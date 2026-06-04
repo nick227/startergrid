@@ -1,5 +1,7 @@
 # Technical 90-Day Roadmap
 
+> **Status as of 2026-06-03:** Weeks 1–6 complete (Data Foundation, DB-Backed Validation, Artifact Store). Operator scripts from Weeks 11–12 also shipped. See `docs/handoff.md` for current state and next sprint recommendation.
+
 ## Product Promise
 
 > "We launch and manage your online dealership footprint."
@@ -65,7 +67,7 @@ DealerNotification    type, channel, payload, delivered_at
 
 ---
 
-## Weeks 1–2: Data Foundation
+## ✅ Weeks 1–2: Data Foundation — COMPLETE (2026-06-03)
 
 **Goal:** Schema and seed pipeline ready. Every subsequent phase builds on top of this.
 
@@ -90,7 +92,7 @@ Acceptance:
 
 ---
 
-## Weeks 3–4: DB-Backed Pristine Validation
+## ✅ Weeks 3–4: DB-Backed Pristine Validation — COMPLETE (2026-06-03)
 
 **Goal:** Every readiness run is reproducible, versioned, and stored. No fixture-only paths for validation.
 
@@ -112,7 +114,7 @@ Acceptance:
 
 ---
 
-## Weeks 5–6: Artifact Store and Proof Folder
+## ✅ Weeks 5–6: Artifact Store and Proof Folder — COMPLETE (2026-06-03)
 
 **Goal:** Every output the system generates is tracked, checksummed, and retrievable. Proof folder is the dealer-facing deliverable.
 
@@ -134,7 +136,7 @@ Acceptance:
 
 ---
 
-## Weeks 7–8: Owned Storefront MVP
+## ⬜ Weeks 7–8: Owned Storefront MVP  ← START HERE
 
 **Goal:** The owned channel is live, leads flow into the DB, and dealers get notified.
 
@@ -184,9 +186,11 @@ Acceptance:
 
 ---
 
-## Weeks 11–12: Dealer Dashboard and Operator Tools
+## ✅ Operator Scripts — COMPLETE (2026-06-03) / ⬜ Weeks 11–12: Dealer Dashboard
 
 **Goal:** A complete demoable flow from dealer profile through to proof export. Operator can run the full cycle without touching code.
+
+**Operator scripts shipped (`dealer:create`, `dealer:status`, `dealer:proof`, `demo:reset`).** Remaining work in this section is the dealer dashboard data layer and the multi-dealer load test.
 
 Build:
 
