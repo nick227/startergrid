@@ -1,13 +1,13 @@
 import { useState, useEffect } from 'react';
-import { parseCSV } from '../lib/parseCSV.ts';
-import type { ParsedCSV } from '../lib/parseCSV.ts';
-import { previewInventoryImport, commitInventoryImport } from '../lib/api.ts';
-import type { ImportPreviewResponse, CommitImportResponse } from '../lib/types.ts';
-import { WizardModal } from './generic/WizardModal.tsx';
-import { ImportStepUpload } from './inventory/ImportStepUpload.tsx';
-import { ImportStepMapping } from './inventory/ImportStepMapping.tsx';
-import { ImportStepPreview } from './inventory/ImportStepPreview.tsx';
-import { IMPORT_WIZARD_STEPS } from './inventory/inventoryConfig.tsx';
+import { parseCSV } from '@/lib/parseCSV.ts';
+import type { ParsedCSV } from '@/lib/parseCSV.ts';
+import { previewInventoryImport, commitInventoryImport } from '@/lib/api.ts';
+import type { ImportPreviewResponse, CommitImportResponse } from '@/lib/types.ts';
+import { WizardModal } from '@/components/generic/WizardModal.tsx';
+import { ImportStepUpload } from './ImportStepUpload.tsx';
+import { ImportStepMapping } from './ImportStepMapping.tsx';
+import { ImportStepPreview } from './ImportStepPreview.tsx';
+import { IMPORT_WIZARD_STEPS } from './inventoryConfig.tsx';
 
 type Props = {
   dealerId: string;
@@ -15,7 +15,7 @@ type Props = {
   onCommitted: (result: CommitImportResponse) => void;
 };
 
-export default function ImportModal({ dealerId, onClose, onCommitted }: Props) {
+export function ImportModal({ dealerId, onClose, onCommitted }: Props) {
   const [step, setStep] = useState(0);
   const [rawText, setRawText] = useState('');
   const [parsed, setParsed] = useState<ParsedCSV | null>(null);
@@ -26,7 +26,6 @@ export default function ImportModal({ dealerId, onClose, onCommitted }: Props) {
   const [committing, setCommitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  // Reset skips when preview changes
   useEffect(() => { setUserSkips(new Set()); }, [preview]);
 
   const handleTextChange = (text: string) => {
@@ -55,7 +54,6 @@ export default function ImportModal({ dealerId, onClose, onCommitted }: Props) {
     if (!parsed || !preview) return;
     setCommitting(true);
     try {
-      // Filter out rows the operator explicitly skipped
       const rowsToCommit = parsed.rows.filter((_, i) => {
         const previewRow = preview.rows[i];
         return previewRow && !userSkips.has(previewRow.rowIndex);

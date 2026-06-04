@@ -3,11 +3,9 @@ export { OperatorPage } from './OperatorPage.tsx';
 export { OperatorNav } from './OperatorNav.tsx';
 export { WorkflowStrip } from './WorkflowStrip.tsx';
 export { SectionCard } from './SectionCard.tsx';
-export { Panel } from './Panel.tsx';
 export { PageHeader } from './PageHeader.tsx';
 export { InlineCallout } from './InlineCallout.tsx';
 export { ErrorState } from './ErrorState.tsx';
-export { StateSummaryCards } from './StateSummaryCards.tsx';
 export { AsyncPanel, PanelSkeleton, PanelError } from './AsyncPanel.tsx';
 export {
   StatusBadge,

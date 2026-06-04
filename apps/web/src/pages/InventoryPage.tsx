@@ -4,25 +4,22 @@ import type { BulkEditPayload, CommitImportResponse } from '@/lib/types.ts';
 import type { OperatorPageBaseProps } from '@/lib/operatorPage.ts';
 import { useAsyncQuery } from '@/hooks/useAsyncQuery.ts';
 import { OperatorPage, SectionCard, InlineCallout, PageHeader } from '@/components/operator';
+import { Banner, EmptyState } from '@/components/ui';
 import { SearchField } from '@/components/ui/SearchField.tsx';
-import { Banner } from '../components/ui/Banner.tsx';
-import { EmptyState } from '../components/ui/EmptyState.tsx';
-import { DataTable } from '../components/generic/DataTable.tsx';
-import { SummaryStrip } from '../components/generic/SummaryStrip.tsx';
-import type { SummaryItem } from '../components/generic/SummaryStrip.tsx';
-import { BulkActionBar } from '../components/generic/BulkActionBar.tsx';
+import { BulkActionBar, DataTable, SummaryStrip } from '@/components/generic';
+import type { SummaryItem } from '@/components/generic';
 import {
+  ImportModal,
+  CleanupFilterBar,
+  VehicleRowExpand,
+  ImportBatchHistory,
   VEHICLE_COLUMNS,
   SUMMARY_STRIP_ITEMS,
   BULK_EDIT_FIELD_DEFS,
   READINESS_CONFIG,
   applyCleanupFilter,
-} from '../components/inventory/inventoryConfig.tsx';
-import type { CleanupFilter } from '../components/inventory/inventoryConfig.tsx';
-import { CleanupFilterBar } from '../components/inventory/CleanupFilterBar.tsx';
-import { VehicleRowExpand } from '../components/inventory/VehicleRowExpand.tsx';
-import { ImportBatchHistory } from '../components/inventory/ImportBatchHistory.tsx';
-import ImportModal from '../components/ImportModal.tsx';
+} from '@/components/inventory';
+import type { CleanupFilter } from '@/components/inventory';
 
 type Props = OperatorPageBaseProps;
 

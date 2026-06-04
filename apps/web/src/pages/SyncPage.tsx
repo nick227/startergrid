@@ -3,11 +3,13 @@ import type { OperatorPageBaseProps } from '@/lib/operatorPage.ts';
 import { useSyncPageData } from '@/hooks/useSyncPageData.ts';
 import { computeSyncReadiness } from '@/lib/syncPresentation.ts';
 import { OperatorPage, ErrorState, PanelSkeleton } from '@/components/operator';
-import { SyncHero } from '@/components/sync/SyncHero.tsx';
-import { SyncSummaryStrip } from '@/components/sync/SyncSummaryStrip.tsx';
-import { SyncPlatformList } from '@/components/sync/SyncPlatformList.tsx';
-import { SyncInventoryPeek } from '@/components/sync/SyncInventoryPeek.tsx';
-import { LastSyncLine } from '@/components/sync/LastSyncLine.tsx';
+import {
+  SyncHero,
+  SyncSummaryStrip,
+  SyncPlatformList,
+  SyncInventoryPeek,
+  LastSyncLine,
+} from '@/components/sync';
 
 type Props = OperatorPageBaseProps;
 

@@ -18,15 +18,10 @@ import {
   AccountStateBadge,
   ErrorState,
 } from '@/components/operator';
-import { FilterChips } from '@/components/generic/FilterChips.tsx';
-import { EmptyState } from '@/components/ui/EmptyState.tsx';
-import { Banner } from '@/components/ui/Banner.tsx';
-import { Button } from '@/components/ui/Button.tsx';
-import { Badge } from '@/components/ui/Badge.tsx';
-import type { BadgeColor } from '@/components/ui/Badge.tsx';
-import { SummaryStrip } from '@/components/generic/SummaryStrip.tsx';
-import type { SummaryItem } from '@/components/generic/SummaryStrip.tsx';
-import { Skeleton } from '@/components/ui/Skeleton.tsx';
+import { FilterChips, SummaryStrip } from '@/components/generic';
+import type { SummaryItem } from '@/components/generic';
+import { Badge, Banner, Button, EmptyState, Skeleton } from '@/components/ui';
+import type { BadgeColor } from '@/components/ui';
 
 type StateFilter = (typeof ACCOUNT_FILTER_CHIPS)[number]['key'];
 
