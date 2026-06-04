@@ -25,6 +25,16 @@ Create `.env` from `.env.example`. All variables required before running any com
 | `FEED_EXPORTS_DIR` | Directory for artifact output | `./exports` (default) |
 | `PORT` | HTTP server port | `3000` (default) |
 | `HOST` | HTTP server bind address | `127.0.0.1` (default) |
+| `DEV_OPERATOR_ID` | Local dev operator id accepted by protected API routes | `dev-operator` |
+| `DEV_OPERATOR_DEALER_IDS` | Optional comma-separated dealership allowlist for the dev operator | blank = all seeded dealers |
+
+For the Vite UI, create `apps/web/.env.local` and set:
+
+```bash
+VITE_DEV_OPERATOR_ID=dev-operator
+```
+
+`VITE_DEV_OPERATOR_ID` is sent as `x-operator-id` by the frontend during local development. It should match `DEV_OPERATOR_ID` for the API process. This is a dev placeholder only, not production login.
 
 ---
 
@@ -165,6 +175,8 @@ POST  /api/dealers/:dealershipId/vehicles/:stockNumber/sold
 POST  /api/dealers/:dealershipId/vehicles/:stockNumber/removed
 PATCH /api/dealers/:dealershipId/vehicles/:stockNumber/photos
 ```
+
+Operator routes require `x-operator-id`, `Authorization: Bearer <operator>`, or `DEV_OPERATOR_ID`. Public storefront reads do not require auth. Lead capture is public-write and rate-limited.
 
 ---
 

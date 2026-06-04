@@ -9,8 +9,6 @@ servers:
   - url: /
     description: Same-origin (Vite proxy in dev)
 
-security: []
-
 tags:
   - name: Health
   - name: Dealers
@@ -24,6 +22,8 @@ paths:
   /health:
     get:
       tags: [Health]
+      security: []
+      x-route-classification: public
       operationId: getHealth
       summary: Health check
       responses:
@@ -33,10 +33,15 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/HealthResponse'
+        '404':
+          $ref: '#/components/responses/NotFound'
 
   /api/dealers:
     get:
       tags: [Dealers]
+      security:
+        - OperatorAuth: []
+      x-route-classification: operator
       operationId: listDealers
       summary: List dealerships
       responses:
@@ -46,10 +51,15 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/DealerListResponse'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
 
   /api/dealers/{dealershipId}/publish/prepare:
     post:
       tags: [Publish]
+      security:
+        - OperatorAuth: []
+      x-route-classification: operator
       operationId: preparePublish
       summary: Prepare publish (dry-run by default)
       parameters:
@@ -68,10 +78,15 @@ paths:
                 $ref: '#/components/schemas/PreparePublishResult'
         '404':
           $ref: '#/components/responses/NotFound'
+        '403':
+          $ref: '#/components/responses/Forbidden'
 
   /api/dealers/{dealershipId}/publish/status:
     get:
       tags: [Publish]
+      security:
+        - OperatorAuth: []
+      x-route-classification: operator
       operationId: getPublishStatus
       summary: Publish readiness status (dry-run prepare)
       parameters:
@@ -89,6 +104,9 @@ paths:
   /api/dealers/{dealershipId}/publish/history:
     get:
       tags: [Publish]
+      security:
+        - OperatorAuth: []
+      x-route-classification: operator
       operationId: getPublishHistory
       summary: Sync event history
       parameters:
@@ -126,6 +144,9 @@ paths:
   /api/dealers/{dealershipId}/publish/accounts:
     get:
       tags: [Publish]
+      security:
+        - OperatorAuth: []
+      x-route-classification: operator
       operationId: getPublishAccounts
       summary: Platform account summary for publish console
       parameters:
@@ -143,6 +164,9 @@ paths:
   /api/dealers/{dealershipId}/publish/queue:
     get:
       tags: [Publish]
+      security:
+        - OperatorAuth: []
+      x-route-classification: operator
       operationId: getPublishQueue
       summary: Publish queue view
       parameters:
@@ -160,6 +184,9 @@ paths:
   /api/dealers/{dealershipId}/accounts:
     get:
       tags: [Accounts]
+      security:
+        - OperatorAuth: []
+      x-route-classification: operator
       operationId: listAccounts
       summary: Platform accounts (management)
       parameters:
@@ -177,6 +204,9 @@ paths:
   /api/dealers/{dealershipId}/accounts/{platformSlug}:
     patch:
       tags: [Accounts]
+      security:
+        - OperatorAuth: []
+      x-route-classification: operator
       operationId: updateAccount
       summary: Update platform account fields
       parameters:
@@ -203,6 +233,9 @@ paths:
   /api/dealers/{dealershipId}/inventory:
     get:
       tags: [Inventory]
+      security:
+        - OperatorAuth: []
+      x-route-classification: operator
       operationId: listInventory
       summary: Active inventory list with readiness
       parameters:
@@ -220,6 +253,9 @@ paths:
   /api/dealers/{dealershipId}/inventory/import/preview:
     post:
       tags: [Inventory]
+      security:
+        - OperatorAuth: []
+      x-route-classification: operator
       operationId: previewInventoryImport
       summary: Import preview (no writes)
       parameters:
@@ -245,6 +281,9 @@ paths:
   /api/dealers/{dealershipId}/inventory/import/commit:
     post:
       tags: [Inventory]
+      security:
+        - OperatorAuth: []
+      x-route-classification: operator
       operationId: commitInventoryImport
       summary: Commit inventory import
       parameters:
@@ -270,6 +309,9 @@ paths:
   /api/dealers/{dealershipId}/inventory/bulk:
     patch:
       tags: [Inventory]
+      security:
+        - OperatorAuth: []
+      x-route-classification: operator
       operationId: bulkEditInventory
       summary: Bulk field update
       parameters:
@@ -295,6 +337,9 @@ paths:
   /api/dealers/{dealershipId}/inventory/import/batches:
     get:
       tags: [Inventory]
+      security:
+        - OperatorAuth: []
+      x-route-classification: operator
       operationId: listImportBatches
       summary: Recent import batch events
       parameters:
@@ -312,6 +357,9 @@ paths:
   /api/dealers/{dealershipId}/vehicles/{stockNumber}/price:
     patch:
       tags: [Vehicles]
+      security:
+        - OperatorAuth: []
+      x-route-classification: operator
       operationId: updateVehiclePrice
       summary: Update vehicle price
       parameters:
@@ -338,6 +386,9 @@ paths:
   /api/dealers/{dealershipId}/vehicles/{stockNumber}/photos:
     patch:
       tags: [Vehicles]
+      security:
+        - OperatorAuth: []
+      x-route-classification: operator
       operationId: updateVehiclePhotos
       summary: Replace vehicle photo URLs
       parameters:
@@ -364,6 +415,9 @@ paths:
   /api/dealers/{dealershipId}/vehicles/{stockNumber}/sold:
     post:
       tags: [Vehicles]
+      security:
+        - OperatorAuth: []
+      x-route-classification: operator
       operationId: markVehicleSold
       summary: Mark vehicle sold
       parameters:
@@ -382,6 +436,9 @@ paths:
   /api/dealers/{dealershipId}/vehicles/{stockNumber}/removed:
     post:
       tags: [Vehicles]
+      security:
+        - OperatorAuth: []
+      x-route-classification: operator
       operationId: markVehicleRemoved
       summary: Mark vehicle removed
       parameters:
@@ -397,9 +454,57 @@ paths:
         '404':
           $ref: '#/components/responses/NotFound'
 
+  /api/dealers/{dealershipId}/ingress/sources:
+    get:
+      tags: [Inventory]
+      security:
+        - OperatorAuth: []
+      x-route-classification: operator
+      operationId: listIngressSources
+      summary: List inventory ingress sources for a dealer
+      parameters:
+        - $ref: '#/components/parameters/dealershipId'
+      responses:
+        '200':
+          description: Ingress sources
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/IngressSourcesResponse'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /api/dealers/{dealershipId}/ingress/runs:
+    get:
+      tags: [Inventory]
+      security:
+        - OperatorAuth: []
+      x-route-classification: operator
+      operationId: listIngressRuns
+      summary: List ingress runs for a dealer
+      parameters:
+        - $ref: '#/components/parameters/dealershipId'
+        - name: limit
+          in: query
+          schema: { type: integer, minimum: 1, maximum: 100, default: 20 }
+        - name: before
+          in: query
+          schema: { type: string }
+      responses:
+        '200':
+          description: Ingress runs with pagination
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/IngressRunsResponse'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
   /api/dealers/{dealershipId}/storefront:
     get:
       tags: [Storefront]
+      security: []
+      x-route-classification: public
       operationId: getStorefront
       summary: Public storefront payload
       parameters:
@@ -418,6 +523,8 @@ paths:
   /api/dealers/{dealershipId}/vehicles/{stockNumber}:
     get:
       tags: [Storefront]
+      security: []
+      x-route-classification: public
       operationId: getVehicleDetail
       summary: Vehicle listing detail
       parameters:
@@ -437,16 +544,18 @@ paths:
   /api/dealers/{dealershipId}/leads:
     post:
       tags: [Storefront]
+      security: []
+      x-route-classification: public-write
       operationId: captureLead
       summary: Capture storefront lead
+      description: Public write endpoint protected by server-side rate limiting and abuse controls.
       parameters:
         - $ref: '#/components/parameters/dealershipId'
       requestBody:
         content:
           application/json:
             schema:
-              type: object
-              additionalProperties: true
+              $ref: '#/components/schemas/LeadCaptureRequest'
       responses:
         '201':
           description: Lead accepted
@@ -460,6 +569,13 @@ paths:
           $ref: '#/components/responses/NotFound'
 
 components:
+  securitySchemes:
+    OperatorAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: dev-placeholder
+      description: Operator auth placeholder. In development, the Fastify guard also accepts x-operator-id or DEV_OPERATOR_ID.
+
   parameters:
     dealershipId:
       name: dealershipId
@@ -489,6 +605,18 @@ components:
             $ref: '#/components/schemas/ErrorResponse'
     BadRequest:
       description: Bad request
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+    Unauthorized:
+      description: Operator authentication required
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+    Forbidden:
+      description: Operator does not have access to this dealership
       content:
         application/json:
           schema:
@@ -712,14 +840,18 @@ components:
 
     PreparePublishRequest:
       type: object
+      additionalProperties: false
       properties:
         dryRun:
           type: boolean
           default: true
         platforms:
           type: array
+          maxItems: 18
           items:
             type: string
+            minLength: 1
+            maxLength: 80
 
     PreparePublishResult:
       allOf:
@@ -1146,23 +1278,33 @@ components:
 
     AccountUpdatePayload:
       type: object
+      additionalProperties: false
       properties:
         state:
           type: string
+          enum: [ACCOUNT_NEEDED, CREDENTIALS_NEEDED, PENDING_REVIEW, ACTIVE, BLOCKED, PARTNER_REQUIRED, SUSPENDED]
         notes:
           type: string
+          maxLength: 5000
         accountId:
           type: string
+          maxLength: 120
         platformRepName:
           type: string
+          maxLength: 160
         platformRepEmail:
           type: string
+          format: email
+          maxLength: 255
         membershipStatus:
           type: string
+          maxLength: 80
         nextAction:
           type: string
+          maxLength: 255
         nextActionOwner:
           type: string
+          enum: [DEALER, OPERATOR, PLATFORM]
           nullable: true
 
     AccountUpdateResponse:
@@ -1266,17 +1408,22 @@ components:
     InventoryImportRequest:
       type: object
       required: [rows]
+      additionalProperties: false
       properties:
         rows:
           type: array
+          maxItems: 2000
           items:
             type: object
+            maxProperties: 200
             additionalProperties:
               type: string
+              maxLength: 2000
         mapping:
           type: object
           additionalProperties:
             type: string
+            maxLength: 80
 
     ImportPreviewRow:
       type: object
@@ -1331,8 +1478,11 @@ components:
 
     CommitImportResponse:
       type: object
-      required: [created, updated, skipped, errors, batchId]
+      required: [created, updated, skipped, errors, batchId, status]
       properties:
+        status:
+          type: string
+          enum: [COMMITTED, PARTIAL, FAILED]
         created:
           type: integer
         updated:
@@ -1355,6 +1505,59 @@ components:
           type: string
           format: date-time
 
+    IngressSourceView:
+      type: object
+      required: [id, slug, label, kind, status, createdAt, updatedAt]
+      properties:
+        id:            { type: string }
+        slug:          { type: string }
+        label:         { type: string }
+        kind:          { type: string }
+        status:        { type: string }
+        lastReceivedAt: { type: string, nullable: true }
+        lastCheckedAt:  { type: string, nullable: true }
+        createdAt:     { type: string }
+        updatedAt:     { type: string }
+
+    IngressRunView:
+      type: object
+      required: [id, sourceKind, status, receivedAt, vehicleCount, createdCount, updatedCount, skippedCount, blockedCount, errorCount]
+      properties:
+        id:           { type: string }
+        sourceId:     { type: string, nullable: true }
+        sourceLabel:  { type: string, nullable: true }
+        sourceKind:   { type: string }
+        status:       { type: string }
+        receivedAt:   { type: string }
+        completedAt:  { type: string, nullable: true }
+        vehicleCount: { type: integer }
+        createdCount: { type: integer }
+        updatedCount: { type: integer }
+        skippedCount: { type: integer }
+        blockedCount: { type: integer }
+        errorCount:   { type: integer }
+        summaryJson:  {}
+
+    IngressSourcesResponse:
+      type: object
+      required: [sources]
+      properties:
+        sources:
+          type: array
+          items:
+            $ref: '#/components/schemas/IngressSourceView'
+
+    IngressRunsResponse:
+      type: object
+      required: [runs, hasMore]
+      properties:
+        runs:
+          type: array
+          items:
+            $ref: '#/components/schemas/IngressRunView'
+        hasMore:
+          type: boolean
+
     ImportBatchesResponse:
       type: object
       required: [batches]
@@ -1367,14 +1570,59 @@ components:
     BulkEditPayload:
       type: object
       required: [stockNumbers, fields]
+      additionalProperties: false
       properties:
         stockNumbers:
           type: array
+          minItems: 1
+          maxItems: 2000
           items:
             type: string
+            minLength: 1
+            maxLength: 80
         fields:
-          type: object
-          additionalProperties: true
+          $ref: '#/components/schemas/BulkEditFields'
+
+    BulkEditFields:
+      type: object
+      additionalProperties: false
+      minProperties: 1
+      properties:
+        priceCents:
+          type: integer
+          minimum: 1
+          maximum: 100000000
+        mileage:
+          type: integer
+          minimum: 0
+          maximum: 2000000
+        condition:
+          type: string
+          enum: [NEW, USED, CPO]
+        exteriorColor:
+          type: string
+          minLength: 1
+          maxLength: 80
+        interiorColor:
+          type: string
+          minLength: 1
+          maxLength: 80
+        bodyStyle:
+          type: string
+          minLength: 1
+          maxLength: 80
+        drivetrain:
+          type: string
+          minLength: 1
+          maxLength: 80
+        fuelType:
+          type: string
+          minLength: 1
+          maxLength: 80
+        transmission:
+          type: string
+          minLength: 1
+          maxLength: 80
 
     BulkEditResponse:
       type: object
@@ -1386,19 +1634,26 @@ components:
     PriceUpdateRequest:
       type: object
       required: [priceCents]
+      additionalProperties: false
       properties:
         priceCents:
           type: integer
           minimum: 1
+          maximum: 100000000
 
     PhotoUpdateRequest:
       type: object
       required: [photoUrls]
+      additionalProperties: false
       properties:
         photoUrls:
           type: array
+          minItems: 1
+          maxItems: 100
           items:
             type: string
+            format: uri
+            maxLength: 512
 
     VehicleUpdatePropagation:
       type: object
@@ -1455,3 +1710,24 @@ components:
         leadId:
           type: string
           nullable: true
+
+    LeadCaptureRequest:
+      type: object
+      additionalProperties: false
+      properties:
+        stockNumber:
+          type: string
+          maxLength: 80
+        contactName:
+          type: string
+          maxLength: 160
+        contactEmail:
+          type: string
+          format: email
+          maxLength: 255
+        contactPhone:
+          type: string
+          maxLength: 40
+        message:
+          type: string
+          maxLength: 5000

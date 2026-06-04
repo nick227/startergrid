@@ -10,6 +10,8 @@ import {
 } from '../../services/publishing/autoReconcileService.js';
 import { getQueueView } from '../../services/publishing/publishQueueService.js';
 import { platformProfiles } from '../../data/platformProfiles.js';
+import { requireDealerAccess } from '../security.js';
+import { preparePublishSchema, validateBody } from '../requestValidation.js';
 
 type DealerParams = { dealershipId: string };
 type PrepareBody = { dryRun?: boolean; platforms?: string[] };
@@ -33,7 +35,11 @@ export function registerPublishRoutes(app: FastifyInstance, prisma: PrismaClient
     '/api/dealers/:dealershipId/publish/prepare',
     async (request, reply) => {
       const { dealershipId } = request.params;
-      const body: PrepareBody = (request.body as PrepareBody) ?? {};
+      if (!requireDealerAccess(request, reply, dealershipId)) return;
+      const parsed = validateBody(preparePublishSchema, request.body ?? {});
+      if (!parsed.ok) return reply.status(400).send({ error: parsed.error });
+
+      const body: PrepareBody = parsed.data;
       const dryRun = body.dryRun !== false; // default true for API safety
       const platformFilter = body.platforms?.length ? body.platforms : undefined;
 
@@ -59,6 +65,7 @@ export function registerPublishRoutes(app: FastifyInstance, prisma: PrismaClient
     '/api/dealers/:dealershipId/publish/status',
     async (request, reply) => {
       const { dealershipId } = request.params;
+      if (!requireDealerAccess(request, reply, dealershipId)) return;
       if (!await requireDealer(prisma, dealershipId))
         return reply.status(404).send({ error: 'Dealer not found' });
 
@@ -91,6 +98,7 @@ export function registerPublishRoutes(app: FastifyInstance, prisma: PrismaClient
     '/api/dealers/:dealershipId/publish/auto-sync',
     async (request, reply) => {
       const { dealershipId } = request.params;
+      if (!requireDealerAccess(request, reply, dealershipId)) return;
       if (!await requireDealer(prisma, dealershipId))
         return reply.status(404).send({ error: 'Dealer not found' });
       return reply.send(getAutoSyncStatus(dealershipId));
@@ -103,6 +111,7 @@ export function registerPublishRoutes(app: FastifyInstance, prisma: PrismaClient
     async (request, reply) => {
       const { dealershipId } = request.params;
       const { platformSlug, kind, limit: limitStr, before } = request.query;
+      if (!requireDealerAccess(request, reply, dealershipId)) return;
 
       if (!await requireDealer(prisma, dealershipId))
         return reply.status(404).send({ error: 'Dealer not found' });
@@ -154,6 +163,7 @@ export function registerPublishRoutes(app: FastifyInstance, prisma: PrismaClient
     '/api/dealers/:dealershipId/publish/accounts',
     async (request, reply) => {
       const { dealershipId } = request.params;
+      if (!requireDealerAccess(request, reply, dealershipId)) return;
       if (!await requireDealer(prisma, dealershipId))
         return reply.status(404).send({ error: 'Dealer not found' });
 
@@ -198,6 +208,7 @@ export function registerPublishRoutes(app: FastifyInstance, prisma: PrismaClient
     '/api/dealers/:dealershipId/publish/queue',
     async (request, reply) => {
       const { dealershipId } = request.params;
+      if (!requireDealerAccess(request, reply, dealershipId)) return;
       if (!await requireDealer(prisma, dealershipId))
         return reply.status(404).send({ error: 'Dealer not found' });
       const view = await getQueueView(prisma, dealershipId);

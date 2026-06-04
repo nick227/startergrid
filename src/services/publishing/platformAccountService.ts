@@ -11,6 +11,15 @@ export const VALID_ACCOUNT_STATES: PlatformAccountState[] = [
 export const NEXT_ACTION_OWNERS = ['DEALER', 'OPERATOR', 'PLATFORM'] as const;
 export type NextActionOwner = typeof NEXT_ACTION_OWNERS[number];
 
+const ACCOUNT_FIELD_LIMITS: Partial<Record<keyof AccountUpdatePayload, number>> = {
+  notes: 5000,
+  accountId: 120,
+  platformRepName: 160,
+  platformRepEmail: 255,
+  membershipStatus: 80,
+  nextAction: 255,
+};
+
 export function isBlockingAccountState(state: string): boolean {
   return state === 'BLOCKED' || state === 'SUSPENDED';
 }
@@ -34,6 +43,21 @@ export function validateAccountUpdatePayload(payload: AccountUpdatePayload): str
     !NEXT_ACTION_OWNERS.includes(payload.nextActionOwner as NextActionOwner)
   ) {
     return `Invalid nextActionOwner: ${payload.nextActionOwner}`;
+  }
+  for (const [field, max] of Object.entries(ACCOUNT_FIELD_LIMITS)) {
+    const value = payload[field as keyof AccountUpdatePayload];
+    if (value !== undefined && value !== null && typeof value !== 'string') {
+      return `${field} must be a string`;
+    }
+    if (typeof value === 'string' && value.length > max) {
+      return `${field} must be ${max} characters or less`;
+    }
+  }
+  if (
+    payload.platformRepEmail &&
+    !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(payload.platformRepEmail)
+  ) {
+    return 'platformRepEmail must be a valid email address';
   }
   return null;
 }

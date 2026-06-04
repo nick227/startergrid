@@ -15,13 +15,17 @@ import type {
   AccountsManagementResponse,
   AccountUpdatePayload,
   AccountUpdateResponse,
+  IngressSourcesResponse,
+  IngressRunsResponse,
 } from './types.ts';
+import { toErrorMessage } from './errors.ts';
+import { withDevOperatorHeaders } from './devAuth.ts';
 
 async function apiFetch<T>(url: string, init?: RequestInit): Promise<T> {
-  const res = await fetch(url, init);
+  const res = await fetch(url, withDevOperatorHeaders(init));
   if (!res.ok) {
     const body = await res.json().catch(() => ({ error: res.statusText }));
-    throw new Error((body as { error?: string }).error ?? `HTTP ${res.status}`);
+    throw new Error(toErrorMessage({ status: res.status, message: (body as { error?: string }).error }, `HTTP ${res.status}`));
   }
   return res.json() as Promise<T>;
 }
@@ -115,6 +119,21 @@ export async function updateAccount(
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(payload),
   });
+}
+
+export async function fetchIngressSources(dealershipId: string): Promise<IngressSourcesResponse> {
+  return apiFetch(`/api/dealers/${dealershipId}/ingress/sources`);
+}
+
+export async function fetchIngressRuns(
+  dealershipId: string,
+  opts?: { limit?: number; before?: string }
+): Promise<IngressRunsResponse> {
+  const params = new URLSearchParams();
+  if (opts?.limit)  params.set('limit',  String(opts.limit));
+  if (opts?.before) params.set('before', opts.before);
+  const qs = params.toString();
+  return apiFetch(`/api/dealers/${dealershipId}/ingress/runs${qs ? `?${qs}` : ''}`);
 }
 
 export async function runPrepare(

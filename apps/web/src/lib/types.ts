@@ -221,11 +221,13 @@ export type ImportPreviewResponse = {
 };
 
 export type CommitImportResponse = {
+  status: 'COMMITTED' | 'PARTIAL' | 'FAILED';
   created: number;
   updated: number;
   skipped: number;
   errors: number;
   batchId: string;
+  ingressRunId: string;
 };
 
 export type ImportBatch = {
@@ -307,6 +309,40 @@ export type AccountUpdatePayload = {
 export type AccountUpdateResponse = {
   account: PlatformAccountDetail;
 };
+
+// ── Inventory Ingress ─────────────────────────────────────────────────────────
+
+export type IngressSourceView = {
+  id: string;
+  slug: string;
+  label: string;
+  kind: string;
+  status: string;
+  lastReceivedAt: string | null;
+  lastCheckedAt:  string | null;
+  createdAt: string;
+  updatedAt: string;
+};
+
+export type IngressRunView = {
+  id: string;
+  sourceId:    string | null;
+  sourceLabel: string | null;
+  sourceKind:  string;
+  status:      string;
+  receivedAt:  string;
+  completedAt: string | null;
+  vehicleCount: number;
+  createdCount: number;
+  updatedCount: number;
+  skippedCount: number;
+  blockedCount: number;
+  errorCount:   number;
+  summaryJson:  unknown;
+};
+
+export type IngressSourcesResponse = { sources: IngressSourceView[] };
+export type IngressRunsResponse     = { runs: IngressRunView[]; hasMore: boolean };
 
 // ── Queue ─────────────────────────────────────────────────────────────────────
 

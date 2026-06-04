@@ -6,6 +6,10 @@ import {
   AccountsService,
 } from '@auto-dealer/api-client';
 import type {
+  AccountUpdatePayload as SdkAccountUpdatePayload,
+  BulkEditPayload as SdkBulkEditPayload,
+} from '@auto-dealer/api-client';
+import type {
   AutoSyncStatus,
   PublishStatusResponse,
   PrepareResult,
@@ -23,6 +27,10 @@ import type {
   AccountUpdatePayload,
   AccountUpdateResponse,
 } from '../types.ts';
+import { toErrorMessage } from '../errors.ts';
+import { configureSdkDevAuth, withDevOperatorHeaders } from '../devAuth.ts';
+
+configureSdkDevAuth();
 
 async function fromSdk<T>(promise: Promise<T>): Promise<T> {
   try {
@@ -30,7 +38,7 @@ async function fromSdk<T>(promise: Promise<T>): Promise<T> {
   } catch (e) {
     if (e instanceof ApiError) {
       const body = e.body as { error?: string } | undefined;
-      const err = new Error(body?.error ?? e.message);
+      const err = new Error(toErrorMessage({ status: e.status, message: body?.error ?? e.message }, e.message));
       (err as Error & { cause?: unknown }).cause = e;
       throw err;
     }
@@ -47,10 +55,10 @@ export async function fetchPublishStatus(dealershipId: string): Promise<PublishS
 }
 
 export async function fetchAutoSyncStatus(dealershipId: string): Promise<AutoSyncStatus> {
-  const res = await fetch(`/api/dealers/${dealershipId}/publish/auto-sync`);
+  const res = await fetch(`/api/dealers/${dealershipId}/publish/auto-sync`, withDevOperatorHeaders());
   if (!res.ok) {
     const body = await res.json().catch(() => ({ error: res.statusText }));
-    throw new Error((body as { error?: string }).error ?? `HTTP ${res.status}`);
+    throw new Error(toErrorMessage({ status: res.status, message: (body as { error?: string }).error }, `HTTP ${res.status}`));
   }
   return res.json() as Promise<AutoSyncStatus>;
 }
@@ -116,7 +124,7 @@ export async function bulkEditVehicles(
   payload: BulkEditPayload
 ): Promise<BulkEditResponse> {
   return fromSdk(
-    InventoryService.bulkEditInventory({ dealershipId, requestBody: payload })
+    InventoryService.bulkEditInventory({ dealershipId, requestBody: payload as SdkBulkEditPayload })
   );
 }
 
@@ -130,7 +138,7 @@ export async function updateAccount(
   payload: AccountUpdatePayload
 ): Promise<AccountUpdateResponse> {
   return fromSdk(
-    AccountsService.updateAccount({ dealershipId, platformSlug, requestBody: payload })
+    AccountsService.updateAccount({ dealershipId, platformSlug, requestBody: payload as SdkAccountUpdatePayload })
   ) as Promise<AccountUpdateResponse>;
 }
 

@@ -108,6 +108,8 @@ model DealershipProfile {
   syncRuns            SyncRun[]
   syncEvents          SyncEvent[]
   platformAccounts    PlatformAccount[]
+  inventorySources    InventorySource[]
+  ingressRuns         IngressRun[]
 }
 
 model Vehicle {
@@ -562,6 +564,78 @@ model SyncEvent {
   @@index([dealershipId])
   @@index([vehicleId])
   @@index([kind])
+}
+
+// ─── Inventory Ingress models ─────────────────────────────────────────────────
+
+enum InventorySourceKind {
+  API
+  WEBHOOK
+  CSV
+  JSON
+  MANUAL
+  SCHEDULED_CHECK
+}
+
+enum InventorySourceStatus {
+  ACTIVE
+  PAUSED
+  DISCONNECTED
+  ERROR
+}
+
+enum IngressRunStatus {
+  RECEIVED
+  PROCESSING
+  COMMITTED
+  PARTIAL
+  FAILED
+}
+
+model InventorySource {
+  id             String                @id @default(cuid())
+  dealershipId   String
+  slug           String                @db.VarChar(80)
+  label          String                @db.VarChar(160)
+  kind           InventorySourceKind
+  status         InventorySourceStatus @default(ACTIVE)
+  lastReceivedAt DateTime?
+  lastCheckedAt  DateTime?
+  configJson     Json?
+  createdAt      DateTime              @default(now())
+  updatedAt      DateTime              @updatedAt
+
+  dealership  DealershipProfile @relation(fields: [dealershipId], references: [id], onDelete: Cascade)
+  ingressRuns IngressRun[]
+
+  @@unique([dealershipId, slug])
+  @@index([dealershipId])
+}
+
+model IngressRun {
+  id                 String          @id @default(cuid())
+  dealershipId       String
+  sourceId           String?
+  sourceKind         InventorySourceKind
+  status             IngressRunStatus @default(RECEIVED)
+  receivedAt         DateTime
+  completedAt        DateTime?
+  vehicleCount       Int             @default(0)
+  createdCount       Int             @default(0)
+  updatedCount       Int             @default(0)
+  skippedCount       Int             @default(0)
+  blockedCount       Int             @default(0)
+  errorCount         Int             @default(0)
+  mappingJson        Json?
+  summaryJson        Json?
+  platformImpactJson Json?
+  createdAt          DateTime        @default(now())
+
+  dealership DealershipProfile @relation(fields: [dealershipId], references: [id], onDelete: Cascade)
+  source     InventorySource?  @relation(fields: [sourceId], references: [id], onDelete: SetNull)
+
+  @@index([dealershipId])
+  @@index([sourceId])
 }
 
 model PlatformAccount {

@@ -10,6 +10,15 @@ import {
   commitImport,
   classifyVehicleReadiness
 } from '../../services/inventory/importService.js';
+import { requireDealerAccess } from '../security.js';
+import {
+  bulkEditSchema,
+  emptyBodySchema,
+  inventoryImportSchema,
+  photoUpdateSchema,
+  priceUpdateSchema,
+  validateBody,
+} from '../requestValidation.js';
 
 type VehicleParams = { dealershipId: string; stockNumber: string };
 type DealerParams = { dealershipId: string };
@@ -26,6 +35,7 @@ export function registerInventoryRoutes(app: FastifyInstance, prisma: PrismaClie
     '/api/dealers/:dealershipId/inventory',
     async (request, reply) => {
       const { dealershipId } = request.params;
+      if (!requireDealerAccess(request, reply, dealershipId)) return;
       if (!await findDealer(prisma, dealershipId))
         return reply.status(404).send({ error: 'Dealer not found' });
 
@@ -71,20 +81,14 @@ export function registerInventoryRoutes(app: FastifyInstance, prisma: PrismaClie
     '/api/dealers/:dealershipId/inventory/import/preview',
     async (request, reply) => {
       const { dealershipId } = request.params;
+      if (!requireDealerAccess(request, reply, dealershipId)) return;
       if (!await findDealer(prisma, dealershipId))
         return reply.status(404).send({ error: 'Dealer not found' });
 
-      const body = request.body as { rows?: unknown; mapping?: unknown };
-      if (!Array.isArray(body.rows))
-        return reply.status(400).send({ error: 'rows must be an array' });
-      if ((body.rows as unknown[]).length > 2000)
-        return reply.status(400).send({ error: 'Max 2000 rows per import' });
+      const body = validateBody(inventoryImportSchema, request.body);
+      if (!body.ok) return reply.status(400).send({ error: body.error });
 
-      const mapping = (typeof body.mapping === 'object' && body.mapping !== null)
-        ? body.mapping as Record<string, string>
-        : {};
-
-      const result = await previewImport(prisma, dealershipId, body.rows as Record<string, string>[], mapping);
+      const result = await previewImport(prisma, dealershipId, body.data.rows, body.data.mapping ?? {});
       return reply.send(result);
     }
   );
@@ -95,20 +99,14 @@ export function registerInventoryRoutes(app: FastifyInstance, prisma: PrismaClie
     '/api/dealers/:dealershipId/inventory/import/commit',
     async (request, reply) => {
       const { dealershipId } = request.params;
+      if (!requireDealerAccess(request, reply, dealershipId)) return;
       if (!await findDealer(prisma, dealershipId))
         return reply.status(404).send({ error: 'Dealer not found' });
 
-      const body = request.body as { rows?: unknown; mapping?: unknown };
-      if (!Array.isArray(body.rows))
-        return reply.status(400).send({ error: 'rows must be an array' });
-      if ((body.rows as unknown[]).length > 2000)
-        return reply.status(400).send({ error: 'Max 2000 rows per import' });
+      const body = validateBody(inventoryImportSchema, request.body);
+      if (!body.ok) return reply.status(400).send({ error: body.error });
 
-      const mapping = (typeof body.mapping === 'object' && body.mapping !== null)
-        ? body.mapping as Record<string, string>
-        : {};
-
-      const result = await commitImport(prisma, dealershipId, body.rows as Record<string, string>[], mapping);
+      const result = await commitImport(prisma, dealershipId, body.data.rows, body.data.mapping ?? {});
       return reply.send(result);
     }
   );
@@ -119,26 +117,16 @@ export function registerInventoryRoutes(app: FastifyInstance, prisma: PrismaClie
     '/api/dealers/:dealershipId/inventory/bulk',
     async (request, reply) => {
       const { dealershipId } = request.params;
+      if (!requireDealerAccess(request, reply, dealershipId)) return;
       if (!await findDealer(prisma, dealershipId))
         return reply.status(404).send({ error: 'Dealer not found' });
 
-      const body = request.body as { stockNumbers?: unknown; fields?: unknown };
-      if (!Array.isArray(body.stockNumbers) || (body.stockNumbers as unknown[]).length === 0)
-        return reply.status(400).send({ error: 'stockNumbers must be a non-empty array' });
-      if (typeof body.fields !== 'object' || body.fields === null)
-        return reply.status(400).send({ error: 'fields must be an object' });
-
-      const ALLOWED = ['priceCents', 'mileage', 'condition', 'exteriorColor', 'interiorColor', 'bodyStyle', 'drivetrain', 'fuelType', 'transmission'];
-      const safeFields: Record<string, unknown> = {};
-      for (const [k, v] of Object.entries(body.fields as Record<string, unknown>)) {
-        if (ALLOWED.includes(k) && v !== undefined && v !== null && v !== '') safeFields[k] = v;
-      }
-      if (!Object.keys(safeFields).length)
-        return reply.status(400).send({ error: 'No valid fields to update' });
+      const body = validateBody(bulkEditSchema, request.body);
+      if (!body.ok) return reply.status(400).send({ error: body.error });
 
       const result = await prisma.vehicle.updateMany({
-        where: { dealershipId, stockNumber: { in: body.stockNumbers as string[] } },
-        data: safeFields
+        where: { dealershipId, stockNumber: { in: body.data.stockNumbers } },
+        data: body.data.fields
       });
 
       if (result.count > 0) {
@@ -156,6 +144,7 @@ export function registerInventoryRoutes(app: FastifyInstance, prisma: PrismaClie
     '/api/dealers/:dealershipId/inventory/import/batches',
     async (request, reply) => {
       const { dealershipId } = request.params;
+      if (!requireDealerAccess(request, reply, dealershipId)) return;
       if (!await findDealer(prisma, dealershipId))
         return reply.status(404).send({ error: 'Dealer not found' });
 
@@ -178,7 +167,11 @@ export function registerInventoryRoutes(app: FastifyInstance, prisma: PrismaClie
   app.patch<{ Params: VehicleParams }>(
     '/api/dealers/:dealershipId/vehicles/:stockNumber/price',
     async (request, reply) => {
-      const validation = validatePriceUpdate(request.body);
+      if (!requireDealerAccess(request, reply, request.params.dealershipId)) return;
+      const body = validateBody(priceUpdateSchema, request.body);
+      if (!body.ok) return reply.status(400).send({ error: body.error });
+
+      const validation = validatePriceUpdate(body.data);
       if (!validation.ok) return reply.status(400).send({ error: validation.error });
       try {
         const result = await applyVehicleUpdate(
@@ -197,6 +190,10 @@ export function registerInventoryRoutes(app: FastifyInstance, prisma: PrismaClie
   app.post<{ Params: VehicleParams }>(
     '/api/dealers/:dealershipId/vehicles/:stockNumber/sold',
     async (request, reply) => {
+      if (!requireDealerAccess(request, reply, request.params.dealershipId)) return;
+      const body = validateBody(emptyBodySchema, request.body ?? {});
+      if (!body.ok) return reply.status(400).send({ error: body.error });
+
       try {
         const result = await applyVehicleUpdate(
           prisma, request.params.dealershipId, request.params.stockNumber, 'SOLD'
@@ -213,6 +210,10 @@ export function registerInventoryRoutes(app: FastifyInstance, prisma: PrismaClie
   app.post<{ Params: VehicleParams }>(
     '/api/dealers/:dealershipId/vehicles/:stockNumber/removed',
     async (request, reply) => {
+      if (!requireDealerAccess(request, reply, request.params.dealershipId)) return;
+      const body = validateBody(emptyBodySchema, request.body ?? {});
+      if (!body.ok) return reply.status(400).send({ error: body.error });
+
       try {
         const result = await applyVehicleUpdate(
           prisma, request.params.dealershipId, request.params.stockNumber, 'REMOVED'
@@ -229,7 +230,11 @@ export function registerInventoryRoutes(app: FastifyInstance, prisma: PrismaClie
   app.patch<{ Params: VehicleParams }>(
     '/api/dealers/:dealershipId/vehicles/:stockNumber/photos',
     async (request, reply) => {
-      const validation = validatePhotoUpdate(request.body);
+      if (!requireDealerAccess(request, reply, request.params.dealershipId)) return;
+      const body = validateBody(photoUpdateSchema, request.body);
+      if (!body.ok) return reply.status(400).send({ error: body.error });
+
+      const validation = validatePhotoUpdate(body.data);
       if (!validation.ok) return reply.status(400).send({ error: validation.error });
       try {
         const result = await applyVehicleUpdate(

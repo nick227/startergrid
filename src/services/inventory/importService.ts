@@ -1,4 +1,9 @@
 import type { PrismaClient, Prisma } from '@prisma/client';
+import {
+  getOrCreateDefaultSource,
+  createIngressRun,
+  deriveIngressStatus,
+} from './ingressService.js';
 
 // ── Column alias map ──────────────────────────────────────────────────────────
 
@@ -256,11 +261,13 @@ function normalizeCondition(raw: string): string {
 }
 
 export type CommitResult = {
+  status: 'COMMITTED' | 'PARTIAL' | 'FAILED';
   created: number;
   updated: number;
   skipped: number;
   errors: number;
   batchId: string;
+  ingressRunId: string;
 };
 
 export async function commitImport(
@@ -269,8 +276,17 @@ export async function commitImport(
   rawRows: Record<string, string>[],
   mapping: Record<string, string>
 ): Promise<CommitResult> {
+  const receivedAt = new Date();
   const preview = await previewImport(prisma, dealershipId, rawRows, mapping);
-  const result: CommitResult = { created: 0, updated: 0, skipped: 0, errors: 0, batchId: '' };
+  const result: CommitResult = {
+    status: 'COMMITTED',
+    created: 0,
+    updated: 0,
+    skipped: 0,
+    errors: 0,
+    batchId: '',
+    ingressRunId: '',
+  };
 
   for (const row of preview.rows) {
     if (row.action === 'SKIP') { result.skipped++; continue; }
@@ -328,30 +344,76 @@ export async function commitImport(
     }
   }
 
-  // Record import batch as a SyncEvent for history
+  const committedRows = result.created + result.updated;
+  result.status = result.errors === 0
+    ? 'COMMITTED'
+    : committedRows > 0
+      ? 'PARTIAL'
+      : 'FAILED';
+
+  // Record IngressRun + SyncEvent for history
   try {
+    const completedAt = new Date();
     const mappedFields = [...new Set(Object.values(mapping).filter(Boolean))];
+    const ingressStatus = deriveIngressStatus(result.created, result.updated, result.errors);
+
+    // Lazy-create the default CSV/manual source for this dealer
+    const sourceId = await getOrCreateDefaultSource(prisma, dealershipId);
+
+    // Create IngressRun — first-class source/intake record
+    const ingressRunId = await createIngressRun(prisma, {
+      dealershipId,
+      sourceId,
+      sourceKind: 'CSV',
+      status: ingressStatus,
+      receivedAt,
+      completedAt,
+      vehicleCount: rawRows.length,
+      createdCount: result.created,
+      updatedCount: result.updated,
+      skippedCount: result.skipped,
+      blockedCount: 0,  // computed post-ingress once validation runs
+      errorCount:   result.errors,
+      mappingJson:  mapping,
+      summaryJson: {
+        status: result.status, created: result.created, updated: result.updated,
+        skipped: result.skipped, errors: result.errors, rowCount: rawRows.length, mappedFields,
+      },
+    });
+    result.ingressRunId = ingressRunId;
+
+    // Update source.lastReceivedAt
+    await prisma.inventorySource.update({
+      where: { id: sourceId },
+      data: { lastReceivedAt: completedAt }
+    });
+
+    // SyncEvent — audit trail; includes ingressRunId for cross-reference
     const event = await prisma.syncEvent.create({
       data: {
         dealershipId,
         kind: 'INVENTORY_IMPORT',
         payload: {
+          status: result.status,
           created: result.created,
           updated: result.updated,
           skipped: result.skipped,
           errors: result.errors,
           rowCount: rawRows.length,
           mappedFields,
+          ingressRunId,
         } as unknown as Prisma.InputJsonValue,
       }
     });
     result.batchId = event.id;
   } catch (err) {
-    console.error('Failed to record import batch event:', err);
+    console.error('Failed to record import batch:', err);
   }
 
-  const { scheduleAutoReconcile } = await import('../publishing/autoReconcileService.js');
-  scheduleAutoReconcile(dealershipId, { full: true });
+  if (result.status === 'COMMITTED') {
+    const { scheduleAutoReconcile } = await import('../publishing/autoReconcileService.js');
+    scheduleAutoReconcile(dealershipId, { full: true });
+  }
 
   return result;
 }

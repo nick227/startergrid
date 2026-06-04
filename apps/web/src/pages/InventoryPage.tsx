@@ -13,6 +13,7 @@ import {
   CleanupFilterBar,
   VehicleRowExpand,
   ImportBatchHistory,
+  IngressPanel,
   VEHICLE_COLUMNS,
   SUMMARY_STRIP_ITEMS,
   BULK_EDIT_FIELD_DEFS,
@@ -130,6 +131,12 @@ export default function InventoryPage({ dealerId, nav, activeTab }: Props) {
               </button>
             ) : undefined
           }
+        />
+
+        <IngressPanel
+          dealerId={dealerId}
+          latestRunId={importResult?.ingressRunId}
+          onShowBlockedVehicles={() => setFilter('BLOCKED')}
         />
 
         {isEmpty && (

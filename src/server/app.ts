@@ -5,6 +5,7 @@ import { registerStorefrontRoutes } from './routes/storefront.js';
 import { registerInventoryRoutes }  from './routes/inventory.js';
 import { registerPublishRoutes }    from './routes/publish.js';
 import { registerAccountRoutes }    from './routes/accounts.js';
+import { registerIngressRoutes }    from './routes/ingress.js';
 
 export function buildApp(prisma: PrismaClient): FastifyInstance {
   const app = Fastify({ logger: false });
@@ -18,6 +19,7 @@ export function buildApp(prisma: PrismaClient): FastifyInstance {
   registerInventoryRoutes(app, prisma);
   registerPublishRoutes(app, prisma);
   registerAccountRoutes(app, prisma);
+  registerIngressRoutes(app, prisma);
 
   return app;
 }

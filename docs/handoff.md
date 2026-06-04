@@ -219,6 +219,19 @@ npm run dealer:export -- <id>
 
 Server runs on port 3000. The Vite UI proxies `/api` automatically in dev.
 
+Operator routes require the dev auth placeholder. For local UI work, set the same operator id on both sides:
+
+```bash
+# API process (.env)
+DEV_OPERATOR_ID=dev-operator
+DEV_OPERATOR_DEALER_IDS=
+
+# Vite web app (apps/web/.env.local)
+VITE_DEV_OPERATOR_ID=dev-operator
+```
+
+`DEV_OPERATOR_DEALER_IDS` is an optional comma-separated dealership allowlist. Leave it blank to allow the dev operator to access every seeded dealership. Public storefront reads stay anonymous; lead capture is public-write and rate-limited.
+
 | Method | Path | Purpose |
 |--------|------|---------|
 | GET | `/health` | Liveness check |
@@ -315,7 +328,7 @@ PlatformProfileVersion (versioned snapshots, SHA-256 checked)
 3. **CSV inventory import** — JSON only.
 4. **Dealer-facing portal** — UI is operator-only; no dealer login or self-service view.
 5. **Webhook / real-time feed push** — scheduler runs on-demand; no background daemon yet.
-6. **Admin / multi-tenant auth** — no authentication on any API endpoint.
+6. **Full admin login / production tenant auth** — dev operator auth exists via `x-operator-id` / `DEV_OPERATOR_ID`, but there is no real login, session, role model, or production identity provider yet.
 7. **`@@unique` on `PlatformProfileVersion(platformSlug, schemaVersion)`** — idempotency handled in code; DB constraint not added yet.
 
 ---

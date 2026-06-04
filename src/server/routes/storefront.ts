@@ -8,6 +8,8 @@ import {
 } from '../../services/storefront/storefrontQueryService.js';
 import { persistLead } from '../../services/publishing/lifecyclePersistenceService.js';
 import { notifyLeadCaptured } from '../../services/dealer/dealerNotificationService.js';
+import { checkPublicWriteAbuseLimit } from '../security.js';
+import { leadCaptureSchema, validateBody } from '../requestValidation.js';
 
 type DealerParams = { dealershipId: string };
 type VehicleParams = { dealershipId: string; stockNumber: string };
@@ -40,7 +42,12 @@ export function registerStorefrontRoutes(app: FastifyInstance, prisma: PrismaCli
     async (request, reply) => {
       const { dealershipId } = request.params;
 
-      const validation = validateLeadInput(request.body);
+      if (!checkPublicWriteAbuseLimit(request, reply, `lead:${dealershipId}`)) return;
+
+      const body = validateBody(leadCaptureSchema, request.body);
+      if (!body.ok) return reply.status(400).send({ error: body.error });
+
+      const validation = validateLeadInput(body.data);
       if (!validation.ok) return reply.status(400).send({ error: validation.error });
 
       const { data } = validation;

@@ -3,6 +3,7 @@ import { execSync } from 'node:child_process';
 import { prisma } from '../../lib/prisma.js';
 import { platformProfiles } from '../../data/platformProfiles.js';
 import { checkPlatformStaleness } from '../../services/inventory/mediaValidationService.js';
+import { buildApp } from '../../server/app.js';
 
 type CheckResult = { name: string; ok: boolean; detail: string };
 
@@ -63,6 +64,25 @@ async function run(): Promise<void> {
     check('typecheck', true, 'no TypeScript errors');
   } catch {
     check('typecheck', false, 'TypeScript errors found');
+  }
+
+  // 7. Dev auth guard contract
+  try {
+    const app = buildApp(prisma);
+    const unauthenticated = await app.inject({ method: 'GET', url: '/api/dealers' });
+    const authenticated = await app.inject({
+      method: 'GET',
+      url: '/api/dealers',
+      headers: { 'x-operator-id': process.env['DEV_OPERATOR_ID'] ?? 'smoke-dev-operator' },
+    });
+
+    check(
+      'Dev operator auth',
+      unauthenticated.statusCode === 401 && authenticated.statusCode === 200,
+      `unauth=${unauthenticated.statusCode}, auth=${authenticated.statusCode}`
+    );
+  } catch (err: any) {
+    check('Dev operator auth', false, err.message);
   }
 
   await prisma.$disconnect();
