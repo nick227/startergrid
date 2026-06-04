@@ -1,0 +1,7 @@
+node_modules
+.env
+dist
+exports/
+mock-outbox/
+mock-platform-receipts/
+.DS_Store

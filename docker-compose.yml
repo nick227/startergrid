@@ -1,0 +1,16 @@
+services:
+  mysql:
+    image: mysql:8.4
+    container_name: dealer-onboarding-poc-mysql
+    restart: unless-stopped
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: dealer_onboarding_poc
+      MYSQL_USER: dealerpoc
+      MYSQL_PASSWORD: dealerpoc
+    ports:
+      - "3307:3306"
+    volumes:
+      - dealer_onboarding_poc_mysql:/var/lib/mysql
+volumes:
+  dealer_onboarding_poc_mysql:

@@ -1,0 +1,48 @@
+{
+  "name": "auto-dealer-onboarding-poc-v1",
+  "version": "4.0.0",
+  "private": true,
+  "type": "module",
+  "description": "V4: DEALER_STOREFRONT owned channel, real feed artifacts, vehicle update propagation, lead capture, dealer-facing status copy, MySQL lifecycle persistence, 18 platforms.",
+  "scripts": {
+    "build": "tsc",
+    "typecheck": "tsc --noEmit",
+    "test": "npm run -s build && node --test dist/src/tests/*.test.js",
+    "validate": "npm run -s build && node dist/src/scripts/validateAll.js",
+    "validate:pristine": "npm run -s build && node dist/src/scripts/validatePristine.js",
+    "validate:pristine:db": "npm run -s build && node dist/src/scripts/validatePristine.js --db",
+    "poc:green": "npm run -s build && node dist/src/scripts/pocGreen.js",
+    "poc:risk": "npm run -s build && node dist/src/scripts/pocRiskMatrix.js",
+    "poc:strict": "npm run -s poc:risk",
+    "poc:portal": "npm run -s build && node dist/src/scripts/pocPortalLifecycle.js",
+    "poc:v4": "npm run -s build && node dist/src/scripts/pocPortalLifecycle.js",
+    "onboard:fake": "npm run -s build && node dist/src/scripts/fakeOnboard.js",
+    "submit:fake": "npm run -s build && node dist/src/scripts/fakeSubmitAll.js",
+    "report": "npm run -s build && node dist/src/scripts/report.js",
+    "db:generate": "prisma generate",
+    "db:push": "prisma db push",
+    "db:seed": "npm run -s build && node dist/prisma/seed.js",
+    "db:reset": "prisma db push --force-reset && npm run db:seed",
+    "db:seed:versions": "npm run -s build && node dist/prisma/seed.js",
+    "dealer:create": "npm run -s build && node dist/src/scripts/dealerCreate.js",
+    "dealer:create:pristine": "npm run -s build && node dist/src/scripts/dealerCreate.js --use-pristine",
+    "dealer:status": "npm run -s build && node dist/src/scripts/dealerStatus.js",
+    "dealer:proof": "npm run -s build && node dist/src/scripts/dealerProof.js",
+    "demo:reset": "npm run -s build && node dist/src/scripts/demoReset.js"
+  },
+  "dependencies": {
+    "@prisma/client": "^6",
+    "jszip": "latest",
+    "dotenv": "latest",
+    "nanoid": "latest",
+    "nodemailer": "latest",
+    "tsx": "latest",
+    "zod": "latest"
+  },
+  "devDependencies": {
+    "@types/node": "latest",
+    "@types/nodemailer": "latest",
+    "prisma": "^6",
+    "typescript": "latest"
+  }
+}

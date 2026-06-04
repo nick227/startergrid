@@ -1,0 +1,412 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+// ─── Enums ───────────────────────────────────────────────────────────────────
+
+enum PlatformKind {
+  MARKETPLACE
+  AD_NETWORK
+  SOCIAL_CATALOG
+  DEALER_STOREFRONT
+  LEAD_ROUTER
+}
+
+enum IntegrationClass {
+  OWNED              // First-party channel — we build and manage it
+  FEEDABLE           // Direct feed/API submission, self-serve
+  ASSISTED           // Email/manual handoff required
+  PARTNER_DEPENDENT  // External commercial agreement required before activation
+}
+
+enum SubmissionMethod {
+  MOCK_EMAIL
+  MOCK_FORM
+  MOCK_API
+  FEED_URL
+  SFTP
+  OAUTH
+  MANUAL_REP
+}
+
+enum ApplicationStatus {
+  NOT_STARTED
+  PROFILE_MISSING_INFO
+  READY_TO_SUBMIT
+  SUBMITTED
+  DEALER_ACTION_NEEDED
+  PLATFORM_REVIEWING
+  APPROVED
+  FEED_TESTING
+  ACTIVE
+  REJECTED
+  PAUSED
+}
+
+enum ValidationStatus {
+  PASS
+  WARN
+  FAIL
+}
+
+enum LeadSource {
+  DEALER_STOREFRONT
+  ADF_XML
+  PLATFORM_FORM
+  MANUAL
+}
+
+enum VehicleUpdateKind {
+  PRICE_CHANGE
+  PHOTO_CHANGE
+  SOLD
+  REMOVED
+  RELISTED
+  DETAILS_CHANGE
+}
+
+enum Environment {
+  MOCK
+  SANDBOX
+  PRODUCTION
+}
+
+// ─── Core models ─────────────────────────────────────────────────────────────
+
+model DealershipProfile {
+  id              String   @id @default(cuid())
+  legalName       String   @db.VarChar(160)
+  dbaName         String?  @db.VarChar(160)
+  dealerLicense   String?  @db.VarChar(80)
+  rooftopAddress  Json
+  websiteUrl      String?  @db.VarChar(255)
+  primaryContact  Json
+  inventorySize   Int?
+  desiredChannels Json
+  documents       Json?
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  vehicles            Vehicle[]
+  applications        PlatformApplication[]
+  leads               Lead[]
+  vehicleUpdates      VehicleUpdate[]
+  subscription        DealerSubscription?
+  inventorySnapshots  InventorySnapshot[]
+  readinessRuns       ReadinessRun[]
+  generatedArtifacts  GeneratedArtifact[]
+  credentialRefs      PlatformCredentialRef[]
+  notifications       DealerNotification[]
+}
+
+model Vehicle {
+  id              String   @id @default(cuid())
+  dealershipId    String
+  vin             String   @db.VarChar(32)
+  stockNumber     String   @db.VarChar(80)
+  year            Int
+  make            String   @db.VarChar(80)
+  model           String   @db.VarChar(80)
+  trim            String?  @db.VarChar(120)
+  mileage         Int
+  priceCents      Int
+  condition       String   @db.VarChar(24)
+  exteriorColor   String   @db.VarChar(80)
+  interiorColor   String?  @db.VarChar(80)
+  bodyStyle       String?  @db.VarChar(80)
+  drivetrain      String?  @db.VarChar(80)
+  fuelType        String?  @db.VarChar(80)
+  transmission    String?  @db.VarChar(80)
+  options         Json
+  starCore        Json
+  soldAt          DateTime?
+  removedAt       DateTime?
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  dealership      DealershipProfile @relation(fields: [dealershipId], references: [id], onDelete: Cascade)
+  media           VehicleMedia[]
+  leads           Lead[]
+  updates         VehicleUpdate[]
+
+  @@index([dealershipId])
+  @@unique([dealershipId, stockNumber])
+}
+
+model VehicleMedia {
+  id          String   @id @default(cuid())
+  vehicleId   String
+  url         String   @db.VarChar(512)
+  kind        String   @db.VarChar(32)
+  sortOrder   Int
+  width       Int?
+  height      Int?
+  mimeType    String?  @db.VarChar(80)
+  createdAt   DateTime @default(now())
+
+  vehicle     Vehicle @relation(fields: [vehicleId], references: [id], onDelete: Cascade)
+
+  @@index([vehicleId])
+}
+
+// ─── Platform models ─────────────────────────────────────────────────────────
+
+model PlatformProfile {
+  id                       String           @id @default(cuid())
+  slug                     String           @unique @db.VarChar(80)
+  name                     String           @db.VarChar(140)
+  kind                     PlatformKind
+  integrationClass         IntegrationClass @default(ASSISTED)
+  submissionMethods        Json
+  requiredDealershipFields Json
+  requiredVehicleFields    Json
+  requiredMediaRules       Json
+  outputFormat             String           @db.VarChar(80)
+  schemaVersion            String           @db.VarChar(80)
+  lastVerifiedAt           DateTime?
+  profileConfidence        String           @default("MEDIUM") @db.VarChar(24)
+  needsReview              Boolean          @default(false)
+  sourceNote               String?          @db.Text
+  mockEndpoint             String?          @db.VarChar(255)
+  integrationUrls          Json?
+  sourceUrls               Json
+  testFixtures             Json
+  createdAt                DateTime         @default(now())
+  updatedAt                DateTime         @updatedAt
+
+  applications             PlatformApplication[]
+  validations              MockValidationRun[]
+}
+
+model PlatformApplication {
+  id            String            @id @default(cuid())
+  dealershipId  String
+  platformId    String
+  status        ApplicationStatus @default(NOT_STARTED)
+  referralCode  String?           @db.VarChar(120)
+  missingFields Json?
+  nextAction    String?           @db.VarChar(255)
+  notes         String?           @db.Text
+  createdAt     DateTime          @default(now())
+  updatedAt     DateTime          @updatedAt
+
+  dealership    DealershipProfile @relation(fields: [dealershipId], references: [id], onDelete: Cascade)
+  platform      PlatformProfile   @relation(fields: [platformId], references: [id], onDelete: Cascade)
+  packets       AuthorizationPacket[]
+  submissions   SubmissionAttempt[]
+
+  @@unique([dealershipId, platformId])
+  @@index([platformId])
+}
+
+model AuthorizationPacket {
+  id                 String   @id @default(cuid())
+  applicationId      String
+  authorizationKey   String   @unique @db.VarChar(120)
+  scope              Json
+  verificationUrl    String   @db.VarChar(512)
+  revocationUrl      String   @db.VarChar(512)
+  dealershipSnapshot Json
+  platformSnapshot   Json
+  inventorySnapshot  Json
+  packetPayload      Json
+  createdAt          DateTime @default(now())
+  revokedAt          DateTime?
+
+  application        PlatformApplication @relation(fields: [applicationId], references: [id], onDelete: Cascade)
+}
+
+model SubmissionAttempt {
+  id                   String           @id @default(cuid())
+  applicationId        String
+  method               SubmissionMethod
+  destination          String           @db.VarChar(255)
+  subject              String?          @db.VarChar(255)
+  payload              Json
+  status               ValidationStatus @default(PASS)
+  response             Json?
+  receiptJson          Json?
+  mockAccepted         Boolean          @default(false)
+  rejectionReasonsJson Json?
+  artifactPath         String?          @db.VarChar(512)
+  environment          Environment      @default(MOCK)
+  createdAt            DateTime         @default(now())
+
+  application          PlatformApplication @relation(fields: [applicationId], references: [id], onDelete: Cascade)
+
+  @@index([applicationId])
+}
+
+model MockValidationRun {
+  id                  String           @id @default(cuid())
+  platformId          String
+  status              ValidationStatus
+  overallStatus       String?          @db.VarChar(24)
+  summary             String           @db.VarChar(255)
+  results             Json
+  platformResultsJson Json?
+  createdAt           DateTime         @default(now())
+
+  platform            PlatformProfile @relation(fields: [platformId], references: [id], onDelete: Cascade)
+
+  @@index([platformId])
+}
+
+// ─── Business value models ────────────────────────────────────────────────────
+
+model Lead {
+  id              String     @id @default(cuid())
+  dealershipId    String
+  vehicleId       String?
+  source          LeadSource
+  platformSlug    String     @db.VarChar(80)
+  contactName     String?    @db.VarChar(160)
+  contactEmail    String?    @db.VarChar(255)
+  contactPhone    String?    @db.VarChar(40)
+  message         String?    @db.Text
+  vehicleInterest Json?
+  adfPayload      Json?
+  createdAt       DateTime   @default(now())
+
+  dealership      DealershipProfile @relation(fields: [dealershipId], references: [id], onDelete: Cascade)
+  vehicle         Vehicle?          @relation(fields: [vehicleId], references: [id])
+
+  @@index([dealershipId])
+  @@index([platformSlug])
+}
+
+model VehicleUpdate {
+  id             String            @id @default(cuid())
+  vehicleId      String
+  dealershipId   String
+  kind           VehicleUpdateKind
+  previousValue  Json?
+  newValue       Json?
+  propagatedTo   Json?
+  createdAt      DateTime          @default(now())
+
+  vehicle        Vehicle           @relation(fields: [vehicleId], references: [id], onDelete: Cascade)
+  dealership     DealershipProfile @relation(fields: [dealershipId], references: [id], onDelete: Cascade)
+
+  @@index([vehicleId])
+  @@index([dealershipId])
+}
+
+model DealerSubscription {
+  id               String    @id @default(cuid())
+  dealershipId     String    @unique
+  plan             String    @db.VarChar(40)
+  setupFeeCents    Int       @default(0)
+  monthlyFeeCents  Int       @default(0)
+  activeFrom       DateTime  @default(now())
+  activeTo         DateTime?
+  status           String    @db.VarChar(24)
+  createdAt        DateTime  @default(now())
+  updatedAt        DateTime  @updatedAt
+
+  dealership       DealershipProfile @relation(fields: [dealershipId], references: [id], onDelete: Cascade)
+}
+
+// ─── Phase 5 models ───────────────────────────────────────────────────────────
+
+model PlatformProfileVersion {
+  id            String   @id @default(cuid())
+  platformSlug  String   @db.VarChar(80)
+  schemaVersion String   @db.VarChar(80)
+  profileJson   Json
+  checksum      String   @db.VarChar(64)
+  seededAt      DateTime @default(now())
+
+  @@index([platformSlug])
+}
+
+model InventorySnapshot {
+  id            String   @id @default(cuid())
+  dealershipId  String
+  vehicleCount  Int
+  snapshotJson  Json
+  checksum      String   @db.VarChar(64)
+  createdAt     DateTime @default(now())
+
+  dealership    DealershipProfile @relation(fields: [dealershipId], references: [id], onDelete: Cascade)
+  readinessRuns ReadinessRun[]
+
+  @@index([dealershipId])
+}
+
+model ReadinessRun {
+  id                  String      @id @default(cuid())
+  dealershipId        String
+  inventorySnapshotId String
+  environment         Environment @default(MOCK)
+  runMode             String      @db.VarChar(24)
+  overallStatus       String      @db.VarChar(24)
+  greenCount          Int
+  yellowCount         Int
+  redCount            Int
+  validatorVersion    String      @db.VarChar(40)
+  resultsJson         Json
+  createdAt           DateTime    @default(now())
+
+  dealership          DealershipProfile @relation(fields: [dealershipId], references: [id], onDelete: Cascade)
+  inventorySnapshot   InventorySnapshot @relation(fields: [inventorySnapshotId], references: [id], onDelete: Cascade)
+  artifacts           GeneratedArtifact[]
+
+  @@index([dealershipId])
+}
+
+model GeneratedArtifact {
+  id                 String      @id @default(cuid())
+  dealershipId       String
+  platformSlug       String      @db.VarChar(80)
+  format             String      @db.VarChar(80)
+  filename           String      @db.VarChar(255)
+  storagePath        String      @db.VarChar(512)
+  checksum           String      @db.VarChar(64)
+  sizeBytes          Int
+  environment        Environment @default(MOCK)
+  linkedRunId        String?
+  linkedSubmissionId String?
+  expiresAt          DateTime?
+  createdAt          DateTime    @default(now())
+
+  dealership         DealershipProfile @relation(fields: [dealershipId], references: [id], onDelete: Cascade)
+  readinessRun       ReadinessRun?     @relation(fields: [linkedRunId], references: [id], onDelete: SetNull)
+
+  @@index([dealershipId])
+  @@index([platformSlug])
+}
+
+model PlatformCredentialRef {
+  id              String      @id @default(cuid())
+  platformSlug    String      @db.VarChar(80)
+  dealershipId    String?
+  environment     Environment
+  credentialKey   String      @db.VarChar(255)
+  expiresAt       DateTime?
+  lastValidatedAt DateTime?
+  createdAt       DateTime    @default(now())
+  updatedAt       DateTime    @updatedAt
+
+  dealership      DealershipProfile? @relation(fields: [dealershipId], references: [id], onDelete: SetNull)
+
+  @@index([platformSlug])
+}
+
+model DealerNotification {
+  id           String    @id @default(cuid())
+  dealershipId String
+  type         String    @db.VarChar(60)
+  payload      Json
+  deliveredAt  DateTime?
+  createdAt    DateTime  @default(now())
+
+  dealership   DealershipProfile @relation(fields: [dealershipId], references: [id], onDelete: Cascade)
+
+  @@index([dealershipId])
+}
