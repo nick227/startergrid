@@ -1,7 +1,7 @@
-import assert from 'node:assert/strict';
+﻿import assert from 'node:assert/strict';
 import test from 'node:test';
 import { platformProfiles } from '../data/platformProfiles.js';
-import { runRiskMatrix } from '../services/riskMatrixService.js';
+import { runRiskMatrix } from '../services/platform/riskMatrixService.js';
 
 test('risk matrix scenarios meet their readiness expectations', () => {
   const results = runRiskMatrix();

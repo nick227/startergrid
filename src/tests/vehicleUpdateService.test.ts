@@ -1,6 +1,6 @@
-import assert from 'node:assert/strict';
+﻿import assert from 'node:assert/strict';
 import { describe, it } from 'node:test';
-import { propagateVehicleUpdate, summarizeUpdatePropagations } from '../services/vehicleUpdateService.js';
+import { propagateVehicleUpdate, summarizeUpdatePropagations } from '../services/inventory/vehicleUpdateService.js';
 import { platformProfiles } from '../data/platformProfiles.js';
 import type { VehicleUpdateEvent } from '../lib/types.js';
 

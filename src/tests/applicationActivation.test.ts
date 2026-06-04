@@ -1,10 +1,10 @@
-import assert from 'node:assert/strict';
+﻿import assert from 'node:assert/strict';
 import { describe, it } from 'node:test';
 import {
   resolveApplicationStatus,
   resolveSubmissionMethod,
   resolveNextAction
-} from '../services/applicationActivationService.js';
+} from '../services/publishing/applicationActivationService.js';
 import { platformProfiles } from '../data/platformProfiles.js';
 
 const google    = platformProfiles.find(p => p.slug === 'google-vehicle-ads')!;

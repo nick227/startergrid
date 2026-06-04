@@ -1,6 +1,6 @@
-import assert from 'node:assert/strict';
+﻿import assert from 'node:assert/strict';
 import { describe, it } from 'node:test';
-import { getDealerStatusCopy, getDealerStatusBadge, integrationClassLabel } from '../services/dealerStatusService.js';
+import { getDealerStatusCopy, getDealerStatusBadge, integrationClassLabel } from '../services/dealer/dealerStatusService.js';
 import { platformProfiles } from '../data/platformProfiles.js';
 import type { PlatformProfileSeed } from '../lib/types.js';
 

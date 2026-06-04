@@ -1,16 +1,18 @@
 # Handoff Document — Auto Dealer Sales Portal
 
-**Prepared:** 2026-06-03  
-**State at handoff:** v4.0.0 · DB-backed MVP pipeline complete · 121 tests passing  
-**Branch:** `master` · Commit: `72f3d1c`
+**Updated:** 2026-06-04  
+**State:** v4.0.0 · DB-backed MVP + Publish Pipeline + Operator UI · 409 tests passing  
+**Branch:** `main`
 
 ---
 
 ## What This System Does
 
-A backend pipeline that takes a dealer profile and inventory, runs readiness validation against 18 ad/marketplace platforms, generates feed artifacts for each platform, and produces a proof folder the operator can deliver to the dealer. The business model: charge a setup fee to launch, charge a monthly fee to manage.
+A backend pipeline that takes a dealer profile and inventory, runs readiness validation against 18 ad/marketplace platforms, generates feed artifacts per platform, queues and dispatches them via a scheduler, and produces proof + invoice artifacts the operator delivers to the dealer.
 
-The system lives entirely in TypeScript. There is no web UI yet. All workflows are driven through CLI scripts.
+The business model: charge a setup fee to launch, a monthly fee to manage.
+
+The system is TypeScript throughout. The **operator console UI** (`apps/web/`) is now live — operators can open a dealer, see publish readiness, run dry-run previews, and execute Prepare & Publish from a browser. CLI scripts remain available for all operations.
 
 ---
 
@@ -19,39 +21,98 @@ The system lives entirely in TypeScript. There is no web UI yet. All workflows a
 ```
 prisma/
   schema.prisma         Full DB schema — source of truth
-  seed.ts               Seeds platform profiles, profile versions, pristine demo dealer
+  seed.ts               Seeds platform profiles + pristine demo dealer
 
 src/
   data/
-    platformProfiles.ts     18 platform profile definitions (the registry)
-    mockPortalResponses.ts  Mock HTTP responses per platform × condition
-  fixtures/
-    pristineApiValidation.fixture.ts   Pristine dealer + 3 vehicles (regression standard)
-    dealership.fixture.ts / vehicles.fixture.ts   Mock data for poc scripts
-  lib/
-    types.ts            All shared TypeScript types (no Prisma imports)
-    prisma.ts           Singleton PrismaClient
-  validators/           Pure validation logic — no DB, no Prisma
-  services/
-    feedGeneratorService.ts       Google JSON, Meta CSV, ADF/XML, Owned JSON, dispatcher
-    vehicleUpdateService.ts       Price/sold/removed propagation by integration class
-    leadCaptureService.ts         Owned channel + ADF/XML lead capture
-    dealerStatusService.ts        Headline/detail/CTA copy per status × class
-    lifecyclePersistenceService.ts  Portal interaction, lead, vehicle update persistence
-    partnerPortalService.ts       Portal lifecycle simulator
-    inventorySnapshotService.ts   DB → VehiclePayload[] + InventorySnapshot row
-    readinessRunService.ts        Full baseline + strict run → ReadinessRun row
-    artifactWriterService.ts      Write file + GeneratedArtifact row
-    proofFolderService.ts         Manifest + JSZip export
-    seedService.ts                PlatformProfileVersion + pristine dealer seeding
-  scripts/              CLI entry points (see "Scripts" section below)
-  tests/                node:test suite — 121 tests, all pure (no DB)
+    platformProfiles.ts       18 platform profile definitions (the registry)
+    mockPortalResponses.ts    Mock HTTP responses per platform × condition
 
-docs/                   Long-form design and planning documents
-exports/                Generated feed artifacts — gitignored, recreated by demo:reset
+  fixtures/
+    dealers/                  dealership.fixture, negativeDealership.fixture
+    vehicles/                 vehicles.fixture, negativeVehicles.fixture
+    platforms/                stalePlatformProfiles.fixture
+    scenarios/                pristineApiValidation.fixture (dealer + 3 vehicles)
+
+  lib/
+    types.ts                  All shared TypeScript types (no Prisma imports)
+    prisma.ts                 Singleton PrismaClient
+
+  validators/
+    pathValidator.ts          Shared path/media-rule helper (root — imported by all)
+    dealer/
+      dealershipProfileValidator.ts
+    vehicle/
+      vehiclePayloadValidator.ts
+    platform/
+      platformReadinessValidator.ts    Baseline + strict readiness per platform
+      platformValidator.ts             Full platform validation report
+      strictPlatformProfileValidator.ts
+
+  services/
+    commercial/               invoiceService, proofFolderService
+    dealer/                   dealerStatusService, dealerExportService,
+                              dealerNotificationService, mockEmailService
+    inventory/                inventorySnapshotService, inventoryUpdateService,
+                              vehicleUpdateService, mediaValidationService
+    platform/                 platformReadinessService, readinessRunService,
+                              riskMatrixService, seedService
+    publishing/               prepareAndPublishService, publishQueueService,
+                              schedulerService, syncEventService, syncPolicyService,
+                              feedGeneratorService, artifactWriterService, outputGenerator,
+                              lifecyclePersistenceService, applicationActivationService,
+                              approvalService, packetGenerator, partnerPortalService,
+                              mockReceiptService
+    storefront/               storefrontQueryService, leadCaptureService
+
+  server/
+    app.ts                    Slim Fastify registrar — registers routes only
+    routes/
+      dealers.ts              GET /api/dealers
+      storefront.ts           GET storefront/vehicle, POST leads
+      inventory.ts            PATCH price/photos, POST sold/removed
+      publish.ts              POST prepare, GET status/history/accounts
+
+  scripts/
+    dealer/                   dealerCreate, dealerStatus, dealerExport,
+                              dealerInvoice, dealerProof, vehicleUpdate
+    sync/                     publishPrepare, syncScheduler, syncApproval,
+                              syncQueue, syncRun
+    dev/                      validateAll, validatePristine, smokeTest,
+                              demoReset, report, fakeOnboard, fakeSubmitAll
+    poc/                      pocGreen, pocPortalLifecycle, pocRiskMatrix
+    server.ts                 Fastify entry point (port 3000)
+
+  tests/                      node:test suite — 409 tests, all pure (no DB)
+
+apps/
+  web/                        Operator Publish Console (Vite + React + Tailwind)
+                              Dev: npm run ui:dev (port 5173, proxied to API on 3000)
+
+docs/                         Design, planning, and handoff documents
+exports/                      Generated feed artifacts — gitignored
 ```
 
-**Key architectural rule:** Prisma only lives in `lifecyclePersistenceService.ts`, `seedService.ts`, `inventorySnapshotService.ts`, `readinessRunService.ts`, `artifactWriterService.ts`, `proofFolderService.ts`, and `src/scripts/`. All validators and business-logic services are pure TypeScript with no DB imports.
+---
+
+## Domain Architecture
+
+Services are grouped by the business concern they own, not by file type.
+
+| Domain | What it owns |
+|--------|--------------|
+| `commercial/` | Invoicing and proof-of-delivery artifacts — the dealer's paid deliverables |
+| `dealer/` | Dealer identity, status copy, export, notifications, mock email transport |
+| `inventory/` | Vehicle state, price/media updates, readiness snapshots, media validation |
+| `platform/` | Platform profiles, readiness runs, risk matrix, profile seeding |
+| `publishing/` | The full publishing pipeline: feed generation → artifact storage → queue → scheduler → dispatch → approval → sync events. Also owns application lifecycle (activation, packets, portal simulation) |
+| `storefront/` | Owned-channel queries and lead capture — kept isolated so lead logic doesn't creep into the core publishing pipeline |
+
+**Known issue:** `publishing/lifecyclePersistenceService` currently owns `persistLead` in addition to application-lifecycle persistence. Lead persistence belongs in `storefront/` long-term. Deferred — do not refactor without a dedicated ticket.
+
+Validators mirror the same domains (`dealer/`, `vehicle/`, `platform/`) with `pathValidator.ts` at root as a shared primitive used by all three subgroups.
+
+Scripts are grouped by workflow (`dealer/`, `sync/`, `dev/`, `poc/`) with `server.ts` at root as the entry point.
 
 ---
 
@@ -60,23 +121,14 @@ exports/                Generated feed artifacts — gitignored, recreated by de
 **Requirements:** Node.js 22+, WampServer (MySQL 8+), npm
 
 ```bash
-# 1. Clone and install
+# Backend
 npm install
-
-# 2. Create .env (copy from .env.example, adjust if needed)
-# Default: mysql://root:@localhost:3306/dealer_onboarding_poc
-
-# 3. Push schema and seed
+cp .env.example .env          # adjust DATABASE_URL if needed
 npm run db:push
 npm run db:seed
 
-# 4. Verify everything works
-npm run demo:reset
-```
-
-After `demo:reset` you should see:
-```
-Demo reset complete. Dealer ID: <id>. Artifacts: 18. Tests: run npm test.
+# Operator UI
+npm run ui:install
 ```
 
 **`.env` values:**
@@ -84,29 +136,50 @@ Demo reset complete. Dealer ID: <id>. Artifacts: 18. Tests: run npm test.
 DATABASE_URL="mysql://root:@localhost:3306/dealer_onboarding_poc"
 APP_BASE_URL="http://localhost:5173"
 MOCK_OUTBOX_DIR="./mock-outbox"
-FEED_EXPORTS_DIR="./exports"   # optional, defaults to ./exports
+FEED_EXPORTS_DIR="./exports"
 ```
+
+**Running both together:**
+```bash
+# Terminal 1 — API server (port 3000)
+npm run server:start
+
+# Terminal 2 — Operator UI (port 5173, proxies /api to 3000)
+npm run ui:dev
+```
+
+Open `http://localhost:5173`, select Prairie Ridge Motors, and verify the Publish Console loads.
 
 ---
 
-## The 10 Commands That Must Always Pass
+## Regression Contract
 
-This is the regression contract. Run these after any change:
+Run all of these after any change. None may fail before shipping.
 
 ```bash
-npm test                            # 121 tests, 0 failing
-npm run poc:green                   # 18/18 platforms GREEN
-npm run poc:risk                    # 90/90 risk matrix expectations
-npm run poc:portal                  # 18/18 platforms reach ACTIVE on happy path
-npm run validate:pristine           # 18/18 GREEN baseline, 0 RED strict (fixture)
-npm run validate:pristine:db        # same, reading from DB
-npm run dealer:create:pristine      # exits 0, 18 GREEN, 18 artifacts written
-npm run dealer:status <dealer-id>   # prints full status grid from DB
-npm run dealer:proof <dealer-id>    # exports ZIP with manifest, exits 0
-npm run demo:reset                  # full teardown + reseed + all checks, exits 0
-```
+# Core
+npm test                              # 409 tests, 0 failing
+npm run smoke:test                    # 6/6 system checks (DB, profiles, typecheck)
+npm run typecheck                     # TypeScript, no emit
 
-If any of these fail, do not ship.
+# Validation
+npm run poc:green                     # 18/18 platforms GREEN (in-memory)
+npm run poc:risk                      # 90/90 risk matrix expectations
+npm run poc:portal                    # 18/18 platforms reach ACTIVE on happy path
+npm run validate:pristine             # 18/18 GREEN baseline, 0 RED strict (fixture)
+npm run validate:pristine:db          # same, reads dealer + inventory from DB
+
+# Publish pipeline (requires a dealer ID)
+npm run publish:prepare -- <id> --dry-run
+npm run publish:prepare -- <id>
+npm run sync:queue -- <id>
+npm run sync:scheduler -- <id> --dry-run
+npm run sync:approval -- list <id>
+
+# Dealer commands
+npm run dealer:proof -- <id>
+npm run dealer:export -- <id>
+```
 
 ---
 
@@ -114,140 +187,155 @@ If any of these fail, do not ship.
 
 | Command | What it does |
 |---|---|
-| `npm run db:push` | Sync schema to MySQL (safe, additive) |
-| `npm run db:seed` | Seed platform profiles + profile versions + pristine dealer |
-| `npm run db:reset` | Force-reset DB + re-seed (destructive) |
-| `npm test` | Build + run all tests |
-| `npm run typecheck` | TypeScript check only (no emit) |
-| `npm run poc:green` | Prove 18/18 platforms GREEN (in-memory, no DB) |
-| `npm run poc:risk` | Prove risk matrix expectations (in-memory) |
-| `npm run poc:portal` | Prove portal lifecycle happy/rejection arcs (in-memory) |
-| `npm run validate:pristine` | Validate pristine fixture against all 18 platforms |
-| `npm run validate:pristine:db` | Same but loads dealer + inventory from DB |
-| `npm run dealer:create:pristine` | Full pipeline for pristine dealer |
-| `npm run dealer:create -- --dealer-file <path>` | Full pipeline for dealer from JSON file |
-| `npm run dealer:status -- <id>` | Status grid for a dealer by ID |
-| `npm run dealer:proof -- <id>` | Export proof folder ZIP for a dealer |
-| `npm run demo:reset` | Full reset and pipeline verification |
+| `db:push` | Sync schema to MySQL (safe, additive) |
+| `db:seed` | Seed platform profiles + pristine demo dealer |
+| `db:reset` | Force-reset DB + re-seed (destructive) |
+| `test` | Build + run all 409 tests |
+| `typecheck` | TypeScript check, no emit |
+| `smoke:test` | DB connectivity, profile count, typecheck, validate:pristine |
+| `poc:green` | 18/18 GREEN in-memory |
+| `poc:risk` | Risk matrix: BASELINE / STRICT / NEGATIVE / STALE scenarios |
+| `poc:portal` | Portal lifecycle: happy path + rejection arcs |
+| `validate:pristine` | Pristine fixture → 18/18 GREEN |
+| `validate:pristine:db` | Pristine fixture from DB → 18/18 GREEN |
+| `dealer:create:pristine` | Full pipeline on pristine fixture, exits 0 |
+| `dealer:status -- <id>` | Status grid: all 18 platforms, copy + CTA |
+| `dealer:proof -- <id>` | Proof folder ZIP (artifacts + manifest) |
+| `dealer:export -- <id>` | Full dealer data archive ZIP |
+| `dealer:invoice -- <id> <YYYY-MM>` | Setup + monthly invoice statement |
+| `vehicle:update -- <id> <stock> <kind>` | Apply price/photo/sold/removed update |
+| `publish:prepare -- <id> [--dry-run]` | Prepare & Publish golden path |
+| `sync:queue -- <id>` | View full publish queue + account states |
+| `sync:scheduler -- [--dry-run]` | Dispatch scheduled items from queue |
+| `sync:approval -- list/approve/hold/reject/release` | Operator approval workflow |
+| `sync:run -- <id>` | Process READY items immediately |
+| `server:start` | Start Fastify API on port 3000 |
+| `ui:dev` | Start Vite operator UI on port 5173 |
+| `demo:reset` | Full teardown + reseed + pipeline verification |
+
+---
+
+## HTTP API Surface
+
+Server runs on port 3000. The Vite UI proxies `/api` automatically in dev.
+
+| Method | Path | Purpose |
+|--------|------|---------|
+| GET | `/health` | Liveness check |
+| GET | `/api/dealers` | List all dealers (operator picker) |
+| GET | `/api/dealers/:id/storefront` | Dealer storefront JSON |
+| GET | `/api/dealers/:id/vehicles/:stock` | Single vehicle listing |
+| POST | `/api/dealers/:id/leads` | Capture lead from storefront |
+| PATCH | `/api/dealers/:id/vehicles/:stock/price` | Update price |
+| PATCH | `/api/dealers/:id/vehicles/:stock/photos` | Update photos |
+| POST | `/api/dealers/:id/vehicles/:stock/sold` | Mark sold |
+| POST | `/api/dealers/:id/vehicles/:stock/removed` | Mark removed |
+| POST | `/api/dealers/:id/publish/prepare` | Prepare & Publish (body: `{dryRun, platforms}`) |
+| GET | `/api/dealers/:id/publish/status` | Current publish status grid |
+| GET | `/api/dealers/:id/publish/history` | SyncEvent history (cursor-paginated) |
+| GET | `/api/dealers/:id/publish/accounts` | Platform account + application summary |
+
+All publish endpoints return `nextRecommendedAction` — one of: `fix_blocked_vehicles`, `review_approvals`, `run_scheduler`, `resolve_partner_requirement`, `resolve_account_requirement`, `no_action`.
 
 ---
 
 ## The 18 Platforms
 
-Defined in `src/data/platformProfiles.ts`. Each has an `integrationClass`:
+Defined in `src/data/platformProfiles.ts`.
 
-| Class | Meaning | Platforms |
-|---|---|---|
-| `OWNED` | We build and manage it | Dealer Storefront |
-| `FEEDABLE` | Direct feed/API, self-serve | Google, Meta, TikTok, Microsoft, Pinterest, Reddit, eBay, X, Snapchat, LinkedIn, Nextdoor, Apple |
-| `ASSISTED` | Manual/email handoff | Cars.com, CarGurus, Autotrader/Cox |
-| `PARTNER_DEPENDENT` | Requires commercial agreement | TrueCar, ADF/XML Lead Routing |
+| Class | Platforms |
+|-------|-----------|
+| `OWNED` | Dealer Storefront |
+| `FEEDABLE` | Google Vehicle Ads, Meta, TikTok, Microsoft, Pinterest, Reddit, eBay Motors, X, Snapchat, LinkedIn, ADF/XML Lead Routing, Nextdoor, Apple Business Connect |
+| `ASSISTED` | CarGurus, Cars.com |
+| `PARTNER_DEPENDENT` | Autotrader/Cox, TrueCar |
 
 ---
 
 ## Data Model (Key Tables)
 
 ```
-DealershipProfile         Core dealer record
-  └── Vehicle             One per VIN, dealershipId FK
-        └── VehicleMedia  Photos and other media
-  └── PlatformApplication Status per platform (NOT_STARTED → ACTIVE)
-        └── SubmissionAttempt  Each outbound attempt, linked to environment
-  └── Lead                Captured from owned channel or ADF
-  └── VehicleUpdate       Price/sold/removed events (event-sourced)
-  └── InventorySnapshot   Point-in-time vehicle list (JSON + checksum)
-        └── ReadinessRun  Baseline + strict results against all 18 platforms
-              └── GeneratedArtifact  Feed files (metadata only; content in ./exports/)
-  └── DealerNotification  Async notification queue
-  └── PlatformCredentialRef  Opaque credential refs (no raw secrets)
+DealershipProfile
+  └── Vehicle → VehicleMedia
+  └── PlatformApplication → SubmissionAttempt, AuthorizationPacket
+  └── Lead
+  └── VehicleUpdate
+  └── InventorySnapshot → ReadinessRun → GeneratedArtifact
+  └── DealerNotification
+  └── DealerSubscription
+  └── SyncPolicy, PublishQueueItem, SyncRun, SyncEvent
+  └── PlatformAccount
 
-PlatformProfile           Registry of 18 platform definitions (seeded)
-PlatformProfileVersion    Versioned snapshot of a profile (SHA-256 checksum)
-DealerSubscription        Billing plan for a dealer
+PlatformProfile (seeded registry of 18)
+PlatformProfileVersion (versioned snapshots, SHA-256 checked)
 ```
 
-**Cascade behavior:** Deleting a `DealershipProfile` cascades to all child rows. `GeneratedArtifact.linkedRunId` is set to NULL if its `ReadinessRun` is deleted (`onDelete: SetNull`).
+**Cascade:** Deleting a `DealershipProfile` cascades to all child rows. `GeneratedArtifact.linkedRunId` is `onDelete: SetNull`.
 
 ---
 
 ## Key Design Decisions
 
-**Why Prisma ^6, not ^7?** Prisma 7 removed datasource URL from `schema.prisma` and requires a driver adapter for `PrismaClient`. That's a significant migration (new packages, restructured instantiation). Pinned to `^6` to stay on the roadmap's original assumptions. Upgrade path exists when there's time — see [Prisma 7 migration guide](https://pris.ly/d/major-version-upgrade).
+**Why Prisma ^6, not ^7?** Prisma 7 removed datasource URL from `schema.prisma` and requires a driver adapter. Pinned to `^6` — upgrade path exists when there's time.
 
-**Why no HTTP API yet?** Operator CLI scripts prove the full pipeline end-to-end. A web layer adds accidental complexity before the data model is stable. The next natural step is an HTTP layer over the same services, not a rewrite.
+**Why `as unknown as Prisma.InputJsonValue`?** Prisma 6 enforces strict recursive `InputJsonValue` types incompatible with `Record<string, unknown>`. The cast is safe — values are JSON-serializable. All occurrences are in persistence services and scripts only.
 
-**Why `as unknown as Prisma.InputJsonValue`?** Prisma 6 enforces strict recursive `InputJsonValue` types for `Json` fields, which is incompatible with `Record<string, unknown>` (the project's `JsonRecord` type). The cast is safe — the runtime values are JSON-serializable objects. All occurrences are in scripts and persistence services only.
+**API `dryRun` defaults to `true`.** Operators must explicitly pass `dryRun: false` to execute Prepare & Publish via the API. CLI requires removing `--dry-run` explicitly. Both sides enforce the same safety posture.
 
-**Why no `@@unique` on `PlatformProfileVersion(platformSlug, schemaVersion)`?** The sprint spec omitted it. Idempotency is handled in `seedService.ts` with a `findFirst` check. Add the constraint in the next schema migration pass if needed — it would simplify future upserts.
+**`lifecyclePersistenceService` mixes concerns.** `persistLead` lives in `publishing/lifecyclePersistenceService` because it was introduced alongside application-state transitions. Lead persistence should eventually move to `storefront/`. Do not touch until that refactor is scoped.
 
-**Environment tagging:** Every `SubmissionAttempt`, `GeneratedArtifact`, `ReadinessRun`, and `PlatformCredentialRef` has an `environment: Environment` column (MOCK/SANDBOX/PRODUCTION). All data written today is `MOCK`. This is the gate before any real API call.
+**Environment tagging.** Every `SubmissionAttempt`, `GeneratedArtifact`, `ReadinessRun`, and `PlatformCredentialRef` has `environment: MOCK | SANDBOX | PRODUCTION`. All current data is `MOCK`. This is the hard gate before any real API call.
 
 ---
 
 ## What's Working and Proven
 
-| Capability | Command | Notes |
-|---|---|---|
-| 18-platform readiness validation | `poc:green`, `validate:pristine` | Pure, no DB required |
-| Risk matrix (pass/fail scenarios) | `poc:risk` | 90/90 expectations |
-| Portal lifecycle simulation | `poc:portal` | 18/18 happy path → ACTIVE |
-| DB-backed dealer + inventory intake | `dealer:create:pristine` | Idempotent upsert |
-| Inventory snapshot with checksum | (internal to readiness run) | SHA-256 of vehicle JSON |
-| Readiness run stored in DB | (internal to dealer:create) | baseline + strict, green/yellow/red counts |
-| Feed artifact generation | (internal to dealer:create) | 18 files written to ./exports/ |
-| Artifact DB registration | (internal to dealer:create) | checksum, path, sizeBytes |
-| Proof folder manifest | `dealer:proof` | Includes lead count, platform count |
-| Proof folder ZIP export | `dealer:proof` | JSZip, manifest.json at root |
-| DB-mode pristine validation | `validate:pristine:db` | Reads dealer + vehicles from DB |
-| Full pipeline reset | `demo:reset` | Idempotent, exits 0 |
-| Status grid CLI | `dealer:status` | All 18 platforms, copy + CTA |
+| Capability | How to verify |
+|---|---|
+| 18-platform readiness validation | `poc:green`, `validate:pristine` |
+| Risk matrix (4 scenario types × 18 platforms) | `poc:risk` |
+| Portal lifecycle simulation | `poc:portal` |
+| DB-backed dealer + inventory intake | `dealer:create:pristine` |
+| Prepare & Publish golden path (dry-run + execute) | `publish:prepare -- <id> [--dry-run]` |
+| Platform queue + scheduler + approval workflow | `sync:queue`, `sync:scheduler`, `sync:approval` |
+| Vehicle update propagation (price, photos, sold, removed) | `vehicle:update` |
+| Feed artifact generation (all 18 formats) | (internal to dealer:create + publish:prepare) |
+| Proof folder ZIP | `dealer:proof` |
+| Dealer data export ZIP | `dealer:export` |
+| Invoice computation | `dealer:invoice -- <id> <YYYY-MM>` |
+| Operator Publish Console UI | `npm run ui:dev` + open localhost:5173 |
+| Publish API (prepare, status, history, accounts) | See HTTP API section above |
 
 ---
 
 ## What's Not Built Yet
 
-In priority order (see `docs/technical-90-day-roadmap.md` for full detail):
-
-1. **Owned storefront served over HTTP** — the JSON artifact is generated, but there's no HTTP server. Dealers can't browse it yet.
-2. **Lead capture wired to DB from a live form** — `leadCaptureService.ts` exists and writes to DB, but there's no HTTP endpoint or frontend to call it.
-3. **Platform application lifecycle from a real intake** — `PlatformApplication` records aren't created automatically when a dealer is onboarded. The `dealer:status` command shows NOT_STARTED for all platforms because no applications exist yet.
-4. **Assisted channel packet submission tracking** — authorization packets are generated (see `fakeSubmitAll.ts`) but not wired into the `dealer:create` flow.
-5. **Inventory update propagation from real events** — `vehicleUpdateService.ts` works in-memory; it's not called when a vehicle is updated in the DB.
-6. **HTTP API** — no Express/Fastify layer yet. All workflows are CLI-only.
-7. **Sandbox credential validation** — `PlatformCredentialRef` model exists in schema; no real API calls.
-8. **CSV inventory import** — JSON only today.
-9. **Dealer notifications via SMTP** — `DealerNotification` model exists; delivery is log-only in MOCK.
-10. **Monthly invoice generation** — `DealerSubscription` model exists; no invoice computation script.
-
----
-
-## Suggested Next Sprint
-
-The highest-value item that directly unlocks revenue is **platform application creation + assisted channel workflow**:
-
-1. When `dealer:create` runs, auto-create a `PlatformApplication` row for each platform the dealer selected in `desiredChannels` (status: `READY_TO_SUBMIT`).
-2. For FEEDABLE platforms: mark as `SUBMITTED` immediately after the feed artifact is written; `ACTIVE` after a configurable hold.
-3. For ASSISTED platforms: generate the authorization packet → `SubmissionAttempt` row (MOCK_EMAIL) → status: `SUBMITTED`.
-4. Wire `vehicleUpdateService.ts` into a real DB update path: when a vehicle's `priceCents` is updated, create a `VehicleUpdate` row and propagate.
-5. Add `dealer:activate` script that transitions a platform application through to ACTIVE for demo purposes.
-
-This makes `dealer:status` actually show meaningful lifecycle state instead of all NOT_STARTED.
+1. **Real SMTP delivery** — `DealerNotification` writes to DB; MOCK env only.
+2. **Sandbox / production API calls** — all `SubmissionAttempt` rows are MOCK.
+3. **CSV inventory import** — JSON only.
+4. **Dealer-facing portal** — UI is operator-only; no dealer login or self-service view.
+5. **Webhook / real-time feed push** — scheduler runs on-demand; no background daemon yet.
+6. **Admin / multi-tenant auth** — no authentication on any API endpoint.
+7. **`@@unique` on `PlatformProfileVersion(platformSlug, schemaVersion)`** — idempotency handled in code; DB constraint not added yet.
 
 ---
 
 ## Files That Are Safe to Ignore
 
-- `README.md` — outdated v2 patch instructions, preserved for history
-- `README_V2.5.md`, `README_V2.5.1.md` — historical release notes
-- `PATCH_MANIFEST.md` — historical file manifest
-- `src/scripts/fakeOnboard.ts`, `src/scripts/fakeSubmitAll.ts` — legacy scripts superseded by `dealer:create`
-- `src/scripts/report.ts`, `src/scripts/validateAll.ts` — early-iteration scripts, not in active use
-- `mock-platform-receipts/` — gitignored, generated by poc scripts
+- `README.md`, `README_V2.5.md`, `README_V2.5.1.md`, `PATCH_MANIFEST.md` — historical, preserved for reference
+- `src/scripts/dev/fakeOnboard.ts`, `src/scripts/dev/fakeSubmitAll.ts` — legacy scripts superseded by `dealer:create`
+- `src/scripts/dev/report.ts`, `src/scripts/dev/validateAll.ts` — early-iteration scripts, not in active use
+- `mock-platform-receipts/`, `mock-outbox/` — gitignored, generated by poc/dev scripts
 
 ---
 
-## Contact / Context
+## Context Documents
 
-See `docs/Market Research Document.md` for the business context, `docs/go-to-market-playbook.md` for the sales motion, and `docs/pricing-and-unit-economics.md` for the revenue model.
-
-The `docs/ai-sprint-roadmap.md` is the spec that drove tonight's build — useful reference for why specific decisions were made.
+| Doc | Contents |
+|-----|----------|
+| `docs/Market Research Document.md` | Business context and competitive landscape |
+| `docs/go-to-market-playbook.md` | Sales motion |
+| `docs/pricing-and-unit-economics.md` | Revenue model |
+| `docs/technical-90-day-roadmap.md` | Full 90-day build plan |
+| `docs/ai-sprint-roadmap.md` | Sprint spec that drove the DB-backed MVP build |
+| `docs/mvp-scope-and-milestones.md` | Phase definitions and acceptance criteria |

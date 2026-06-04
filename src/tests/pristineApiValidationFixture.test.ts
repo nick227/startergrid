@@ -1,8 +1,8 @@
-import assert from 'node:assert/strict';
+﻿import assert from 'node:assert/strict';
 import test from 'node:test';
 import { platformProfiles } from '../data/platformProfiles.js';
-import { pristineApiDealership, pristineApiVehicles } from '../fixtures/pristineApiValidation.fixture.js';
-import { validatePlatformReadiness, validatePlatformReadinessStrict } from '../validators/platformReadinessValidator.js';
+import { pristineApiDealership, pristineApiVehicles } from '../fixtures/scenarios/pristineApiValidation.fixture.js';
+import { validatePlatformReadiness, validatePlatformReadinessStrict } from '../validators/platform/platformReadinessValidator.js';
 
 test('pristine API fixture passes baseline readiness for every registered platform', () => {
   const failing = platformProfiles

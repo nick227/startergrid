@@ -1,4 +1,4 @@
-import assert from 'node:assert/strict';
+﻿import assert from 'node:assert/strict';
 import { describe, it } from 'node:test';
 import { platformProfiles } from '../data/platformProfiles.js';
 import { mockPortalResponses, getMockPortalResponse } from '../data/mockPortalResponses.js';
@@ -8,7 +8,7 @@ import {
   HAPPY_PATH_FEED,
   HAPPY_PATH_ASSISTED,
   HAPPY_PATH_ADF
-} from '../services/partnerPortalService.js';
+} from '../services/publishing/partnerPortalService.js';
 import type { MockPortalCondition } from '../lib/types.js';
 
 const REQUIRED_CONDITIONS: MockPortalCondition[] = ['PORTAL_ACCEPTED', 'PORTAL_REJECTED', 'PORTAL_NEEDS_INFO', 'PORTAL_ERROR'];

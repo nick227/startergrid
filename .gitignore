@@ -5,3 +5,4 @@ exports/
 mock-outbox/
 mock-platform-receipts/
 .DS_Store
+packages/api-client/generated/

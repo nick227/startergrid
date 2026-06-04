@@ -1,6 +1,6 @@
-import assert from 'node:assert/strict';
+﻿import assert from 'node:assert/strict';
 import { describe, it } from 'node:test';
-import { validateDealershipProfile } from '../validators/dealershipProfileValidator.js';
+import { validateDealershipProfile } from '../validators/dealer/dealershipProfileValidator.js';
 import type { DealershipPayload } from '../lib/types.js';
 
 const baseDealership: DealershipPayload = {

@@ -1,7 +1,7 @@
-import assert from 'node:assert/strict';
+﻿import assert from 'node:assert/strict';
 import { describe, it } from 'node:test';
-import { dbVehicleToPayload, type DbVehicle } from '../services/inventorySnapshotService.js';
-import { dbDealershipToPayload, type DbDealership } from '../services/readinessRunService.js';
+import { dbVehicleToPayload, type DbVehicle } from '../services/inventory/inventorySnapshotService.js';
+import { dbDealershipToPayload, type DbDealership } from '../services/platform/readinessRunService.js';
 
 const baseDbVehicle: DbVehicle = {
   id: 'v-001',

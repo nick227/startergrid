@@ -1,4 +1,4 @@
-import assert from 'node:assert/strict';
+﻿import assert from 'node:assert/strict';
 import { describe, it } from 'node:test';
 import {
   canApprove,
@@ -7,8 +7,8 @@ import {
   canRelease,
   approvedNextStatus,
   ageLabel
-} from '../services/approvalService.js';
-import { isEligibleForDispatch } from '../services/schedulerService.js';
+} from '../services/publishing/approvalService.js';
+import { isEligibleForDispatch } from '../services/publishing/schedulerService.js';
 
 // ── Legal / illegal transition matrix ────────────────────────────────────────
 

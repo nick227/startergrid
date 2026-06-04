@@ -14,7 +14,12 @@ app.listen({ port: PORT, host: HOST }, (err, address) => {
   }
   console.log(`Dealer storefront API listening at ${address}`);
   console.log(`  GET  ${address}/health`);
+  console.log(`  GET  ${address}/api/dealers`);
   console.log(`  GET  ${address}/api/dealers/:dealershipId/storefront`);
   console.log(`  GET  ${address}/api/dealers/:dealershipId/vehicles/:stockNumber`);
   console.log(`  POST ${address}/api/dealers/:dealershipId/leads`);
+  console.log(`  POST ${address}/api/dealers/:dealershipId/publish/prepare`);
+  console.log(`  GET  ${address}/api/dealers/:dealershipId/publish/status`);
+  console.log(`  GET  ${address}/api/dealers/:dealershipId/publish/history`);
+  console.log(`  GET  ${address}/api/dealers/:dealershipId/publish/accounts`);
 });

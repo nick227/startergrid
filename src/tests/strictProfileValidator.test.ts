@@ -1,6 +1,6 @@
-import assert from 'node:assert/strict';
+﻿import assert from 'node:assert/strict';
 import { describe, it } from 'node:test';
-import { validateStrictPlatformProfile, defaultStrictProfilePolicy } from '../validators/strictPlatformProfileValidator.js';
+import { validateStrictPlatformProfile, defaultStrictProfilePolicy } from '../validators/platform/strictPlatformProfileValidator.js';
 import type { PlatformProfileSeed } from '../lib/types.js';
 
 const todayIso = new Date().toISOString().split('T')[0];

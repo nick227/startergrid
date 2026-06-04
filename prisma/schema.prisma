@@ -457,6 +457,7 @@ enum SyncEventKind {
   APPROVAL_REQUESTED  // Item entered NEEDS_APPROVAL state
   APPROVAL_HELD       // Operator placed item on hold
   APPROVAL_RELEASED   // Operator released item from hold
+  INVENTORY_IMPORT    // Bulk CSV/paste import batch completed
 }
 
 enum PlatformAccountState {
@@ -564,14 +565,20 @@ model SyncEvent {
 }
 
 model PlatformAccount {
-  id           String               @id @default(cuid())
-  dealershipId String
-  platformSlug String               @db.VarChar(80)
-  state        PlatformAccountState @default(ACCOUNT_NEEDED)
-  notes        String?              @db.Text
-  lastChecked  DateTime?
-  createdAt    DateTime             @default(now())
-  updatedAt    DateTime             @updatedAt
+  id                String               @id @default(cuid())
+  dealershipId      String
+  platformSlug      String               @db.VarChar(80)
+  state             PlatformAccountState @default(ACCOUNT_NEEDED)
+  accountId         String?              @db.VarChar(120)
+  platformRepName   String?              @db.VarChar(160)
+  platformRepEmail  String?              @db.VarChar(255)
+  membershipStatus  String?              @db.VarChar(80)
+  nextAction        String?              @db.VarChar(255)
+  nextActionOwner   String?              @db.VarChar(80)
+  notes             String?              @db.Text
+  lastChecked       DateTime?
+  createdAt         DateTime             @default(now())
+  updatedAt         DateTime             @updatedAt
 
   dealership   DealershipProfile @relation(fields: [dealershipId], references: [id], onDelete: Cascade)
 

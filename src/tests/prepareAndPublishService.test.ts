@@ -1,4 +1,4 @@
-import assert from 'node:assert/strict';
+﻿import assert from 'node:assert/strict';
 import { describe, it } from 'node:test';
 import {
   derivePublishState,
@@ -6,7 +6,7 @@ import {
   summarizePublishStates,
   classifyVehicleReadiness,
   type PublishState
-} from '../services/prepareAndPublishService.js';
+} from '../services/publishing/prepareAndPublishService.js';
 import { platformProfiles } from '../data/platformProfiles.js';
 import type { ValidationIssue, VehiclePayload } from '../lib/types.js';
 

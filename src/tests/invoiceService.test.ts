@@ -1,4 +1,4 @@
-import assert from 'node:assert/strict';
+﻿import assert from 'node:assert/strict';
 import { describe, it } from 'node:test';
 import {
   computeSetupInvoice,
@@ -8,7 +8,7 @@ import {
   type SubscriptionRef,
   type SetupInvoiceStats,
   type MonthlyInvoiceStats
-} from '../services/invoiceService.js';
+} from '../services/commercial/invoiceService.js';
 
 const DEALER_ID = 'test-dealer-001';
 const DEALER_NAME = 'Prairie Ridge Motors LLC';

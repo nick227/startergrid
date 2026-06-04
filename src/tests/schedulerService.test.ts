@@ -1,4 +1,4 @@
-import assert from 'node:assert/strict';
+﻿import assert from 'node:assert/strict';
 import { describe, it } from 'node:test';
 import {
   isEligibleForDispatch,
@@ -8,7 +8,7 @@ import {
   nextRetryAt,
   MAX_ATTEMPTS,
   BACKOFF_DELAYS_MS
-} from '../services/schedulerService.js';
+} from '../services/publishing/schedulerService.js';
 
 // ── helpers ──────────────────────────────────────────────────────────────────
 

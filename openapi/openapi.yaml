@@ -1,0 +1,1457 @@
+openapi: 3.0.3
+info:
+  title: Auto Dealer Operator API
+  version: 4.0.0
+  description: |
+    Contract for the operator publish console and dealer inventory APIs.
+    Handlers are implemented in Fastify; this spec is the source for the generated web client.
+servers:
+  - url: /
+    description: Same-origin (Vite proxy in dev)
+
+security: []
+
+tags:
+  - name: Health
+  - name: Dealers
+  - name: Publish
+  - name: Accounts
+  - name: Inventory
+  - name: Vehicles
+  - name: Storefront
+
+paths:
+  /health:
+    get:
+      tags: [Health]
+      operationId: getHealth
+      summary: Health check
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HealthResponse'
+
+  /api/dealers:
+    get:
+      tags: [Dealers]
+      operationId: listDealers
+      summary: List dealerships
+      responses:
+        '200':
+          description: Dealer list
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DealerListResponse'
+
+  /api/dealers/{dealershipId}/publish/prepare:
+    post:
+      tags: [Publish]
+      operationId: preparePublish
+      summary: Prepare publish (dry-run by default)
+      parameters:
+        - $ref: '#/components/parameters/dealershipId'
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PreparePublishRequest'
+      responses:
+        '200':
+          description: Prepare result
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PreparePublishResult'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /api/dealers/{dealershipId}/publish/status:
+    get:
+      tags: [Publish]
+      operationId: getPublishStatus
+      summary: Publish readiness status (dry-run prepare)
+      parameters:
+        - $ref: '#/components/parameters/dealershipId'
+      responses:
+        '200':
+          description: Status snapshot
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PublishStatusResponse'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /api/dealers/{dealershipId}/publish/history:
+    get:
+      tags: [Publish]
+      operationId: getPublishHistory
+      summary: Sync event history
+      parameters:
+        - $ref: '#/components/parameters/dealershipId'
+        - name: platformSlug
+          in: query
+          schema:
+            type: string
+        - name: kind
+          in: query
+          schema:
+            type: string
+        - name: limit
+          in: query
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 200
+            default: 50
+        - name: before
+          in: query
+          description: Cursor sync event id
+          schema:
+            type: string
+      responses:
+        '200':
+          description: History page
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HistoryResponse'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /api/dealers/{dealershipId}/publish/accounts:
+    get:
+      tags: [Publish]
+      operationId: getPublishAccounts
+      summary: Platform account summary for publish console
+      parameters:
+        - $ref: '#/components/parameters/dealershipId'
+      responses:
+        '200':
+          description: Account rows aligned to platform catalog
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PublishAccountsResponse'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /api/dealers/{dealershipId}/publish/queue:
+    get:
+      tags: [Publish]
+      operationId: getPublishQueue
+      summary: Publish queue view
+      parameters:
+        - $ref: '#/components/parameters/dealershipId'
+      responses:
+        '200':
+          description: Queue buckets and summary
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/QueueView'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /api/dealers/{dealershipId}/accounts:
+    get:
+      tags: [Accounts]
+      operationId: listAccounts
+      summary: Platform accounts (management)
+      parameters:
+        - $ref: '#/components/parameters/dealershipId'
+      responses:
+        '200':
+          description: Accounts with summary counts
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AccountsManagementResponse'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /api/dealers/{dealershipId}/accounts/{platformSlug}:
+    patch:
+      tags: [Accounts]
+      operationId: updateAccount
+      summary: Update platform account fields
+      parameters:
+        - $ref: '#/components/parameters/dealershipId'
+        - $ref: '#/components/parameters/platformSlug'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AccountUpdatePayload'
+      responses:
+        '200':
+          description: Updated account
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AccountUpdateResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /api/dealers/{dealershipId}/inventory:
+    get:
+      tags: [Inventory]
+      operationId: listInventory
+      summary: Active inventory list with readiness
+      parameters:
+        - $ref: '#/components/parameters/dealershipId'
+      responses:
+        '200':
+          description: Vehicles
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/VehicleListResponse'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /api/dealers/{dealershipId}/inventory/import/preview:
+    post:
+      tags: [Inventory]
+      operationId: previewInventoryImport
+      summary: Import preview (no writes)
+      parameters:
+        - $ref: '#/components/parameters/dealershipId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/InventoryImportRequest'
+      responses:
+        '200':
+          description: Preview rows
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ImportPreviewResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /api/dealers/{dealershipId}/inventory/import/commit:
+    post:
+      tags: [Inventory]
+      operationId: commitInventoryImport
+      summary: Commit inventory import
+      parameters:
+        - $ref: '#/components/parameters/dealershipId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/InventoryImportRequest'
+      responses:
+        '200':
+          description: Commit counts
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CommitImportResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /api/dealers/{dealershipId}/inventory/bulk:
+    patch:
+      tags: [Inventory]
+      operationId: bulkEditInventory
+      summary: Bulk field update
+      parameters:
+        - $ref: '#/components/parameters/dealershipId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/BulkEditPayload'
+      responses:
+        '200':
+          description: Update count
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BulkEditResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /api/dealers/{dealershipId}/inventory/import/batches:
+    get:
+      tags: [Inventory]
+      operationId: listImportBatches
+      summary: Recent import batch events
+      parameters:
+        - $ref: '#/components/parameters/dealershipId'
+      responses:
+        '200':
+          description: Batches
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ImportBatchesResponse'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /api/dealers/{dealershipId}/vehicles/{stockNumber}/price:
+    patch:
+      tags: [Vehicles]
+      operationId: updateVehiclePrice
+      summary: Update vehicle price
+      parameters:
+        - $ref: '#/components/parameters/dealershipId'
+        - $ref: '#/components/parameters/stockNumber'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PriceUpdateRequest'
+      responses:
+        '200':
+          description: Update propagation result
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/VehicleUpdateResult'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /api/dealers/{dealershipId}/vehicles/{stockNumber}/photos:
+    patch:
+      tags: [Vehicles]
+      operationId: updateVehiclePhotos
+      summary: Replace vehicle photo URLs
+      parameters:
+        - $ref: '#/components/parameters/dealershipId'
+        - $ref: '#/components/parameters/stockNumber'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PhotoUpdateRequest'
+      responses:
+        '200':
+          description: Update propagation result
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/VehicleUpdateResult'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /api/dealers/{dealershipId}/vehicles/{stockNumber}/sold:
+    post:
+      tags: [Vehicles]
+      operationId: markVehicleSold
+      summary: Mark vehicle sold
+      parameters:
+        - $ref: '#/components/parameters/dealershipId'
+        - $ref: '#/components/parameters/stockNumber'
+      responses:
+        '200':
+          description: Update propagation result
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/VehicleUpdateResult'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /api/dealers/{dealershipId}/vehicles/{stockNumber}/removed:
+    post:
+      tags: [Vehicles]
+      operationId: markVehicleRemoved
+      summary: Mark vehicle removed
+      parameters:
+        - $ref: '#/components/parameters/dealershipId'
+        - $ref: '#/components/parameters/stockNumber'
+      responses:
+        '200':
+          description: Update propagation result
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/VehicleUpdateResult'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /api/dealers/{dealershipId}/storefront:
+    get:
+      tags: [Storefront]
+      operationId: getStorefront
+      summary: Public storefront payload
+      parameters:
+        - $ref: '#/components/parameters/dealershipId'
+      responses:
+        '200':
+          description: Storefront
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: true
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /api/dealers/{dealershipId}/vehicles/{stockNumber}:
+    get:
+      tags: [Storefront]
+      operationId: getVehicleDetail
+      summary: Vehicle listing detail
+      parameters:
+        - $ref: '#/components/parameters/dealershipId'
+        - $ref: '#/components/parameters/stockNumber'
+      responses:
+        '200':
+          description: Listing
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: true
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /api/dealers/{dealershipId}/leads:
+    post:
+      tags: [Storefront]
+      operationId: captureLead
+      summary: Capture storefront lead
+      parameters:
+        - $ref: '#/components/parameters/dealershipId'
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: true
+      responses:
+        '201':
+          description: Lead accepted
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LeadCaptureResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+components:
+  parameters:
+    dealershipId:
+      name: dealershipId
+      in: path
+      required: true
+      schema:
+        type: string
+    platformSlug:
+      name: platformSlug
+      in: path
+      required: true
+      schema:
+        type: string
+    stockNumber:
+      name: stockNumber
+      in: path
+      required: true
+      schema:
+        type: string
+
+  responses:
+    NotFound:
+      description: Not found
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+    BadRequest:
+      description: Bad request
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+
+  schemas:
+    ErrorResponse:
+      type: object
+      required: [error]
+      properties:
+        error:
+          type: string
+
+    HealthResponse:
+      type: object
+      required: [ok, ts]
+      properties:
+        ok:
+          type: boolean
+        ts:
+          type: string
+          format: date-time
+
+    IntegrationClass:
+      type: string
+      enum: [OWNED, FEEDABLE, ASSISTED, PARTNER_DEPENDENT]
+
+    ReadinessColor:
+      type: string
+      enum: [GREEN, YELLOW, RED]
+
+    PublishState:
+      type: string
+      enum:
+        - Active
+        - Ready
+        - Scheduled
+        - Needs Approval
+        - Blocked
+        - Packet Prepared
+        - Partner Required
+        - Failed
+
+    NextRecommendedAction:
+      type: string
+      enum:
+        - fix_blocked_vehicles
+        - review_approvals
+        - run_scheduler
+        - resolve_partner_requirement
+        - resolve_account_requirement
+        - no_action
+
+    ValidationIssue:
+      type: object
+      required: [path, message, severity]
+      properties:
+        path:
+          type: string
+        message:
+          type: string
+        severity:
+          type: string
+          enum: [FAIL, WARN]
+        code:
+          type: string
+
+    PublishStateSummary:
+      type: object
+      required:
+        - Active
+        - Ready
+        - Scheduled
+        - Needs Approval
+        - Blocked
+        - Packet Prepared
+        - Partner Required
+        - Failed
+      properties:
+        Active:
+          type: integer
+          minimum: 0
+        Ready:
+          type: integer
+          minimum: 0
+        Scheduled:
+          type: integer
+          minimum: 0
+        Needs Approval:
+          type: integer
+          minimum: 0
+        Blocked:
+          type: integer
+          minimum: 0
+        Packet Prepared:
+          type: integer
+          minimum: 0
+        Partner Required:
+          type: integer
+          minimum: 0
+        Failed:
+          type: integer
+          minimum: 0
+
+    ReadinessSummary:
+      type: object
+      required: [green, yellow, red]
+      properties:
+        green:
+          type: integer
+          minimum: 0
+        yellow:
+          type: integer
+          minimum: 0
+        red:
+          type: integer
+          minimum: 0
+
+    VehicleReadinessItem:
+      type: object
+      required: [stockNumber, label, issues]
+      properties:
+        stockNumber:
+          type: string
+        label:
+          type: string
+          enum: [ready, warning, blocked]
+        issues:
+          type: array
+          items:
+            $ref: '#/components/schemas/ValidationIssue'
+
+    VehicleReadinessBlock:
+      type: object
+      required: [total, ready, warning, blocked, details]
+      properties:
+        total:
+          type: integer
+          minimum: 0
+        ready:
+          type: integer
+          minimum: 0
+        warning:
+          type: integer
+          minimum: 0
+        blocked:
+          type: integer
+          minimum: 0
+        details:
+          type: array
+          items:
+            $ref: '#/components/schemas/VehicleReadinessItem'
+
+    PlatformPublishResult:
+      type: object
+      required:
+        - platformSlug
+        - platformName
+        - integrationClass
+        - readiness
+        - state
+        - detail
+        - scheduledFor
+        - queueItemId
+        - artifactPath
+      properties:
+        platformSlug:
+          type: string
+        platformName:
+          type: string
+        integrationClass:
+          $ref: '#/components/schemas/IntegrationClass'
+        readiness:
+          $ref: '#/components/schemas/ReadinessColor'
+        state:
+          $ref: '#/components/schemas/PublishState'
+        detail:
+          type: string
+        scheduledFor:
+          type: string
+          format: date-time
+          nullable: true
+        queueItemId:
+          type: string
+          nullable: true
+        artifactPath:
+          type: string
+          nullable: true
+
+    PublishStatusResponse:
+      type: object
+      required:
+        - dealershipId
+        - dealerName
+        - preparedAt
+        - vehicles
+        - readinessSummary
+        - platforms
+        - summary
+        - nextRecommendedAction
+      properties:
+        dealershipId:
+          type: string
+        dealerName:
+          type: string
+        preparedAt:
+          type: string
+          format: date-time
+        vehicles:
+          $ref: '#/components/schemas/VehicleReadinessBlock'
+        readinessSummary:
+          $ref: '#/components/schemas/ReadinessSummary'
+        platforms:
+          type: array
+          items:
+            $ref: '#/components/schemas/PlatformPublishResult'
+        summary:
+          $ref: '#/components/schemas/PublishStateSummary'
+        nextRecommendedAction:
+          $ref: '#/components/schemas/NextRecommendedAction'
+
+    PreparePublishRequest:
+      type: object
+      properties:
+        dryRun:
+          type: boolean
+          default: true
+        platforms:
+          type: array
+          items:
+            type: string
+
+    PreparePublishResult:
+      allOf:
+        - $ref: '#/components/schemas/PublishStatusResponse'
+        - type: object
+          required: [dryRun]
+          properties:
+            dryRun:
+              type: boolean
+
+    SyncEvent:
+      type: object
+      required:
+        - id
+        - dealershipId
+        - vehicleId
+        - platformSlug
+        - kind
+        - payload
+        - syncRunId
+        - createdAt
+      properties:
+        id:
+          type: string
+        dealershipId:
+          type: string
+        vehicleId:
+          type: string
+          nullable: true
+        platformSlug:
+          type: string
+          nullable: true
+        kind:
+          type: string
+        payload:
+          type: object
+          nullable: true
+          additionalProperties: true
+        syncRunId:
+          type: string
+          nullable: true
+        createdAt:
+          type: string
+          format: date-time
+
+    HistoryMeta:
+      type: object
+      required: [hasMore, nextCursor]
+      properties:
+        hasMore:
+          type: boolean
+        nextCursor:
+          type: string
+          nullable: true
+
+    HistoryResponse:
+      type: object
+      required: [events, meta]
+      properties:
+        events:
+          type: array
+          items:
+            $ref: '#/components/schemas/SyncEvent'
+        meta:
+          $ref: '#/components/schemas/HistoryMeta'
+
+    PublishPlatformAccountEntry:
+      type: object
+      required:
+        - platformSlug
+        - platformName
+        - integrationClass
+        - accountState
+        - accountId
+        - platformRepName
+        - platformRepEmail
+        - membershipStatus
+        - nextAction
+        - nextActionOwner
+        - notes
+        - applicationStatus
+        - lastChecked
+        - updatedAt
+      properties:
+        platformSlug:
+          type: string
+        platformName:
+          type: string
+        integrationClass:
+          $ref: '#/components/schemas/IntegrationClass'
+        accountState:
+          type: string
+        accountId:
+          type: string
+          nullable: true
+        platformRepName:
+          type: string
+          nullable: true
+        platformRepEmail:
+          type: string
+          nullable: true
+        membershipStatus:
+          type: string
+          nullable: true
+        nextAction:
+          type: string
+          nullable: true
+        nextActionOwner:
+          type: string
+          nullable: true
+        notes:
+          type: string
+          nullable: true
+        applicationStatus:
+          type: string
+          nullable: true
+        lastChecked:
+          type: string
+          format: date-time
+          nullable: true
+        updatedAt:
+          type: string
+          format: date-time
+          nullable: true
+
+    PublishAccountsResponse:
+      type: object
+      required: [accounts]
+      properties:
+        accounts:
+          type: array
+          items:
+            $ref: '#/components/schemas/PublishPlatformAccountEntry'
+
+    QueueItemView:
+      type: object
+      required:
+        - id
+        - stockNumber
+        - vehicleTitle
+        - vehicleId
+        - platformSlug
+        - platformName
+        - integrationClass
+        - triggerKind
+        - status
+        - policyMode
+        - priority
+        - scheduledFor
+        - blockReason
+        - approvalRequiredReason
+        - holdReason
+        - approvedBy
+        - sentAt
+        - attemptCount
+        - nextAttemptAt
+        - claimedBy
+        - createdAt
+      properties:
+        id:
+          type: string
+        stockNumber:
+          type: string
+          nullable: true
+        vehicleTitle:
+          type: string
+          nullable: true
+        vehicleId:
+          type: string
+          nullable: true
+        platformSlug:
+          type: string
+        platformName:
+          type: string
+        integrationClass:
+          $ref: '#/components/schemas/IntegrationClass'
+        triggerKind:
+          type: string
+        status:
+          type: string
+        policyMode:
+          type: string
+        priority:
+          type: integer
+        scheduledFor:
+          type: string
+          format: date-time
+          nullable: true
+        blockReason:
+          type: string
+          nullable: true
+        approvalRequiredReason:
+          type: string
+          nullable: true
+        holdReason:
+          type: string
+          nullable: true
+        approvedBy:
+          type: string
+          nullable: true
+        sentAt:
+          type: string
+          format: date-time
+          nullable: true
+        attemptCount:
+          type: integer
+        nextAttemptAt:
+          type: string
+          format: date-time
+          nullable: true
+        claimedBy:
+          type: string
+          nullable: true
+        createdAt:
+          type: string
+          format: date-time
+
+    QueuePlatformAccountRef:
+      type: object
+      required: [platformSlug, platformName, state]
+      properties:
+        platformSlug:
+          type: string
+        platformName:
+          type: string
+        state:
+          type: string
+
+    QueueSummary:
+      type: object
+      required:
+        - ready
+        - scheduled
+        - needsApproval
+        - blocked
+        - held
+        - claimed
+        - overdue
+        - retryPending
+        - sent
+        - failed
+      properties:
+        ready:
+          type: integer
+        scheduled:
+          type: integer
+        needsApproval:
+          type: integer
+        blocked:
+          type: integer
+        held:
+          type: integer
+        claimed:
+          type: integer
+        overdue:
+          type: integer
+        retryPending:
+          type: integer
+        sent:
+          type: integer
+        failed:
+          type: integer
+
+    QueueView:
+      type: object
+      required:
+        - dealershipId
+        - dealerName
+        - generatedAt
+        - pending
+        - terminal
+        - overdue
+        - retryPending
+        - claimed
+        - platformAccounts
+        - summary
+      properties:
+        dealershipId:
+          type: string
+        dealerName:
+          type: string
+        generatedAt:
+          type: string
+          format: date-time
+        pending:
+          type: array
+          items:
+            $ref: '#/components/schemas/QueueItemView'
+        terminal:
+          type: array
+          items:
+            $ref: '#/components/schemas/QueueItemView'
+        overdue:
+          type: array
+          items:
+            $ref: '#/components/schemas/QueueItemView'
+        retryPending:
+          type: array
+          items:
+            $ref: '#/components/schemas/QueueItemView'
+        claimed:
+          type: array
+          items:
+            $ref: '#/components/schemas/QueueItemView'
+        platformAccounts:
+          type: array
+          items:
+            $ref: '#/components/schemas/QueuePlatformAccountRef'
+        summary:
+          $ref: '#/components/schemas/QueueSummary'
+
+    DealerSummary:
+      type: object
+      required: [id, legalName, dbaName, createdAt]
+      properties:
+        id:
+          type: string
+        legalName:
+          type: string
+        dbaName:
+          type: string
+          nullable: true
+        createdAt:
+          type: string
+          format: date-time
+
+    DealerListResponse:
+      type: object
+      required: [dealers]
+      properties:
+        dealers:
+          type: array
+          items:
+            $ref: '#/components/schemas/DealerSummary'
+
+    PlatformAccountDetail:
+      type: object
+      required:
+        - id
+        - platformSlug
+        - platformName
+        - integrationClass
+        - state
+        - accountId
+        - platformRepName
+        - platformRepEmail
+        - membershipStatus
+        - nextAction
+        - nextActionOwner
+        - notes
+        - lastChecked
+        - createdAt
+        - updatedAt
+      properties:
+        id:
+          type: string
+        platformSlug:
+          type: string
+        platformName:
+          type: string
+        integrationClass:
+          type: string
+        state:
+          type: string
+        accountId:
+          type: string
+          nullable: true
+        platformRepName:
+          type: string
+          nullable: true
+        platformRepEmail:
+          type: string
+          nullable: true
+        membershipStatus:
+          type: string
+          nullable: true
+        nextAction:
+          type: string
+          nullable: true
+        nextActionOwner:
+          type: string
+          nullable: true
+        notes:
+          type: string
+          nullable: true
+        lastChecked:
+          type: string
+          format: date-time
+          nullable: true
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+
+    AccountStateSummary:
+      type: object
+      required: [total, active, needsSetup, pendingReview, blocked, partnerRequired]
+      properties:
+        total:
+          type: integer
+        active:
+          type: integer
+        needsSetup:
+          type: integer
+        pendingReview:
+          type: integer
+        blocked:
+          type: integer
+        partnerRequired:
+          type: integer
+
+    AccountsManagementResponse:
+      type: object
+      required: [accounts, summary]
+      properties:
+        accounts:
+          type: array
+          items:
+            $ref: '#/components/schemas/PlatformAccountDetail'
+        summary:
+          $ref: '#/components/schemas/AccountStateSummary'
+
+    AccountUpdatePayload:
+      type: object
+      properties:
+        state:
+          type: string
+        notes:
+          type: string
+        accountId:
+          type: string
+        platformRepName:
+          type: string
+        platformRepEmail:
+          type: string
+        membershipStatus:
+          type: string
+        nextAction:
+          type: string
+        nextActionOwner:
+          type: string
+          nullable: true
+
+    AccountUpdateResponse:
+      type: object
+      required: [account]
+      properties:
+        account:
+          $ref: '#/components/schemas/PlatformAccountDetail'
+
+    VehicleIssue:
+      type: object
+      required: [path, message, severity]
+      properties:
+        path:
+          type: string
+        message:
+          type: string
+        severity:
+          type: string
+          enum: [FAIL, WARN]
+
+    VehicleListItem:
+      type: object
+      required:
+        - id
+        - stockNumber
+        - vin
+        - year
+        - make
+        - model
+        - trim
+        - mileage
+        - priceCents
+        - condition
+        - exteriorColor
+        - mediaCount
+        - readiness
+        - issues
+        - updatedAt
+      properties:
+        id:
+          type: string
+        stockNumber:
+          type: string
+        vin:
+          type: string
+        year:
+          type: integer
+        make:
+          type: string
+        model:
+          type: string
+        trim:
+          type: string
+          nullable: true
+        mileage:
+          type: integer
+        priceCents:
+          type: integer
+        condition:
+          type: string
+        exteriorColor:
+          type: string
+        mediaCount:
+          type: integer
+        readiness:
+          type: string
+          enum: [READY, BLOCKED, WARNING]
+        issues:
+          type: array
+          items:
+            $ref: '#/components/schemas/VehicleIssue'
+        updatedAt:
+          type: string
+          format: date-time
+
+    VehicleListSummary:
+      type: object
+      required: [total, ready, warning, blocked]
+      properties:
+        total:
+          type: integer
+        ready:
+          type: integer
+        warning:
+          type: integer
+        blocked:
+          type: integer
+
+    VehicleListResponse:
+      type: object
+      required: [vehicles, summary]
+      properties:
+        vehicles:
+          type: array
+          items:
+            $ref: '#/components/schemas/VehicleListItem'
+        summary:
+          $ref: '#/components/schemas/VehicleListSummary'
+
+    InventoryImportRequest:
+      type: object
+      required: [rows]
+      properties:
+        rows:
+          type: array
+          items:
+            type: object
+            additionalProperties:
+              type: string
+        mapping:
+          type: object
+          additionalProperties:
+            type: string
+
+    ImportPreviewRow:
+      type: object
+      required: [rowIndex, raw, mapped, action, issues, readiness]
+      properties:
+        rowIndex:
+          type: integer
+        raw:
+          type: object
+          additionalProperties:
+            type: string
+        mapped:
+          type: object
+          additionalProperties: true
+        action:
+          type: string
+          enum: [CREATE, UPDATE, SKIP]
+        issues:
+          type: array
+          items:
+            $ref: '#/components/schemas/VehicleIssue'
+        readiness:
+          type: string
+          enum: [READY, BLOCKED, WARNING]
+        existing:
+          type: object
+          additionalProperties: true
+
+    ImportPreviewResponse:
+      type: object
+      required: [rows, unmappedColumns, requiredUnmapped, summary, suggestedMapping]
+      properties:
+        rows:
+          type: array
+          items:
+            $ref: '#/components/schemas/ImportPreviewRow'
+        unmappedColumns:
+          type: array
+          items:
+            type: string
+        requiredUnmapped:
+          type: array
+          items:
+            type: string
+        summary:
+          type: object
+          additionalProperties: true
+        suggestedMapping:
+          type: object
+          additionalProperties:
+            type: string
+
+    CommitImportResponse:
+      type: object
+      required: [created, updated, skipped, errors, batchId]
+      properties:
+        created:
+          type: integer
+        updated:
+          type: integer
+        skipped:
+          type: integer
+        errors:
+          type: integer
+        batchId:
+          type: string
+
+    ImportBatch:
+      type: object
+      required: [id, createdAt]
+      additionalProperties: true
+      properties:
+        id:
+          type: string
+        createdAt:
+          type: string
+          format: date-time
+
+    ImportBatchesResponse:
+      type: object
+      required: [batches]
+      properties:
+        batches:
+          type: array
+          items:
+            $ref: '#/components/schemas/ImportBatch'
+
+    BulkEditPayload:
+      type: object
+      required: [stockNumbers, fields]
+      properties:
+        stockNumbers:
+          type: array
+          items:
+            type: string
+        fields:
+          type: object
+          additionalProperties: true
+
+    BulkEditResponse:
+      type: object
+      required: [updated]
+      properties:
+        updated:
+          type: integer
+
+    PriceUpdateRequest:
+      type: object
+      required: [priceCents]
+      properties:
+        priceCents:
+          type: integer
+          minimum: 1
+
+    PhotoUpdateRequest:
+      type: object
+      required: [photoUrls]
+      properties:
+        photoUrls:
+          type: array
+          items:
+            type: string
+
+    VehicleUpdatePropagation:
+      type: object
+      required: [platformSlug, integrationClass, action]
+      properties:
+        platformSlug:
+          type: string
+        integrationClass:
+          type: string
+        action:
+          type: string
+
+    VehicleUpdateResult:
+      type: object
+      required:
+        - updateId
+        - vehicleId
+        - stockNumber
+        - kind
+        - activePlatformCount
+        - propagations
+        - summary
+        - queueItemsCreated
+        - syncEventId
+      properties:
+        updateId:
+          type: string
+        vehicleId:
+          type: string
+        stockNumber:
+          type: string
+        kind:
+          type: string
+        activePlatformCount:
+          type: integer
+        propagations:
+          type: array
+          items:
+            $ref: '#/components/schemas/VehicleUpdatePropagation'
+        summary:
+          type: object
+          additionalProperties: true
+        queueItemsCreated:
+          type: integer
+        syncEventId:
+          type: string
+
+    LeadCaptureResponse:
+      type: object
+      required: [message]
+      properties:
+        message:
+          type: string
+        leadId:
+          type: string
+          nullable: true

@@ -1,14 +1,14 @@
-import assert from 'node:assert/strict';
+﻿import assert from 'node:assert/strict';
 import { describe, it } from 'node:test';
-import { mockDealership } from '../fixtures/dealership.fixture.js';
-import { mockVehicles } from '../fixtures/vehicles.fixture.js';
+import { mockDealership } from '../fixtures/dealers/dealership.fixture.js';
+import { mockVehicles } from '../fixtures/vehicles/vehicles.fixture.js';
 import {
   generateGoogleVehicleFeed,
   generateMetaCatalogCsv,
   generateAdfXml,
   generateOwnedStorefrontJson,
   generateFeedForPlatform
-} from '../services/feedGeneratorService.js';
+} from '../services/publishing/feedGeneratorService.js';
 import { platformProfiles } from '../data/platformProfiles.js';
 
 describe('generateGoogleVehicleFeed', () => {

@@ -1,8 +1,8 @@
-import 'dotenv/config';
+﻿import 'dotenv/config';
 import type { Prisma } from '@prisma/client';
 import { prisma } from '../src/lib/prisma.js';
 import { platformProfiles } from '../src/data/platformProfiles.js';
-import { seedPlatformProfileVersions, seedPristineDealer } from '../src/services/seedService.js';
+import { seedPlatformProfileVersions, seedPristineDealer } from '../src/services/platform/seedService.js';
 
 async function main() {
   for (const platform of platformProfiles) {

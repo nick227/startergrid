@@ -1,12 +1,12 @@
-import assert from 'node:assert/strict';
+﻿import assert from 'node:assert/strict';
 import { describe, it } from 'node:test';
 import {
   isValidHttpUrl,
   validateMediaUrls,
   validateListingUrls,
   checkPlatformStaleness
-} from '../services/mediaValidationService.js';
-import { pristineApiDealership, pristineApiVehicles } from '../fixtures/pristineApiValidation.fixture.js';
+} from '../services/inventory/mediaValidationService.js';
+import { pristineApiDealership, pristineApiVehicles } from '../fixtures/scenarios/pristineApiValidation.fixture.js';
 import { platformProfiles } from '../data/platformProfiles.js';
 import type { VehiclePayload } from '../lib/types.js';
 
@@ -181,7 +181,7 @@ describe('checkPlatformStaleness', () => {
 
 describe('ValidationIssue named codes — backfilled in validators', () => {
   it('INVALID_VIN code is emitted by vehiclePayloadValidator', async () => {
-    const { validateVehiclePayloads } = await import('../validators/vehiclePayloadValidator.js');
+    const { validateVehiclePayloads } = await import('../validators/vehicle/vehiclePayloadValidator.js');
     const vehicles: VehiclePayload[] = [{ ...pristineApiVehicles[0]!, vin: 'BAD-VIN!!!' }];
     const issues = validateVehiclePayloads(vehicles, [], {});
     const vinIssue = issues.find(i => i.code === 'INVALID_VIN');
@@ -190,7 +190,7 @@ describe('ValidationIssue named codes — backfilled in validators', () => {
   });
 
   it('PRICE_SUSPICIOUS code is emitted by vehiclePayloadValidator', async () => {
-    const { validateVehiclePayloads } = await import('../validators/vehiclePayloadValidator.js');
+    const { validateVehiclePayloads } = await import('../validators/vehicle/vehiclePayloadValidator.js');
     const vehicles: VehiclePayload[] = [{ ...pristineApiVehicles[0]!, priceCents: 500 }];
     const issues = validateVehiclePayloads(vehicles, [], {});
     const priceIssue = issues.find(i => i.code === 'PRICE_SUSPICIOUS');
@@ -199,7 +199,7 @@ describe('ValidationIssue named codes — backfilled in validators', () => {
   });
 
   it('MEDIA_MISSING code is emitted when minImages not met', async () => {
-    const { validateVehiclePayloads } = await import('../validators/vehiclePayloadValidator.js');
+    const { validateVehiclePayloads } = await import('../validators/vehicle/vehiclePayloadValidator.js');
     const vehicles: VehiclePayload[] = [{ ...pristineApiVehicles[0]!, media: [] }];
     const issues = validateVehiclePayloads(vehicles, [], { minImages: 3 });
     const mediaIssue = issues.find(i => i.code === 'MEDIA_MISSING');

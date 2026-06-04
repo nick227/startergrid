@@ -1,7 +1,7 @@
-import assert from 'node:assert/strict';
+﻿import assert from 'node:assert/strict';
 import { describe, it } from 'node:test';
 import type { PrismaClient } from '@prisma/client';
-import { buildProofFolderManifest } from '../services/proofFolderService.js';
+import { buildProofFolderManifest } from '../services/commercial/proofFolderService.js';
 
 function makeMockPrisma(overrides?: {
   artifacts?: unknown[];

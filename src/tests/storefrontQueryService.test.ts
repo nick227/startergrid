@@ -1,11 +1,11 @@
-import assert from 'node:assert/strict';
+﻿import assert from 'node:assert/strict';
 import { describe, it } from 'node:test';
 import {
   shapeStorefront,
   shapeVehicleListing,
   validateLeadInput
-} from '../services/storefrontQueryService.js';
-import { pristineApiDealership, pristineApiVehicles } from '../fixtures/pristineApiValidation.fixture.js';
+} from '../services/storefront/storefrontQueryService.js';
+import { pristineApiDealership, pristineApiVehicles } from '../fixtures/scenarios/pristineApiValidation.fixture.js';
 
 describe('shapeStorefront', () => {
   const storefront = shapeStorefront(pristineApiDealership, pristineApiVehicles);

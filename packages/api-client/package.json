@@ -1,0 +1,10 @@
+{
+  "name": "@auto-dealer/api-client",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Generated fetch client from openapi/openapi.yaml",
+  "exports": {
+    ".": "./index.ts"
+  }
+}
