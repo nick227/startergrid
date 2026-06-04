@@ -127,7 +127,7 @@ export type VehicleUpdatePropagation = {
   platformSlug: string;
   platformName: string;
   integrationClass: IntegrationClass;
-  action: 'FEED_REFRESH' | 'DELTA_UPDATE' | 'REMOVE_LISTING' | 'UPDATE_PACKET' | 'NO_ACTION';
+  action: 'FEED_REFRESH' | 'DELTA_UPDATE' | 'REMOVE_LISTING' | 'UPDATE_PACKET' | 'PARTNER_FOLLOWUP' | 'NO_ACTION';
   payload: Record<string, unknown>;
   notes: string;
 };
@@ -174,10 +174,24 @@ export type PlatformProfileSeed = {
   testFixtures: JsonRecord;
 };
 
+export type IssueCode =
+  | 'INVALID_VIN'
+  | 'PRICE_SUSPICIOUS'
+  | 'MEDIA_MISSING'
+  | 'MEDIA_URL_INVALID'
+  | 'LISTING_URL_INVALID'
+  | 'PROFILE_STALE'
+  | 'PROFILE_NEEDS_REVIEW'
+  | 'PROFILE_LOW_CONFIDENCE'
+  | 'PROFILE_MEDIUM_CONFIDENCE'
+  | 'PROFILE_NO_SOURCE_URLS'
+  | 'PROFILE_ASSISTED_MARKETPLACE';
+
 export type ValidationIssue = {
   path: string;
   message: string;
   severity: 'FAIL' | 'WARN';
+  code?: IssueCode;
 };
 
 export type PlatformValidationReport = {
@@ -230,7 +244,8 @@ export type ApplicationStatus =
   | 'FEED_TESTING'
   | 'ACTIVE'
   | 'REJECTED'
-  | 'PAUSED';
+  | 'PAUSED'
+  | 'PARTNER_REQUIRED';
 
 export type MockPortalCondition =
   | 'PORTAL_ACCEPTED'

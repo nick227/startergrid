@@ -24,7 +24,8 @@ export function validateStrictPlatformProfile(
     issues.push({
       path: `${platform.slug}.needsReview`,
       message: `${platform.name} is explicitly marked needsReview`,
-      severity: 'FAIL'
+      severity: 'FAIL',
+      code: 'PROFILE_NEEDS_REVIEW'
     });
   }
 
@@ -32,7 +33,8 @@ export function validateStrictPlatformProfile(
     issues.push({
       path: `${platform.slug}.lastVerifiedAt`,
       message: `${platform.name} profile is ${freshnessDays} days old; strict max is ${policy.maxFreshnessDays}`,
-      severity: 'WARN'
+      severity: 'WARN',
+      code: 'PROFILE_STALE'
     });
   }
 
@@ -40,7 +42,8 @@ export function validateStrictPlatformProfile(
     issues.push({
       path: `${platform.slug}.profileConfidence`,
       message: `${platform.name} profile confidence is LOW`,
-      severity: 'WARN'
+      severity: 'WARN',
+      code: 'PROFILE_LOW_CONFIDENCE'
     });
   }
 
@@ -48,7 +51,8 @@ export function validateStrictPlatformProfile(
     issues.push({
       path: `${platform.slug}.profileConfidence`,
       message: `${platform.name} profile confidence is MEDIUM; keep YELLOW until partner path is confirmed`,
-      severity: 'WARN'
+      severity: 'WARN',
+      code: 'PROFILE_MEDIUM_CONFIDENCE'
     });
   }
 
@@ -56,7 +60,8 @@ export function validateStrictPlatformProfile(
     issues.push({
       path: `${platform.slug}.sourceUrls`,
       message: `${platform.name} has no source URLs attached to its profile`,
-      severity: 'WARN'
+      severity: 'WARN',
+      code: 'PROFILE_NO_SOURCE_URLS'
     });
   }
 
@@ -67,7 +72,8 @@ export function validateStrictPlatformProfile(
     issues.push({
       path: `${platform.slug}.submissionMethods`,
       message: `${platform.name} is marketplace-assisted only; live partner acceptance remains unconfirmed`,
-      severity: 'WARN'
+      severity: 'WARN',
+      code: 'PROFILE_ASSISTED_MARKETPLACE'
     });
   }
 

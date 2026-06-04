@@ -94,8 +94,8 @@ export async function persistVehicleUpdate(
   previousValue?: Record<string, unknown> | null,
   newValue?: Record<string, unknown> | null,
   propagatedTo?: string[]
-): Promise<void> {
-  await prisma.vehicleUpdate.create({
+): Promise<string> {
+  const row = await prisma.vehicleUpdate.create({
     data: {
       vehicleId,
       dealershipId,
@@ -112,4 +112,6 @@ export async function persistVehicleUpdate(
   if (kind === 'REMOVED') {
     await prisma.vehicle.update({ where: { id: vehicleId }, data: { removedAt: new Date() } });
   }
+
+  return row.id;
 }

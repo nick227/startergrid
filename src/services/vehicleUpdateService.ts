@@ -13,7 +13,7 @@ function actionFor(kind: VehicleUpdateKind, integrationClass: IntegrationClass):
   if (integrationClass === 'OWNED') return 'DELTA_UPDATE';
   if (integrationClass === 'FEEDABLE') return 'FEED_REFRESH';
   if (integrationClass === 'ASSISTED') return 'UPDATE_PACKET';
-  if (integrationClass === 'PARTNER_DEPENDENT') return 'UPDATE_PACKET';
+  if (integrationClass === 'PARTNER_DEPENDENT') return 'PARTNER_FOLLOWUP';
   return 'NO_ACTION';
 }
 
@@ -28,6 +28,8 @@ function notesFor(kind: VehicleUpdateKind, platform: PlatformProfileSeed, action
       return `${name} feed flagged for refresh. Updated vehicle data will be picked up on next scheduled crawl or manual re-submit.`;
     case 'UPDATE_PACKET':
       return `Update notification packet generated for ${name}. Requires manual re-submission or partner contact to apply the change.`;
+    case 'PARTNER_FOLLOWUP':
+      return `${name} requires partner follow-up to propagate this change. Contact your account manager or the platform representative.`;
     default:
       return `No propagation action required for ${name}.`;
   }
@@ -50,6 +52,14 @@ function deltaPayloadFor(event: VehicleUpdateEvent, platform: PlatformProfileSee
         previousValue: event.previousValue ?? null,
         newValue: event.newValue ?? null,
         partnerContact: (platform.integrationUrls as Record<string, string> | undefined)?.['supportUrl'] ?? null
+      };
+    case 'PARTNER_FOLLOWUP':
+      return {
+        ...base,
+        operation: 'PARTNER_FOLLOWUP_REQUIRED',
+        previousValue: event.previousValue ?? null,
+        newValue: event.newValue ?? null,
+        partnerPortalUrl: (platform.integrationUrls as Record<string, string> | undefined)?.['partnerPortalUrl'] ?? null
       };
     default:
       return base;
@@ -77,12 +87,14 @@ export function summarizeUpdatePropagations(propagations: VehicleUpdatePropagati
   immediate: number;
   feedRefresh: number;
   manualRequired: number;
+  partnerFollowup: number;
   removed: number;
 } {
   return {
-    immediate: propagations.filter(p => p.action === 'DELTA_UPDATE').length,
-    feedRefresh: propagations.filter(p => p.action === 'FEED_REFRESH').length,
-    manualRequired: propagations.filter(p => p.action === 'UPDATE_PACKET').length,
-    removed: propagations.filter(p => p.action === 'REMOVE_LISTING').length
+    immediate:       propagations.filter(p => p.action === 'DELTA_UPDATE').length,
+    feedRefresh:     propagations.filter(p => p.action === 'FEED_REFRESH').length,
+    manualRequired:  propagations.filter(p => p.action === 'UPDATE_PACKET').length,
+    partnerFollowup: propagations.filter(p => p.action === 'PARTNER_FOLLOWUP').length,
+    removed:         propagations.filter(p => p.action === 'REMOVE_LISTING').length
   };
 }

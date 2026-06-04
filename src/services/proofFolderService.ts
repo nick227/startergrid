@@ -22,6 +22,33 @@ export type ProofFolderManifest = {
   }>;
   leadCount: number;
   activePlatformCount: number;
+  readinessSummary: {
+    greenCount: number;
+    yellowCount: number;
+    redCount: number;
+    overallStatus: string | null;
+    runId: string | null;
+  };
+  activationSummary: {
+    total: number;
+    active: number;
+    submitted: number;
+    partnerRequired: number;
+  };
+  invoiceSummary: {
+    plan: string;
+    setupFeeCents: number;
+    monthlyFeeCents: number;
+    status: string;
+  } | null;
+  leadSummary: {
+    total: number;
+    byPlatform: Record<string, number>;
+  };
+  inventoryUpdateSummary: {
+    total: number;
+    byKind: Record<string, number>;
+  };
 };
 
 export async function buildProofFolderManifest(
@@ -53,6 +80,52 @@ export async function buildProofFolderManifest(
     where: { dealershipId, status: 'ACTIVE' }
   });
 
+  // Activation summary
+  const applications = await prisma.platformApplication.findMany({
+    where: { dealershipId },
+    select: { status: true }
+  });
+  const activationSummary = {
+    total: applications.length,
+    active: applications.filter(a => a.status === 'ACTIVE').length,
+    submitted: applications.filter(a => a.status === 'SUBMITTED').length,
+    partnerRequired: applications.filter(a => a.status === 'PARTNER_REQUIRED').length
+  };
+
+  // Invoice summary
+  const subscription = await prisma.dealerSubscription.findUnique({
+    where: { dealershipId },
+    select: { plan: true, setupFeeCents: true, monthlyFeeCents: true, status: true }
+  });
+  const invoiceSummary = subscription
+    ? {
+        plan: subscription.plan,
+        setupFeeCents: subscription.setupFeeCents,
+        monthlyFeeCents: subscription.monthlyFeeCents,
+        status: subscription.status
+      }
+    : null;
+
+  // Lead summary by platform
+  const leads = await prisma.lead.findMany({
+    where: { dealershipId },
+    select: { platformSlug: true }
+  });
+  const leadByPlatform: Record<string, number> = {};
+  for (const lead of leads) {
+    leadByPlatform[lead.platformSlug] = (leadByPlatform[lead.platformSlug] ?? 0) + 1;
+  }
+
+  // Inventory update summary by kind
+  const vehicleUpdates = await prisma.vehicleUpdate.findMany({
+    where: { dealershipId },
+    select: { kind: true }
+  });
+  const updateByKind: Record<string, number> = {};
+  for (const u of vehicleUpdates) {
+    updateByKind[u.kind] = (updateByKind[u.kind] ?? 0) + 1;
+  }
+
   return {
     dealershipId,
     dealerName: dealership.legalName,
@@ -71,7 +144,18 @@ export async function buildProofFolderManifest(
       createdAt: a.createdAt.toISOString()
     })),
     leadCount,
-    activePlatformCount
+    activePlatformCount,
+    readinessSummary: {
+      greenCount: run?.greenCount ?? 0,
+      yellowCount: run?.yellowCount ?? 0,
+      redCount: run?.redCount ?? 0,
+      overallStatus: run?.overallStatus ?? null,
+      runId: run?.id ?? null
+    },
+    activationSummary,
+    invoiceSummary,
+    leadSummary: { total: leads.length, byPlatform: leadByPlatform },
+    inventoryUpdateSummary: { total: vehicleUpdates.length, byKind: updateByKind }
   };
 }
 

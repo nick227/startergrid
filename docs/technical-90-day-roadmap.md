@@ -136,7 +136,7 @@ Acceptance:
 
 ---
 
-## ⬜ Weeks 7–8: Owned Storefront MVP  ← START HERE
+## ✅ Weeks 7–8: Owned Storefront MVP — COMPLETE (2026-06-04)
 
 **Goal:** The owned channel is live, leads flow into the DB, and dealers get notified.
 
@@ -160,7 +160,7 @@ Acceptance:
 
 ---
 
-## Weeks 9–10: Platform Activation Workflow and Inventory Management
+## ✅ Weeks 9–10: DB-Backed Inventory Update Propagation — COMPLETE (2026-06-04)
 
 **Goal:** Activation is tracked per platform across all four integration classes. Inventory changes propagate to active platforms.
 

@@ -54,9 +54,9 @@ function validatePlatformReadinessWithOptions(
   ];
 
   if (schemaFreshnessStatus === 'FAIL') {
-    issues.push({ path: `${platform.slug}.needsReview`, message: `${platform.name} profile is marked needsReview`, severity: 'FAIL' });
+    issues.push({ path: `${platform.slug}.needsReview`, message: `${platform.name} profile is marked needsReview`, severity: 'FAIL', code: 'PROFILE_NEEDS_REVIEW' });
   } else if (schemaFreshnessStatus === 'WARN') {
-    issues.push({ path: `${platform.slug}.lastVerifiedAt`, message: `${platform.name} profile is older than ${FRESH_DAYS} days`, severity: 'WARN' });
+    issues.push({ path: `${platform.slug}.lastVerifiedAt`, message: `${platform.name} profile is older than ${FRESH_DAYS} days`, severity: 'WARN', code: 'PROFILE_STALE' });
   }
 
   if (platform.profileConfidence === 'LOW') {

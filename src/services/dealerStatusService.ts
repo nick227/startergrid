@@ -33,6 +33,7 @@ function statusLabel(status: ApplicationStatus, integrationClass: IntegrationCla
     case 'ACTIVE': return 'active';
     case 'REJECTED': return 'rejected';
     case 'PAUSED': return 'paused';
+    case 'PARTNER_REQUIRED': return 'partner_required';
   }
 }
 

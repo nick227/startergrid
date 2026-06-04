@@ -67,6 +67,11 @@ async function main() {
   console.log(`Active platforms: ${activePlatformCount}/18`);
   console.log(`Open actions: ${openActions.length}`);
 
+  if (openActions.length > 0) {
+    console.log('\n── Open Actions ──');
+    openActions.forEach((action, i) => console.log(`  ${i + 1}. ${action}`));
+  }
+
   await prisma.$disconnect();
 }
 

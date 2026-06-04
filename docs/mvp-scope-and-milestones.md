@@ -1,6 +1,6 @@
 # MVP Scope And Milestones
 
-> **Status as of 2026-06-03:** Milestones 1–4 complete. Milestone 5 (Assisted Channel Workflow) is the next sprint.
+> **Status as of 2026-06-04:** Milestones 1–5 complete. Milestone 6 (Revenue Validation) is the next sprint.
 
 ## MVP Thesis
 
@@ -86,26 +86,29 @@ Acceptance:
 
 ---
 
-## ⬜ Milestone 5: Assisted Channel Workflow — NEXT
+## ✅ Milestone 5: Activation Status Foundation — COMPLETE (2026-06-04)
 
-The gap between Milestone 4 and billing-ready: the system needs to actually track what platform applications have been submitted and what status they're in, so `dealer:status` shows something real instead of 18 NOT_STARTEDs.
+The gap between Milestone 4 and billing-ready: the system now tracks what platform applications have been submitted and what status they're in, so `dealer:status` shows real lifecycle state instead of 18 NOT_STARTEDs.
 
 Acceptance:
 
-- [ ] `dealer:create` auto-creates `PlatformApplication` rows for each channel in `desiredChannels`
-- [ ] FEEDABLE platforms: status moves to `SUBMITTED` after artifact is written
-- [ ] ASSISTED platforms: CarGurus/Cars.com/Autotrader packet generated + `SubmissionAttempt` row created
-- [ ] `dealer:status <id>` shows at least 12 platforms in non-NOT_STARTED state after `dealer:create`
-- [ ] Manual dealer action items appear on DEALER_ACTION_NEEDED platforms
-- [ ] Partner attribution stub for PARTNER_DEPENDENT platforms
+- [x] `dealer:create` auto-creates `PlatformApplication` rows for all 18 platforms
+- [x] FEEDABLE platforms: status moves to `SUBMITTED` after artifact is written
+- [x] ASSISTED platforms (CarGurus, Cars.com, LinkedIn, Apple): auth packet generated + `SubmissionAttempt` (MOCK_EMAIL) created
+- [x] `dealer:status <id>` shows 16/18 platforms in non-NOT_STARTED state after `dealer:create` (1 ACTIVE, 15 SUBMITTED, 2 PARTNER_REQUIRED)
+- [x] Partner attribution: PARTNER_DEPENDENT platforms get `PARTNER_REQUIRED` status + nextAction
+- [x] Open actions list printed in `dealer:status` footer
+- [x] `PARTNER_REQUIRED` added to `ApplicationStatus` enum (schema + types + service)
+- [x] 136 tests passing (15 new tests in `applicationActivation.test.ts`)
 
 ---
 
-## ⬜ Milestone 6: Revenue Validation
+## ✅ Milestone 6: Revenue Validation — COMPLETE (2026-06-04)
 
 Acceptance:
 
-- [ ] `DealerSubscription` record created on `dealer:create` with setup fee + monthly fee
-- [ ] `dealer:invoice <id> <period>` prints billable line items from DB
-- [ ] Setup line items: readiness run count, artifact count, platforms activated
-- [ ] Monthly line items: active platform count, lead count, vehicle update count
+- [x] `DealerSubscription` record upserted on `dealer:create` (plan: MONTHLY_MANAGED, setup: $1,000, monthly: $399)
+- [x] `dealer:invoice <id> <period>` prints setup + monthly billable statements from DB
+- [x] Setup line items: readiness run count, artifact count, platforms activated, proof folder reference
+- [x] Monthly line items: active platform count, lead count (period-scoped), vehicle update count (period-scoped)
+- [x] 160 tests passing (24 new tests in `invoiceService.test.ts`)

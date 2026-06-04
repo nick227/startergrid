@@ -74,11 +74,14 @@ describe('propagateVehicleUpdate', () => {
 });
 
 describe('summarizeUpdatePropagations', () => {
-  it('correctly counts each action type', () => {
+  it('correctly counts each action type across all classes', () => {
     const result = propagateVehicleUpdate(baseEvent, activePlatforms);
     const summary = summarizeUpdatePropagations(result);
-    assert.equal(summary.immediate + summary.feedRefresh + summary.manualRequired + summary.removed, activePlatforms.length);
+    const total = summary.immediate + summary.feedRefresh + summary.manualRequired + summary.partnerFollowup + summary.removed;
+    assert.equal(total, activePlatforms.length);
     assert.equal(summary.immediate, activePlatforms.filter(p => p.integrationClass === 'OWNED').length);
+    assert.equal(summary.partnerFollowup, activePlatforms.filter(p => p.integrationClass === 'PARTNER_DEPENDENT').length);
+    assert.equal(summary.manualRequired, activePlatforms.filter(p => p.integrationClass === 'ASSISTED').length);
   });
 
   it('all actions are REMOVE_LISTING on SOLD', () => {
@@ -86,6 +89,6 @@ describe('summarizeUpdatePropagations', () => {
     const result = propagateVehicleUpdate(soldEvent, activePlatforms);
     const summary = summarizeUpdatePropagations(result);
     assert.equal(summary.removed, activePlatforms.length);
-    assert.equal(summary.immediate + summary.feedRefresh + summary.manualRequired, 0);
+    assert.equal(summary.immediate + summary.feedRefresh + summary.manualRequired + summary.partnerFollowup, 0);
   });
 });

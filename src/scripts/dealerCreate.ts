@@ -9,6 +9,9 @@ import { runAndPersistReadiness } from '../services/readinessRunService.js';
 import { generateFeedForPlatform } from '../services/feedGeneratorService.js';
 import { writeAndRegisterArtifact } from '../services/artifactWriterService.js';
 import { buildProofFolderManifest } from '../services/proofFolderService.js';
+import { upsertApplication } from '../services/lifecyclePersistenceService.js';
+import { activateApplicationAfterCreate } from '../services/applicationActivationService.js';
+import { upsertDefaultSyncPolicies, upsertDefaultPlatformAccounts } from '../services/syncPolicyService.js';
 
 async function upsertDealerWithVehicles(
   dealership: DealershipPayload,
@@ -98,8 +101,25 @@ async function main() {
   const dealershipId = await upsertDealerWithVehicles(dealershipPayload, vehiclesPayload);
   console.log(`Dealer ID: ${dealershipId}`);
 
+  await prisma.dealerSubscription.upsert({
+    where: { dealershipId },
+    update: {},
+    create: {
+      dealershipId,
+      plan: 'MONTHLY_MANAGED',
+      setupFeeCents: 100000,
+      monthlyFeeCents: 39900,
+      status: 'ACTIVE'
+    }
+  });
+
   const { runId, baselineResults, overallStatus } = await runAndPersistReadiness(prisma, dealershipId);
   console.log(`Readiness run: ${runId}`);
+
+  const dbPlatforms = await prisma.platformProfile.findMany({ select: { id: true, slug: true } });
+  const platformIdBySlug = new Map(dbPlatforms.map(p => [p.slug, p.id]));
+
+  await upsertDefaultSyncPolicies(prisma, dealershipId);
 
   console.log('\nPlatform readiness:');
   let artifactCount = 0;
@@ -110,8 +130,25 @@ async function main() {
     const artifact = generateFeedForPlatform(platform, dealershipPayload, vehiclesPayload);
     const { storagePath } = await writeAndRegisterArtifact(prisma, dealershipId, artifact, { linkedRunId: runId });
     artifactCount++;
-    console.log(`  ${icon} ${platform.name} → ${storagePath}`);
+
+    const platformDbId = platformIdBySlug.get(platform.slug);
+    if (platformDbId) {
+      const applicationId = await upsertApplication(prisma, dealershipId, platformDbId);
+      const { status } = await activateApplicationAfterCreate(prisma, {
+        dealershipId,
+        applicationId,
+        platform,
+        feedArtifactPath: storagePath,
+        dealership: dealershipPayload,
+        vehicles: vehiclesPayload
+      });
+      console.log(`  ${icon} ${platform.name} → ${status} → ${storagePath}`);
+    } else {
+      console.log(`  ${icon} ${platform.name} → ${storagePath}`);
+    }
   }
+
+  await upsertDefaultPlatformAccounts(prisma, dealershipId);
 
   const manifest = await buildProofFolderManifest(prisma, dealershipId, runId);
   console.log(`\nOverall: ${overallStatus}`);

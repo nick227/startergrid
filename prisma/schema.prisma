@@ -46,6 +46,7 @@ enum ApplicationStatus {
   ACTIVE
   REJECTED
   PAUSED
+  PARTNER_REQUIRED
 }
 
 enum ValidationStatus {
@@ -102,6 +103,11 @@ model DealershipProfile {
   generatedArtifacts  GeneratedArtifact[]
   credentialRefs      PlatformCredentialRef[]
   notifications       DealerNotification[]
+  syncPolicies        SyncPolicy[]
+  publishQueue        PublishQueueItem[]
+  syncRuns            SyncRun[]
+  syncEvents          SyncEvent[]
+  platformAccounts    PlatformAccount[]
 }
 
 model Vehicle {
@@ -133,6 +139,8 @@ model Vehicle {
   media           VehicleMedia[]
   leads           Lead[]
   updates         VehicleUpdate[]
+  queueItems      PublishQueueItem[]
+  syncEvents      SyncEvent[]
 
   @@index([dealershipId])
   @@unique([dealershipId, stockNumber])
@@ -408,5 +416,165 @@ model DealerNotification {
 
   dealership   DealershipProfile @relation(fields: [dealershipId], references: [id], onDelete: Cascade)
 
+  @@index([dealershipId])
+}
+
+// ─── Event + Publishing Control models ───────────────────────────────────────
+
+enum SyncMode {
+  REAL_TIME          // Immediate publish when valid
+  SCHEDULED          // Batch on schedule
+  MANUAL             // Operator-triggered only
+  APPROVAL_REQUIRED  // Needs operator sign-off before publish
+}
+
+enum PublishQueueStatus {
+  READY           // Cleared by policy; will publish on next sync run
+  BLOCKED         // Waiting on partner/manual action
+  NEEDS_APPROVAL  // Policy requires operator approval before dispatch
+  SCHEDULED       // In queue for future scheduled run
+  CLAIMED         // Atomically locked by a scheduler instance; in-flight
+  HELD            // Operator placed item on hold pending further review
+  SENT            // Dispatched (MOCK env: recorded, not real API)
+  FAILED          // All retry attempts exhausted
+  CANCELLED       // Superseded by newer change or manually cancelled
+}
+
+enum SyncEventKind {
+  INVENTORY_CHANGE   // Price/photo/details changed
+  VEHICLE_SOLD       // Vehicle marked sold — urgent removal
+  VEHICLE_REMOVED    // Vehicle removed from inventory
+  ARTIFACT_GENERATED // Feed file created
+  SUBMISSION_SENT    // Submission attempt dispatched
+  APPROVAL_GRANTED   // Operator approved a queue item
+  APPROVAL_REJECTED  // Operator rejected a queue item
+  PARTNER_FOLLOWUP   // Partner action recorded
+  ACCOUNT_UPDATED    // PlatformAccount state changed
+  POLICY_CHANGED     // SyncPolicy updated
+  DISPATCH_CLAIMED    // Scheduler atomically claimed item for dispatch
+  DISPATCH_FAILED     // Dispatch attempt failed; may retry
+  DISPATCH_RETRY      // Item requeued for retry with backoff
+  APPROVAL_REQUESTED  // Item entered NEEDS_APPROVAL state
+  APPROVAL_HELD       // Operator placed item on hold
+  APPROVAL_RELEASED   // Operator released item from hold
+}
+
+enum PlatformAccountState {
+  ACCOUNT_NEEDED      // No account exists yet
+  CREDENTIALS_NEEDED  // Account exists but no valid credentials
+  PENDING_REVIEW      // Application submitted, awaiting platform review
+  ACTIVE              // Account operational and publishing
+  BLOCKED             // Account suspended or restricted
+  PARTNER_REQUIRED    // Needs commercial agreement before activation
+  SUSPENDED           // Operator-suspended
+}
+
+model SyncPolicy {
+  id            String   @id @default(cuid())
+  dealershipId  String
+  platformSlug  String   @db.VarChar(80)
+  mode          SyncMode
+  urgentRemoval Boolean  @default(true)  // bypass normal mode for SOLD/REMOVED
+  scheduleHint  String?  @db.VarChar(80) // e.g. "DAILY_09:00", "HOURLY"
+  notes         String?  @db.Text
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  dealership    DealershipProfile @relation(fields: [dealershipId], references: [id], onDelete: Cascade)
+
+  @@unique([dealershipId, platformSlug])
+  @@index([dealershipId])
+}
+
+model PublishQueueItem {
+  id             String             @id @default(cuid())
+  dealershipId   String
+  vehicleId      String?
+  platformSlug   String             @db.VarChar(80)
+  triggerKind    String             @db.VarChar(40)  // VehicleUpdateKind
+  status         PublishQueueStatus @default(READY)
+  policyMode     SyncMode
+  priority       Int                @default(5)      // 1=urgent, 10=low
+  idempotencyKey String             @unique @default(cuid()) @db.VarChar(120)
+  scheduledFor   DateTime?
+  approvalRequiredReason String?    @db.VarChar(255)
+  blockReason    String?            @db.VarChar(255)
+  approvedBy     String?            @db.VarChar(160)
+  approvedAt     DateTime?
+  rejectedBy     String?            @db.VarChar(160)
+  rejectedAt     DateTime?
+  rejectionReason String?           @db.Text
+  heldBy         String?            @db.VarChar(160)
+  heldAt         DateTime?
+  holdReason     String?            @db.Text
+  sentAt         DateTime?
+  failureReason  String?            @db.Text
+  claimedAt      DateTime?
+  claimedBy      String?            @db.VarChar(120)
+  attemptCount   Int                @default(0)
+  lastAttemptAt  DateTime?
+  nextAttemptAt  DateTime?
+  createdAt      DateTime           @default(now())
+  updatedAt      DateTime           @updatedAt
+
+  dealership     DealershipProfile  @relation(fields: [dealershipId], references: [id], onDelete: Cascade)
+  vehicle        Vehicle?           @relation(fields: [vehicleId], references: [id], onDelete: SetNull)
+
+  @@index([dealershipId, status])
+  @@index([dealershipId, vehicleId, platformSlug])
+  @@index([vehicleId])
+}
+
+model SyncRun {
+  id           String    @id @default(cuid())
+  dealershipId String
+  triggeredBy  String    @db.VarChar(80)
+  status       String    @db.VarChar(24) @default("PENDING")
+  itemsTotal   Int       @default(0)
+  itemsSent    Int       @default(0)
+  itemsFailed  Int       @default(0)
+  itemsSkipped Int       @default(0)
+  startedAt    DateTime?
+  completedAt  DateTime?
+  createdAt    DateTime  @default(now())
+
+  dealership   DealershipProfile @relation(fields: [dealershipId], references: [id], onDelete: Cascade)
+  events       SyncEvent[]
+
+  @@index([dealershipId])
+}
+
+model SyncEvent {
+  id           String        @id @default(cuid())
+  dealershipId String
+  vehicleId    String?
+  platformSlug String?       @db.VarChar(80)
+  kind         SyncEventKind
+  payload      Json
+  syncRunId    String?
+  createdAt    DateTime      @default(now())
+
+  dealership   DealershipProfile @relation(fields: [dealershipId], references: [id], onDelete: Cascade)
+  vehicle      Vehicle?          @relation(fields: [vehicleId], references: [id], onDelete: SetNull)
+  syncRun      SyncRun?          @relation(fields: [syncRunId], references: [id], onDelete: SetNull)
+
+  @@index([dealershipId])
+  @@index([vehicleId])
+  @@index([kind])
+}
+
+model PlatformAccount {
+  id           String               @id @default(cuid())
+  dealershipId String
+  platformSlug String               @db.VarChar(80)
+  state        PlatformAccountState @default(ACCOUNT_NEEDED)
+  notes        String?              @db.Text
+  lastChecked  DateTime?
+  createdAt    DateTime             @default(now())
+  updatedAt    DateTime             @updatedAt
+
+  dealership   DealershipProfile @relation(fields: [dealershipId], references: [id], onDelete: Cascade)
+
+  @@unique([dealershipId, platformSlug])
   @@index([dealershipId])
 }

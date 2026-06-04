@@ -28,7 +28,8 @@ export function validateMediaRules(vehicles: VehiclePayload[], rules: MediaRules
       issues.push({
         path: `vehicles.${vehicle.stockNumber}.media`,
         message: `Vehicle ${vehicle.stockNumber} needs at least ${minImages} images for this platform`,
-        severity: 'FAIL'
+        severity: 'FAIL',
+        code: 'MEDIA_MISSING'
       });
     }
 
