@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback, useRef } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { toErrorMessage } from '@/lib/errors.ts';
 
 export type AsyncQueryState<T> = {
@@ -17,29 +17,31 @@ export function useAsyncQuery<T>(
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [lastRefresh, setLastRefresh] = useState<Date | null>(null);
-  const loaderRef = useRef(loader);
-  loaderRef.current = loader;
+  const [tick, setTick] = useState(0);
 
-  const reload = useCallback(() => {
+  const reload = useCallback(() => setTick(t => t + 1), []);
+
+  useEffect(() => {
+    let active = true;
     setLoading(true);
     setError(null);
-    loaderRef
-      .current()
+    loader()
       .then(d => {
+        if (!active) return;
         setData(d);
         setLoading(false);
         setLastRefresh(new Date());
       })
       .catch(e => {
+        if (!active) return;
         setError(toErrorMessage(e));
         setLoading(false);
       });
+    return () => {
+      active = false;
+    };
     // eslint-disable-next-line react-hooks/exhaustive-deps -- caller-owned dependency list
-  }, deps);
-
-  useEffect(() => {
-    reload();
-  }, [reload]);
+  }, [...deps, tick]);
 
   return { data, loading, error, lastRefresh, reload };
 }

@@ -30,7 +30,9 @@ async function fromSdk<T>(promise: Promise<T>): Promise<T> {
   } catch (e) {
     if (e instanceof ApiError) {
       const body = e.body as { error?: string } | undefined;
-      throw new Error(body?.error ?? e.message);
+      const err = new Error(body?.error ?? e.message);
+      (err as Error & { cause?: unknown }).cause = e;
+      throw err;
     }
     throw e;
   }

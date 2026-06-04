@@ -23,6 +23,7 @@ export function usePublishConsoleData(dealerId: string) {
     history.reload();
     accounts.reload();
     setLastRefresh(new Date());
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [status.reload, queue.reload, history.reload, accounts.reload]);
 
   return {

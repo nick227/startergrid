@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { parseCSV } from '@/lib/parseCSV.ts';
 import type { ParsedCSV } from '@/lib/parseCSV.ts';
 import { previewInventoryImport, commitInventoryImport } from '@/lib/api.ts';
@@ -26,8 +26,6 @@ export function ImportModal({ dealerId, onClose, onCommitted }: Props) {
   const [committing, setCommitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  useEffect(() => { setUserSkips(new Set()); }, [preview]);
-
   const handleTextChange = (text: string) => {
     setRawText(text);
     if (!text.trim()) { setParsed(null); return; }
@@ -42,6 +40,7 @@ export function ImportModal({ dealerId, onClose, onCommitted }: Props) {
     try {
       const result = await previewInventoryImport(dealerId, parsed.rows, mapping);
       setPreview(result);
+      setUserSkips(new Set());
       setStep(2);
     } catch (e: unknown) {
       setError(e instanceof Error ? e.message : 'Preview failed');
@@ -67,7 +66,12 @@ export function ImportModal({ dealerId, onClose, onCommitted }: Props) {
   };
 
   const toggleSkip = (rowIndex: number) =>
-    setUserSkips(s => { const n = new Set(s); n.has(rowIndex) ? n.delete(rowIndex) : n.add(rowIndex); return n; });
+    setUserSkips(s => {
+      const n = new Set(s);
+      if (n.has(rowIndex)) n.delete(rowIndex);
+      else n.add(rowIndex);
+      return n;
+    });
 
   const commitableCount = preview
     ? preview.rows.filter(r =>

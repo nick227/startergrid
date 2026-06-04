@@ -32,7 +32,12 @@ export function DataTable<T extends { id: string }>({
   const [expanded, setExpanded] = useState<Set<string>>(new Set());
 
   const toggleExpand = (id: string) =>
-    setExpanded(e => { const n = new Set(e); n.has(id) ? n.delete(id) : n.add(id); return n; });
+    setExpanded(e => {
+      const n = new Set(e);
+      if (n.has(id)) n.delete(id);
+      else n.add(id);
+      return n;
+    });
 
   if (loading) return <Skeleton rows={6} />;
   if (!rows.length) return <>{emptyState}</>;

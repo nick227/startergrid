@@ -1,7 +1,7 @@
 export type ParsedCSV = { headers: string[]; rows: Record<string, string>[] };
 
 export function parseCSV(text: string): ParsedCSV {
-  const cleaned = text.replace(/^﻿/, '').trim();
+  const cleaned = text.replace(/^\uFEFF/, '').trim();
   if (!cleaned) return { headers: [], rows: [] };
 
   const lines = cleaned.split(/\r?\n/);

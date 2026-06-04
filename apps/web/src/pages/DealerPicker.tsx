@@ -10,7 +10,8 @@ type Props = { onSelect: (id: string) => void };
 
 export default function DealerPicker({ onSelect }: Props) {
   const { data, loading, error } = useAsyncQuery(() => fetchDealers(), []);
-  const dealers = data?.dealers ?? [];
+  const dealerRows = data?.dealers;
+  const dealers = useMemo(() => dealerRows ?? [], [dealerRows]);
   const [query, setQuery] = useState('');
   const [manualId, setManualId] = useState('');
 

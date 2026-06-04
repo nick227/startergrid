@@ -5,6 +5,7 @@ import type { ImportBatch } from '../../lib/types.ts';
 type Props = {
   dealerId: string;
   latestBatchId?: string;
+  initialOpen?: boolean;
 };
 
 function relativeTime(iso: string): string {
@@ -41,8 +42,8 @@ function BatchRow({ batch, isLatest }: { batch: ImportBatch; isLatest: boolean }
   );
 }
 
-export function ImportBatchHistory({ dealerId, latestBatchId }: Props) {
-  const [open, setOpen] = useState(false);
+export function ImportBatchHistory({ dealerId, latestBatchId, initialOpen = false }: Props) {
+  const [open, setOpen] = useState(initialOpen);
   const [batches, setBatches] = useState<ImportBatch[] | null>(null);
   const [loading, setLoading] = useState(false);
 
@@ -53,14 +54,11 @@ export function ImportBatchHistory({ dealerId, latestBatchId }: Props) {
       .catch(() => setLoading(false));
   };
 
-  // Auto-open and refresh when a new import completes
   useEffect(() => {
-    if (latestBatchId) {
-      setOpen(true);
-      loadBatches();
-    }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [latestBatchId]);
+    if (!latestBatchId) return;
+    loadBatches();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [latestBatchId, dealerId]);
 
   const handleToggle = () => {
     const next = !open;

@@ -20,6 +20,8 @@ export function useSyncPageData(dealerId: string) {
     autoSync.reload();
     history.reload();
     setLastRefresh(new Date());
+  // reload fns are stable from useAsyncQuery
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [status.reload, autoSync.reload, history.reload]);
 
   const phase = autoSync.data?.phase ?? status.data?.autoSync?.phase ?? 'idle';
@@ -33,7 +35,7 @@ export function useSyncPageData(dealerId: string) {
       history.reload();
     }, 2500);
     return () => clearInterval(id);
-  }, [isBusy, autoSync.reload, status.reload, history.reload]);
+  }, [isBusy, autoSync, status, history]);
 
   const statusWithAuto = status.data
     ? {

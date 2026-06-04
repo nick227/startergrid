@@ -34,7 +34,8 @@ export default function InventoryPage({ dealerId, nav, activeTab }: Props) {
   const [showImport, setShowImport] = useState(false);
   const [importResult, setImportResult] = useState<CommitImportResponse | null>(null);
 
-  const vehicles = data?.vehicles ?? [];
+  const vehicleRows = data?.vehicles;
+  const vehicles = useMemo(() => vehicleRows ?? [], [vehicleRows]);
   const summary = data?.summary;
 
   const visible = useMemo(() =>
@@ -56,7 +57,8 @@ export default function InventoryPage({ dealerId, nav, activeTab }: Props) {
   const toggleAll = () =>
     setSelected(s => {
       const ns = new Set(s);
-      allVisibleSelected ? visible.forEach(v => ns.delete(v.id)) : visible.forEach(v => ns.add(v.id));
+      if (allVisibleSelected) visible.forEach(v => ns.delete(v.id));
+      else visible.forEach(v => ns.add(v.id));
       return ns;
     });
 
@@ -208,7 +210,12 @@ export default function InventoryPage({ dealerId, nav, activeTab }: Props) {
             </SectionCard>
 
             <SectionCard title="Import history" subtitle="Recent batch imports for this dealer" noPadding>
-              <ImportBatchHistory dealerId={dealerId} latestBatchId={importResult?.batchId} />
+              <ImportBatchHistory
+                key={importResult?.batchId ?? 'none'}
+                dealerId={dealerId}
+                latestBatchId={importResult?.batchId}
+                initialOpen={!!importResult}
+              />
             </SectionCard>
 
             <div className="flex items-center gap-3">
@@ -234,7 +241,12 @@ export default function InventoryPage({ dealerId, nav, activeTab }: Props) {
                 rows={visible}
                 selectable
                 selected={selected}
-                onToggle={id => setSelected(s => { const ns = new Set(s); ns.has(id) ? ns.delete(id) : ns.add(id); return ns; })}
+                onToggle={id => setSelected(s => {
+                  const ns = new Set(s);
+                  if (ns.has(id)) ns.delete(id);
+                  else ns.add(id);
+                  return ns;
+                })}
                 onToggleAll={toggleAll}
                 allSelected={allVisibleSelected}
                 expandContent={v => v.issues.length > 0 ? <VehicleRowExpand issues={v.issues} /> : null}

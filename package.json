@@ -49,6 +49,8 @@
     "ui:install":            "npm install --prefix apps/web",
     "ui:dev":                "npm run client:generate && npm run dev --prefix apps/web",
     "ui:build":              "npm run client:generate && npm run build --prefix apps/web",
+    "ui:lint":               "npm run lint --prefix apps/web",
+    "ui:lint:fix":           "npm run lint:fix --prefix apps/web",
 
     "openapi:validate":      "redocly lint openapi/openapi.yaml",
     "client:generate":       "node node_modules/openapi-typescript-codegen/bin/index.js --input openapi/openapi.yaml --output packages/api-client/generated --client fetch --useOptions --exportCore true"

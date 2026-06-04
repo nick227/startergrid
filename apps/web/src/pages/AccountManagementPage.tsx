@@ -58,7 +58,8 @@ export default function AccountManagementPage({ dealerId, nav, activeTab }: Prop
   const [expanded, setExpanded] = useState<string | null>(null);
   const [saveResult, setSaveResult] = useState<string | null>(null);
 
-  const accounts = data?.accounts ?? [];
+  const accountRows = data?.accounts;
+  const accounts = useMemo(() => accountRows ?? [], [accountRows]);
   const summary  = data?.summary;
   const blockingCount = accounts.filter(a => accountStateVisual(a.state).blocksPublishing).length;
 
