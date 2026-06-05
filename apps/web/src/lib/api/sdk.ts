@@ -4,6 +4,7 @@ import {
   PublishService,
   InventoryService,
   AccountsService,
+  PerformanceService,
   type AutoSyncStatus as SdkAutoSyncStatus,
 } from '@auto-dealer/api-client';
 import type {
@@ -14,6 +15,7 @@ import type {
 } from '@auto-dealer/api-client';
 import type {
   AutoSyncStatus,
+  PerformanceInsightsResponse,
   PublishStatusResponse,
   PrepareResult,
   HistoryResponse,
@@ -35,6 +37,11 @@ import type {
   UpdateIngressSourcePayload,
   IngressSourceResponse,
   SourceCheckResult,
+  VehiclePerformanceListResponse,
+  VehiclePerformanceDetailResponse,
+  PlatformPerformanceListResponse,
+  PerformanceSummaryResponse,
+  PerformanceComputeResponse,
 } from '../types.ts';
 import { toErrorMessage } from '../errors.ts';
 import { configureSdkDevAuth } from '../devAuth.ts';
@@ -204,4 +211,84 @@ export async function runPrepare(
       requestBody: { dryRun: opts.dryRun, platforms: opts.platforms },
     })
   ) as Promise<PrepareResult>;
+}
+
+// ── Performance cache (Phase 3) ───────────────────────────────────────────────
+// All five functions use the generated PerformanceService — no raw fetch calls.
+
+export async function fetchVehiclePerformanceList(
+  dealershipId: string
+): Promise<VehiclePerformanceListResponse> {
+  return fromSdk(PerformanceService.listVehiclePerformance({ dealershipId })) as Promise<VehiclePerformanceListResponse>;
+}
+
+export async function fetchVehiclePerformanceItem(
+  dealershipId: string,
+  stockNumber: string
+): Promise<VehiclePerformanceDetailResponse> {
+  return fromSdk(PerformanceService.getVehiclePerformance({ dealershipId, stockNumber })) as Promise<VehiclePerformanceDetailResponse>;
+}
+
+export async function fetchPlatformPerformance(
+  dealershipId: string
+): Promise<PlatformPerformanceListResponse> {
+  return fromSdk(PerformanceService.listPlatformPerformance({ dealershipId })) as Promise<PlatformPerformanceListResponse>;
+}
+
+export async function fetchPerformanceSummary(
+  dealershipId: string
+): Promise<PerformanceSummaryResponse> {
+  return fromSdk(PerformanceService.getPerformanceSummary({ dealershipId })) as Promise<PerformanceSummaryResponse>;
+}
+
+export async function triggerPerformanceCompute(
+  dealershipId: string
+): Promise<PerformanceComputeResponse> {
+  return fromSdk(PerformanceService.computePerformance({ dealershipId })) as Promise<PerformanceComputeResponse>;
+}
+
+// ── Legacy (pre-Phase-3) ──────────────────────────────────────────────────────
+export async function fetchPerformanceInsights(
+  dealershipId: string
+): Promise<PerformanceInsightsResponse> {
+  await fromSdk(PerformanceService.computePerformance({ dealershipId }));
+
+  const [summaryBody, vehiclesBody, platformsBody] = await Promise.all([
+    fromSdk(PerformanceService.getPerformanceSummary({ dealershipId })),
+    fromSdk(PerformanceService.listVehiclePerformance({ dealershipId })),
+    fromSdk(PerformanceService.listPlatformPerformance({ dealershipId })),
+  ]);
+
+  const totalLeads = platformsBody.platforms.reduce((s, p) => s + p.totalLeads, 0);
+
+  return {
+    dealershipId,
+    computedAt: summaryBody.summary.computedAt ?? vehiclesBody.computedAt ?? new Date().toISOString(),
+    summary: {
+      activeVehicles: summaryBody.summary.activeCount,
+      staleCount: summaryBody.summary.staleCount,
+      fastCount: summaryBody.summary.fastCount,
+      totalLeads,
+    },
+    vehicles: vehiclesBody.items.map(v => ({
+      vehicleId: v.vehicleId,
+      stockNumber: v.stockNumber,
+      title: `${v.year} ${v.make} ${v.model}`,
+      daysOnline: v.daysOnline,
+      movementSignal: v.movementSignal,
+      comparableCount: v.comparableCount,
+      avgComparableDays: v.avgComparableDays,
+      platformAssists: v.platformAssists,
+    })),
+    platforms: platformsBody.platforms.map(p => ({
+      platformSlug: p.platformSlug,
+      totalLeads: p.totalLeads,
+      leadsPerVehicle: p.leadsPerVehicle,
+      vehiclesListed: p.vehiclesListed,
+      vehiclesSold: p.vehiclesSold,
+      avgDaysToMove: p.avgDaysToMove,
+      confidence: p.confidence,
+      sampleSize: p.sampleSize,
+    })),
+  };
 }

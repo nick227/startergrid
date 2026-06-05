@@ -385,6 +385,101 @@ export type IngressRunView = {
 export type IngressSourcesResponse = { sources: IngressSourceView[] };
 export type IngressRunsResponse     = { runs: IngressRunView[]; hasMore: boolean };
 
+// ── Performance cache (Phase 3 API) ──────────────────────────────────────────
+
+export type MovementSignal = 'FAST' | 'ON_TRACK' | 'SLOW' | 'STALE' | 'LOW_DATA';
+export type PerformanceConfidence = 'INSUFFICIENT' | 'LOW' | 'MEDIUM' | 'HIGH';
+
+export type VehiclePerformanceItem = {
+  vehicleId:         string;
+  stockNumber:       string;
+  year:              number;
+  make:              string;
+  model:             string;
+  condition:         string;
+  priceCents:        number;
+  daysOnline:        number;
+  firstListedAt:     string;
+  comparableCount:   number;
+  avgComparableDays: number | null;
+  movementSignal:    MovementSignal;
+  platformAssists:   Record<string, { leads: number }>;
+  avgVdpDwellMs:     number | null;
+  vdpSessionCount:   number;
+  computedAt:        string;
+};
+
+export type PlatformPerformanceItem = {
+  platformSlug:        string;
+  vehiclesListed:      number;
+  vehiclesSold:        number;
+  avgDaysToMove:       number | null;
+  medianDaysToMove:    number | null;
+  totalLeads:          number;
+  leadsPerVehicle:     number | null;
+  confidence:          PerformanceConfidence;
+  sampleSize:          number;
+  observedAssistLabel: string;
+  computedAt:          string;
+};
+
+export type PerformanceSummaryView = {
+  computedAt:           string | null;
+  activeCount:          number;
+  staleCount:           number;
+  fastCount:            number;
+  lowDataCount:         number;
+  topMovers:            VehiclePerformanceItem[];
+  staleRisks:           VehiclePerformanceItem[];
+  bestObservedPlatform: PlatformPerformanceItem | null;
+};
+
+export type VehiclePerformanceListResponse   = { items: VehiclePerformanceItem[]; computedAt: string | null };
+export type VehiclePerformanceDetailResponse = { item: VehiclePerformanceItem };
+export type PlatformPerformanceListResponse  = { platforms: PlatformPerformanceItem[]; computedAt: string | null };
+export type PerformanceSummaryResponse       = { summary: PerformanceSummaryView };
+export type PerformanceComputeResult         = { vehicles: number; vehicleErrors: number; platforms: number; durationMs: number; computedAt: string };
+export type PerformanceComputeResponse       = { result: PerformanceComputeResult };
+
+// ── Legacy performance insights (pre-Phase-3) ─────────────────────────────────
+
+export type MovementSignalLegacy = MovementSignal; // alias kept for any existing references
+
+export type VehiclePerformanceInsight = {
+  vehicleId: string;
+  stockNumber: string;
+  title: string;
+  daysOnline: number;
+  movementSignal: MovementSignal;
+  comparableCount: number;
+  avgComparableDays: number | null;
+  platformAssists: Record<string, { leads: number }>;
+};
+
+export type PlatformPerformanceInsight = {
+  platformSlug: string;
+  totalLeads: number;
+  leadsPerVehicle: number | null;
+  vehiclesListed: number;
+  vehiclesSold: number;
+  avgDaysToMove: number | null;
+  confidence: string;
+  sampleSize: number;
+};
+
+export type PerformanceInsightsResponse = {
+  dealershipId: string;
+  computedAt: string;
+  summary: {
+    activeVehicles: number;
+    staleCount: number;
+    fastCount: number;
+    totalLeads: number;
+  };
+  vehicles: VehiclePerformanceInsight[];
+  platforms: PlatformPerformanceInsight[];
+};
+
 // ── Queue ─────────────────────────────────────────────────────────────────────
 
 export type QueueView = {

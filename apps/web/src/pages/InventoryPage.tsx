@@ -1,6 +1,6 @@
 import { useState, useMemo } from 'react';
-import { fetchInventory, bulkEditVehicles } from '@/lib/api/sdk.ts';
-import type { BulkEditPayload, CommitImportResponse } from '@/lib/types.ts';
+import { fetchInventory, bulkEditVehicles, fetchVehiclePerformanceList } from '@/lib/api/sdk.ts';
+import type { BulkEditPayload, CommitImportResponse, VehiclePerformanceItem } from '@/lib/types.ts';
 import type { OperatorPageBaseProps } from '@/lib/operatorPage.ts';
 import { useAsyncQuery } from '@/hooks/useAsyncQuery.ts';
 import { OperatorPage, SectionCard, InlineCallout, PageHeader } from '@/components/operator';
@@ -15,7 +15,7 @@ import {
   VehicleRowExpand,
   ImportBatchHistory,
   IngressPanel,
-  VEHICLE_COLUMNS,
+  buildVehicleColumns,
   SUMMARY_STRIP_ITEMS,
   BULK_EDIT_FIELD_DEFS,
   READINESS_CONFIG,
@@ -35,6 +35,19 @@ export default function InventoryPage({ dealerId, nav, activeTab }: Props) {
   const [search, setSearch] = useState('');
   const [showImport, setShowImport] = useState(false);
   const [importResult, setImportResult] = useState<CommitImportResponse | null>(null);
+
+  const perf = useAsyncQuery(
+    () => fetchVehiclePerformanceList(dealerId),
+    [dealerId]
+  );
+
+  const perfMap = useMemo<Map<string, VehiclePerformanceItem>>(() => {
+    const m = new Map<string, VehiclePerformanceItem>();
+    for (const item of perf.data?.items ?? []) m.set(item.stockNumber, item);
+    return m;
+  }, [perf.data]);
+
+  const vehicleColumns = useMemo(() => buildVehicleColumns(perfMap), [perfMap]);
 
   const vehicleRows = data?.vehicles;
   const vehicles = useMemo(() => vehicleRows ?? [], [vehicleRows]);
@@ -252,7 +265,7 @@ export default function InventoryPage({ dealerId, nav, activeTab }: Props) {
 
             <SectionCard noPadding>
               <DataTable
-                columns={VEHICLE_COLUMNS}
+                columns={vehicleColumns}
                 rows={visible}
                 selectable
                 selected={selected}
@@ -264,7 +277,12 @@ export default function InventoryPage({ dealerId, nav, activeTab }: Props) {
                 })}
                 onToggleAll={toggleAll}
                 allSelected={allVisibleSelected}
-                expandContent={v => v.issues.length > 0 ? <VehicleRowExpand issues={v.issues} /> : null}
+                expandContent={v => {
+                  const vperf = perfMap.get(v.stockNumber);
+                  return (v.issues.length > 0 || vperf)
+                    ? <VehicleRowExpand issues={v.issues} perf={vperf} />
+                    : null;
+                }}
                 rowClassName={v => READINESS_CONFIG[v.readiness].rowBg}
                 loading={loading && !data}
                 emptyState={

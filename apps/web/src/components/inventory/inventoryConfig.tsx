@@ -1,6 +1,6 @@
 import type { Column } from '../generic/DataTable.tsx';
 import type { FieldDef } from '../generic/BulkActionBar.tsx';
-import type { VehicleListItem } from '../../lib/types.ts';
+import type { VehicleListItem, VehiclePerformanceItem, MovementSignal } from '../../lib/types.ts';
 import { Badge } from '../ui/Badge.tsx';
 import type { BadgeColor } from '../ui/Badge.tsx';
 
@@ -33,6 +33,21 @@ export function ReadinessBadge({ readiness, style = 'dot' }: { readiness: Readin
     );
   }
   return <Badge color={cfg.badgeColor}>{cfg.label}</Badge>;
+}
+
+// ── Movement signal badge ─────────────────────────────────────────────────────
+
+const SIGNAL_CFG: Record<MovementSignal, { label: string; color: BadgeColor }> = {
+  FAST:     { label: 'Fast',     color: 'green' },
+  ON_TRACK: { label: 'On Track', color: 'blue'  },
+  SLOW:     { label: 'Slow',     color: 'amber' },
+  STALE:    { label: 'Stale',    color: 'red'   },
+  LOW_DATA: { label: '—',        color: 'slate' },
+};
+
+export function MovementSignalBadge({ signal }: { signal: MovementSignal | string }) {
+  const cfg = SIGNAL_CFG[signal as MovementSignal] ?? SIGNAL_CFG.LOW_DATA;
+  return <Badge color={cfg.color}>{cfg.label}</Badge>;
 }
 
 // ── Action badge (import preview) ─────────────────────────────────────────────
@@ -109,6 +124,32 @@ export const VEHICLE_COLUMNS: Column<VehicleListItem>[] = [
     render: v => <ReadinessBadge readiness={v.readiness} />,
   },
 ];
+
+// ── Vehicle columns with optional performance data ────────────────────────────
+// buildVehicleColumns closes over a Map so the performance column can read
+// VehiclePerformanceItem data without widening the VehicleListItem type.
+
+export function buildVehicleColumns(
+  perfMap: Map<string, VehiclePerformanceItem>,
+): Column<VehicleListItem>[] {
+  return [
+    ...VEHICLE_COLUMNS,
+    {
+      key: 'performance',
+      label: 'Days / Signal',
+      render: v => {
+        const perf = perfMap.get(v.stockNumber);
+        if (!perf) return <span className="text-slate-300 text-xs">—</span>;
+        return (
+          <span className="inline-flex items-center gap-1.5">
+            <span className="text-xs text-slate-400 tabular-nums">{perf.daysOnline}d</span>
+            <MovementSignalBadge signal={perf.movementSignal} />
+          </span>
+        );
+      },
+    },
+  ];
+}
 
 // ── Summary strip item definitions ───────────────────────────────────────────
 

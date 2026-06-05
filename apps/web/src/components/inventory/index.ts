@@ -14,5 +14,7 @@ export {
   CLEANUP_FILTER_DEFS,
   IMPORT_WIZARD_STEPS,
   applyCleanupFilter,
+  MovementSignalBadge,
+  buildVehicleColumns,
 } from './inventoryConfig.tsx';
 export type { CleanupFilter, FilterChipDef } from './inventoryConfig.tsx';

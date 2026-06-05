@@ -1,6 +1,8 @@
 import { useMemo } from 'react';
 import type { OperatorPageBaseProps } from '@/lib/operatorPage.ts';
 import { useSyncPageData } from '@/hooks/useSyncPageData.ts';
+import { useAsyncQuery } from '@/hooks/useAsyncQuery.ts';
+import { fetchPerformanceSummary } from '@/lib/api/sdk.ts';
 import { computeSyncReadiness } from '@/lib/syncPresentation.ts';
 import { OperatorPage, ErrorState, PanelSkeleton } from '@/components/operator';
 import {
@@ -9,12 +11,16 @@ import {
   SyncPlatformList,
   SyncInventoryPeek,
   LastSyncLine,
+  PerformanceInsightStrip,
 } from '@/components/sync';
 
 type Props = OperatorPageBaseProps;
 
 export default function SyncPage({ dealerId, nav, activeTab }: Props) {
   const { status, history, reload, lastRefresh, isRefreshing } = useSyncPageData(dealerId);
+
+  // Performance summary is loaded once; recompute is user-triggered via PerformanceInsightStrip.
+  const perfQuery = useAsyncQuery(() => fetchPerformanceSummary(dealerId), [dealerId]);
 
   const statusData = status.data;
   const readiness = useMemo(
@@ -62,6 +68,13 @@ export default function SyncPage({ dealerId, nav, activeTab }: Props) {
             />
 
             <SyncSummaryStrip readiness={readiness} />
+
+            <PerformanceInsightStrip
+              dealerId={dealerId}
+              summary={perfQuery.data?.summary ?? null}
+              loading={perfQuery.loading}
+              onComputed={perfQuery.reload}
+            />
 
             <SyncInventoryPeek
               blocked={blockedVehicles}
