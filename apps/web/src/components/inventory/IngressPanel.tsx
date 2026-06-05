@@ -23,7 +23,7 @@ type Props = {
   onShowBlockedVehicles?: () => void;
 };
 
-// ── Helpers ───────────────────────────────────────────────────────────────────
+// ── Time helpers ──────────────────────────────────────────────────────────────
 
 function relativeTime(iso: string): string {
   const diff = Date.now() - new Date(iso).getTime();
@@ -40,11 +40,85 @@ function relativeTimeFromNow(iso: string): string {
   if (Math.abs(diffMs) < 60_000) return 'now';
   const abs  = Math.abs(diffMs);
   const mins = Math.floor(abs / 60_000);
-  if (diffMs < 0) return `${mins < 60 ? `${mins}m` : `${Math.floor(mins / 60)}h`} ago`;
-  if (mins < 60)  return `in ${mins}m`;
+  if (diffMs < 0) return mins < 60 ? `${mins}m ago` : `${Math.floor(mins / 60)}h ago`;
+  if (mins < 60) return `in ${mins}m`;
   const hrs = Math.floor(mins / 60);
   return hrs < 24 ? `in ${hrs}h` : `in ${Math.floor(hrs / 24)}d`;
 }
+
+// ── Poll interval presets ─────────────────────────────────────────────────────
+
+type PresetKey = 'none' | '15' | '60' | '360' | '1440' | 'custom';
+
+const PRESET_OPTIONS: { key: PresetKey; label: string; minutes: number | null }[] = [
+  { key: 'none',   label: 'Manual only',    minutes: null },
+  { key: '15',     label: 'Every 15 min',   minutes: 15   },
+  { key: '60',     label: 'Hourly',         minutes: 60   },
+  { key: '360',    label: 'Every 6 hours',  minutes: 360  },
+  { key: '1440',   label: 'Daily',          minutes: 1440 },
+  { key: 'custom', label: 'Custom…',        minutes: null },
+];
+
+function toPresetKey(minutes: number | null): PresetKey {
+  if (minutes === null) return 'none';
+  const found = PRESET_OPTIONS.find(p => p.key !== 'custom' && p.key !== 'none' && p.minutes === minutes);
+  return found ? (found.key as PresetKey) : 'custom';
+}
+
+function resolveInterval(preset: PresetKey, custom: string): number | null {
+  if (preset === 'none') return null;
+  if (preset === 'custom') {
+    const n = parseInt(custom, 10);
+    return !isNaN(n) && n >= 5 && n <= 10080 ? n : null;
+  }
+  return parseInt(preset, 10);
+}
+
+// ── PollIntervalPicker ────────────────────────────────────────────────────────
+
+function PollIntervalPicker({ preset, custom, onPreset, onCustom }: {
+  preset: PresetKey;
+  custom: string;
+  onPreset: (k: PresetKey) => void;
+  onCustom:  (v: string) => void;
+}) {
+  return (
+    <div className="space-y-1.5">
+      <div className="flex items-center gap-2 flex-wrap">
+        <span className="text-xs text-slate-500 shrink-0">Schedule</span>
+        <select
+          value={preset}
+          onChange={e => onPreset(e.target.value as PresetKey)}
+          className="text-xs px-3 py-2 border border-slate-200 rounded-lg bg-white focus:outline-none focus:ring-1 focus:ring-slate-400"
+        >
+          {PRESET_OPTIONS.map(p => (
+            <option key={p.key} value={p.key}>{p.label}</option>
+          ))}
+        </select>
+        {preset === 'custom' && (
+          <input
+            type="number"
+            min={5}
+            max={10080}
+            value={custom}
+            onChange={e => onCustom(e.target.value)}
+            placeholder="min (5–10080)"
+            className="w-28 text-xs px-3 py-2 border border-slate-200 rounded-lg bg-white focus:outline-none focus:ring-1 focus:ring-slate-400"
+          />
+        )}
+      </div>
+      {preset !== 'none' && (
+        <p className="text-xs text-slate-300">
+          Automation requires{' '}
+          <code className="font-mono text-slate-400">npm run ingress:poll-sources</code>{' '}
+          or an external scheduler.
+        </p>
+      )}
+    </div>
+  );
+}
+
+// ── Source status label maps ──────────────────────────────────────────────────
 
 const SOURCE_KIND_LABEL: Record<string, string> = {
   CSV:             'CSV upload',
@@ -94,34 +168,25 @@ const RUN_STATUS_STYLE: Record<string, { pill: string; dot: string; label: strin
 // ── Main component ────────────────────────────────────────────────────────────
 
 export function IngressPanel({ dealerId, latestRunId, onShowBlockedVehicles }: Props) {
-  const {
-    data: srcData, loading: loadingSrc, error: srcErr, reload: reloadSrc,
-  } = useAsyncQuery(() => fetchIngressSources(dealerId), [dealerId, latestRunId]);
+  const { data: srcData, loading: loadingSrc, error: srcErr, reload: reloadSrc } =
+    useAsyncQuery(() => fetchIngressSources(dealerId), [dealerId, latestRunId]);
 
-  const {
-    data: runsData, loading: loadingRuns, error: runsErr, reload: reloadRuns,
-  } = useAsyncQuery(() => fetchIngressRuns(dealerId, { limit: 5 }), [dealerId, latestRunId]);
+  const { data: runsData, loading: loadingRuns, error: runsErr, reload: reloadRuns } =
+    useAsyncQuery(() => fetchIngressRuns(dealerId, { limit: 5 }), [dealerId, latestRunId]);
 
   const [addingSource, setAddingSource] = useState(false);
 
-  const sources  = srcData?.sources  ?? [];
-  const runs     = runsData?.runs    ?? [];
-  const loading  = loadingSrc && !srcData || loadingRuns && !runsData;
+  const sources = srcData?.sources ?? [];
+  const runs    = runsData?.runs   ?? [];
+  const loading = (loadingSrc && !srcData) || (loadingRuns && !runsData);
 
-  const lastRun = runs[0] ?? null;
+  const lastRun  = runs[0] ?? null;
   const subtitle = lastRun
     ? `Last intake ${relativeTime(lastRun.receivedAt)} · ${lastRun.vehicleCount} vehicle${lastRun.vehicleCount !== 1 ? 's' : ''}`
     : 'No imports yet — use Import CSV to bring in your first batch';
 
-  const handleSourceSaved = () => {
-    setAddingSource(false);
-    reloadSrc();
-  };
-
-  const handleSourceUpdated = () => {
-    reloadSrc();
-    reloadRuns();
-  };
+  const handleSourceSaved = () => { setAddingSource(false); reloadSrc(); };
+  const handleSourceUpdated = () => { reloadSrc(); reloadRuns(); };
 
   return (
     <SectionCard title="Intake sources" subtitle={subtitle} noPadding>
@@ -203,12 +268,15 @@ function AddSourceForm({
   onSaved: () => void;
   onCancel: () => void;
 }) {
-  const [label, setLabel]   = useState('');
-  const [feedUrl, setFeedUrl] = useState('');
-  const [status, setStatus] = useState<'ACTIVE' | 'PAUSED'>('ACTIVE');
-  const [error, setError]   = useState<string | null>(null);
-  const [saving, setSaving] = useState(false);
+  const [label,    setLabel]    = useState('');
+  const [feedUrl,  setFeedUrl]  = useState('');
+  const [status,   setStatus]   = useState<'ACTIVE' | 'PAUSED'>('ACTIVE');
+  const [preset,   setPreset]   = useState<PresetKey>('none');
+  const [custom,   setCustom]   = useState('');
+  const [error,    setError]    = useState<string | null>(null);
+  const [saving,   setSaving]   = useState(false);
 
+  const pollInterval = resolveInterval(preset, custom);
   const canSubmit = label.trim().length > 0 && feedUrl.trim().startsWith('https://');
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -218,9 +286,10 @@ function AddSourceForm({
     setError(null);
     try {
       await createIngressSource(dealerId, {
-        label:   label.trim(),
-        feedUrl: feedUrl.trim(),
+        label:               label.trim(),
+        feedUrl:             feedUrl.trim(),
         status,
+        pollIntervalMinutes: pollInterval,
       });
       onSaved();
     } catch (err) {
@@ -238,18 +307,13 @@ function AddSourceForm({
       {error && <p className="text-xs text-red-600">{error}</p>}
       <div className="space-y-2">
         <input
-          type="text"
-          value={label}
-          onChange={e => setLabel(e.target.value)}
+          type="text" value={label} onChange={e => setLabel(e.target.value)}
           placeholder="Label (e.g. DMS Feed, Partner API)"
-          required
-          maxLength={160}
+          required maxLength={160}
           className="w-full text-xs px-3 py-2 border border-slate-200 rounded-lg bg-white focus:outline-none focus:ring-1 focus:ring-slate-400"
         />
         <input
-          type="url"
-          value={feedUrl}
-          onChange={e => setFeedUrl(e.target.value)}
+          type="url" value={feedUrl} onChange={e => setFeedUrl(e.target.value)}
           placeholder="https://api.example.com/inventory"
           required
           className="w-full text-xs px-3 py-2 border border-slate-200 rounded-lg bg-white focus:outline-none focus:ring-1 focus:ring-slate-400"
@@ -257,26 +321,132 @@ function AddSourceForm({
         {feedUrl && !feedUrl.startsWith('https://') && (
           <p className="text-xs text-amber-700">Feed URL must use HTTPS</p>
         )}
-        <select
-          value={status}
-          onChange={e => setStatus(e.target.value as 'ACTIVE' | 'PAUSED')}
-          className="text-xs px-3 py-2 border border-slate-200 rounded-lg bg-white focus:outline-none focus:ring-1 focus:ring-slate-400"
-        >
-          <option value="ACTIVE">Active</option>
-          <option value="PAUSED">Paused</option>
-        </select>
+        <div className="flex items-center gap-3">
+          <span className="text-xs text-slate-500 shrink-0">Status</span>
+          <select
+            value={status} onChange={e => setStatus(e.target.value as 'ACTIVE' | 'PAUSED')}
+            className="text-xs px-3 py-2 border border-slate-200 rounded-lg bg-white focus:outline-none focus:ring-1 focus:ring-slate-400"
+          >
+            <option value="ACTIVE">Active</option>
+            <option value="PAUSED">Paused</option>
+          </select>
+        </div>
+        <PollIntervalPicker
+          preset={preset} custom={custom}
+          onPreset={setPreset} onCustom={setCustom}
+        />
       </div>
       <div className="flex items-center gap-3">
         <button
-          type="submit"
-          disabled={saving || !canSubmit}
+          type="submit" disabled={saving || !canSubmit}
           className="px-3 py-1.5 text-xs font-semibold bg-slate-900 text-white rounded-lg disabled:opacity-40"
         >
           {saving ? 'Saving…' : 'Save source'}
         </button>
+        <button type="button" onClick={onCancel}
+          className="text-xs font-semibold text-slate-400 hover:text-slate-600"
+        >
+          Cancel
+        </button>
+      </div>
+    </form>
+  );
+}
+
+// ── Edit source form ──────────────────────────────────────────────────────────
+
+function EditSourceForm({
+  source,
+  dealerId,
+  onSaved,
+  onCancel,
+}: {
+  source: IngressSourceView;
+  dealerId: string;
+  onSaved: () => void;
+  onCancel: () => void;
+}) {
+  const [label,   setLabel]   = useState(source.label);
+  const [feedUrl, setFeedUrl] = useState(source.feedUrl ?? '');
+  const [status,  setStatus]  = useState<'ACTIVE' | 'PAUSED'>(
+    source.status === 'PAUSED' ? 'PAUSED' : 'ACTIVE',
+  );
+  const initPreset = toPresetKey(source.pollIntervalMinutes);
+  const [preset, setPreset]   = useState<PresetKey>(initPreset);
+  const [custom, setCustom]   = useState(
+    initPreset === 'custom' && source.pollIntervalMinutes !== null
+      ? String(source.pollIntervalMinutes)
+      : '',
+  );
+  const [error,  setError]   = useState<string | null>(null);
+  const [saving, setSaving]  = useState(false);
+
+  const pollInterval = resolveInterval(preset, custom);
+  const canSubmit = label.trim().length > 0 && feedUrl.trim().startsWith('https://');
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!canSubmit) return;
+    setSaving(true);
+    setError(null);
+    try {
+      await updateIngressSource(dealerId, source.id, {
+        label:               label.trim(),
+        feedUrl:             feedUrl.trim(),
+        status,
+        pollIntervalMinutes: pollInterval,
+      });
+      onSaved();
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to update source');
+      setSaving(false);
+    }
+  };
+
+  return (
+    <form
+      onSubmit={handleSubmit}
+      className="px-5 py-4 bg-slate-50/50 border-t border-slate-100 space-y-3"
+    >
+      <p className="text-xs font-semibold text-slate-700">Edit API source</p>
+      {error && <p className="text-xs text-red-600">{error}</p>}
+      <div className="space-y-2">
+        <input
+          type="text" value={label} onChange={e => setLabel(e.target.value)}
+          placeholder="Label" required maxLength={160}
+          className="w-full text-xs px-3 py-2 border border-slate-200 rounded-lg bg-white focus:outline-none focus:ring-1 focus:ring-slate-400"
+        />
+        <input
+          type="url" value={feedUrl} onChange={e => setFeedUrl(e.target.value)}
+          placeholder="https://api.example.com/inventory" required
+          className="w-full text-xs px-3 py-2 border border-slate-200 rounded-lg bg-white focus:outline-none focus:ring-1 focus:ring-slate-400"
+        />
+        {feedUrl && !feedUrl.startsWith('https://') && (
+          <p className="text-xs text-amber-700">Feed URL must use HTTPS</p>
+        )}
+        <div className="flex items-center gap-3">
+          <span className="text-xs text-slate-500 shrink-0">Status</span>
+          <select
+            value={status} onChange={e => setStatus(e.target.value as 'ACTIVE' | 'PAUSED')}
+            className="text-xs px-3 py-2 border border-slate-200 rounded-lg bg-white focus:outline-none focus:ring-1 focus:ring-slate-400"
+          >
+            <option value="ACTIVE">Active</option>
+            <option value="PAUSED">Paused</option>
+          </select>
+        </div>
+        <PollIntervalPicker
+          preset={preset} custom={custom}
+          onPreset={setPreset} onCustom={setCustom}
+        />
+      </div>
+      <div className="flex items-center gap-3">
         <button
-          type="button"
-          onClick={onCancel}
+          type="submit" disabled={saving || !canSubmit}
+          className="px-3 py-1.5 text-xs font-semibold bg-slate-900 text-white rounded-lg disabled:opacity-40"
+        >
+          {saving ? 'Saving…' : 'Save'}
+        </button>
+        <button type="button" onClick={onCancel}
           className="text-xs font-semibold text-slate-400 hover:text-slate-600"
         >
           Cancel
@@ -297,18 +467,21 @@ function SourceRow({
   dealerId: string;
   onUpdated?: () => void;
 }) {
-  const statusCls = SOURCE_STATUS_STYLE[source.status] ?? 'bg-slate-100 text-slate-500';
-  const kindLabel = SOURCE_KIND_LABEL[source.kind] ?? source.kind;
-  const isApi     = source.kind === 'API';
-  const canCheck  = isApi && (source.status === 'ACTIVE' || source.status === 'ERROR');
+  const statusCls  = SOURCE_STATUS_STYLE[source.status] ?? 'bg-slate-100 text-slate-500';
+  const kindLabel  = SOURCE_KIND_LABEL[source.kind] ?? source.kind;
+  const isApi      = source.kind === 'API';
+  const isError    = source.status === 'ERROR';
+  const canCheck   = isApi && (source.status === 'ACTIVE' || isError);
 
-  const [toggling, setToggling] = useState(false);
-  const [checking, setChecking] = useState(false);
+  const [toggling,   setToggling]   = useState(false);
+  const [checking,   setChecking]   = useState(false);
   const [checkError, setCheckError] = useState<string | null>(null);
+  const [editing,    setEditing]    = useState(false);
 
   const toggleStatus = async () => {
     if (!isApi || toggling) return;
-    const next = source.status === 'ACTIVE' ? 'PAUSED' : 'ACTIVE';
+    const next: 'ACTIVE' | 'PAUSED' =
+      source.status === 'ACTIVE' ? 'PAUSED' : 'ACTIVE';
     setToggling(true);
     try {
       await updateIngressSource(dealerId, source.id, { status: next });
@@ -333,78 +506,113 @@ function SourceRow({
     }
   };
 
+  const handleEditSaved = () => {
+    setEditing(false);
+    onUpdated?.();
+  };
+
+  // Scheduling status line values (computed once, used below)
+  const isOverdue = !!(source.pollIntervalMinutes && source.nextCheckAt && new Date(source.nextCheckAt) <= new Date());
+  const scheduleText = isError
+    ? 'Error · retry available'
+    : !source.pollIntervalMinutes
+      ? 'Manual only'
+      : isOverdue
+        ? 'Overdue'
+        : source.nextCheckAt
+          ? `Next check ${relativeTimeFromNow(source.nextCheckAt)}`
+          : `every ${source.pollIntervalMinutes}m`;
+  const scheduleCls = isError
+    ? 'text-red-500'
+    : isOverdue
+      ? 'text-amber-500 font-medium'
+      : 'text-slate-400';
+
   return (
-    <div className="px-5 py-3 text-xs">
-      {/* Row 1: label / kind / status / check button */}
-      <div className="flex items-center gap-3">
-        <div className="flex-1 min-w-0">
-          <span className="text-sm font-semibold text-slate-900">{source.label}</span>
-          <span className="ml-2 text-slate-400">{kindLabel}</span>
+    <div>
+      <div className="px-5 py-3 text-xs">
+        {/* Row 1: label / kind / status badge / actions / received */}
+        <div className="flex items-center gap-2 flex-wrap">
+          <div className="flex-1 min-w-0 flex items-center gap-2">
+            <span className="text-sm font-semibold text-slate-900">{source.label}</span>
+            <span className="text-slate-400">{kindLabel}</span>
+          </div>
+          {isApi ? (
+            <button
+              type="button"
+              onClick={toggleStatus}
+              disabled={toggling}
+              title={source.status === 'ACTIVE' ? 'Click to pause' : 'Click to activate'}
+              className={`px-2 py-0.5 rounded text-xs font-medium shrink-0 transition-opacity ${statusCls} ${toggling ? 'opacity-50' : 'hover:opacity-75 cursor-pointer'}`}
+            >
+              {toggling ? '…' : source.status.toLowerCase()}
+            </button>
+          ) : (
+            <span className={`px-2 py-0.5 rounded text-xs font-medium shrink-0 ${statusCls}`}>
+              {source.status.toLowerCase()}
+            </span>
+          )}
+          {canCheck && (
+            <button
+              type="button"
+              onClick={handleCheck}
+              disabled={checking}
+              className={`text-xs font-semibold shrink-0 disabled:opacity-50 ${isError ? 'text-red-600 hover:text-red-800' : 'text-sky-700 hover:text-sky-900'}`}
+            >
+              {checking ? 'Checking…' : isError ? 'Retry' : 'Check now'}
+            </button>
+          )}
+          {isApi && (
+            <button
+              type="button"
+              onClick={() => setEditing(v => !v)}
+              className="text-xs font-semibold text-slate-400 hover:text-slate-700 shrink-0"
+            >
+              {editing ? 'Cancel' : 'Edit'}
+            </button>
+          )}
+          <div className="text-slate-400 shrink-0 text-right text-xs ml-auto">
+            {source.lastReceivedAt
+              ? <span title={source.lastReceivedAt}>received {relativeTime(source.lastReceivedAt)}</span>
+              : <span className="italic">never received</span>}
+          </div>
         </div>
-        {isApi ? (
-          <button
-            type="button"
-            onClick={toggleStatus}
-            disabled={toggling}
-            title={source.status === 'ACTIVE' ? 'Click to pause' : 'Click to activate'}
-            className={`px-2 py-0.5 rounded text-xs font-medium shrink-0 transition-opacity ${statusCls} ${toggling ? 'opacity-50' : 'hover:opacity-75 cursor-pointer'}`}
-          >
-            {toggling ? '…' : source.status.toLowerCase()}
-          </button>
-        ) : (
-          <span className={`px-2 py-0.5 rounded text-xs font-medium shrink-0 ${statusCls}`}>
-            {source.status.toLowerCase()}
-          </span>
+
+        {/* Row 2 (API only): feedUrl · last checked · schedule status */}
+        {isApi && (
+          <div className="mt-1 flex items-center gap-3 text-slate-400 flex-wrap">
+            {source.feedUrl ? (
+              <span className="truncate max-w-[220px]" title={source.feedUrl}>
+                {source.feedUrl}
+              </span>
+            ) : (
+              <span className="italic">no feed URL set</span>
+            )}
+            <span className="shrink-0">
+              {source.lastCheckedAt
+                ? `checked ${relativeTime(source.lastCheckedAt)}`
+                : 'not yet checked'}
+            </span>
+            <span className={`shrink-0 ${scheduleCls}`}>{scheduleText}</span>
+          </div>
         )}
-        {canCheck && (
-          <button
-            type="button"
-            onClick={handleCheck}
-            disabled={checking}
-            className="text-xs font-semibold text-sky-700 hover:text-sky-900 shrink-0 disabled:opacity-50"
-          >
-            {checking ? 'Checking…' : 'Check now'}
-          </button>
+
+        {/* Row 3 (API only): inline check error */}
+        {isApi && (source.lastCheckError || checkError) && (
+          <div className="mt-1 text-red-600 text-xs">
+            {checkError ?? source.lastCheckError}
+          </div>
         )}
-        <div className="text-slate-400 shrink-0 text-right text-xs min-w-[90px]">
-          {source.lastReceivedAt
-            ? <span title={source.lastReceivedAt}>received {relativeTime(source.lastReceivedAt)}</span>
-            : <span className="italic">never received</span>}
-        </div>
       </div>
 
-      {/* Row 2 (API only): feedUrl · checked timestamp · next schedule */}
-      {isApi && (
-        <div className="mt-1 flex items-center gap-3 text-slate-400 flex-wrap text-xs">
-          {source.feedUrl ? (
-            <span className="truncate max-w-[240px]" title={source.feedUrl}>
-              {source.feedUrl}
-            </span>
-          ) : (
-            <span className="italic">no feed URL set</span>
-          )}
-          <span className="shrink-0">
-            {source.lastCheckedAt
-              ? `checked ${relativeTime(source.lastCheckedAt)}`
-              : 'not yet checked'}
-          </span>
-          {source.pollIntervalMinutes && source.nextCheckAt ? (
-            <span className={`shrink-0 ${new Date(source.nextCheckAt) <= new Date() ? 'text-amber-500' : 'text-slate-300'}`}>
-              {new Date(source.nextCheckAt) <= new Date()
-                ? 'overdue'
-                : `next ${relativeTimeFromNow(source.nextCheckAt)}`}
-            </span>
-          ) : source.pollIntervalMinutes ? (
-            <span className="shrink-0 text-slate-300">every {source.pollIntervalMinutes}m</span>
-          ) : null}
-        </div>
-      )}
-
-      {/* Row 3 (API only): error state from last check */}
-      {isApi && (source.lastCheckError || checkError) && (
-        <div className="mt-1 text-red-600 text-xs">
-          {checkError ?? source.lastCheckError}
-        </div>
+      {/* Inline edit form */}
+      {editing && (
+        <EditSourceForm
+          source={source}
+          dealerId={dealerId}
+          onSaved={handleEditSaved}
+          onCancel={() => setEditing(false)}
+        />
       )}
     </div>
   );

@@ -345,12 +345,14 @@ export type CreateIngressSourcePayload = {
   feedUrl: string;
   sourceSlug?: string;
   status?: 'ACTIVE' | 'PAUSED';
+  pollIntervalMinutes?: number | null;
 };
 
 export type UpdateIngressSourcePayload = {
   label?: string;
   feedUrl?: string;
   status?: 'ACTIVE' | 'PAUSED' | 'DISCONNECTED' | 'ERROR';
+  pollIntervalMinutes?: number | null;
 };
 
 export type IngressSourceResponse = { source: IngressSourceView };
