@@ -8,6 +8,7 @@ import {
 import {
   previewImport,
   commitImport,
+  ingestJsonVehicles,
   classifyVehicleReadiness
 } from '../../services/inventory/importService.js';
 import { requireDealerAccess } from '../security.js';
@@ -15,6 +16,7 @@ import {
   bulkEditSchema,
   emptyBodySchema,
   inventoryImportSchema,
+  jsonIngestSchema,
   photoUpdateSchema,
   priceUpdateSchema,
   validateBody,
@@ -107,6 +109,27 @@ export function registerInventoryRoutes(app: FastifyInstance, prisma: PrismaClie
       if (!body.ok) return reply.status(400).send({ error: body.error });
 
       const result = await commitImport(prisma, dealershipId, body.data.rows, body.data.mapping ?? {});
+      return reply.send(result);
+    }
+  );
+
+  // ── JSON ingest ───────────────────────────────────────────────────────────────
+
+  app.post<{ Params: DealerParams }>(
+    '/api/dealers/:dealershipId/inventory/ingest/json',
+    async (request, reply) => {
+      const { dealershipId } = request.params;
+      if (!requireDealerAccess(request, reply, dealershipId)) return;
+      if (!await findDealer(prisma, dealershipId))
+        return reply.status(404).send({ error: 'Dealer not found' });
+
+      const body = validateBody(jsonIngestSchema, request.body);
+      if (!body.ok) return reply.status(400).send({ error: body.error });
+
+      const result = await ingestJsonVehicles(prisma, dealershipId, body.data.vehicles, {
+        sourceSlug:  body.data.sourceSlug,
+        sourceLabel: body.data.sourceLabel,
+      });
       return reply.send(result);
     }
   );

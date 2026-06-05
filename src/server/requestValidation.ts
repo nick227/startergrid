@@ -91,6 +91,35 @@ export const photoUpdateSchema = z.object({
 // operationId: markVehicleSold | markVehicleRemoved
 export const emptyBodySchema = z.object({}).strict().optional();
 
+// operationId: ingestJsonInventory
+const jsonIngestVehicleSchema = z.object({
+  stockNumber:   nonEmptyString(80),
+  vin:           nonEmptyString(17),
+  year:          z.number().int().min(1900).max(2100),
+  make:          nonEmptyString(80),
+  model:         nonEmptyString(80),
+  trim:          optionalText(80),
+  mileage:       z.number().int().min(0).max(2_000_000),
+  priceCents:    z.number().int().min(1).max(100_000_000),
+  condition:     z.enum(['NEW', 'USED', 'CPO']),
+  exteriorColor: nonEmptyString(80),
+  interiorColor: optionalText(80),
+  bodyStyle:     optionalText(80),
+  drivetrain:    optionalText(80),
+  fuelType:      optionalText(80),
+  transmission:  optionalText(80),
+  photoUrls:     z.array(z.string().trim().url().max(512)).max(100).optional(),
+}).strict();
+
+export const jsonIngestSchema = z.object({
+  sourceSlug:  optionalText(80),
+  sourceLabel: optionalText(160),
+  mode:        z.enum(['upsert']).optional(),
+  vehicles:    z.array(jsonIngestVehicleSchema).min(1).max(2000),
+}).strict();
+
+export type JsonIngestBody = z.infer<typeof jsonIngestSchema>;
+
 // operationId: captureLead
 export const leadCaptureSchema = z.object({
   stockNumber: optionalText(80),

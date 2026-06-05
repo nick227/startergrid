@@ -8,6 +8,12 @@ export const DEFAULT_CSV_SOURCE = {
   kind:  'CSV' as InventorySourceKind,
 } as const;
 
+export const DEFAULT_JSON_SOURCE = {
+  slug:  'json-manual',
+  label: 'JSON Upload',
+  kind:  'JSON' as InventorySourceKind,
+} as const;
+
 // ── Pure helpers ──────────────────────────────────────────────────────────────
 
 export function deriveIngressStatus(
@@ -70,6 +76,25 @@ export type CreateIngressRunOpts = {
 };
 
 // ── DB functions ──────────────────────────────────────────────────────────────
+
+export async function getOrCreateSource(
+  prisma: PrismaClient,
+  dealershipId: string,
+  slug: string,
+  label: string,
+  kind: InventorySourceKind,
+): Promise<string> {
+  const existing = await prisma.inventorySource.findUnique({
+    where: { dealershipId_slug: { dealershipId, slug } },
+    select: { id: true }
+  });
+  if (existing) return existing.id;
+
+  const created = await prisma.inventorySource.create({
+    data: { dealershipId, slug, label, kind, status: 'ACTIVE' }
+  });
+  return created.id;
+}
 
 export async function getOrCreateDefaultSource(
   prisma: PrismaClient,

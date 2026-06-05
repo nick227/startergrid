@@ -326,6 +326,38 @@ paths:
         '404':
           $ref: '#/components/responses/NotFound'
 
+  /api/dealers/{dealershipId}/inventory/ingest/json:
+    post:
+      tags: [Inventory]
+      security:
+        - OperatorAuth: []
+      x-route-classification: operator
+      operationId: ingestJsonInventory
+      summary: Ingest vehicles from a structured JSON payload
+      parameters:
+        - $ref: '#/components/parameters/dealershipId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/JsonInventoryIngestRequest'
+      responses:
+        '200':
+          description: Ingest result
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/JsonIngestResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
   /api/dealers/{dealershipId}/inventory/bulk:
     patch:
       tags: [Inventory]
@@ -1495,6 +1527,69 @@ components:
           type: object
           additionalProperties:
             type: string
+
+    JsonVehicleInput:
+      type: object
+      required: [stockNumber, vin, year, make, model, mileage, priceCents, condition, exteriorColor]
+      properties:
+        stockNumber:   { type: string, maxLength: 80 }
+        vin:           { type: string, maxLength: 17 }
+        year:          { type: integer, minimum: 1900, maximum: 2100 }
+        make:          { type: string, maxLength: 80 }
+        model:         { type: string, maxLength: 80 }
+        trim:          { type: string, maxLength: 80 }
+        mileage:       { type: integer, minimum: 0, maximum: 2000000 }
+        priceCents:    { type: integer, minimum: 1, maximum: 100000000 }
+        condition:
+          type: string
+          enum: [NEW, USED, CPO]
+        exteriorColor: { type: string, maxLength: 80 }
+        interiorColor: { type: string, maxLength: 80 }
+        bodyStyle:     { type: string, maxLength: 80 }
+        drivetrain:    { type: string, maxLength: 80 }
+        fuelType:      { type: string, maxLength: 80 }
+        transmission:  { type: string, maxLength: 80 }
+        photoUrls:
+          type: array
+          maxItems: 100
+          items:
+            type: string
+            format: uri
+
+    JsonInventoryIngestRequest:
+      type: object
+      required: [vehicles]
+      properties:
+        sourceSlug:
+          type: string
+          maxLength: 80
+        sourceLabel:
+          type: string
+          maxLength: 160
+        mode:
+          type: string
+          enum: [upsert]
+        vehicles:
+          type: array
+          minItems: 1
+          maxItems: 2000
+          items:
+            $ref: '#/components/schemas/JsonVehicleInput'
+
+    JsonIngestResponse:
+      type: object
+      required: [status, ingressRunId, created, updated, skipped, errors, vehicleCount]
+      properties:
+        status:
+          type: string
+          enum: [COMMITTED, PARTIAL, FAILED]
+        ingressRunId: { type: string }
+        created:      { type: integer }
+        updated:      { type: integer }
+        skipped:      { type: integer }
+        errors:       { type: integer }
+        vehicleCount: { type: integer }
+        batchId:      { type: string }
 
     CommitImportResponse:
       type: object

@@ -20,6 +20,7 @@ export const routeClassifications = {
     'GET /api/dealers/:dealershipId/inventory',
     'POST /api/dealers/:dealershipId/inventory/import/preview',
     'POST /api/dealers/:dealershipId/inventory/import/commit',
+    'POST /api/dealers/:dealershipId/inventory/ingest/json',
     'PATCH /api/dealers/:dealershipId/inventory/bulk',
     'GET /api/dealers/:dealershipId/inventory/import/batches',
     'PATCH /api/dealers/:dealershipId/vehicles/:stockNumber/price',

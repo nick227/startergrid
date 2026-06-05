@@ -1,8 +1,10 @@
 import type { PrismaClient, Prisma } from '@prisma/client';
 import {
   getOrCreateDefaultSource,
+  getOrCreateSource,
   createIngressRun,
   deriveIngressStatus,
+  DEFAULT_JSON_SOURCE,
 } from './ingressService.js';
 
 // ── Column alias map ──────────────────────────────────────────────────────────
@@ -467,4 +469,185 @@ export function classifyVehicleReadiness(v: {
     issues.some(i => i.severity === 'WARN') ? 'WARNING' : 'READY';
 
   return { readiness, issues };
+}
+
+// ── JSON ingest ───────────────────────────────────────────────────────────────
+
+export type IngestVehicleInput = {
+  stockNumber:   string;
+  vin:           string;
+  year:          number;
+  make:          string;
+  model:         string;
+  trim?:         string;
+  mileage:       number;
+  priceCents:    number;
+  condition:     'NEW' | 'USED' | 'CPO';
+  exteriorColor: string;
+  interiorColor?: string;
+  bodyStyle?:    string;
+  drivetrain?:   string;
+  fuelType?:     string;
+  transmission?: string;
+  photoUrls?:    string[];
+};
+
+export type JsonIngestResult = {
+  status:       'COMMITTED' | 'PARTIAL' | 'FAILED';
+  created:      number;
+  updated:      number;
+  skipped:      number;
+  errors:       number;
+  vehicleCount: number;
+  ingressRunId: string;
+  batchId:      string;
+};
+
+export async function ingestJsonVehicles(
+  prisma: PrismaClient,
+  dealershipId: string,
+  vehicles: IngestVehicleInput[],
+  opts: { sourceSlug?: string; sourceLabel?: string } = {}
+): Promise<JsonIngestResult> {
+  const receivedAt  = new Date();
+  const sourceSlug  = opts.sourceSlug  ?? DEFAULT_JSON_SOURCE.slug;
+  const sourceLabel = opts.sourceLabel ?? DEFAULT_JSON_SOURCE.label;
+
+  const result: JsonIngestResult = {
+    status: 'COMMITTED', created: 0, updated: 0, skipped: 0,
+    errors: 0, vehicleCount: vehicles.length, ingressRunId: '', batchId: '',
+  };
+
+  const existingRows = await prisma.vehicle.findMany({
+    where: { dealershipId },
+    select: { id: true, stockNumber: true },
+  });
+  const existingById = new Map(existingRows.map(v => [v.stockNumber, v.id]));
+
+  let blockedCount = 0;
+  const seenStocks = new Set<string>();
+
+  for (let i = 0; i < vehicles.length; i++) {
+    const v = vehicles[i]!;
+
+    const issues = validateRow(v as MappedRow, i + 1);
+    if (seenStocks.has(v.stockNumber)) {
+      issues.push({
+        path: 'stockNumber',
+        message: `Row ${i + 1}: duplicate stock "${v.stockNumber}" within this batch`,
+        severity: 'FAIL',
+      });
+    } else {
+      seenStocks.add(v.stockNumber);
+    }
+
+    if (issues.some(iss => iss.severity === 'FAIL')) {
+      blockedCount++;
+      result.skipped++;
+      continue;
+    }
+
+    const mediaCreate = (v.photoUrls ?? []).map((url, idx) => ({ url, kind: 'IMAGE', sortOrder: idx }));
+    const commonData = {
+      vin:           v.vin,
+      year:          v.year,
+      make:          v.make,
+      model:         v.model,
+      trim:          v.trim          ?? null,
+      mileage:       v.mileage,
+      priceCents:    v.priceCents,
+      condition:     v.condition,
+      exteriorColor: v.exteriorColor,
+      interiorColor: v.interiorColor ?? null,
+      bodyStyle:     v.bodyStyle     ?? null,
+      drivetrain:    v.drivetrain    ?? null,
+      fuelType:      v.fuelType      ?? null,
+      transmission:  v.transmission  ?? null,
+      options:  [] as unknown as Prisma.InputJsonValue,
+      starCore: {} as unknown as Prisma.InputJsonValue,
+    };
+
+    try {
+      const existingId = existingById.get(v.stockNumber);
+      if (!existingId) {
+        await prisma.vehicle.create({
+          data: {
+            dealershipId, stockNumber: v.stockNumber, ...commonData,
+            ...(mediaCreate.length ? { media: { create: mediaCreate } } : {}),
+          }
+        });
+        result.created++;
+      } else {
+        await prisma.vehicle.update({
+          where: { id: existingId },
+          data: {
+            ...commonData,
+            ...(mediaCreate.length ? { media: { deleteMany: {}, create: mediaCreate } } : {}),
+          }
+        });
+        result.updated++;
+      }
+    } catch (err: unknown) {
+      console.error(`JSON ingest error on row ${i + 1}:`, err);
+      result.errors++;
+    }
+  }
+
+  const committedRows = result.created + result.updated;
+  result.status = result.errors === 0 ? 'COMMITTED' : committedRows > 0 ? 'PARTIAL' : 'FAILED';
+
+  try {
+    const completedAt  = new Date();
+    const ingressStatus = deriveIngressStatus(result.created, result.updated, result.errors);
+
+    const sourceId = await getOrCreateSource(prisma, dealershipId, sourceSlug, sourceLabel, 'JSON');
+
+    const ingressRunId = await createIngressRun(prisma, {
+      dealershipId,
+      sourceId,
+      sourceKind:   'JSON',
+      status:       ingressStatus,
+      receivedAt,
+      completedAt,
+      vehicleCount: vehicles.length,
+      createdCount: result.created,
+      updatedCount: result.updated,
+      skippedCount: result.skipped,
+      blockedCount,
+      errorCount:   result.errors,
+      summaryJson: {
+        status: result.status, created: result.created, updated: result.updated,
+        skipped: result.skipped, errors: result.errors,
+        vehicleCount: vehicles.length, sourceSlug,
+      },
+    });
+    result.ingressRunId = ingressRunId;
+
+    await prisma.inventorySource.update({
+      where: { id: sourceId },
+      data: { lastReceivedAt: completedAt },
+    });
+
+    const event = await prisma.syncEvent.create({
+      data: {
+        dealershipId,
+        kind: 'INVENTORY_IMPORT',
+        payload: {
+          status: result.status, created: result.created, updated: result.updated,
+          skipped: result.skipped, errors: result.errors,
+          vehicleCount: vehicles.length, sourceSlug, ingressRunId,
+        } as unknown as Prisma.InputJsonValue,
+      }
+    });
+    result.batchId = event.id;
+  } catch (err) {
+    console.error('Failed to record JSON ingest run:', err);
+  }
+
+  if (result.status === 'COMMITTED') {
+    const { scheduleAutoReconcile } = await import('../publishing/autoReconcileService.js');
+    scheduleAutoReconcile(dealershipId, { full: true, ingressRunId: result.ingressRunId });
+  }
+
+  return result;
 }
