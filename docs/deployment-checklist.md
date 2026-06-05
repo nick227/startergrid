@@ -54,7 +54,7 @@ npm run db:seed
 npm run smoke:test
 ```
 
-Expected smoke test output: `6/6 checks passed`
+Expected smoke test output: `8/8 checks passed`
 
 ---
 
@@ -156,6 +156,35 @@ npm run vehicle:update -- <dealershipId> <stockNumber> SOLD
 # Mark removed
 npm run vehicle:update -- <dealershipId> <stockNumber> REMOVED
 ```
+
+---
+
+## Ingress Source Polling
+
+API inventory sources (`kind: API`) can be polled automatically. See `docs/ingress-polling.md` for full setup.
+
+```bash
+# Dry-run: show which sources are due without fetching
+npm run ingress:poll-sources -- --dry-run
+
+# Check all due sources across all dealers
+npm run ingress:poll-sources
+
+# Check one dealer's sources only
+npm run ingress:poll-sources -- --dealer <dealershipId>
+
+# Retry ERROR sources
+npm run ingress:poll-sources -- --retry-errors
+```
+
+**Before enabling automated polling:**
+
+- [ ] Source registered with valid HTTPS `feedUrl`
+- [ ] `pollIntervalMinutes` set in operator UI
+- [ ] Manual check verified: `npm run ingress:check-source -- <dealerId> <sourceId>`
+- [ ] Dry-run passes: `npm run ingress:poll-sources -- --dry-run`
+- [ ] External scheduler configured to run CLI more frequently than shortest source interval
+- [ ] Alerts wired for non-zero exit code (feed failures)
 
 ---
 

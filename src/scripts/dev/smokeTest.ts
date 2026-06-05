@@ -85,6 +85,14 @@ async function run(): Promise<void> {
     check('Dev operator auth', false, err.message);
   }
 
+  // 8. Ingress poll dry-run
+  try {
+    execSync('node dist/src/scripts/inventory/pollSources.js --dry-run', { stdio: 'pipe' });
+    check('ingress:poll dry-run', true, 'exits cleanly');
+  } catch {
+    check('ingress:poll dry-run', false, 'non-zero exit');
+  }
+
   await prisma.$disconnect();
 
   // Print results
