@@ -208,7 +208,7 @@ function RunRow({ run, isLatest, onShowBlockedVehicles }: {
             ))}
           </div>
         ) : run.status === 'COMMITTED' || run.status === 'PARTIAL' ? (
-          <div className="mt-1 text-slate-300 text-xs italic">publish sync pending…</div>
+          <div className="mt-1 text-slate-300 text-xs italic">platform impact pending…</div>
         ) : null}
       </div>
 
