@@ -4,6 +4,7 @@ import type { BulkEditPayload, CommitImportResponse, VehiclePerformanceItem } fr
 import type { OperatorPageBaseProps } from '@/lib/operatorPage.ts';
 import { useAsyncQuery } from '@/hooks/useAsyncQuery.ts';
 import { OperatorPage, SectionCard, InlineCallout, PageHeader } from '@/components/operator';
+import { EMPTY_STATE_COPY } from '@/lib/statusRegistry.ts';
 import { Banner, EmptyState } from '@/components/ui';
 import { InfoButton } from '@/components/docs';
 import { SearchField } from '@/components/ui/SearchField.tsx';
@@ -18,7 +19,7 @@ import {
   buildVehicleColumns,
   SUMMARY_STRIP_ITEMS,
   BULK_EDIT_FIELD_DEFS,
-  READINESS_CONFIG,
+  vehicleReadinessRowBg,
   applyCleanupFilter,
 } from '@/components/inventory';
 import type { CleanupFilter } from '@/components/inventory';
@@ -140,7 +141,7 @@ export default function InventoryPage({ dealerId, nav, activeTab }: Props) {
         <PageHeader
           title="Inventory"
           infoDocId="inventory/inventory-readiness"
-          subtitle="Import, clean up issues, then sync to all platforms"
+          subtitle="Import stock, fix blockers, then send updates to platforms"
           action={
             summary && summary.ready > 0 ? (
               <button
@@ -164,8 +165,8 @@ export default function InventoryPage({ dealerId, nav, activeTab }: Props) {
           <SectionCard>
             <EmptyState
               icon="📦"
-              title="No inventory yet"
-              subtitle="Start by importing vehicles from a CSV or spreadsheet. Once rows pass validation, you can publish to platforms."
+              title={EMPTY_STATE_COPY.noInventory.title}
+              subtitle={EMPTY_STATE_COPY.noInventory.subtitle}
               action={
                 <div className="flex flex-col sm:flex-row gap-3 justify-center">
                   <button
@@ -180,7 +181,7 @@ export default function InventoryPage({ dealerId, nav, activeTab }: Props) {
                     onClick={nav.goToSync}
                     className="px-6 py-3 bg-white border border-slate-200 text-slate-700 text-sm font-semibold rounded-xl"
                   >
-                    Skip to publish console
+                    Skip to Sync
                   </button>
                 </div>
               }
@@ -283,10 +284,10 @@ export default function InventoryPage({ dealerId, nav, activeTab }: Props) {
                     ? <VehicleRowExpand issues={v.issues} perf={vperf} />
                     : null;
                 }}
-                rowClassName={v => READINESS_CONFIG[v.readiness].rowBg}
+                rowClassName={v => vehicleReadinessRowBg(v.readiness)}
                 loading={loading && !data}
                 emptyState={
-                  <EmptyState icon="🔍" title="No vehicles match this filter" subtitle="Try clearing filters or import more stock." />
+                  <EmptyState icon="🔍" title={EMPTY_STATE_COPY.noInventoryFilter.title} subtitle={EMPTY_STATE_COPY.noInventoryFilter.subtitle} />
                 }
               />
             </SectionCard>
@@ -294,7 +295,7 @@ export default function InventoryPage({ dealerId, nav, activeTab }: Props) {
             {summary && summary.ready > 0 && (
               <InlineCallout
                 tone="success"
-                title="Ready for publishing"
+                title="Ready to sync"
                 icon="✓"
                 action={
                   <button

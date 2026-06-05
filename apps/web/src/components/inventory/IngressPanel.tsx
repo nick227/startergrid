@@ -12,8 +12,10 @@ import type {
   IngressRunView,
   IngressRunPlatformImpact,
 } from '@/lib/types.ts';
+import { ingressRunStatusVisual, EMPTY_STATE_COPY } from '@/lib/statusRegistry.ts';
 import { SectionCard } from '@/components/operator';
 import { AsyncPanel } from '@/components/operator/AsyncPanel.tsx';
+import { EmptyState } from '@/components/ui';
 
 // ── Props ─────────────────────────────────────────────────────────────────────
 
@@ -108,10 +110,8 @@ function PollIntervalPicker({ preset, custom, onPreset, onCustom }: {
         )}
       </div>
       {preset !== 'none' && (
-        <p className="text-xs text-slate-300">
-          Automation requires{' '}
-          <code className="font-mono text-slate-400">npm run ingress:poll-sources</code>{' '}
-          or an external scheduler.
+        <p className="text-xs text-slate-400">
+          Automatic checks run on your server schedule — ask your ops team to enable polling.
         </p>
       )}
     </div>
@@ -144,26 +144,16 @@ function buildImpactChips(impact: IngressRunPlatformImpact): ImpactChip[] {
   const chips: ImpactChip[] = [];
   const s = impact.publishSummary;
   if (impact.dispatched > 0)
-    chips.push({ label: `${impact.dispatched} dispatched`, cls: 'text-emerald-700' });
+    chips.push({ label: `${impact.dispatched} submitted`, cls: 'text-emerald-700' });
   const scheduled = (s['Scheduled'] ?? 0) + (s['Ready'] ?? 0);
   if (scheduled > 0)
     chips.push({ label: `${scheduled} scheduled`, cls: 'text-sky-700' });
   if ((s['Needs Approval'] ?? 0) > 0)
-    chips.push({ label: `${s['Needs Approval']} need approval`, cls: 'text-amber-700' });
+    chips.push({ label: `${s['Needs Approval']} pending`, cls: 'text-amber-700' });
   if ((s['Failed'] ?? 0) > 0)
     chips.push({ label: `${s['Failed']} failed`, cls: 'text-red-600 font-semibold' });
-  if (impact.inCooldown > 0)
-    chips.push({ label: `${impact.inCooldown} in cooldown`, cls: 'text-slate-400' });
   return chips;
 }
-
-const RUN_STATUS_STYLE: Record<string, { pill: string; dot: string; label: string }> = {
-  COMMITTED:  { pill: 'bg-emerald-100 text-emerald-800', dot: 'bg-emerald-500', label: 'Committed' },
-  PARTIAL:    { pill: 'bg-amber-100 text-amber-800',     dot: 'bg-amber-500',   label: 'Partial' },
-  FAILED:     { pill: 'bg-red-100 text-red-700',         dot: 'bg-red-500',     label: 'Failed' },
-  RECEIVED:   { pill: 'bg-sky-100 text-sky-800',         dot: 'bg-sky-500',     label: 'Received' },
-  PROCESSING: { pill: 'bg-sky-100 text-sky-800',         dot: 'bg-sky-500',     label: 'Processing' },
-};
 
 // ── Main component ────────────────────────────────────────────────────────────
 
@@ -183,7 +173,7 @@ export function IngressPanel({ dealerId, latestRunId, onShowBlockedVehicles }: P
   const lastRun  = runs[0] ?? null;
   const subtitle = lastRun
     ? `Last intake ${relativeTime(lastRun.receivedAt)} · ${lastRun.vehicleCount} vehicle${lastRun.vehicleCount !== 1 ? 's' : ''}`
-    : 'No imports yet — use Import CSV to bring in your first batch';
+    : EMPTY_STATE_COPY.noIntakeRuns.subtitle;
 
   const handleSourceSaved = () => { setAddingSource(false); reloadSrc(); };
   const handleSourceUpdated = () => { reloadSrc(); reloadRuns(); };
@@ -191,13 +181,21 @@ export function IngressPanel({ dealerId, latestRunId, onShowBlockedVehicles }: P
   return (
     <SectionCard title="Intake sources" subtitle={subtitle} noPadding>
       <AsyncPanel
-        label="ingress sources"
+        label="Intake sources"
         loading={loading}
         error={srcErr ?? runsErr}
         hasData={srcData !== null || runsData !== null}
         onRetry={() => { reloadSrc(); reloadRuns(); }}
         skeletonRows={3}
       >
+        {sources.length === 0 && !addingSource && (
+          <EmptyState
+            icon="🔗"
+            title={EMPTY_STATE_COPY.noIntakeSources.title}
+            subtitle={EMPTY_STATE_COPY.noIntakeSources.subtitle}
+          />
+        )}
+
         {/* ── Source rows ──────────────────────────────────────────────────── */}
         {sources.length > 0 && (
           <div className="divide-y divide-slate-50 border-b border-slate-100">
@@ -246,10 +244,12 @@ export function IngressPanel({ dealerId, latestRunId, onShowBlockedVehicles }: P
             ))}
           </div>
         ) : (
-          !loading && (
-            <div className="px-5 py-6 text-center text-sm text-slate-400">
-              No intake runs yet. Use <span className="font-medium">Import CSV</span> above to bring in your first batch.
-            </div>
+          !loading && sources.length === 0 && (
+            <EmptyState
+              icon="📥"
+              title={EMPTY_STATE_COPY.noIntakeRuns.title}
+              subtitle={EMPTY_STATE_COPY.noIntakeRuns.subtitle}
+            />
           )
         )}
       </AsyncPanel>
@@ -625,7 +625,7 @@ function RunRow({ run, isLatest, onShowBlockedVehicles }: {
   isLatest: boolean;
   onShowBlockedVehicles?: () => void;
 }) {
-  const s = RUN_STATUS_STYLE[run.status] ?? { pill: 'bg-slate-100 text-slate-600', dot: 'bg-slate-400', label: run.status };
+  const s = ingressRunStatusVisual(run.status);
   const hasIssues = run.errorCount > 0 || run.blockedCount > 0;
 
   return (
@@ -659,7 +659,7 @@ function RunRow({ run, isLatest, onShowBlockedVehicles }: {
             ))}
           </div>
         ) : run.status === 'COMMITTED' || run.status === 'PARTIAL' ? (
-          <div className="mt-1 text-slate-300 text-xs italic">platform impact pending…</div>
+          <div className="mt-1 text-slate-400 text-xs">{EMPTY_STATE_COPY.noPerformancePlatforms.title}</div>
         ) : null}
       </div>
 

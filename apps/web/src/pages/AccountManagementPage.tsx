@@ -8,6 +8,7 @@ import {
   ACCOUNT_FILTER_CHIPS,
   accountStateVisual,
   ACCOUNT_STATE_REGISTRY,
+  EMPTY_STATE_COPY,
   type AccountStateKey,
 } from '@/lib/statusRegistry.ts';
 import {
@@ -21,6 +22,7 @@ import {
 import { FilterChips, SummaryStrip } from '@/components/generic';
 import type { SummaryItem } from '@/components/generic';
 import { Badge, Banner, Button, EmptyState, Skeleton } from '@/components/ui';
+import { SearchField } from '@/components/ui/SearchField.tsx';
 import type { BadgeColor } from '@/components/ui';
 
 type StateFilter = (typeof ACCOUNT_FILTER_CHIPS)[number]['key'];
@@ -87,10 +89,10 @@ export default function AccountManagementPage({ dealerId, nav, activeTab }: Prop
   const summaryItems: SummaryItem[] = summary ? [
     { key: 'total',          label: 'Total',          value: summary.total,          colorClass: 'text-slate-700' },
     { key: 'active',         label: 'Active',         value: summary.active,         colorClass: 'text-emerald-700' },
-    { key: 'needsSetup',     label: 'Needs Setup',    value: summary.needsSetup,     colorClass: 'text-amber-700' },
+    { key: 'needsSetup',     label: 'Needs setup',    value: summary.needsSetup,     colorClass: 'text-amber-700' },
     { key: 'pendingReview',  label: 'Pending Review', value: summary.pendingReview,  colorClass: 'text-sky-700' },
     { key: 'blocked',        label: 'Blocked',        value: summary.blocked,        colorClass: 'text-red-700' },
-    { key: 'partnerRequired',label: 'Partner Req.',   value: summary.partnerRequired,colorClass: 'text-slate-500' },
+    { key: 'partnerRequired',label: 'Partner required', value: summary.partnerRequired, colorClass: 'text-slate-500' },
   ] : [];
 
   const summaryActiveKey =
@@ -124,8 +126,14 @@ export default function AccountManagementPage({ dealerId, nav, activeTab }: Prop
         <PageHeader
           title="Platform accounts"
           infoDocId="platforms/account-states"
-          subtitle="Fix account gaps so Sync can reach every platform."
+          subtitle="Finish account setup so every platform can receive inventory."
         />
+
+        {blockingCount === 0 && accounts.length > 0 && (
+          <InlineCallout tone="success" title={EMPTY_STATE_COPY.noAccountBlockers.title} icon="✓">
+            {EMPTY_STATE_COPY.noAccountBlockers.subtitle}
+          </InlineCallout>
+        )}
 
         {blockingCount > 0 && (
           <InlineCallout
@@ -166,11 +174,11 @@ export default function AccountManagementPage({ dealerId, nav, activeTab }: Prop
         />
 
         <div className="flex items-center gap-3">
-          <input
+          <SearchField
             value={search}
-            onChange={e => setSearch(e.target.value)}
+            onChange={setSearch}
             placeholder="Search platform, account ID, rep…"
-            className="flex-1 max-w-md px-4 py-2.5 text-sm border border-slate-200 rounded-xl bg-white focus:outline-none focus:ring-2 focus:ring-emerald-500/30"
+            className="flex-1 max-w-md"
           />
           {filter !== 'ALL' && (
             <button type="button" onClick={() => setFilter('ALL')} className="text-xs font-semibold text-emerald-700">
@@ -192,10 +200,8 @@ export default function AccountManagementPage({ dealerId, nav, activeTab }: Prop
           ) : visible.length === 0 ? (
             <EmptyState
               icon="🔗"
-              title={accounts.length === 0 ? 'No platform accounts' : 'No matches'}
-              subtitle={accounts.length === 0
-                ? 'Accounts appear after your first sync run.'
-                : 'Try another filter or search term.'}
+              title={accounts.length === 0 ? EMPTY_STATE_COPY.noAccounts.title : EMPTY_STATE_COPY.noAccountMatches.title}
+              subtitle={accounts.length === 0 ? EMPTY_STATE_COPY.noAccounts.subtitle : EMPTY_STATE_COPY.noAccountMatches.subtitle}
             />
           ) : (
             <div className="divide-y divide-slate-50">
@@ -214,8 +220,8 @@ export default function AccountManagementPage({ dealerId, nav, activeTab }: Prop
         </SectionCard>
 
         <p className="text-xs text-slate-400 px-1">
-          Blocked and Suspended states prevent publishing. Partner Required needs a commercial agreement first.
-          Credential details (tokens, API keys) are stored and managed outside this portal.
+          Blocked accounts stop updates. Partner required means a commercial agreement is needed first.
+          Login credentials are managed outside this portal.
         </p>
       </div>
     </OperatorPage>
@@ -251,7 +257,7 @@ function AccountRow({ account, expanded, onToggle, dealerId, onSaved }: {
               <Badge color={cls.color}>{cls.label}</Badge>
               {meta.blocksPublishing && (
                 <span className="text-[10px] font-bold uppercase text-red-600 bg-red-100 px-1.5 py-0.5 rounded">
-                  Blocks publish
+                  Blocked
                 </span>
               )}
             </div>

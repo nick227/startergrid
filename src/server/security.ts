@@ -40,7 +40,6 @@ export const routeClassifications = {
   ],
   publicWrite: [
     'POST /api/dealers/:dealershipId/leads',
-    'POST /api/dealers/:dealershipId/storefront/events',
   ],
 } as const;
 

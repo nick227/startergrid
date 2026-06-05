@@ -16,9 +16,9 @@ export type SyncPlatformOutcomeMeta = {
 };
 
 const OUTCOME_META: Record<SyncPlatformOutcome, Omit<SyncPlatformOutcomeMeta, 'outcome'>> = {
-  live: { label: 'Live', pill: 'bg-emerald-100 text-emerald-800 border-emerald-200', sort: 3 },
-  ready: { label: 'Will sync', pill: 'bg-sky-100 text-sky-800 border-sky-200', sort: 2 },
-  waiting: { label: 'Needs you', pill: 'bg-amber-100 text-amber-900 border-amber-200', sort: 1 },
+  live: { label: 'Active', pill: 'bg-emerald-100 text-emerald-800 border-emerald-200', sort: 3 },
+  ready: { label: 'Scheduled', pill: 'bg-sky-100 text-sky-800 border-sky-200', sort: 2 },
+  waiting: { label: 'Pending', pill: 'bg-amber-100 text-amber-900 border-amber-200', sort: 1 },
   blocked: { label: 'Blocked', pill: 'bg-red-100 text-red-800 border-red-200', sort: 0 },
 };
 
@@ -169,9 +169,9 @@ export function computeSyncReadiness(data: PublishStatusResponse): SyncReadiness
 
   const autoSyncLine =
     autoPhase === 'idle' && auto?.lastCompletedAt
-      ? `Last auto-update ${relativeTime(auto.lastCompletedAt)}${auto.lastDispatched != null && auto.lastDispatched > 0 ? ` · ${auto.lastDispatched} dispatch${auto.lastDispatched !== 1 ? 'es' : ''}` : ''}`
+      ? `Last update ${relativeTime(auto.lastCompletedAt)}${auto.lastDispatched != null && auto.lastDispatched > 0 ? ` · ${auto.lastDispatched} platform${auto.lastDispatched !== 1 ? 's' : ''} submitted` : ''}`
       : autoPhase === 'idle'
-        ? 'Inventory changes auto-sync to platforms after you save.'
+        ? 'Inventory changes sync to platforms after you save.'
         : '';
 
   return {

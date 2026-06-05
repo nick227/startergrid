@@ -709,34 +709,6 @@ paths:
         '404':
           $ref: '#/components/responses/NotFound'
 
-  /api/dealers/{dealershipId}/storefront/events:
-    post:
-      tags: [Storefront]
-      security: []
-      x-route-classification: public-write
-      operationId: captureStorefrontEvent
-      summary: Capture storefront engagement event
-      description: Public write endpoint for first-party VDP/SRP analytics. Rate-limited server-side.
-      parameters:
-        - $ref: '#/components/parameters/dealershipId'
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/StorefrontEventRequest'
-      responses:
-        '201':
-          description: Event accepted
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/StorefrontEventResponse'
-        '400':
-          $ref: '#/components/responses/BadRequest'
-        '404':
-          $ref: '#/components/responses/NotFound'
-
   /api/dealers/{dealershipId}/performance/vehicles:
     get:
       tags: [Performance]
@@ -2160,39 +2132,6 @@ components:
           type: string
           nullable: true
 
-    StorefrontEventRequest:
-      type: object
-      required: [sessionId, eventType]
-      properties:
-        sessionId:
-          type: string
-          maxLength: 64
-        eventType:
-          type: string
-          enum: [srp_view, vdp_view, dwell_ping, gallery_open, lead_start]
-        stockNumber:
-          type: string
-          maxLength: 80
-        dwellMs:
-          type: integer
-          minimum: 0
-          maximum: 3600000
-        pagePath:
-          type: string
-          maxLength: 255
-        metadata:
-          type: object
-          additionalProperties: true
-
-    StorefrontEventResponse:
-      type: object
-      required: [ok, eventId]
-      properties:
-        ok:
-          type: boolean
-        eventId:
-          type: string
-
     # ── Performance cache schemas ──────────────────────────────────────────────
 
     MovementSignal:
@@ -2225,8 +2164,6 @@ components:
         - avgComparableDays
         - movementSignal
         - platformAssists
-        - avgVdpDwellMs
-        - vdpSessionCount
         - computedAt
       properties:
         vehicleId:
@@ -2268,13 +2205,6 @@ components:
                 type: integer
                 minimum: 0
           description: Observed lead counts by platform slug. Not sales attribution.
-        avgVdpDwellMs:
-          type: integer
-          nullable: true
-          description: Average VDP dwell time in milliseconds from storefront events.
-        vdpSessionCount:
-          type: integer
-          minimum: 0
         computedAt:
           type: string
           format: date-time

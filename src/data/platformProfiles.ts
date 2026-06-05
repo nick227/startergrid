@@ -11,7 +11,7 @@ export const platformProfiles: PlatformProfileSeed[] = [
     lastVerifiedAt: '2026-06-03T00:00:00.000Z',
     profileConfidence: 'HIGH',
     needsReview: false,
-    sourceNote: 'First-party owned channel. The platform builds and manages the dealer\'s inventory listing page and lead capture. All inventory changes sync in real time. Leads route directly to the dealer with no marketplace cut.',
+    sourceNote: 'White-label web feed channel. Sync publishes listing artifacts like any other destination — powers dealer-branded sites via feed, not a hosted per-dealer browse product. Consumer discovery is the internal marketplace (separate channel).',
     mockEndpoint: 'mock://platform/dealer-storefront',
     integrationUrls: {
       partnerPortalUrl: 'https://app.example.com/dashboard',

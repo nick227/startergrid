@@ -173,3 +173,4 @@ export type InventoryImportBody = z.infer<typeof inventoryImportSchema>;
 export type BulkEditBody = z.infer<typeof bulkEditSchema>;
 export type AccountUpdateBody = z.infer<typeof accountUpdateSchema>;
 export type LeadCaptureBody = z.infer<typeof leadCaptureSchema>;
+

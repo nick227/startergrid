@@ -93,23 +93,25 @@ model DealershipProfile {
   createdAt       DateTime @default(now())
   updatedAt       DateTime @updatedAt
 
-  vehicles            Vehicle[]
-  applications        PlatformApplication[]
-  leads               Lead[]
-  vehicleUpdates      VehicleUpdate[]
-  subscription        DealerSubscription?
-  inventorySnapshots  InventorySnapshot[]
-  readinessRuns       ReadinessRun[]
-  generatedArtifacts  GeneratedArtifact[]
-  credentialRefs      PlatformCredentialRef[]
-  notifications       DealerNotification[]
-  syncPolicies        SyncPolicy[]
-  publishQueue        PublishQueueItem[]
-  syncRuns            SyncRun[]
-  syncEvents          SyncEvent[]
-  platformAccounts    PlatformAccount[]
-  inventorySources    InventorySource[]
-  ingressRuns         IngressRun[]
+  vehicles                     Vehicle[]
+  applications                 PlatformApplication[]
+  leads                        Lead[]
+  vehicleUpdates               VehicleUpdate[]
+  subscription                 DealerSubscription?
+  inventorySnapshots           InventorySnapshot[]
+  readinessRuns                ReadinessRun[]
+  generatedArtifacts           GeneratedArtifact[]
+  credentialRefs               PlatformCredentialRef[]
+  notifications                DealerNotification[]
+  syncPolicies                 SyncPolicy[]
+  publishQueue                 PublishQueueItem[]
+  syncRuns                     SyncRun[]
+  syncEvents                   SyncEvent[]
+  platformAccounts             PlatformAccount[]
+  inventorySources             InventorySource[]
+  ingressRuns                  IngressRun[]
+  vehiclePerformanceCaches     VehiclePerformanceCache[]
+  platformPerformanceSummaries PlatformPerformanceSummary[]
 }
 
 model Vehicle {
@@ -137,12 +139,13 @@ model Vehicle {
   createdAt       DateTime @default(now())
   updatedAt       DateTime @updatedAt
 
-  dealership      DealershipProfile @relation(fields: [dealershipId], references: [id], onDelete: Cascade)
-  media           VehicleMedia[]
-  leads           Lead[]
-  updates         VehicleUpdate[]
-  queueItems      PublishQueueItem[]
-  syncEvents      SyncEvent[]
+  dealership       DealershipProfile @relation(fields: [dealershipId], references: [id], onDelete: Cascade)
+  media            VehicleMedia[]
+  leads            Lead[]
+  updates          VehicleUpdate[]
+  queueItems       PublishQueueItem[]
+  syncEvents       SyncEvent[]
+  performanceCache VehiclePerformanceCache?
 
   @@index([dealershipId])
   @@unique([dealershipId, stockNumber])
@@ -657,6 +660,61 @@ model PlatformAccount {
   updatedAt         DateTime             @updatedAt
 
   dealership   DealershipProfile @relation(fields: [dealershipId], references: [id], onDelete: Cascade)
+
+  @@unique([dealershipId, platformSlug])
+  @@index([dealershipId])
+}
+
+// ─── Performance engine cache models ─────────────────────────────────────────
+//
+// Performance cache tables are written by aggregate jobs and read by performance
+// API endpoints. Jobs compute from Vehicle, SyncEvent, and Lead data.
+//
+// Language contract: all platform data uses "observed assist" framing —
+// never "sold by". Confidence levels gate how results are labelled.
+
+model VehiclePerformanceCache {
+  id                String   @id @default(cuid())
+  dealershipId      String
+  vehicleId         String   @unique
+  stockNumber       String   @db.VarChar(80)
+  make              String   @db.VarChar(80)
+  model             String   @db.VarChar(80)
+  year              Int
+  priceCents        Int
+  condition         String   @db.VarChar(10)
+  daysOnline        Int
+  firstListedAt     DateTime
+  comparableCount   Int      @default(0)
+  avgComparableDays Float?
+  movementSignal    String   @db.VarChar(16)  // FAST|ON_TRACK|SLOW|STALE|LOW_DATA
+  platformAssistsJson Json?                    // { [slug]: { leads: number } }
+  computedAt        DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+
+  dealership  DealershipProfile @relation(fields: [dealershipId], references: [id], onDelete: Cascade)
+  vehicle     Vehicle           @relation(fields: [vehicleId], references: [id], onDelete: Cascade)
+
+  @@index([dealershipId])
+  @@index([dealershipId, movementSignal])
+}
+
+model PlatformPerformanceSummary {
+  id               String   @id @default(cuid())
+  dealershipId     String
+  platformSlug     String   @db.VarChar(80)
+  vehiclesListed   Int      @default(0)
+  vehiclesSold     Int      @default(0)
+  avgDaysToMove    Float?
+  medianDaysToMove Float?
+  totalLeads       Int      @default(0)
+  leadsPerVehicle  Float?
+  confidence       String   @db.VarChar(16)  // INSUFFICIENT|LOW|MEDIUM|HIGH
+  sampleSize       Int      @default(0)
+  computedAt       DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+
+  dealership  DealershipProfile @relation(fields: [dealershipId], references: [id], onDelete: Cascade)
 
   @@unique([dealershipId, platformSlug])
   @@index([dealershipId])

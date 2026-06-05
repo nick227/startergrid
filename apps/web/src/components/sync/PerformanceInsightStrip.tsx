@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import type { PerformanceSummaryView, PerformanceComputeResult } from '@/lib/types.ts';
 import { triggerPerformanceCompute } from '@/lib/api/sdk.ts';
+import { EMPTY_STATE_COPY } from '@/lib/statusRegistry.ts';
 
 type Props = {
   dealerId:    string;
@@ -46,7 +47,7 @@ export function PerformanceInsightStrip({ dealerId, summary, loading, onComputed
         <div>
           <p className="text-xs font-semibold text-slate-600">Movement signals</p>
           <p className="text-[10px] text-slate-400 mt-0.5">
-            Run the performance cache to see movement signals, stale risks, and best observed platform.
+            {EMPTY_STATE_COPY.noPerformanceData.subtitle}
           </p>
           {computeResult && (
             <p className="text-[10px] text-emerald-600 mt-1 font-medium">
@@ -67,7 +68,7 @@ export function PerformanceInsightStrip({ dealerId, summary, loading, onComputed
           disabled={computing}
           className="shrink-0 px-3 py-1.5 text-xs font-semibold bg-slate-800 hover:bg-slate-900 text-white rounded-lg disabled:opacity-50"
         >
-          {computing ? 'Computing…' : 'Compute now'}
+          {computing ? 'Refreshing…' : 'Refresh now'}
         </button>
       </div>
     );
@@ -91,7 +92,7 @@ export function PerformanceInsightStrip({ dealerId, summary, loading, onComputed
           disabled={computing}
           className="text-[10px] font-medium text-slate-400 hover:text-slate-600 disabled:opacity-50"
         >
-          {computing ? 'Computing…' : 'Recompute'}
+          {computing ? 'Refreshing…' : 'Refresh'}
         </button>
       </div>
 
@@ -140,7 +141,7 @@ export function PerformanceInsightStrip({ dealerId, summary, loading, onComputed
             </>
           ) : (
             <p className="text-[10px] text-slate-400 mt-0.5">
-              Need SUBMISSION_SENT events + sold vehicles
+              {EMPTY_STATE_COPY.noPerformancePlatforms.subtitle}
             </p>
           )}
         </div>
@@ -156,7 +157,7 @@ export function PerformanceInsightStrip({ dealerId, summary, loading, onComputed
 
       {computeResult && (
         <p className="text-[10px] text-emerald-600 font-medium">
-          Recomputed: {computeResult.vehicles} vehicle{computeResult.vehicles !== 1 ? 's' : ''}
+          Refreshed: {computeResult.vehicles} vehicle{computeResult.vehicles !== 1 ? 's' : ''}
           {computeResult.platforms > 0 && `, ${computeResult.platforms} platform${computeResult.platforms !== 1 ? 's' : ''}`}
           {computeResult.vehicleErrors > 0 && (
             <span className="text-amber-600"> · {computeResult.vehicleErrors} error{computeResult.vehicleErrors !== 1 ? 's' : ''}</span>
@@ -169,7 +170,7 @@ export function PerformanceInsightStrip({ dealerId, summary, loading, onComputed
 
       {summary.computedAt && (
         <p className="text-[10px] text-slate-300">
-          Cache from {new Date(summary.computedAt).toLocaleString()}
+          Updated {new Date(summary.computedAt).toLocaleString()}
         </p>
       )}
     </div>

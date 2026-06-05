@@ -1,53 +1,52 @@
 import type { Column } from '../generic/DataTable.tsx';
 import type { FieldDef } from '../generic/BulkActionBar.tsx';
 import type { VehicleListItem, VehiclePerformanceItem, MovementSignal } from '../../lib/types.ts';
+import {
+  VEHICLE_READINESS_REGISTRY,
+  movementSignalVisual,
+  type VehicleReadinessKey,
+} from '../../lib/statusRegistry.ts';
 import { Badge } from '../ui/Badge.tsx';
 import type { BadgeColor } from '../ui/Badge.tsx';
 
-// ── Readiness token map ───────────────────────────────────────────────────────
-
-type Readiness = 'READY' | 'WARNING' | 'BLOCKED';
-
-export const READINESS_CONFIG: Record<Readiness, {
-  label: string;
-  badgeColor: BadgeColor;
-  dotColor: string;
-  textColor: string;
-  rowBg: string;
-}> = {
-  READY:   { label: 'Ready',   badgeColor: 'green', dotColor: 'bg-green-500', textColor: 'text-green-700', rowBg: '' },
-  WARNING: { label: 'Warning', badgeColor: 'amber', dotColor: 'bg-amber-400', textColor: 'text-amber-700', rowBg: 'bg-amber-50/20' },
-  BLOCKED: { label: 'Blocked', badgeColor: 'red',   dotColor: 'bg-red-500',   textColor: 'text-red-700',   rowBg: 'bg-red-50/40' },
-};
-
 // ── Readiness badge — dot style (table rows) or pill style (import preview) ──
 
+type Readiness = VehicleReadinessKey;
+
+const READINESS_BADGE_COLOR: Record<Readiness, BadgeColor> = {
+  READY: 'green',
+  WARNING: 'amber',
+  BLOCKED: 'red',
+};
+
+const READINESS_TEXT_COLOR: Record<Readiness, string> = {
+  READY: 'text-green-700',
+  WARNING: 'text-amber-700',
+  BLOCKED: 'text-red-700',
+};
+
+export function vehicleReadinessRowBg(readiness: Readiness): string {
+  return VEHICLE_READINESS_REGISTRY[readiness].rowBg;
+}
+
 export function ReadinessBadge({ readiness, style = 'dot' }: { readiness: Readiness; style?: 'dot' | 'pill' }) {
-  const cfg = READINESS_CONFIG[readiness];
+  const meta = VEHICLE_READINESS_REGISTRY[readiness];
   if (style === 'dot') {
     return (
-      <span className={`flex items-center gap-1 text-xs ${cfg.textColor}`}>
-        <span className={`w-1.5 h-1.5 rounded-full ${cfg.dotColor} inline-block`} />
-        {cfg.label}
+      <span className={`flex items-center gap-1 text-xs ${READINESS_TEXT_COLOR[readiness]}`}>
+        <span className={`w-1.5 h-1.5 rounded-full ${meta.dot} inline-block`} />
+        {meta.label}
       </span>
     );
   }
-  return <Badge color={cfg.badgeColor}>{cfg.label}</Badge>;
+  return <Badge color={READINESS_BADGE_COLOR[readiness]}>{meta.label}</Badge>;
 }
 
 // ── Movement signal badge ─────────────────────────────────────────────────────
 
-const SIGNAL_CFG: Record<MovementSignal, { label: string; color: BadgeColor }> = {
-  FAST:     { label: 'Fast',     color: 'green' },
-  ON_TRACK: { label: 'On Track', color: 'blue'  },
-  SLOW:     { label: 'Slow',     color: 'amber' },
-  STALE:    { label: 'Stale',    color: 'red'   },
-  LOW_DATA: { label: '—',        color: 'slate' },
-};
-
 export function MovementSignalBadge({ signal }: { signal: MovementSignal | string }) {
-  const cfg = SIGNAL_CFG[signal as MovementSignal] ?? SIGNAL_CFG.LOW_DATA;
-  return <Badge color={cfg.color}>{cfg.label}</Badge>;
+  const meta = movementSignalVisual(signal);
+  return <Badge color={meta.badgeColor}>{meta.label}</Badge>;
 }
 
 // ── Action badge (import preview) ─────────────────────────────────────────────
@@ -136,7 +135,7 @@ export function buildVehicleColumns(
     ...VEHICLE_COLUMNS,
     {
       key: 'performance',
-      label: 'Days / Signal',
+      label: 'Days / Movement signal',
       render: v => {
         const perf = perfMap.get(v.stockNumber);
         if (!perf) return <span className="text-slate-300 text-xs">—</span>;
@@ -156,7 +155,7 @@ export function buildVehicleColumns(
 export const SUMMARY_STRIP_ITEMS: Array<{ key: string; label: string; colorClass: string }> = [
   { key: 'total',   label: 'Total',   colorClass: 'text-slate-700' },
   { key: 'ready',   label: 'Ready',   colorClass: 'text-green-700' },
-  { key: 'warning', label: 'Warning', colorClass: 'text-amber-600' },
+  { key: 'warning', label: 'Needs review', colorClass: 'text-amber-600' },
   { key: 'blocked', label: 'Blocked', colorClass: 'text-red-600'   },
 ];
 

@@ -10,11 +10,12 @@ export {
   VEHICLE_COLUMNS,
   SUMMARY_STRIP_ITEMS,
   BULK_EDIT_FIELD_DEFS,
-  READINESS_CONFIG,
   CLEANUP_FILTER_DEFS,
   IMPORT_WIZARD_STEPS,
   applyCleanupFilter,
   MovementSignalBadge,
+  ReadinessBadge,
+  vehicleReadinessRowBg,
   buildVehicleColumns,
 } from './inventoryConfig.tsx';
 export type { CleanupFilter, FilterChipDef } from './inventoryConfig.tsx';

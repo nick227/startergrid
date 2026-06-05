@@ -10,6 +10,7 @@ export function OperatorNav({ active, nav }: Props) {
     sync: nav.goToSync,
     inventory: nav.goToInventory,
     accounts: nav.goToAccounts,
+    insights: nav.goToInsights,
   };
 
   return (

@@ -35,6 +35,7 @@ export function PageShell({
     sync: 'Sync',
     inventory: 'Inventory',
     accounts: 'Platform Accounts',
+    insights: 'Insights',
   };
 
   return (

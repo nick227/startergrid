@@ -1,18 +1,55 @@
 # Handoff Document — Auto Dealer Sales Portal
 
-**Updated:** 2026-06-04  
-**State:** v4.0.0 · DB-backed MVP + Publish Pipeline + Operator UI · 409 tests passing  
+**Updated:** 2026-06-05  
+**State:** v4.1.0 · Sync engine + Operator Console + Performance Insights · 707 tests passing  
 **Branch:** `main`
 
 ---
 
 ## What This System Does
 
-A backend pipeline that takes a dealer profile and inventory, runs readiness validation against 18 ad/marketplace platforms, generates feed artifacts per platform, queues and dispatches them via a scheduler, and produces proof + invoice artifacts the operator delivers to the dealer.
+A sync engine that owns dealer inventory truth, ingress, platform readiness, publishing, accounts, and performance cache. It validates against 18 ad/marketplace platforms, generates feed artifacts, queues and dispatches them via a scheduler, and produces proof + invoice artifacts.
 
-The business model: charge a setup fee to launch, a monthly fee to manage.
+Two frontends consume different API surfaces:
 
-The system is TypeScript throughout. The **operator console UI** (`apps/web/`) is now live — operators can open a dealer, see publish readiness, run dry-run previews, and execute Prepare & Publish from a browser. CLI scripts remain available for all operations.
+- **Operator portal** (`apps/web/`) — inventory, ingress, accounts, publish/sync, performance insights. Uses the generated OpenAPI SDK.
+- **Consumer marketplace** (`apps/marketplace/`, not built) — multi-dealer browse/search. Reads curated marketplace index APIs only. Must not couple to sync-engine internals (queues, account states, operator workflow).
+
+CLI scripts remain available for all sync-engine operations.
+
+---
+
+## Application Architecture
+
+```
+apps/web              Operator portal — generated OpenAPI SDK
+apps/marketplace      Consumer multi-dealer app (planned) — marketplace index APIs only
+src/                  Sync engine + core DB truth
+  server/routes/
+    marketplace-ingest.ts   Third-party contract: sync dispatches marketplace-ready inventory here
+```
+
+**Source of truth (sync engine owns):** inventory, ingress, platform readiness, platform dispatch, performance cache.
+
+**Marketplace consumes curated output only:** marketplace index, public vehicle cards, dealer storefront-ready inventory, search/filter payloads. It does **not** read raw publishing queues, account states, or operator workflow data.
+
+`dealer-storefront` is a white-label **feed channel** (artifact output), not a hosted per-dealer browse product. Discovery lives in the internal marketplace, synced as platform slug **`marketplace`** (FEEDABLE, treated like any third-party destination).
+
+---
+
+## HTTP Route Contract (mandatory)
+
+Any HTTP route touched or added must follow, in the same commit:
+
+1. OpenAPI spec updated first (`openapi/openapi.yaml`)
+2. Security classification (`x-route-classification`, `security` block)
+3. `operationId` on every operation
+4. Request/response schemas in `components/schemas`
+5. Regenerate SDK — `npm run client:generate`
+6. Frontends call SDK wrappers in `apps/*/src/lib/api/sdk.ts`, not raw `fetch`
+7. `src/tests/routeContract.test.ts` stays green
+
+No more “just add a quick endpoint.”
 
 ---
 
@@ -64,6 +101,9 @@ src/
                               approvalService, packetGenerator, partnerPortalService,
                               mockReceiptService
     storefront/               storefrontQueryService, leadCaptureService
+    performance/              performanceMath (pure), performanceAggregator,
+                              vehicleAggregateJob, platformAggregateJob,
+                              performanceQueryService
 
   server/
     app.ts                    Slim Fastify registrar — registers routes only
@@ -83,11 +123,21 @@ src/
     poc/                      pocGreen, pocPortalLifecycle, pocRiskMatrix
     server.ts                 Fastify entry point (port 3000)
 
-  tests/                      node:test suite — 409 tests, all pure (no DB)
+  tests/                      node:test suite — 707 tests, all pure (no DB)
 
 apps/
-  web/                        Operator Publish Console (Vite + React + Tailwind)
+  web/                        Operator portal (Vite + React + Tailwind)
                               Dev: npm run ui:dev (port 5173, proxied to API on 3000)
+    src/pages/InsightsPage.tsx          Performance Insights tab — summary tiles, vehicle table, platform cards
+    src/components/sync/
+      PerformanceInsightStrip.tsx       Movement signal + stale risk strip on Inventory and Sync pages
+  marketplace/                Consumer multi-dealer app (not built yet)
+
+openapi/
+  openapi.yaml                API contract — source of truth for HTTP surface
+
+packages/
+  api-client/                 Generated SDK (`npm run client:generate`)
 
 docs/                         Design, planning, and handoff documents
 exports/                      Generated feed artifacts — gitignored
@@ -107,6 +157,7 @@ Services are grouped by the business concern they own, not by file type.
 | `platform/` | Platform profiles, readiness runs, risk matrix, profile seeding |
 | `publishing/` | The full publishing pipeline: feed generation → artifact storage → queue → scheduler → dispatch → approval → sync events. Also owns application lifecycle (activation, packets, portal simulation) |
 | `storefront/` | Owned-channel queries and lead capture — kept isolated so lead logic doesn't creep into the core publishing pipeline |
+| `performance/` | Performance cache computation and read queries. `performanceMath.ts` is pure (no DB). Aggregator jobs write `VehiclePerformanceCache` and `PlatformPerformanceSummary`. Query service is read-only from cache. |
 
 **Known issue:** `publishing/lifecyclePersistenceService` currently owns `persistLead` in addition to application-lifecycle persistence. Lead persistence belongs in `storefront/` long-term. Deferred — do not refactor without a dedicated ticket.
 
@@ -158,7 +209,7 @@ Run all of these after any change. None may fail before shipping.
 
 ```bash
 # Core
-npm test                              # 409 tests, 0 failing
+npm test                              # 707 tests, 0 failing
 npm run smoke:test                    # 6/6 system checks (DB, profiles, typecheck)
 npm run typecheck                     # TypeScript, no emit
 
@@ -247,6 +298,11 @@ VITE_DEV_OPERATOR_ID=dev-operator
 | GET | `/api/dealers/:id/publish/status` | Current publish status grid |
 | GET | `/api/dealers/:id/publish/history` | SyncEvent history (cursor-paginated) |
 | GET | `/api/dealers/:id/publish/accounts` | Platform account + application summary |
+| GET | `/api/dealers/:id/performance/vehicles` | All vehicle performance cache rows |
+| GET | `/api/dealers/:id/performance/vehicles/:stock` | Single vehicle performance by stock number |
+| GET | `/api/dealers/:id/performance/platforms` | Per-platform observed assist summaries |
+| GET | `/api/dealers/:id/performance/summary` | Aggregated view: counts, top movers, stale risks, best platform |
+| POST | `/api/dealers/:id/performance/compute` | Trigger manual cache recomputation |
 
 All publish endpoints return `nextRecommendedAction` — one of: `fix_blocked_vehicles`, `review_approvals`, `run_scheduler`, `resolve_partner_requirement`, `resolve_account_requirement`, `no_action`.
 
@@ -278,16 +334,30 @@ DealershipProfile
   └── DealerSubscription
   └── SyncPolicy, PublishQueueItem, SyncRun, SyncEvent
   └── PlatformAccount
+  └── VehiclePerformanceCache         Per-vehicle movement signal cache (one row per vehicle)
+  └── PlatformPerformanceSummary      Per-platform observed assist summary (one row per slug)
 
 PlatformProfile (seeded registry of 18)
 PlatformProfileVersion (versioned snapshots, SHA-256 checked)
 ```
+
+**Performance cache models:**
+
+`VehiclePerformanceCache` — keyed `(dealershipId, vehicleId)`. Stores `movementSignal` (FAST | ON_TRACK | SLOW | STALE | LOW_DATA), `daysOnline`, `comparableCount`, `avgComparableDays`, and `platformAssistsJson` (per-slug lead counts). Populated by `POST /performance/compute`; read by GET endpoints. Never written by query routes.
+
+`PlatformPerformanceSummary` — keyed `(dealershipId, platformSlug)`. Stores `vehiclesListed`, `vehiclesSold`, `avgDaysToMove`, `medianDaysToMove`, `totalLeads`, `leadsPerVehicle`, `confidence` (INSUFFICIENT | LOW | MEDIUM | HIGH), and `sampleSize`. `observedAssistLabel` is derived at query time via `platformAssistLabel()` — never stored.
 
 **Cascade:** Deleting a `DealershipProfile` cascades to all child rows. `GeneratedArtifact.linkedRunId` is `onDelete: SetNull`.
 
 ---
 
 ## Key Design Decisions
+
+**Performance language guardrails.** The performance engine surfaces correlation signals, not causal attribution. The enforced vocabulary:
+- Use **"movement signal"** (FAST / ON_TRACK / SLOW / STALE / LOW_DATA) — never "velocity score" or "sell-through rate."
+- Use **"observed assist"** for platform contribution labels — never "sold by [platform]" or "drove X sales."
+- `platformAssistLabel()` in `performanceMath.ts` is the single source of label text. Do not inline or reword these labels in UI or API responses.
+- `confidence` levels (INSUFFICIENT / LOW / MEDIUM / HIGH) describe sample size only — they do not indicate quality of the platform or likelihood of future performance.
 
 **Why Prisma ^6, not ^7?** Prisma 7 removed datasource URL from `schema.prisma` and requires a driver adapter. Pinned to `^6` — upgrade path exists when there's time.
 
@@ -318,18 +388,19 @@ PlatformProfileVersion (versioned snapshots, SHA-256 checked)
 | Invoice computation | `dealer:invoice -- <id> <YYYY-MM>` |
 | Operator Publish Console UI | `npm run ui:dev` + open localhost:5173 |
 | Publish API (prepare, status, history, accounts) | See HTTP API section above |
+| Performance Insights UI (Insights tab) | `npm run ui:dev`, pick dealer, click Insights |
+| Performance API (vehicle list, vehicle detail, platform list, summary, compute) | See HTTP API section above |
 
 ---
 
 ## What's Not Built Yet
 
-1. **Real SMTP delivery** — `DealerNotification` writes to DB; MOCK env only.
-2. **Sandbox / production API calls** — all `SubmissionAttempt` rows are MOCK.
-3. **CSV inventory import** — JSON only.
-4. **Dealer-facing portal** — UI is operator-only; no dealer login or self-service view.
-5. **Webhook / real-time feed push** — scheduler runs on-demand; no background daemon yet.
-6. **Full admin login / production tenant auth** — dev operator auth exists via `x-operator-id` / `DEV_OPERATOR_ID`, but there is no real login, session, role model, or production identity provider yet.
-7. **`@@unique` on `PlatformProfileVersion(platformSlug, schemaVersion)`** — idempotency handled in code; DB constraint not added yet.
+1. **Internal marketplace loop** — `apps/marketplace/` consumer app, marketplace index read APIs, real HTTP dispatch to ingest endpoint, `MarketplaceListing` projection. Route and ingest contract defined in `docs/plans/marketplace-index-contract.md`.
+2. **Production auth** — dev operator header only; no login, sessions, or dealer/admin role model.
+3. **Sandbox / production API calls** — all `SubmissionAttempt` rows are MOCK.
+4. **Background scheduler daemon** — sync runs on-demand via CLI/API.
+5. **Real SMTP delivery** — `DealerNotification` writes to DB; MOCK env only.
+6. **Dealer self-service capability gating** — operator portal exists; role-based dealer depth not implemented.
 
 ---
 

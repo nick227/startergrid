@@ -25,8 +25,6 @@ export type VehiclePerformanceItem = {
   avgComparableDays: number | null;
   movementSignal:    string;
   platformAssists:   Record<string, { leads: number }>;
-  avgVdpDwellMs:     number | null;
-  vdpSessionCount:   number;
   computedAt:        string;
 };
 
@@ -71,8 +69,6 @@ type CacheRow = {
   avgComparableDays:   number | null;
   movementSignal:      string;
   platformAssistsJson: unknown;
-  avgVdpDwellMs:       number | null;
-  vdpSessionCount:     number;
   computedAt:          Date;
 };
 
@@ -104,8 +100,6 @@ function shapeVehicle(v: CacheRow): VehiclePerformanceItem {
     avgComparableDays: v.avgComparableDays,
     movementSignal:    v.movementSignal,
     platformAssists:   (v.platformAssistsJson ?? {}) as Record<string, { leads: number }>,
-    avgVdpDwellMs:     v.avgVdpDwellMs,
-    vdpSessionCount:   v.vdpSessionCount,
     computedAt:        v.computedAt.toISOString(),
   };
 }

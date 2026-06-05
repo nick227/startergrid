@@ -1,6 +1,6 @@
 import type { OperatorNavHandlers } from './operatorNav.ts';
 
-export type OperatorPageSegment = 'inventory' | 'accounts' | 'knowledge';
+export type OperatorPageSegment = 'inventory' | 'accounts' | 'insights' | 'knowledge';
 
 export type OperatorRoute = {
   dealerId: string | null;
@@ -20,8 +20,9 @@ export function parseOperatorRoute(): OperatorRoute {
   const page: OperatorPageSegment | null =
     segment === 'inventory' ? 'inventory'
       : segment === 'accounts' ? 'accounts'
-        : segment === 'knowledge' ? 'knowledge'
-          : null;
+        : segment === 'insights' ? 'insights'
+          : segment === 'knowledge' ? 'knowledge'
+            : null;
 
   return { dealerId: match[1] ?? null, page };
 }
@@ -44,6 +45,7 @@ export function buildOperatorNav(dealerId: string): OperatorNavHandlers {
     goToSync: () => { window.location.hash = operatorHash(dealerId); },
     goToInventory: () => { window.location.hash = operatorHash(dealerId, 'inventory'); },
     goToAccounts: () => { window.location.hash = operatorHash(dealerId, 'accounts'); },
+    goToInsights: () => { window.location.hash = operatorHash(dealerId, 'insights'); },
     goToKnowledge: () => { window.location.hash = operatorHash(dealerId, 'knowledge'); },
     changeDealer: () => { window.location.hash = dealerPickerHash(); },
   };

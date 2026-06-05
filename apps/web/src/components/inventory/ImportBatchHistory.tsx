@@ -1,6 +1,8 @@
 import { useState, useEffect } from 'react';
 import { fetchImportBatches } from '../../lib/api/sdk.ts';
 import type { ImportBatch } from '../../lib/types.ts';
+import { EMPTY_STATE_COPY } from '../../lib/statusRegistry.ts';
+import { EmptyState } from '../ui';
 
 type Props = {
   dealerId: string;
@@ -69,13 +71,14 @@ export function ImportBatchHistory({ dealerId, latestBatchId, initialOpen = fals
   const hasBatches = batches && batches.length > 0;
 
   return (
-    <div className="bg-white rounded-xl border border-slate-200 overflow-hidden">
+    <div>
       <button
+        type="button"
         onClick={handleToggle}
-        className="w-full px-5 py-3 flex items-center justify-between hover:bg-slate-50 transition-colors"
+        className="w-full px-5 py-3 flex items-center justify-between hover:bg-slate-50 transition-colors border-b border-slate-100"
       >
         <div className="flex items-center gap-2">
-          <span className="text-xs font-semibold text-slate-500 uppercase tracking-wider">Import History</span>
+          <span className="text-xs font-semibold text-slate-500">Show past imports</span>
           {batches !== null && (
             <span className="text-xs text-slate-300">({batches.length})</span>
           )}
@@ -84,14 +87,16 @@ export function ImportBatchHistory({ dealerId, latestBatchId, initialOpen = fals
       </button>
 
       {open && (
-        <div className="border-t border-slate-100">
+        <div>
           {loading && !hasBatches && (
             <div className="px-5 py-3 text-xs text-slate-400 animate-pulse">Loading…</div>
           )}
           {!loading && !hasBatches && (
-            <div className="px-5 py-4 text-xs text-slate-400 text-center">
-              No import history yet. Import a CSV to get started.
-            </div>
+            <EmptyState
+              icon="📋"
+              title={EMPTY_STATE_COPY.noImportHistory.title}
+              subtitle={EMPTY_STATE_COPY.noImportHistory.subtitle}
+            />
           )}
           {hasBatches && batches.map(b => (
             <BatchRow key={b.id} batch={b} isLatest={b.id === latestBatchId} />
