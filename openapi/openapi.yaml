@@ -17,6 +17,7 @@ tags:
   - name: Inventory
   - name: Vehicles
   - name: Storefront
+  - name: Performance
 
 paths:
   /health:
@@ -705,6 +706,174 @@ paths:
                 $ref: '#/components/schemas/LeadCaptureResponse'
         '400':
           $ref: '#/components/responses/BadRequest'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /api/dealers/{dealershipId}/storefront/events:
+    post:
+      tags: [Storefront]
+      security: []
+      x-route-classification: public-write
+      operationId: captureStorefrontEvent
+      summary: Capture storefront engagement event
+      description: Public write endpoint for first-party VDP/SRP analytics. Rate-limited server-side.
+      parameters:
+        - $ref: '#/components/parameters/dealershipId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/StorefrontEventRequest'
+      responses:
+        '201':
+          description: Event accepted
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StorefrontEventResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /api/dealers/{dealershipId}/performance/vehicles:
+    get:
+      tags: [Performance]
+      security:
+        - OperatorAuth: []
+      x-route-classification: operator
+      operationId: listVehiclePerformance
+      summary: Vehicle movement signals from cache
+      description: |
+        Returns cached movement signal and comparable benchmark for every active vehicle.
+        Reads from VehiclePerformanceCache only — no live computation.
+        Run POST /performance/compute first if the response is empty.
+      parameters:
+        - $ref: '#/components/parameters/dealershipId'
+      responses:
+        '200':
+          description: Vehicle performance list
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/VehiclePerformanceListResponse'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /api/dealers/{dealershipId}/performance/vehicles/{stockNumber}:
+    get:
+      tags: [Performance]
+      security:
+        - OperatorAuth: []
+      x-route-classification: operator
+      operationId: getVehiclePerformance
+      summary: Single vehicle movement signal from cache
+      description: |
+        Returns cached performance data for one vehicle by stock number.
+        Returns 404 when the vehicle has not yet been computed.
+      parameters:
+        - $ref: '#/components/parameters/dealershipId'
+        - $ref: '#/components/parameters/stockNumber'
+      responses:
+        '200':
+          description: Vehicle performance detail
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/VehiclePerformanceDetailResponse'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /api/dealers/{dealershipId}/performance/platforms:
+    get:
+      tags: [Performance]
+      security:
+        - OperatorAuth: []
+      x-route-classification: operator
+      operationId: listPlatformPerformance
+      summary: Per-platform observed assist data from cache
+      description: |
+        Returns average days-to-move, lead counts, and confidence for every platform
+        that has SUBMISSION_SENT events. Uses "observed assist" framing — not attribution.
+        Reads from PlatformPerformanceSummary cache only.
+      parameters:
+        - $ref: '#/components/parameters/dealershipId'
+      responses:
+        '200':
+          description: Platform performance list
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PlatformPerformanceListResponse'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /api/dealers/{dealershipId}/performance/summary:
+    get:
+      tags: [Performance]
+      security:
+        - OperatorAuth: []
+      x-route-classification: operator
+      operationId: getPerformanceSummary
+      summary: Top movers, stale risks, and best observed platform from cache
+      description: |
+        Aggregated overview: fast movers (up to 5), stale risks (up to 5),
+        signal counts, and the best observed platform (lowest avg days to move
+        with confidence ≥ LOW). Cache-only read.
+      parameters:
+        - $ref: '#/components/parameters/dealershipId'
+      responses:
+        '200':
+          description: Performance summary
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PerformanceSummaryResponse'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /api/dealers/{dealershipId}/performance/compute:
+    post:
+      tags: [Performance]
+      security:
+        - OperatorAuth: []
+      x-route-classification: operator
+      operationId: computePerformance
+      summary: Trigger manual performance cache recomputation
+      description: |
+        Runs vehicle and platform aggregate jobs for the dealer and upserts cache tables.
+        Idempotent — safe to run multiple times. vehicleErrors > 0 indicates
+        partial failures; check server logs for details.
+      parameters:
+        - $ref: '#/components/parameters/dealershipId'
+      responses:
+        '200':
+          description: Compute result with counts and duration
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PerformanceComputeResponse'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
         '404':
           $ref: '#/components/responses/NotFound'
 
@@ -1990,6 +2159,292 @@ components:
         leadId:
           type: string
           nullable: true
+
+    StorefrontEventRequest:
+      type: object
+      required: [sessionId, eventType]
+      properties:
+        sessionId:
+          type: string
+          maxLength: 64
+        eventType:
+          type: string
+          enum: [srp_view, vdp_view, dwell_ping, gallery_open, lead_start]
+        stockNumber:
+          type: string
+          maxLength: 80
+        dwellMs:
+          type: integer
+          minimum: 0
+          maximum: 3600000
+        pagePath:
+          type: string
+          maxLength: 255
+        metadata:
+          type: object
+          additionalProperties: true
+
+    StorefrontEventResponse:
+      type: object
+      required: [ok, eventId]
+      properties:
+        ok:
+          type: boolean
+        eventId:
+          type: string
+
+    # ── Performance cache schemas ──────────────────────────────────────────────
+
+    MovementSignal:
+      type: string
+      enum: [FAST, ON_TRACK, SLOW, STALE, LOW_DATA]
+      description: >
+        Compares daysOnline to the average for comparable vehicles (same make/model,
+        year ±3, price ±5%). LOW_DATA means fewer than 3 comparable sold vehicles exist.
+
+    PerformanceConfidence:
+      type: string
+      enum: [INSUFFICIENT, LOW, MEDIUM, HIGH]
+      description: >
+        Based on the count of sold vehicles observed for the platform.
+        INSUFFICIENT = 0–2, LOW = 3–9, MEDIUM = 10–29, HIGH = 30+.
+
+    VehiclePerformanceItem:
+      type: object
+      required:
+        - vehicleId
+        - stockNumber
+        - year
+        - make
+        - model
+        - condition
+        - priceCents
+        - daysOnline
+        - firstListedAt
+        - comparableCount
+        - avgComparableDays
+        - movementSignal
+        - platformAssists
+        - avgVdpDwellMs
+        - vdpSessionCount
+        - computedAt
+      properties:
+        vehicleId:
+          type: string
+        stockNumber:
+          type: string
+        year:
+          type: integer
+        make:
+          type: string
+        model:
+          type: string
+        condition:
+          type: string
+        priceCents:
+          type: integer
+        daysOnline:
+          type: integer
+          minimum: 0
+        firstListedAt:
+          type: string
+          format: date-time
+        comparableCount:
+          type: integer
+          minimum: 0
+        avgComparableDays:
+          type: number
+          nullable: true
+          description: Null when fewer than 3 comparable sold vehicles exist.
+        movementSignal:
+          $ref: '#/components/schemas/MovementSignal'
+        platformAssists:
+          type: object
+          additionalProperties:
+            type: object
+            required: [leads]
+            properties:
+              leads:
+                type: integer
+                minimum: 0
+          description: Observed lead counts by platform slug. Not sales attribution.
+        avgVdpDwellMs:
+          type: integer
+          nullable: true
+          description: Average VDP dwell time in milliseconds from storefront events.
+        vdpSessionCount:
+          type: integer
+          minimum: 0
+        computedAt:
+          type: string
+          format: date-time
+
+    PlatformPerformanceItem:
+      type: object
+      required:
+        - platformSlug
+        - vehiclesListed
+        - vehiclesSold
+        - avgDaysToMove
+        - medianDaysToMove
+        - totalLeads
+        - leadsPerVehicle
+        - confidence
+        - sampleSize
+        - observedAssistLabel
+        - computedAt
+      properties:
+        platformSlug:
+          type: string
+        vehiclesListed:
+          type: integer
+          minimum: 0
+          description: Count of distinct vehicles with SUBMISSION_SENT events on this platform.
+        vehiclesSold:
+          type: integer
+          minimum: 0
+          description: Of the listed vehicles, how many have soldAt set.
+        avgDaysToMove:
+          type: number
+          nullable: true
+          description: >
+            Average days from first SUBMISSION_SENT to soldAt for sold vehicles.
+            Not a causal claim — use observedAssistLabel for display.
+        medianDaysToMove:
+          type: number
+          nullable: true
+        totalLeads:
+          type: integer
+          minimum: 0
+        leadsPerVehicle:
+          type: number
+          nullable: true
+        confidence:
+          $ref: '#/components/schemas/PerformanceConfidence'
+        sampleSize:
+          type: integer
+          minimum: 0
+          description: Number of sold vehicles used in the calculation.
+        observedAssistLabel:
+          type: string
+          description: >
+            "strong observed assist" | "possible assist" | "insufficient data".
+            Never says "sold by". Derived from confidence.
+        computedAt:
+          type: string
+          format: date-time
+
+    PerformanceSummaryView:
+      type: object
+      required:
+        - computedAt
+        - activeCount
+        - staleCount
+        - fastCount
+        - lowDataCount
+        - topMovers
+        - staleRisks
+        - bestObservedPlatform
+      properties:
+        computedAt:
+          type: string
+          format: date-time
+          nullable: true
+          description: Null when no cache rows exist yet.
+        activeCount:
+          type: integer
+          minimum: 0
+        staleCount:
+          type: integer
+          minimum: 0
+        fastCount:
+          type: integer
+          minimum: 0
+        lowDataCount:
+          type: integer
+          minimum: 0
+        topMovers:
+          type: array
+          maxItems: 5
+          items:
+            $ref: '#/components/schemas/VehiclePerformanceItem'
+        staleRisks:
+          type: array
+          maxItems: 5
+          items:
+            $ref: '#/components/schemas/VehiclePerformanceItem'
+        bestObservedPlatform:
+          description: >
+            Platform with the lowest avgDaysToMove among platforms with confidence ≥ LOW.
+            Null (JSON null) when no eligible platforms exist; shape matches PlatformPerformanceItem.
+          allOf:
+            - $ref: '#/components/schemas/PlatformPerformanceItem'
+
+    VehiclePerformanceListResponse:
+      type: object
+      required: [items, computedAt]
+      properties:
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/VehiclePerformanceItem'
+        computedAt:
+          type: string
+          format: date-time
+          nullable: true
+
+    VehiclePerformanceDetailResponse:
+      type: object
+      required: [item]
+      properties:
+        item:
+          $ref: '#/components/schemas/VehiclePerformanceItem'
+
+    PlatformPerformanceListResponse:
+      type: object
+      required: [platforms, computedAt]
+      properties:
+        platforms:
+          type: array
+          items:
+            $ref: '#/components/schemas/PlatformPerformanceItem'
+        computedAt:
+          type: string
+          format: date-time
+          nullable: true
+
+    PerformanceSummaryResponse:
+      type: object
+      required: [summary]
+      properties:
+        summary:
+          $ref: '#/components/schemas/PerformanceSummaryView'
+
+    PerformanceComputeResponse:
+      type: object
+      required: [result]
+      properties:
+        result:
+          type: object
+          required: [vehicles, vehicleErrors, platforms, durationMs, computedAt]
+          properties:
+            vehicles:
+              type: integer
+              minimum: 0
+              description: Number of vehicle cache rows successfully written.
+            vehicleErrors:
+              type: integer
+              minimum: 0
+              description: Number of vehicles that failed to cache. 0 means full success.
+            platforms:
+              type: integer
+              minimum: 0
+            durationMs:
+              type: integer
+              minimum: 0
+            computedAt:
+              type: string
+              format: date-time
 
     AutoSyncStatus:
       type: object

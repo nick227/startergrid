@@ -39,6 +39,12 @@ const REGISTERED_ROUTES = new Set([
   'GET    /api/dealers/{dealershipId}/storefront',
   'GET    /api/dealers/{dealershipId}/vehicles/{stockNumber}',
   'POST   /api/dealers/{dealershipId}/leads',
+  'POST   /api/dealers/{dealershipId}/storefront/events',
+  'GET    /api/dealers/{dealershipId}/performance/vehicles',
+  'GET    /api/dealers/{dealershipId}/performance/vehicles/{stockNumber}',
+  'GET    /api/dealers/{dealershipId}/performance/platforms',
+  'GET    /api/dealers/{dealershipId}/performance/summary',
+  'POST   /api/dealers/{dealershipId}/performance/compute',
 ]);
 
 // ── Parse OpenAPI spec ────────────────────────────────────────────────────────

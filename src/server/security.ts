@@ -10,6 +10,11 @@ export const routeClassifications = {
   ],
   operator: [
     'GET /api/dealers',
+    'GET /api/dealers/:dealershipId/performance/vehicles',
+    'GET /api/dealers/:dealershipId/performance/vehicles/:stockNumber',
+    'GET /api/dealers/:dealershipId/performance/platforms',
+    'GET /api/dealers/:dealershipId/performance/summary',
+    'POST /api/dealers/:dealershipId/performance/compute',
     'POST /api/dealers/:dealershipId/publish/prepare',
     'GET /api/dealers/:dealershipId/publish/status',
     'GET /api/dealers/:dealershipId/publish/history',
@@ -35,6 +40,7 @@ export const routeClassifications = {
   ],
   publicWrite: [
     'POST /api/dealers/:dealershipId/leads',
+    'POST /api/dealers/:dealershipId/storefront/events',
   ],
 } as const;
 
