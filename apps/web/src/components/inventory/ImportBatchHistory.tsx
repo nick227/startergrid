@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { fetchImportBatches } from '../../lib/api.ts';
+import { fetchImportBatches } from '../../lib/api/sdk.ts';
 import type { ImportBatch } from '../../lib/types.ts';
 
 type Props = {

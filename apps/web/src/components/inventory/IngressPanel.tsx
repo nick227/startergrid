@@ -1,6 +1,6 @@
 import { useAsyncQuery } from '@/hooks/useAsyncQuery.ts';
 import { fetchIngressSources, fetchIngressRuns } from '@/lib/api/sdk.ts';
-import type { IngressSourceView, IngressRunView } from '@/lib/types.ts';
+import type { IngressSourceView, IngressRunView, IngressRunPlatformImpact } from '@/lib/types.ts';
 import { SectionCard } from '@/components/operator';
 import { AsyncPanel } from '@/components/operator/AsyncPanel.tsx';
 
@@ -39,6 +39,29 @@ const SOURCE_STATUS_STYLE: Record<string, string> = {
   DISCONNECTED: 'bg-slate-100 text-slate-500',
   ERROR:        'bg-red-100 text-red-700',
 };
+
+// ── Platform impact helpers ───────────────────────────────────────────────────
+
+type ImpactChip = { label: string; cls: string };
+
+function buildImpactChips(impact: IngressRunPlatformImpact): ImpactChip[] {
+  const chips: ImpactChip[] = [];
+  const s = impact.publishSummary;
+
+  if (impact.dispatched > 0)
+    chips.push({ label: `${impact.dispatched} dispatched`, cls: 'text-emerald-700' });
+  const scheduled = (s['Scheduled'] ?? 0) + (s['Ready'] ?? 0);
+  if (scheduled > 0)
+    chips.push({ label: `${scheduled} scheduled`, cls: 'text-sky-700' });
+  if ((s['Needs Approval'] ?? 0) > 0)
+    chips.push({ label: `${s['Needs Approval']} need approval`, cls: 'text-amber-700' });
+  if ((s['Failed'] ?? 0) > 0)
+    chips.push({ label: `${s['Failed']} failed`, cls: 'text-red-600 font-semibold' });
+  if (impact.inCooldown > 0)
+    chips.push({ label: `${impact.inCooldown} in cooldown`, cls: 'text-slate-400' });
+
+  return chips;
+}
 
 const RUN_STATUS_STYLE: Record<string, { pill: string; dot: string; label: string }> = {
   COMMITTED:  { pill: 'bg-emerald-100 text-emerald-800', dot: 'bg-emerald-500', label: 'Committed' },
@@ -175,6 +198,18 @@ function RunRow({ run, isLatest, onShowBlockedVehicles }: {
           {run.skippedCount > 0 && <span className="text-slate-400">{run.skippedCount} skipped</span>}
           {run.errorCount   > 0 && <span className="text-red-600 font-semibold">{run.errorCount} errors</span>}
         </div>
+
+        {/* Publish impact — shown once auto-reconcile has written back */}
+        {run.platformImpactJson ? (
+          <div className="flex items-center gap-2 mt-1 flex-wrap">
+            <span className="text-slate-300 select-none">→</span>
+            {buildImpactChips(run.platformImpactJson).map(c => (
+              <span key={c.label} className={`${c.cls}`}>{c.label}</span>
+            ))}
+          </div>
+        ) : run.status === 'COMMITTED' || run.status === 'PARTIAL' ? (
+          <div className="mt-1 text-slate-300 text-xs italic">publish sync pending…</div>
+        ) : null}
       </div>
 
       {/* Fix link when there are issues */}

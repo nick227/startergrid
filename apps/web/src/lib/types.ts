@@ -324,21 +324,29 @@ export type IngressSourceView = {
   updatedAt: string;
 };
 
+export type IngressRunPlatformImpact = {
+  reconcileAt:    string;
+  publishSummary: Record<string, number>;
+  dispatched:     number;
+  inCooldown:     number;
+};
+
 export type IngressRunView = {
   id: string;
-  sourceId:    string | null;
-  sourceLabel: string | null;
-  sourceKind:  string;
-  status:      string;
-  receivedAt:  string;
-  completedAt: string | null;
-  vehicleCount: number;
-  createdCount: number;
-  updatedCount: number;
-  skippedCount: number;
-  blockedCount: number;
-  errorCount:   number;
-  summaryJson:  unknown;
+  sourceId:          string | null;
+  sourceLabel:       string | null;
+  sourceKind:        string;
+  status:            string;
+  receivedAt:        string;
+  completedAt:       string | null;
+  vehicleCount:      number;
+  createdCount:      number;
+  updatedCount:      number;
+  skippedCount:      number;
+  blockedCount:      number;
+  errorCount:        number;
+  summaryJson:       unknown;
+  platformImpactJson: IngressRunPlatformImpact | null;
 };
 
 export type IngressSourcesResponse = { sources: IngressSourceView[] };

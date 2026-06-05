@@ -1,5 +1,5 @@
 import { useState, useMemo } from 'react';
-import { fetchInventory, bulkEditVehicles } from '@/lib/api.ts';
+import { fetchInventory, bulkEditVehicles } from '@/lib/api/sdk.ts';
 import type { BulkEditPayload, CommitImportResponse } from '@/lib/types.ts';
 import type { OperatorPageBaseProps } from '@/lib/operatorPage.ts';
 import { useAsyncQuery } from '@/hooks/useAsyncQuery.ts';
