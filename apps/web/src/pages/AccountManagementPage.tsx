@@ -1,5 +1,5 @@
 import { useState, useMemo } from 'react';
-import { fetchAccounts, updateAccount } from '@/lib/api.ts';
+import { fetchAccounts, updateAccount } from '@/lib/api/sdk.ts';
 import type { PlatformAccountDetail, AccountUpdatePayload } from '@/lib/types.ts';
 import type { OperatorPageBaseProps } from '@/lib/operatorPage.ts';
 import { useAsyncQuery } from '@/hooks/useAsyncQuery.ts';

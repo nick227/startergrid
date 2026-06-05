@@ -1,5 +1,5 @@
 import { useMemo, useState } from 'react';
-import { fetchDealers } from '@/lib/api.ts';
+import { fetchDealers } from '@/lib/api/sdk.ts';
 import type { DealerSummary } from '@/lib/types.ts';
 import { useAsyncQuery } from '@/hooks/useAsyncQuery.ts';
 import { Skeleton } from '@/components/ui/Skeleton.tsx';

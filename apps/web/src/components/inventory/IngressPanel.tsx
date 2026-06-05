@@ -1,5 +1,5 @@
 import { useAsyncQuery } from '@/hooks/useAsyncQuery.ts';
-import { fetchIngressSources, fetchIngressRuns } from '@/lib/api.ts';
+import { fetchIngressSources, fetchIngressRuns } from '@/lib/api/sdk.ts';
 import type { IngressSourceView, IngressRunView } from '@/lib/types.ts';
 import { SectionCard } from '@/components/operator';
 import { AsyncPanel } from '@/components/operator/AsyncPanel.tsx';

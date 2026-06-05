@@ -20,11 +20,13 @@ export function validateBody<T>(schema: z.ZodType<T>, body: unknown): Validation
   return { ok: true, data: parsed.data };
 }
 
+// operationId: preparePublish
 export const preparePublishSchema = z.object({
   dryRun: z.boolean().optional(),
   platforms: z.array(nonEmptyString(80)).max(18).optional(),
 }).strict();
 
+// operationId: previewInventoryImport | commitInventoryImport
 export const inventoryImportSchema = z.object({
   rows: z.array(
     z.record(z.string().max(200), z.string().max(2000)).refine(
@@ -35,6 +37,7 @@ export const inventoryImportSchema = z.object({
   mapping: z.record(z.string().max(200), nonEmptyString(80)).optional(),
 }).strict();
 
+// operationId: bulkEditInventory (fields sub-schema)
 export const bulkEditFieldsSchema = z.object({
   priceCents: z.number().int().min(1).max(100_000_000).optional(),
   mileage: z.number().int().min(0).max(2_000_000).optional(),
@@ -49,11 +52,13 @@ export const bulkEditFieldsSchema = z.object({
   message: 'At least one editable field is required',
 });
 
+// operationId: bulkEditInventory
 export const bulkEditSchema = z.object({
   stockNumbers: z.array(nonEmptyString(80)).min(1).max(2000),
   fields: bulkEditFieldsSchema,
 }).strict();
 
+// operationId: updateAccount
 export const accountUpdateSchema = z.object({
   state: z.enum([
     'ACCOUNT_NEEDED',
@@ -73,16 +78,20 @@ export const accountUpdateSchema = z.object({
   nextActionOwner: z.enum(['DEALER', 'OPERATOR', 'PLATFORM']).nullable().optional(),
 }).strict();
 
+// operationId: updateVehiclePrice
 export const priceUpdateSchema = z.object({
   priceCents: z.number().int().min(1).max(100_000_000),
 }).strict();
 
+// operationId: updateVehiclePhotos
 export const photoUpdateSchema = z.object({
   photoUrls: z.array(z.string().trim().url().max(512)).min(1).max(100),
 }).strict();
 
+// operationId: markVehicleSold | markVehicleRemoved
 export const emptyBodySchema = z.object({}).strict().optional();
 
+// operationId: captureLead
 export const leadCaptureSchema = z.object({
   stockNumber: optionalText(80),
   contactName: optionalText(160),

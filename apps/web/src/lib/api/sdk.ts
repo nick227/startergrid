@@ -4,6 +4,7 @@ import {
   PublishService,
   InventoryService,
   AccountsService,
+  type AutoSyncStatus as SdkAutoSyncStatus,
 } from '@auto-dealer/api-client';
 import type {
   AccountUpdatePayload as SdkAccountUpdatePayload,
@@ -26,9 +27,11 @@ import type {
   AccountsManagementResponse,
   AccountUpdatePayload,
   AccountUpdateResponse,
+  IngressSourcesResponse,
+  IngressRunsResponse,
 } from '../types.ts';
 import { toErrorMessage } from '../errors.ts';
-import { configureSdkDevAuth, withDevOperatorHeaders } from '../devAuth.ts';
+import { configureSdkDevAuth } from '../devAuth.ts';
 
 configureSdkDevAuth();
 
@@ -55,12 +58,7 @@ export async function fetchPublishStatus(dealershipId: string): Promise<PublishS
 }
 
 export async function fetchAutoSyncStatus(dealershipId: string): Promise<AutoSyncStatus> {
-  const res = await fetch(`/api/dealers/${dealershipId}/publish/auto-sync`, withDevOperatorHeaders());
-  if (!res.ok) {
-    const body = await res.json().catch(() => ({ error: res.statusText }));
-    throw new Error(toErrorMessage({ status: res.status, message: (body as { error?: string }).error }, `HTTP ${res.status}`));
-  }
-  return res.json() as Promise<AutoSyncStatus>;
+  return fromSdk(PublishService.getAutoSyncStatus({ dealershipId })) as Promise<SdkAutoSyncStatus>;
 }
 
 export async function fetchPublishHistory(
@@ -140,6 +138,19 @@ export async function updateAccount(
   return fromSdk(
     AccountsService.updateAccount({ dealershipId, platformSlug, requestBody: payload as SdkAccountUpdatePayload })
   ) as Promise<AccountUpdateResponse>;
+}
+
+export async function fetchIngressSources(dealershipId: string): Promise<IngressSourcesResponse> {
+  return fromSdk(InventoryService.listIngressSources({ dealershipId })) as Promise<IngressSourcesResponse>;
+}
+
+export async function fetchIngressRuns(
+  dealershipId: string,
+  opts?: { limit?: number; before?: string }
+): Promise<IngressRunsResponse> {
+  return fromSdk(
+    InventoryService.listIngressRuns({ dealershipId, limit: opts?.limit, before: opts?.before })
+  ) as Promise<IngressRunsResponse>;
 }
 
 export async function runPrepare(

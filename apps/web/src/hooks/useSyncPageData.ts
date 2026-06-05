@@ -4,7 +4,7 @@ import {
   fetchPublishStatus,
   fetchPublishHistory,
   fetchAutoSyncStatus,
-} from '@/lib/api.ts';
+} from '@/lib/api/sdk.ts';
 
 export function useSyncPageData(dealerId: string) {
   const status = useAsyncQuery(() => fetchPublishStatus(dealerId), [dealerId]);

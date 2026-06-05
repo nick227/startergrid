@@ -181,6 +181,26 @@ paths:
         '404':
           $ref: '#/components/responses/NotFound'
 
+  /api/dealers/{dealershipId}/publish/auto-sync:
+    get:
+      tags: [Publish]
+      security:
+        - OperatorAuth: []
+      x-route-classification: operator
+      operationId: getAutoSyncStatus
+      summary: Auto-sync daemon state for a dealer
+      parameters:
+        - $ref: '#/components/parameters/dealershipId'
+      responses:
+        '200':
+          description: Current auto-sync phase and last run info
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AutoSyncStatus'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
   /api/dealers/{dealershipId}/accounts:
     get:
       tags: [Accounts]
@@ -1509,7 +1529,7 @@ components:
 
     IngressSourceView:
       type: object
-      required: [id, slug, label, kind, status, createdAt, updatedAt]
+      required: [id, slug, label, kind, status, lastReceivedAt, lastCheckedAt, createdAt, updatedAt]
       properties:
         id:            { type: string }
         slug:          { type: string }
@@ -1523,7 +1543,7 @@ components:
 
     IngressRunView:
       type: object
-      required: [id, sourceKind, status, receivedAt, vehicleCount, createdCount, updatedCount, skippedCount, blockedCount, errorCount]
+      required: [id, sourceId, sourceLabel, sourceKind, status, receivedAt, completedAt, vehicleCount, createdCount, updatedCount, skippedCount, blockedCount, errorCount, summaryJson]
       properties:
         id:           { type: string }
         sourceId:     { type: string, nullable: true }
@@ -1539,6 +1559,7 @@ components:
         blockedCount: { type: integer }
         errorCount:   { type: integer }
         summaryJson:  {}
+        platformImpactJson: {}
 
     IngressSourcesResponse:
       type: object
@@ -1711,6 +1732,25 @@ components:
           type: string
         leadId:
           type: string
+          nullable: true
+
+    AutoSyncStatus:
+      type: object
+      required: [phase, scheduledFullReconcile, lastCompletedAt, lastError, lastDispatched]
+      properties:
+        phase:
+          type: string
+          enum: [idle, scheduled, running, failed]
+        scheduledFullReconcile:
+          type: boolean
+        lastCompletedAt:
+          type: string
+          nullable: true
+        lastError:
+          type: string
+          nullable: true
+        lastDispatched:
+          type: integer
           nullable: true
 
     LeadCaptureRequest:
