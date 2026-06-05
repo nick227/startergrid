@@ -58,10 +58,12 @@ describe('IngressSourceView shape', () => {
     label:         'Manual Upload',
     kind:          'CSV',
     status:        'ACTIVE',
-    feedUrl:       null,
-    lastCheckError: null,
-    lastReceivedAt: null,
-    lastCheckedAt:  null,
+    feedUrl:             null,
+    lastCheckError:      null,
+    pollIntervalMinutes: null,
+    nextCheckAt:         null,
+    lastReceivedAt:      null,
+    lastCheckedAt:       null,
     createdAt:     new Date().toISOString(),
     updatedAt:     new Date().toISOString(),
   };
@@ -196,23 +198,29 @@ describe('IngressSourceView with feedUrl', () => {
     const v: IngressSourceView = {
       id: 's1', slug: 'csv-manual', label: 'Manual Upload',
       kind: 'CSV', status: 'ACTIVE', feedUrl: null, lastCheckError: null,
+      pollIntervalMinutes: null, nextCheckAt: null,
       lastReceivedAt: null, lastCheckedAt: null,
       createdAt: new Date().toISOString(), updatedAt: new Date().toISOString(),
     };
     assert.equal(v.feedUrl, null);
+    assert.equal(v.pollIntervalMinutes, null);
+    assert.equal(v.nextCheckAt, null);
   });
 
-  it('accepts feedUrl and lastCheckError for API sources', () => {
+  it('accepts feedUrl, polling schedule, and lastCheckError for API sources', () => {
     const v: IngressSourceView = {
       id: 's2', slug: 'my-api', label: 'My API',
       kind: 'API', status: 'ERROR',
       feedUrl: 'https://api.example.com/feed',
       lastCheckError: 'Feed returned HTTP 503',
+      pollIntervalMinutes: 60,
+      nextCheckAt: new Date().toISOString(),
       lastReceivedAt: null, lastCheckedAt: new Date().toISOString(),
       createdAt: new Date().toISOString(), updatedAt: new Date().toISOString(),
     };
     assert.equal(v.feedUrl, 'https://api.example.com/feed');
     assert.ok(v.lastCheckError?.includes('503'));
+    assert.equal(v.pollIntervalMinutes, 60);
   });
 });
 
@@ -226,10 +234,17 @@ describe('createIngressSourceSchema — valid inputs', () => {
     assert.ok(r.ok);
   });
 
-  it('accepts optional sourceSlug and status', () => {
+  it('accepts optional sourceSlug, status, and pollIntervalMinutes', () => {
     const r = validateBody(createIngressSourceSchema, {
       label: 'My Feed', feedUrl: 'https://feed.example.com',
-      sourceSlug: 'my-feed', status: 'PAUSED',
+      sourceSlug: 'my-feed', status: 'PAUSED', pollIntervalMinutes: 60,
+    });
+    assert.ok(r.ok);
+  });
+
+  it('accepts pollIntervalMinutes: null (no schedule)', () => {
+    const r = validateBody(createIngressSourceSchema, {
+      label: 'My Feed', feedUrl: 'https://x.com', pollIntervalMinutes: null,
     });
     assert.ok(r.ok);
   });
@@ -287,11 +302,22 @@ describe('updateIngressSourceSchema — valid inputs', () => {
     assert.ok(r.ok);
   });
 
-  it('accepts all fields at once', () => {
+  it('accepts all fields at once including pollIntervalMinutes', () => {
     const r = validateBody(updateIngressSourceSchema, {
       label: 'Updated', feedUrl: 'https://new.example.com', status: 'ACTIVE',
+      pollIntervalMinutes: 120,
     });
     assert.ok(r.ok);
+  });
+
+  it('accepts pollIntervalMinutes: null to remove schedule', () => {
+    const r = validateBody(updateIngressSourceSchema, { pollIntervalMinutes: null });
+    assert.ok(r.ok);
+  });
+
+  it('rejects pollIntervalMinutes below minimum (5)', () => {
+    const r = validateBody(updateIngressSourceSchema, { pollIntervalMinutes: 4 });
+    assert.ok(!r.ok);
   });
 
   it('accepts DISCONNECTED and ERROR status values', () => {

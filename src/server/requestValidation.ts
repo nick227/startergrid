@@ -98,8 +98,9 @@ export const createIngressSourceSchema = z.object({
     url => url.startsWith('https://'),
     'feedUrl must use HTTPS'
   ),
-  sourceSlug: optionalText(80),
-  status:     z.enum(['ACTIVE', 'PAUSED']).optional(),
+  sourceSlug:          optionalText(80),
+  status:              z.enum(['ACTIVE', 'PAUSED']).optional(),
+  pollIntervalMinutes: z.number().int().min(5).max(10_080).nullable().optional(),
 }).strict();
 
 // operationId: updateIngressSource
@@ -109,7 +110,8 @@ export const updateIngressSourceSchema = z.object({
     url => url.startsWith('https://'),
     'feedUrl must use HTTPS'
   ).optional(),
-  status:  z.enum(['ACTIVE', 'PAUSED', 'DISCONNECTED', 'ERROR']).optional(),
+  status:              z.enum(['ACTIVE', 'PAUSED', 'DISCONNECTED', 'ERROR']).optional(),
+  pollIntervalMinutes: z.number().int().min(5).max(10_080).nullable().optional(),
 }).strict().refine(
   body => Object.keys(body).length > 0,
   'At least one field is required'

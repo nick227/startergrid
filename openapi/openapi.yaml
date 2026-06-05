@@ -1718,19 +1718,21 @@ components:
 
     IngressSourceView:
       type: object
-      required: [id, slug, label, kind, status, feedUrl, lastCheckError, lastReceivedAt, lastCheckedAt, createdAt, updatedAt]
+      required: [id, slug, label, kind, status, feedUrl, lastCheckError, pollIntervalMinutes, nextCheckAt, lastReceivedAt, lastCheckedAt, createdAt, updatedAt]
       properties:
-        id:             { type: string }
-        slug:           { type: string }
-        label:          { type: string }
-        kind:           { type: string }
-        status:         { type: string }
-        feedUrl:        { type: string, nullable: true }
-        lastCheckError: { type: string, nullable: true }
-        lastReceivedAt: { type: string, nullable: true }
-        lastCheckedAt:  { type: string, nullable: true }
-        createdAt:      { type: string }
-        updatedAt:      { type: string }
+        id:                  { type: string }
+        slug:                { type: string }
+        label:               { type: string }
+        kind:                { type: string }
+        status:              { type: string }
+        feedUrl:             { type: string, nullable: true }
+        lastCheckError:      { type: string, nullable: true }
+        pollIntervalMinutes: { type: integer, nullable: true }
+        nextCheckAt:         { type: string, nullable: true }
+        lastReceivedAt:      { type: string, nullable: true }
+        lastCheckedAt:       { type: string, nullable: true }
+        createdAt:           { type: string }
+        updatedAt:           { type: string }
 
     SourceCheckResult:
       type: object
@@ -1770,6 +1772,11 @@ components:
         status:
           type: string
           enum: [ACTIVE, PAUSED]
+        pollIntervalMinutes:
+          type: integer
+          minimum: 5
+          maximum: 10080
+          nullable: true
 
     UpdateIngressSourceRequest:
       type: object
@@ -1785,6 +1792,11 @@ components:
         status:
           type: string
           enum: [ACTIVE, PAUSED, DISCONNECTED, ERROR]
+        pollIntervalMinutes:
+          type: integer
+          minimum: 5
+          maximum: 10080
+          nullable: true
 
     IngressRunView:
       type: object

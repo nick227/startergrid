@@ -34,10 +34,12 @@ export type IngressSourceView = {
   label: string;
   kind: string;
   status: string;
-  feedUrl:        string | null;
-  lastCheckError: string | null;
-  lastReceivedAt: string | null;
-  lastCheckedAt:  string | null;
+  feedUrl:             string | null;
+  lastCheckError:      string | null;
+  pollIntervalMinutes: number | null;
+  nextCheckAt:         string | null;
+  lastReceivedAt:      string | null;
+  lastCheckedAt:       string | null;
   createdAt: string;
   updatedAt: string;
 };
@@ -160,19 +162,33 @@ type SourceRow = {
 };
 
 function mapSourceRow(r: SourceRow): IngressSourceView {
-  const cfg = r.configJson as Record<string, unknown> | null;
+  const cfg                = r.configJson as Record<string, unknown> | null;
+  const pollIntervalMinutes = typeof cfg?.pollIntervalMinutes === 'number' ? cfg.pollIntervalMinutes : null;
+  const lastCheckedAt       = r.lastCheckedAt?.toISOString() ?? null;
+
+  let nextCheckAt: string | null = null;
+  if (pollIntervalMinutes !== null) {
+    if (!r.lastCheckedAt) {
+      nextCheckAt = new Date().toISOString(); // never checked → due now
+    } else {
+      nextCheckAt = new Date(r.lastCheckedAt.getTime() + pollIntervalMinutes * 60_000).toISOString();
+    }
+  }
+
   return {
-    id:             r.id,
-    slug:           r.slug,
-    label:          r.label,
-    kind:           r.kind,
-    status:         r.status,
-    feedUrl:        typeof cfg?.feedUrl === 'string' ? cfg.feedUrl : null,
-    lastCheckError: typeof cfg?.lastCheckError === 'string' ? cfg.lastCheckError : null,
-    lastReceivedAt: r.lastReceivedAt?.toISOString() ?? null,
-    lastCheckedAt:  r.lastCheckedAt?.toISOString()  ?? null,
-    createdAt:      r.createdAt.toISOString(),
-    updatedAt:      r.updatedAt.toISOString(),
+    id:                  r.id,
+    slug:                r.slug,
+    label:               r.label,
+    kind:                r.kind,
+    status:              r.status,
+    feedUrl:             typeof cfg?.feedUrl === 'string' ? cfg.feedUrl : null,
+    lastCheckError:      typeof cfg?.lastCheckError === 'string' ? cfg.lastCheckError : null,
+    pollIntervalMinutes,
+    nextCheckAt,
+    lastReceivedAt:      r.lastReceivedAt?.toISOString() ?? null,
+    lastCheckedAt,
+    createdAt:           r.createdAt.toISOString(),
+    updatedAt:           r.updatedAt.toISOString(),
   };
 }
 
@@ -214,10 +230,13 @@ export async function listSources(
 export async function createSource(
   prisma: PrismaClient,
   dealershipId: string,
-  payload: { label: string; feedUrl: string; sourceSlug?: string; status?: string },
+  payload: { label: string; feedUrl: string; sourceSlug?: string; status?: string; pollIntervalMinutes?: number | null },
 ): Promise<IngressSourceView> {
   const base = payload.sourceSlug ? slugify(payload.sourceSlug) : slugify(payload.label);
   const slug = await resolveUniqueSlug(prisma, dealershipId, base || 'api-source');
+
+  const configJson: Record<string, unknown> = { feedUrl: payload.feedUrl };
+  if (payload.pollIntervalMinutes != null) configJson.pollIntervalMinutes = payload.pollIntervalMinutes;
 
   const row = await prisma.inventorySource.create({
     data: {
@@ -226,7 +245,7 @@ export async function createSource(
       label:      payload.label,
       kind:       'API',
       status:     (payload.status ?? 'ACTIVE') as InventorySourceStatus,
-      configJson: { feedUrl: payload.feedUrl } as unknown as Prisma.InputJsonValue,
+      configJson: configJson as unknown as Prisma.InputJsonValue,
     },
   });
   return mapSourceRow(row);
@@ -236,7 +255,7 @@ export async function updateSource(
   prisma: PrismaClient,
   dealershipId: string,
   sourceId: string,
-  payload: { label?: string; feedUrl?: string; status?: string },
+  payload: { label?: string; feedUrl?: string; status?: string; pollIntervalMinutes?: number | null },
 ): Promise<IngressSourceView | null> {
   const existing = await prisma.inventorySource.findFirst({
     where: { id: sourceId, dealershipId },
@@ -246,9 +265,12 @@ export async function updateSource(
   const data: Prisma.InventorySourceUpdateInput = {};
   if (payload.label  !== undefined) data.label  = payload.label;
   if (payload.status !== undefined) data.status = payload.status as InventorySourceStatus;
-  if (payload.feedUrl !== undefined) {
+  if (payload.feedUrl !== undefined || payload.pollIntervalMinutes !== undefined) {
     const current = existing.configJson as Record<string, unknown> ?? {};
-    data.configJson = { ...current, feedUrl: payload.feedUrl } as unknown as Prisma.InputJsonValue;
+    const updates: Record<string, unknown> = {};
+    if (payload.feedUrl !== undefined)            updates.feedUrl            = payload.feedUrl;
+    if (payload.pollIntervalMinutes !== undefined) updates.pollIntervalMinutes = payload.pollIntervalMinutes;
+    data.configJson = { ...current, ...updates } as unknown as Prisma.InputJsonValue;
   }
 
   const updated = await prisma.inventorySource.update({

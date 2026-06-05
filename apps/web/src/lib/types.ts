@@ -318,10 +318,12 @@ export type IngressSourceView = {
   label: string;
   kind: string;
   status: string;
-  feedUrl:        string | null;
-  lastCheckError: string | null;
-  lastReceivedAt: string | null;
-  lastCheckedAt:  string | null;
+  feedUrl:             string | null;
+  lastCheckError:      string | null;
+  pollIntervalMinutes: number | null;
+  nextCheckAt:         string | null;
+  lastReceivedAt:      string | null;
+  lastCheckedAt:       string | null;
   createdAt: string;
   updatedAt: string;
 };

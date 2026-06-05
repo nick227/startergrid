@@ -35,6 +35,17 @@ function relativeTime(iso: string): string {
   return `${Math.floor(hrs / 24)}d ago`;
 }
 
+function relativeTimeFromNow(iso: string): string {
+  const diffMs = new Date(iso).getTime() - Date.now();
+  if (Math.abs(diffMs) < 60_000) return 'now';
+  const abs  = Math.abs(diffMs);
+  const mins = Math.floor(abs / 60_000);
+  if (diffMs < 0) return `${mins < 60 ? `${mins}m` : `${Math.floor(mins / 60)}h`} ago`;
+  if (mins < 60)  return `in ${mins}m`;
+  const hrs = Math.floor(mins / 60);
+  return hrs < 24 ? `in ${hrs}h` : `in ${Math.floor(hrs / 24)}d`;
+}
+
 const SOURCE_KIND_LABEL: Record<string, string> = {
   CSV:             'CSV upload',
   JSON:            'JSON feed',
@@ -362,11 +373,11 @@ function SourceRow({
         </div>
       </div>
 
-      {/* Row 2 (API only): feedUrl + checked timestamp */}
+      {/* Row 2 (API only): feedUrl · checked timestamp · next schedule */}
       {isApi && (
-        <div className="mt-1 flex items-center gap-3 text-slate-400 flex-wrap">
+        <div className="mt-1 flex items-center gap-3 text-slate-400 flex-wrap text-xs">
           {source.feedUrl ? (
-            <span className="truncate max-w-[280px]" title={source.feedUrl}>
+            <span className="truncate max-w-[240px]" title={source.feedUrl}>
               {source.feedUrl}
             </span>
           ) : (
@@ -377,6 +388,15 @@ function SourceRow({
               ? `checked ${relativeTime(source.lastCheckedAt)}`
               : 'not yet checked'}
           </span>
+          {source.pollIntervalMinutes && source.nextCheckAt ? (
+            <span className={`shrink-0 ${new Date(source.nextCheckAt) <= new Date() ? 'text-amber-500' : 'text-slate-300'}`}>
+              {new Date(source.nextCheckAt) <= new Date()
+                ? 'overdue'
+                : `next ${relativeTimeFromNow(source.nextCheckAt)}`}
+            </span>
+          ) : source.pollIntervalMinutes ? (
+            <span className="shrink-0 text-slate-300">every {source.pollIntervalMinutes}m</span>
+          ) : null}
         </div>
       )}
 
