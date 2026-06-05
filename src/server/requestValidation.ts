@@ -3,6 +3,19 @@ import { z } from 'zod';
 const nonEmptyString = (max: number) => z.string().trim().min(1).max(max);
 const optionalText = (max: number) => z.string().trim().max(max).optional();
 
+/** HTTPS required everywhere; localhost HTTP allowed for local dev/demo. */
+export function isValidFeedUrl(url: string): boolean {
+  return url.startsWith('https://') ||
+    url.startsWith('http://localhost') ||
+    url.startsWith('http://127.0.0.1');
+}
+
+const feedUrlSchema = (max: number) =>
+  z.string().trim().url().max(max).refine(
+    isValidFeedUrl,
+    'feedUrl must use HTTPS (http://localhost is allowed for local dev)',
+  );
+
 export type ValidationResult<T> =
   | { ok: true; data: T }
   | { ok: false; error: string };
@@ -93,11 +106,8 @@ export const emptyBodySchema = z.object({}).strict().optional();
 
 // operationId: createIngressSource
 export const createIngressSourceSchema = z.object({
-  label:      nonEmptyString(160),
-  feedUrl:    z.string().trim().url().max(512).refine(
-    url => url.startsWith('https://'),
-    'feedUrl must use HTTPS'
-  ),
+  label:               nonEmptyString(160),
+  feedUrl:             feedUrlSchema(512),
   sourceSlug:          optionalText(80),
   status:              z.enum(['ACTIVE', 'PAUSED']).optional(),
   pollIntervalMinutes: z.number().int().min(5).max(10_080).nullable().optional(),
@@ -105,11 +115,8 @@ export const createIngressSourceSchema = z.object({
 
 // operationId: updateIngressSource
 export const updateIngressSourceSchema = z.object({
-  label:   nonEmptyString(160).optional(),
-  feedUrl: z.string().trim().url().max(512).refine(
-    url => url.startsWith('https://'),
-    'feedUrl must use HTTPS'
-  ).optional(),
+  label:               nonEmptyString(160).optional(),
+  feedUrl:             feedUrlSchema(512).optional(),
   status:              z.enum(['ACTIVE', 'PAUSED', 'DISCONNECTED', 'ERROR']).optional(),
   pollIntervalMinutes: z.number().int().min(5).max(10_080).nullable().optional(),
 }).strict().refine(

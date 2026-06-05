@@ -1,6 +1,6 @@
 import type { PrismaClient, Prisma } from '@prisma/client';
 import { ingestJsonVehicles } from './importService.js';
-import { validateBody, jsonIngestSchema } from '../../server/requestValidation.js';
+import { validateBody, jsonIngestSchema, isValidFeedUrl } from '../../server/requestValidation.js';
 
 const FETCH_TIMEOUT_MS   = 30_000;       // 30 s
 const MAX_RESPONSE_BYTES = 5 * 1024 * 1024; // 5 MB
@@ -48,8 +48,8 @@ export async function checkApiInventorySource(
   const cfg     = source.configJson as Record<string, unknown> | null;
   const feedUrl = typeof cfg?.feedUrl === 'string' ? cfg.feedUrl : null;
 
-  if (!feedUrl || !feedUrl.startsWith('https://')) {
-    return { success: false, error: 'No valid HTTPS feedUrl configured on this source', checkedAt: checkedAt.toISOString() };
+  if (!feedUrl || !isValidFeedUrl(feedUrl)) {
+    return { success: false, error: 'No valid feedUrl configured (HTTPS required; http://localhost allowed for local dev)', checkedAt: checkedAt.toISOString() };
   }
 
   // ── Fetch ─────────────────────────────────────────────────────────────────

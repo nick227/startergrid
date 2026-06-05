@@ -13,6 +13,8 @@ export type DealerExportManifest = {
   applicationCount: number;
   readinessRunCount: number;
   hasSubscription: boolean;
+  ingressSourceCount: number;
+  ingressRunCount: number;
 };
 
 export async function exportDealerArchive(
@@ -136,6 +138,47 @@ export async function exportDealerArchive(
     }
   }
 
+  // ingress-sources.json
+  const ingressSources = await prisma.inventorySource.findMany({
+    where: { dealershipId },
+    orderBy: { createdAt: 'asc' },
+    select: {
+      id: true, slug: true, label: true, kind: true, status: true,
+      lastReceivedAt: true, lastCheckedAt: true, configJson: true,
+      createdAt: true, updatedAt: true,
+    },
+  });
+  zip.file('ingress-sources.json', JSON.stringify(ingressSources.map(s => {
+    const cfg = s.configJson as Record<string, unknown> | null;
+    return {
+      id: s.id, slug: s.slug, label: s.label, kind: s.kind, status: s.status,
+      feedUrl:             cfg?.feedUrl ?? null,
+      pollIntervalMinutes: cfg?.pollIntervalMinutes ?? null,
+      lastReceivedAt: s.lastReceivedAt?.toISOString() ?? null,
+      lastCheckedAt:  s.lastCheckedAt?.toISOString()  ?? null,
+      createdAt: s.createdAt.toISOString(),
+      updatedAt: s.updatedAt.toISOString(),
+    };
+  }), null, 2));
+
+  // ingress-runs.json (20 most recent)
+  const ingressRuns = await prisma.ingressRun.findMany({
+    where: { dealershipId },
+    orderBy: { receivedAt: 'desc' },
+    take: 20,
+    select: {
+      id: true, sourceId: true, sourceKind: true, status: true,
+      receivedAt: true, completedAt: true,
+      vehicleCount: true, createdCount: true, updatedCount: true,
+      skippedCount: true, blockedCount: true, errorCount: true,
+    },
+  });
+  zip.file('ingress-runs.json', JSON.stringify(ingressRuns.map(r => ({
+    ...r,
+    receivedAt:  r.receivedAt.toISOString(),
+    completedAt: r.completedAt?.toISOString() ?? null,
+  })), null, 2));
+
   // export-manifest.json
   const manifest: DealerExportManifest = {
     exportedAt: new Date().toISOString(),
@@ -146,7 +189,9 @@ export async function exportDealerArchive(
     leadCount: dealer.leads.length,
     applicationCount: dealer.applications.length,
     readinessRunCount: readinessRuns.length,
-    hasSubscription: dealer.subscription !== null
+    hasSubscription: dealer.subscription !== null,
+    ingressSourceCount: ingressSources.length,
+    ingressRunCount: ingressRuns.length,
   };
   zip.file('export-manifest.json', JSON.stringify(manifest, null, 2));
 

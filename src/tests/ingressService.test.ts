@@ -8,7 +8,7 @@ import {
   type IngressRunView,
   type CreateIngressRunOpts,
 } from '../services/inventory/ingressService.js';
-import { validateBody, createIngressSourceSchema, updateIngressSourceSchema } from '../server/requestValidation.js';
+import { validateBody, createIngressSourceSchema, updateIngressSourceSchema, isValidFeedUrl } from '../server/requestValidation.js';
 
 // ── DEFAULT_CSV_SOURCE constant ───────────────────────────────────────────────
 
@@ -224,6 +224,18 @@ describe('IngressSourceView with feedUrl', () => {
   });
 });
 
+// ── isValidFeedUrl ────────────────────────────────────────────────────────────
+
+describe('isValidFeedUrl', () => {
+  it('accepts https://', () => assert.ok(isValidFeedUrl('https://api.example.com/feed')));
+  it('accepts http://localhost with port', () => assert.ok(isValidFeedUrl('http://localhost:3000/dev/demo-feed')));
+  it('accepts http://localhost without port', () => assert.ok(isValidFeedUrl('http://localhost/feed')));
+  it('accepts http://127.0.0.1 with port', () => assert.ok(isValidFeedUrl('http://127.0.0.1:3000/feed')));
+  it('rejects http:// non-localhost', () => assert.ok(!isValidFeedUrl('http://example.com/feed')));
+  it('rejects empty string', () => assert.ok(!isValidFeedUrl('')));
+  it('rejects ftp://', () => assert.ok(!isValidFeedUrl('ftp://example.com/feed')));
+});
+
 // ── createIngressSourceSchema ─────────────────────────────────────────────────
 
 describe('createIngressSourceSchema — valid inputs', () => {
@@ -245,6 +257,20 @@ describe('createIngressSourceSchema — valid inputs', () => {
   it('accepts pollIntervalMinutes: null (no schedule)', () => {
     const r = validateBody(createIngressSourceSchema, {
       label: 'My Feed', feedUrl: 'https://x.com', pollIntervalMinutes: null,
+    });
+    assert.ok(r.ok);
+  });
+
+  it('accepts http://localhost for local dev', () => {
+    const r = validateBody(createIngressSourceSchema, {
+      label: 'Local Demo', feedUrl: 'http://localhost:3000/dev/demo-feed',
+    });
+    assert.ok(r.ok);
+  });
+
+  it('accepts http://127.0.0.1 for local dev', () => {
+    const r = validateBody(createIngressSourceSchema, {
+      label: 'Local Demo', feedUrl: 'http://127.0.0.1:3000/feed',
     });
     assert.ok(r.ok);
   });

@@ -18,12 +18,14 @@ async function main() {
 
   console.log(`Dealer:        ${manifest.dealerLegalName}`);
   console.log(`Exported at:   ${manifest.exportedAt}`);
-  console.log(`Vehicles:      ${manifest.vehicleCount}`);
-  console.log(`Artifacts:     ${manifest.artifactCount}`);
-  console.log(`Applications:  ${manifest.applicationCount}`);
-  console.log(`Leads:         ${manifest.leadCount}`);
-  console.log(`Readiness runs:${manifest.readinessRunCount}`);
-  console.log(`Subscription:  ${manifest.hasSubscription ? 'yes' : 'none'}`);
+  console.log(`Vehicles:       ${manifest.vehicleCount}`);
+  console.log(`Artifacts:      ${manifest.artifactCount}`);
+  console.log(`Applications:   ${manifest.applicationCount}`);
+  console.log(`Leads:          ${manifest.leadCount}`);
+  console.log(`Readiness runs: ${manifest.readinessRunCount}`);
+  console.log(`Ingress sources:${manifest.ingressSourceCount}`);
+  console.log(`Ingress runs:   ${manifest.ingressRunCount}`);
+  console.log(`Subscription:   ${manifest.hasSubscription ? 'yes' : 'none'}`);
   console.log('');
   console.log(`Archive: ${zipPath}`);
 
