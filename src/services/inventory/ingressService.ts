@@ -34,7 +34,8 @@ export type IngressSourceView = {
   label: string;
   kind: string;
   status: string;
-  feedUrl: string | null;
+  feedUrl:        string | null;
+  lastCheckError: string | null;
   lastReceivedAt: string | null;
   lastCheckedAt:  string | null;
   createdAt: string;
@@ -167,6 +168,7 @@ function mapSourceRow(r: SourceRow): IngressSourceView {
     kind:           r.kind,
     status:         r.status,
     feedUrl:        typeof cfg?.feedUrl === 'string' ? cfg.feedUrl : null,
+    lastCheckError: typeof cfg?.lastCheckError === 'string' ? cfg.lastCheckError : null,
     lastReceivedAt: r.lastReceivedAt?.toISOString() ?? null,
     lastCheckedAt:  r.lastCheckedAt?.toISOString()  ?? null,
     createdAt:      r.createdAt.toISOString(),

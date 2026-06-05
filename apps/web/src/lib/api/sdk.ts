@@ -34,6 +34,7 @@ import type {
   CreateIngressSourcePayload,
   UpdateIngressSourcePayload,
   IngressSourceResponse,
+  SourceCheckResult,
 } from '../types.ts';
 import { toErrorMessage } from '../errors.ts';
 import { configureSdkDevAuth } from '../devAuth.ts';
@@ -173,6 +174,15 @@ export async function updateIngressSource(
       requestBody: payload as unknown as SdkUpdateIngressSourceRequest,
     })
   ) as Promise<IngressSourceResponse>;
+}
+
+export async function checkIngressSource(
+  dealershipId: string,
+  sourceId: string,
+): Promise<SourceCheckResult> {
+  return fromSdk(
+    InventoryService.checkIngressSource({ dealershipId, sourceId })
+  ) as Promise<SourceCheckResult>;
 }
 
 export async function fetchIngressRuns(

@@ -318,11 +318,24 @@ export type IngressSourceView = {
   label: string;
   kind: string;
   status: string;
-  feedUrl: string | null;
+  feedUrl:        string | null;
+  lastCheckError: string | null;
   lastReceivedAt: string | null;
   lastCheckedAt:  string | null;
   createdAt: string;
   updatedAt: string;
+};
+
+export type SourceCheckResult = {
+  success:      boolean;
+  vehicleCount?: number;
+  created?:     number;
+  updated?:     number;
+  skipped?:     number;
+  errors?:      number;
+  ingressRunId?: string;
+  error?:       string;
+  checkedAt:    string;
 };
 
 export type CreateIngressSourcePayload = {

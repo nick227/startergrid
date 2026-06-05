@@ -17,6 +17,7 @@
     "dealer:export":         "npm run -s build && node dist/src/scripts/dealer/dealerExport.js",
     "vehicle:update":        "npm run -s build && node dist/src/scripts/dealer/vehicleUpdate.js",
     "ingest:json:fixture":   "npm run -s build && node dist/src/scripts/inventory/ingestJsonFixture.js",
+    "ingress:check-source":  "npm run -s build && node dist/src/scripts/inventory/checkSource.js",
 
     "publish:prepare":       "npm run -s build && node dist/src/scripts/sync/publishPrepare.js",
     "sync:scheduler":        "npm run -s build && node dist/src/scripts/sync/syncScheduler.js",

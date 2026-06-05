@@ -5,6 +5,7 @@ import {
   fetchIngressRuns,
   createIngressSource,
   updateIngressSource,
+  checkIngressSource,
 } from '@/lib/api/sdk.ts';
 import type {
   IngressSourceView,
@@ -106,6 +107,11 @@ export function IngressPanel({ dealerId, latestRunId, onShowBlockedVehicles }: P
     reloadSrc();
   };
 
+  const handleSourceUpdated = () => {
+    reloadSrc();
+    reloadRuns();
+  };
+
   return (
     <SectionCard title="Intake sources" subtitle={subtitle} noPadding>
       <AsyncPanel
@@ -124,7 +130,7 @@ export function IngressPanel({ dealerId, latestRunId, onShowBlockedVehicles }: P
                 key={s.id}
                 source={s}
                 dealerId={dealerId}
-                onUpdated={reloadSrc}
+                onUpdated={handleSourceUpdated}
               />
             ))}
           </div>
@@ -283,7 +289,11 @@ function SourceRow({
   const statusCls = SOURCE_STATUS_STYLE[source.status] ?? 'bg-slate-100 text-slate-500';
   const kindLabel = SOURCE_KIND_LABEL[source.kind] ?? source.kind;
   const isApi     = source.kind === 'API';
+  const canCheck  = isApi && (source.status === 'ACTIVE' || source.status === 'ERROR');
+
   const [toggling, setToggling] = useState(false);
+  const [checking, setChecking] = useState(false);
+  const [checkError, setCheckError] = useState<string | null>(null);
 
   const toggleStatus = async () => {
     if (!isApi || toggling) return;
@@ -297,9 +307,24 @@ function SourceRow({
     }
   };
 
+  const handleCheck = async () => {
+    if (!canCheck || checking) return;
+    setChecking(true);
+    setCheckError(null);
+    try {
+      const result = await checkIngressSource(dealerId, source.id);
+      if (!result.success && result.error) setCheckError(result.error);
+      onUpdated?.();
+    } catch (err) {
+      setCheckError(err instanceof Error ? err.message : 'Check failed');
+    } finally {
+      setChecking(false);
+    }
+  };
+
   return (
     <div className="px-5 py-3 text-xs">
-      {/* Row 1: label / kind / status */}
+      {/* Row 1: label / kind / status / check button */}
       <div className="flex items-center gap-3">
         <div className="flex-1 min-w-0">
           <span className="text-sm font-semibold text-slate-900">{source.label}</span>
@@ -320,6 +345,16 @@ function SourceRow({
             {source.status.toLowerCase()}
           </span>
         )}
+        {canCheck && (
+          <button
+            type="button"
+            onClick={handleCheck}
+            disabled={checking}
+            className="text-xs font-semibold text-sky-700 hover:text-sky-900 shrink-0 disabled:opacity-50"
+          >
+            {checking ? 'Checking…' : 'Check now'}
+          </button>
+        )}
         <div className="text-slate-400 shrink-0 text-right text-xs min-w-[90px]">
           {source.lastReceivedAt
             ? <span title={source.lastReceivedAt}>received {relativeTime(source.lastReceivedAt)}</span>
@@ -327,9 +362,9 @@ function SourceRow({
         </div>
       </div>
 
-      {/* Row 2 (API only): feedUrl + checked status */}
+      {/* Row 2 (API only): feedUrl + checked timestamp */}
       {isApi && (
-        <div className="mt-1 flex items-center gap-3 text-slate-400">
+        <div className="mt-1 flex items-center gap-3 text-slate-400 flex-wrap">
           {source.feedUrl ? (
             <span className="truncate max-w-[280px]" title={source.feedUrl}>
               {source.feedUrl}
@@ -340,8 +375,15 @@ function SourceRow({
           <span className="shrink-0">
             {source.lastCheckedAt
               ? `checked ${relativeTime(source.lastCheckedAt)}`
-              : 'not yet polled — polling not active'}
+              : 'not yet checked'}
           </span>
+        </div>
+      )}
+
+      {/* Row 3 (API only): error state from last check */}
+      {isApi && (source.lastCheckError || checkError) && (
+        <div className="mt-1 text-red-600 text-xs">
+          {checkError ?? source.lastCheckError}
         </div>
       )}
     </div>

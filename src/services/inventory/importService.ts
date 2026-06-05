@@ -1,4 +1,4 @@
-import type { PrismaClient, Prisma } from '@prisma/client';
+import type { PrismaClient, Prisma, InventorySourceKind } from '@prisma/client';
 import {
   getOrCreateDefaultSource,
   getOrCreateSource,
@@ -507,7 +507,7 @@ export async function ingestJsonVehicles(
   prisma: PrismaClient,
   dealershipId: string,
   vehicles: IngestVehicleInput[],
-  opts: { sourceSlug?: string; sourceLabel?: string } = {}
+  opts: { sourceSlug?: string; sourceLabel?: string; sourceKind?: InventorySourceKind } = {}
 ): Promise<JsonIngestResult> {
   const receivedAt  = new Date();
   const sourceSlug  = opts.sourceSlug  ?? DEFAULT_JSON_SOURCE.slug;
@@ -600,12 +600,12 @@ export async function ingestJsonVehicles(
     const completedAt  = new Date();
     const ingressStatus = deriveIngressStatus(result.created, result.updated, result.errors);
 
-    const sourceId = await getOrCreateSource(prisma, dealershipId, sourceSlug, sourceLabel, 'JSON');
+    const sourceId = await getOrCreateSource(prisma, dealershipId, sourceSlug, sourceLabel, opts.sourceKind ?? 'JSON');
 
     const ingressRunId = await createIngressRun(prisma, {
       dealershipId,
       sourceId,
-      sourceKind:   'JSON',
+      sourceKind:   opts.sourceKind ?? 'JSON',
       status:       ingressStatus,
       receivedAt,
       completedAt,

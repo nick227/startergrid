@@ -589,6 +589,31 @@ paths:
         '404':
           $ref: '#/components/responses/NotFound'
 
+  /api/dealers/{dealershipId}/ingress/sources/{sourceId}/check:
+    post:
+      tags: [Inventory]
+      security:
+        - OperatorAuth: []
+      x-route-classification: operator
+      operationId: checkIngressSource
+      summary: Fetch the source's feedUrl and ingest returned vehicles
+      parameters:
+        - $ref: '#/components/parameters/dealershipId'
+        - $ref: '#/components/parameters/sourceId'
+      responses:
+        '200':
+          description: Check result with ingest counts or error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SourceCheckResult'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
   /api/dealers/{dealershipId}/ingress/runs:
     get:
       tags: [Inventory]
@@ -1693,18 +1718,33 @@ components:
 
     IngressSourceView:
       type: object
-      required: [id, slug, label, kind, status, feedUrl, lastReceivedAt, lastCheckedAt, createdAt, updatedAt]
+      required: [id, slug, label, kind, status, feedUrl, lastCheckError, lastReceivedAt, lastCheckedAt, createdAt, updatedAt]
       properties:
-        id:            { type: string }
-        slug:          { type: string }
-        label:         { type: string }
-        kind:          { type: string }
-        status:        { type: string }
-        feedUrl:       { type: string, nullable: true }
+        id:             { type: string }
+        slug:           { type: string }
+        label:          { type: string }
+        kind:           { type: string }
+        status:         { type: string }
+        feedUrl:        { type: string, nullable: true }
+        lastCheckError: { type: string, nullable: true }
         lastReceivedAt: { type: string, nullable: true }
         lastCheckedAt:  { type: string, nullable: true }
-        createdAt:     { type: string }
-        updatedAt:     { type: string }
+        createdAt:      { type: string }
+        updatedAt:      { type: string }
+
+    SourceCheckResult:
+      type: object
+      required: [success, checkedAt]
+      properties:
+        success:      { type: boolean }
+        vehicleCount: { type: integer }
+        created:      { type: integer }
+        updated:      { type: integer }
+        skipped:      { type: integer }
+        errors:       { type: integer }
+        ingressRunId: { type: string }
+        error:        { type: string }
+        checkedAt:    { type: string, format: date-time }
 
     IngressSourceResponse:
       type: object

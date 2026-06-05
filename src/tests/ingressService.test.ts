@@ -59,6 +59,7 @@ describe('IngressSourceView shape', () => {
     kind:          'CSV',
     status:        'ACTIVE',
     feedUrl:       null,
+    lastCheckError: null,
     lastReceivedAt: null,
     lastCheckedAt:  null,
     createdAt:     new Date().toISOString(),
@@ -194,21 +195,24 @@ describe('IngressSourceView with feedUrl', () => {
   it('accepts feedUrl as null for non-API sources', () => {
     const v: IngressSourceView = {
       id: 's1', slug: 'csv-manual', label: 'Manual Upload',
-      kind: 'CSV', status: 'ACTIVE', feedUrl: null,
+      kind: 'CSV', status: 'ACTIVE', feedUrl: null, lastCheckError: null,
       lastReceivedAt: null, lastCheckedAt: null,
       createdAt: new Date().toISOString(), updatedAt: new Date().toISOString(),
     };
     assert.equal(v.feedUrl, null);
   });
 
-  it('accepts feedUrl as a string for API sources', () => {
+  it('accepts feedUrl and lastCheckError for API sources', () => {
     const v: IngressSourceView = {
       id: 's2', slug: 'my-api', label: 'My API',
-      kind: 'API', status: 'ACTIVE', feedUrl: 'https://api.example.com/feed',
-      lastReceivedAt: null, lastCheckedAt: null,
+      kind: 'API', status: 'ERROR',
+      feedUrl: 'https://api.example.com/feed',
+      lastCheckError: 'Feed returned HTTP 503',
+      lastReceivedAt: null, lastCheckedAt: new Date().toISOString(),
       createdAt: new Date().toISOString(), updatedAt: new Date().toISOString(),
     };
     assert.equal(v.feedUrl, 'https://api.example.com/feed');
+    assert.ok(v.lastCheckError?.includes('503'));
   });
 });
 

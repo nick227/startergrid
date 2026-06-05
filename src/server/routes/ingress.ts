@@ -1,6 +1,7 @@
 import type { FastifyInstance } from 'fastify';
 import type { PrismaClient } from '@prisma/client';
 import { listSources, listRuns, createSource, updateSource } from '../../services/inventory/ingressService.js';
+import { checkApiInventorySource } from '../../services/inventory/sourceCheckService.js';
 import { requireDealerAccess } from '../security.js';
 import { createIngressSourceSchema, updateIngressSourceSchema, validateBody } from '../requestValidation.js';
 
@@ -63,6 +64,20 @@ export function registerIngressRoutes(app: FastifyInstance, prisma: PrismaClient
       const source = await updateSource(prisma, dealershipId, sourceId, body.data);
       if (!source) return reply.status(404).send({ error: 'Source not found' });
       return reply.send({ source });
+    }
+  );
+
+  // POST /api/dealers/:dealershipId/ingress/sources/:sourceId/check
+  app.post<{ Params: SourceParams }>(
+    '/api/dealers/:dealershipId/ingress/sources/:sourceId/check',
+    async (request, reply) => {
+      const { dealershipId, sourceId } = request.params;
+      if (!requireDealerAccess(request, reply, dealershipId)) return;
+      if (!await requireDealer(prisma, dealershipId))
+        return reply.status(404).send({ error: 'Dealer not found' });
+
+      const result = await checkApiInventorySource(prisma, dealershipId, sourceId);
+      return reply.send(result);
     }
   );
 
