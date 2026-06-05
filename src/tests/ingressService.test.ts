@@ -94,6 +94,7 @@ describe('IngressRunView shape', () => {
     blockedCount:  0,
     errorCount:    0,
     summaryJson:  null,
+    platformImpactJson: null,
   };
 
   it('has required count fields as numbers', () => {

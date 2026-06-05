@@ -1478,7 +1478,7 @@ components:
 
     CommitImportResponse:
       type: object
-      required: [created, updated, skipped, errors, batchId, status]
+      required: [created, updated, skipped, errors, batchId, ingressRunId, status]
       properties:
         status:
           type: string
@@ -1492,6 +1492,8 @@ components:
         errors:
           type: integer
         batchId:
+          type: string
+        ingressRunId:
           type: string
 
     ImportBatch:

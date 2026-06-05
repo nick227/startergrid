@@ -36,19 +36,20 @@ export type IngressSourceView = {
 
 export type IngressRunView = {
   id: string;
-  sourceId:    string | null;
-  sourceLabel: string | null;
-  sourceKind:  string;
-  status:      string;
-  receivedAt:  string;
-  completedAt: string | null;
-  vehicleCount: number;
-  createdCount: number;
-  updatedCount: number;
-  skippedCount: number;
-  blockedCount: number;
-  errorCount:   number;
-  summaryJson:  unknown;
+  sourceId:          string | null;
+  sourceLabel:       string | null;
+  sourceKind:        string;
+  status:            string;
+  receivedAt:        string;
+  completedAt:       string | null;
+  vehicleCount:      number;
+  createdCount:      number;
+  updatedCount:      number;
+  skippedCount:      number;
+  blockedCount:      number;
+  errorCount:        number;
+  summaryJson:       unknown;
+  platformImpactJson: unknown;
 };
 
 export type CreateIngressRunOpts = {
@@ -172,20 +173,21 @@ export async function listRuns(
 
   return {
     runs: page.map(r => ({
-      id:           r.id,
-      sourceId:     r.sourceId,
-      sourceLabel:  r.source?.label ?? null,
-      sourceKind:   r.sourceKind,
-      status:       r.status,
-      receivedAt:   r.receivedAt.toISOString(),
-      completedAt:  r.completedAt?.toISOString() ?? null,
-      vehicleCount: r.vehicleCount,
-      createdCount: r.createdCount,
-      updatedCount: r.updatedCount,
-      skippedCount: r.skippedCount,
-      blockedCount: r.blockedCount,
-      errorCount:   r.errorCount,
-      summaryJson:  r.summaryJson,
+      id:                  r.id,
+      sourceId:            r.sourceId,
+      sourceLabel:         r.source?.label ?? null,
+      sourceKind:          r.sourceKind,
+      status:              r.status,
+      receivedAt:          r.receivedAt.toISOString(),
+      completedAt:         r.completedAt?.toISOString() ?? null,
+      vehicleCount:        r.vehicleCount,
+      createdCount:        r.createdCount,
+      updatedCount:        r.updatedCount,
+      skippedCount:        r.skippedCount,
+      blockedCount:        r.blockedCount,
+      errorCount:          r.errorCount,
+      summaryJson:         r.summaryJson,
+      platformImpactJson:  r.platformImpactJson,
     })),
     hasMore,
   };

@@ -1,6 +1,7 @@
 ﻿import { nanoid } from 'nanoid';
 import type { PrismaClient, Prisma } from '@prisma/client';
 import { recordSyncEvent } from './syncEventService.js';
+import { isInCooldown } from './syncPolicyService.js';
 
 // ── Constants ────────────────────────────────────────────────────────────────
 
@@ -61,7 +62,7 @@ export type SchedulerItemPreview = {
   priority: number;
   scheduledFor: string | null;
   attemptCount: number;
-  reason: 'READY' | 'SCHEDULED_DUE' | 'RETRY';
+  reason: 'READY' | 'SCHEDULED_DUE' | 'RETRY' | 'COOLDOWN';
 };
 
 export type SchedulerResult = {
@@ -72,6 +73,7 @@ export type SchedulerResult = {
   sentCount: number;
   failedCount: number;
   skippedCount: number;
+  cooldownCount: number;
   syncRunIds: string[];
   previews: SchedulerItemPreview[];
 };
@@ -103,26 +105,56 @@ export async function runScheduler(
     orderBy: [{ priority: 'asc' }, { createdAt: 'asc' }]
   });
 
-  // Filter to truly eligible
-  const eligible = candidates.filter(c => isEligibleForDispatch(c, now));
+  // Load SyncPolicies for cooldown checking
+  const policyRows = await prisma.syncPolicy.findMany({
+    where: { ...(dealershipId ? { dealershipId } : {}) },
+    select: { dealershipId: true, platformSlug: true, minIntervalMinutes: true, lastDispatchedAt: true, urgentRemoval: true }
+  });
+  const policyKey = (dId: string, slug: string) => `${dId}:${slug}`;
+  const policyMap = new Map(policyRows.map(p => [policyKey(p.dealershipId, p.platformSlug), p]));
+
+  // Partition into eligible vs. cooldown-blocked
+  const eligible: typeof candidates = [];
+  const inCooldownItems: typeof candidates = [];
+
+  for (const c of candidates) {
+    if (!isEligibleForDispatch(c, now)) continue;
+    const policy = policyMap.get(policyKey(c.dealershipId, c.platformSlug));
+    const isUrgent = (c.triggerKind === 'SOLD' || c.triggerKind === 'REMOVED') && (policy?.urgentRemoval ?? true);
+    if (!isUrgent && isInCooldown(policy, now)) {
+      inCooldownItems.push(c);
+    } else {
+      eligible.push(c);
+    }
+  }
 
   // Build previews for dry-run and result reporting
-  const previews: SchedulerItemPreview[] = eligible.map(item => ({
-    id: item.id,
-    dealershipId: item.dealershipId,
-    vehicleId: item.vehicleId,
-    platformSlug: item.platformSlug,
-    triggerKind: item.triggerKind,
-    status: item.status,
-    priority: item.priority,
-    scheduledFor: item.scheduledFor?.toISOString() ?? null,
-    attemptCount: item.attemptCount,
-    reason: item.status === 'READY'
-      ? 'READY'
-      : item.status === 'FAILED'
-      ? 'RETRY'
-      : 'SCHEDULED_DUE'
-  }));
+  const previews: SchedulerItemPreview[] = [
+    ...eligible.map(item => ({
+      id: item.id,
+      dealershipId: item.dealershipId,
+      vehicleId: item.vehicleId,
+      platformSlug: item.platformSlug,
+      triggerKind: item.triggerKind,
+      status: item.status,
+      priority: item.priority,
+      scheduledFor: item.scheduledFor?.toISOString() ?? null,
+      attemptCount: item.attemptCount,
+      reason: (item.status === 'READY' ? 'READY' : item.status === 'FAILED' ? 'RETRY' : 'SCHEDULED_DUE') as SchedulerItemPreview['reason'],
+    })),
+    ...inCooldownItems.map(item => ({
+      id: item.id,
+      dealershipId: item.dealershipId,
+      vehicleId: item.vehicleId,
+      platformSlug: item.platformSlug,
+      triggerKind: item.triggerKind,
+      status: item.status,
+      priority: item.priority,
+      scheduledFor: item.scheduledFor?.toISOString() ?? null,
+      attemptCount: item.attemptCount,
+      reason: 'COOLDOWN' as const,
+    })),
+  ];
 
   if (dryRun) {
     return {
@@ -133,6 +165,7 @@ export async function runScheduler(
       sentCount: 0,
       failedCount: 0,
       skippedCount: 0,
+      cooldownCount: inCooldownItems.length,
       syncRunIds: [],
       previews
     };
@@ -166,7 +199,7 @@ export async function runScheduler(
   }
 
   if (claimedIds.length === 0) {
-    return { dryRun: false, schedulerId, eligibleCount: eligible.length, claimedCount: 0, sentCount: 0, failedCount: 0, skippedCount: eligible.length, syncRunIds: [], previews };
+    return { dryRun: false, schedulerId, eligibleCount: eligible.length, claimedCount: 0, sentCount: 0, failedCount: 0, skippedCount: eligible.length, cooldownCount: inCooldownItems.length, syncRunIds: [], previews };
   }
 
   // Group claimed items by dealershipId
@@ -181,6 +214,8 @@ export async function runScheduler(
   let totalSent = 0;
   let totalFailed = 0;
   const syncRunIds: string[] = [];
+  // Track (dealershipId:platformSlug) pairs that had at least one successful dispatch
+  const dispatchedPlatforms = new Set<string>();
 
   for (const [dId, items] of byDealer) {
     const syncRun = await prisma.syncRun.create({
@@ -225,6 +260,7 @@ export async function runScheduler(
           },
           syncRunId: syncRun.id
         });
+        dispatchedPlatforms.add(policyKey(dId, item.platformSlug));
         runSent++;
       } else {
         const newAttemptCount = item.attemptCount + 1;
@@ -277,6 +313,20 @@ export async function runScheduler(
     totalFailed += runFailed;
   }
 
+  // Update lastDispatchedAt for every platform that received a dispatch this run
+  if (dispatchedPlatforms.size > 0) {
+    const dispatchedAt = new Date();
+    await Promise.all(
+      [...dispatchedPlatforms].map(key => {
+        const [dId, slug] = key.split(':') as [string, string];
+        return prisma.syncPolicy.updateMany({
+          where: { dealershipId: dId, platformSlug: slug },
+          data: { lastDispatchedAt: dispatchedAt }
+        });
+      })
+    );
+  }
+
   return {
     dryRun: false,
     schedulerId,
@@ -285,6 +335,7 @@ export async function runScheduler(
     sentCount: totalSent,
     failedCount: totalFailed,
     skippedCount: eligible.length - claimedIds.length,
+    cooldownCount: inCooldownItems.length,
     syncRunIds,
     previews
   };

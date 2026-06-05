@@ -473,15 +473,17 @@ enum PlatformAccountState {
 }
 
 model SyncPolicy {
-  id            String   @id @default(cuid())
-  dealershipId  String
-  platformSlug  String   @db.VarChar(80)
-  mode          SyncMode
-  urgentRemoval Boolean  @default(true)  // bypass normal mode for SOLD/REMOVED
-  scheduleHint  String?  @db.VarChar(80) // e.g. "DAILY_09:00", "HOURLY"
-  notes         String?  @db.Text
-  createdAt     DateTime @default(now())
-  updatedAt     DateTime @updatedAt
+  id                 String    @id @default(cuid())
+  dealershipId       String
+  platformSlug       String    @db.VarChar(80)
+  mode               SyncMode
+  urgentRemoval      Boolean   @default(true)  // bypass cooldown/mode for SOLD/REMOVED
+  scheduleHint       String?   @db.VarChar(80) // e.g. "DAILY_09:00", "HOURLY"
+  minIntervalMinutes Int?                       // min minutes between dispatches; null = platform-governed
+  lastDispatchedAt   DateTime?                  // updated on each successful dispatch
+  notes              String?   @db.Text
+  createdAt          DateTime  @default(now())
+  updatedAt          DateTime  @updatedAt
 
   dealership    DealershipProfile @relation(fields: [dealershipId], references: [id], onDelete: Cascade)
 

@@ -56,6 +56,43 @@ export function resolveBlockReason(status: PublishQueueStatus, mode: SyncMode): 
   return null;
 }
 
+// ── Cooldown helpers ─────────────────────────────────────────────────────────
+
+/** Default minimum dispatch interval (minutes) by integration class. */
+export function defaultMinIntervalMinutes(cls: IntegrationClass): number | null {
+  switch (cls) {
+    case 'OWNED':              return 0;     // real-time OK
+    case 'FEEDABLE':           return 60;    // max once per hour
+    case 'ASSISTED':           return 1440;  // max once per day (manual anyway)
+    case 'PARTNER_DEPENDENT':  return null;  // no rule until agreement in place
+  }
+}
+
+/**
+ * Returns true if the platform is within its cooldown window and should not
+ * receive a new dispatch right now.
+ * Urgent removals (SOLD/REMOVED) bypass cooldown regardless of this result.
+ */
+export function isInCooldown(
+  policy: { minIntervalMinutes: number | null; lastDispatchedAt: Date | null } | null | undefined,
+  now: Date
+): boolean {
+  if (!policy?.minIntervalMinutes || !policy.lastDispatchedAt) return false;
+  const elapsedMs = now.getTime() - policy.lastDispatchedAt.getTime();
+  return elapsedMs < policy.minIntervalMinutes * 60_000;
+}
+
+/** Remaining cooldown seconds, or 0 if not in cooldown. */
+export function cooldownRemainingSeconds(
+  policy: { minIntervalMinutes: number | null; lastDispatchedAt: Date | null } | null | undefined,
+  now: Date
+): number {
+  if (!policy?.minIntervalMinutes || !policy.lastDispatchedAt) return 0;
+  const cooldownMs = policy.minIntervalMinutes * 60_000;
+  const elapsedMs  = now.getTime() - policy.lastDispatchedAt.getTime();
+  return Math.max(0, Math.ceil((cooldownMs - elapsedMs) / 1000));
+}
+
 export function defaultAccountState(applicationStatus: string): PlatformAccountState {
   switch (applicationStatus) {
     case 'ACTIVE':                             return 'ACTIVE';
@@ -80,12 +117,13 @@ export async function upsertDefaultSyncPolicies(
     platformProfiles.map(p =>
       prisma.syncPolicy.upsert({
         where: { dealershipId_platformSlug: { dealershipId, platformSlug: p.slug } },
-        update: {},
+        update: { minIntervalMinutes: defaultMinIntervalMinutes(p.integrationClass) },
         create: {
           dealershipId,
           platformSlug: p.slug,
           mode: defaultSyncMode(p.integrationClass) as any,
-          urgentRemoval: true
+          urgentRemoval: true,
+          minIntervalMinutes: defaultMinIntervalMinutes(p.integrationClass),
         }
       })
     )

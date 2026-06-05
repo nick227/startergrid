@@ -372,7 +372,7 @@ export async function commitImport(
       createdCount: result.created,
       updatedCount: result.updated,
       skippedCount: result.skipped,
-      blockedCount: 0,  // computed post-ingress once validation runs
+      blockedCount: preview.summary.blocked,  // rows that failed validation in this batch
       errorCount:   result.errors,
       mappingJson:  mapping,
       summaryJson: {
@@ -412,7 +412,7 @@ export async function commitImport(
 
   if (result.status === 'COMMITTED') {
     const { scheduleAutoReconcile } = await import('../publishing/autoReconcileService.js');
-    scheduleAutoReconcile(dealershipId, { full: true });
+    scheduleAutoReconcile(dealershipId, { full: true, ingressRunId: result.ingressRunId });
   }
 
   return result;

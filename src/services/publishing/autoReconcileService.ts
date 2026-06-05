@@ -1,3 +1,4 @@
+import type { Prisma } from '@prisma/client';
 import { prisma } from '../../lib/prisma.js';
 import { runPrepareAndPublish } from './prepareAndPublishService.js';
 import { runScheduler } from './schedulerService.js';
@@ -17,6 +18,7 @@ export type AutoSyncStatus = {
 
 type Pending = {
   needsFullReconcile: boolean;
+  ingressRunId: string | null;
   timer: ReturnType<typeof setTimeout> | null;
 };
 
@@ -40,11 +42,12 @@ export function getAutoSyncStatus(dealershipId: string): AutoSyncStatus {
 /** After inventory writes: debounced prepare + dispatch. Use full:true for import/bulk. */
 export function scheduleAutoReconcile(
   dealershipId: string,
-  opts: { full?: boolean; immediate?: boolean } = {}
+  opts: { full?: boolean; immediate?: boolean; ingressRunId?: string } = {}
 ): void {
   const full = opts.full === true;
-  const entry = pendingByDealer.get(dealershipId) ?? { needsFullReconcile: false, timer: null };
+  const entry = pendingByDealer.get(dealershipId) ?? { needsFullReconcile: false, ingressRunId: null, timer: null };
   entry.needsFullReconcile = entry.needsFullReconcile || full;
+  if (opts.ingressRunId) entry.ingressRunId = opts.ingressRunId;
   if (entry.timer) clearTimeout(entry.timer);
 
   const delay = opts.immediate ? 0 : DEBOUNCE_MS;
@@ -67,6 +70,7 @@ export function scheduleAutoReconcile(
 async function flushAutoReconcile(dealershipId: string): Promise<void> {
   const entry = pendingByDealer.get(dealershipId);
   const needsFull = entry?.needsFullReconcile ?? false;
+  const ingressRunId = entry?.ingressRunId ?? null;
   pendingByDealer.delete(dealershipId);
 
   const running: AutoSyncStatus = {
@@ -79,8 +83,9 @@ async function flushAutoReconcile(dealershipId: string): Promise<void> {
   statusByDealer.set(dealershipId, running);
 
   try {
+    let prepareResult: Awaited<ReturnType<typeof runPrepareAndPublish>> | null = null;
     if (needsFull) {
-      await runPrepareAndPublish(prisma, dealershipId, { dryRun: false });
+      prepareResult = await runPrepareAndPublish(prisma, dealershipId, { dryRun: false });
     }
     const sched = await runScheduler(prisma, { dealershipId, dryRun: false });
 
@@ -93,6 +98,20 @@ async function flushAutoReconcile(dealershipId: string): Promise<void> {
         dispatched: sched.sentCount,
       },
     });
+
+    // Write back platform impact to the originating IngressRun
+    if (ingressRunId && needsFull && prepareResult) {
+      const impactJson = {
+        reconcileAt:     new Date().toISOString(),
+        publishSummary:  prepareResult.summary,
+        dispatched:      sched.sentCount,
+        inCooldown:      sched.cooldownCount,
+      };
+      await prisma.ingressRun.update({
+        where: { id: ingressRunId },
+        data: { platformImpactJson: impactJson as unknown as Prisma.InputJsonValue },
+      });
+    }
 
     statusByDealer.set(dealershipId, {
       phase: 'idle',

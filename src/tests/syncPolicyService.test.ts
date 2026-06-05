@@ -6,7 +6,10 @@ import {
   resolvePriority,
   resolveScheduledFor,
   resolveBlockReason,
-  defaultAccountState
+  defaultAccountState,
+  defaultMinIntervalMinutes,
+  isInCooldown,
+  cooldownRemainingSeconds,
 } from '../services/publishing/syncPolicyService.js';
 import { platformProfiles } from '../data/platformProfiles.js';
 
@@ -131,6 +134,125 @@ describe('defaultAccountState', () => {
   });
   it('NOT_STARTED → ACCOUNT_NEEDED', () => {
     assert.equal(defaultAccountState('NOT_STARTED'), 'ACCOUNT_NEEDED');
+  });
+});
+
+// ── defaultMinIntervalMinutes ────────────────────────────────────────────────
+
+describe('defaultMinIntervalMinutes', () => {
+  it('OWNED → 0 (real-time OK)', () => {
+    assert.equal(defaultMinIntervalMinutes('OWNED'), 0);
+  });
+  it('FEEDABLE → 60 (max once per hour)', () => {
+    assert.equal(defaultMinIntervalMinutes('FEEDABLE'), 60);
+  });
+  it('ASSISTED → 1440 (max once per day)', () => {
+    assert.equal(defaultMinIntervalMinutes('ASSISTED'), 1440);
+  });
+  it('PARTNER_DEPENDENT → null (no rule yet)', () => {
+    assert.equal(defaultMinIntervalMinutes('PARTNER_DEPENDENT'), null);
+  });
+});
+
+// ── isInCooldown ─────────────────────────────────────────────────────────────
+
+describe('isInCooldown', () => {
+  const NOW = new Date('2026-06-04T12:00:00Z');
+
+  it('null policy → not in cooldown', () => {
+    assert.equal(isInCooldown(null, NOW), false);
+  });
+
+  it('undefined policy → not in cooldown', () => {
+    assert.equal(isInCooldown(undefined, NOW), false);
+  });
+
+  it('minIntervalMinutes = null → not in cooldown', () => {
+    assert.equal(isInCooldown({ minIntervalMinutes: null, lastDispatchedAt: new Date() }, NOW), false);
+  });
+
+  it('minIntervalMinutes = 0 → not in cooldown (real-time policy)', () => {
+    assert.equal(isInCooldown({ minIntervalMinutes: 0, lastDispatchedAt: new Date() }, NOW), false);
+  });
+
+  it('no lastDispatchedAt → not in cooldown (never dispatched)', () => {
+    assert.equal(isInCooldown({ minIntervalMinutes: 60, lastDispatchedAt: null }, NOW), false);
+  });
+
+  it('dispatched 30m ago, cooldown=60m → still in cooldown', () => {
+    const last = new Date(NOW.getTime() - 30 * 60_000);
+    assert.equal(isInCooldown({ minIntervalMinutes: 60, lastDispatchedAt: last }, NOW), true);
+  });
+
+  it('dispatched 61m ago, cooldown=60m → not in cooldown', () => {
+    const last = new Date(NOW.getTime() - 61 * 60_000);
+    assert.equal(isInCooldown({ minIntervalMinutes: 60, lastDispatchedAt: last }, NOW), false);
+  });
+
+  it('dispatched exactly 60m ago, cooldown=60m → not in cooldown (elapsed === cooldown)', () => {
+    const last = new Date(NOW.getTime() - 60 * 60_000);
+    assert.equal(isInCooldown({ minIntervalMinutes: 60, lastDispatchedAt: last }, NOW), false);
+  });
+
+  it('dispatched 23h ago, cooldown=1440m → still in cooldown', () => {
+    const last = new Date(NOW.getTime() - 23 * 60 * 60_000);
+    assert.equal(isInCooldown({ minIntervalMinutes: 1440, lastDispatchedAt: last }, NOW), true);
+  });
+
+  it('dispatched 25h ago, cooldown=1440m → not in cooldown', () => {
+    const last = new Date(NOW.getTime() - 25 * 60 * 60_000);
+    assert.equal(isInCooldown({ minIntervalMinutes: 1440, lastDispatchedAt: last }, NOW), false);
+  });
+});
+
+// ── cooldownRemainingSeconds ─────────────────────────────────────────────────
+
+describe('cooldownRemainingSeconds', () => {
+  const NOW = new Date('2026-06-04T12:00:00Z');
+
+  it('returns 0 when not in cooldown', () => {
+    assert.equal(cooldownRemainingSeconds(null, NOW), 0);
+  });
+
+  it('returns 0 when cooldown already expired', () => {
+    const last = new Date(NOW.getTime() - 120 * 60_000);
+    assert.equal(cooldownRemainingSeconds({ minIntervalMinutes: 60, lastDispatchedAt: last }, NOW), 0);
+  });
+
+  it('returns remaining seconds when in cooldown', () => {
+    const last = new Date(NOW.getTime() - 30 * 60_000); // 30m ago
+    const remaining = cooldownRemainingSeconds({ minIntervalMinutes: 60, lastDispatchedAt: last }, NOW);
+    assert.ok(remaining > 0 && remaining <= 30 * 60, `Expected 0–1800s, got ${remaining}`);
+  });
+
+  it('returns approximately 1800s when exactly half of 60m cooldown remains', () => {
+    const last = new Date(NOW.getTime() - 30 * 60_000);
+    const remaining = cooldownRemainingSeconds({ minIntervalMinutes: 60, lastDispatchedAt: last }, NOW);
+    assert.ok(remaining >= 1799 && remaining <= 1801, `Expected ~1800, got ${remaining}`);
+  });
+});
+
+// ── isInCooldown + urgent removal interaction (documented) ────────────────────
+
+describe('cooldown and urgentRemoval logic', () => {
+  const NOW = new Date('2026-06-04T12:00:00Z');
+  const RECENT = new Date(NOW.getTime() - 10 * 60_000); // 10m ago
+
+  it('isInCooldown returns true for FEEDABLE platform dispatched 10m ago', () => {
+    assert.equal(
+      isInCooldown({ minIntervalMinutes: 60, lastDispatchedAt: RECENT }, NOW),
+      true
+    );
+  });
+
+  it('urgent removals should bypass cooldown (verified at scheduler level, not here)', () => {
+    // isInCooldown has no knowledge of triggerKind — that check lives in runScheduler.
+    // This test documents the contract: isInCooldown reports true; caller decides bypass.
+    assert.equal(
+      isInCooldown({ minIntervalMinutes: 60, lastDispatchedAt: RECENT }, NOW),
+      true,
+      'isInCooldown itself always checks interval, bypass is caller responsibility'
+    );
   });
 });
 
