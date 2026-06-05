@@ -4,6 +4,7 @@ import {
   platformOutcomeMeta,
   sortPlatformsForSync,
 } from '@/lib/syncPresentation.ts';
+import { InfoLabel } from '@/components/docs';
 
 type Props = {
   platforms: PlatformPublishResult[];
@@ -22,7 +23,9 @@ export function SyncPlatformList({ platforms, onFixAccounts }: Props) {
     <section className="bg-white rounded-2xl border border-slate-200 overflow-hidden">
       <div className="px-5 py-4 border-b border-slate-100 flex flex-wrap items-center justify-between gap-2">
         <div>
-          <h2 className="text-sm font-bold text-slate-900">Platforms</h2>
+          <h2 className="text-sm font-bold text-slate-900">
+            <InfoLabel term="Platforms" docId="platforms/platform" />
+          </h2>
           <p className="text-xs text-slate-500 mt-0.5">
             {pass} will pass · {fail} need action
           </p>

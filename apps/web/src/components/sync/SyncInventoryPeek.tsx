@@ -1,4 +1,5 @@
 import type { VehicleReadinessItem } from '@/lib/types.ts';
+import { InfoLabel } from '@/components/docs';
 
 type Props = {
   blocked: VehicleReadinessItem[];
@@ -13,7 +14,9 @@ export function SyncInventoryPeek({ blocked, warningCount, onOpenInventory }: Pr
     <section className="bg-white rounded-2xl border border-slate-200 p-5">
       <div className="flex items-start justify-between gap-3 mb-3">
         <div>
-          <h2 className="text-sm font-bold text-slate-900">Inventory to fix</h2>
+          <h2 className="text-sm font-bold text-slate-900">
+            <InfoLabel term="Inventory readiness" docId="inventory/inventory-readiness" />
+          </h2>
           <p className="text-xs text-slate-500 mt-0.5">
             Only vehicles blocking sync — open inventory for the full list.
           </p>

@@ -123,6 +123,7 @@ export default function AccountManagementPage({ dealerId, nav, activeTab }: Prop
       <div className="space-y-5">
         <PageHeader
           title="Platform accounts"
+          infoDocId="platforms/account-states"
           subtitle="Fix account gaps so Sync can reach every platform."
         />
 

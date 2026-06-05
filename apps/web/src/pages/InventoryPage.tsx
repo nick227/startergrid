@@ -5,6 +5,7 @@ import type { OperatorPageBaseProps } from '@/lib/operatorPage.ts';
 import { useAsyncQuery } from '@/hooks/useAsyncQuery.ts';
 import { OperatorPage, SectionCard, InlineCallout, PageHeader } from '@/components/operator';
 import { Banner, EmptyState } from '@/components/ui';
+import { InfoButton } from '@/components/docs';
 import { SearchField } from '@/components/ui/SearchField.tsx';
 import { BulkActionBar, DataTable, SummaryStrip } from '@/components/generic';
 import type { SummaryItem } from '@/components/generic';
@@ -107,18 +108,25 @@ export default function InventoryPage({ dealerId, nav, activeTab }: Props) {
       lastRefresh={lastRefresh ?? undefined}
       footerPad={selected.size > 0}
       headerAction={
-        <button
-          type="button"
-          onClick={() => { setImportResult(null); setShowImport(true); }}
-          className="px-4 py-1.5 text-xs font-semibold bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg"
-        >
-          Import CSV
-        </button>
+        <span className="inline-flex items-center gap-2">
+          <span className="inline-flex items-center gap-1 text-xs font-semibold text-slate-600">
+            CSV import
+            <InfoButton docId="inventory/csv-import" />
+          </span>
+          <button
+            type="button"
+            onClick={() => { setImportResult(null); setShowImport(true); }}
+            className="px-4 py-1.5 text-xs font-semibold bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg"
+          >
+            Import CSV
+          </button>
+        </span>
       }
     >
       <div className="space-y-5">
         <PageHeader
           title="Inventory"
+          infoDocId="inventory/inventory-readiness"
           subtitle="Import, clean up issues, then sync to all platforms"
           action={
             summary && summary.ready > 0 ? (

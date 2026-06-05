@@ -9,6 +9,7 @@ type Props = OperatorPageBaseProps & {
   headerAction?: React.ReactNode;
   footerPad?: boolean;
   hideDealerId?: boolean;
+  sectionLabel?: string;
   children: React.ReactNode;
 };
 
@@ -23,6 +24,7 @@ export function OperatorPage({
   headerAction,
   footerPad,
   hideDealerId,
+  sectionLabel,
   children,
 }: Props) {
   return (
@@ -37,6 +39,7 @@ export function OperatorPage({
       headerAction={headerAction}
       footerPad={footerPad}
       hideDealerId={hideDealerId}
+      sectionLabel={sectionLabel}
     >
       {children}
     </PageShell>

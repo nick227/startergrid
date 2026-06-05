@@ -13,11 +13,110 @@
   .field-input {
     @apply w-full px-3 py-2 text-sm border border-slate-200 rounded-xl bg-white focus:outline-none focus:ring-2 focus:ring-emerald-500/30;
   }
+
+  .doc-reader-body {
+    font-family: Georgia, 'Times New Roman', serif;
+  }
+
+  .doc-reader-prose {
+    @apply text-[15px] leading-[1.8] text-stone-800;
+  }
+
+  .doc-reader-prose > p:first-of-type {
+    @apply text-[17px] leading-[1.75] text-stone-700 mb-6;
+  }
+
+  .doc-reader-prose h2 {
+    @apply text-base font-sans font-bold text-slate-900 tracking-tight mt-9 mb-3 pb-2 border-b border-stone-200/90;
+  }
+
+  .doc-reader-prose h3 {
+    @apply text-sm font-sans font-semibold text-stone-800 tracking-wide uppercase mt-7 mb-2;
+  }
+
+  .doc-reader-prose p {
+    @apply my-4 text-stone-700;
+  }
+
+  .doc-reader-prose strong {
+    @apply font-semibold text-stone-900;
+  }
+
+  .doc-reader-prose ul {
+    @apply my-4 pl-5 space-y-2 list-disc marker:text-emerald-700/70;
+  }
+
+  .doc-reader-prose ol {
+    @apply my-4 pl-5 space-y-2.5 list-decimal marker:font-sans marker:text-sm marker:font-semibold marker:text-emerald-800;
+  }
+
+  .doc-reader-prose li {
+    @apply pl-1 text-stone-700;
+  }
+
+  .doc-reader-prose li > p {
+    @apply my-1;
+  }
+
+  .doc-reader-prose hr {
+    @apply my-8 border-0 h-px bg-gradient-to-r from-transparent via-stone-300 to-transparent;
+  }
+
+  .doc-reader-prose .doc-link {
+    @apply text-emerald-900 underline underline-offset-[3px] decoration-emerald-300/80 hover:decoration-emerald-600 font-medium;
+  }
+
+  .doc-reader-prose .doc-table-wrap {
+    @apply my-6 -mx-1 overflow-x-auto rounded-xl border border-stone-200/90 bg-white/60 shadow-sm;
+  }
+
+  .doc-reader-prose .doc-table {
+    @apply w-full min-w-[280px] text-left text-sm font-sans border-collapse;
+  }
+
+  .doc-reader-prose .doc-table thead {
+    @apply bg-stone-100/90;
+  }
+
+  .doc-reader-prose .doc-table th {
+    @apply px-3 py-2.5 text-[11px] font-bold uppercase tracking-wider text-stone-600 border-b border-stone-200;
+  }
+
+  .doc-reader-prose .doc-table td {
+    @apply px-3 py-2.5 text-[13px] text-stone-700 border-b border-stone-100 align-top leading-snug;
+  }
+
+  .doc-reader-prose .doc-table tbody tr:last-child td {
+    @apply border-b-0;
+  }
+
+  .doc-reader-prose .doc-table tbody tr:nth-child(even) {
+    @apply bg-stone-50/50;
+  }
+
+  .doc-reader-prose .doc-table td:first-child {
+    @apply font-medium text-stone-900 whitespace-nowrap;
+  }
 }
 
 @layer utilities {
   .scrollbar-thin {
     scrollbar-width: thin;
     scrollbar-color: theme('colors.slate.300') transparent;
+  }
+
+  @keyframes doc-sheet-up {
+    from {
+      transform: translateY(100%);
+      opacity: 0.6;
+    }
+    to {
+      transform: translateY(0);
+      opacity: 1;
+    }
+  }
+
+  .animate-doc-sheet-up {
+    animation: doc-sheet-up 0.28s ease-out;
   }
 }

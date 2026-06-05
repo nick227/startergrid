@@ -5,6 +5,7 @@ import { useAsyncQuery } from '@/hooks/useAsyncQuery.ts';
 import { Skeleton } from '@/components/ui/Skeleton.tsx';
 import { SearchField } from '@/components/ui/SearchField.tsx';
 import { ErrorState } from '@/components/operator/ErrorState.tsx';
+import { InfoLabel } from '@/components/docs';
 
 type Props = { onSelect: (id: string) => void };
 
@@ -33,7 +34,14 @@ export default function DealerPicker({ onSelect }: Props) {
           </div>
           <h1 className="text-2xl font-bold text-white tracking-tight">Operator Console</h1>
           <p className="text-slate-400 mt-2 text-sm max-w-xs mx-auto leading-relaxed">
-            Inventory → accounts → sync. Pick a dealer to start.
+            <InfoLabel
+              term="Dealer context"
+              docId="dealerships/dealer-context"
+              inverted
+              termClassName="text-slate-300"
+              className="justify-center"
+            />
+            {' '}— pick a rooftop, then inventory → accounts → sync.
           </p>
         </div>
 
@@ -72,6 +80,16 @@ export default function DealerPicker({ onSelect }: Props) {
                 <div className="text-slate-400 text-xs font-mono mt-1">{d.id}</div>
               </button>
             ))}
+          </div>
+
+          <div className="px-4 py-3 border-t border-slate-100 bg-white text-center">
+            <button
+              type="button"
+              onClick={() => { window.location.hash = '#/knowledge'; }}
+              className="text-xs font-semibold text-slate-600 hover:text-emerald-700 transition-colors"
+            >
+              Knowledge base →
+            </button>
           </div>
 
           <div className="p-4 bg-slate-50 border-t border-slate-100">

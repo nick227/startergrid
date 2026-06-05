@@ -4,6 +4,7 @@ export type OperatorNavHandlers = {
   goToSync: () => void;
   goToInventory: () => void;
   goToAccounts: () => void;
+  goToKnowledge: () => void;
   changeDealer: () => void;
 };
 
@@ -16,5 +17,6 @@ export const OPERATOR_TABS: Array<{ id: OperatorTab; label: string; short: strin
 export function tabFromPage(page: string | null): OperatorTab {
   if (page === 'inventory') return 'inventory';
   if (page === 'accounts') return 'accounts';
+  if (page === 'knowledge') return 'sync';
   return 'sync';
 }

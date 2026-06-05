@@ -14,6 +14,7 @@ type Props = {
   children: React.ReactNode;
   footerPad?: boolean;
   hideDealerId?: boolean;
+  sectionLabel?: string;
 };
 
 export function PageShell({
@@ -28,6 +29,7 @@ export function PageShell({
   children,
   footerPad,
   hideDealerId,
+  sectionLabel,
 }: Props) {
   const tabTitles: Record<OperatorTab, string> = {
     sync: 'Sync',
@@ -53,7 +55,7 @@ export function PageShell({
                 {!hideDealerId && (
                   <p className="text-slate-500 text-xs font-mono mt-0.5 truncate">{dealerId}</p>
                 )}
-                <p className="text-slate-400 text-xs mt-1 hidden sm:block">{tabTitles[activeTab]}</p>
+                <p className="text-slate-400 text-xs mt-1 hidden sm:block">{sectionLabel ?? tabTitles[activeTab]}</p>
               </div>
             </div>
 
@@ -64,13 +66,22 @@ export function PageShell({
           </div>
 
           <div className="pb-3 flex items-center justify-between gap-3 flex-wrap border-t border-slate-800/80 pt-3">
-            <button
-              type="button"
-              onClick={nav.changeDealer}
-              className="text-xs text-slate-500 hover:text-white transition-colors"
-            >
-              ← Change dealer
-            </button>
+            <div className="flex items-center gap-4">
+              <button
+                type="button"
+                onClick={nav.changeDealer}
+                className="text-xs text-slate-500 hover:text-white transition-colors"
+              >
+                ← Change dealer
+              </button>
+              <button
+                type="button"
+                onClick={nav.goToKnowledge}
+                className="text-xs text-slate-500 hover:text-white transition-colors"
+              >
+                Knowledge base
+              </button>
+            </div>
             <div className="flex items-center gap-2">
               {lastRefresh && !refreshing && (
                 <span className="text-slate-600 text-xs">Updated {lastRefresh.toLocaleTimeString()}</span>
