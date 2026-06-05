@@ -91,6 +91,33 @@ export const photoUpdateSchema = z.object({
 // operationId: markVehicleSold | markVehicleRemoved
 export const emptyBodySchema = z.object({}).strict().optional();
 
+// operationId: createIngressSource
+export const createIngressSourceSchema = z.object({
+  label:      nonEmptyString(160),
+  feedUrl:    z.string().trim().url().max(512).refine(
+    url => url.startsWith('https://'),
+    'feedUrl must use HTTPS'
+  ),
+  sourceSlug: optionalText(80),
+  status:     z.enum(['ACTIVE', 'PAUSED']).optional(),
+}).strict();
+
+// operationId: updateIngressSource
+export const updateIngressSourceSchema = z.object({
+  label:   nonEmptyString(160).optional(),
+  feedUrl: z.string().trim().url().max(512).refine(
+    url => url.startsWith('https://'),
+    'feedUrl must use HTTPS'
+  ).optional(),
+  status:  z.enum(['ACTIVE', 'PAUSED', 'DISCONNECTED', 'ERROR']).optional(),
+}).strict().refine(
+  body => Object.keys(body).length > 0,
+  'At least one field is required'
+);
+
+export type CreateIngressSourceBody = z.infer<typeof createIngressSourceSchema>;
+export type UpdateIngressSourceBody = z.infer<typeof updateIngressSourceSchema>;
+
 // operationId: ingestJsonInventory
 const jsonIngestVehicleSchema = z.object({
   stockNumber:   nonEmptyString(80),

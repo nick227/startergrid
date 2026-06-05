@@ -525,6 +525,69 @@ paths:
                 $ref: '#/components/schemas/IngressSourcesResponse'
         '404':
           $ref: '#/components/responses/NotFound'
+    post:
+      tags: [Inventory]
+      security:
+        - OperatorAuth: []
+      x-route-classification: operator
+      operationId: createIngressSource
+      summary: Register an API inventory source
+      parameters:
+        - $ref: '#/components/parameters/dealershipId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateIngressSourceRequest'
+      responses:
+        '200':
+          description: Created source
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/IngressSourceResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /api/dealers/{dealershipId}/ingress/sources/{sourceId}:
+    patch:
+      tags: [Inventory]
+      security:
+        - OperatorAuth: []
+      x-route-classification: operator
+      operationId: updateIngressSource
+      summary: Update label, status, or feed URL of an ingress source
+      parameters:
+        - $ref: '#/components/parameters/dealershipId'
+        - $ref: '#/components/parameters/sourceId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateIngressSourceRequest'
+      responses:
+        '200':
+          description: Updated source
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/IngressSourceResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
 
   /api/dealers/{dealershipId}/ingress/runs:
     get:
@@ -643,6 +706,12 @@ components:
         type: string
     stockNumber:
       name: stockNumber
+      in: path
+      required: true
+      schema:
+        type: string
+    sourceId:
+      name: sourceId
       in: path
       required: true
       schema:
@@ -1624,17 +1693,58 @@ components:
 
     IngressSourceView:
       type: object
-      required: [id, slug, label, kind, status, lastReceivedAt, lastCheckedAt, createdAt, updatedAt]
+      required: [id, slug, label, kind, status, feedUrl, lastReceivedAt, lastCheckedAt, createdAt, updatedAt]
       properties:
         id:            { type: string }
         slug:          { type: string }
         label:         { type: string }
         kind:          { type: string }
         status:        { type: string }
+        feedUrl:       { type: string, nullable: true }
         lastReceivedAt: { type: string, nullable: true }
         lastCheckedAt:  { type: string, nullable: true }
         createdAt:     { type: string }
         updatedAt:     { type: string }
+
+    IngressSourceResponse:
+      type: object
+      required: [source]
+      properties:
+        source:
+          $ref: '#/components/schemas/IngressSourceView'
+
+    CreateIngressSourceRequest:
+      type: object
+      required: [label, feedUrl]
+      properties:
+        label:
+          type: string
+          maxLength: 160
+        feedUrl:
+          type: string
+          format: uri
+          maxLength: 512
+        sourceSlug:
+          type: string
+          maxLength: 80
+        status:
+          type: string
+          enum: [ACTIVE, PAUSED]
+
+    UpdateIngressSourceRequest:
+      type: object
+      properties:
+        label:
+          type: string
+          minLength: 1
+          maxLength: 160
+        feedUrl:
+          type: string
+          format: uri
+          maxLength: 512
+        status:
+          type: string
+          enum: [ACTIVE, PAUSED, DISCONNECTED, ERROR]
 
     IngressRunView:
       type: object

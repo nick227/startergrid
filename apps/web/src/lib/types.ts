@@ -318,11 +318,27 @@ export type IngressSourceView = {
   label: string;
   kind: string;
   status: string;
+  feedUrl: string | null;
   lastReceivedAt: string | null;
   lastCheckedAt:  string | null;
   createdAt: string;
   updatedAt: string;
 };
+
+export type CreateIngressSourcePayload = {
+  label: string;
+  feedUrl: string;
+  sourceSlug?: string;
+  status?: 'ACTIVE' | 'PAUSED';
+};
+
+export type UpdateIngressSourcePayload = {
+  label?: string;
+  feedUrl?: string;
+  status?: 'ACTIVE' | 'PAUSED' | 'DISCONNECTED' | 'ERROR';
+};
+
+export type IngressSourceResponse = { source: IngressSourceView };
 
 export type IngressRunPlatformImpact = {
   reconcileAt:    string;

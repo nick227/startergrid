@@ -1,10 +1,20 @@
+import { useState } from 'react';
 import { useAsyncQuery } from '@/hooks/useAsyncQuery.ts';
-import { fetchIngressSources, fetchIngressRuns } from '@/lib/api/sdk.ts';
-import type { IngressSourceView, IngressRunView, IngressRunPlatformImpact } from '@/lib/types.ts';
+import {
+  fetchIngressSources,
+  fetchIngressRuns,
+  createIngressSource,
+  updateIngressSource,
+} from '@/lib/api/sdk.ts';
+import type {
+  IngressSourceView,
+  IngressRunView,
+  IngressRunPlatformImpact,
+} from '@/lib/types.ts';
 import { SectionCard } from '@/components/operator';
 import { AsyncPanel } from '@/components/operator/AsyncPanel.tsx';
 
-// ── Props ────────────────────────────────────────────────────────────────────
+// ── Props ─────────────────────────────────────────────────────────────────────
 
 type Props = {
   dealerId: string;
@@ -25,12 +35,12 @@ function relativeTime(iso: string): string {
 }
 
 const SOURCE_KIND_LABEL: Record<string, string> = {
-  CSV:            'CSV upload',
-  JSON:           'JSON feed',
-  API:            'API',
-  WEBHOOK:        'Webhook',
-  MANUAL:         'Manual',
-  SCHEDULED_CHECK:'Scheduled check',
+  CSV:             'CSV upload',
+  JSON:            'JSON feed',
+  API:             'API feed',
+  WEBHOOK:         'Webhook',
+  MANUAL:          'Manual',
+  SCHEDULED_CHECK: 'Scheduled check',
 };
 
 const SOURCE_STATUS_STYLE: Record<string, string> = {
@@ -47,7 +57,6 @@ type ImpactChip = { label: string; cls: string };
 function buildImpactChips(impact: IngressRunPlatformImpact): ImpactChip[] {
   const chips: ImpactChip[] = [];
   const s = impact.publishSummary;
-
   if (impact.dispatched > 0)
     chips.push({ label: `${impact.dispatched} dispatched`, cls: 'text-emerald-700' });
   const scheduled = (s['Scheduled'] ?? 0) + (s['Ready'] ?? 0);
@@ -59,7 +68,6 @@ function buildImpactChips(impact: IngressRunPlatformImpact): ImpactChip[] {
     chips.push({ label: `${s['Failed']} failed`, cls: 'text-red-600 font-semibold' });
   if (impact.inCooldown > 0)
     chips.push({ label: `${impact.inCooldown} in cooldown`, cls: 'text-slate-400' });
-
   return chips;
 }
 
@@ -82,22 +90,24 @@ export function IngressPanel({ dealerId, latestRunId, onShowBlockedVehicles }: P
     data: runsData, loading: loadingRuns, error: runsErr, reload: reloadRuns,
   } = useAsyncQuery(() => fetchIngressRuns(dealerId, { limit: 5 }), [dealerId, latestRunId]);
 
+  const [addingSource, setAddingSource] = useState(false);
+
   const sources  = srcData?.sources  ?? [];
   const runs     = runsData?.runs    ?? [];
   const loading  = loadingSrc && !srcData || loadingRuns && !runsData;
 
-  // Derive the most recent completed run for the subtitle
   const lastRun = runs[0] ?? null;
   const subtitle = lastRun
     ? `Last intake ${relativeTime(lastRun.receivedAt)} · ${lastRun.vehicleCount} vehicle${lastRun.vehicleCount !== 1 ? 's' : ''}`
     : 'No imports yet — use Import CSV to bring in your first batch';
 
+  const handleSourceSaved = () => {
+    setAddingSource(false);
+    reloadSrc();
+  };
+
   return (
-    <SectionCard
-      title="Intake sources"
-      subtitle={subtitle}
-      noPadding
-    >
+    <SectionCard title="Intake sources" subtitle={subtitle} noPadding>
       <AsyncPanel
         label="ingress sources"
         loading={loading}
@@ -109,7 +119,33 @@ export function IngressPanel({ dealerId, latestRunId, onShowBlockedVehicles }: P
         {/* ── Source rows ──────────────────────────────────────────────────── */}
         {sources.length > 0 && (
           <div className="divide-y divide-slate-50 border-b border-slate-100">
-            {sources.map(s => <SourceRow key={s.id} source={s} />)}
+            {sources.map(s => (
+              <SourceRow
+                key={s.id}
+                source={s}
+                dealerId={dealerId}
+                onUpdated={reloadSrc}
+              />
+            ))}
+          </div>
+        )}
+
+        {/* ── Add API source ────────────────────────────────────────────────── */}
+        {addingSource ? (
+          <AddSourceForm
+            dealerId={dealerId}
+            onSaved={handleSourceSaved}
+            onCancel={() => setAddingSource(false)}
+          />
+        ) : (
+          <div className={`px-5 py-2 ${sources.length > 0 ? 'border-b border-slate-100' : ''}`}>
+            <button
+              type="button"
+              onClick={() => setAddingSource(true)}
+              className="text-xs font-semibold text-slate-500 hover:text-slate-800 py-1"
+            >
+              + Add API source
+            </button>
           </div>
         )}
 
@@ -122,7 +158,7 @@ export function IngressPanel({ dealerId, latestRunId, onShowBlockedVehicles }: P
                 run={run}
                 isLatest={i === 0 && run.id === latestRunId}
                 onShowBlockedVehicles={
-                  run.errorCount > 0 || (run.blockedCount > 0) ? onShowBlockedVehicles : undefined
+                  run.errorCount > 0 || run.blockedCount > 0 ? onShowBlockedVehicles : undefined
                 }
               />
             ))}
@@ -139,26 +175,175 @@ export function IngressPanel({ dealerId, latestRunId, onShowBlockedVehicles }: P
   );
 }
 
-// ── Source row ────────────────────────────────────────────────────────────────
+// ── Add source form ───────────────────────────────────────────────────────────
 
-function SourceRow({ source }: { source: IngressSourceView }) {
-  const statusCls = SOURCE_STATUS_STYLE[source.status] ?? 'bg-slate-100 text-slate-500';
-  const kindLabel = SOURCE_KIND_LABEL[source.kind] ?? source.kind;
+function AddSourceForm({
+  dealerId,
+  onSaved,
+  onCancel,
+}: {
+  dealerId: string;
+  onSaved: () => void;
+  onCancel: () => void;
+}) {
+  const [label, setLabel]   = useState('');
+  const [feedUrl, setFeedUrl] = useState('');
+  const [status, setStatus] = useState<'ACTIVE' | 'PAUSED'>('ACTIVE');
+  const [error, setError]   = useState<string | null>(null);
+  const [saving, setSaving] = useState(false);
+
+  const canSubmit = label.trim().length > 0 && feedUrl.trim().startsWith('https://');
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!canSubmit) return;
+    setSaving(true);
+    setError(null);
+    try {
+      await createIngressSource(dealerId, {
+        label:   label.trim(),
+        feedUrl: feedUrl.trim(),
+        status,
+      });
+      onSaved();
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to create source');
+      setSaving(false);
+    }
+  };
 
   return (
-    <div className="px-5 py-3 flex items-center gap-3 text-xs">
-      <div className="flex-1 min-w-0">
-        <span className="text-sm font-semibold text-slate-900">{source.label}</span>
-        <span className="ml-2 text-slate-400">{kindLabel}</span>
+    <form
+      onSubmit={handleSubmit}
+      className="px-5 py-4 border-b border-slate-100 space-y-3 bg-slate-50/50"
+    >
+      <p className="text-xs font-semibold text-slate-700">Register API source</p>
+      {error && <p className="text-xs text-red-600">{error}</p>}
+      <div className="space-y-2">
+        <input
+          type="text"
+          value={label}
+          onChange={e => setLabel(e.target.value)}
+          placeholder="Label (e.g. DMS Feed, Partner API)"
+          required
+          maxLength={160}
+          className="w-full text-xs px-3 py-2 border border-slate-200 rounded-lg bg-white focus:outline-none focus:ring-1 focus:ring-slate-400"
+        />
+        <input
+          type="url"
+          value={feedUrl}
+          onChange={e => setFeedUrl(e.target.value)}
+          placeholder="https://api.example.com/inventory"
+          required
+          className="w-full text-xs px-3 py-2 border border-slate-200 rounded-lg bg-white focus:outline-none focus:ring-1 focus:ring-slate-400"
+        />
+        {feedUrl && !feedUrl.startsWith('https://') && (
+          <p className="text-xs text-amber-700">Feed URL must use HTTPS</p>
+        )}
+        <select
+          value={status}
+          onChange={e => setStatus(e.target.value as 'ACTIVE' | 'PAUSED')}
+          className="text-xs px-3 py-2 border border-slate-200 rounded-lg bg-white focus:outline-none focus:ring-1 focus:ring-slate-400"
+        >
+          <option value="ACTIVE">Active</option>
+          <option value="PAUSED">Paused</option>
+        </select>
       </div>
-      <span className={`px-2 py-0.5 rounded text-xs font-medium shrink-0 ${statusCls}`}>
-        {source.status.toLowerCase()}
-      </span>
-      <div className="text-slate-400 shrink-0 text-right min-w-0">
-        {source.lastReceivedAt
-          ? <span title={source.lastReceivedAt}>received {relativeTime(source.lastReceivedAt)}</span>
-          : <span className="italic">never received</span>}
+      <div className="flex items-center gap-3">
+        <button
+          type="submit"
+          disabled={saving || !canSubmit}
+          className="px-3 py-1.5 text-xs font-semibold bg-slate-900 text-white rounded-lg disabled:opacity-40"
+        >
+          {saving ? 'Saving…' : 'Save source'}
+        </button>
+        <button
+          type="button"
+          onClick={onCancel}
+          className="text-xs font-semibold text-slate-400 hover:text-slate-600"
+        >
+          Cancel
+        </button>
       </div>
+    </form>
+  );
+}
+
+// ── Source row ────────────────────────────────────────────────────────────────
+
+function SourceRow({
+  source,
+  dealerId,
+  onUpdated,
+}: {
+  source: IngressSourceView;
+  dealerId: string;
+  onUpdated?: () => void;
+}) {
+  const statusCls = SOURCE_STATUS_STYLE[source.status] ?? 'bg-slate-100 text-slate-500';
+  const kindLabel = SOURCE_KIND_LABEL[source.kind] ?? source.kind;
+  const isApi     = source.kind === 'API';
+  const [toggling, setToggling] = useState(false);
+
+  const toggleStatus = async () => {
+    if (!isApi || toggling) return;
+    const next = source.status === 'ACTIVE' ? 'PAUSED' : 'ACTIVE';
+    setToggling(true);
+    try {
+      await updateIngressSource(dealerId, source.id, { status: next });
+      onUpdated?.();
+    } finally {
+      setToggling(false);
+    }
+  };
+
+  return (
+    <div className="px-5 py-3 text-xs">
+      {/* Row 1: label / kind / status */}
+      <div className="flex items-center gap-3">
+        <div className="flex-1 min-w-0">
+          <span className="text-sm font-semibold text-slate-900">{source.label}</span>
+          <span className="ml-2 text-slate-400">{kindLabel}</span>
+        </div>
+        {isApi ? (
+          <button
+            type="button"
+            onClick={toggleStatus}
+            disabled={toggling}
+            title={source.status === 'ACTIVE' ? 'Click to pause' : 'Click to activate'}
+            className={`px-2 py-0.5 rounded text-xs font-medium shrink-0 transition-opacity ${statusCls} ${toggling ? 'opacity-50' : 'hover:opacity-75 cursor-pointer'}`}
+          >
+            {toggling ? '…' : source.status.toLowerCase()}
+          </button>
+        ) : (
+          <span className={`px-2 py-0.5 rounded text-xs font-medium shrink-0 ${statusCls}`}>
+            {source.status.toLowerCase()}
+          </span>
+        )}
+        <div className="text-slate-400 shrink-0 text-right text-xs min-w-[90px]">
+          {source.lastReceivedAt
+            ? <span title={source.lastReceivedAt}>received {relativeTime(source.lastReceivedAt)}</span>
+            : <span className="italic">never received</span>}
+        </div>
+      </div>
+
+      {/* Row 2 (API only): feedUrl + checked status */}
+      {isApi && (
+        <div className="mt-1 flex items-center gap-3 text-slate-400">
+          {source.feedUrl ? (
+            <span className="truncate max-w-[280px]" title={source.feedUrl}>
+              {source.feedUrl}
+            </span>
+          ) : (
+            <span className="italic">no feed URL set</span>
+          )}
+          <span className="shrink-0">
+            {source.lastCheckedAt
+              ? `checked ${relativeTime(source.lastCheckedAt)}`
+              : 'not yet polled — polling not active'}
+          </span>
+        </div>
+      )}
     </div>
   );
 }
@@ -177,10 +362,8 @@ function RunRow({ run, isLatest, onShowBlockedVehicles }: {
     <div className={`px-5 py-2.5 flex items-center gap-3 text-xs transition-colors
       ${isLatest ? 'bg-emerald-50/60' : hasIssues ? 'bg-amber-50/30' : 'hover:bg-slate-50/80'}`}>
 
-      {/* Status dot */}
       <span className={`w-1.5 h-1.5 rounded-full shrink-0 ${s.dot}`} />
 
-      {/* Source + time */}
       <div className="flex-1 min-w-0">
         <div className="flex items-center gap-2 flex-wrap">
           <span className={`px-1.5 py-0.5 rounded font-medium shrink-0 ${s.pill}`}>{s.label}</span>
@@ -190,7 +373,6 @@ function RunRow({ run, isLatest, onShowBlockedVehicles }: {
           <span className="text-slate-400">{relativeTime(run.receivedAt)}</span>
         </div>
 
-        {/* Counts */}
         <div className="flex items-center gap-3 mt-1 text-slate-500 flex-wrap">
           <span>{run.vehicleCount} vehicle{run.vehicleCount !== 1 ? 's' : ''}</span>
           {run.createdCount > 0 && <span className="text-emerald-700">+{run.createdCount} created</span>}
@@ -199,7 +381,6 @@ function RunRow({ run, isLatest, onShowBlockedVehicles }: {
           {run.errorCount   > 0 && <span className="text-red-600 font-semibold">{run.errorCount} errors</span>}
         </div>
 
-        {/* Publish impact — shown once auto-reconcile has written back */}
         {run.platformImpactJson ? (
           <div className="flex items-center gap-2 mt-1 flex-wrap">
             <span className="text-slate-300 select-none">→</span>
@@ -212,7 +393,6 @@ function RunRow({ run, isLatest, onShowBlockedVehicles }: {
         ) : null}
       </div>
 
-      {/* Fix link when there are issues */}
       {hasIssues && onShowBlockedVehicles && (
         <button
           type="button"

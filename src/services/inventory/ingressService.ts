@@ -1,4 +1,4 @@
-import type { PrismaClient, Prisma, InventorySourceKind, IngressRunStatus } from '@prisma/client';
+import type { PrismaClient, Prisma, InventorySourceKind, InventorySourceStatus, IngressRunStatus } from '@prisma/client';
 
 // ── Default source constants ──────────────────────────────────────────────────
 
@@ -34,6 +34,7 @@ export type IngressSourceView = {
   label: string;
   kind: string;
   status: string;
+  feedUrl: string | null;
   lastReceivedAt: string | null;
   lastCheckedAt:  string | null;
   createdAt: string;
@@ -147,6 +148,56 @@ export async function createIngressRun(
   return run.id;
 }
 
+// ── Source view mapper ────────────────────────────────────────────────────────
+
+type SourceRow = {
+  id: string; slug: string; label: string;
+  kind: InventorySourceKind; status: InventorySourceStatus;
+  configJson: Prisma.JsonValue;
+  lastReceivedAt: Date | null; lastCheckedAt: Date | null;
+  createdAt: Date; updatedAt: Date;
+};
+
+function mapSourceRow(r: SourceRow): IngressSourceView {
+  const cfg = r.configJson as Record<string, unknown> | null;
+  return {
+    id:             r.id,
+    slug:           r.slug,
+    label:          r.label,
+    kind:           r.kind,
+    status:         r.status,
+    feedUrl:        typeof cfg?.feedUrl === 'string' ? cfg.feedUrl : null,
+    lastReceivedAt: r.lastReceivedAt?.toISOString() ?? null,
+    lastCheckedAt:  r.lastCheckedAt?.toISOString()  ?? null,
+    createdAt:      r.createdAt.toISOString(),
+    updatedAt:      r.updatedAt.toISOString(),
+  };
+}
+
+// ── Slug helpers ──────────────────────────────────────────────────────────────
+
+function slugify(text: string): string {
+  return text.toLowerCase().trim()
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/^-|-$/g, '')
+    .slice(0, 70);
+}
+
+async function resolveUniqueSlug(
+  prisma: PrismaClient,
+  dealershipId: string,
+  base: string,
+): Promise<string> {
+  const existing = await prisma.inventorySource.findUnique({
+    where: { dealershipId_slug: { dealershipId, slug: base } },
+    select: { id: true },
+  });
+  if (!existing) return base;
+  return `${base.slice(0, 65)}-${Date.now().toString(36).slice(-5)}`;
+}
+
+// ── DB functions ──────────────────────────────────────────────────────────────
+
 export async function listSources(
   prisma: PrismaClient,
   dealershipId: string
@@ -155,17 +206,54 @@ export async function listSources(
     where: { dealershipId },
     orderBy: { createdAt: 'asc' }
   });
-  return rows.map(r => ({
-    id:            r.id,
-    slug:          r.slug,
-    label:         r.label,
-    kind:          r.kind,
-    status:        r.status,
-    lastReceivedAt: r.lastReceivedAt?.toISOString() ?? null,
-    lastCheckedAt:  r.lastCheckedAt?.toISOString()  ?? null,
-    createdAt:     r.createdAt.toISOString(),
-    updatedAt:     r.updatedAt.toISOString(),
-  }));
+  return rows.map(mapSourceRow);
+}
+
+export async function createSource(
+  prisma: PrismaClient,
+  dealershipId: string,
+  payload: { label: string; feedUrl: string; sourceSlug?: string; status?: string },
+): Promise<IngressSourceView> {
+  const base = payload.sourceSlug ? slugify(payload.sourceSlug) : slugify(payload.label);
+  const slug = await resolveUniqueSlug(prisma, dealershipId, base || 'api-source');
+
+  const row = await prisma.inventorySource.create({
+    data: {
+      dealershipId,
+      slug,
+      label:      payload.label,
+      kind:       'API',
+      status:     (payload.status ?? 'ACTIVE') as InventorySourceStatus,
+      configJson: { feedUrl: payload.feedUrl } as unknown as Prisma.InputJsonValue,
+    },
+  });
+  return mapSourceRow(row);
+}
+
+export async function updateSource(
+  prisma: PrismaClient,
+  dealershipId: string,
+  sourceId: string,
+  payload: { label?: string; feedUrl?: string; status?: string },
+): Promise<IngressSourceView | null> {
+  const existing = await prisma.inventorySource.findFirst({
+    where: { id: sourceId, dealershipId },
+  });
+  if (!existing) return null;
+
+  const data: Prisma.InventorySourceUpdateInput = {};
+  if (payload.label  !== undefined) data.label  = payload.label;
+  if (payload.status !== undefined) data.status = payload.status as InventorySourceStatus;
+  if (payload.feedUrl !== undefined) {
+    const current = existing.configJson as Record<string, unknown> ?? {};
+    data.configJson = { ...current, feedUrl: payload.feedUrl } as unknown as Prisma.InputJsonValue;
+  }
+
+  const updated = await prisma.inventorySource.update({
+    where: { id: sourceId },
+    data,
+  });
+  return mapSourceRow(updated);
 }
 
 export async function listRuns(

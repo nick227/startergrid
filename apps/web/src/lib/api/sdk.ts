@@ -9,6 +9,8 @@ import {
 import type {
   AccountUpdatePayload as SdkAccountUpdatePayload,
   BulkEditPayload as SdkBulkEditPayload,
+  CreateIngressSourceRequest as SdkCreateIngressSourceRequest,
+  UpdateIngressSourceRequest as SdkUpdateIngressSourceRequest,
 } from '@auto-dealer/api-client';
 import type {
   AutoSyncStatus,
@@ -29,6 +31,9 @@ import type {
   AccountUpdateResponse,
   IngressSourcesResponse,
   IngressRunsResponse,
+  CreateIngressSourcePayload,
+  UpdateIngressSourcePayload,
+  IngressSourceResponse,
 } from '../types.ts';
 import { toErrorMessage } from '../errors.ts';
 import { configureSdkDevAuth } from '../devAuth.ts';
@@ -142,6 +147,32 @@ export async function updateAccount(
 
 export async function fetchIngressSources(dealershipId: string): Promise<IngressSourcesResponse> {
   return fromSdk(InventoryService.listIngressSources({ dealershipId })) as Promise<IngressSourcesResponse>;
+}
+
+export async function createIngressSource(
+  dealershipId: string,
+  payload: CreateIngressSourcePayload
+): Promise<IngressSourceResponse> {
+  return fromSdk(
+    InventoryService.createIngressSource({
+      dealershipId,
+      requestBody: payload as unknown as SdkCreateIngressSourceRequest,
+    })
+  ) as Promise<IngressSourceResponse>;
+}
+
+export async function updateIngressSource(
+  dealershipId: string,
+  sourceId: string,
+  payload: UpdateIngressSourcePayload
+): Promise<IngressSourceResponse> {
+  return fromSdk(
+    InventoryService.updateIngressSource({
+      dealershipId,
+      sourceId,
+      requestBody: payload as unknown as SdkUpdateIngressSourceRequest,
+    })
+  ) as Promise<IngressSourceResponse>;
 }
 
 export async function fetchIngressRuns(

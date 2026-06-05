@@ -32,6 +32,8 @@ const REGISTERED_ROUTES = new Set([
   'POST   /api/dealers/{dealershipId}/vehicles/{stockNumber}/sold',
   'POST   /api/dealers/{dealershipId}/vehicles/{stockNumber}/removed',
   'GET    /api/dealers/{dealershipId}/ingress/sources',
+  'POST   /api/dealers/{dealershipId}/ingress/sources',
+  'PATCH  /api/dealers/{dealershipId}/ingress/sources/{sourceId}',
   'GET    /api/dealers/{dealershipId}/ingress/runs',
   'GET    /api/dealers/{dealershipId}/storefront',
   'GET    /api/dealers/{dealershipId}/vehicles/{stockNumber}',

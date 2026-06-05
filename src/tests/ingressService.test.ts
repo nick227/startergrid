@@ -2,11 +2,13 @@ import assert from 'node:assert/strict';
 import { describe, it } from 'node:test';
 import {
   DEFAULT_CSV_SOURCE,
+  DEFAULT_JSON_SOURCE,
   deriveIngressStatus,
   type IngressSourceView,
   type IngressRunView,
   type CreateIngressRunOpts,
 } from '../services/inventory/ingressService.js';
+import { validateBody, createIngressSourceSchema, updateIngressSourceSchema } from '../server/requestValidation.js';
 
 // ── DEFAULT_CSV_SOURCE constant ───────────────────────────────────────────────
 
@@ -56,6 +58,7 @@ describe('IngressSourceView shape', () => {
     label:         'Manual Upload',
     kind:          'CSV',
     status:        'ACTIVE',
+    feedUrl:       null,
     lastReceivedAt: null,
     lastCheckedAt:  null,
     createdAt:     new Date().toISOString(),
@@ -174,5 +177,144 @@ describe('deriveIngressStatus — boundary cases', () => {
 
   it('updated only (no creates), no errors → COMMITTED', () => {
     assert.equal(deriveIngressStatus(0, 50, 0), 'COMMITTED');
+  });
+});
+
+// ── DEFAULT_JSON_SOURCE constant ──────────────────────────────────────────────
+
+describe('DEFAULT_JSON_SOURCE', () => {
+  it('has slug json-manual', () => assert.equal(DEFAULT_JSON_SOURCE.slug, 'json-manual'));
+  it('has kind JSON',        () => assert.equal(DEFAULT_JSON_SOURCE.kind, 'JSON'));
+  it('has non-empty label',  () => assert.ok(DEFAULT_JSON_SOURCE.label.length > 0));
+});
+
+// ── IngressSourceView shape with feedUrl ─────────────────────────────────────
+
+describe('IngressSourceView with feedUrl', () => {
+  it('accepts feedUrl as null for non-API sources', () => {
+    const v: IngressSourceView = {
+      id: 's1', slug: 'csv-manual', label: 'Manual Upload',
+      kind: 'CSV', status: 'ACTIVE', feedUrl: null,
+      lastReceivedAt: null, lastCheckedAt: null,
+      createdAt: new Date().toISOString(), updatedAt: new Date().toISOString(),
+    };
+    assert.equal(v.feedUrl, null);
+  });
+
+  it('accepts feedUrl as a string for API sources', () => {
+    const v: IngressSourceView = {
+      id: 's2', slug: 'my-api', label: 'My API',
+      kind: 'API', status: 'ACTIVE', feedUrl: 'https://api.example.com/feed',
+      lastReceivedAt: null, lastCheckedAt: null,
+      createdAt: new Date().toISOString(), updatedAt: new Date().toISOString(),
+    };
+    assert.equal(v.feedUrl, 'https://api.example.com/feed');
+  });
+});
+
+// ── createIngressSourceSchema ─────────────────────────────────────────────────
+
+describe('createIngressSourceSchema — valid inputs', () => {
+  it('accepts label + HTTPS feedUrl', () => {
+    const r = validateBody(createIngressSourceSchema, {
+      label: 'My DMS Feed', feedUrl: 'https://api.example.com/inventory'
+    });
+    assert.ok(r.ok);
+  });
+
+  it('accepts optional sourceSlug and status', () => {
+    const r = validateBody(createIngressSourceSchema, {
+      label: 'My Feed', feedUrl: 'https://feed.example.com',
+      sourceSlug: 'my-feed', status: 'PAUSED',
+    });
+    assert.ok(r.ok);
+  });
+});
+
+describe('createIngressSourceSchema — invalid inputs', () => {
+  it('rejects missing label', () => {
+    const r = validateBody(createIngressSourceSchema, { feedUrl: 'https://a.com' });
+    assert.ok(!r.ok);
+  });
+
+  it('rejects HTTP feedUrl', () => {
+    const r = validateBody(createIngressSourceSchema, {
+      label: 'Feed', feedUrl: 'http://insecure.example.com/feed'
+    });
+    assert.ok(!r.ok);
+    assert.ok(r.error.includes('HTTPS'));
+  });
+
+  it('rejects empty feedUrl', () => {
+    const r = validateBody(createIngressSourceSchema, { label: 'Feed', feedUrl: '' });
+    assert.ok(!r.ok);
+  });
+
+  it('rejects invalid status', () => {
+    const r = validateBody(createIngressSourceSchema, {
+      label: 'Feed', feedUrl: 'https://x.com', status: 'BROKEN'
+    });
+    assert.ok(!r.ok);
+  });
+
+  it('rejects unknown keys (strict)', () => {
+    const r = validateBody(createIngressSourceSchema, {
+      label: 'Feed', feedUrl: 'https://x.com', extra: 'oops'
+    });
+    assert.ok(!r.ok);
+  });
+});
+
+// ── updateIngressSourceSchema ─────────────────────────────────────────────────
+
+describe('updateIngressSourceSchema — valid inputs', () => {
+  it('accepts status-only update', () => {
+    const r = validateBody(updateIngressSourceSchema, { status: 'PAUSED' });
+    assert.ok(r.ok);
+  });
+
+  it('accepts label-only update', () => {
+    const r = validateBody(updateIngressSourceSchema, { label: 'New Label' });
+    assert.ok(r.ok);
+  });
+
+  it('accepts feedUrl-only update', () => {
+    const r = validateBody(updateIngressSourceSchema, { feedUrl: 'https://new.example.com' });
+    assert.ok(r.ok);
+  });
+
+  it('accepts all fields at once', () => {
+    const r = validateBody(updateIngressSourceSchema, {
+      label: 'Updated', feedUrl: 'https://new.example.com', status: 'ACTIVE',
+    });
+    assert.ok(r.ok);
+  });
+
+  it('accepts DISCONNECTED and ERROR status values', () => {
+    assert.ok(validateBody(updateIngressSourceSchema, { status: 'DISCONNECTED' }).ok);
+    assert.ok(validateBody(updateIngressSourceSchema, { status: 'ERROR' }).ok);
+  });
+});
+
+describe('updateIngressSourceSchema — invalid inputs', () => {
+  it('rejects empty body', () => {
+    const r = validateBody(updateIngressSourceSchema, {});
+    assert.ok(!r.ok);
+  });
+
+  it('rejects HTTP feedUrl', () => {
+    const r = validateBody(updateIngressSourceSchema, { feedUrl: 'http://not-https.com' });
+    assert.ok(!r.ok);
+    assert.ok(r.error.includes('HTTPS'));
+  });
+
+  it('rejects empty label string', () => {
+    const r = validateBody(updateIngressSourceSchema, { label: '' });
+    assert.ok(!r.ok);
+  });
+
+  it('rejects unknown keys (strict)', () => {
+    const r = validateBody(updateIngressSourceSchema, { status: 'ACTIVE', extra: 'oops' });
+    assert.ok(!r.ok);
   });
 });
