@@ -278,6 +278,24 @@ Running the script a second time will update (not create) the same three vehicle
 
 ---
 
+## Operator portal UI
+
+Inventory → **Intake sources** → **JSON / API ingest** runs the same endpoint as the curl examples above, without CLI.
+
+| Control | Behavior |
+|---|---|
+| Paste / upload | Client validates JSON shape before POST. Empty `vehicles`, invalid JSON, and files over **5 MB** are blocked in the portal with inline errors. |
+| Source tag | Optional dropdown maps to `sourceSlug` / `sourceLabel`; defaults to `json-portal` / Portal JSON ingest. |
+| Snapshot toggle | **Treat this feed as the full current inventory** sends `snapshotMode: true` and `dryRun: true`. Missing active stock appears in **Snapshot review** — commit explicitly; never auto-removed on dry-run. |
+| Results | Created, updated, blocked (validation), skipped, errors, missing-from-feed count. |
+| Snapshot review | Same `SnapshotReviewCard` as ingress run history — select candidates and **Commit as removed** (`POST .../inventory/ingest/snapshot/commit`). |
+
+After ingest, the portal reloads inventory, ingress runs, and benchmarks (same refresh path as CSV commit).
+
+**E2E:** `npm run e2e:portal` (Playwright; requires `demo:reset` + API on 3000). See `docs/demo-flow.md` Step 3.
+
+---
+
 ## OpenAPI reference
 
 The machine-readable contract is in `openapi/openapi.yaml` under path `/api/dealers/{dealershipId}/inventory/ingest/json` with operationId `ingestJsonInventory`. Schemas: `JsonVehicleInput`, `JsonInventoryIngestRequest`, `JsonIngestResponse`.

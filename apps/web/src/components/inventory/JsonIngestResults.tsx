@@ -20,7 +20,7 @@ export function JsonIngestResults({ result }: Props) {
   const candidates = result.salesStatus?.snapshotRemovedCandidates.length ?? 0;
 
   return (
-    <div className="space-y-2">
+    <div className="space-y-2" data-testid="json-ingest-results">
       <div className="flex flex-wrap items-center gap-2">
         <span className={`px-2 py-0.5 rounded text-[10px] font-bold uppercase ${
           result.status === 'COMMITTED' ? 'bg-emerald-100 text-emerald-800' :

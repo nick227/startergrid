@@ -238,12 +238,6 @@ export function IngressPanel({ dealerId, latestRunId, onShowBlockedVehicles, onS
           </div>
         )}
 
-        <JsonIngestPanel
-          dealerId={dealerId}
-          sources={sources}
-          onIngestComplete={handleIngestComplete}
-        />
-
         {/* ── Run rows ─────────────────────────────────────────────────────── */}
         {runs.length > 0 ? (
           <div className="divide-y divide-slate-50">
@@ -270,6 +264,12 @@ export function IngressPanel({ dealerId, latestRunId, onShowBlockedVehicles, onS
           )
         )}
       </AsyncPanel>
+
+      <JsonIngestPanel
+        dealerId={dealerId}
+        sources={sources}
+        onIngestComplete={handleIngestComplete}
+      />
     </SectionCard>
   );
 }

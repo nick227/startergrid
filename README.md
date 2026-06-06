@@ -1,4 +1,4 @@
-# Auto Dealer Sales Portal — v4.6.0
+# Auto Dealer Sales Portal — v4.6.1
 
 A backend pipeline that onboards auto dealers onto 18 ad and marketplace platforms — validation, feed generation, artifact storage, and proof export — via CLI and the Operator Console web UI.
 
@@ -21,6 +21,10 @@ A backend pipeline that onboards auto dealers onto 18 ad and marketplace platfor
 **v4.5** polishes operator workflow in Inventory: snapshot review UI, lifecycle filters and vehicle history, benchmark freshness states, and a dismissible inventory walkthrough.
 
 **v4.6** adds portal JSON/API ingest on Inventory — paste or upload feeds, snapshot dry-run toggle, ingest results, and explicit snapshot commit via the existing review card.
+
+**v4.6.1** hardens portal JSON ingest for release: Playwright E2E, operator docs, narrow-viewport layout, client-side invalid/empty/large-file guards, and snapshot candidate edge-case tests.
+
+**Release summary (v4.6):** v4.6 completes the operator lifecycle loop: inventory can be ingested from the portal, authoritative snapshots run as safe dry-runs, missing vehicles can be reviewed and explicitly marked removed, lifecycle history records the source, and benchmarks refresh from reliable sold/removed exposure windows.
 
 **Stack:** TypeScript (ESM) · Prisma 6 · MySQL · Node 22 · node:test
 
@@ -107,7 +111,7 @@ npm run performance:compute -- <dealershipId>
 These 10 commands must always exit 0:
 
 ```
-npm test                         946 backend + 31 web + 8 marketplace tests
+npm test                         946 backend + 40 web + 8 marketplace tests
 npm run smoke:test               6/6 system checks
 npm run poc:green                18/18 GREEN
 npm run poc:risk                 90/90 expectations

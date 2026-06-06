@@ -1,9 +1,9 @@
 {
   "name": "auto-dealer-onboarding-poc-v1",
-  "version": "4.6.0",
+  "version": "4.6.1",
   "private": true,
   "type": "module",
-  "description": "V4.6: Portal JSON/API ingest with snapshot dry-run on Inventory.",
+  "description": "V4.6.1: Portal JSON ingest release hardening — E2E, docs, client polish.",
   "scripts": {
     "build": "tsc",
     "typecheck": "tsc --noEmit",
@@ -56,6 +56,8 @@
     "ui:build":              "npm run client:generate && npm run build --prefix apps/web",
     "ui:lint":               "npm run lint --prefix apps/web",
     "ui:lint:fix":           "npm run lint:fix --prefix apps/web",
+    "e2e:portal":            "npm run e2e --prefix apps/web",
+    "e2e:portal:install":    "npm run e2e:install --prefix apps/web",
 
     "marketplace:install":          "npm install --prefix apps/marketplace",
     "marketplace:dev":              "npm run client:generate:marketplace && npm run dev --prefix apps/marketplace",

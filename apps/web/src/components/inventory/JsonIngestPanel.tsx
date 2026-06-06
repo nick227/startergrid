@@ -1,7 +1,12 @@
 import { useRef, useState } from 'react';
 import type { IngressSourceView, JsonIngestResponse } from '@/lib/types.ts';
 import { ingestJsonInventory } from '@/lib/api/sdk.ts';
-import { parseJsonIngestText, snapshotReviewFromSalesStatus } from '@/lib/jsonIngestParse.ts';
+import {
+  formatJsonIngestFileSizeError,
+  jsonIngestFileTooLarge,
+  parseJsonIngestText,
+  snapshotReviewFromSalesStatus,
+} from '@/lib/jsonIngestParse.ts';
 import { JsonIngestResults } from './JsonIngestResults.tsx';
 import { SnapshotReviewCard } from './SnapshotReviewCard.tsx';
 
@@ -25,14 +30,31 @@ export function JsonIngestPanel({ dealerId, sources, onIngestComplete }: Props) 
   const [result, setResult] = useState<JsonIngestResponse | null>(null);
 
   const selectedSource = sources.find(s => s.id === sourceId);
+  const payloadBytes = new TextEncoder().encode(jsonText).length;
 
   const handleFile = async (file: File) => {
+    if (jsonIngestFileTooLarge(file.size)) {
+      setParseError(formatJsonIngestFileSizeError(file.size));
+      return;
+    }
+
     const text = await file.text();
+    if (jsonIngestFileTooLarge(new TextEncoder().encode(text).length)) {
+      setParseError(formatJsonIngestFileSizeError(new TextEncoder().encode(text).length));
+      return;
+    }
+
     setJsonText(text);
     setParseError(null);
+    setResult(null);
   };
 
   const handleSubmit = async () => {
+    if (jsonIngestFileTooLarge(payloadBytes)) {
+      setParseError(formatJsonIngestFileSizeError(payloadBytes));
+      return;
+    }
+
     const parsed = parseJsonIngestText(jsonText);
     if (!parsed.ok) {
       setParseError(parsed.error);
@@ -69,21 +91,24 @@ export function JsonIngestPanel({ dealerId, sources, onIngestComplete }: Props) 
     : null;
 
   return (
-    <div className="border-b border-slate-100 bg-slate-50/30">
+    <div className="border-b border-slate-100 bg-slate-50/30 min-w-0">
       <button
         type="button"
+        data-testid="json-ingest-toggle"
         onClick={() => setExpanded(v => !v)}
-        className="w-full px-5 py-3 flex items-center justify-between text-left hover:bg-slate-50/80"
+        className="w-full px-3 sm:px-5 py-3 flex items-center justify-between gap-3 text-left hover:bg-slate-50/80"
       >
-        <div>
+        <div className="min-w-0">
           <p className="text-xs font-bold text-slate-800">JSON / API ingest</p>
-          <p className="text-[11px] text-slate-500 mt-0.5">Paste or upload a feed — optional authoritative snapshot dry-run</p>
+          <p className="text-[11px] text-slate-500 mt-0.5 truncate sm:whitespace-normal">
+            Paste or upload a feed — optional authoritative snapshot dry-run
+          </p>
         </div>
-        <span className="text-slate-400 text-xs">{expanded ? '▲' : '▼'}</span>
+        <span className="text-slate-400 text-xs shrink-0">{expanded ? '▲' : '▼'}</span>
       </button>
 
       {expanded && (
-        <div className="px-5 pb-4 space-y-3 border-t border-slate-100">
+        <div className="px-3 sm:px-5 pb-4 space-y-3 border-t border-slate-100 min-w-0">
           {sources.length > 0 && (
             <div className="space-y-1">
               <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">
@@ -92,7 +117,7 @@ export function JsonIngestPanel({ dealerId, sources, onIngestComplete }: Props) 
               <select
                 value={sourceId}
                 onChange={e => setSourceId(e.target.value)}
-                className="w-full text-xs px-3 py-2 border border-slate-200 rounded-lg bg-white"
+                className="w-full min-w-0 text-xs px-3 py-2 border border-slate-200 rounded-lg bg-white"
               >
                 <option value="">{PORTAL_SOURCE.label}</option>
                 {sources.map(s => (
@@ -104,8 +129,8 @@ export function JsonIngestPanel({ dealerId, sources, onIngestComplete }: Props) 
             </div>
           )}
 
-          <div className="space-y-1">
-            <div className="flex items-center justify-between gap-2">
+          <div className="space-y-1 min-w-0">
+            <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
               <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">
                 JSON payload
               </label>
@@ -114,36 +139,48 @@ export function JsonIngestPanel({ dealerId, sources, onIngestComplete }: Props) 
                 type="file"
                 accept="application/json,.json"
                 className="hidden"
+                data-testid="json-ingest-file-input"
                 onChange={e => {
                   const file = e.target.files?.[0];
                   if (file) void handleFile(file);
+                  e.target.value = '';
                 }}
               />
               <button
                 type="button"
                 onClick={() => fileRef.current?.click()}
-                className="text-[11px] font-semibold text-emerald-700 hover:underline"
+                className="text-[11px] font-semibold text-emerald-700 hover:underline self-start sm:self-auto"
               >
                 Upload file
               </button>
             </div>
             <textarea
+              data-testid="json-ingest-textarea"
               value={jsonText}
               onChange={e => { setJsonText(e.target.value); setParseError(null); }}
               rows={8}
               placeholder='{"vehicles":[{"stockNumber":"A001","vin":"...","year":2023,...}]}'
-              className="w-full text-xs font-mono px-3 py-2 border border-slate-200 rounded-lg bg-white focus:outline-none focus:ring-1 focus:ring-slate-400"
+              className="w-full min-w-0 text-xs font-mono px-3 py-2 border border-slate-200 rounded-lg bg-white focus:outline-none focus:ring-1 focus:ring-slate-400 resize-y"
             />
+            {payloadBytes > 0 && (
+              <p className="text-[10px] text-slate-400 tabular-nums">
+                {(payloadBytes / 1024).toFixed(1)} KB
+                {jsonIngestFileTooLarge(payloadBytes) && (
+                  <span className="text-red-600"> — exceeds 5 MB limit</span>
+                )}
+              </p>
+            )}
           </div>
 
           <label className="flex items-start gap-2 cursor-pointer">
             <input
               type="checkbox"
+              data-testid="json-ingest-snapshot"
               checked={snapshotMode}
               onChange={e => setSnapshotMode(e.target.checked)}
-              className="mt-0.5 rounded border-slate-300"
+              className="mt-0.5 rounded border-slate-300 shrink-0"
             />
-            <span className="text-xs text-slate-700">
+            <span className="text-xs text-slate-700 min-w-0">
               <span className="font-semibold">Treat this feed as the full current inventory</span>
               <span className="block text-[11px] text-amber-800 mt-0.5">
                 Dry-run first — vehicles missing from this payload appear as removal candidates.
@@ -152,20 +189,32 @@ export function JsonIngestPanel({ dealerId, sources, onIngestComplete }: Props) 
             </span>
           </label>
 
-          {parseError && <p className="text-xs text-red-600">{parseError}</p>}
-          {submitError && <p className="text-xs text-red-600">{submitError}</p>}
+          {parseError && (
+            <p data-testid="json-ingest-parse-error" className="text-xs text-red-600 break-words">
+              {parseError}
+            </p>
+          )}
+          {submitError && (
+            <p data-testid="json-ingest-submit-error" className="text-xs text-red-600 break-words">
+              {submitError}
+            </p>
+          )}
 
           <button
             type="button"
-            disabled={submitting || !jsonText.trim()}
+            data-testid="json-ingest-submit"
+            disabled={submitting || !jsonText.trim() || jsonIngestFileTooLarge(payloadBytes)}
             onClick={() => void handleSubmit()}
-            className="px-4 py-2 text-xs font-bold bg-slate-900 text-white rounded-lg disabled:opacity-50"
+            className="w-full sm:w-auto px-4 py-2 text-xs font-bold bg-slate-900 text-white rounded-lg disabled:opacity-50"
           >
             {submitting ? 'Running ingest…' : snapshotMode ? 'Run snapshot dry-run ingest' : 'Run JSON ingest'}
           </button>
 
           {result && (
-            <div className="rounded-lg border border-slate-200 bg-white p-3 space-y-3">
+            <div
+              data-testid="json-ingest-outcome"
+              className="rounded-lg border border-slate-200 bg-white p-3 space-y-3 min-w-0 overflow-hidden"
+            >
               <JsonIngestResults result={result} />
               {snapshotReview && snapshotReview.pendingCount > 0 && result.ingressRunId && (
                 <SnapshotReviewCard

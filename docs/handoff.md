@@ -1,14 +1,14 @@
 # Handoff Document — Auto Dealer Sales Portal
 
 **Updated:** 2026-06-06  
-**State:** v4.6.0 · Sales status sync, snapshot reconcile, operator lifecycle workflow, portal JSON ingest  
+**State:** v4.6.1 · Sales status sync, snapshot reconcile, operator lifecycle workflow, portal JSON ingest (hardened)  
 **Branch:** `main`
 
 ---
 
 ## What This System Does
 
-A sync engine that owns dealer inventory truth, ingress, platform readiness, publishing, accounts, and performance cache. It validates against 18 ad/marketplace platforms, generates feed artifacts, queues and dispatches them via a scheduler, and produces proof + invoice artifacts.
+A sync engine that owns dealer inventory truth, ingress, platform readiness, publishing, accounts, and performance cache. It validates against 19 ad/marketplace platforms, generates feed artifacts, queues and dispatches them via a scheduler, and produces proof + invoice artifacts.
 
 Two frontends consume different API surfaces:
 
@@ -141,7 +141,7 @@ We **infer movement** from inventory status and platform exposure. We **measure*
 
 **Slug note:** sync/feed destination may use `marketplace`; first-party measurement + leads use **`consumer-marketplace`** today. Align in platform registry when marketplace is added as a formal platform profile.
 
-### Which of the big 18 can report clicks/views/contacts?
+### Which of the big 19 can report clicks/views/contacts?
 
 **Not uniform.** Treat partner metrics as **optional direct integrations**, never as guaranteed inputs. **Do not** build CSV imports, manual report ingestion, or fake click/view parity to match partners before real APIs exist.
 
@@ -195,7 +195,7 @@ Future CRM — customer workflow only (not in web)
 
 | Dealer type | Where they see performance |
 |-------------|---------------------------|
-| **Full system** (`apps/web` + marketplace) | Cross-platform channel comparison in web; marketplace is one row among 18 |
+| **Full system** (`apps/web` + marketplace) | Cross-platform channel comparison in web; marketplace is one row among 19 |
 | **Marketplace-only** (no web access) | Light stats inside `apps/marketplace/dealer` — views, detail views, inquiries — **not** full platform BI |
 
 Marketplace **inquiries** still feed **`apps/web` aggregate performance** for operators who use the full stack. Marketplace UI shows **page views + request info** as first-party facts; it does **not** replace web’s cross-channel ops view.
@@ -281,6 +281,29 @@ Run JSON ingest from Inventory without CLI — reuses existing ingest + snapshot
 
 - Dealer marketplace stats UI (`GET .../dealers/{id}/stats`)
 - ROI, attribution, lead quality, or customer response claims
+
+---
+
+## v4.6.1 — Portal JSON ingest release hardening (implemented)
+
+Operational polish only — no new lifecycle design.
+
+### Delivered
+
+- **Playwright E2E** — `apps/web/e2e/portal-json-ingest.spec.ts`; `npm run e2e:portal`
+- **`docs/json-ingest.md`** — Operator portal UI section
+- **`docs/demo-flow.md`** — Step 3 synced with portal JSON ingest + snapshot dry-run demo
+- **Mobile/narrow layout** — responsive padding, full-width submit on small viewports, `min-w-0` overflow guards
+- **Client guards** — invalid JSON, empty `vehicles`, bare array root, 5 MB file/payload limit with inline errors
+- **Snapshot candidate edge cases** — dedupe, empty stock filter, pending count after partial commit; vitest coverage
+- **`data-testid`** hooks on ingest panel, results, and snapshot review card
+
+### Deferred to v4.7
+
+- Scheduled/API source checks opt into snapshot mode
+- “Check now” snapshot dry-run
+- Same `SnapshotReviewCard` for API pulls
+- Never auto-remove from scheduled poll without explicit setting/review
 
 ---
 
@@ -442,7 +465,7 @@ prisma/
 
 src/
   data/
-    platformProfiles.ts       18 platform profile definitions (the registry)
+    platformProfiles.ts       19 platform profile definitions (the registry)
     mockPortalResponses.ts    Mock HTTP responses per platform × condition
 
   fixtures/
@@ -607,10 +630,10 @@ npm run openapi:validate:marketplace  # marketplace spec valid
 npm run marketplace:build             # client generate + Vite build
 
 # Validation
-npm run poc:green                     # 18/18 platforms GREEN (in-memory)
+npm run poc:green                     # 19/19 platforms GREEN (in-memory)
 npm run poc:risk                      # 90/90 risk matrix expectations
-npm run poc:portal                    # 18/18 platforms reach ACTIVE on happy path
-npm run validate:pristine             # 18/18 GREEN baseline, 0 RED strict (fixture)
+npm run poc:portal                    # 19/19 platforms reach ACTIVE on happy path
+npm run validate:pristine             # 19/19 GREEN baseline, 0 RED strict (fixture)
 npm run validate:pristine:db          # same, reads dealer + inventory from DB
 
 # Publish pipeline (requires a dealer ID)
@@ -637,13 +660,13 @@ npm run dealer:export -- <id>
 | `test` | Build + run all backend + web + marketplace tests |
 | `typecheck` | TypeScript check, no emit |
 | `smoke:test` | DB connectivity, profile count, typecheck, validate:pristine |
-| `poc:green` | 18/18 GREEN in-memory |
+| `poc:green` | 19/19 GREEN in-memory |
 | `poc:risk` | Risk matrix: BASELINE / STRICT / NEGATIVE / STALE scenarios |
 | `poc:portal` | Portal lifecycle: happy path + rejection arcs |
-| `validate:pristine` | Pristine fixture → 18/18 GREEN |
-| `validate:pristine:db` | Pristine fixture from DB → 18/18 GREEN |
+| `validate:pristine` | Pristine fixture → 19/19 GREEN |
+| `validate:pristine:db` | Pristine fixture from DB → 19/19 GREEN |
 | `dealer:create:pristine` | Full pipeline on pristine fixture, exits 0 |
-| `dealer:status -- <id>` | Status grid: all 18 platforms, copy + CTA |
+| `dealer:status -- <id>` | Status grid: all 19 platforms, copy + CTA |
 | `dealer:proof -- <id>` | Proof folder ZIP (artifacts + manifest) |
 | `dealer:export -- <id>` | Full dealer data archive ZIP |
 | `dealer:invoice -- <id> <YYYY-MM>` | Setup + monthly invoice statement |
@@ -717,13 +740,13 @@ Documented in `openapi/openapi-marketplace.yaml`. Client in `packages/marketplac
 
 ---
 
-## The 18 Platforms
+## The 19 Platforms
 
 Defined in `src/data/platformProfiles.ts`.
 
 | Class | Platforms |
 |-------|-----------|
-| `OWNED` | Dealer Storefront |
+| `OWNED` | Dealer Storefront, Consumer Marketplace |
 | `FEEDABLE` | Google Vehicle Ads, Meta, TikTok, Microsoft, Pinterest, Reddit, eBay Motors, X, Snapchat, LinkedIn, ADF/XML Lead Routing, Nextdoor, Apple Business Connect |
 | `ASSISTED` | CarGurus, Cars.com |
 | `PARTNER_DEPENDENT` | Autotrader/Cox, TrueCar |
@@ -747,7 +770,7 @@ DealershipProfile
   └── VehiclePerformanceCache         Per-vehicle movement signal cache (one row per vehicle)
   └── PlatformPerformanceSummary      Per-platform observed assist summary (one row per slug)
 
-PlatformProfile (seeded registry of 18)
+PlatformProfile (seeded registry of 19)
 PlatformProfileVersion (versioned snapshots, SHA-256 checked)
 ```
 
@@ -878,14 +901,14 @@ These rules are enforced in tests. Any label change must pass the language contr
 
 | Capability | How to verify |
 |---|---|
-| 18-platform readiness validation | `poc:green`, `validate:pristine` |
-| Risk matrix (4 scenario types × 18 platforms) | `poc:risk` |
+| 19-platform readiness validation | `poc:green`, `validate:pristine` |
+| Risk matrix (4 scenario types × 19 platforms) | `poc:risk` |
 | Portal lifecycle simulation | `poc:portal` |
 | DB-backed dealer + inventory intake | `dealer:create:pristine` |
 | Prepare & Publish golden path (dry-run + execute) | `publish:prepare -- <id> [--dry-run]` |
 | Platform queue + scheduler + approval workflow | `sync:queue`, `sync:scheduler`, `sync:approval` |
 | Vehicle update propagation (price, photos, sold, removed) | `vehicle:update` |
-| Feed artifact generation (all 18 formats) | (internal to dealer:create + publish:prepare) |
+| Feed artifact generation (all 19 formats) | (internal to dealer:create + publish:prepare) |
 | Proof folder ZIP (includes channel event summary) | `dealer:proof` |
 | Dealer data export ZIP (includes channel-activity-summary.json) | `dealer:export` |
 | Invoice computation | `dealer:invoice -- <id> <YYYY-MM>` |

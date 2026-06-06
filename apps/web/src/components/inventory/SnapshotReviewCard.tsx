@@ -49,7 +49,10 @@ export function SnapshotReviewCard({ dealerId, ingressRunId, review, onCommitted
   };
 
   return (
-    <div className="mt-2 rounded-lg border border-amber-200 bg-amber-50/80 p-3 space-y-2">
+    <div
+      data-testid="snapshot-review-card"
+      className="mt-2 rounded-lg border border-amber-200 bg-amber-50/80 p-3 space-y-2"
+    >
       <div>
         <p className="text-xs font-bold text-amber-900">
           {review.candidates.length} missing from latest feed

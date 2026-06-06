@@ -156,9 +156,36 @@ Open `http://localhost:5173` in a browser.
 
 ---
 
-## Step 3 — Inventory ingress snapshot
+## Step 3 — Inventory ingress & portal JSON ingest
 
-The ingress layer pulls vehicle data from external inventory sources. In the demo, vehicles are already seeded — this step shows the tooling.
+The ingress layer pulls vehicle data from external inventory sources. After `demo:reset`, Prairie Ridge Motors has three vehicles (`PRM-24001` … `PRM-24003`).
+
+### Portal — JSON / API ingest (recommended for demos)
+
+1. Open **Inventory** for Prairie Ridge Motors.
+2. Under **Intake sources**, expand **JSON / API ingest**.
+3. Paste a JSON payload or **Upload file** (max 5 MB in the portal).
+4. Optional: enable **Treat this feed as the full current inventory** — this always runs a **snapshot dry-run** first. Vehicles missing from the payload appear as removal candidates; nothing is removed until you commit in **Snapshot review**.
+5. Click **Run JSON ingest** or **Run snapshot dry-run ingest**.
+6. Review counts: created, updated, blocked, skipped, errors, **Missing from feed**.
+7. If snapshot mode: use **Snapshot review** to explicitly mark selected stock numbers as removed (not sold).
+
+**Snapshot demo tip:** paste a feed containing only `PRM-24001` with snapshot mode on — the review card should list `PRM-24002` and `PRM-24003` as missing from the latest feed.
+
+See `docs/json-ingest.md` for the API contract and portal UI notes.
+
+### Playwright E2E (optional)
+
+Requires demo DB state (`npm run demo:reset`) and free ports 3000 + 5173:
+
+```bash
+npm run e2e:portal:install   # once per machine — Chromium only
+npm run e2e:portal
+```
+
+Tests skip automatically if no dealers are returned from the API.
+
+### CLI ingress tooling
 
 **Check configured sources:**
 ```bash
@@ -170,9 +197,9 @@ npm run ingress:check-source
 npm run ingress:poll-sources
 ```
 
-After a successful ingest, the Inventory tab reflects updated counts without a page reload (data refreshes on tab focus).
+After a successful ingest, the Inventory tab reflects updated counts via the intake refresh hook (inventory reload + ingress runs + benchmarks).
 
-**Snapshot history** is visible on the Inventory tab status bar — it shows the last ingest time and vehicle count delta.
+**Ingress run history** is visible under Intake sources — each run shows status, counts, and platform impact when reconcile completes.
 
 ---
 
