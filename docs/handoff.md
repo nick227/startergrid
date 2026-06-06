@@ -1,7 +1,7 @@
 # Handoff Document — Auto Dealer Sales Portal
 
 **Updated:** 2026-06-05  
-**State:** v4.2.0 · Sync engine + Operator Console + Performance Insights · 721 tests passing  
+**State:** v4.3.0 · Sync engine + Operator Console + Performance Insights · 769 tests passing  
 **Branch:** `main`
 
 ---
@@ -123,7 +123,7 @@ src/
     poc/                      pocGreen, pocPortalLifecycle, pocRiskMatrix
     server.ts                 Fastify entry point (port 3000)
 
-  tests/                      node:test suite — 721 tests, all pure (no DB)
+  tests/                      node:test suite — 769 tests, all pure (no DB)
 
 apps/
   web/                        Operator portal (Vite + React + Tailwind)
@@ -209,7 +209,7 @@ Run all of these after any change. None may fail before shipping.
 
 ```bash
 # Core
-npm test                              # 721 tests, 0 failing
+npm test                              # 769 tests, 0 failing
 npm run smoke:test                    # 6/6 system checks (DB, profiles, typecheck)
 npm run typecheck                     # TypeScript, no emit
 
@@ -341,26 +341,110 @@ PlatformProfile (seeded registry of 18)
 PlatformProfileVersion (versioned snapshots, SHA-256 checked)
 ```
 
-**Performance cache models:**
+**Performance cache models** — see the full contract in [Performance Data Contract](#performance-data-contract).
 
-`VehiclePerformanceCache` — keyed `(dealershipId, vehicleId)`. Stores `movementSignal` (FAST | ON_TRACK | SLOW | STALE | LOW_DATA), `daysOnline`, `comparableCount`, `avgComparableDays`, `medianComparableDays`, `benchmarkConfidence` (INSUFFICIENT | LOW | MEDIUM | HIGH), and `platformAssistsJson` (per-slug lead counts). Populated by `POST /performance/compute`; read by GET endpoints. `benchmarkLabel` is derived at query time via `benchmarkLabel()` — never stored.
+`VehiclePerformanceCache` — keyed `(dealershipId, vehicleId)`. One row per active vehicle. `benchmarkLabel` is derived at query time, never stored.
 
-`PlatformPerformanceSummary` — keyed `(dealershipId, platformSlug)`. Stores `vehiclesListed`, `vehiclesSold`, `avgDaysToMove`, `medianDaysToMove`, `totalLeads`, `leadsPerVehicle`, `confidence` (INSUFFICIENT | LOW | MEDIUM | HIGH), and `sampleSize`. `observedAssistLabel` is derived at query time via `platformAssistLabel()` — never stored.
+`PlatformPerformanceSummary` — keyed `(dealershipId, platformSlug)`. One row per platform with SUBMISSION\_SENT events. `observedAssistLabel` is derived at query time, never stored.
 
 **Cascade:** Deleting a `DealershipProfile` cascades to all child rows. `GeneratedArtifact.linkedRunId` is `onDelete: SetNull`.
 
 ---
 
-## Key Design Decisions
+## Performance Data Contract
 
-**Performance language guardrails.** The performance engine surfaces correlation signals, not causal attribution. The enforced vocabulary:
-- Use **"movement signal"** (FAST / ON_TRACK / SLOW / STALE / LOW_DATA) — never "velocity score" or "sell-through rate."
-- Use **"observed assist"** for platform contribution labels — never "sold by [platform]" or "drove X sales."
-- Use **"comparable benchmark"** for per-vehicle comparisons — never "predicted sell time" or "expected days."
-- `platformAssistLabel()` in `performanceMath.ts` is the single source of platform label text.
-- `benchmarkLabel()` in `performanceMath.ts` is the single source of benchmark quality label text ("not enough comparable data" / "limited comparable data" / "comparable benchmark" / "strong comparable benchmark").
-- `PerformanceConfidence` levels (INSUFFICIENT / LOW / MEDIUM / HIGH) describe sample size only — they do not indicate quality of the platform or likelihood of future performance.
-- Confidence thresholds: INSUFFICIENT = 0–2 sold comparables, LOW = 3–9, MEDIUM = 10–29, HIGH = 30+. Same function (`deriveConfidence`) used for both vehicle benchmarks and platform summaries.
+This section is the authoritative reference for anyone building UI, writing API consumers, or modifying the performance pipeline. The contract is enforced by `src/tests/performanceContract.test.ts`.
+
+### VehiclePerformanceCache — stored fields
+
+| Field | Type | Notes |
+|-------|------|-------|
+| `daysOnline` | `Int` | Whole days since `createdAt` at compute time |
+| `movementSignal` | `String` | FAST \| ON_TRACK \| SLOW \| STALE \| LOW_DATA |
+| `comparableCount` | `Int` | Count of sold comparable vehicles used for benchmark |
+| `avgComparableDays` | `Float?` | Average days-online for sold comparables. Null when `comparableCount = 0` |
+| `medianComparableDays` | `Float?` | Median days-online for sold comparables. Null when `comparableCount = 0` |
+| `benchmarkConfidence` | `String` | INSUFFICIENT \| LOW \| MEDIUM \| HIGH (default: INSUFFICIENT) |
+| `platformAssistsJson` | `Json?` | `{ [slug]: { leads: number } }` — lead counts per platform |
+
+**Not stored:** `benchmarkLabel` — derived at query time from `benchmarkConfidence` via `benchmarkLabel()`.
+
+### PlatformPerformanceSummary — stored fields
+
+| Field | Type | Notes |
+|-------|------|-------|
+| `avgDaysToMove` | `Float?` | Average days from first SUBMISSION_SENT to soldAt. Null when `sampleSize = 0` |
+| `medianDaysToMove` | `Float?` | Median days from first SUBMISSION_SENT to soldAt. Null when `sampleSize = 0` |
+| `sampleSize` | `Int` | Count of sold vehicles used in calculation (= `vehiclesSold`) |
+| `leadsPerVehicle` | `Float?` | `totalLeads / vehiclesListed`. Null when `vehiclesListed = 0` |
+| `confidence` | `String` | INSUFFICIENT \| LOW \| MEDIUM \| HIGH |
+
+**Not stored:** `observedAssistLabel` — derived at query time from `confidence` via `platformAssistLabel()`.
+
+### API response fields (VehiclePerformanceItem)
+
+Every `GET /performance/vehicles` response item includes all of the above plus:
+
+| Field | Source |
+|-------|--------|
+| `benchmarkLabel` | Derived: `benchmarkLabel(benchmarkConfidence)` |
+| `firstListedAt` | ISO 8601 string from `firstListedAt` DB column |
+| `computedAt` | ISO 8601 string from `computedAt` DB column |
+
+### API response fields (PlatformPerformanceItem)
+
+Every `GET /performance/platforms` response item includes all of the above plus:
+
+| Field | Source |
+|-------|--------|
+| `observedAssistLabel` | Derived: `platformAssistLabel(confidence)` |
+| `computedAt` | ISO 8601 string from `computedAt` DB column |
+
+### Movement signal thresholds
+
+Ratio = `daysOnline / avgComparableDays`
+
+| Signal | Condition |
+|--------|-----------|
+| `LOW_DATA` | `comparableCount < 3` OR `avgComparableDays` is null/0 |
+| `FAST` | ratio < 0.7 |
+| `ON_TRACK` | 0.7 ≤ ratio ≤ 1.3 |
+| `SLOW` | 1.3 < ratio ≤ 2.0 |
+| `STALE` | ratio > 2.0 |
+
+### Confidence thresholds (used for both benchmarks and platform summaries)
+
+| Level | Sold vehicles | `benchmarkLabel` | `observedAssistLabel` |
+|-------|--------------|------------------|-----------------------|
+| `INSUFFICIENT` | 0–2 | "not enough comparable data" | "insufficient data" |
+| `LOW` | 3–9 | "limited comparable data" | "possible assist" |
+| `MEDIUM` | 10–29 | "comparable benchmark" | "strong observed assist" |
+| `HIGH` | 30+ | "strong comparable benchmark" | "strong observed assist" |
+
+### Language rules
+
+These rules are enforced in tests. Any label change must pass the language contract suite.
+
+- Use **"movement signal"** — never "velocity score", "sell-through rate", "days-to-sell".
+- Use **"observed assist"** for platform labels — never "sold by [platform]", "drove X sales", "caused".
+- Use **"comparable benchmark"** for vehicle benchmarks — never "predicted sell time", "expected days", "will sell in".
+- `benchmarkLabel()` and `platformAssistLabel()` in `performanceMath.ts` are the single sources of label text.
+- **Forbidden terms in any label:** "sold by", "drove", "caused", "ROI", "revenue", "predict", "will sell", "guaranteed", "certain", "attribution".
+- `PerformanceConfidence` levels describe sample size only — not quality of the platform or likelihood of future performance.
+
+### Testing contract
+
+`src/tests/performanceContract.test.ts` proves:
+- All required fields are present on aggregator output rows
+- All required fields are present on API response items (via mock Prisma)
+- LOW_DATA case: `comparableCount < 3` → `movementSignal=LOW_DATA`, `benchmarkConfidence=INSUFFICIENT`, `benchmarkLabel="not enough comparable data"`
+- Platform INSUFFICIENT: `sampleSize=0` → `avgDaysToMove=null`, `medianDaysToMove=null`, `observedAssistLabel="insufficient data"`
+- No label contains any forbidden attribution or predictive term
+- `benchmarkLabel` and `observedAssistLabel` are deterministic, non-empty strings
+
+---
+
+## Key Design Decisions
 
 **Why Prisma ^6, not ^7?** Prisma 7 removed datasource URL from `schema.prisma` and requires a driver adapter. Pinned to `^6` — upgrade path exists when there's time.
 
