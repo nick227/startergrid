@@ -107,7 +107,7 @@ npm run performance:compute -- <dealershipId>
 These 10 commands must always exit 0:
 
 ```
-npm test                         824 backend + 11 web UI tests
+npm test                         946 backend + 31 web + 8 marketplace tests
 npm run smoke:test               6/6 system checks
 npm run poc:green                18/18 GREEN
 npm run poc:risk                 90/90 expectations

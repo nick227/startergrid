@@ -1,7 +1,7 @@
 # Handoff Document — Auto Dealer Sales Portal
 
 **Updated:** 2026-06-06  
-**State:** v4.4.0 · Channel measurement export integration; v4.4 Sales Status Sync in progress  
+**State:** v4.6.0 · Sales status sync, snapshot reconcile, operator lifecycle workflow, portal JSON ingest  
 **Branch:** `main`
 
 ---
