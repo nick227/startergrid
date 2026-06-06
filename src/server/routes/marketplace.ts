@@ -6,9 +6,12 @@ import {
   getMarketplaceDealerIndex,
   type MarketplaceListFilters,
 } from '../../services/marketplace/marketplaceQueryService.js';
+import { captureMarketplaceLead } from '../../services/marketplace/marketplaceLeadService.js';
+import { checkPublicWriteAbuseLimit } from '../security.js';
+import { marketplaceLeadCaptureSchema, validateBody } from '../requestValidation.js';
 
-// No operator auth on any marketplace route — all are public read-only.
-// checkPublicWriteAbuseLimit is not applied here because these are GETs.
+// Marketplace GET routes are public read-only.
+// Lead capture is public-write with abuse limiting.
 
 type ListingParams = { listingId: string };
 type DealerParams  = { dealerId: string };
@@ -69,6 +72,25 @@ export function registerMarketplaceRoutes(app: FastifyInstance, prisma: PrismaCl
       const detail = await getMarketplaceVehicle(prisma, request.params.listingId);
       if (!detail) return reply.status(404).send({ error: 'Vehicle not found' });
       return reply.send(detail);
+    }
+  );
+
+  // POST /api/marketplace/vehicles/:listingId/leads
+  // Public inquiry capture for one eligible listing.
+  app.post<{ Params: ListingParams }>(
+    '/api/marketplace/vehicles/:listingId/leads',
+    async (request, reply) => {
+      const { listingId } = request.params;
+
+      if (!checkPublicWriteAbuseLimit(request, reply, `marketplace-lead:${listingId}`)) return;
+
+      const body = validateBody(marketplaceLeadCaptureSchema, request.body);
+      if (!body.ok) return reply.status(400).send({ error: body.error });
+
+      const result = await captureMarketplaceLead(prisma, listingId, body.data);
+      if (!result) return reply.status(404).send({ error: 'Vehicle not found' });
+
+      return reply.status(201).send({ message: 'Inquiry received', leadId: result.leadId });
     }
   );
 

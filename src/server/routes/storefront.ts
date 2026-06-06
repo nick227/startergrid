@@ -62,7 +62,7 @@ export function registerStorefrontRoutes(app: FastifyInstance, prisma: PrismaCli
       });
       if (!dealerExists) return reply.status(404).send({ error: 'Dealer not found' });
 
-      await persistLead(prisma, dealershipId, {
+      const leadId = await persistLead(prisma, dealershipId, {
         source: 'DEALER_STOREFRONT',
         platformSlug: 'dealer-storefront',
         vehicleId,
@@ -73,21 +73,13 @@ export function registerStorefrontRoutes(app: FastifyInstance, prisma: PrismaCli
         vehicleInterest: data.stockNumber ? { stockNumber: data.stockNumber } : null
       });
 
-      const lead = await prisma.lead.findFirst({
-        where: { dealershipId, platformSlug: 'dealer-storefront' },
-        orderBy: { createdAt: 'desc' },
-        select: { id: true }
+      await notifyLeadCaptured(prisma, dealershipId, leadId, 'dealer-storefront', {
+        name: data.contactName ?? undefined,
+        email: data.contactEmail ?? undefined,
+        stockNumber: data.stockNumber
       });
 
-      if (lead) {
-        await notifyLeadCaptured(prisma, dealershipId, lead.id, 'dealer-storefront', {
-          name: data.contactName ?? undefined,
-          email: data.contactEmail ?? undefined,
-          stockNumber: data.stockNumber
-        });
-      }
-
-      return reply.status(201).send({ message: 'Lead received', leadId: lead?.id ?? null });
+      return reply.status(201).send({ message: 'Lead received', leadId });
     }
   );
 }

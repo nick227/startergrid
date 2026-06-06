@@ -69,8 +69,8 @@ export async function persistLead(
     vehicleInterest?: Record<string, unknown> | null;
     adfPayload?: string | null;
   }
-): Promise<void> {
-  await prisma.lead.create({
+): Promise<string> {
+  const created = await prisma.lead.create({
     data: {
       dealershipId,
       vehicleId: lead.vehicleId ?? null,
@@ -84,6 +84,7 @@ export async function persistLead(
       adfPayload: lead.adfPayload ? ({ xml: lead.adfPayload } as unknown as Prisma.InputJsonValue) : undefined
     }
   });
+  return created.id;
 }
 
 export async function persistVehicleUpdate(

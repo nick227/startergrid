@@ -128,4 +128,17 @@ describe('marketplace routes — public access', () => {
     assert.equal(withHeader.statusCode, withoutHeader.statusCode);
     assert.equal(withHeader.statusCode, 200);
   });
+
+  it('POST /api/marketplace/vehicles/:listingId/leads is public-write with validation', async () => {
+    const app = buildApp(mockPrisma());
+
+    const response = await app.inject({
+      method: 'POST',
+      url: '/api/marketplace/vehicles/listing-a/leads',
+      payload: {},
+    });
+
+    assert.equal(response.statusCode, 400);
+    assert.match(response.json().error, /contactName/);
+  });
 });

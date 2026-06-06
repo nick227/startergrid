@@ -9,6 +9,8 @@ export type { OpenAPIConfig } from './core/OpenAPI';
 
 export type { MarketplaceDealerIndexResponse } from './models/MarketplaceDealerIndexResponse';
 export type { MarketplaceErrorResponse } from './models/MarketplaceErrorResponse';
+export type { MarketplaceLeadCaptureRequest } from './models/MarketplaceLeadCaptureRequest';
+export type { MarketplaceLeadCaptureResponse } from './models/MarketplaceLeadCaptureResponse';
 export { MarketplaceVehicleCard } from './models/MarketplaceVehicleCard';
 export type { MarketplaceVehicleDetailResponse } from './models/MarketplaceVehicleDetailResponse';
 export type { MarketplaceVehicleListResponse } from './models/MarketplaceVehicleListResponse';

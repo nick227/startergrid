@@ -10,6 +10,9 @@ export const marketplaceRouteClassifications = {
     'GET /api/marketplace/vehicles/:listingId',
     'GET /api/marketplace/dealers/:dealerId',
   ],
+  publicWrite: [
+    'POST /api/marketplace/vehicles/:listingId/leads',
+  ],
 } as const;
 
 export const routeClassifications = {

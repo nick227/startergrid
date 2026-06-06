@@ -3,6 +3,8 @@
 /* tslint:disable */
 /* eslint-disable */
 import type { MarketplaceDealerIndexResponse } from '../models/MarketplaceDealerIndexResponse';
+import type { MarketplaceLeadCaptureRequest } from '../models/MarketplaceLeadCaptureRequest';
+import type { MarketplaceLeadCaptureResponse } from '../models/MarketplaceLeadCaptureResponse';
 import type { MarketplaceVehicleDetailResponse } from '../models/MarketplaceVehicleDetailResponse';
 import type { MarketplaceVehicleListResponse } from '../models/MarketplaceVehicleListResponse';
 import type { CancelablePromise } from '../core/CancelablePromise';
@@ -94,6 +96,41 @@ export class MarketplaceService {
             },
             errors: {
                 404: `Not found`,
+            },
+        });
+    }
+    /**
+     * Submit a vehicle inquiry
+     * Public lead capture for one marketplace-eligible vehicle.
+     * Accepts basic contact fields only — no buyer accounts required.
+     * Returns 404 when the listing is sold, removed, or not found.
+     * Does not expose raw lead data on any GET endpoint.
+     *
+     * @returns MarketplaceLeadCaptureResponse Inquiry accepted
+     * @throws ApiError
+     */
+    public static captureMarketplaceLead({
+        listingId,
+        requestBody,
+    }: {
+        /**
+         * Opaque vehicle identifier from MarketplaceVehicleCard.listingId
+         */
+        listingId: string,
+        requestBody: MarketplaceLeadCaptureRequest,
+    }): CancelablePromise<MarketplaceLeadCaptureResponse> {
+        return __request(OpenAPI, {
+            method: 'POST',
+            url: '/api/marketplace/vehicles/{listingId}/leads',
+            path: {
+                'listingId': listingId,
+            },
+            body: requestBody,
+            mediaType: 'application/json',
+            errors: {
+                400: `Bad request — invalid query parameter value`,
+                404: `Not found`,
+                429: `Too many requests`,
             },
         });
     }

@@ -23,6 +23,7 @@ const yaml = _require('js-yaml') as { load(src: string): unknown };
 const REGISTERED_MARKETPLACE_ROUTES = new Set([
   'GET    /api/marketplace/vehicles',
   'GET    /api/marketplace/vehicles/{listingId}',
+  'POST   /api/marketplace/vehicles/{listingId}/leads',
   'GET    /api/marketplace/dealers/{dealerId}',
 ]);
 
@@ -112,13 +113,19 @@ describe('marketplace route ↔ OpenAPI coverage', () => {
 // ── Security contract ─────────────────────────────────────────────────────────
 
 describe('marketplace security declarations', () => {
-  it('every marketplace route has x-route-classification: public', () => {
-    const violations = specOps.filter(o => o.classification !== 'public');
+  it('every marketplace GET route has x-route-classification: public', () => {
+    const violations = specOps.filter(o => o.method === 'GET' && o.classification !== 'public');
     assert.deepEqual(
       violations.map(o => `${o.operationId} (${o.key})`),
       [],
-      'All marketplace routes must be classified public:'
+      'All marketplace GET routes must be classified public:'
     );
+  });
+
+  it('marketplace lead capture route is public-write', () => {
+    const leadOp = specOps.find(o => o.operationId === 'captureMarketplaceLead');
+    assert.ok(leadOp, 'captureMarketplaceLead must be documented');
+    assert.equal(leadOp!.classification, 'public-write');
   });
 
   it('every marketplace route has security: [] (no auth required)', () => {

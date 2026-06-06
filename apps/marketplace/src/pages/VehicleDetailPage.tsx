@@ -18,6 +18,7 @@ import { VehicleGallery } from '../components/ui/VehicleGallery.tsx';
 import { SpecGrid } from '../components/ui/SpecGrid.tsx';
 import { DealerBlock } from '../components/ui/DealerBlock.tsx';
 import { SectionCard } from '../components/ui/SectionCard.tsx';
+import { LeadInquiryForm } from '../components/ui/LeadInquiryForm.tsx';
 
 type Props = { listingId: string };
 
@@ -105,6 +106,12 @@ export default function VehicleDetailPage({ listingId }: Props) {
             dealerName={vehicle.dealerName}
             city={vehicle.dealerCity}
             state={vehicle.dealerState}
+          />
+
+          <LeadInquiryForm
+            listingId={vehicle.listingId}
+            vehicleLabel={heading}
+            dealerName={vehicle.dealerName}
           />
         </div>
       </div>

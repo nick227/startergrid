@@ -174,3 +174,16 @@ export type BulkEditBody = z.infer<typeof bulkEditSchema>;
 export type AccountUpdateBody = z.infer<typeof accountUpdateSchema>;
 export type LeadCaptureBody = z.infer<typeof leadCaptureSchema>;
 
+// operationId: captureMarketplaceLead
+export const marketplaceLeadCaptureSchema = z.object({
+  contactName: optionalText(160),
+  contactEmail: z.string().trim().email().max(255).optional().or(z.literal('')),
+  contactPhone: optionalText(40),
+  message: optionalText(5000),
+}).strict().refine(
+  body => Boolean(body.contactName || body.contactEmail || body.contactPhone),
+  'At least one of contactName, contactEmail, or contactPhone is required'
+);
+
+export type MarketplaceLeadCaptureBody = z.infer<typeof marketplaceLeadCaptureSchema>;
+

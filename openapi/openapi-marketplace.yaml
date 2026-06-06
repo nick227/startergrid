@@ -127,6 +127,49 @@ paths:
         '404':
           $ref: '#/components/responses/NotFound'
 
+  /api/marketplace/vehicles/{listingId}/leads:
+    post:
+      tags: [Marketplace]
+      security: []
+      x-route-classification: public-write
+      operationId: captureMarketplaceLead
+      summary: Submit a vehicle inquiry
+      description: |
+        Public lead capture for one marketplace-eligible vehicle.
+        Accepts basic contact fields only — no buyer accounts required.
+        Returns 404 when the listing is sold, removed, or not found.
+        Does not expose raw lead data on any GET endpoint.
+      parameters:
+        - name: listingId
+          in: path
+          required: true
+          description: Opaque vehicle identifier from MarketplaceVehicleCard.listingId
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/MarketplaceLeadCaptureRequest'
+      responses:
+        '201':
+          description: Inquiry accepted
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MarketplaceLeadCaptureResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '429':
+          description: Too many requests
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MarketplaceErrorResponse'
+
   /api/marketplace/dealers/{dealerId}:
     get:
       tags: [Marketplace]
@@ -293,6 +336,35 @@ components:
           items:
             type: string
           description: Images beyond the first 8 from the card.
+
+    MarketplaceLeadCaptureRequest:
+      type: object
+      additionalProperties: false
+      description: Basic shopper contact fields. At least one contact field is required.
+      properties:
+        contactName:
+          type: string
+          maxLength: 160
+        contactEmail:
+          type: string
+          format: email
+          maxLength: 255
+        contactPhone:
+          type: string
+          maxLength: 40
+        message:
+          type: string
+          maxLength: 5000
+
+    MarketplaceLeadCaptureResponse:
+      type: object
+      required: [message]
+      properties:
+        message:
+          type: string
+        leadId:
+          type: string
+          nullable: true
 
     MarketplaceDealerIndexResponse:
       type: object

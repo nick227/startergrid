@@ -7,7 +7,7 @@
   "scripts": {
     "build": "tsc",
     "typecheck": "tsc --noEmit",
-    "test": "npm run -s build && node --test dist/src/tests/*.test.js && npm run -s test --prefix apps/web",
+    "test": "npm run -s build && node --test dist/src/tests/*.test.js && npm run -s test --prefix apps/web && npm run -s test --prefix apps/marketplace",
 
     "dealer:create":         "npm run -s build && node dist/src/scripts/dealer/dealerCreate.js",
     "dealer:create:pristine":"npm run -s build && node dist/src/scripts/dealer/dealerCreate.js --use-pristine",
@@ -63,8 +63,11 @@
     "marketplace:client:generate":  "npm run client:generate:marketplace",
     "marketplace:boundary:check":   "node scripts/check-marketplace-boundary.js",
 
-    "build:all":   "npm run build && npm run ui:build && npm run marketplace:build",
-    "verify:all":  "npm run test && npm run marketplace:boundary:check && npm run openapi:validate && npm run openapi:validate:marketplace",
+    "dev:operator":   "npm run ui:dev",
+    "dev:marketplace":"npm run marketplace:dev",
+
+    "build:all":  "npm run build && npm run ui:build && npm run marketplace:build",
+    "verify:all": "npm run openapi:validate && npm run openapi:validate:marketplace && npm run test && npm run marketplace:boundary:check",
 
     "openapi:validate":              "redocly lint openapi/openapi.yaml",
     "openapi:validate:marketplace":  "redocly lint openapi/openapi-marketplace.yaml",

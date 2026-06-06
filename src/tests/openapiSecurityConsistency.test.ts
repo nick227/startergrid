@@ -143,7 +143,7 @@ describe('OpenAPI security consistency', () => {
       spec,
       new Set<string>(),
       new Set(marketplaceRouteClassifications.public),
-      new Set<string>(),
+      new Set(marketplaceRouteClassifications.publicWrite),
       'openapi-marketplace.yaml',
     );
   });

@@ -7,10 +7,23 @@ import {
   type MarketplaceVehicleListResponse,
   type MarketplaceVehicleDetailResponse,
   type MarketplaceDealerIndexResponse,
+  type MarketplaceLeadCaptureResponse,
 } from '@dealer-marketplace/client';
 
 export type { MarketplaceVehicleCard } from '@dealer-marketplace/client';
-export type { MarketplaceVehicleListResponse, MarketplaceVehicleDetailResponse, MarketplaceDealerIndexResponse };
+export type {
+  MarketplaceVehicleListResponse,
+  MarketplaceVehicleDetailResponse,
+  MarketplaceDealerIndexResponse,
+  MarketplaceLeadCaptureResponse,
+};
+
+export type LeadCaptureInput = {
+  contactName?:  string;
+  contactEmail?: string;
+  contactPhone?: string;
+  message?:      string;
+};
 
 export type ListFilters = {
   make?:      string;
@@ -67,4 +80,14 @@ export function fetchVehicle(listingId: string): Promise<MarketplaceVehicleDetai
 
 export function fetchDealer(dealerId: string): Promise<MarketplaceDealerIndexResponse> {
   return call(() => MarketplaceService.getMarketplaceDealerIndex({ dealerId }));
+}
+
+export function submitVehicleLead(
+  listingId: string,
+  input: LeadCaptureInput,
+): Promise<MarketplaceLeadCaptureResponse> {
+  return call(() => MarketplaceService.captureMarketplaceLead({
+    listingId,
+    requestBody: input,
+  }));
 }
