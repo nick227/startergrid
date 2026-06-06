@@ -89,6 +89,9 @@ export async function persistLead(
 
 export type PersistVehicleUpdateOpts = {
   statusChangedAt?: Date;
+  lifecycleSource?: import('../inventory/lifecycleEventService.js').LifecycleEventSource;
+  ingressRunId?: string;
+  lifecycleNote?: string;
 };
 
 export async function persistVehicleUpdate(
@@ -105,6 +108,22 @@ export async function persistVehicleUpdate(
   const storedNewValue = kind === 'SOLD' || kind === 'REMOVED' || kind === 'RELISTED'
     ? { ...(newValue ?? {}), statusChangedAt: at.toISOString() }
     : newValue;
+
+  if (kind === 'SOLD' || kind === 'REMOVED' || kind === 'RELISTED') {
+    const current = await prisma.vehicle.findUnique({
+      where: { id: vehicleId },
+      select: { soldAt: true, removedAt: true, reactivatedAt: true },
+    });
+    if (current) {
+      const { recordLifecycleEventForUpdate } = await import('../inventory/lifecycleEventService.js');
+      await recordLifecycleEventForUpdate(prisma, vehicleId, dealershipId, kind, current, {
+        source: opts.lifecycleSource,
+        ingressRunId: opts.ingressRunId,
+        statusChangedAt: at,
+        note: opts.lifecycleNote,
+      });
+    }
+  }
 
   const row = await prisma.vehicleUpdate.create({
     data: {

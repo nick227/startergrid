@@ -153,10 +153,20 @@ export const jsonIngestSchema = z.object({
   sourceSlug:  optionalText(80),
   sourceLabel: optionalText(160),
   mode:        z.enum(['upsert']).optional(),
+  snapshotMode: z.boolean().optional(),
+  dryRun: z.boolean().optional(),
+  commitSnapshotRemovals: z.boolean().optional(),
   vehicles:    z.array(jsonIngestVehicleSchema).min(1).max(2000),
 }).strict();
 
+export const snapshotCommitSchema = z.object({
+  ingressRunId: nonEmptyString(80),
+  stockNumbers: z.array(nonEmptyString(80)).min(1).max(500),
+  statusChangedAt: z.string().datetime().optional(),
+}).strict();
+
 export type JsonIngestBody = z.infer<typeof jsonIngestSchema>;
+export type SnapshotCommitBody = z.infer<typeof snapshotCommitSchema>;
 
 // operationId: captureLead
 export const leadCaptureSchema = z.object({

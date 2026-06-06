@@ -114,6 +114,7 @@ model DealershipProfile {
   applications                 PlatformApplication[]
   leads                        Lead[]
   vehicleUpdates               VehicleUpdate[]
+  vehicleLifecycleEvents       VehicleLifecycleEvent[]
   subscription                 DealerSubscription?
   inventorySnapshots           InventorySnapshot[]
   readinessRuns                ReadinessRun[]
@@ -162,6 +163,7 @@ model Vehicle {
   media             VehicleMedia[]
   leads             Lead[]
   updates           VehicleUpdate[]
+  lifecycleEvents   VehicleLifecycleEvent[]
   queueItems        PublishQueueItem[]
   syncEvents        SyncEvent[]
   performanceCache  VehiclePerformanceCache?
@@ -328,6 +330,27 @@ model VehicleUpdate {
 
   @@index([vehicleId])
   @@index([dealershipId])
+}
+
+model VehicleLifecycleEvent {
+  id              String   @id @default(cuid())
+  vehicleId       String
+  dealershipId    String
+  fromState       String   @db.VarChar(20)
+  toState         String   @db.VarChar(20)
+  triggerKind     String   @db.VarChar(40)
+  source          String   @db.VarChar(40)
+  ingressRunId    String?
+  statusChangedAt DateTime
+  note            String?  @db.VarChar(255)
+  createdAt       DateTime @default(now())
+
+  vehicle         Vehicle           @relation(fields: [vehicleId], references: [id], onDelete: Cascade)
+  dealership      DealershipProfile @relation(fields: [dealershipId], references: [id], onDelete: Cascade)
+
+  @@index([vehicleId])
+  @@index([dealershipId, createdAt])
+  @@index([ingressRunId])
 }
 
 model DealerSubscription {

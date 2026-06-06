@@ -99,6 +99,10 @@ Internal states: **`AVAILABLE`**, **`SOLD`**, **`REMOVED`**, **`REACTIVATED`** (
 
 Ingress JSON may include optional `availability` (`available` \| `sold` \| `removed`) and `statusChangedAt`. Performance jobs recompute after lifecycle changes.
 
+**Snapshot reconcile (v4.4.1):** set `snapshotMode: true` on JSON ingest. Missing active vehicles are returned as `snapshotRemovedCandidates` (dry-run by default). Commit via `commitSnapshotRemovals` or `POST .../ingest/snapshot/commit`. Removals are labeled *Missing from latest feed* — not sold.
+
+**Audit trail:** `VehicleLifecycleEvent` records `AVAILABLE → SOLD`, `AVAILABLE → REMOVED`, `SOLD → REACTIVATED`, `REMOVED → REACTIVATED` with source (`manual`, `ingress_row`, `feed_snapshot`).
+
 ## apps/web display rules
 
 - Show counts with conservative labels: **observed**, **reported**, **imported**, **unavailable**.

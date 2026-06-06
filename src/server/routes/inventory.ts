@@ -19,6 +19,7 @@ import {
   jsonIngestSchema,
   photoUpdateSchema,
   priceUpdateSchema,
+  snapshotCommitSchema,
   validateBody,
 } from '../requestValidation.js';
 
@@ -129,8 +130,69 @@ export function registerInventoryRoutes(app: FastifyInstance, prisma: PrismaClie
       const result = await ingestJsonVehicles(prisma, dealershipId, body.data.vehicles, {
         sourceSlug:  body.data.sourceSlug,
         sourceLabel: body.data.sourceLabel,
+        snapshotMode: body.data.snapshotMode,
+        dryRun: body.data.dryRun,
+        commitSnapshotRemovals: body.data.commitSnapshotRemovals,
       });
       return reply.send(result);
+    }
+  );
+
+  // ── Snapshot removal commit (explicit, after dry-run ingest) ─────────────────
+
+  app.post<{ Params: DealerParams }>(
+    '/api/dealers/:dealershipId/inventory/ingest/snapshot/commit',
+    async (request, reply) => {
+      const { dealershipId } = request.params;
+      if (!requireDealerAccess(request, reply, dealershipId)) return;
+      if (!await findDealer(prisma, dealershipId))
+        return reply.status(404).send({ error: 'Dealer not found' });
+
+      const body = validateBody(snapshotCommitSchema, request.body);
+      if (!body.ok) return reply.status(400).send({ error: body.error });
+
+      const { commitSnapshotRemovals } = await import('../../services/inventory/salesStatusReconcileService.js');
+      const result = await commitSnapshotRemovals(
+        prisma,
+        dealershipId,
+        body.data.ingressRunId,
+        body.data.stockNumbers,
+        {
+          statusChangedAt: body.data.statusChangedAt
+            ? new Date(body.data.statusChangedAt)
+            : undefined,
+        },
+      );
+
+      if (result.rejected.length > 0 && result.applied === 0) {
+        return reply.status(400).send({
+          error: 'No stock numbers matched the snapshot dry-run for this ingress run',
+          ...result,
+        });
+      }
+
+      return reply.send(result);
+    }
+  );
+
+  // ── Lifecycle audit trail ───────────────────────────────────────────────────
+
+  app.get<{ Params: DealerParams; Querystring: { limit?: string; stockNumber?: string } }>(
+    '/api/dealers/:dealershipId/inventory/lifecycle-events',
+    async (request, reply) => {
+      const { dealershipId } = request.params;
+      if (!requireDealerAccess(request, reply, dealershipId)) return;
+      if (!await findDealer(prisma, dealershipId))
+        return reply.status(404).send({ error: 'Dealer not found' });
+
+      const limit = request.query.limit ? parseInt(request.query.limit, 10) : 50;
+      const { listLifecycleEvents } = await import('../../services/inventory/lifecycleEventService.js');
+      const events = await listLifecycleEvents(prisma, dealershipId, {
+        limit: Number.isFinite(limit) ? limit : 50,
+        stockNumber: request.query.stockNumber,
+      });
+
+      return reply.send({ events });
     }
   );
 

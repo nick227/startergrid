@@ -2,7 +2,7 @@ import { useState } from 'react';
 import type { OperatorPageBaseProps } from '@/lib/operatorPage.ts';
 import { useAsyncQuery } from '@/hooks/useAsyncQuery.ts';
 import { fetchCachedPerformanceSnapshot, triggerPerformanceCompute } from '@/lib/api/sdk.ts';
-import { formatMovementBenchmarkLine, formatChannelMetricsDisplay, formatPlatformChannelHint } from '@/lib/movementBenchmark.ts';
+import { formatMovementBenchmarkLine, formatChannelMetricsDisplay, formatPlatformChannelHint, formatPlatformExposureLine } from '@/lib/movementBenchmark.ts';
 import { formatPerformanceUpdated } from '@/lib/performanceFreshness.ts';
 import { EMPTY_STATE_COPY } from '@/lib/statusRegistry.ts';
 import { OperatorPage, SectionCard, PageHeader, ErrorState } from '@/components/operator';
@@ -160,6 +160,7 @@ export default function InsightsPage({ dealerId, nav, activeTab }: Props) {
                       {data.platforms.map(p => {
                         const channel = formatChannelMetricsDisplay(p.channelMetrics);
                         const hasChannel = channel.primary != null;
+                        const exposureLine = formatPlatformExposureLine(p);
 
                         return (
                           <div key={p.platformSlug} className="rounded-xl border border-slate-100 p-4 bg-slate-50/50">
@@ -171,6 +172,10 @@ export default function InsightsPage({ dealerId, nav, activeTab }: Props) {
                                   : `${p.confidence.toLowerCase()} move sample`}
                               </span>
                             </div>
+
+                            {exposureLine && (
+                              <p className="text-[11px] text-slate-500 mt-1">{exposureLine}</p>
+                            )}
 
                             {hasChannel ? (
                               <>

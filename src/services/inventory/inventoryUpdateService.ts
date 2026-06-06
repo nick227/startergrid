@@ -10,6 +10,9 @@ export type VehicleUpdateOptions = {
   priceCents?: number;
   photoUrls?: string[];
   statusChangedAt?: Date;
+  source?: import('./lifecycleEventService.js').LifecycleEventSource;
+  ingressRunId?: string;
+  lifecycleNote?: string;
 };
 
 export type VehicleUpdateResult = {
@@ -133,7 +136,12 @@ export async function applyVehicleUpdate(
     Object.keys(previousValue).length > 0 ? previousValue : null,
     Object.keys(newValue).length > 0 ? newValue : null,
     propagatedSlugs,
-    { statusChangedAt: opts.statusChangedAt },
+    {
+      statusChangedAt: opts.statusChangedAt,
+      lifecycleSource: opts.source,
+      ingressRunId: opts.ingressRunId,
+      lifecycleNote: opts.lifecycleNote,
+    },
   );
 
   // Emit SyncEvent + enqueue PublishQueueItems for each affected platform

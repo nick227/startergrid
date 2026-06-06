@@ -1,9 +1,9 @@
 {
   "name": "auto-dealer-onboarding-poc-v1",
-  "version": "4.4.0",
+  "version": "4.4.1",
   "private": true,
   "type": "module",
-  "description": "V4.4: Sales status sync foundation — lifecycle, exposure windows, benchmark recompute.",
+  "description": "V4.4.1: Ingress snapshot reconcile, lifecycle audit trail, platform exposure UI.",
   "scripts": {
     "build": "tsc",
     "typecheck": "tsc --noEmit",

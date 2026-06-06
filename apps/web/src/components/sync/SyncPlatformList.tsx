@@ -4,7 +4,7 @@ import {
   platformOutcomeMeta,
   sortPlatformsForSync,
 } from '@/lib/syncPresentation.ts';
-import { formatPlatformAssistHint, formatChannelMetricsDisplay } from '@/lib/movementBenchmark.ts';
+import { formatPlatformAssistHint, formatPlatformExposureLine, formatChannelMetricsDisplay } from '@/lib/movementBenchmark.ts';
 import { SectionCard } from '@/components/operator';
 
 type Props = {
@@ -69,6 +69,7 @@ function SyncPlatformRow({
 }) {
   const meta = platformOutcomeMeta(p);
   const detail = friendlyPlatformDetail(p);
+  const exposureLine = perf ? formatPlatformExposureLine(perf) : null;
   const valueHint = perf ? formatPlatformAssistHint(perf) : null;
   const channelFootnote = perf
     ? formatChannelMetricsDisplay(perf.channelMetrics).secondary
@@ -99,6 +100,9 @@ function SyncPlatformRow({
           </span>
           <span className="text-sm font-semibold text-slate-900 truncate">{p.platformName}</span>
         </div>
+        {exposureLine && (
+          <p className="text-[11px] text-slate-500 pl-0.5 truncate">{exposureLine}</p>
+        )}
         {valueHint && (
           <p className="text-[11px] text-slate-400 pl-0.5 truncate">{valueHint}</p>
         )}

@@ -131,6 +131,17 @@ export function formatPlatformChannelHint(item: PlatformPerformanceItem): string
   return display.primary;
 }
 
+export function formatPlatformExposureLine(item: PlatformPerformanceItem): string | null {
+  const parts: string[] = [];
+  if (item.vehiclesListed > 0) parts.push(`${item.vehiclesListed} active`);
+  if (item.vehiclesSold > 0) parts.push(`${item.vehiclesSold} sold`);
+  if (item.vehiclesRemoved > 0) parts.push(`${item.vehiclesRemoved} removed`);
+  if (item.avgDaysOnPlatform != null) {
+    parts.push(`avg exposure ${Math.round(item.avgDaysOnPlatform)}d`);
+  }
+  return parts.length > 0 ? parts.join(' · ') : null;
+}
+
 export function formatPlatformAssistHint(item: PlatformPerformanceItem): string | null {
   const channelHint = formatPlatformChannelHint(item);
   if (channelHint) return channelHint;

@@ -5,6 +5,7 @@ import {
   formatChannelMetricsLine,
   formatPlatformAssistHint,
   formatPlatformChannelHint,
+  formatPlatformExposureLine,
 } from './movementBenchmark.ts';
 import type { ChannelMetrics, PlatformPerformanceItem } from './types.ts';
 
@@ -12,6 +13,8 @@ const BASE_PLATFORM: PlatformPerformanceItem = {
   platformSlug: 'consumer-marketplace',
   vehiclesListed: 3,
   vehiclesSold: 0,
+  vehiclesRemoved: 0,
+  avgDaysOnPlatform: null,
   avgDaysToMove: null,
   medianDaysToMove: null,
   totalLeads: 0,
@@ -77,6 +80,28 @@ describe('formatChannelMetricsLine', () => {
       inquiries: { count: 3, confidence: 'observed_first_party' },
     });
     expect(line).toBe('3 inquiries');
+  });
+});
+
+describe('formatPlatformExposureLine', () => {
+  it('formats active, sold, removed, and avg exposure compactly', () => {
+    const line = formatPlatformExposureLine({
+      ...BASE_PLATFORM,
+      vehiclesListed: 12,
+      vehiclesSold: 4,
+      vehiclesRemoved: 2,
+      avgDaysOnPlatform: 31.2,
+    });
+    expect(line).toBe('12 active · 4 sold · 2 removed · avg exposure 31d');
+  });
+
+  it('returns null when there is no exposure data', () => {
+    expect(formatPlatformExposureLine({
+      ...BASE_PLATFORM,
+      vehiclesListed: 0,
+      vehiclesSold: 0,
+      vehiclesRemoved: 0,
+    })).toBeNull();
   });
 });
 

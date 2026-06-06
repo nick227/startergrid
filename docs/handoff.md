@@ -225,6 +225,21 @@ Keep inventory sold/removed/available state accurate; use that status for moveme
 
 See **`docs/channel-measurement.md`** for measurement model; lifecycle details in **`src/services/inventory/vehicleLifecycle.ts`**.
 
+---
+
+## v4.4.1 — Ingress Snapshot Reconcile (implemented)
+
+Authoritative feed snapshot mode with explicit dry-run and commit — no silent removals from partial feeds.
+
+### Delivered
+
+- **`snapshotMode`** on JSON ingest — detects active vehicles missing from the feed
+- **`dryRun`** (defaults true when snapshotMode) — returns `snapshotRemovedCandidates` without writes
+- **`commitSnapshotRemovals`** on ingest or **`POST .../ingest/snapshot/commit`** — applies REMOVED with source `feed_snapshot` and note *Missing from latest feed*
+- **`VehicleLifecycleEvent`** audit trail — `fromState` → `toState` for sold, removed, relist (manual, ingress_row, feed_snapshot)
+- **`GET .../inventory/lifecycle-events`** — recent lifecycle history for debugging
+- **UI** — platform rows show compact exposure copy (`12 active · 4 sold · 2 removed · avg exposure 31d`)
+
 ### Still deferred
 
 - CSV imports of partner metrics

@@ -1,4 +1,4 @@
-# Auto Dealer Sales Portal — v4.4.0
+# Auto Dealer Sales Portal — v4.4.1
 
 A backend pipeline that onboards auto dealers onto 18 ad and marketplace platforms — validation, feed generation, artifact storage, and proof export — via CLI and the Operator Console web UI.
 
@@ -15,6 +15,8 @@ A backend pipeline that onboards auto dealers onto 18 ad and marketplace platfor
 **v4.3.1** polishes confidence-aware channel metric display in the operator UI, seeds demo marketplace events on `demo:reset`, and documents the measurement model in `docs/channel-measurement.md`.
 
 **v4.4** strengthens sold/removed lifecycle handling, closes platform exposure windows on status change, ingests sales status from JSON ingress, and recomputes movement benchmarks from inventory state — not partner metric imports.
+
+**v4.4.1** adds authoritative feed snapshot reconcile (dry-run candidates + explicit commit), lifecycle audit events, and compact platform exposure copy in Sync/Insights.
 
 **Stack:** TypeScript (ESM) · Prisma 6 · MySQL · Node 22 · node:test
 

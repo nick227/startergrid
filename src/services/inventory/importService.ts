@@ -503,13 +503,36 @@ export type JsonIngestResult = {
   vehicleCount: number;
   ingressRunId: string;
   batchId:      string;
+  salesStatus?: {
+    sold: number;
+    removed: number;
+    reactivated: number;
+    skipped: number;
+    snapshotRemovedCandidates: Array<{
+      stockNumber: string;
+      vehicleId: string;
+      reason: 'missing_from_feed';
+      label: string;
+    }>;
+    snapshotRemovalsApplied: number;
+    snapshotDryRun: boolean;
+  };
+};
+
+export type JsonIngestOpts = {
+  sourceSlug?: string;
+  sourceLabel?: string;
+  sourceKind?: InventorySourceKind;
+  snapshotMode?: boolean;
+  dryRun?: boolean;
+  commitSnapshotRemovals?: boolean;
 };
 
 export async function ingestJsonVehicles(
   prisma: PrismaClient,
   dealershipId: string,
   vehicles: IngestVehicleInput[],
-  opts: { sourceSlug?: string; sourceLabel?: string; sourceKind?: InventorySourceKind } = {}
+  opts: JsonIngestOpts = {}
 ): Promise<JsonIngestResult> {
   const receivedAt  = new Date();
   const sourceSlug  = opts.sourceSlug  ?? DEFAULT_JSON_SOURCE.slug;
@@ -647,16 +670,53 @@ export async function ingestJsonVehicles(
   }
 
   if (result.status === 'COMMITTED') {
-    const statusRows = vehicles
-      .filter(v => v.availability)
-      .map(v => ({
-        stockNumber: v.stockNumber,
-        availability: v.availability!,
-        statusChangedAt: v.statusChangedAt ? new Date(v.statusChangedAt) : undefined,
-      }));
-    if (statusRows.length > 0) {
+    const statusRows = vehicles.map(v => ({
+      stockNumber: v.stockNumber,
+      availability: v.availability,
+      statusChangedAt: v.statusChangedAt ? new Date(v.statusChangedAt) : undefined,
+    }));
+
+    const hasSalesStatusWork =
+      statusRows.some(r => r.availability) || opts.snapshotMode === true;
+
+    if (hasSalesStatusWork) {
       const { reconcileSalesStatusFromIngest } = await import('./salesStatusReconcileService.js');
-      await reconcileSalesStatusFromIngest(prisma, dealershipId, statusRows);
+      const salesStatus = await reconcileSalesStatusFromIngest(
+        prisma,
+        dealershipId,
+        statusRows,
+        {
+          snapshotMode: opts.snapshotMode,
+          dryRun: opts.dryRun,
+          commitSnapshotRemovals: opts.commitSnapshotRemovals,
+          ingressRunId: result.ingressRunId,
+        },
+      );
+      result.salesStatus = salesStatus;
+
+      if (result.ingressRunId) {
+        try {
+          const existing = await prisma.ingressRun.findUnique({
+            where: { id: result.ingressRunId },
+            select: { summaryJson: true },
+          });
+          const prior = (existing?.summaryJson ?? {}) as Record<string, unknown>;
+          await prisma.ingressRun.update({
+            where: { id: result.ingressRunId },
+            data: {
+              summaryJson: {
+                ...prior,
+                snapshotMode: opts.snapshotMode === true,
+                snapshotDryRun: salesStatus.snapshotDryRun,
+                snapshotRemovedCandidates: salesStatus.snapshotRemovedCandidates,
+                snapshotRemovalsApplied: salesStatus.snapshotRemovalsApplied,
+              } as unknown as Prisma.InputJsonValue,
+            },
+          });
+        } catch (err) {
+          console.error('Failed to persist snapshot reconcile summary:', err);
+        }
+      }
     }
 
     const { scheduleAutoReconcile } = await import('../publishing/autoReconcileService.js');

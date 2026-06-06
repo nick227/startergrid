@@ -25,6 +25,8 @@ const REGISTERED_ROUTES = new Set([
   'POST   /api/dealers/{dealershipId}/inventory/import/preview',
   'POST   /api/dealers/{dealershipId}/inventory/import/commit',
   'POST   /api/dealers/{dealershipId}/inventory/ingest/json',
+  'POST   /api/dealers/{dealershipId}/inventory/ingest/snapshot/commit',
+  'GET    /api/dealers/{dealershipId}/inventory/lifecycle-events',
   'PATCH  /api/dealers/{dealershipId}/inventory/bulk',
   'GET    /api/dealers/{dealershipId}/inventory/import/batches',
   'PATCH  /api/dealers/{dealershipId}/vehicles/{stockNumber}/price',

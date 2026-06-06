@@ -516,6 +516,8 @@ export type PlatformPerformanceInsight = {
   leadsPerVehicle: number | null;
   vehiclesListed: number;
   vehiclesSold: number;
+  vehiclesRemoved: number;
+  avgDaysOnPlatform: number | null;
   avgDaysToMove: number | null;
   confidence: string;
   sampleSize: number;

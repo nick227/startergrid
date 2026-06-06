@@ -359,6 +359,70 @@ paths:
         '404':
           $ref: '#/components/responses/NotFound'
 
+  /api/dealers/{dealershipId}/inventory/ingest/snapshot/commit:
+    post:
+      tags: [Inventory]
+      security:
+        - OperatorAuth: []
+      x-route-classification: operator
+      operationId: commitSnapshotRemovals
+      summary: Commit feed-snapshot removals from a prior dry-run ingest
+      description: >
+        Applies REMOVED only for stock numbers that appeared as snapshotRemovedCandidates
+        on the given ingressRunId. Does not infer sold — missing vehicles are marked removed
+        with source feed_snapshot and note "Missing from latest feed".
+      parameters:
+        - $ref: '#/components/parameters/dealershipId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SnapshotRemovalCommitRequest'
+      responses:
+        '200':
+          description: Commit result
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SnapshotRemovalCommitResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /api/dealers/{dealershipId}/inventory/lifecycle-events:
+    get:
+      tags: [Inventory]
+      security:
+        - OperatorAuth: []
+      x-route-classification: operator
+      operationId: listVehicleLifecycleEvents
+      summary: Lifecycle audit trail for sold, removed, and relisted transitions
+      parameters:
+        - $ref: '#/components/parameters/dealershipId'
+        - name: limit
+          in: query
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 200
+            default: 50
+        - name: stockNumber
+          in: query
+          schema:
+            type: string
+            maxLength: 80
+      responses:
+        '200':
+          description: Recent lifecycle events
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/VehicleLifecycleEventListResponse'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
   /api/dealers/{dealershipId}/inventory/bulk:
     patch:
       tags: [Inventory]
@@ -1790,6 +1854,14 @@ components:
           items:
             type: string
             format: uri
+        availability:
+          type: string
+          enum: [available, sold, removed]
+          description: Optional per-row lifecycle hint from the feed
+        statusChangedAt:
+          type: string
+          format: date-time
+          description: When the feed reported this availability change
 
     JsonInventoryIngestRequest:
       type: object
@@ -1804,6 +1876,20 @@ components:
         mode:
           type: string
           enum: [upsert]
+        snapshotMode:
+          type: boolean
+          description: >
+            When true, compare active DB inventory to this feed and detect vehicles missing
+            from the payload. Removals are never applied silently — use dryRun (default true)
+            or commitSnapshotRemovals on a follow-up call.
+        dryRun:
+          type: boolean
+          description: When snapshotMode is true, defaults to true — returns candidates only
+        commitSnapshotRemovals:
+          type: boolean
+          description: >
+            When snapshotMode is true and dryRun is false, apply REMOVED for missing vehicles.
+            Prefer POST .../ingest/snapshot/commit for explicit operator confirmation.
         vehicles:
           type: array
           minItems: 1
@@ -1825,6 +1911,94 @@ components:
         errors:       { type: integer }
         vehicleCount: { type: integer }
         batchId:      { type: string }
+        salesStatus:
+          $ref: '#/components/schemas/SalesStatusReconcileResult'
+
+    SnapshotRemovedCandidate:
+      type: object
+      required: [stockNumber, vehicleId, reason, label]
+      properties:
+        stockNumber: { type: string }
+        vehicleId:   { type: string }
+        reason:
+          type: string
+          enum: [missing_from_feed]
+        label:
+          type: string
+          description: Operator-facing reason — not sold
+
+    SalesStatusReconcileResult:
+      type: object
+      required: [sold, removed, reactivated, skipped, snapshotRemovedCandidates, snapshotRemovalsApplied, snapshotDryRun]
+      properties:
+        sold:       { type: integer }
+        removed:    { type: integer }
+        reactivated: { type: integer }
+        skipped:    { type: integer }
+        snapshotRemovedCandidates:
+          type: array
+          items:
+            $ref: '#/components/schemas/SnapshotRemovedCandidate'
+        snapshotRemovalsApplied: { type: integer }
+        snapshotDryRun: { type: boolean }
+
+    SnapshotRemovalCommitRequest:
+      type: object
+      required: [ingressRunId, stockNumbers]
+      properties:
+        ingressRunId: { type: string }
+        stockNumbers:
+          type: array
+          minItems: 1
+          maxItems: 500
+          items:
+            type: string
+            maxLength: 80
+        statusChangedAt:
+          type: string
+          format: date-time
+
+    SnapshotRemovalCommitResponse:
+      type: object
+      required: [applied, skipped, rejected]
+      properties:
+        applied:  { type: integer }
+        skipped:  { type: integer }
+        rejected:
+          type: array
+          items:
+            type: string
+
+    VehicleLifecycleEvent:
+      type: object
+      required: [id, vehicleId, stockNumber, fromState, toState, triggerKind, source, statusChangedAt, createdAt]
+      properties:
+        id:              { type: string }
+        vehicleId:       { type: string }
+        stockNumber:     { type: string }
+        fromState:
+          type: string
+          enum: [AVAILABLE, SOLD, REMOVED, REACTIVATED]
+        toState:
+          type: string
+          enum: [AVAILABLE, SOLD, REMOVED, REACTIVATED]
+        triggerKind:     { type: string }
+        source:
+          type: string
+          enum: [manual, ingress_row, feed_snapshot]
+        ingressRunId:    { type: string, nullable: true }
+        statusChangedAt: { type: string, format: date-time }
+        note:            { type: string, nullable: true }
+        createdAt:       { type: string, format: date-time }
+
+    VehicleLifecycleEventListResponse:
+      type: object
+      required: [events]
+      properties:
+        events:
+          type: array
+          items:
+            $ref: '#/components/schemas/VehicleLifecycleEvent'
 
     CommitImportResponse:
       type: object
