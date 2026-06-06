@@ -1,6 +1,9 @@
 import 'dotenv/config';
 import { prisma } from '../lib/prisma.js';
 import { buildApp } from '../server/app.js';
+import { validateEnv } from '../server/env.js';
+
+validateEnv();
 
 const PORT = Number(process.env['PORT'] ?? 3000);
 const HOST = process.env['HOST'] ?? '127.0.0.1';

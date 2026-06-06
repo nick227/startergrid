@@ -17,11 +17,12 @@ export function buildApp(prisma: PrismaClient): FastifyInstance {
     return reply.send({ ok: true, ts: new Date().toISOString() });
   });
 
-  // Dev-only demo feed — not in OpenAPI contract; serves fixture for local demo.
-  // Consumed by the Connected Inventory Demo source (http://localhost:PORT/dev/demo-feed).
-  app.get('/dev/demo-feed', async (_req, reply) => {
-    return reply.send(demoFeedPayload);
-  });
+  // Dev-only demo feed — not registered in production.
+  if (process.env['NODE_ENV'] !== 'production') {
+    app.get('/dev/demo-feed', async (_req, reply) => {
+      return reply.send(demoFeedPayload);
+    });
+  }
 
   registerDealerRoutes(app, prisma);
   registerStorefrontRoutes(app, prisma);

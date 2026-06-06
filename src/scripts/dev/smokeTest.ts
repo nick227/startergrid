@@ -4,6 +4,7 @@ import { prisma } from '../../lib/prisma.js';
 import { platformProfiles } from '../../data/platformProfiles.js';
 import { checkPlatformStaleness } from '../../services/inventory/mediaValidationService.js';
 import { buildApp } from '../../server/app.js';
+import { validateEnv, EnvValidationError } from '../../server/env.js';
 
 type CheckResult = { name: string; ok: boolean; detail: string };
 
@@ -91,6 +92,19 @@ async function run(): Promise<void> {
     check('ingress:poll dry-run', true, 'exits cleanly');
   } catch {
     check('ingress:poll dry-run', false, 'non-zero exit');
+  }
+
+  // 9. Env validation rejects a known-bad config
+  try {
+    let caught = false;
+    try {
+      validateEnv({ NODE_ENV: 'production' /* missing DATABASE_URL, APP_BASE_URL, SESSION_SECRET, … */ });
+    } catch (err) {
+      caught = err instanceof EnvValidationError && err.errors.length >= 3;
+    }
+    check('env validation', caught, caught ? 'rejects bad config with EnvValidationError' : 'did not throw or wrong type');
+  } catch (err: any) {
+    check('env validation', false, err.message);
   }
 
   await prisma.$disconnect();
