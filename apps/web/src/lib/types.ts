@@ -444,6 +444,32 @@ export type PerformanceSummaryResponse       = { summary: PerformanceSummaryView
 export type PerformanceComputeResult         = { vehicles: number; vehicleErrors: number; platforms: number; durationMs: number; computedAt: string };
 export type PerformanceComputeResponse       = { result: PerformanceComputeResult };
 
+export type MarketplaceVehicleCard = {
+  listingId: string;
+  stockNumber: string;
+  year: number;
+  make: string;
+  model: string;
+  trim: string | null;
+  condition: string;
+  priceCents: number;
+  mileage: number;
+  exteriorColor: string | null;
+  mediaUrls: string[];
+  dealerId: string;
+  dealerName: string;
+  dealerCity: string | null;
+  dealerState: string | null;
+  listingUrl: string;
+  listedAt: string;
+};
+
+export type MarketplaceVehicleDetailResponse = {
+  vehicle: MarketplaceVehicleCard;
+  fullDescription: string | null;
+  additionalMediaUrls: string[];
+};
+
 // ── Legacy performance insights (pre-Phase-3) ─────────────────────────────────
 
 export type MovementSignalLegacy = MovementSignal; // alias kept for any existing references

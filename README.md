@@ -1,10 +1,12 @@
-# Auto Dealer Sales Portal — v4.1.1
+# Auto Dealer Sales Portal — v4.2.0
 
 A backend pipeline that onboards auto dealers onto 18 ad and marketplace platforms — validation, feed generation, artifact storage, and proof export — via CLI and the Operator Console web UI.
 
 **v4.1** adds **Performance Intelligence**: cached movement benchmarks embedded in Inventory and Sync so operators see whether vehicles are moving faster or slower than comparable stock and which platforms show observed activity — without a separate analytics product.
 
 **v4.1.1** wires benchmarks operationally: performance compute runs after import/sync reconcile (non-blocking on failure), auto-sync exposes refresh-pending/freshness, and demo seed includes sold comparables so FAST/SLOW/STALE show in the portal.
+
+**v4.2** polishes vehicle-level operations in Inventory: expandable detail panel (movement, platform comparison, marketplace-safe preview), movement signal filters/sort, and cleaner Sync hierarchy. Insights stays reference-only.
 
 **Stack:** TypeScript (ESM) · Prisma 6 · MySQL · Node 22 · node:test
 

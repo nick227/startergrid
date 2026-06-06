@@ -72,7 +72,7 @@ export function DataTable<T extends { id: string }>({
       <tbody>
         {rows.map(row => {
           const isExpanded = expanded.has(row.id);
-          const expandNode = expandContent ? expandContent(row) : null;
+          const expandNode = expandContent?.(row) ?? null;
           const rowBg = rowClassName ? rowClassName(row) : '';
 
           return (
@@ -95,20 +95,21 @@ export function DataTable<T extends { id: string }>({
                 ))}
                 {expandContent && (
                   <td className="pr-4 py-2.5">
-                    {expandNode !== null && (
-                      <button
-                        onClick={() => toggleExpand(row.id)}
-                        className="text-xs text-slate-400 hover:text-slate-600 transition-colors"
-                      >
-                        {isExpanded ? '▲' : '▼'}
-                      </button>
-                    )}
+                    <button
+                      type="button"
+                      onClick={() => toggleExpand(row.id)}
+                      className="text-xs text-slate-400 hover:text-slate-600 transition-colors"
+                      aria-expanded={isExpanded}
+                      aria-label={isExpanded ? 'Collapse vehicle detail' : 'Expand vehicle detail'}
+                    >
+                      {isExpanded ? '▲' : '▼'}
+                    </button>
                   </td>
                 )}
               </tr>
               {isExpanded && expandNode && (
-                <tr className="bg-slate-50 border-b border-slate-100">
-                  <td colSpan={colSpan} className="pl-12 pr-4 py-2">
+                <tr className="bg-slate-50/80 border-b border-slate-100">
+                  <td colSpan={colSpan} className="px-3 py-3">
                     {expandNode}
                   </td>
                 </tr>

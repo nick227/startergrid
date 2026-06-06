@@ -3,7 +3,7 @@ import type { OperatorPageBaseProps } from '@/lib/operatorPage.ts';
 import type { PlatformPerformanceItem } from '@/lib/types.ts';
 import { useSyncPageData } from '@/hooks/useSyncPageData.ts';
 import { useAsyncQuery } from '@/hooks/useAsyncQuery.ts';
-import { fetchPerformanceSummary, fetchPlatformPerformance, fetchVehiclePerformanceList } from '@/lib/api/sdk.ts';
+import { fetchPlatformPerformance, fetchVehiclePerformanceList } from '@/lib/api/sdk.ts';
 import { computeSyncReadiness } from '@/lib/syncPresentation.ts';
 import { countBenchmarkedVehicles, countSlowVehicles, staleStockNumbers } from '@/lib/movementBenchmark.ts';
 import { OperatorPage, ErrorState, PanelSkeleton } from '@/components/operator';
@@ -13,18 +13,15 @@ import {
   SyncPlatformList,
   SyncInventoryPeek,
   LastSyncLine,
-  PerformanceInsightStrip,
 } from '@/components/sync';
 
 type Props = OperatorPageBaseProps;
 
 export default function SyncPage({ dealerId, nav, activeTab }: Props) {
-  const perfQuery = useAsyncQuery(() => fetchPerformanceSummary(dealerId), [dealerId]);
   const vehiclePerfQuery = useAsyncQuery(() => fetchVehiclePerformanceList(dealerId), [dealerId]);
   const platformPerfQuery = useAsyncQuery(() => fetchPlatformPerformance(dealerId), [dealerId]);
 
   const refreshMovement = () => {
-    perfQuery.reload();
     vehiclePerfQuery.reload();
     platformPerfQuery.reload();
   };
@@ -38,19 +35,22 @@ export default function SyncPage({ dealerId, nav, activeTab }: Props) {
   }, [platformPerfQuery.data]);
 
   const movementContext = useMemo(() => {
-    const summary = perfQuery.data?.summary;
     const items = vehiclePerfQuery.data?.items ?? [];
-    if (!summary?.computedAt) return null;
+    const computedAt = vehiclePerfQuery.data?.computedAt ?? null;
+    if (!computedAt) return null;
+    const fastCount = items.filter(v => v.movementSignal === 'FAST').length;
+    const staleCount = items.filter(v => v.movementSignal === 'STALE').length;
+    const lowDataCount = items.filter(v => v.movementSignal === 'LOW_DATA').length;
     return {
-      computedAt: summary.computedAt,
-      fastCount: summary.fastCount,
+      computedAt,
+      fastCount,
       slowCount: countSlowVehicles(items),
-      staleCount: summary.staleCount,
-      lowDataCount: summary.lowDataCount,
+      staleCount,
+      lowDataCount,
       benchmarkedCount: countBenchmarkedVehicles(items),
       staleStocks: staleStockNumbers(items),
     };
-  }, [perfQuery.data, vehiclePerfQuery.data]);
+  }, [vehiclePerfQuery.data]);
 
   const statusData = status.data;
   const readiness = useMemo(
@@ -82,7 +82,7 @@ export default function SyncPage({ dealerId, nav, activeTab }: Props) {
       lastRefresh={lastRefresh}
       hideDealerId
     >
-      <div className="space-y-6 max-w-4xl mx-auto">
+      <div className="space-y-5 max-w-4xl mx-auto">
         {status.loading && !statusData ? (
           <div className="space-y-4">
             <div className="h-40 rounded-2xl bg-slate-200 animate-pulse" />
@@ -100,15 +100,9 @@ export default function SyncPage({ dealerId, nav, activeTab }: Props) {
             <SyncSummaryStrip
               readiness={readiness}
               movement={movementContext}
-              onReviewInventory={nav.goToInventory}
-            />
-
-            <PerformanceInsightStrip
-              dealerId={dealerId}
-              summary={perfQuery.data?.summary ?? null}
-              loading={perfQuery.loading || isRefreshing}
               autoSync={autoSync}
-              onComputed={refreshMovement}
+              onReviewInventory={nav.goToInventory}
+              onOpenInsights={nav.goToInsights}
             />
 
             <SyncInventoryPeek

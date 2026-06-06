@@ -103,6 +103,19 @@ export function formatPlatformExpandLine(
   return parts.join(' · ');
 }
 
+export function platformCompareRows(
+  perf: VehiclePerformanceItem,
+  platformPerfBySlug?: Map<string, PlatformPerformanceItem>,
+): Array<{ slug: string; line: string; vehicleLeads: number }> {
+  return Object.entries(perf.platformAssists)
+    .map(([slug, assist]) => ({
+      slug,
+      vehicleLeads: assist.leads,
+      line: formatPlatformExpandLine(slug, assist.leads, platformPerfBySlug?.get(slug)),
+    }))
+    .sort((a, b) => b.vehicleLeads - a.vehicleLeads);
+}
+
 export function countLowDataVehicles(items: VehiclePerformanceItem[]): number {
   return items.filter(v => v.movementSignal === 'LOW_DATA' || !hasSimilarBenchmark(v)).length;
 }

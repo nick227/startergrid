@@ -226,6 +226,15 @@ export function movementSignalVisual(signal: string): MovementSignalMeta {
   return MOVEMENT_SIGNAL_REGISTRY[signal as MovementSignalKey] ?? MOVEMENT_SIGNAL_REGISTRY.LOW_DATA;
 }
 
+/** Lower sorts first when ordering inventory by movement signal. */
+export const MOVEMENT_SIGNAL_SORT_ORDER: Record<MovementSignalKey, number> = {
+  STALE: 0,
+  SLOW: 1,
+  ON_TRACK: 2,
+  FAST: 3,
+  LOW_DATA: 4,
+};
+
 // ── Intake run status ──────────────────────────────────────────────────────────
 
 export type IngressRunStatusKey = 'COMMITTED' | 'PARTIAL' | 'FAILED' | 'RECEIVED' | 'PROCESSING';
@@ -281,6 +290,18 @@ export const EMPTY_STATE_COPY = {
   noPerformancePlatforms: {
     title: 'No platform impact yet',
     subtitle: 'Platforms show observed assists after inventory has been submitted and leads come in.',
+  },
+  postImportBenchmarksPending: {
+    title: 'Movement benchmarks updating',
+    subtitle: 'Auto-sync is running after import. Days / Signal will fill in when reconcile finishes.',
+  },
+  movementLowDataFleet: {
+    title: 'Limited movement benchmarks',
+    subtitle: 'Most vehicles need more sold comparables. Fast / slow signals appear as history builds.',
+  },
+  marketplacePreviewUnavailable: {
+    title: 'Not on marketplace yet',
+    subtitle: 'Vehicle needs a price and must be active (not sold) to appear in the consumer index.',
   },
   noAccountBlockers: {
     title: 'No account blockers',

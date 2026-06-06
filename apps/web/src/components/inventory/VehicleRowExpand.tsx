@@ -1,29 +1,22 @@
-import type { VehicleIssue, VehiclePerformanceItem, PlatformPerformanceItem } from '../../lib/types.ts';
-import { MovementBenchmarkExpand } from './MovementBenchmark.tsx';
+import type { VehicleIssue, VehicleListItem, VehiclePerformanceItem, PlatformPerformanceItem } from '../../lib/types.ts';
+import { VehicleDetailPanel } from './VehicleDetailPanel.tsx';
 
 type Props = {
+  vehicle: VehicleListItem;
   issues: VehicleIssue[];
   perf?: VehiclePerformanceItem | null;
   platformPerfBySlug?: Map<string, PlatformPerformanceItem>;
+  benchmarksUpdating?: boolean;
 };
 
-export function VehicleRowExpand({ issues, perf, platformPerfBySlug }: Props) {
+/** @deprecated Use VehicleDetailPanel — kept for table expand wiring. */
+export function VehicleRowExpand({ vehicle, issues, perf, platformPerfBySlug, benchmarksUpdating }: Props) {
   return (
-    <div className="space-y-2">
-      {issues.map((iss, i) => (
-        <div
-          key={i}
-          className={`text-xs py-0.5 ${iss.severity === 'FAIL' ? 'text-red-600' : 'text-amber-600'}`}
-        >
-          {iss.severity === 'FAIL' ? '✕' : '⚠'} {iss.message}
-        </div>
-      ))}
-
-      {perf && (
-        <div className={issues.length > 0 ? 'pt-1.5 border-t border-slate-100' : ''}>
-          <MovementBenchmarkExpand perf={perf} platformPerfBySlug={platformPerfBySlug} />
-        </div>
-      )}
-    </div>
+    <VehicleDetailPanel
+      vehicle={{ ...vehicle, issues }}
+      perf={perf}
+      platformPerfBySlug={platformPerfBySlug}
+      benchmarksUpdating={benchmarksUpdating}
+    />
   );
 }

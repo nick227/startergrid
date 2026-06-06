@@ -59,6 +59,9 @@ export class MarketplaceService {
                 'page': page,
                 'pageSize': pageSize,
             },
+            errors: {
+                400: `Not found`,
+            },
         });
     }
     /**

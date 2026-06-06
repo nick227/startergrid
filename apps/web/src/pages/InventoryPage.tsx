@@ -7,7 +7,19 @@ import { useAutoSyncWatch } from '@/hooks/useAutoSyncWatch.ts';
 import { OperatorPage, SectionCard, InlineCallout, PageHeader } from '@/components/operator';
 import { EMPTY_STATE_COPY } from '@/lib/statusRegistry.ts';
 import { formatBenchmarkFreshness, hasPerformanceData, isBenchmarksUpdating } from '@/lib/performanceFreshness.ts';
-import { countBenchmarkedVehicles, staleStockNumbers } from '@/lib/movementBenchmark.ts';
+import {
+  countBenchmarkedVehicles,
+  countLowDataVehicles,
+  staleStockNumbers,
+} from '@/lib/movementBenchmark.ts';
+import {
+  applyMovementFilter,
+  movementFilterCounts,
+  sortInventoryVehicles,
+  type InventorySortKey,
+  type MovementFilter,
+  type SortDirection,
+} from '@/lib/inventoryVehicleOps.ts';
 import { Banner, EmptyState } from '@/components/ui';
 import { InfoButton } from '@/components/docs';
 import { SearchField } from '@/components/ui/SearchField.tsx';
@@ -19,6 +31,8 @@ import {
   VehicleRowExpand,
   ImportBatchHistory,
   IngressPanel,
+  MovementFilterBar,
+  InventorySortBar,
   buildVehicleColumns,
   SUMMARY_STRIP_ITEMS,
   BULK_EDIT_FIELD_DEFS,
@@ -36,6 +50,9 @@ export default function InventoryPage({ dealerId, nav, activeTab }: Props) {
   );
   const [selected, setSelected] = useState<Set<string>>(new Set());
   const [filter, setFilter] = useState<CleanupFilter>('ALL');
+  const [movementFilter, setMovementFilter] = useState<MovementFilter>('ALL');
+  const [sortKey, setSortKey] = useState<InventorySortKey>('movementSignal');
+  const [sortDirection, setSortDirection] = useState<SortDirection>('asc');
   const [search, setSearch] = useState('');
   const [showImport, setShowImport] = useState(false);
   const [importResult, setImportResult] = useState<CommitImportResponse | null>(null);
@@ -75,17 +92,28 @@ export default function InventoryPage({ dealerId, nav, activeTab }: Props) {
   const vehicles = useMemo(() => vehicleRows ?? [], [vehicleRows]);
   const summary = data?.summary;
 
-  const visible = useMemo(() =>
-    vehicles.filter(v => {
+  const visible = useMemo(() => {
+    const filtered = vehicles.filter(v => {
       if (!applyCleanupFilter(v, filter)) return false;
+      if (!applyMovementFilter(v, perfMap, movementFilter)) return false;
       if (search) {
         const q = search.toLowerCase();
         return v.stockNumber.toLowerCase().includes(q) || v.vin.toLowerCase().includes(q)
           || v.make.toLowerCase().includes(q) || v.model.toLowerCase().includes(q);
       }
       return true;
-    }),
-    [vehicles, filter, search]
+    });
+    return sortInventoryVehicles(filtered, perfMap, sortKey, sortDirection);
+  }, [vehicles, filter, movementFilter, search, perfMap, sortKey, sortDirection]);
+
+  const movementCounts = useMemo(
+    () => movementFilterCounts(vehicles, perfMap),
+    [vehicles, perfMap],
+  );
+  const benchmarksUpdating = isBenchmarksUpdating(autoSync.data);
+  const lowDataCount = useMemo(
+    () => countLowDataVehicles(perf.data?.items ?? []),
+    [perf.data],
   );
 
   const allVisibleSelected = visible.length > 0 && visible.every(v => selected.has(v.id));
@@ -249,12 +277,26 @@ export default function InventoryPage({ dealerId, nav, activeTab }: Props) {
             {importResult.skipped > 0 && <>, <strong>{importResult.skipped}</strong> skipped</>}
             {importResult.errors > 0 && <>, <strong className="text-red-700">{importResult.errors} errors</strong></>}
             . Platforms will update automatically.
-            {hasPerformanceData(perf.data?.computedAt) && benchmarkCount > 0 ? (
-              <> Movement benchmarks for <strong>{benchmarkCount}</strong> vehicle{benchmarkCount !== 1 ? 's' : ''} — see Days / Signal.</>
+            {benchmarksUpdating ? (
+              <> {EMPTY_STATE_COPY.postImportBenchmarksPending.title} — {EMPTY_STATE_COPY.postImportBenchmarksPending.subtitle}</>
+            ) : hasPerformanceData(perf.data?.computedAt) && benchmarkCount > 0 ? (
+              <> Movement benchmarks for <strong>{benchmarkCount}</strong> vehicle{benchmarkCount !== 1 ? 's' : ''} — expand a row for detail.</>
             ) : (
-              <> When ready, refresh movement benchmarks on Sync to compare days vs similar stock.</>
+              <> When auto-sync finishes, expand a vehicle for movement vs similar stock.</>
             )}
           </Banner>
+        )}
+
+        {!importResult && benchmarksUpdating && (
+          <InlineCallout tone="warning" title={EMPTY_STATE_COPY.postImportBenchmarksPending.title} icon="⟳">
+            {EMPTY_STATE_COPY.postImportBenchmarksPending.subtitle}
+          </InlineCallout>
+        )}
+
+        {!importResult && !benchmarksUpdating && lowDataCount > 0 && lowDataCount >= vehicles.length - 1 && vehicles.length > 0 && (
+          <InlineCallout tone="neutral" title={EMPTY_STATE_COPY.movementLowDataFleet.title} icon="ℹ">
+            {EMPTY_STATE_COPY.movementLowDataFleet.subtitle}
+          </InlineCallout>
         )}
 
         {!importResult && staleStocks.length > 0 && (
@@ -273,7 +315,7 @@ export default function InventoryPage({ dealerId, nav, activeTab }: Props) {
           <>
             <SummaryStrip items={summaryItems} loading={loading && !data} />
 
-            <SectionCard title="Filters" subtitle="Tap readiness or issue type to narrow the list">
+            <SectionCard title="Filters" subtitle="Readiness, movement signals, and issue types">
               <CleanupFilterBar
                 active={filter}
                 counts={chipCounts}
@@ -285,6 +327,14 @@ export default function InventoryPage({ dealerId, nav, activeTab }: Props) {
                 }}
                 onSelect={setFilter}
               />
+              <div className="mt-4 pt-4 border-t border-slate-100">
+                <MovementFilterBar
+                  active={movementFilter}
+                  counts={movementCounts}
+                  onSelect={setMovementFilter}
+                  benchmarksUpdating={benchmarksUpdating}
+                />
+              </div>
             </SectionCard>
 
             <SectionCard title="Import history" subtitle="Recent batch imports for this dealer" noPadding>
@@ -296,15 +346,25 @@ export default function InventoryPage({ dealerId, nav, activeTab }: Props) {
               />
             </SectionCard>
 
-            <div className="flex items-center gap-3">
+            <div className="flex flex-wrap items-center gap-3">
               <SearchField
                 value={search}
                 onChange={setSearch}
                 placeholder="Search stock #, VIN, make, model…"
                 className="flex-1 max-w-md"
               />
-              {filter !== 'ALL' && (
-                <button type="button" onClick={() => setFilter('ALL')} className="text-xs font-semibold text-emerald-700">
+              <InventorySortBar
+                sortKey={sortKey}
+                direction={sortDirection}
+                onSortKey={setSortKey}
+                onDirection={setSortDirection}
+              />
+              {(filter !== 'ALL' || movementFilter !== 'ALL') && (
+                <button
+                  type="button"
+                  onClick={() => { setFilter('ALL'); setMovementFilter('ALL'); }}
+                  className="text-xs font-semibold text-emerald-700"
+                >
                   Clear filters
                 </button>
               )}
@@ -327,12 +387,15 @@ export default function InventoryPage({ dealerId, nav, activeTab }: Props) {
                 })}
                 onToggleAll={toggleAll}
                 allSelected={allVisibleSelected}
-                expandContent={v => {
-                  const vperf = perfMap.get(v.stockNumber);
-                  return (v.issues.length > 0 || vperf)
-                    ? <VehicleRowExpand issues={v.issues} perf={vperf} platformPerfBySlug={platformPerfBySlug} />
-                    : null;
-                }}
+                expandContent={v => (
+                  <VehicleRowExpand
+                    vehicle={v}
+                    issues={v.issues}
+                    perf={perfMap.get(v.stockNumber)}
+                    platformPerfBySlug={platformPerfBySlug}
+                    benchmarksUpdating={benchmarksUpdating}
+                  />
+                )}
                 rowClassName={v => vehicleReadinessRowBg(v.readiness)}
                 loading={loading && !data}
                 emptyState={

@@ -1,7 +1,7 @@
 # Handoff Document — Auto Dealer Sales Portal
 
 **Updated:** 2026-06-05  
-**State:** v4.1.1 · Sync engine + Operator Console + Performance Intelligence · operational benchmark wiring  
+**State:** v4.2.0 · Sync engine + Operator Console + vehicle-level UI polish  
 **Branch:** `main`
 
 ---
@@ -78,6 +78,12 @@ Cached movement benchmarks answer: *Is this vehicle moving faster or slower than
 - `AutoSyncStatus` adds `performanceRefreshPending` and `performanceComputedAt` for portal freshness polling.
 - `seedPerformanceBenchmarkDemo` adds sold comparables + sync events + leads so demo shows FAST / SLOW / STALE (not all LOW_DATA).
 - Marketplace index APIs remain performance-free (operator routes only).
+
+### v4.2 vehicle-level UI (Inventory primary)
+
+- Expand any inventory row for **VehicleDetailPanel**: movement vs similar stock, platform movement comparison, marketplace-safe preview (via `@dealer-marketplace/client` SDK — no performance fields).
+- Movement signal **filters** and **sort** on Inventory; no frontend benchmark math (API fields + display rounding only).
+- Sync hierarchy: readiness hero → tiles → inventory peek → platforms → history; movement one-liner links to Insights for full reference.
 
 ---
 

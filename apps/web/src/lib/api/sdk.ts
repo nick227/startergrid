@@ -7,6 +7,11 @@ import {
   PerformanceService,
   type AutoSyncStatus as SdkAutoSyncStatus,
 } from '@auto-dealer/api-client';
+import {
+  ApiError as MarketplaceApiError,
+  MarketplaceService,
+  OpenAPI as MarketplaceOpenAPI,
+} from '@dealer-marketplace/client';
 import type {
   AccountUpdatePayload as SdkAccountUpdatePayload,
   BulkEditPayload as SdkBulkEditPayload,
@@ -44,11 +49,27 @@ import type {
   PerformanceSummaryView,
   VehiclePerformanceItem,
   PlatformPerformanceItem,
+  MarketplaceVehicleDetailResponse,
 } from '../types.ts';
 import { toErrorMessage } from '../errors.ts';
 import { configureSdkDevAuth } from '../devAuth.ts';
 
 configureSdkDevAuth();
+MarketplaceOpenAPI.BASE = '';
+
+async function fromMarketplaceSdk<T>(promise: Promise<T>): Promise<T> {
+  try {
+    return await promise;
+  } catch (e) {
+    if (e instanceof MarketplaceApiError) {
+      const body = e.body as { error?: string } | undefined;
+      const err = new Error(toErrorMessage({ status: e.status, message: body?.error ?? e.message }, e.message));
+      (err as Error & { cause?: unknown }).cause = e;
+      throw err;
+    }
+    throw e;
+  }
+}
 
 async function fromSdk<T>(promise: Promise<T>): Promise<T> {
   try {
@@ -282,4 +303,13 @@ export async function fetchCachedPerformanceSnapshot(
     platforms: platformsBody.platforms,
     totalObservedAssists,
   };
+}
+
+/** Consumer-safe vehicle card — no performance or operator fields. */
+export async function fetchMarketplaceVehicleDetail(
+  listingId: string,
+): Promise<MarketplaceVehicleDetailResponse> {
+  return fromMarketplaceSdk(
+    MarketplaceService.getMarketplaceVehicle({ listingId }),
+  ) as Promise<MarketplaceVehicleDetailResponse>;
 }

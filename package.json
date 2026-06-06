@@ -1,9 +1,9 @@
 {
   "name": "auto-dealer-onboarding-poc-v1",
-  "version": "4.1.1",
+  "version": "4.2.0",
   "private": true,
   "type": "module",
-  "description": "V4.1.1: Performance compute after import/sync, benchmark freshness, demo seed with FAST/SLOW/STALE; sync engine + 18 platforms; OpenAPI SDK.",
+  "description": "V4.2: Vehicle-level operator UI — detail panel, movement filters, marketplace preview; embedded benchmarks in Inventory/Sync.",
   "scripts": {
     "build": "tsc",
     "typecheck": "tsc --noEmit",
