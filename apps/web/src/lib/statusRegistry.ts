@@ -3,6 +3,11 @@ import type {
   PublishState,
   PublishStateSummary,
 } from './types.ts';
+import { statusDot, statusPill, statusRing } from '../../../../packages/design-tokens/colors.ts';
+
+const P = statusPill;
+const D = statusDot;
+const R = statusRing;
 
 export type StatusTone = 'neutral' | 'success' | 'info' | 'warning' | 'danger' | 'muted';
 
@@ -17,14 +22,14 @@ export type StatusVisual = {
 // ── Publish states (8) ───────────────────────────────────────────────────────
 
 export const PUBLISH_STATE_REGISTRY: Record<PublishState, StatusVisual & { order: number }> = {
-  Active:           { label: 'Active',           tone: 'success', order: 0, pill: 'bg-emerald-50 text-emerald-800 border-emerald-200', dot: 'bg-emerald-500', ring: 'ring-emerald-100' },
-  Ready:            { label: 'Ready',            tone: 'success', order: 1, pill: 'bg-green-50 text-green-800 border-green-200',     dot: 'bg-green-500',   ring: 'ring-green-100' },
-  Scheduled:        { label: 'Scheduled',        tone: 'info',    order: 2, pill: 'bg-sky-50 text-sky-800 border-sky-200',           dot: 'bg-sky-500',     ring: 'ring-sky-100' },
-  'Needs Approval': { label: 'Needs Approval',   tone: 'warning', order: 3, pill: 'bg-amber-50 text-amber-900 border-amber-200',    dot: 'bg-amber-500',   ring: 'ring-amber-100' },
-  Blocked:          { label: 'Blocked',          tone: 'danger',  order: 4, pill: 'bg-red-50 text-red-800 border-red-200',         dot: 'bg-red-500',     ring: 'ring-red-100' },
-  'Packet Prepared':{ label: 'Packet Prepared',  tone: 'info',    order: 5, pill: 'bg-indigo-50 text-indigo-800 border-indigo-200', dot: 'bg-indigo-500',  ring: 'ring-indigo-100' },
-  'Partner Required':{ label: 'Partner Required', tone: 'muted',   order: 6, pill: 'bg-slate-100 text-slate-600 border-slate-200',   dot: 'bg-slate-400',   ring: 'ring-slate-100' },
-  Failed:           { label: 'Failed',           tone: 'danger',  order: 7, pill: 'bg-rose-50 text-rose-800 border-rose-200',       dot: 'bg-rose-600',    ring: 'ring-rose-100' },
+  Active:           { label: 'Active',           tone: 'success', order: 0, pill: P.success, dot: D.success, ring: R.success },
+  Ready:            { label: 'Ready',            tone: 'success', order: 1, pill: P.success, dot: D.success, ring: R.success },
+  Scheduled:        { label: 'Scheduled',        tone: 'info',    order: 2, pill: P.info,    dot: D.info,    ring: R.info },
+  'Needs Approval': { label: 'Needs Approval',   tone: 'warning', order: 3, pill: P.warning, dot: D.warning, ring: R.warning },
+  Blocked:          { label: 'Blocked',          tone: 'danger',  order: 4, pill: P.danger,  dot: D.danger,  ring: R.danger },
+  'Packet Prepared':{ label: 'Packet Prepared',  tone: 'info',    order: 5, pill: P.info,    dot: D.info,    ring: R.info },
+  'Partner Required':{ label: 'Partner Required', tone: 'muted',   order: 6, pill: P.muted,   dot: D.muted,   ring: R.muted },
+  Failed:           { label: 'Failed',           tone: 'danger',  order: 7, pill: P.danger,  dot: D.danger,  ring: R.danger },
 };
 
 export const PUBLISH_STATE_KEYS = Object.keys(PUBLISH_STATE_REGISTRY) as PublishState[];
@@ -33,8 +38,8 @@ export function publishStateVisual(state: string): StatusVisual {
   return PUBLISH_STATE_REGISTRY[state as PublishState] ?? {
     label: state,
     tone: 'muted',
-    pill: 'bg-slate-100 text-slate-600 border-slate-200',
-    dot: 'bg-slate-400',
+    pill: P.muted,
+    dot: D.muted,
   };
 }
 
@@ -55,13 +60,13 @@ export type AccountStateMeta = StatusVisual & {
 };
 
 export const ACCOUNT_STATE_REGISTRY: Record<AccountStateKey, AccountStateMeta> = {
-  ACTIVE:             { label: 'Active',             tone: 'success', blocksPublishing: false, filterGroup: 'ACTIVE',          pill: 'bg-emerald-50 text-emerald-800 border-emerald-200', dot: 'bg-emerald-500' },
-  PENDING_REVIEW:     { label: 'Pending Review',     tone: 'info',    blocksPublishing: false, filterGroup: 'PENDING_REVIEW',  pill: 'bg-sky-50 text-sky-800 border-sky-200',           dot: 'bg-sky-500' },
-  ACCOUNT_NEEDED:     { label: 'Needs setup',        tone: 'muted',   blocksPublishing: false, filterGroup: 'NEEDS_SETUP',     pill: 'bg-slate-100 text-slate-700 border-slate-200',    dot: 'bg-slate-400' },
-  CREDENTIALS_NEEDED: { label: 'Needs setup',      tone: 'warning', blocksPublishing: false, filterGroup: 'NEEDS_SETUP',     pill: 'bg-amber-50 text-amber-900 border-amber-200',     dot: 'bg-amber-500' },
-  BLOCKED:            { label: 'Blocked',            tone: 'danger',  blocksPublishing: true,  filterGroup: 'BLOCKED',         pill: 'bg-red-50 text-red-800 border-red-200',           dot: 'bg-red-500' },
-  SUSPENDED:          { label: 'Suspended',          tone: 'danger',  blocksPublishing: true,  filterGroup: 'BLOCKED',         pill: 'bg-red-50 text-red-800 border-red-200',           dot: 'bg-red-500' },
-  PARTNER_REQUIRED:   { label: 'Partner Required',   tone: 'muted',   blocksPublishing: true,  filterGroup: 'PARTNER_REQUIRED', pill: 'bg-slate-100 text-slate-600 border-slate-200',   dot: 'bg-slate-400' },
+  ACTIVE:             { label: 'Active',             tone: 'success', blocksPublishing: false, filterGroup: 'ACTIVE',          pill: P.success, dot: D.success },
+  PENDING_REVIEW:     { label: 'Pending Review',     tone: 'info',    blocksPublishing: false, filterGroup: 'PENDING_REVIEW',  pill: P.info,    dot: D.info },
+  ACCOUNT_NEEDED:     { label: 'Needs setup',        tone: 'muted',   blocksPublishing: false, filterGroup: 'NEEDS_SETUP',     pill: P.muted,   dot: D.muted },
+  CREDENTIALS_NEEDED: { label: 'Needs setup',      tone: 'warning', blocksPublishing: false, filterGroup: 'NEEDS_SETUP',     pill: P.warning, dot: D.warning },
+  BLOCKED:            { label: 'Blocked',            tone: 'danger',  blocksPublishing: true,  filterGroup: 'BLOCKED',         pill: P.danger,  dot: D.danger },
+  SUSPENDED:          { label: 'Suspended',          tone: 'danger',  blocksPublishing: true,  filterGroup: 'BLOCKED',         pill: P.danger,  dot: D.danger },
+  PARTNER_REQUIRED:   { label: 'Partner Required',   tone: 'muted',   blocksPublishing: true,  filterGroup: 'PARTNER_REQUIRED', pill: P.muted,  dot: D.muted },
 };
 
 export function accountStateVisual(state: string): AccountStateMeta {
@@ -70,8 +75,8 @@ export function accountStateVisual(state: string): AccountStateMeta {
     tone: 'muted',
     blocksPublishing: false,
     filterGroup: 'ALL',
-    pill: 'bg-slate-100 text-slate-600 border-slate-200',
-    dot: 'bg-slate-400',
+    pill: P.muted,
+    dot: D.muted,
   };
 }
 
@@ -98,23 +103,23 @@ export type QueueStatusKey =
   | 'CANCELLED';
 
 export const QUEUE_STATUS_REGISTRY: Record<QueueStatusKey, StatusVisual> = {
-  READY:          { label: 'Ready',          tone: 'success', pill: 'bg-emerald-50 text-emerald-800 border-emerald-200', dot: 'bg-emerald-500' },
-  SCHEDULED:      { label: 'Scheduled',      tone: 'info',    pill: 'bg-sky-50 text-sky-800 border-sky-200',           dot: 'bg-sky-500' },
-  NEEDS_APPROVAL: { label: 'Needs approval', tone: 'warning', pill: 'bg-amber-50 text-amber-900 border-amber-200',     dot: 'bg-amber-500' },
-  HELD:           { label: 'Held',           tone: 'warning', pill: 'bg-amber-50 text-amber-900 border-amber-200',     dot: 'bg-amber-600' },
-  BLOCKED:        { label: 'Blocked',        tone: 'danger',  pill: 'bg-red-50 text-red-800 border-red-200',           dot: 'bg-red-500' },
-  CLAIMED:        { label: 'Claimed',        tone: 'info',    pill: 'bg-violet-50 text-violet-800 border-violet-200',  dot: 'bg-violet-500' },
-  SENT:           { label: 'Submitted',      tone: 'success', pill: 'bg-green-50 text-green-800 border-green-200',     dot: 'bg-green-500' },
-  FAILED:         { label: 'Failed',         tone: 'danger',  pill: 'bg-rose-50 text-rose-800 border-rose-200',       dot: 'bg-rose-600' },
-  CANCELLED:      { label: 'Cancelled',      tone: 'muted',   pill: 'bg-slate-100 text-slate-500 border-slate-200',    dot: 'bg-slate-300' },
+  READY:          { label: 'Ready',          tone: 'success', pill: P.success, dot: D.success },
+  SCHEDULED:      { label: 'Scheduled',      tone: 'info',    pill: P.info,    dot: D.info },
+  NEEDS_APPROVAL: { label: 'Needs approval', tone: 'warning', pill: P.warning, dot: D.warning },
+  HELD:           { label: 'Held',           tone: 'warning', pill: P.warning, dot: D.warning },
+  BLOCKED:        { label: 'Blocked',        tone: 'danger',  pill: P.danger,  dot: D.danger },
+  CLAIMED:        { label: 'Claimed',        tone: 'info',    pill: P.info,    dot: D.info },
+  SENT:           { label: 'Submitted',      tone: 'success', pill: P.success, dot: D.success },
+  FAILED:         { label: 'Failed',         tone: 'danger',  pill: P.danger,  dot: D.danger },
+  CANCELLED:      { label: 'Cancelled',      tone: 'muted',   pill: P.muted,   dot: D.muted },
 };
 
 export function queueStatusVisual(status: string): StatusVisual {
   return QUEUE_STATUS_REGISTRY[status as QueueStatusKey] ?? {
     label: status,
     tone: 'muted',
-    pill: 'bg-slate-100 text-slate-600 border-slate-200',
-    dot: 'bg-slate-400',
+    pill: P.muted,
+    dot: D.muted,
   };
 }
 
@@ -125,17 +130,17 @@ export type VehicleReadinessKey = 'READY' | 'WARNING' | 'BLOCKED';
 export type VehicleReadinessMeta = StatusVisual & { rowBg: string; summaryKey: string };
 
 export const VEHICLE_READINESS_REGISTRY: Record<VehicleReadinessKey, VehicleReadinessMeta> = {
-  READY:   { label: 'Ready',   tone: 'success', summaryKey: 'ready',   rowBg: '',              pill: 'bg-emerald-50 text-emerald-800 border-emerald-200', dot: 'bg-emerald-500' },
-  WARNING: { label: 'Needs review', tone: 'warning', summaryKey: 'warning', rowBg: 'bg-amber-50/30', pill: 'bg-amber-50 text-amber-900 border-amber-200', dot: 'bg-amber-500' },
-  BLOCKED: { label: 'Blocked', tone: 'danger',  summaryKey: 'blocked', rowBg: 'bg-red-50/40',   pill: 'bg-red-50 text-red-800 border-red-200',         dot: 'bg-red-500' },
+  READY:   { label: 'Ready',   tone: 'success', summaryKey: 'ready',   rowBg: '',                    pill: P.success, dot: D.success },
+  WARNING: { label: 'Needs review', tone: 'warning', summaryKey: 'warning', rowBg: 'bg-status-warning-bg/30', pill: P.warning, dot: D.warning },
+  BLOCKED: { label: 'Blocked', tone: 'danger',  summaryKey: 'blocked', rowBg: 'bg-status-error-bg/40',   pill: P.danger,  dot: D.danger },
 };
 
 // ── Readiness color (platform) ─────────────────────────────────────────────────
 
 export const READINESS_COLOR_REGISTRY: Record<string, StatusVisual> = {
-  GREEN:  { label: 'Green',  tone: 'success', pill: 'bg-emerald-100 text-emerald-800', dot: 'bg-emerald-500' },
-  YELLOW: { label: 'Yellow', tone: 'warning', pill: 'bg-amber-100 text-amber-800',   dot: 'bg-amber-500' },
-  RED:    { label: 'Red',    tone: 'danger',  pill: 'bg-red-100 text-red-800',       dot: 'bg-red-500' },
+  GREEN:  { label: 'Green',  tone: 'success', pill: P.success, dot: D.success },
+  YELLOW: { label: 'Yellow', tone: 'warning', pill: P.warning, dot: D.warning },
+  RED:    { label: 'Red',    tone: 'danger',  pill: P.danger,  dot: D.danger },
 };
 
 // ── Next recommended action ────────────────────────────────────────────────────
@@ -215,11 +220,11 @@ export type MovementSignalKey = 'FAST' | 'ON_TRACK' | 'SLOW' | 'STALE' | 'LOW_DA
 export type MovementSignalMeta = StatusVisual & { badgeColor: 'green' | 'blue' | 'amber' | 'red' | 'slate' };
 
 export const MOVEMENT_SIGNAL_REGISTRY: Record<MovementSignalKey, MovementSignalMeta> = {
-  FAST:     { label: 'Fast',     tone: 'success', badgeColor: 'green', pill: 'bg-emerald-50 text-emerald-800 border-emerald-200', dot: 'bg-emerald-500' },
-  ON_TRACK: { label: 'On track', tone: 'info',    badgeColor: 'blue',  pill: 'bg-sky-50 text-sky-800 border-sky-200',           dot: 'bg-sky-500' },
-  SLOW:     { label: 'Slow',     tone: 'warning', badgeColor: 'amber', pill: 'bg-amber-50 text-amber-900 border-amber-200',     dot: 'bg-amber-500' },
-  STALE:    { label: 'Stale',    tone: 'danger',  badgeColor: 'red',   pill: 'bg-red-50 text-red-800 border-red-200',           dot: 'bg-red-500' },
-  LOW_DATA: { label: 'Low data', tone: 'muted',   badgeColor: 'slate', pill: 'bg-slate-100 text-slate-600 border-slate-200',    dot: 'bg-slate-400' },
+  FAST:     { label: 'Fast',     tone: 'success', badgeColor: 'green', pill: P.success, dot: D.success },
+  ON_TRACK: { label: 'On track', tone: 'info',    badgeColor: 'blue',  pill: P.info,    dot: D.info },
+  SLOW:     { label: 'Slow',     tone: 'warning', badgeColor: 'amber', pill: P.warning, dot: D.warning },
+  STALE:    { label: 'Stale',    tone: 'danger',  badgeColor: 'red',   pill: P.danger,  dot: D.danger },
+  LOW_DATA: { label: 'Low data', tone: 'muted',   badgeColor: 'slate', pill: P.muted,   dot: D.muted },
 };
 
 export function movementSignalVisual(signal: string): MovementSignalMeta {
@@ -240,19 +245,19 @@ export const MOVEMENT_SIGNAL_SORT_ORDER: Record<MovementSignalKey, number> = {
 export type IngressRunStatusKey = 'COMMITTED' | 'PARTIAL' | 'FAILED' | 'RECEIVED' | 'PROCESSING';
 
 export const INGRESS_RUN_STATUS_REGISTRY: Record<IngressRunStatusKey, StatusVisual> = {
-  COMMITTED:  { label: 'Committed',  tone: 'success', pill: 'bg-emerald-100 text-emerald-800', dot: 'bg-emerald-500' },
-  PARTIAL:    { label: 'Partial',    tone: 'warning', pill: 'bg-amber-100 text-amber-800',     dot: 'bg-amber-500' },
-  FAILED:     { label: 'Failed',     tone: 'danger',  pill: 'bg-red-100 text-red-700',         dot: 'bg-red-500' },
-  RECEIVED:   { label: 'Received',   tone: 'info',    pill: 'bg-sky-100 text-sky-800',         dot: 'bg-sky-500' },
-  PROCESSING: { label: 'Processing', tone: 'info',    pill: 'bg-sky-100 text-sky-800',         dot: 'bg-sky-500' },
+  COMMITTED:  { label: 'Committed',  tone: 'success', pill: P.success, dot: D.success },
+  PARTIAL:    { label: 'Partial',    tone: 'warning', pill: P.warning, dot: D.warning },
+  FAILED:     { label: 'Failed',     tone: 'danger',  pill: P.danger,  dot: D.danger },
+  RECEIVED:   { label: 'Received',   tone: 'info',    pill: P.info,    dot: D.info },
+  PROCESSING: { label: 'Processing', tone: 'info',    pill: P.info,    dot: D.info },
 };
 
 export function ingressRunStatusVisual(status: string): StatusVisual {
   return INGRESS_RUN_STATUS_REGISTRY[status as IngressRunStatusKey] ?? {
     label: status,
     tone: 'muted',
-    pill: 'bg-slate-100 text-slate-600',
-    dot: 'bg-slate-400',
+    pill: P.muted,
+    dot: D.muted,
   };
 }
 
@@ -326,10 +331,10 @@ export const EMPTY_STATE_COPY = {
 } as const;
 
 export const TONE_SURFACE: Record<StatusTone, { bg: string; border: string; accent: string }> = {
-  neutral: { bg: 'bg-white', border: 'border-slate-200', accent: 'text-slate-700' },
-  success: { bg: 'bg-emerald-50/80', border: 'border-emerald-200', accent: 'text-emerald-900' },
-  info:    { bg: 'bg-sky-50/80', border: 'border-sky-200', accent: 'text-sky-900' },
-  warning: { bg: 'bg-amber-50/80', border: 'border-amber-200', accent: 'text-amber-950' },
-  danger:  { bg: 'bg-red-50/80', border: 'border-red-200', accent: 'text-red-900' },
-  muted:   { bg: 'bg-slate-50', border: 'border-slate-200', accent: 'text-slate-600' },
+  neutral: { bg: 'bg-surface-card', border: 'border-silver-200', accent: 'text-ink-body' },
+  success: { bg: 'bg-status-success-bg/80', border: 'border-status-success-border', accent: 'text-status-success-text' },
+  info:    { bg: 'bg-status-info-bg/80', border: 'border-status-info-border', accent: 'text-status-info-text' },
+  warning: { bg: 'bg-status-warning-bg/80', border: 'border-status-warning-border', accent: 'text-status-warning-text' },
+  danger:  { bg: 'bg-status-error-bg/80', border: 'border-status-error-border', accent: 'text-status-error-text' },
+  muted:   { bg: 'bg-status-neutral-bg', border: 'border-status-neutral-border', accent: 'text-status-neutral-text' },
 };

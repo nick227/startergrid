@@ -26,27 +26,27 @@ export default function DealerPicker({ onSelect }: Props) {
   );
 
   return (
-    <div className="min-h-screen bg-slate-950 flex items-center justify-center p-6">
+    <div className="min-h-screen bg-navy-950 flex items-center justify-center p-6">
       <div className="w-full max-w-lg">
         <div className="mb-10 text-center">
-          <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-emerald-400 to-teal-600 flex items-center justify-center text-2xl mx-auto mb-4 shadow-lg shadow-emerald-900/30">
+          <div className="w-16 h-16 rounded-xl bg-gradient-to-br from-navy-800 to-navy-700 flex items-center justify-center text-2xl mx-auto mb-4 shadow-chrome">
             📡
           </div>
           <h1 className="text-2xl font-bold text-white tracking-tight">Operator Console</h1>
-          <p className="text-slate-400 mt-2 text-sm max-w-xs mx-auto leading-relaxed">
+          <p className="text-ink-faint mt-2 text-sm max-w-xs mx-auto leading-relaxed">
             <InfoLabel
               term="Dealer context"
               docId="dealerships/dealer-context"
               inverted
-              termClassName="text-slate-300"
+              termClassName="text-silver-200"
               className="justify-center"
             />
             {' '}— pick a rooftop, then inventory → accounts → sync.
           </p>
         </div>
 
-        <div className="bg-white rounded-2xl shadow-2xl shadow-black/20 overflow-hidden border border-slate-200/80">
-          <div className="p-4 border-b border-slate-100 bg-slate-50/50">
+        <div className="bg-surface-card rounded-xl shadow-elevation-3 overflow-hidden border border-silver-200">
+          <div className="p-4 border-b border-silver-200 bg-surface-inset">
             <SearchField
               value={query}
               onChange={setQuery}

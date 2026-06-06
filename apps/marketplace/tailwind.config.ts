@@ -1,17 +1,7 @@
 import type { Config } from 'tailwindcss';
+import companyPreset from '../../packages/design-tokens/tailwind.preset.ts';
 
 export default {
+  presets: [companyPreset],
   content: ['./index.html', './src/**/*.{ts,tsx}'],
-  theme: {
-    extend: {
-      colors: {
-        brand: {
-          DEFAULT: '#2563eb',
-          dark:    '#1d4ed8',
-          light:   '#eff6ff',
-        },
-      },
-    },
-  },
-  plugins: [],
 } satisfies Config;

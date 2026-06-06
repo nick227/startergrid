@@ -1,0 +1,13 @@
+/**
+ * CSS custom properties — import before @tailwind base.
+ */
+
+:root {
+  --color-chrome-deep: #071321;
+  --color-chrome: #0f2744;
+  --color-accent-marketplace: #1d4ed8;
+  --color-accent-operator: #ea580c;
+  --color-surface-page-operator: #f4f6f8;
+  --color-surface-page-marketplace: #f8fafc;
+  --color-focus: #3b82c4;
+}

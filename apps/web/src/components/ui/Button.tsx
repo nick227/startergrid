@@ -4,16 +4,16 @@ type Variant = 'primary' | 'secondary' | 'ghost' | 'danger' | 'success';
 type Size = 'sm' | 'md';
 
 const VARIANT_CLASSES: Record<Variant, string> = {
-  primary:   'bg-blue-600 hover:bg-blue-700 text-white',
-  secondary: 'bg-slate-700 hover:bg-slate-600 text-slate-200',
-  ghost:     'text-slate-500 hover:text-slate-700',
-  danger:    'bg-red-600 hover:bg-red-700 text-white',
-  success:   'bg-green-600 hover:bg-green-700 text-white',
+  primary:   'bg-orange-600 hover:bg-orange-500 text-white',
+  secondary: 'bg-navy-800 hover:bg-navy-700 text-silver-100 border border-navy-700',
+  ghost:     'text-ink-muted hover:text-ink-heading',
+  danger:    'bg-status-error-dot hover:bg-red-700 text-white',
+  success:   'bg-status-success-text hover:bg-green-800 text-white',
 };
 
 const SIZE_CLASSES: Record<Size, string> = {
-  sm: 'px-3 py-1.5 text-xs',
-  md: 'px-4 py-2 text-sm',
+  sm: 'px-3 py-1.5 text-xs rounded-md',
+  md: 'px-4 py-2 text-sm rounded-md',
 };
 
 type Props = {
@@ -37,7 +37,7 @@ export function Button({
       type={type}
       onClick={onClick}
       disabled={disabled || loading}
-      className={`font-medium rounded-lg transition-colors disabled:opacity-40
+      className={`focus-ring font-semibold transition-colors disabled:opacity-40
         ${VARIANT_CLASSES[variant]} ${SIZE_CLASSES[size]} ${className}`}
     >
       {loading && loadingLabel ? loadingLabel : children}

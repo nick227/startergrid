@@ -7,7 +7,7 @@ type Props = {
 
 export function Card({ children, className = '' }: Props) {
   return (
-    <div className={`bg-white rounded-xl border border-slate-200 overflow-hidden ${className}`}>
+    <div className={`surface-card-operator overflow-hidden ${className}`}>
       {children}
     </div>
   );

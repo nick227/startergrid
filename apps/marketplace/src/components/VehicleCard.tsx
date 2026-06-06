@@ -20,7 +20,7 @@ export function VehicleCard({ card }: Props) {
   }, [card.listingId]);
 
   return (
-    <article className="group mp-card flex h-full flex-col overflow-hidden transition hover:border-blue-300 hover:shadow-md">
+    <article className="group mp-card flex h-full flex-col overflow-hidden transition hover:border-navy-500/40 hover:shadow-elevation-3">
       <a href={listingHref(card.listingId)} className="mp-focus block flex-1 rounded-t-2xl">
         <VehicleImage
           src={card.mediaUrls[0]}
@@ -30,31 +30,31 @@ export function VehicleCard({ card }: Props) {
 
         <div className="space-y-3 p-4">
           <div className="space-y-1">
-            <h3 className="text-base font-semibold leading-snug text-slate-900">{title}</h3>
-            {card.trim && <p className="text-sm text-slate-500">{card.trim}</p>}
+            <h3 className="text-base font-semibold leading-snug text-ink-heading">{title}</h3>
+            {card.trim && <p className="text-sm text-ink-muted">{card.trim}</p>}
           </div>
 
-          <p className="text-xl font-bold tabular-nums text-slate-900">
+          <p className="text-xl font-bold tabular-nums text-ink">
             {formatPrice(card.priceCents)}
           </p>
 
-          <div className="flex flex-wrap items-center gap-2 text-sm text-slate-600">
+          <div className="flex flex-wrap items-center gap-2 text-sm text-ink-muted">
             <span>{formatMileage(card.mileage)}</span>
-            <span className="text-slate-300" aria-hidden="true">·</span>
+            <span className="text-silver-300" aria-hidden="true">·</span>
             <ConditionBadge condition={card.condition} />
           </div>
         </div>
       </a>
 
-      <div className="border-t border-slate-100 px-4 py-3">
-        <p className="mp-label text-slate-400">Dealer</p>
+      <div className="border-t border-silver-200 px-4 py-3">
+        <p className="mp-label text-ink-faint">Dealer</p>
         <a
           href={dealerHref(card.dealerId)}
-          className="mp-focus mt-0.5 block text-sm font-medium text-slate-700 hover:text-blue-600"
+          className="mp-focus mt-0.5 block text-sm font-medium text-ink-body hover:text-cta"
         >
           {card.dealerName}
         </a>
-        {location && <p className="mt-0.5 text-xs text-slate-500">{location}</p>}
+        {location && <p className="mt-0.5 text-xs text-ink-muted">{location}</p>}
       </div>
     </article>
   );

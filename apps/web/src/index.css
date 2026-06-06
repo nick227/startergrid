@@ -1,17 +1,20 @@
+@import '../../../packages/design-tokens/tokens.css';
+@import '../../../packages/design-tokens/components.css';
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
 @layer base {
   body {
-    @apply bg-[#f4f6f8] text-slate-900 antialiased;
+    @apply bg-surface-page font-sans text-ink antialiased;
     font-feature-settings: 'cv02', 'cv03', 'cv04', 'cv11';
   }
 }
 
 @layer components {
   .field-input {
-    @apply w-full px-3 py-2 text-sm border border-slate-200 rounded-xl bg-white focus:outline-none focus:ring-2 focus:ring-emerald-500/30;
+    @apply field-input-base;
   }
 
   .doc-reader-body {
@@ -19,39 +22,39 @@
   }
 
   .doc-reader-prose {
-    @apply text-[15px] leading-[1.8] text-stone-800;
+    @apply text-[15px] leading-[1.8] text-ink-body;
   }
 
   .doc-reader-prose > p:first-of-type {
-    @apply text-[17px] leading-[1.75] text-stone-700 mb-6;
+    @apply text-[17px] leading-[1.75] text-ink-body mb-6;
   }
 
   .doc-reader-prose h2 {
-    @apply text-base font-sans font-bold text-slate-900 tracking-tight mt-9 mb-3 pb-2 border-b border-stone-200/90;
+    @apply text-base font-sans font-bold text-ink-heading tracking-tight mt-9 mb-3 pb-2 border-b border-silver-200/90;
   }
 
   .doc-reader-prose h3 {
-    @apply text-sm font-sans font-semibold text-stone-800 tracking-wide uppercase mt-7 mb-2;
+    @apply text-sm font-sans font-semibold text-ink-body tracking-wide uppercase mt-7 mb-2;
   }
 
   .doc-reader-prose p {
-    @apply my-4 text-stone-700;
+    @apply my-4 text-ink-body;
   }
 
   .doc-reader-prose strong {
-    @apply font-semibold text-stone-900;
+    @apply font-semibold text-ink-heading;
   }
 
   .doc-reader-prose ul {
-    @apply my-4 pl-5 space-y-2 list-disc marker:text-emerald-700/70;
+    @apply my-4 pl-5 space-y-2 list-disc marker:text-navy-700/70;
   }
 
   .doc-reader-prose ol {
-    @apply my-4 pl-5 space-y-2.5 list-decimal marker:font-sans marker:text-sm marker:font-semibold marker:text-emerald-800;
+    @apply my-4 pl-5 space-y-2.5 list-decimal marker:font-sans marker:text-sm marker:font-semibold marker:text-navy-800;
   }
 
   .doc-reader-prose li {
-    @apply pl-1 text-stone-700;
+    @apply pl-1 text-ink-body;
   }
 
   .doc-reader-prose li > p {
@@ -59,15 +62,15 @@
   }
 
   .doc-reader-prose hr {
-    @apply my-8 border-0 h-px bg-gradient-to-r from-transparent via-stone-300 to-transparent;
+    @apply my-8 border-0 h-px bg-gradient-to-r from-transparent via-silver-300 to-transparent;
   }
 
   .doc-reader-prose .doc-link {
-    @apply text-emerald-900 underline underline-offset-[3px] decoration-emerald-300/80 hover:decoration-emerald-600 font-medium;
+    @apply text-navy-800 underline underline-offset-[3px] decoration-navy-500/40 hover:decoration-cta font-medium;
   }
 
   .doc-reader-prose .doc-table-wrap {
-    @apply my-6 -mx-1 overflow-x-auto rounded-xl border border-stone-200/90 bg-white/60 shadow-sm;
+    @apply my-6 -mx-1 overflow-x-auto rounded-xl border border-silver-200/90 bg-white/60 shadow-elevation-1;
   }
 
   .doc-reader-prose .doc-table {
@@ -75,15 +78,15 @@
   }
 
   .doc-reader-prose .doc-table thead {
-    @apply bg-stone-100/90;
+    @apply bg-silver-100/90;
   }
 
   .doc-reader-prose .doc-table th {
-    @apply px-3 py-2.5 text-[11px] font-bold uppercase tracking-wider text-stone-600 border-b border-stone-200;
+    @apply px-3 py-2.5 text-[11px] font-bold uppercase tracking-wider text-ink-muted border-b border-silver-200;
   }
 
   .doc-reader-prose .doc-table td {
-    @apply px-3 py-2.5 text-[13px] text-stone-700 border-b border-stone-100 align-top leading-snug;
+    @apply px-3 py-2.5 text-[13px] text-ink-body border-b border-silver-100 align-top leading-snug;
   }
 
   .doc-reader-prose .doc-table tbody tr:last-child td {
@@ -91,18 +94,18 @@
   }
 
   .doc-reader-prose .doc-table tbody tr:nth-child(even) {
-    @apply bg-stone-50/50;
+    @apply bg-silver-100/50;
   }
 
   .doc-reader-prose .doc-table td:first-child {
-    @apply font-medium text-stone-900 whitespace-nowrap;
+    @apply font-medium text-ink-heading whitespace-nowrap;
   }
 }
 
 @layer utilities {
   .scrollbar-thin {
     scrollbar-width: thin;
-    scrollbar-color: theme('colors.slate.300') transparent;
+    scrollbar-color: theme('colors.silver.300') transparent;
   }
 
   @keyframes doc-sheet-up {

@@ -1,7 +1,7 @@
 # UI Design System — Company Palette & App Emphasis
 
 **Created:** 2026-06-06  
-**Status:** Approved direction — implementation not started  
+**Status:** Phase 0–1 implemented (tokens + core primitives)  
 **Scope:** Shared design tokens for `apps/marketplace` and `apps/web` (Operator Console)
 
 ---
