@@ -2,11 +2,8 @@
 // Mirrors the structure of routeContract.test.ts but targets
 // openapi/openapi-marketplace.yaml and the marketplace Fastify routes.
 //
-// All marketplace routes must be:
-//   - documented in openapi-marketplace.yaml
-//   - classified as x-route-classification: public
-//   - have security: [] (no auth required)
-//   - have an operationId
+// Registered routes must match openapi-marketplace.yaml.
+// Phase C auth routes are documented in OpenAPI but not yet mounted in Fastify.
 
 import assert from 'node:assert/strict';
 import { describe, it } from 'node:test';
@@ -21,12 +18,20 @@ const yaml = _require('js-yaml') as { load(src: string): unknown };
 // Keep in sync with src/server/routes/marketplace.ts and src/server/app.ts.
 
 const REGISTERED_MARKETPLACE_ROUTES = new Set([
+  'GET    /api/marketplace/feed',
   'GET    /api/marketplace/vehicles',
   'GET    /api/marketplace/vehicles/{listingId}',
   'POST   /api/marketplace/vehicles/{listingId}/leads',
   'POST   /api/marketplace/events',
   'GET    /api/marketplace/dealers/{dealerId}',
   'GET    /api/marketplace/dealers/{dealerId}/stats',
+]);
+
+/** Documented in OpenAPI; Fastify handlers ship in Phase C (mp_session). */
+const PHASE_C_SPEC_ONLY_ROUTES = new Set([
+  'POST   /api/marketplace/auth/login',
+  'POST   /api/marketplace/auth/logout',
+  'GET    /api/marketplace/auth/me',
 ]);
 
 // ── Parse marketplace OpenAPI spec ───────────────────────────────────────────
@@ -43,7 +48,7 @@ type ParsedOp = {
   path: string;
   classification: string | null;
   hasEmptySecurity: boolean;
-  hasAnyAuth: boolean;
+  hasMarketplaceCookieAuth: boolean;
   operationId: string;
 };
 
@@ -65,7 +70,9 @@ function parseMarketplaceSpec(): ParsedOp[] {
       const classification = op['x-route-classification'] ?? null;
       const security = op.security;
       const hasEmptySecurity = Array.isArray(security) && security.length === 0;
-      const hasAnyAuth = Array.isArray(security) && security.length > 0;
+      const hasMarketplaceCookieAuth =
+        Array.isArray(security) &&
+        security.some(s => Object.prototype.hasOwnProperty.call(s, 'MarketplaceCookieAuth'));
 
       ops.push({
         key,
@@ -73,7 +80,7 @@ function parseMarketplaceSpec(): ParsedOp[] {
         path,
         classification,
         hasEmptySecurity,
-        hasAnyAuth,
+        hasMarketplaceCookieAuth,
         operationId: op.operationId ?? '(none)',
       });
     }
@@ -83,6 +90,7 @@ function parseMarketplaceSpec(): ParsedOp[] {
 
 const specOps = parseMarketplaceSpec();
 const specKeys = new Set(specOps.map(o => o.key));
+const registeredOrPhaseC = new Set([...REGISTERED_MARKETPLACE_ROUTES, ...PHASE_C_SPEC_ONLY_ROUTES]);
 
 // ── Route ↔ OpenAPI coverage ──────────────────────────────────────────────────
 
@@ -95,19 +103,19 @@ describe('marketplace route ↔ OpenAPI coverage', () => {
     assert.deepEqual(missing, [], `Marketplace routes missing from spec:\n${missing.join('\n')}`);
   });
 
-  it('every openapi-marketplace.yaml path has a matching registered Fastify route', () => {
+  it('every openapi-marketplace.yaml path has a matching registered Fastify route or Phase C stub', () => {
     const extra: string[] = [];
     for (const key of specKeys) {
-      if (!REGISTERED_MARKETPLACE_ROUTES.has(key)) extra.push(key);
+      if (!registeredOrPhaseC.has(key)) extra.push(key);
     }
     assert.deepEqual(extra, [], `Spec paths with no matching route:\n${extra.join('\n')}`);
   });
 
-  it('route counts match', () => {
+  it('route counts match (registered + Phase C spec-only = OpenAPI operations)', () => {
     assert.equal(
       specOps.length,
-      REGISTERED_MARKETPLACE_ROUTES.size,
-      `Spec has ${specOps.length} operations; REGISTERED has ${REGISTERED_MARKETPLACE_ROUTES.size}`
+      REGISTERED_MARKETPLACE_ROUTES.size + PHASE_C_SPEC_ONLY_ROUTES.size,
+      `Spec has ${specOps.length} operations; registered=${REGISTERED_MARKETPLACE_ROUTES.size}, phaseC=${PHASE_C_SPEC_ONLY_ROUTES.size}`
     );
   });
 });
@@ -115,13 +123,22 @@ describe('marketplace route ↔ OpenAPI coverage', () => {
 // ── Security contract ─────────────────────────────────────────────────────────
 
 describe('marketplace security declarations', () => {
-  it('every marketplace GET route has x-route-classification: public', () => {
-    const violations = specOps.filter(o => o.method === 'GET' && o.classification !== 'public');
+  it('every anonymous marketplace GET route is classified public', () => {
+    const violations = specOps.filter(
+      o => o.method === 'GET' && o.classification !== 'public' && o.classification !== 'marketplace-auth'
+    );
     assert.deepEqual(
       violations.map(o => `${o.operationId} (${o.key})`),
       [],
-      'All marketplace GET routes must be classified public:'
+      'Anonymous GET routes must be public; auth GET uses marketplace-auth:'
     );
+  });
+
+  it('GET /api/marketplace/auth/me is marketplace-auth with MarketplaceCookieAuth', () => {
+    const me = specOps.find(o => o.operationId === 'getMarketplaceMe');
+    assert.ok(me, 'getMarketplaceMe must be documented');
+    assert.equal(me!.classification, 'marketplace-auth');
+    assert.ok(me!.hasMarketplaceCookieAuth, 'getMarketplaceMe must require MarketplaceCookieAuth');
   });
 
   it('marketplace lead capture route is public-write', () => {
@@ -130,21 +147,21 @@ describe('marketplace security declarations', () => {
     assert.equal(leadOp!.classification, 'public-write');
   });
 
-  it('every marketplace route has security: [] (no auth required)', () => {
-    const violations = specOps.filter(o => !o.hasEmptySecurity);
+  it('anonymous marketplace routes have security: []', () => {
+    const violations = specOps.filter(o => !o.hasEmptySecurity && !o.hasMarketplaceCookieAuth);
     assert.deepEqual(
       violations.map(o => `${o.operationId} (${o.key})`),
       [],
-      'All marketplace routes must have security: []:'
+      'Routes without mp_session must have security: []:'
     );
   });
 
-  it('no marketplace route has any auth scheme', () => {
-    const violations = specOps.filter(o => o.hasAnyAuth);
+  it('only getMarketplaceMe requires MarketplaceCookieAuth', () => {
+    const violations = specOps.filter(o => o.hasMarketplaceCookieAuth && o.operationId !== 'getMarketplaceMe');
     assert.deepEqual(
       violations.map(o => `${o.operationId} (${o.key})`),
       [],
-      'Marketplace routes must not require authentication:'
+      'Only getMarketplaceMe may require MarketplaceCookieAuth:'
     );
   });
 
@@ -164,8 +181,6 @@ describe('marketplace spec isolation', () => {
   it('openapi-marketplace.yaml has no $ref pointing at openapi.yaml', () => {
     const specPath = join(process.cwd(), 'openapi', 'openapi-marketplace.yaml');
     const raw = readFileSync(specPath, 'utf8');
-    // Reject $ref: './openapi.yaml#...' or similar cross-spec references.
-    // A plain mention in a description string is fine.
     assert.ok(
       !raw.includes("$ref: './openapi.yaml") && !raw.includes('$ref: "./openapi.yaml'),
       'openapi-marketplace.yaml must not $ref into openapi.yaml — specs are isolated'

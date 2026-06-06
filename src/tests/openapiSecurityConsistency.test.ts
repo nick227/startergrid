@@ -92,6 +92,7 @@ function assertSpecMatchesClassifications(
   expectedOperator: Set<string>,
   expectedPublic: Set<string>,
   expectedPublicWrite: Set<string>,
+  expectedMarketplaceAuth: Set<string>,
   label: string,
 ): void {
   for (const [path, operations] of Object.entries(spec.paths)) {
@@ -116,6 +117,18 @@ function assertSpecMatchesClassifications(
         assert.equal(operation['x-route-classification'], 'public-write', `${label}: ${key} must be classified public-write`);
         assert.deepEqual(operation.security, [], `${label}: ${key} must be public-write without OperatorAuth`);
         expectedPublicWrite.delete(key);
+        continue;
+      }
+
+      if (expectedMarketplaceAuth.has(key)) {
+        if (key === 'GET /api/marketplace/auth/me') {
+          assert.equal(operation['x-route-classification'], 'marketplace-auth', `${label}: ${key} must be marketplace-auth`);
+          assert.deepEqual(operation.security, [{ MarketplaceCookieAuth: [] }], `${label}: ${key} must require MarketplaceCookieAuth`);
+        } else {
+          assert.equal(operation['x-route-classification'], 'public', `${label}: ${key} must be classified public (login/logout)`);
+          assert.deepEqual(operation.security, [], `${label}: ${key} must not require auth`);
+        }
+        expectedMarketplaceAuth.delete(key);
       }
     }
   }
@@ -123,6 +136,7 @@ function assertSpecMatchesClassifications(
   assert.deepEqual([...expectedOperator], [], `${label}: missing operator routes in OpenAPI`);
   assert.deepEqual([...expectedPublic], [], `${label}: missing public routes in OpenAPI`);
   assert.deepEqual([...expectedPublicWrite], [], `${label}: missing public-write routes in OpenAPI`);
+  assert.deepEqual([...expectedMarketplaceAuth], [], `${label}: missing marketplace auth routes in OpenAPI`);
 }
 
 describe('OpenAPI security consistency', () => {
@@ -133,6 +147,7 @@ describe('OpenAPI security consistency', () => {
       new Set(routeClassifications.operator),
       new Set(routeClassifications.public),
       new Set(routeClassifications.publicWrite),
+      new Set<string>(),
       'openapi.yaml',
     );
   });
@@ -144,6 +159,7 @@ describe('OpenAPI security consistency', () => {
       new Set<string>(),
       new Set(marketplaceRouteClassifications.public),
       new Set(marketplaceRouteClassifications.publicWrite),
+      new Set(marketplaceRouteClassifications.marketplaceAuth),
       'openapi-marketplace.yaml',
     );
   });

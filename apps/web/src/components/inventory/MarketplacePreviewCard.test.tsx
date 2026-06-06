@@ -2,13 +2,13 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, screen, waitFor } from '@testing-library/react';
 import { MarketplacePreviewCard } from './MarketplacePreviewCard.tsx';
 
-vi.mock('@/lib/api/sdk.ts', () => ({
-  fetchMarketplaceVehicleDetail: vi.fn(),
+vi.mock('@/lib/api/marketplacePreviewFetch.ts', () => ({
+  fetchMarketplacePreviewCard: vi.fn(),
 }));
 
-import { fetchMarketplaceVehicleDetail } from '@/lib/api/sdk.ts';
+import { fetchMarketplacePreviewCard } from '@/lib/api/marketplacePreviewFetch.ts';
 
-const mockFetch = vi.mocked(fetchMarketplaceVehicleDetail);
+const mockFetch = vi.mocked(fetchMarketplacePreviewCard);
 
 describe('MarketplacePreviewCard UI states', () => {
   beforeEach(() => {
@@ -24,27 +24,24 @@ describe('MarketplacePreviewCard UI states', () => {
 
   it('renders consumer preview without operator performance wording', async () => {
     mockFetch.mockResolvedValue({
-      vehicle: {
-        listingId: 'v1',
-        stockNumber: 'PRM-1',
-        year: 2021,
-        make: 'Honda',
-        model: 'Accord',
-        trim: null,
-        condition: 'USED',
-        priceCents: 2000000,
-        mileage: 12000,
-        exteriorColor: 'White',
-        mediaUrls: [],
-        dealerId: 'd1',
-        dealerName: 'Demo Dealer',
-        dealerCity: 'Plano',
-        dealerState: 'TX',
-        listingUrl: '/marketplace/dealers/d1/PRM-1',
-        listedAt: '2026-06-01T12:00:00.000Z',
-      },
-      fullDescription: null,
-      additionalMediaUrls: [],
+      listingId: 'v1',
+      stockNumber: 'PRM-1',
+      year: 2021,
+      make: 'Honda',
+      model: 'Accord',
+      trim: null,
+      condition: 'USED',
+      priceCents: 2000000,
+      mileage: 12000,
+      exteriorColor: 'White',
+      mediaUrls: [],
+      mediaItems: [],
+      dealerId: 'd1',
+      dealerName: 'Demo Dealer',
+      dealerCity: 'Plano',
+      dealerState: 'TX',
+      listingUrl: '/marketplace/dealers/d1/PRM-1',
+      listedAt: '2026-06-01T12:00:00.000Z',
     });
 
     render(<MarketplacePreviewCard vehicle={{ id: 'v1', priceCents: 2000000 }} />);

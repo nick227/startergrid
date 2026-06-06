@@ -1,6 +1,6 @@
 import type { ReactNode } from 'react';
 import { useCallback, useEffect, useState } from 'react';
-import { fetchMarketplaceVehicleDetail } from '@/lib/api/sdk.ts';
+import { fetchMarketplacePreviewCard } from '@/lib/api/marketplacePreviewFetch.ts';
 import {
   assessMarketplaceEligibility,
   buildMarketplacePreviewDisplay,
@@ -87,9 +87,9 @@ export function MarketplacePreviewCard({ vehicle }: Props) {
     setError(null);
     setDisplay(null);
 
-    fetchMarketplaceVehicleDetail(vehicle.id)
-      .then(res => {
-        if (!cancelled) setDisplay(buildMarketplacePreviewDisplay(res.vehicle));
+    fetchMarketplacePreviewCard(vehicle.id)
+      .then(card => {
+        if (!cancelled) setDisplay(buildMarketplacePreviewDisplay(card));
       })
       .catch(e => {
         if (!cancelled) {
