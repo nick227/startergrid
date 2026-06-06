@@ -250,7 +250,7 @@ curl -X POST http://localhost:3000/api/dealers/<DEALER_ID>/performance/compute \
   -H "x-operator-id: dev-operator"
 ```
 
-> The demo `demo:reset` pre-seeds performance benchmarks with sold comparables. The Insights tab should show populated data immediately after reset.
+> The demo `demo:reset` pre-seeds performance benchmarks with sold comparables. The Insights tab should show populated data immediately after reset. Platform cards include **`consumer-marketplace`** channel metrics (views, detail views, inquiries) from seeded first-party events.
 
 **Language rules enforced in the UI:**
 - "movement signal" — not "velocity score" or "sell-through rate"

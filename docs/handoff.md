@@ -111,8 +111,8 @@ Do **not** assume every platform provides every metric. Do **not** hard-depend o
 
 | Layer | Today | Target |
 |-------|--------|--------|
-| Performance cache | `totalLeads`, `platformAssistsJson`, movement benchmarks | Same + **views / detail views / clicks / inquiries** per slug when known |
-| Marketplace | Lead capture → `Lead` with `platformSlug: consumer-marketplace` | + first-party **engagement events** (impression, VDP view, dealer page, gallery, inquiry) |
+| Performance cache | `totalLeads`, `platformAssistsJson`, movement benchmarks, **`channelMetricsJson`** on platform rows | Same + partner imports when available (v4.4+) |
+| Marketplace | Lead capture + first-party **`POST /api/marketplace/events`** | Dealer inbox slice later (`apps/marketplace/dealer`) |
 | Third-party platforms | Leads counted when `Lead.platformSlug` matches | + **imported** metrics when partner APIs/portals provide them |
 | `apps/web` | Platform rows: leads, avg days to move, observed assists | Channel comparison table (views · clicks · inquiries · move time) |
 | `apps/marketplace/dealer` | Not built | **Marketplace-only** lightweight stats for dealers without `apps/web` |
@@ -150,6 +150,8 @@ Use the same **display words** across channels; store **provenance** separately:
 - `platform_reported` — partner API or automated import
 - `manual_imported` — dealer/ops CSV or portal paste
 - `unavailable` — show “—” in UI; never fabricate
+
+See **`docs/channel-measurement.md`** for `ChannelEvent`, `Lead`, and `PlatformPerformanceSummary.channelMetricsJson` field definitions and aggregation rules.
 
 ### Architecture flow
 

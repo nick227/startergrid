@@ -75,6 +75,24 @@ describe('mergeMetricConfidence', () => {
   it('returns incoming when current is undefined', () => {
     assert.equal(mergeMetricConfidence(undefined, 'platform_reported'), 'platform_reported');
   });
+
+  it('does not downgrade when incoming confidence is lower', () => {
+    assert.equal(
+      mergeMetricConfidence('observed_first_party', 'platform_reported'),
+      'observed_first_party',
+    );
+    assert.equal(
+      mergeMetricConfidence('platform_reported', 'unavailable'),
+      'platform_reported',
+    );
+  });
+
+  it('promotes manual_imported over unavailable', () => {
+    assert.equal(
+      mergeMetricConfidence('unavailable', 'manual_imported'),
+      'manual_imported',
+    );
+  });
 });
 
 describe('aggregateChannelMetrics', () => {

@@ -4,7 +4,7 @@ import {
   platformOutcomeMeta,
   sortPlatformsForSync,
 } from '@/lib/syncPresentation.ts';
-import { formatPlatformAssistHint } from '@/lib/movementBenchmark.ts';
+import { formatPlatformAssistHint, formatChannelMetricsDisplay } from '@/lib/movementBenchmark.ts';
 import { SectionCard } from '@/components/operator';
 
 type Props = {
@@ -70,6 +70,12 @@ function SyncPlatformRow({
   const meta = platformOutcomeMeta(p);
   const detail = friendlyPlatformDetail(p);
   const valueHint = perf ? formatPlatformAssistHint(perf) : null;
+  const channelFootnote = perf
+    ? formatChannelMetricsDisplay(perf.channelMetrics).secondary
+    : null;
+  const showChannelFootnote =
+    channelFootnote != null &&
+    channelFootnote.startsWith('Mixed measurement');
   const showAccounts =
     onFixAccounts &&
     (p.accountState === 'BLOCKED' ||
@@ -95,6 +101,9 @@ function SyncPlatformRow({
         </div>
         {valueHint && (
           <p className="text-[11px] text-slate-400 pl-0.5 truncate">{valueHint}</p>
+        )}
+        {showChannelFootnote && (
+          <p className="text-[10px] text-slate-400 pl-0.5 truncate">{channelFootnote}</p>
         )}
       </div>
       <div className="flex items-center gap-3 sm:justify-end">

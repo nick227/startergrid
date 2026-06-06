@@ -1,5 +1,5 @@
 import { movementSignalVisual } from './statusRegistry.ts';
-import type { MovementSignal, PerformanceConfidence, PlatformPerformanceItem, VehiclePerformanceItem, ChannelMetrics } from './types.ts';
+import type { MovementSignal, PerformanceConfidence, PlatformPerformanceItem, VehiclePerformanceItem, ChannelMetrics, MetricConfidence, ChannelMetric } from './types.ts';
 
 export function hasSimilarBenchmark(perf: VehiclePerformanceItem): boolean {
   return perf.comparableCount >= 3 && perf.avgComparableDays != null;
@@ -61,20 +61,79 @@ export function movementTaskHint(perf: VehiclePerformanceItem): string | null {
   }
 }
 
+export function channelMetricConfidenceLabel(confidence: MetricConfidence): string {
+  switch (confidence) {
+    case 'observed_first_party':
+      return 'observed';
+    case 'platform_reported':
+      return 'reported';
+    case 'manual_imported':
+      return 'imported';
+    default:
+      return 'unavailable';
+  }
+}
+
+export type ChannelMetricsDisplay = {
+  primary: string | null;
+  secondary: string | null;
+};
+
+type ChannelMetricEntry = { label: string; metric: ChannelMetric };
+
+function channelMetricEntries(metrics: ChannelMetrics): ChannelMetricEntry[] {
+  const entries: ChannelMetricEntry[] = [];
+  if (metrics.views) entries.push({ label: 'views', metric: metrics.views });
+  if (metrics.detailViews) entries.push({ label: 'detail views', metric: metrics.detailViews });
+  if (metrics.inquiries) entries.push({ label: 'inquiries', metric: metrics.inquiries });
+  if (metrics.reportedClicks) entries.push({ label: 'reported clicks', metric: metrics.reportedClicks });
+  if (metrics.reportedContacts) entries.push({ label: 'reported contacts', metric: metrics.reportedContacts });
+  return entries;
+}
+
+export function formatChannelMetricsDisplay(metrics: ChannelMetrics | undefined): ChannelMetricsDisplay {
+  if (!metrics) return { primary: null, secondary: null };
+
+  const entries = channelMetricEntries(metrics);
+  if (entries.length === 0) return { primary: null, secondary: null };
+
+  const confidences = new Set(entries.map(e => e.metric.confidence));
+  const uniform = confidences.size === 1;
+  const source = channelMetricConfidenceLabel(entries[0]!.metric.confidence);
+
+  if (uniform) {
+    const parts = entries.map(e => `${e.metric.count.toLocaleString()} ${e.label}`);
+    return {
+      primary: parts.join(' · '),
+      secondary: source === 'unavailable' ? 'Activity unavailable from this source' : `${source} activity`,
+    };
+  }
+
+  const parts = entries.map(
+    e => `${e.metric.count.toLocaleString()} ${e.label} (${channelMetricConfidenceLabel(e.metric.confidence)})`,
+  );
+  return {
+    primary: parts.join(' · '),
+    secondary: 'Mixed measurement sources — counts are not combined across confidence levels.',
+  };
+}
+
 export function formatChannelMetricsLine(metrics: ChannelMetrics | undefined): string | null {
-  if (!metrics) return null;
-  const parts: string[] = [];
-  if (metrics.views) parts.push(`${metrics.views.count.toLocaleString()} views`);
-  if (metrics.detailViews) parts.push(`${metrics.detailViews.count.toLocaleString()} detail views`);
-  if (metrics.inquiries) parts.push(`${metrics.inquiries.count.toLocaleString()} inquiries`);
-  if (metrics.reportedClicks) parts.push(`${metrics.reportedClicks.count.toLocaleString()} clicks`);
-  if (metrics.reportedContacts) parts.push(`${metrics.reportedContacts.count.toLocaleString()} contacts`);
-  return parts.length > 0 ? parts.join(' · ') : null;
+  return formatChannelMetricsDisplay(metrics).primary;
+}
+
+export function formatPlatformChannelHint(item: PlatformPerformanceItem): string | null {
+  const display = formatChannelMetricsDisplay(item.channelMetrics);
+  if (!display.primary) return null;
+  if (display.secondary && !display.primary.includes('(')) {
+    return `${display.primary} · ${display.secondary}`;
+  }
+  return display.primary;
 }
 
 export function formatPlatformAssistHint(item: PlatformPerformanceItem): string | null {
-  const channelLine = formatChannelMetricsLine(item.channelMetrics);
-  if (channelLine) return channelLine;
+  const channelHint = formatPlatformChannelHint(item);
+  if (channelHint) return channelHint;
 
   if (item.totalLeads === 0 && item.avgDaysToMove == null) return null;
   const parts: string[] = [];
@@ -101,8 +160,8 @@ export function formatPlatformExpandLine(
   leads: number,
   platform?: PlatformPerformanceItem | null,
 ): string {
-  const channelLine = platform ? formatChannelMetricsLine(platform.channelMetrics) : null;
-  if (channelLine) return `${slug} · ${channelLine}`;
+  const channelHint = platform ? formatPlatformChannelHint(platform) : null;
+  if (channelHint) return `${slug} · ${channelHint}`;
 
   const parts: string[] = [slug];
   if (leads > 0) {

@@ -1,5 +1,5 @@
 import type { PlatformPerformanceItem, VehiclePerformanceItem } from '@/lib/types.ts';
-import { platformCompareRows } from '@/lib/movementBenchmark.ts';
+import { platformCompareRows, formatPlatformChannelHint } from '@/lib/movementBenchmark.ts';
 import { EMPTY_STATE_COPY } from '@/lib/statusRegistry.ts';
 
 type Props = {
@@ -40,16 +40,23 @@ export function PlatformMovementCompare({ perf, platformPerfBySlug }: Props) {
                     : '—'}
                 </td>
                 <td className="py-1.5 text-slate-500">
-                  {platform?.avgDaysToMove != null && (
-                    <>Avg move {Math.round(platform.avgDaysToMove)}d</>
-                  )}
-                  {platform?.medianDaysToMove != null && (
-                    <> · median {Math.round(platform.medianDaysToMove)}d</>
-                  )}
-                  {platform?.observedAssistLabel && (
-                    <> · {platform.observedAssistLabel}</>
-                  )}
-                  {!platform?.avgDaysToMove && !platform?.observedAssistLabel && '—'}
+                  {(() => {
+                    const channelHint = platform ? formatPlatformChannelHint(platform) : null;
+                    if (channelHint) return channelHint;
+                    if (platform?.avgDaysToMove != null) {
+                      return (
+                        <>
+                          Avg move {Math.round(platform.avgDaysToMove)}d
+                          {platform.medianDaysToMove != null && (
+                            <> · median {Math.round(platform.medianDaysToMove)}d</>
+                          )}
+                          {platform.observedAssistLabel && <> · {platform.observedAssistLabel}</>}
+                        </>
+                      );
+                    }
+                    if (platform?.observedAssistLabel) return platform.observedAssistLabel;
+                    return '—';
+                  })()}
                 </td>
               </tr>
             );

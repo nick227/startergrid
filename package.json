@@ -1,9 +1,9 @@
 {
   "name": "auto-dealer-onboarding-poc-v1",
-  "version": "4.3.0",
+  "version": "4.3.1",
   "private": true,
   "type": "module",
-  "description": "V4.3: Channel events foundation — consumer-marketplace measurement in performance aggregates.",
+  "description": "V4.3.1: Channel metrics polish — demo seed, confidence-aware display, measurement docs.",
   "scripts": {
     "build": "tsc",
     "typecheck": "tsc --noEmit",

@@ -2,7 +2,7 @@ import { useState } from 'react';
 import type { OperatorPageBaseProps } from '@/lib/operatorPage.ts';
 import { useAsyncQuery } from '@/hooks/useAsyncQuery.ts';
 import { fetchCachedPerformanceSnapshot, triggerPerformanceCompute } from '@/lib/api/sdk.ts';
-import { formatMovementBenchmarkLine } from '@/lib/movementBenchmark.ts';
+import { formatMovementBenchmarkLine, formatChannelMetricsDisplay, formatPlatformChannelHint } from '@/lib/movementBenchmark.ts';
 import { formatPerformanceUpdated } from '@/lib/performanceFreshness.ts';
 import { EMPTY_STATE_COPY } from '@/lib/statusRegistry.ts';
 import { OperatorPage, SectionCard, PageHeader, ErrorState } from '@/components/operator';
@@ -154,25 +154,46 @@ export default function InsightsPage({ dealerId, nav, activeTab }: Props) {
                   )}
                 </SectionCard>
 
-                <SectionCard title="Platforms" subtitle="Observed assists and move times — low confidence when sample is small">
+                <SectionCard title="Platforms" subtitle="Channel activity and observed assists — not sales attribution">
                   {data.platforms.length > 0 ? (
                     <div className="grid gap-3 sm:grid-cols-2">
-                      {data.platforms.map(p => (
-                        <div key={p.platformSlug} className="rounded-xl border border-slate-100 p-4 bg-slate-50/50">
-                          <div className="flex items-center justify-between gap-2">
-                            <h3 className="font-semibold text-sm">{p.platformSlug}</h3>
-                            <span className="text-[10px] text-slate-400 uppercase">
-                              {p.confidence === 'INSUFFICIENT' || p.confidence === 'LOW' ? 'low confidence' : p.confidence.toLowerCase()}
-                            </span>
+                      {data.platforms.map(p => {
+                        const channel = formatChannelMetricsDisplay(p.channelMetrics);
+                        const hasChannel = channel.primary != null;
+
+                        return (
+                          <div key={p.platformSlug} className="rounded-xl border border-slate-100 p-4 bg-slate-50/50">
+                            <div className="flex items-center justify-between gap-2">
+                              <h3 className="font-semibold text-sm">{p.platformSlug}</h3>
+                              <span className="text-[10px] text-slate-400 uppercase">
+                                {p.confidence === 'INSUFFICIENT' || p.confidence === 'LOW'
+                                  ? 'low move sample'
+                                  : `${p.confidence.toLowerCase()} move sample`}
+                              </span>
+                            </div>
+
+                            {hasChannel ? (
+                              <>
+                                <p className="text-sm font-semibold text-slate-800 mt-2 leading-snug">{channel.primary}</p>
+                                {channel.secondary && (
+                                  <p className="text-[11px] text-slate-500 mt-1">{channel.secondary}</p>
+                                )}
+                              </>
+                            ) : p.totalLeads > 0 || p.avgDaysToMove != null ? (
+                              <>
+                                <p className="text-2xl font-bold tabular-nums mt-2">{p.totalLeads}</p>
+                                <p className="text-xs text-slate-500 mt-1">
+                                  observed assist{p.totalLeads !== 1 ? 's' : ''}
+                                  {p.avgDaysToMove != null && <> · avg move {Math.round(p.avgDaysToMove)}d</>}
+                                  {p.observedAssistLabel && <> · {p.observedAssistLabel}</>}
+                                </p>
+                              </>
+                            ) : (
+                              <p className="text-xs text-slate-400 mt-2">No channel activity recorded for this platform.</p>
+                            )}
                           </div>
-                          <p className="text-2xl font-bold tabular-nums mt-2">{p.totalLeads}</p>
-                          <p className="text-xs text-slate-500 mt-1">
-                            observed assist{p.totalLeads !== 1 ? 's' : ''}
-                            {p.avgDaysToMove != null && <> · avg move {Math.round(p.avgDaysToMove)}d</>}
-                            {p.observedAssistLabel && <> · {p.observedAssistLabel}</>}
-                          </p>
-                        </div>
-                      ))}
+                        );
+                      })}
                     </div>
                   ) : (
                     <EmptyState
