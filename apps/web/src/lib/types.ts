@@ -416,8 +416,10 @@ export type PlatformPerformanceItem = {
   platformSlug:        string;
   vehiclesListed:      number;
   vehiclesSold:        number;
+  vehiclesRemoved:     number;
   avgDaysToMove:       number | null;
   medianDaysToMove:    number | null;
+  avgDaysOnPlatform:   number | null;
   totalLeads:          number;
   leadsPerVehicle:     number | null;
   confidence:          PerformanceConfidence;

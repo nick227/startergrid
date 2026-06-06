@@ -81,17 +81,19 @@ type FakeVehicleRow = {
 };
 
 type FakePlatformRow = {
-  platformSlug:    string;
-  vehiclesListed:  number;
-  vehiclesSold:    number;
-  avgDaysToMove:   number | null;
-  medianDaysToMove: number | null;
-  totalLeads:      number;
-  leadsPerVehicle: number | null;
-  confidence:      string;
-  sampleSize:      number;
+  platformSlug:      string;
+  vehiclesListed:    number;
+  vehiclesSold:      number;
+  vehiclesRemoved:   number;
+  avgDaysToMove:     number | null;
+  medianDaysToMove:  number | null;
+  avgDaysOnPlatform: number | null;
+  totalLeads:        number;
+  leadsPerVehicle:   number | null;
+  confidence:        string;
+  sampleSize:        number;
   channelMetricsJson: unknown;
-  computedAt:      Date;
+  computedAt:        Date;
 };
 
 function makeMockPrisma(
@@ -133,11 +135,13 @@ function fakeVehicleRow(overrides: Partial<FakeVehicleRow> = {}): FakeVehicleRow
 
 function fakePlatformRow(overrides: Partial<FakePlatformRow> = {}): FakePlatformRow {
   return {
-    platformSlug:    'autotrader',
-    vehiclesListed:  5,
-    vehiclesSold:    3,
-    avgDaysToMove:   18,
-    medianDaysToMove: 16,
+    platformSlug:      'autotrader',
+    vehiclesListed:    5,
+    vehiclesSold:      3,
+    vehiclesRemoved:   1,
+    avgDaysToMove:     18,
+    medianDaysToMove:  16,
+    avgDaysOnPlatform: 22,
     totalLeads:      10,
     leadsPerVehicle: 2,
     confidence:      'LOW',
@@ -308,8 +312,10 @@ const REQUIRED_PLATFORM_ITEM_FIELDS: (keyof PlatformPerformanceItem)[] = [
   'platformSlug',
   'vehiclesListed',
   'vehiclesSold',
+  'vehiclesRemoved',
   'avgDaysToMove',
   'medianDaysToMove',
+  'avgDaysOnPlatform',
   'totalLeads',
   'leadsPerVehicle',
   'confidence',

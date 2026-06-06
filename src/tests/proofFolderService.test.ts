@@ -37,7 +37,11 @@ function makeMockPrisma(overrides?: {
     },
     vehicleUpdate: {
       findMany: async () => overrides?.vehicleUpdates ?? []
-    }
+    },
+    channelEvent: {
+      groupBy: async () => [],
+      findFirst: async () => null,
+    },
   } as unknown as PrismaClient;
 }
 

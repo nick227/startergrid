@@ -2235,8 +2235,10 @@ components:
         - platformSlug
         - vehiclesListed
         - vehiclesSold
+        - vehiclesRemoved
         - avgDaysToMove
         - medianDaysToMove
+        - avgDaysOnPlatform
         - totalLeads
         - leadsPerVehicle
         - confidence
@@ -2250,11 +2252,15 @@ components:
         vehiclesListed:
           type: integer
           minimum: 0
-          description: Count of distinct vehicles with SUBMISSION_SENT events on this platform.
+          description: Active vehicles with open platform exposure (SUBMISSION_SENT and not sold/removed).
         vehiclesSold:
           type: integer
           minimum: 0
-          description: Of the listed vehicles, how many have soldAt set.
+          description: Vehicles with soldAt set after platform submission.
+        vehiclesRemoved:
+          type: integer
+          minimum: 0
+          description: Vehicles removed from inventory while listed on this platform (exposure closed, not sold).
         avgDaysToMove:
           type: number
           nullable: true
@@ -2264,6 +2270,10 @@ components:
         medianDaysToMove:
           type: number
           nullable: true
+        avgDaysOnPlatform:
+          type: number
+          nullable: true
+          description: Average days from first SUBMISSION_SENT to removedAt for removed (not sold) vehicles.
         totalLeads:
           type: integer
           minimum: 0

@@ -25,6 +25,7 @@ const baseDbVehicle: DbVehicle = {
   starCore: { Vehicle: { VIN: '1HGCV1F30JA000001', ModelYear: 2021 } },
   soldAt: null,
   removedAt: null,
+  reactivatedAt: null,
   createdAt: new Date('2026-01-01'),
   updatedAt: new Date('2026-01-01'),
   media: [

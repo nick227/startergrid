@@ -45,6 +45,7 @@ export async function computePlatformPerformanceSummaries(
       createdAt: true,
       soldAt: true,
       removedAt: true,
+      reactivatedAt: true,
     },
   });
 
@@ -81,6 +82,7 @@ export async function computePlatformPerformanceSummaries(
     createdAt:   v.createdAt,
     soldAt:      v.soldAt,
     removedAt:   v.removedAt,
+    reactivatedAt: v.reactivatedAt,
   }));
 
   const submissionInputs: SyncSubmissionEvent[] = submissionEvents.map(ev => ({
@@ -103,10 +105,12 @@ export async function computePlatformPerformanceSummaries(
       create: {
         dealershipId,
         platformSlug:    row.platformSlug,
-        vehiclesListed:  row.vehiclesListed,
-        vehiclesSold:    row.vehiclesSold,
-        avgDaysToMove:   row.avgDaysToMove,
+        vehiclesListed:   row.vehiclesListed,
+        vehiclesSold:     row.vehiclesSold,
+        vehiclesRemoved:  row.vehiclesRemoved,
+        avgDaysToMove:    row.avgDaysToMove,
         medianDaysToMove: row.medianDaysToMove,
+        avgDaysOnPlatform: row.avgDaysOnPlatform,
         totalLeads:      row.totalLeads,
         leadsPerVehicle: row.leadsPerVehicle,
         confidence:      row.confidence,
@@ -115,10 +119,12 @@ export async function computePlatformPerformanceSummaries(
         computedAt:      now,
       },
       update: {
-        vehiclesListed:  row.vehiclesListed,
-        vehiclesSold:    row.vehiclesSold,
-        avgDaysToMove:   row.avgDaysToMove,
+        vehiclesListed:   row.vehiclesListed,
+        vehiclesSold:     row.vehiclesSold,
+        vehiclesRemoved:  row.vehiclesRemoved,
+        avgDaysToMove:    row.avgDaysToMove,
         medianDaysToMove: row.medianDaysToMove,
+        avgDaysOnPlatform: row.avgDaysOnPlatform,
         totalLeads:      row.totalLeads,
         leadsPerVehicle: row.leadsPerVehicle,
         confidence:      row.confidence,

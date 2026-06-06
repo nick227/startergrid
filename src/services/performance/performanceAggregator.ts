@@ -12,6 +12,7 @@ import {
   type ChannelMetrics,
   type ChannelEventInput,
 } from '../channel/channelMetrics.js';
+import { isExposureOpen, listingStartDate } from '../inventory/vehicleLifecycle.js';
 
 export type { Confidence, MovementSignal, ChannelMetrics };
 
@@ -26,6 +27,7 @@ export type VehiclePerfInput = {
   createdAt: Date;
   soldAt: Date | null;
   removedAt: Date | null;
+  reactivatedAt?: Date | null;
 };
 
 export type VehiclePerfRow = {
@@ -50,8 +52,10 @@ export type PlatformPerfRow = {
   platformSlug: string;
   vehiclesListed: number;
   vehiclesSold: number;
+  vehiclesRemoved: number;
   avgDaysToMove: number | null;
   medianDaysToMove: number | null;
+  avgDaysOnPlatform: number | null;
   totalLeads: number;
   leadsPerVehicle: number | null;
   confidence: Confidence;
@@ -74,32 +78,51 @@ export function aggregatePlatformAssists(
   return byVehicle;
 }
 
-function soldComparables(vehicles: VehiclePerfInput[], target: VehiclePerfInput, now: Date): number[] {
+function soldComparables(
+  vehicles: VehiclePerfInput[],
+  target: VehiclePerfInput,
+  firstSubmitByVehicle: Map<string, Date>,
+  now: Date,
+): number[] {
   const days: number[] = [];
   for (const v of vehicles) {
     if (!v.soldAt) continue;
     if (!isComparable(target, v)) continue;
-    days.push(computeDaysOnline(v.createdAt, v.soldAt, now));
+    const start = listingStartDate(v, firstSubmitByVehicle.get(v.id) ?? null);
+    days.push(computeDaysOnline(start, v.soldAt, now));
   }
   return days;
+}
+
+function buildFirstSubmitByVehicle(submissions: SyncSubmissionEvent[]): Map<string, Date> {
+  const map = new Map<string, Date>();
+  for (const ev of submissions) {
+    if (!ev.vehicleId) continue;
+    if (!map.has(ev.vehicleId)) map.set(ev.vehicleId, ev.createdAt);
+  }
+  return map;
 }
 
 export function buildVehiclePerformanceRows(
   vehicles: VehiclePerfInput[],
   leads: Array<{ vehicleId: string | null; platformSlug: string }>,
-  now: Date = new Date()
+  now: Date = new Date(),
+  submissionEvents: SyncSubmissionEvent[] = [],
 ): VehiclePerfRow[] {
   const assists = aggregatePlatformAssists(leads);
-  const active = vehicles.filter(v => !v.soldAt && !v.removedAt);
+  const active = vehicles.filter(v => isExposureOpen(v));
+  const firstSubmitByVehicle = buildFirstSubmitByVehicle(submissionEvents);
 
   return active.map(vehicle => {
-    const compDays = soldComparables(vehicles, vehicle, now);
+    const firstSubmit = firstSubmitByVehicle.get(vehicle.id) ?? null;
+    const listedAt = listingStartDate(vehicle, firstSubmit);
+    const compDays = soldComparables(vehicles, vehicle, firstSubmitByVehicle, now);
     const comparableCount = compDays.length;
     const avgComparableDays = comparableCount > 0
       ? compDays.reduce((s, d) => s + d, 0) / comparableCount
       : null;
     const medianComparableDays = median(compDays);
-    const daysOnline = computeDaysOnline(vehicle.createdAt, null, now);
+    const daysOnline = computeDaysOnline(listedAt, null, now);
 
     return {
       vehicleId: vehicle.id,
@@ -110,7 +133,7 @@ export function buildVehiclePerformanceRows(
       priceCents: vehicle.priceCents,
       condition: vehicle.condition,
       daysOnline,
-      firstListedAt: vehicle.createdAt,
+      firstListedAt: listedAt,
       comparableCount,
       avgComparableDays,
       medianComparableDays,
@@ -177,7 +200,28 @@ export function buildPlatformRowsFromEvents(
   for (const platformSlug of [...allSlugs].sort()) {
     const vehicleMap = platformVehicleFirst.get(platformSlug) ?? new Map<string, Date>();
     const listedIds = [...vehicleMap.keys()];
-    let vehiclesListed = listedIds.length;
+
+    let vehiclesListed = 0;
+    let vehiclesSold = 0;
+    let vehiclesRemoved = 0;
+    const daysToMove: number[] = [];
+    const daysOnPlatform: number[] = [];
+
+    for (const vehicleId of listedIds) {
+      const vehicle = vehicleById.get(vehicleId);
+      if (!vehicle) continue;
+      const firstSubmit = vehicleMap.get(vehicleId)!;
+
+      if (vehicle.soldAt) {
+        vehiclesSold++;
+        daysToMove.push(computeDaysOnline(firstSubmit, vehicle.soldAt, now));
+      } else if (vehicle.removedAt) {
+        vehiclesRemoved++;
+        daysOnPlatform.push(computeDaysOnline(firstSubmit, vehicle.removedAt, now));
+      } else {
+        vehiclesListed++;
+      }
+    }
 
     if (vehiclesListed === 0) {
       const eventVehicleIds = new Set(
@@ -185,31 +229,28 @@ export function buildPlatformRowsFromEvents(
           .map(e => e.vehicleId)
           .filter((id): id is string => Boolean(id)),
       );
-      vehiclesListed = eventVehicleIds.size;
-    }
-
-    const daysToMove: number[] = [];
-    let vehiclesSold = 0;
-
-    for (const vehicleId of listedIds) {
-      const vehicle = vehicleById.get(vehicleId);
-      if (!vehicle?.soldAt) continue;
-      vehiclesSold++;
-      const firstSubmit = vehicleMap.get(vehicleId)!;
-      daysToMove.push(computeDaysOnline(firstSubmit, vehicle.soldAt, now));
+      for (const vehicleId of eventVehicleIds) {
+        const vehicle = vehicleById.get(vehicleId);
+        if (vehicle && isExposureOpen(vehicle)) vehiclesListed++;
+      }
     }
 
     const totalLeads = leadCounts.get(platformSlug) ?? 0;
     const avgDaysToMove = daysToMove.length > 0
       ? daysToMove.reduce((s, d) => s + d, 0) / daysToMove.length
       : null;
+    const avgDaysOnPlatform = daysOnPlatform.length > 0
+      ? daysOnPlatform.reduce((s, d) => s + d, 0) / daysOnPlatform.length
+      : null;
 
     rows.push({
       platformSlug,
       vehiclesListed,
       vehiclesSold,
+      vehiclesRemoved,
       avgDaysToMove,
       medianDaysToMove: median(daysToMove),
+      avgDaysOnPlatform,
       totalLeads,
       leadsPerVehicle: vehiclesListed > 0 ? totalLeads / vehiclesListed : null,
       confidence: deriveConfidence(vehiclesSold),
@@ -247,10 +288,12 @@ export function buildPlatformPerformanceRows(
       platformSlug,
       vehiclesListed: listed.length,
       vehiclesSold: sold.length,
+      vehiclesRemoved: vehicles.filter(v => v.removedAt && !v.soldAt).length,
       avgDaysToMove: soldDays.length > 0
         ? soldDays.reduce((s, d) => s + d, 0) / soldDays.length
         : null,
       medianDaysToMove: median(soldDays),
+      avgDaysOnPlatform: null,
       totalLeads,
       leadsPerVehicle: listed.length > 0 ? totalLeads / listed.length : null,
       confidence,

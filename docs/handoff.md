@@ -1,7 +1,7 @@
 # Handoff Document — Auto Dealer Sales Portal
 
 **Updated:** 2026-06-06  
-**State:** v4.2.1 · Marketplace Index Quality — hardened query layer, boundary guardrails, 861 tests  
+**State:** v4.4.0 · Channel measurement export integration; v4.4 Sales Status Sync in progress  
 **Branch:** `main`
 
 ---
@@ -210,24 +210,22 @@ Marketplace **inquiries** still feed **`apps/web` aggregate performance** for op
 
 ---
 
-## v4.4 — Sales Status Sync Foundation (planned)
+## v4.4 — Sales Status Sync Foundation (implemented)
 
-**Replaces** the earlier “Partner Metrics Import Foundation” direction. Cleaner and more sellable: movement from inventory + exposure, marketplace measured directly, partner engagement only via future automated integrations.
+Keep inventory sold/removed/available state accurate; use that status for movement benchmarks and platform exposure windows. No CSV partner imports or CRM workflow.
 
-### Goal
+### Delivered
 
-Keep inventory sold/removed/available state accurate, then use that status to improve movement benchmarks and platform exposure windows.
+- **`VehicleLifecycleState`** — `AVAILABLE`, `SOLD`, `REMOVED`, `REACTIVATED` (via `reactivatedAt` on `Vehicle`)
+- **Lifecycle persistence** — `SOLD` / `REMOVED` / `RELISTED` with explicit `statusChangedAt`; sold clears removed/reactivated; relist clears sold/removed
+- **Ingress sales status** — optional `availability` + `statusChangedAt` on JSON ingest → `reconcileSalesStatusFromIngest`
+- **Exposure windows** — platform `vehiclesListed` = active exposure only; `vehiclesRemoved`, `avgDaysOnPlatform` for closed-not-sold; `avgDaysToMove` from submit → sold
+- **Performance jobs** — listing start from earliest `SUBMISSION_SENT` or `reactivatedAt`; purge stale vehicle cache rows on sold/removed; recompute on lifecycle changes via auto-reconcile
+- **API/UI** — `vehiclesRemoved`, `avgDaysOnPlatform` on platform performance items
 
-### Scope
+See **`docs/channel-measurement.md`** for measurement model; lifecycle details in **`src/services/inventory/vehicleLifecycle.ts`**.
 
-- Stronger sold/removed lifecycle (consistent ops paths, reconciliation after sync)
-- Sales status ingestion from existing inventory/sales source (DMS / ingress — not dealer-entered analytics)
-- Reconcile sold vehicles after sync (close exposure windows, trigger benchmark recompute)
-- Platform exposure window accuracy (`SUBMISSION_SENT` → sold/removed)
-- Benchmark recompute after sold/removed changes
-- Movement summaries by platform in `apps/web` (from status + exposure, not imported partner reports)
-
-### Defer or avoid
+### Still deferred
 
 - CSV imports of partner metrics
 - Manual report ingestion
@@ -461,7 +459,7 @@ src/
     poc/                      pocGreen, pocPortalLifecycle, pocRiskMatrix
     server.ts                 Fastify entry point (port 3000)
 
-  tests/                      node:test suite — 861 tests, all pure (no DB)
+  tests/                      node:test suite — 900+ tests, all pure (no DB)
 
 apps/
   web/                        Operator portal (Vite + React + Tailwind)
@@ -555,7 +553,7 @@ Run all of these after any change. None may fail before shipping.
 
 ```bash
 # Core
-npm test                              # 861 tests, 0 failing (backend + web)
+npm test                              # 900+ tests, 0 failing (backend + web + marketplace)
 npm run smoke:test                    # 6/6 system checks (DB, profiles, typecheck)
 npm run typecheck                     # TypeScript, no emit
 
@@ -592,7 +590,7 @@ npm run dealer:export -- <id>
 | `db:push` | Sync schema to MySQL (safe, additive) |
 | `db:seed` | Seed platform profiles + pristine demo dealer |
 | `db:reset` | Force-reset DB + re-seed (destructive) |
-| `test` | Build + run all 861 tests (backend + web) |
+| `test` | Build + run all backend + web + marketplace tests |
 | `typecheck` | TypeScript check, no emit |
 | `smoke:test` | DB connectivity, profile count, typecheck, validate:pristine |
 | `poc:green` | 18/18 GREEN in-memory |
@@ -615,7 +613,7 @@ npm run dealer:export -- <id>
 | `ui:dev` / `dev:operator` | Start Vite operator UI on port 5173 |
 | `marketplace:dev` / `dev:marketplace` | Start Vite marketplace on port 5174 |
 | `demo:reset` | Full teardown + reseed + pipeline verification |
-| `verify:all` | OpenAPI validate + 861 tests + boundary check (no DB required) |
+| `verify:all` | OpenAPI validate (both specs) + tests + boundary check (no DB required) |
 | `build:all` | TypeScript + operator UI + marketplace Vite builds |
 
 ---
@@ -669,7 +667,9 @@ Documented in `openapi/openapi-marketplace.yaml`. Client in `packages/marketplac
 | GET | `/api/marketplace/vehicles` | Paginated browse with filters (see Marketplace API section) |
 | GET | `/api/marketplace/vehicles/:listingId` | Single vehicle detail |
 | POST | `/api/marketplace/vehicles/:listingId/leads` | Anonymous vehicle inquiry (rate-limited) |
+| POST | `/api/marketplace/events` | First-party channel event capture — `vehicle_detail_view`, `dealer_page_view`, `vehicle_impression` (rate-limited) |
 | GET | `/api/marketplace/dealers/:dealerId` | Dealer storefront index |
+| GET | `/api/marketplace/dealers/:dealerId/stats` | Aggregate observed marketplace activity — vehicleDetailViews, dealerPageViews, inquirySubmissions |
 
 ---
 
@@ -699,6 +699,7 @@ DealershipProfile
   └── DealerSubscription
   └── SyncPolicy, PublishQueueItem, SyncRun, SyncEvent
   └── PlatformAccount
+  └── ChannelEvent                    First-party and imported engagement events (append-only)
   └── VehiclePerformanceCache         Per-vehicle movement signal cache (one row per vehicle)
   └── PlatformPerformanceSummary      Per-platform observed assist summary (one row per slug)
 
@@ -706,11 +707,17 @@ PlatformProfile (seeded registry of 18)
 PlatformProfileVersion (versioned snapshots, SHA-256 checked)
 ```
 
+**Channel measurement models** — see `docs/channel-measurement.md` for full contract.
+
+`ChannelEvent` — append-only engagement facts per `(dealershipId, platformSlug)`. Each row has an `eventType` (`VEHICLE_DETAIL_VIEW`, `DEALER_PAGE_VIEW`, `INQUIRY_SUBMITTED`, `REPORTED_CLICK`, `REPORTED_VIEW`, `REPORTED_CONTACT`, `VEHICLE_IMPRESSION`), a `sourceConfidence` (`OBSERVED_FIRST_PARTY`, `PLATFORM_REPORTED`, `MANUAL_IMPORTED`, `UNAVAILABLE`), a `quantity` (supports batch imports), and an optional `vehicleId` / `listingId`. Does not store buyer PII or VINs.
+
+Marketplace UI writes `OBSERVED_FIRST_PARTY` events for consumer-marketplace. The `INQUIRY_SUBMITTED` event is also written when a marketplace lead is captured — `ChannelEvent` and `Lead` are complementary, not duplicates.
+
 **Performance cache models** — see the full contract in [Performance Data Contract](#performance-data-contract).
 
 `VehiclePerformanceCache` — keyed `(dealershipId, vehicleId)`. One row per active vehicle. `benchmarkLabel` is derived at query time, never stored.
 
-`PlatformPerformanceSummary` — keyed `(dealershipId, platformSlug)`. One row per platform with SUBMISSION\_SENT events. `observedAssistLabel` is derived at query time, never stored.
+`PlatformPerformanceSummary` — keyed `(dealershipId, platformSlug)`. One row per platform with SUBMISSION\_SENT events. `channelMetricsJson` holds a normalized rollup from `ChannelEvent` rows (see `docs/channel-measurement.md`). `observedAssistLabel` is derived at query time, never stored.
 
 **Cascade:** Deleting a `DealershipProfile` cascades to all child rows. `GeneratedArtifact.linkedRunId` is `onDelete: SetNull`.
 
@@ -835,13 +842,17 @@ These rules are enforced in tests. Any label change must pass the language contr
 | Platform queue + scheduler + approval workflow | `sync:queue`, `sync:scheduler`, `sync:approval` |
 | Vehicle update propagation (price, photos, sold, removed) | `vehicle:update` |
 | Feed artifact generation (all 18 formats) | (internal to dealer:create + publish:prepare) |
-| Proof folder ZIP | `dealer:proof` |
-| Dealer data export ZIP | `dealer:export` |
+| Proof folder ZIP (includes channel event summary) | `dealer:proof` |
+| Dealer data export ZIP (includes channel-activity-summary.json) | `dealer:export` |
 | Invoice computation | `dealer:invoice -- <id> <YYYY-MM>` |
 | Operator Publish Console UI | `npm run ui:dev` + open localhost:5173 |
 | Publish API (prepare, status, history, accounts) | See HTTP API section above |
 | Performance Insights UI (Insights tab) | `npm run ui:dev`, pick dealer, click Insights |
 | Performance API (vehicle list, vehicle detail, platform list, summary, compute) | See HTTP API section above |
+| Marketplace consumer browse + vehicle inquiry | `npm run marketplace:dev` + open localhost:5174 |
+| Marketplace channel event capture (`POST /api/marketplace/events`) | OpenAPI: `openapi/openapi-marketplace.yaml` |
+| Marketplace dealer stats (`GET .../dealers/:id/stats`) | Returns vehicleDetailViews, dealerPageViews, inquirySubmissions |
+| Channel performance in operator portal | Platform rows show `channelMetricsJson` (views, inquiries per slug) |
 
 ---
 

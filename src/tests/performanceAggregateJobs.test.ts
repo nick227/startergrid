@@ -174,13 +174,14 @@ describe('buildPlatformRowsFromEvents', () => {
     assert.equal(rows[0]!.sampleSize, rows[0]!.vehiclesSold);
   });
 
-  it('vehicle that is removed (removedAt set) is still counted in vehiclesListed but not sold', () => {
+  it('vehicle that is removed (removedAt set) closes active listing but tracks removal', () => {
     const removedVehicle: VehiclePerfInput = { ...BASE_VEHICLE, removedAt: days(5) };
     const subs: SyncSubmissionEvent[] = [
-      { vehicleId: 'v1', platformSlug: 'autotrader', createdAt: days(15) },
+      { vehicleId: 'v1', platformSlug: 'autotrader', createdAt: days(25) },
     ];
     const rows = buildPlatformRowsFromEvents([removedVehicle], subs, [], [], NOW);
-    assert.equal(rows[0]!.vehiclesListed, 1);
+    assert.equal(rows[0]!.vehiclesListed, 0);
+    assert.equal(rows[0]!.vehiclesRemoved, 1);
     assert.equal(rows[0]!.vehiclesSold, 0);
   });
 
@@ -194,7 +195,7 @@ describe('buildPlatformRowsFromEvents', () => {
     assert.equal(rows.length, 2);
     // Each platform independently counted the vehicle
     for (const row of rows) {
-      assert.equal(row.vehiclesListed, 1);
+      assert.equal(row.vehiclesListed, 0);
       assert.equal(row.vehiclesSold, 1);
     }
     // But avgDaysToMove differs because first-submit date differs

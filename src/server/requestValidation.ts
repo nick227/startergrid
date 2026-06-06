@@ -145,6 +145,8 @@ const jsonIngestVehicleSchema = z.object({
   fuelType:      optionalText(80),
   transmission:  optionalText(80),
   photoUrls:     z.array(z.string().trim().url().max(512)).max(100).optional(),
+  availability:  z.enum(['available', 'sold', 'removed']).optional(),
+  statusChangedAt: z.string().datetime().optional(),
 }).strict();
 
 export const jsonIngestSchema = z.object({

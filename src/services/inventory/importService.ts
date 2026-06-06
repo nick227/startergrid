@@ -490,6 +490,8 @@ export type IngestVehicleInput = {
   fuelType?:     string;
   transmission?: string;
   photoUrls?:    string[];
+  availability?: 'available' | 'sold' | 'removed';
+  statusChangedAt?: string;
 };
 
 export type JsonIngestResult = {
@@ -645,6 +647,18 @@ export async function ingestJsonVehicles(
   }
 
   if (result.status === 'COMMITTED') {
+    const statusRows = vehicles
+      .filter(v => v.availability)
+      .map(v => ({
+        stockNumber: v.stockNumber,
+        availability: v.availability!,
+        statusChangedAt: v.statusChangedAt ? new Date(v.statusChangedAt) : undefined,
+      }));
+    if (statusRows.length > 0) {
+      const { reconcileSalesStatusFromIngest } = await import('./salesStatusReconcileService.js');
+      await reconcileSalesStatusFromIngest(prisma, dealershipId, statusRows);
+    }
+
     const { scheduleAutoReconcile } = await import('../publishing/autoReconcileService.js');
     scheduleAutoReconcile(dealershipId, { full: true, ingressRunId: result.ingressRunId });
   }

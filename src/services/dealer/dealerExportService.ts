@@ -2,6 +2,9 @@ import fs from 'node:fs/promises';
 import path from 'node:path';
 import JSZip from 'jszip';
 import type { PrismaClient } from '@prisma/client';
+import {
+  buildChannelActivitySummary,
+} from '../channel/channelEventService.js';
 
 export type DealerExportManifest = {
   exportedAt: string;
@@ -15,6 +18,7 @@ export type DealerExportManifest = {
   hasSubscription: boolean;
   ingressSourceCount: number;
   ingressRunCount: number;
+  channelEventCount: number;
 };
 
 export async function exportDealerArchive(
@@ -161,6 +165,12 @@ export async function exportDealerArchive(
     };
   }), null, 2));
 
+  // channel-activity-summary.json
+  // Aggregate observed marketplace activity and reported platform activity.
+  // Contains no buyer PII, no vehicle VINs, no operator internals — counts only.
+  const channelActivitySummary = await buildChannelActivitySummary(prisma, dealershipId);
+  zip.file('channel-activity-summary.json', JSON.stringify(channelActivitySummary, null, 2));
+
   // ingress-runs.json (20 most recent)
   const ingressRuns = await prisma.ingressRun.findMany({
     where: { dealershipId },
@@ -192,6 +202,7 @@ export async function exportDealerArchive(
     hasSubscription: dealer.subscription !== null,
     ingressSourceCount: ingressSources.length,
     ingressRunCount: ingressRuns.length,
+    channelEventCount: channelActivitySummary.total,
   };
   zip.file('export-manifest.json', JSON.stringify(manifest, null, 2));
 

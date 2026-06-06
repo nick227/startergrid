@@ -36,8 +36,10 @@ export type PlatformPerformanceItem = {
   platformSlug:        string;
   vehiclesListed:      number;
   vehiclesSold:        number;
+  vehiclesRemoved:     number;
   avgDaysToMove:       number | null;
   medianDaysToMove:    number | null;
+  avgDaysOnPlatform:   number | null;
   totalLeads:          number;
   leadsPerVehicle:     number | null;
   confidence:          string;
@@ -80,17 +82,19 @@ type CacheRow = {
 };
 
 type SummaryRow = {
-  platformSlug:    string;
-  vehiclesListed:  number;
-  vehiclesSold:    number;
-  avgDaysToMove:   number | null;
+  platformSlug:     string;
+  vehiclesListed:   number;
+  vehiclesSold:     number;
+  vehiclesRemoved:  number;
+  avgDaysToMove:    number | null;
   medianDaysToMove: number | null;
-  totalLeads:      number;
-  leadsPerVehicle: number | null;
-  confidence:      string;
-  sampleSize:      number;
+  avgDaysOnPlatform: number | null;
+  totalLeads:       number;
+  leadsPerVehicle:  number | null;
+  confidence:       string;
+  sampleSize:       number;
   channelMetricsJson: unknown;
-  computedAt:      Date;
+  computedAt:       Date;
 };
 
 function shapeVehicle(v: CacheRow): VehiclePerformanceItem {
@@ -121,8 +125,10 @@ function shapePlatform(p: SummaryRow): PlatformPerformanceItem {
     platformSlug:        p.platformSlug,
     vehiclesListed:      p.vehiclesListed,
     vehiclesSold:        p.vehiclesSold,
+    vehiclesRemoved:     p.vehiclesRemoved,
     avgDaysToMove:       p.avgDaysToMove,
     medianDaysToMove:    p.medianDaysToMove,
+    avgDaysOnPlatform:   p.avgDaysOnPlatform,
     totalLeads:          p.totalLeads,
     leadsPerVehicle:     p.leadsPerVehicle,
     confidence:          p.confidence,

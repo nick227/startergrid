@@ -2,6 +2,10 @@ import fs from 'node:fs/promises';
 import path from 'node:path';
 import JSZip from 'jszip';
 import type { PrismaClient } from '@prisma/client';
+import {
+  buildChannelActivitySummary,
+  type ChannelActivitySummary,
+} from '../channel/channelEventService.js';
 
 export type ProofFolderManifest = {
   dealershipId: string;
@@ -49,6 +53,9 @@ export type ProofFolderManifest = {
     total: number;
     byKind: Record<string, number>;
   };
+  // Aggregate observed marketplace activity and reported platform activity.
+  // Contains no buyer PII and no vehicle VINs — counts only.
+  channelEventSummary: ChannelActivitySummary;
 };
 
 export async function buildProofFolderManifest(
@@ -155,7 +162,8 @@ export async function buildProofFolderManifest(
     activationSummary,
     invoiceSummary,
     leadSummary: { total: leads.length, byPlatform: leadByPlatform },
-    inventoryUpdateSummary: { total: vehicleUpdates.length, byKind: updateByKind }
+    inventoryUpdateSummary: { total: vehicleUpdates.length, byKind: updateByKind },
+    channelEventSummary: await buildChannelActivitySummary(prisma, dealershipId),
   };
 }
 

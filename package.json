@@ -1,9 +1,9 @@
 {
   "name": "auto-dealer-onboarding-poc-v1",
-  "version": "4.3.1",
+  "version": "4.4.0",
   "private": true,
   "type": "module",
-  "description": "V4.3.1: Channel metrics polish — demo seed, confidence-aware display, measurement docs.",
+  "description": "V4.4: Sales status sync foundation — lifecycle, exposure windows, benchmark recompute.",
   "scripts": {
     "build": "tsc",
     "typecheck": "tsc --noEmit",

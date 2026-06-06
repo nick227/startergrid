@@ -87,6 +87,10 @@ export async function persistLead(
   return created.id;
 }
 
+export type PersistVehicleUpdateOpts = {
+  statusChangedAt?: Date;
+};
+
 export async function persistVehicleUpdate(
   prisma: PrismaClient,
   vehicleId: string,
@@ -94,24 +98,40 @@ export async function persistVehicleUpdate(
   kind: 'PRICE_CHANGE' | 'PHOTO_CHANGE' | 'SOLD' | 'REMOVED' | 'RELISTED' | 'DETAILS_CHANGE',
   previousValue?: Record<string, unknown> | null,
   newValue?: Record<string, unknown> | null,
-  propagatedTo?: string[]
+  propagatedTo?: string[],
+  opts: PersistVehicleUpdateOpts = {},
 ): Promise<string> {
+  const at = opts.statusChangedAt ?? new Date();
+  const storedNewValue = kind === 'SOLD' || kind === 'REMOVED' || kind === 'RELISTED'
+    ? { ...(newValue ?? {}), statusChangedAt: at.toISOString() }
+    : newValue;
+
   const row = await prisma.vehicleUpdate.create({
     data: {
       vehicleId,
       dealershipId,
       kind,
       previousValue: previousValue != null ? (previousValue as unknown as Prisma.InputJsonValue) : undefined,
-      newValue: newValue != null ? (newValue as unknown as Prisma.InputJsonValue) : undefined,
+      newValue: storedNewValue != null ? (storedNewValue as unknown as Prisma.InputJsonValue) : undefined,
       propagatedTo: propagatedTo ? ({ platforms: propagatedTo } as unknown as Prisma.InputJsonValue) : undefined
     }
   });
 
   if (kind === 'SOLD') {
-    await prisma.vehicle.update({ where: { id: vehicleId }, data: { soldAt: new Date() } });
-  }
-  if (kind === 'REMOVED') {
-    await prisma.vehicle.update({ where: { id: vehicleId }, data: { removedAt: new Date() } });
+    await prisma.vehicle.update({
+      where: { id: vehicleId },
+      data: { soldAt: at, removedAt: null, reactivatedAt: null },
+    });
+  } else if (kind === 'REMOVED') {
+    await prisma.vehicle.update({
+      where: { id: vehicleId },
+      data: { removedAt: at, reactivatedAt: null },
+    });
+  } else if (kind === 'RELISTED') {
+    await prisma.vehicle.update({
+      where: { id: vehicleId },
+      data: { soldAt: null, removedAt: null, reactivatedAt: at },
+    });
   }
 
   return row.id;

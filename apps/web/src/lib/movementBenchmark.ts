@@ -146,6 +146,12 @@ export function formatPlatformAssistHint(item: PlatformPerformanceItem): string 
   if (item.totalLeads > 0) {
     parts.push(`${item.totalLeads} observed assist${item.totalLeads !== 1 ? 's' : ''}`);
   }
+  if (item.avgDaysOnPlatform != null && item.avgDaysToMove == null) {
+    parts.push(`avg on platform ${Math.round(item.avgDaysOnPlatform)}d`);
+  }
+  if (item.vehiclesRemoved > 0 && item.avgDaysOnPlatform == null) {
+    parts.push(`${item.vehiclesRemoved} removed`);
+  }
   if (item.confidence === 'INSUFFICIENT' || item.confidence === 'LOW') {
     parts.push('low confidence');
   }

@@ -1,20 +1,12 @@
 import type { Prisma, PrismaClient } from '@prisma/client';
-import { buildVehiclePerformanceRows, type VehiclePerfInput } from './performanceAggregator.js';
-
-// ── Types ─────────────────────────────────────────────────────────────────────
+import { buildVehiclePerformanceRows, type VehiclePerfInput, type SyncSubmissionEvent } from './performanceAggregator.js';
 
 export type VehicleJobResult = {
   computed: number;
+  purged: number;
   errors: number;
 };
 
-// ── Main job ──────────────────────────────────────────────────────────────────
-
-// Fetches all vehicles for a dealer (active + sold — sold vehicles are needed to
-// compute the comparable average), plus leads, then upserts one cache row per active vehicle.
-//
-// Idempotent: safe to rerun at any time. Uses upsert so partial runs leave the
-// table in a consistent state; no deleteMany before recreating.
 export async function computeVehiclePerformanceCache(
   prisma: PrismaClient,
   dealershipId: string,
@@ -22,7 +14,6 @@ export async function computeVehiclePerformanceCache(
 ): Promise<VehicleJobResult> {
   const now = opts.now ?? new Date();
 
-  // Fetch all vehicles — including sold ones so comparableAvgDays is accurate.
   const vehicles = await prisma.vehicle.findMany({
     where: { dealershipId },
     select: {
@@ -36,29 +27,58 @@ export async function computeVehiclePerformanceCache(
       createdAt: true,
       soldAt: true,
       removedAt: true,
+      reactivatedAt: true,
     },
   });
 
-  // Leads drive the platformAssistsJson: which platforms generated leads for each vehicle.
   const leads = await prisma.lead.findMany({
     where: { dealershipId },
     select: { vehicleId: true, platformSlug: true },
   });
 
+  const submissionEvents = await prisma.syncEvent.findMany({
+    where: {
+      dealershipId,
+      kind: 'SUBMISSION_SENT',
+      vehicleId: { not: null },
+    },
+    select: { vehicleId: true, platformSlug: true, createdAt: true },
+    orderBy: { createdAt: 'asc' },
+  });
+
   const vehicleInputs: VehiclePerfInput[] = vehicles.map(v => ({
-    id:          v.id,
-    stockNumber: v.stockNumber,
-    make:        v.make,
-    model:       v.model,
-    year:        v.year,
-    priceCents:  v.priceCents,
-    condition:   v.condition,
-    createdAt:   v.createdAt,
-    soldAt:      v.soldAt,
-    removedAt:   v.removedAt,
+    id:            v.id,
+    stockNumber:   v.stockNumber,
+    make:          v.make,
+    model:         v.model,
+    year:          v.year,
+    priceCents:    v.priceCents,
+    condition:     v.condition,
+    createdAt:     v.createdAt,
+    soldAt:        v.soldAt,
+    removedAt:     v.removedAt,
+    reactivatedAt: v.reactivatedAt,
   }));
 
-  const rows = buildVehiclePerformanceRows(vehicleInputs, leads, now);
+  const submissionInputs: SyncSubmissionEvent[] = submissionEvents.map(ev => ({
+    vehicleId:    ev.vehicleId,
+    platformSlug: ev.platformSlug,
+    createdAt:    ev.createdAt,
+  }));
+
+  const rows = buildVehiclePerformanceRows(vehicleInputs, leads, now, submissionInputs);
+  const activeIds = new Set(rows.map(r => r.vehicleId));
+
+  const stale = await prisma.vehiclePerformanceCache.findMany({
+    where: { dealershipId },
+    select: { vehicleId: true },
+  });
+  let purged = 0;
+  for (const row of stale) {
+    if (activeIds.has(row.vehicleId)) continue;
+    await prisma.vehiclePerformanceCache.delete({ where: { vehicleId: row.vehicleId } });
+    purged++;
+  }
 
   let computed = 0;
   let errors = 0;
@@ -97,5 +117,5 @@ export async function computeVehiclePerformanceCache(
     }
   }
 
-  return { computed, errors };
+  return { computed, purged, errors };
 }

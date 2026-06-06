@@ -154,6 +154,7 @@ model Vehicle {
   starCore        Json
   soldAt          DateTime?
   removedAt       DateTime?
+  reactivatedAt   DateTime?
   createdAt       DateTime @default(now())
   updatedAt       DateTime @updatedAt
 
@@ -726,8 +727,10 @@ model PlatformPerformanceSummary {
   platformSlug     String   @db.VarChar(80)
   vehiclesListed   Int      @default(0)
   vehiclesSold     Int      @default(0)
+  vehiclesRemoved  Int      @default(0)
   avgDaysToMove    Float?
   medianDaysToMove Float?
+  avgDaysOnPlatform Float?
   totalLeads       Int      @default(0)
   leadsPerVehicle  Float?
   confidence       String   @db.VarChar(16)  // INSUFFICIENT|LOW|MEDIUM|HIGH

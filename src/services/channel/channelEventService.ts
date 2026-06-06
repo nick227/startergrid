@@ -115,6 +115,64 @@ export async function fetchChannelEventsForDealer(
   }));
 }
 
+// ── Channel activity summary ──────────────────────────────────────────────────
+// Aggregate-only summary of observed marketplace activity and reported platform
+// activity. Contains no buyer PII, no vehicle VINs, and no operator internals.
+// Used in dealer:export and proof manifests to document channel engagement.
+
+export type ChannelActivitySummary = {
+  total:              number;            // sum of all event quantities
+  byPlatform:         Record<string, number>;
+  byEventType:        Record<string, number>;
+  bySourceConfidence: Record<string, number>;
+  latestOccurredAt:   string | null;     // ISO 8601; null if no events
+};
+
+export async function buildChannelActivitySummary(
+  prisma:       PrismaClient,
+  dealershipId: string,
+): Promise<ChannelActivitySummary> {
+  const [byPlatform, byEventType, byConfidence, latest] = await Promise.all([
+    prisma.channelEvent.groupBy({
+      by:    ['platformSlug'],
+      where: { dealershipId },
+      _sum:  { quantity: true },
+    }),
+    prisma.channelEvent.groupBy({
+      by:    ['eventType'],
+      where: { dealershipId },
+      _sum:  { quantity: true },
+    }),
+    prisma.channelEvent.groupBy({
+      by:    ['sourceConfidence'],
+      where: { dealershipId },
+      _sum:  { quantity: true },
+    }),
+    prisma.channelEvent.findFirst({
+      where:   { dealershipId },
+      orderBy: { occurredAt: 'desc' },
+      select:  { occurredAt: true },
+    }),
+  ]);
+
+  const toRecord = <T extends { _sum: { quantity: number | null } }>(
+    rows: T[],
+    key: (r: T) => string,
+  ): Record<string, number> =>
+    Object.fromEntries(rows.map(r => [key(r), r._sum.quantity ?? 0]));
+
+  const platformMap = toRecord(byPlatform, r => r.platformSlug);
+  const total = Object.values(platformMap).reduce((s, n) => s + n, 0);
+
+  return {
+    total,
+    byPlatform:         platformMap,
+    byEventType:        toRecord(byEventType, r => r.eventType as string),
+    bySourceConfidence: toRecord(byConfidence, r => r.sourceConfidence as string),
+    latestOccurredAt:   latest?.occurredAt.toISOString() ?? null,
+  };
+}
+
 export type MarketplaceDealerStats = {
   dealerId:           string;
   vehicleDetailViews: number;

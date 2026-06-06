@@ -9,6 +9,7 @@ import { enqueueFromVehicleUpdate } from '../publishing/publishQueueService.js';
 export type VehicleUpdateOptions = {
   priceCents?: number;
   photoUrls?: string[];
+  statusChangedAt?: Date;
 };
 
 export type VehicleUpdateResult = {
@@ -76,6 +77,13 @@ export async function applyVehicleUpdate(
   });
   if (!dbVehicle) throw new Error(`Vehicle ${stockNumber} not found for dealer ${dealershipId}`);
 
+  if (kind === 'REMOVED' && dbVehicle.soldAt) {
+    throw new Error(`Vehicle ${stockNumber} is already sold — cannot mark removed`);
+  }
+  if (kind === 'RELISTED' && !dbVehicle.soldAt && !dbVehicle.removedAt) {
+    throw new Error(`Vehicle ${stockNumber} is already available`);
+  }
+
   const previousValue: Record<string, unknown> = {};
   const newValue: Record<string, unknown> = {};
 
@@ -124,7 +132,8 @@ export async function applyVehicleUpdate(
     kind,
     Object.keys(previousValue).length > 0 ? previousValue : null,
     Object.keys(newValue).length > 0 ? newValue : null,
-    propagatedSlugs
+    propagatedSlugs,
+    { statusChangedAt: opts.statusChangedAt },
   );
 
   // Emit SyncEvent + enqueue PublishQueueItems for each affected platform
@@ -136,9 +145,9 @@ export async function applyVehicleUpdate(
     syncEventId = result.syncEventId;
   }
 
-  if (queueItemsCreated > 0) {
+  if (queueItemsCreated > 0 || kind === 'SOLD' || kind === 'REMOVED' || kind === 'RELISTED') {
     const { scheduleAutoReconcile } = await import('../publishing/autoReconcileService.js');
-    const urgent = kind === 'SOLD' || kind === 'REMOVED';
+    const urgent = kind === 'SOLD' || kind === 'REMOVED' || kind === 'RELISTED';
     scheduleAutoReconcile(dealershipId, { full: false, immediate: urgent });
   }
 
