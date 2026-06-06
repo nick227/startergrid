@@ -423,7 +423,27 @@ export type PlatformPerformanceItem = {
   confidence:          PerformanceConfidence;
   sampleSize:          number;
   observedAssistLabel: string;
+  channelMetrics:      ChannelMetrics;
   computedAt:          string;
+};
+
+export type MetricConfidence =
+  | 'observed_first_party'
+  | 'platform_reported'
+  | 'manual_imported'
+  | 'unavailable';
+
+export type ChannelMetric = {
+  count: number;
+  confidence: MetricConfidence;
+};
+
+export type ChannelMetrics = {
+  views?:            ChannelMetric;
+  detailViews?:      ChannelMetric;
+  inquiries?:        ChannelMetric;
+  reportedClicks?:   ChannelMetric;
+  reportedContacts?: ChannelMetric;
 };
 
 export type PerformanceSummaryView = {

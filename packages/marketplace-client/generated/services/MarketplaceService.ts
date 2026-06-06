@@ -2,6 +2,8 @@
 /* istanbul ignore file */
 /* tslint:disable */
 /* eslint-disable */
+import type { MarketplaceChannelEventRequest } from '../models/MarketplaceChannelEventRequest';
+import type { MarketplaceChannelEventResponse } from '../models/MarketplaceChannelEventResponse';
 import type { MarketplaceDealerIndexResponse } from '../models/MarketplaceDealerIndexResponse';
 import type { MarketplaceLeadCaptureRequest } from '../models/MarketplaceLeadCaptureRequest';
 import type { MarketplaceLeadCaptureResponse } from '../models/MarketplaceLeadCaptureResponse';
@@ -125,6 +127,32 @@ export class MarketplaceService {
             path: {
                 'listingId': listingId,
             },
+            body: requestBody,
+            mediaType: 'application/json',
+            errors: {
+                400: `Bad request — invalid query parameter value`,
+                404: `Not found`,
+                429: `Too many requests`,
+            },
+        });
+    }
+    /**
+     * Record a first-party marketplace engagement event
+     * Captures observed_first_party channel events for consumer-marketplace.
+     * Does not return analytics. GET marketplace endpoints remain analytics-free.
+     * Rate-limited public write.
+     *
+     * @returns MarketplaceChannelEventResponse Event accepted
+     * @throws ApiError
+     */
+    public static captureMarketplaceChannelEvent({
+        requestBody,
+    }: {
+        requestBody: MarketplaceChannelEventRequest,
+    }): CancelablePromise<MarketplaceChannelEventResponse> {
+        return __request(OpenAPI, {
+            method: 'POST',
+            url: '/api/marketplace/events',
             body: requestBody,
             mediaType: 'application/json',
             errors: {

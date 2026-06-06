@@ -1,8 +1,10 @@
 import type { PrismaClient } from '@prisma/client';
+import { MARKETPLACE_PLATFORM_SLUG } from '../channel/channelMetrics.js';
+import { recordChannelEvent } from '../channel/channelEventService.js';
 import { persistLead } from '../publishing/lifecyclePersistenceService.js';
 import { notifyLeadCaptured } from '../dealer/dealerNotificationService.js';
 
-export const MARKETPLACE_PLATFORM_SLUG = 'consumer-marketplace';
+export { MARKETPLACE_PLATFORM_SLUG };
 
 export type MarketplaceLeadContact = {
   contactName?:  string | null;
@@ -62,6 +64,16 @@ export async function captureMarketplaceLead(
       stockNumber: listing.stockNumber,
     },
   );
+
+  await recordChannelEvent(prisma, {
+    dealershipId:     listing.dealershipId,
+    platformSlug:       MARKETPLACE_PLATFORM_SLUG,
+    eventType:          'INQUIRY_SUBMITTED',
+    sourceConfidence:   'OBSERVED_FIRST_PARTY',
+    vehicleId:          listing.id,
+    listingId,
+    quantity:           1,
+  });
 
   return { leadId };
 }

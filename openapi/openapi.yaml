@@ -2242,6 +2242,7 @@ components:
         - confidence
         - sampleSize
         - observedAssistLabel
+        - channelMetrics
         - computedAt
       properties:
         platformSlug:
@@ -2280,9 +2281,39 @@ components:
           description: >
             "strong observed assist" | "possible assist" | "insufficient data".
             Never says "sold by". Derived from confidence.
+        channelMetrics:
+          $ref: '#/components/schemas/ChannelMetrics'
         computedAt:
           type: string
           format: date-time
+
+    ChannelMetric:
+      type: object
+      required: [count, confidence]
+      properties:
+        count:
+          type: integer
+          minimum: 0
+        confidence:
+          type: string
+          enum: [observed_first_party, platform_reported, manual_imported, unavailable]
+
+    ChannelMetrics:
+      type: object
+      description: >
+        Normalized channel engagement counts. Omitted metrics were not observed —
+        never inferred as zero with unavailable confidence.
+      properties:
+        views:
+          $ref: '#/components/schemas/ChannelMetric'
+        detailViews:
+          $ref: '#/components/schemas/ChannelMetric'
+        inquiries:
+          $ref: '#/components/schemas/ChannelMetric'
+        reportedClicks:
+          $ref: '#/components/schemas/ChannelMetric'
+        reportedContacts:
+          $ref: '#/components/schemas/ChannelMetric'
 
     PerformanceSummaryView:
       type: object

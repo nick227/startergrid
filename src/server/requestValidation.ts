@@ -187,3 +187,16 @@ export const marketplaceLeadCaptureSchema = z.object({
 
 export type MarketplaceLeadCaptureBody = z.infer<typeof marketplaceLeadCaptureSchema>;
 
+// operationId: captureMarketplaceChannelEvent
+export const marketplaceChannelEventSchema = z.object({
+  eventType: z.enum(['vehicle_impression', 'vehicle_detail_view', 'dealer_page_view']),
+  listingId: optionalText(80),
+  dealerId:  optionalText(80),
+}).strict().refine(
+  body => {
+    if (body.eventType === 'dealer_page_view') return Boolean(body.dealerId?.trim());
+    return Boolean(body.listingId?.trim());
+  },
+  'dealer_page_view requires dealerId; vehicle events require listingId',
+);
+

@@ -32,7 +32,7 @@ const BASE_VEHICLE: VehiclePerfInput = {
 
 describe('buildPlatformRowsFromEvents', () => {
   it('returns empty array when there are no submissions', () => {
-    const rows = buildPlatformRowsFromEvents([BASE_VEHICLE], [], [], NOW);
+    const rows = buildPlatformRowsFromEvents([BASE_VEHICLE], [], [], [], NOW);
     assert.equal(rows.length, 0);
   });
 
@@ -41,7 +41,7 @@ describe('buildPlatformRowsFromEvents', () => {
       { vehicleId: null,  platformSlug: 'autotrader', createdAt: days(20) },
       { vehicleId: 'v1',  platformSlug: null,         createdAt: days(20) },
     ];
-    const rows = buildPlatformRowsFromEvents([BASE_VEHICLE], bad, [], NOW);
+    const rows = buildPlatformRowsFromEvents([BASE_VEHICLE], bad, [], [], NOW);
     assert.equal(rows.length, 0);
   });
 
@@ -50,7 +50,7 @@ describe('buildPlatformRowsFromEvents', () => {
       { vehicleId: 'v1', platformSlug: 'autotrader', createdAt: days(25) },
       { vehicleId: 'v1', platformSlug: 'cars.com',   createdAt: days(20) },
     ];
-    const rows = buildPlatformRowsFromEvents([BASE_VEHICLE], subs, [], NOW);
+    const rows = buildPlatformRowsFromEvents([BASE_VEHICLE], subs, [], [], NOW);
     const slugs = rows.map(r => r.platformSlug).sort();
     assert.deepEqual(slugs, ['autotrader', 'cars.com']);
   });
@@ -61,7 +61,7 @@ describe('buildPlatformRowsFromEvents', () => {
       { vehicleId: 'v1', platformSlug: 'autotrader', createdAt: days(25) },
       { vehicleId: 'v2', platformSlug: 'autotrader', createdAt: days(20) },
     ];
-    const rows = buildPlatformRowsFromEvents([BASE_VEHICLE, v2], subs, [], NOW);
+    const rows = buildPlatformRowsFromEvents([BASE_VEHICLE, v2], subs, [], [], NOW);
     assert.equal(rows[0]!.vehiclesListed, 2);
   });
 
@@ -71,7 +71,7 @@ describe('buildPlatformRowsFromEvents', () => {
       { vehicleId: 'v1', platformSlug: 'autotrader', createdAt: days(10) },
       { vehicleId: 'v1', platformSlug: 'autotrader', createdAt: days(5)  },
     ];
-    const rows = buildPlatformRowsFromEvents([BASE_VEHICLE], subs, [], NOW);
+    const rows = buildPlatformRowsFromEvents([BASE_VEHICLE], subs, [], [], NOW);
     assert.equal(rows.length, 1);
     assert.equal(rows[0]!.vehiclesListed, 1);
   });
@@ -84,7 +84,7 @@ describe('buildPlatformRowsFromEvents', () => {
       { vehicleId: 'v1', platformSlug: 'autotrader', createdAt: days(25) },
       { vehicleId: 'v1', platformSlug: 'autotrader', createdAt: days(10) },
     ];
-    const rows = buildPlatformRowsFromEvents([soldVehicle], subs, [], NOW);
+    const rows = buildPlatformRowsFromEvents([soldVehicle], subs, [], [], NOW);
     assert.equal(rows[0]!.vehiclesSold, 1);
     assert.equal(rows[0]!.avgDaysToMove, 10);
   });
@@ -93,7 +93,7 @@ describe('buildPlatformRowsFromEvents', () => {
     const subs: SyncSubmissionEvent[] = [
       { vehicleId: 'v1', platformSlug: 'autotrader', createdAt: days(25) },
     ];
-    const rows = buildPlatformRowsFromEvents([BASE_VEHICLE], subs, [], NOW);
+    const rows = buildPlatformRowsFromEvents([BASE_VEHICLE], subs, [], [], NOW);
     assert.equal(rows[0]!.vehiclesSold, 0);
     assert.equal(rows[0]!.avgDaysToMove, null);
     assert.equal(rows[0]!.medianDaysToMove, null);
@@ -103,7 +103,7 @@ describe('buildPlatformRowsFromEvents', () => {
     const subs: SyncSubmissionEvent[] = [
       { vehicleId: 'v1', platformSlug: 'autotrader', createdAt: days(25) },
     ];
-    const rows = buildPlatformRowsFromEvents([BASE_VEHICLE], subs, [], NOW);
+    const rows = buildPlatformRowsFromEvents([BASE_VEHICLE], subs, [], [], NOW);
     assert.equal(rows[0]!.confidence, 'INSUFFICIENT');
   });
 
@@ -114,7 +114,7 @@ describe('buildPlatformRowsFromEvents', () => {
     const subs: SyncSubmissionEvent[] = vehicles.map(v => ({
       vehicleId: v.id, platformSlug: 'autotrader', createdAt: days(20),
     }));
-    const rows = buildPlatformRowsFromEvents(vehicles, subs, [], NOW);
+    const rows = buildPlatformRowsFromEvents(vehicles, subs, [], [], NOW);
     assert.equal(rows[0]!.confidence, 'LOW');
     assert.equal(rows[0]!.sampleSize, 3);
   });
@@ -128,7 +128,7 @@ describe('buildPlatformRowsFromEvents', () => {
       { vehicleId: 'v1', platformSlug: 'autotrader', createdAt: days(20) },
       { vehicleId: 'v2', platformSlug: 'autotrader', createdAt: days(25) },
     ];
-    const rows = buildPlatformRowsFromEvents([v1, v2], subs, [], NOW);
+    const rows = buildPlatformRowsFromEvents([v1, v2], subs, [], [], NOW);
     assert.equal(rows[0]!.avgDaysToMove, 15);     // (10 + 20) / 2
     assert.equal(rows[0]!.medianDaysToMove, 15);  // median of [10, 20]
   });
@@ -142,7 +142,7 @@ describe('buildPlatformRowsFromEvents', () => {
       { platformSlug: 'autotrader' },
       { platformSlug: 'cars.com'   },
     ];
-    const rows = buildPlatformRowsFromEvents([BASE_VEHICLE], subs, leads, NOW);
+    const rows = buildPlatformRowsFromEvents([BASE_VEHICLE], subs, leads, [], NOW);
     const at = rows.find(r => r.platformSlug === 'autotrader')!;
     assert.equal(at.totalLeads, 2);
     assert.equal(at.leadsPerVehicle, 2);  // 2 leads / 1 listed vehicle
@@ -150,7 +150,7 @@ describe('buildPlatformRowsFromEvents', () => {
 
   it('leadsPerVehicle is null when vehiclesListed is 0 (guard against division by zero)', () => {
     // No listed vehicles but pass a lead anyway (edge case: platform slug with no submissions)
-    const rows = buildPlatformRowsFromEvents([], [], [{ platformSlug: 'autotrader' }], NOW);
+    const rows = buildPlatformRowsFromEvents([], [], [{ platformSlug: 'autotrader' }], [], NOW);
     assert.equal(rows.length, 0); // no submissions → no rows
   });
 
@@ -160,7 +160,7 @@ describe('buildPlatformRowsFromEvents', () => {
       { vehicleId: 'v1', platformSlug: 'autotrader', createdAt: days(25) },
     ];
     const leads = [{ platformSlug: 'cars.com' }];
-    const rows = buildPlatformRowsFromEvents([BASE_VEHICLE], subs, leads, NOW);
+    const rows = buildPlatformRowsFromEvents([BASE_VEHICLE], subs, leads, [], NOW);
     assert.ok(!rows.some(r => r.platformSlug === 'cars.com'));
     assert.ok(rows.some(r => r.platformSlug === 'autotrader'));
   });
@@ -170,7 +170,7 @@ describe('buildPlatformRowsFromEvents', () => {
     const subs: SyncSubmissionEvent[] = [
       { vehicleId: 'v1', platformSlug: 'autotrader', createdAt: days(15) },
     ];
-    const rows = buildPlatformRowsFromEvents([soldVehicle], subs, [], NOW);
+    const rows = buildPlatformRowsFromEvents([soldVehicle], subs, [], [], NOW);
     assert.equal(rows[0]!.sampleSize, rows[0]!.vehiclesSold);
   });
 
@@ -179,7 +179,7 @@ describe('buildPlatformRowsFromEvents', () => {
     const subs: SyncSubmissionEvent[] = [
       { vehicleId: 'v1', platformSlug: 'autotrader', createdAt: days(15) },
     ];
-    const rows = buildPlatformRowsFromEvents([removedVehicle], subs, [], NOW);
+    const rows = buildPlatformRowsFromEvents([removedVehicle], subs, [], [], NOW);
     assert.equal(rows[0]!.vehiclesListed, 1);
     assert.equal(rows[0]!.vehiclesSold, 0);
   });
@@ -190,7 +190,7 @@ describe('buildPlatformRowsFromEvents', () => {
       { vehicleId: 'v1', platformSlug: 'autotrader', createdAt: days(20) },
       { vehicleId: 'v1', platformSlug: 'cars.com',   createdAt: days(18) },
     ];
-    const rows = buildPlatformRowsFromEvents([soldV], subs, [], NOW);
+    const rows = buildPlatformRowsFromEvents([soldV], subs, [], [], NOW);
     assert.equal(rows.length, 2);
     // Each platform independently counted the vehicle
     for (const row of rows) {
@@ -378,7 +378,7 @@ describe('platform row language contract', () => {
     const subs: SyncSubmissionEvent[] = [
       { vehicleId: 'v1', platformSlug: 'autotrader', createdAt: days(20) },
     ];
-    const rows = buildPlatformRowsFromEvents([soldV], subs, [], NOW);
+    const rows = buildPlatformRowsFromEvents([soldV], subs, [], [], NOW);
     const validConfidence = new Set(['INSUFFICIENT', 'LOW', 'MEDIUM', 'HIGH']);
     for (const row of rows) {
       assert.ok(validConfidence.has(row.confidence), `unexpected confidence: ${row.confidence}`);

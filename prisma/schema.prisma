@@ -62,6 +62,23 @@ enum LeadSource {
   MANUAL
 }
 
+enum ChannelEventType {
+  VEHICLE_IMPRESSION
+  VEHICLE_DETAIL_VIEW
+  DEALER_PAGE_VIEW
+  INQUIRY_SUBMITTED
+  REPORTED_CLICK
+  REPORTED_VIEW
+  REPORTED_CONTACT
+}
+
+enum SourceConfidence {
+  OBSERVED_FIRST_PARTY
+  PLATFORM_REPORTED
+  MANUAL_IMPORTED
+  UNAVAILABLE
+}
+
 enum VehicleUpdateKind {
   PRICE_CHANGE
   PHOTO_CHANGE
@@ -112,6 +129,7 @@ model DealershipProfile {
   ingressRuns                  IngressRun[]
   vehiclePerformanceCaches     VehiclePerformanceCache[]
   platformPerformanceSummaries PlatformPerformanceSummary[]
+  channelEvents                ChannelEvent[]
 }
 
 model Vehicle {
@@ -139,13 +157,14 @@ model Vehicle {
   createdAt       DateTime @default(now())
   updatedAt       DateTime @updatedAt
 
-  dealership       DealershipProfile @relation(fields: [dealershipId], references: [id], onDelete: Cascade)
-  media            VehicleMedia[]
-  leads            Lead[]
-  updates          VehicleUpdate[]
-  queueItems       PublishQueueItem[]
-  syncEvents       SyncEvent[]
-  performanceCache VehiclePerformanceCache?
+  dealership        DealershipProfile @relation(fields: [dealershipId], references: [id], onDelete: Cascade)
+  media             VehicleMedia[]
+  leads             Lead[]
+  updates           VehicleUpdate[]
+  queueItems        PublishQueueItem[]
+  syncEvents        SyncEvent[]
+  performanceCache  VehiclePerformanceCache?
+  channelEvents     ChannelEvent[]
 
   @@index([dealershipId])
   @@unique([dealershipId, stockNumber])
@@ -713,6 +732,7 @@ model PlatformPerformanceSummary {
   leadsPerVehicle  Float?
   confidence       String   @db.VarChar(16)  // INSUFFICIENT|LOW|MEDIUM|HIGH
   sampleSize       Int      @default(0)
+  channelMetricsJson Json?
   computedAt       DateTime @default(now())
   updatedAt        DateTime @updatedAt
 
@@ -720,4 +740,31 @@ model PlatformPerformanceSummary {
 
   @@unique([dealershipId, platformSlug])
   @@index([dealershipId])
+}
+
+// ─── Channel measurement ─────────────────────────────────────────────────────
+// Neutral engagement events for any platform/channel slug.
+// Marketplace writes observed_first_party events; partner imports use platform_reported.
+
+model ChannelEvent {
+  id               String             @id @default(cuid())
+  dealershipId     String
+  platformSlug     String             @db.VarChar(80)
+  vehicleId        String?
+  listingId        String?            @db.VarChar(80)
+  eventType        ChannelEventType
+  sourceConfidence SourceConfidence
+  quantity         Int                @default(1)
+  metadataJson     Json?
+  occurredAt       DateTime           @default(now())
+  createdAt        DateTime           @default(now())
+
+  dealership DealershipProfile @relation(fields: [dealershipId], references: [id], onDelete: Cascade)
+  vehicle    Vehicle?          @relation(fields: [vehicleId], references: [id], onDelete: SetNull)
+
+  @@index([dealershipId])
+  @@index([dealershipId, platformSlug])
+  @@index([dealershipId, platformSlug, eventType])
+  @@index([vehicleId])
+  @@index([occurredAt])
 }

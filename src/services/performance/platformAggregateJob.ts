@@ -1,9 +1,10 @@
-import type { PrismaClient } from '@prisma/client';
+import type { PrismaClient, Prisma } from '@prisma/client';
 import {
   buildPlatformRowsFromEvents,
   type SyncSubmissionEvent,
   type VehiclePerfInput,
 } from './performanceAggregator.js';
+import { fetchChannelEventsForDealer } from '../channel/channelEventService.js';
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 
@@ -67,6 +68,8 @@ export async function computePlatformPerformanceSummaries(
     select: { platformSlug: true },
   });
 
+  const channelEvents = await fetchChannelEventsForDealer(prisma, dealershipId);
+
   const vehicleInputs: VehiclePerfInput[] = vehicles.map(v => ({
     id:          v.id,
     stockNumber: v.stockNumber,
@@ -86,7 +89,13 @@ export async function computePlatformPerformanceSummaries(
     createdAt:    ev.createdAt,
   }));
 
-  const rows = buildPlatformRowsFromEvents(vehicleInputs, submissionInputs, leads, now);
+  const rows = buildPlatformRowsFromEvents(
+    vehicleInputs,
+    submissionInputs,
+    leads,
+    channelEvents,
+    now,
+  );
 
   for (const row of rows) {
     await prisma.platformPerformanceSummary.upsert({
@@ -102,6 +111,7 @@ export async function computePlatformPerformanceSummaries(
         leadsPerVehicle: row.leadsPerVehicle,
         confidence:      row.confidence,
         sampleSize:      row.sampleSize,
+        channelMetricsJson: row.channelMetrics as unknown as Prisma.InputJsonValue,
         computedAt:      now,
       },
       update: {
@@ -113,6 +123,7 @@ export async function computePlatformPerformanceSummaries(
         leadsPerVehicle: row.leadsPerVehicle,
         confidence:      row.confidence,
         sampleSize:      row.sampleSize,
+        channelMetricsJson: row.channelMetrics as unknown as Prisma.InputJsonValue,
         computedAt:      now,
       },
     });

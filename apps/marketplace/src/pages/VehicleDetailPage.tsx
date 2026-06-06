@@ -9,6 +9,8 @@ import {
   vehicleTitle,
 } from '../lib/display.ts';
 import { getListReturn } from '../lib/listReturn.ts';
+import { MarketplaceEventType } from '../lib/events.ts';
+import { useTrackMarketplaceEvent } from '../hooks/useTrackMarketplaceEvent.ts';
 import { PageShell } from '../components/layout/PageShell.tsx';
 import { DetailPageSkeleton } from '../components/ui/SkeletonGrid.tsx';
 import { ErrorState } from '../components/ui/ErrorState.tsx';
@@ -35,6 +37,7 @@ export default function VehicleDetailPage({ listingId }: Props) {
     : undefined;
 
   usePageMeta(title, metaDescription);
+  useTrackMarketplaceEvent(data ? { eventType: MarketplaceEventType.VEHICLE_DETAIL_VIEW, listingId } : null);
 
   if (loading && !data) {
     return (

@@ -3,6 +3,8 @@ import { usePageMeta } from '../hooks/usePageMeta.ts';
 import { fetchDealer, isNotFoundError } from '../lib/api.ts';
 import { formatResultCount } from '../lib/display.ts';
 import { getListReturn, saveListReturn } from '../lib/listReturn.ts';
+import { MarketplaceEventType } from '../lib/events.ts';
+import { useTrackMarketplaceEvent } from '../hooks/useTrackMarketplaceEvent.ts';
 import { listHref } from '../lib/routes.ts';
 import { PageShell } from '../components/layout/PageShell.tsx';
 import { VehicleCard } from '../components/VehicleCard.tsx';
@@ -26,6 +28,7 @@ export default function DealerDetailPage({ dealerId }: Props) {
     data?.dealerName ?? 'Dealer',
     data ? `${formatResultCount(data.vehicles.length)} on the marketplace` : undefined,
   );
+  useTrackMarketplaceEvent(data ? { eventType: MarketplaceEventType.DEALER_PAGE_VIEW, dealerId } : null);
 
   if (loading && !data) {
     return (

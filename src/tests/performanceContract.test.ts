@@ -90,6 +90,7 @@ type FakePlatformRow = {
   leadsPerVehicle: number | null;
   confidence:      string;
   sampleSize:      number;
+  channelMetricsJson: unknown;
   computedAt:      Date;
 };
 
@@ -141,6 +142,7 @@ function fakePlatformRow(overrides: Partial<FakePlatformRow> = {}): FakePlatform
     leadsPerVehicle: 2,
     confidence:      'LOW',
     sampleSize:      3,
+    channelMetricsJson: {},
     computedAt:      NOW,
     ...overrides,
   };
@@ -242,7 +244,7 @@ describe('platform cache row — shape contract', () => {
   ];
 
   it('all required platform fields are present', () => {
-    const rows = buildPlatformRowsFromEvents([BASE], subs, [], NOW);
+    const rows = buildPlatformRowsFromEvents([BASE], subs, [], [], NOW);
     assert.equal(rows.length, 1);
     const row = rows[0]!;
     const REQUIRED = [
@@ -257,23 +259,23 @@ describe('platform cache row — shape contract', () => {
   });
 
   it('confidence is always a non-empty string', () => {
-    const rows = buildPlatformRowsFromEvents([BASE], subs, [], NOW);
+    const rows = buildPlatformRowsFromEvents([BASE], subs, [], [], NOW);
     assert.ok(typeof rows[0]!.confidence === 'string' && rows[0]!.confidence.length > 0);
   });
 
   it('avgDaysToMove is null when no vehicles sold', () => {
-    const rows = buildPlatformRowsFromEvents([BASE], subs, [], NOW);
+    const rows = buildPlatformRowsFromEvents([BASE], subs, [], [], NOW);
     assert.equal(rows[0]!.avgDaysToMove, null);
   });
 
   it('medianDaysToMove is null when no vehicles sold', () => {
-    const rows = buildPlatformRowsFromEvents([BASE], subs, [], NOW);
+    const rows = buildPlatformRowsFromEvents([BASE], subs, [], [], NOW);
     assert.equal(rows[0]!.medianDaysToMove, null);
   });
 
   it('sampleSize equals vehiclesSold', () => {
     const soldBase: VehiclePerfInput = { ...BASE, soldAt: days(10) };
-    const rows = buildPlatformRowsFromEvents([soldBase], subs, [], NOW);
+    const rows = buildPlatformRowsFromEvents([soldBase], subs, [], [], NOW);
     assert.equal(rows[0]!.sampleSize, rows[0]!.vehiclesSold);
   });
 });
@@ -313,6 +315,7 @@ const REQUIRED_PLATFORM_ITEM_FIELDS: (keyof PlatformPerformanceItem)[] = [
   'confidence',
   'sampleSize',
   'observedAssistLabel',
+  'channelMetrics',
   'computedAt',
 ];
 
@@ -476,7 +479,7 @@ describe('LOW_DATA case — explicit chain', () => {
     const subs: SyncSubmissionEvent[] = [
       { vehicleId: 'v1', platformSlug: 'autotrader', createdAt: days(25) },
     ];
-    const rows = buildPlatformRowsFromEvents([BASE], subs, [], NOW);
+    const rows = buildPlatformRowsFromEvents([BASE], subs, [], [], NOW);
     assert.equal(rows[0]!.confidence, 'INSUFFICIENT');
     assert.equal(rows[0]!.sampleSize, 0);
     assert.equal(rows[0]!.avgDaysToMove, null);

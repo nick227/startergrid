@@ -7,8 +7,13 @@ import {
   type MarketplaceListFilters,
 } from '../../services/marketplace/marketplaceQueryService.js';
 import { captureMarketplaceLead } from '../../services/marketplace/marketplaceLeadService.js';
+import {
+  recordMarketplaceChannelEvent,
+  getDealerMarketplaceStats,
+} from '../../services/channel/channelEventService.js';
+import { parsePublicMarketplaceEventType } from '../../services/channel/channelMetrics.js';
 import { checkPublicWriteAbuseLimit } from '../security.js';
-import { marketplaceLeadCaptureSchema, validateBody } from '../requestValidation.js';
+import { marketplaceLeadCaptureSchema, marketplaceChannelEventSchema, validateBody } from '../requestValidation.js';
 
 // Marketplace GET routes are public read-only.
 // Lead capture is public-write with abuse limiting.
@@ -75,6 +80,30 @@ export function registerMarketplaceRoutes(app: FastifyInstance, prisma: PrismaCl
     }
   );
 
+  // POST /api/marketplace/events
+  // First-party marketplace engagement capture (no analytics in GET responses).
+  app.post(
+    '/api/marketplace/events',
+    async (request, reply) => {
+      if (!checkPublicWriteAbuseLimit(request, reply, 'marketplace-event')) return;
+
+      const body = validateBody(marketplaceChannelEventSchema, request.body);
+      if (!body.ok) return reply.status(400).send({ error: body.error });
+
+      const dbEventType = parsePublicMarketplaceEventType(body.data.eventType);
+      if (!dbEventType) return reply.status(400).send({ error: 'Invalid eventType' });
+
+      const result = await recordMarketplaceChannelEvent(prisma, {
+        eventType:  dbEventType as 'VEHICLE_IMPRESSION' | 'VEHICLE_DETAIL_VIEW' | 'DEALER_PAGE_VIEW',
+        listingId:  body.data.listingId?.trim() || null,
+        dealerId:   body.data.dealerId?.trim() || null,
+      });
+      if (!result) return reply.status(404).send({ error: 'Listing or dealer not found' });
+
+      return reply.status(202).send({ accepted: true });
+    }
+  );
+
   // POST /api/marketplace/vehicles/:listingId/leads
   // Public inquiry capture for one eligible listing.
   app.post<{ Params: ListingParams }>(
@@ -102,6 +131,17 @@ export function registerMarketplaceRoutes(app: FastifyInstance, prisma: PrismaCl
       const index = await getMarketplaceDealerIndex(prisma, request.params.dealerId);
       if (!index) return reply.status(404).send({ error: 'Dealer not found' });
       return reply.send(index);
+    }
+  );
+
+  // GET /api/marketplace/dealers/:dealerId/stats
+  // First-party channel engagement stats (aggregate counts only).
+  app.get<{ Params: DealerParams }>(
+    '/api/marketplace/dealers/:dealerId/stats',
+    async (request, reply) => {
+      const stats = await getDealerMarketplaceStats(prisma, request.params.dealerId);
+      if (!stats) return reply.status(404).send({ error: 'Dealer not found' });
+      return reply.send(stats);
     }
   );
 }

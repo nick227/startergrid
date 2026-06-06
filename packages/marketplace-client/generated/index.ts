@@ -7,6 +7,8 @@ export { CancelablePromise, CancelError } from './core/CancelablePromise';
 export { OpenAPI } from './core/OpenAPI';
 export type { OpenAPIConfig } from './core/OpenAPI';
 
+export { MarketplaceChannelEventRequest } from './models/MarketplaceChannelEventRequest';
+export type { MarketplaceChannelEventResponse } from './models/MarketplaceChannelEventResponse';
 export type { MarketplaceDealerIndexResponse } from './models/MarketplaceDealerIndexResponse';
 export type { MarketplaceErrorResponse } from './models/MarketplaceErrorResponse';
 export type { MarketplaceLeadCaptureRequest } from './models/MarketplaceLeadCaptureRequest';

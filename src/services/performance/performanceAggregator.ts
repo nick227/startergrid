@@ -7,8 +7,13 @@ import {
   type Confidence,
   type MovementSignal,
 } from './performanceMath.js';
+import {
+  aggregateChannelMetrics,
+  type ChannelMetrics,
+  type ChannelEventInput,
+} from '../channel/channelMetrics.js';
 
-export type { Confidence, MovementSignal };
+export type { Confidence, MovementSignal, ChannelMetrics };
 
 export type VehiclePerfInput = {
   id: string;
@@ -51,6 +56,7 @@ export type PlatformPerfRow = {
   leadsPerVehicle: number | null;
   confidence: Confidence;
   sampleSize: number;
+  channelMetrics: ChannelMetrics;
 };
 
 export function aggregatePlatformAssists(
@@ -134,11 +140,11 @@ export function buildPlatformRowsFromEvents(
   vehicles: VehiclePerfInput[],
   submissions: SyncSubmissionEvent[],
   leads: Array<{ platformSlug: string }>,
+  channelEvents: ChannelEventInput[] = [],
   now: Date = new Date(),
 ): PlatformPerfRow[] {
   const vehicleById = new Map(vehicles.map(v => [v.id, v]));
 
-  // platformSlug → vehicleId → first submission date
   const platformVehicleFirst = new Map<string, Map<string, Date>>();
   for (const ev of submissions) {
     if (!ev.vehicleId || !ev.platformSlug) continue;
@@ -154,11 +160,33 @@ export function buildPlatformRowsFromEvents(
     leadCounts.set(lead.platformSlug, (leadCounts.get(lead.platformSlug) ?? 0) + 1);
   }
 
+  const eventsByPlatform = new Map<string, ChannelEventInput[]>();
+  for (const ev of channelEvents) {
+    const bucket = eventsByPlatform.get(ev.platformSlug) ?? [];
+    bucket.push(ev);
+    eventsByPlatform.set(ev.platformSlug, bucket);
+  }
+
+  const allSlugs = new Set<string>([
+    ...platformVehicleFirst.keys(),
+    ...eventsByPlatform.keys(),
+  ]);
+
   const rows: PlatformPerfRow[] = [];
 
-  for (const [platformSlug, vehicleMap] of platformVehicleFirst) {
+  for (const platformSlug of [...allSlugs].sort()) {
+    const vehicleMap = platformVehicleFirst.get(platformSlug) ?? new Map<string, Date>();
     const listedIds = [...vehicleMap.keys()];
-    const vehiclesListed = listedIds.length;
+    let vehiclesListed = listedIds.length;
+
+    if (vehiclesListed === 0) {
+      const eventVehicleIds = new Set(
+        (eventsByPlatform.get(platformSlug) ?? [])
+          .map(e => e.vehicleId)
+          .filter((id): id is string => Boolean(id)),
+      );
+      vehiclesListed = eventVehicleIds.size;
+    }
 
     const daysToMove: number[] = [];
     let vehiclesSold = 0;
@@ -186,6 +214,7 @@ export function buildPlatformRowsFromEvents(
       leadsPerVehicle: vehiclesListed > 0 ? totalLeads / vehiclesListed : null,
       confidence: deriveConfidence(vehiclesSold),
       sampleSize: vehiclesSold,
+      channelMetrics: aggregateChannelMetrics(eventsByPlatform.get(platformSlug) ?? []),
     });
   }
 
@@ -226,6 +255,7 @@ export function buildPlatformPerformanceRows(
       leadsPerVehicle: listed.length > 0 ? totalLeads / listed.length : null,
       confidence,
       sampleSize: sold.length,
+      channelMetrics: {},
     };
   });
 }

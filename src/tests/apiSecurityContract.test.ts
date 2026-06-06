@@ -141,4 +141,16 @@ describe('marketplace routes — public access', () => {
     assert.equal(response.statusCode, 400);
     assert.match(response.json().error, /contactName/);
   });
+
+  it('POST /api/marketplace/events is public-write with validation', async () => {
+    const app = buildApp(mockPrisma());
+
+    const response = await app.inject({
+      method: 'POST',
+      url: '/api/marketplace/events',
+      payload: { eventType: 'vehicle_detail_view' },
+    });
+
+    assert.equal(response.statusCode, 400);
+  });
 });

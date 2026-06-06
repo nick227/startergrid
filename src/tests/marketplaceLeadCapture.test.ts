@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import { describe, it } from 'node:test';
 import { marketplaceLeadCaptureSchema } from '../server/requestValidation.js';
-import { MARKETPLACE_PLATFORM_SLUG } from '../services/marketplace/marketplaceLeadService.js';
+import { MARKETPLACE_PLATFORM_SLUG } from '../services/channel/channelMetrics.js';
 
 describe('marketplaceLeadCaptureSchema', () => {
   it('accepts a minimal contact payload', () => {

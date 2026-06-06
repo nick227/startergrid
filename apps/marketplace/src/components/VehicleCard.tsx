@@ -1,14 +1,23 @@
+import { useEffect, useRef } from 'react';
 import type { MarketplaceVehicleCard } from '../lib/api.ts';
 import { formatPrice, formatMileage, formatLocation, vehicleHeading } from '../lib/display.ts';
 import { listingHref, dealerHref } from '../lib/routes.ts';
+import { trackMarketplaceEvent, MarketplaceEventType } from '../lib/events.ts';
 import { VehicleImage } from './ui/VehicleImage.tsx';
 import { ConditionBadge } from './ui/ConditionBadge.tsx';
 
 type Props = { card: MarketplaceVehicleCard };
 
 export function VehicleCard({ card }: Props) {
+  const tracked = useRef(false);
   const location = formatLocation(card.dealerCity, card.dealerState);
   const title = vehicleHeading(card);
+
+  useEffect(() => {
+    if (tracked.current) return;
+    tracked.current = true;
+    trackMarketplaceEvent({ eventType: MarketplaceEventType.VEHICLE_IMPRESSION, listingId: card.listingId });
+  }, [card.listingId]);
 
   return (
     <article className="group mp-card flex h-full flex-col overflow-hidden transition hover:border-blue-300 hover:shadow-md">

@@ -8,6 +8,7 @@
 
 import type { PrismaClient } from '@prisma/client';
 import { benchmarkLabel, platformAssistLabel, type Confidence } from './performanceMath.js';
+import type { ChannelMetrics } from '../channel/channelMetrics.js';
 
 // ── Public types ──────────────────────────────────────────────────────────────
 
@@ -42,6 +43,7 @@ export type PlatformPerformanceItem = {
   confidence:          string;
   sampleSize:          number;
   observedAssistLabel: string;
+  channelMetrics:      ChannelMetrics;
   computedAt:          string;
 };
 
@@ -87,6 +89,7 @@ type SummaryRow = {
   leadsPerVehicle: number | null;
   confidence:      string;
   sampleSize:      number;
+  channelMetricsJson: unknown;
   computedAt:      Date;
 };
 
@@ -125,6 +128,7 @@ function shapePlatform(p: SummaryRow): PlatformPerformanceItem {
     confidence:          p.confidence,
     sampleSize:          p.sampleSize,
     observedAssistLabel: platformAssistLabel(p.confidence as Confidence),
+    channelMetrics:      (p.channelMetricsJson ?? {}) as ChannelMetrics,
     computedAt:          p.computedAt.toISOString(),
   };
 }

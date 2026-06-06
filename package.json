@@ -1,9 +1,9 @@
 {
   "name": "auto-dealer-onboarding-poc-v1",
-  "version": "4.2.1",
+  "version": "4.3.0",
   "private": true,
   "type": "module",
-  "description": "V4.2.1: Vehicle detail panel hardening — marketplace preview states, filter composition, UI tests.",
+  "description": "V4.3: Channel events foundation — consumer-marketplace measurement in performance aggregates.",
   "scripts": {
     "build": "tsc",
     "typecheck": "tsc --noEmit",

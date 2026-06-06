@@ -1,5 +1,5 @@
 import { movementSignalVisual } from './statusRegistry.ts';
-import type { MovementSignal, PerformanceConfidence, PlatformPerformanceItem, VehiclePerformanceItem } from './types.ts';
+import type { MovementSignal, PerformanceConfidence, PlatformPerformanceItem, VehiclePerformanceItem, ChannelMetrics } from './types.ts';
 
 export function hasSimilarBenchmark(perf: VehiclePerformanceItem): boolean {
   return perf.comparableCount >= 3 && perf.avgComparableDays != null;
@@ -61,7 +61,21 @@ export function movementTaskHint(perf: VehiclePerformanceItem): string | null {
   }
 }
 
+export function formatChannelMetricsLine(metrics: ChannelMetrics | undefined): string | null {
+  if (!metrics) return null;
+  const parts: string[] = [];
+  if (metrics.views) parts.push(`${metrics.views.count.toLocaleString()} views`);
+  if (metrics.detailViews) parts.push(`${metrics.detailViews.count.toLocaleString()} detail views`);
+  if (metrics.inquiries) parts.push(`${metrics.inquiries.count.toLocaleString()} inquiries`);
+  if (metrics.reportedClicks) parts.push(`${metrics.reportedClicks.count.toLocaleString()} clicks`);
+  if (metrics.reportedContacts) parts.push(`${metrics.reportedContacts.count.toLocaleString()} contacts`);
+  return parts.length > 0 ? parts.join(' · ') : null;
+}
+
 export function formatPlatformAssistHint(item: PlatformPerformanceItem): string | null {
+  const channelLine = formatChannelMetricsLine(item.channelMetrics);
+  if (channelLine) return channelLine;
+
   if (item.totalLeads === 0 && item.avgDaysToMove == null) return null;
   const parts: string[] = [];
   if (item.avgDaysToMove != null) {
@@ -87,6 +101,9 @@ export function formatPlatformExpandLine(
   leads: number,
   platform?: PlatformPerformanceItem | null,
 ): string {
+  const channelLine = platform ? formatChannelMetricsLine(platform.channelMetrics) : null;
+  if (channelLine) return `${slug} · ${channelLine}`;
+
   const parts: string[] = [slug];
   if (leads > 0) {
     parts.push(`${leads} observed assist${leads !== 1 ? 's' : ''}`);
