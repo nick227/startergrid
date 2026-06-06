@@ -1,7 +1,7 @@
 # Handoff Document — Auto Dealer Sales Portal
 
 **Updated:** 2026-06-05  
-**State:** v4.3.0 · Sync engine + Operator Console + Performance Insights · 769 tests passing  
+**State:** v4.1.1 · Sync engine + Operator Console + Performance Intelligence · operational benchmark wiring  
 **Branch:** `main`
 
 ---
@@ -12,7 +12,7 @@ A sync engine that owns dealer inventory truth, ingress, platform readiness, pub
 
 Two frontends consume different API surfaces:
 
-- **Operator portal** (`apps/web/`) — inventory, ingress, accounts, publish/sync, performance insights. Uses the generated OpenAPI SDK.
+- **Operator portal** (`apps/web/`) — inventory, ingress, accounts, publish/sync, **movement benchmarks in workflow** (Inventory primary; Sync context; Insights reference). Uses the generated OpenAPI SDK.
 - **Consumer marketplace** (`apps/marketplace/`, not built) — multi-dealer browse/search. Reads curated marketplace index APIs only. Must not couple to sync-engine internals (queues, account states, operator workflow).
 
 CLI scripts remain available for all sync-engine operations.
@@ -50,6 +50,34 @@ Any HTTP route touched or added must follow, in the same commit:
 7. `src/tests/routeContract.test.ts` stays green
 
 No more “just add a quick endpoint.”
+
+---
+
+## Performance Intelligence (v4.1)
+
+Cached movement benchmarks answer: *Is this vehicle moving faster or slower than similar stock, and which platforms show observed activity?*
+
+**Engine (sync):** `VehiclePerformanceCache`, `PlatformPerformanceSummary`, aggregate jobs, five operator API routes, `npm run performance:compute`.
+
+**Operator UI stance:** benchmarks are **native context**, not a separate analytics product.
+
+| Surface | Role |
+|---------|------|
+| **Inventory** | Primary — `Days / Signal` column; row expand for comparable group + observed assists |
+| **Sync** | Readiness first — movement line under tiles; manual **Refresh** only |
+| **Platform rows** | Quiet avg move time + observed assists + low confidence |
+| **Insights** | Reference summary — reads cache only; explicit refresh button |
+
+**Language contract:** movement signal, similar average, observed assist, best observed platform, low confidence, not enough comparable data. Never: sold by, ROI, attribution, guaranteed best channel.
+
+**UI rule:** no route auto-triggers `POST /performance/compute` on load.
+
+### v4.1.1 operational wiring
+
+- After successful auto-reconcile (import/sync), `runPerformanceComputeForDealer` runs in-process; failures are logged and do not fail reconcile.
+- `AutoSyncStatus` adds `performanceRefreshPending` and `performanceComputedAt` for portal freshness polling.
+- `seedPerformanceBenchmarkDemo` adds sold comparables + sync events + leads so demo shows FAST / SLOW / STALE (not all LOW_DATA).
+- Marketplace index APIs remain performance-free (operator routes only).
 
 ---
 

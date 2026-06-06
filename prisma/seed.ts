@@ -3,6 +3,7 @@ import type { Prisma } from '@prisma/client';
 import { prisma } from '../src/lib/prisma.js';
 import { platformProfiles } from '../src/data/platformProfiles.js';
 import { seedPlatformProfileVersions, seedPristineDealer } from '../src/services/platform/seedService.js';
+import { seedPerformanceBenchmarkDemo } from '../src/services/performance/performanceDemoSeed.js';
 
 async function main() {
   for (const platform of platformProfiles) {
@@ -51,6 +52,7 @@ async function main() {
 
   await seedPlatformProfileVersions(prisma);
   const dealershipId = await seedPristineDealer(prisma);
+  await seedPerformanceBenchmarkDemo(prisma, dealershipId);
   console.log(`Pristine dealer ready: ${dealershipId}`);
 }
 

@@ -1,6 +1,10 @@
-# Auto Dealer Sales Portal — v4.0.0
+# Auto Dealer Sales Portal — v4.1.1
 
 A backend pipeline that onboards auto dealers onto 18 ad and marketplace platforms — validation, feed generation, artifact storage, and proof export — via CLI and the Operator Console web UI.
+
+**v4.1** adds **Performance Intelligence**: cached movement benchmarks embedded in Inventory and Sync so operators see whether vehicles are moving faster or slower than comparable stock and which platforms show observed activity — without a separate analytics product.
+
+**v4.1.1** wires benchmarks operationally: performance compute runs after import/sync reconcile (non-blocking on failure), auto-sync exposes refresh-pending/freshness, and demo seed includes sold comparables so FAST/SLOW/STALE show in the portal.
 
 **Stack:** TypeScript (ESM) · Prisma 6 · MySQL · Node 22 · node:test
 
@@ -75,6 +79,9 @@ npm run poc:portal
 
 # DB-mode validation
 npm run validate:pristine:db
+
+# Populate movement benchmarks for a dealer (after inventory + sync history exist)
+npm run performance:compute -- <dealershipId>
 ```
 
 ---
@@ -84,7 +91,7 @@ npm run validate:pristine:db
 These 10 commands must always exit 0:
 
 ```
-npm test                         707 tests
+npm test                         824 tests
 npm run smoke:test               6/6 system checks
 npm run poc:green                18/18 GREEN
 npm run poc:risk                 90/90 expectations
@@ -139,12 +146,17 @@ npm run demo:reset               exits 0
 
 *Portal (`apps/web/`, port 5173) — dealer + admin roles*
 - Dealer picker with search
-- Sync dashboard — readiness hero, platform list, sync history, cross-links to blockers
-- Inventory — CSV import wizard, filters, bulk edit, ingress sources and run history
+- Sync dashboard — readiness hero, platform list, sync history, movement context, manual benchmark refresh
+- Inventory — CSV import, **Days / Signal** column (`12 days · Similar avg 19 · Fast`), row expand with comparable group + observed assists
 - Platform accounts — list, filter, inline edit (state, account ID, rep, next action)
 - Knowledge base catalog + in-app doc reader (client-facing articles)
-- Insights tab — per-vehicle movement and platform assist counts
+- Insights tab — reference summary only (reads cached benchmarks; refresh is explicit)
 - OpenAPI-generated API client; dev auth via `x-operator-id`
+
+*Performance Intelligence (v4.1)*
+- Cached vehicle movement signals vs similar sold stock (make/model, year ±3, price ±5%)
+- Per-platform observed assists and avg move times (low confidence when sample is small)
+- Five operator performance API routes + `npm run performance:compute`
 
 **Not built yet (in priority order):**
 - Internal marketplace (`apps/marketplace/`) — multi-dealer consumer UI + ingest API as a sync target and primary test harness

@@ -35,13 +35,13 @@ export function movementBenchmarkParts(perf: VehiclePerformanceItem): MovementBe
 
 export function formatMovementBenchmarkLine(perf: VehiclePerformanceItem): string {
   const p = movementBenchmarkParts(perf);
-  if (p.hasBenchmark && p.similarMedian != null) {
-    return `${p.daysOnline} days · Similar median ${p.similarMedian} · ${p.signalLabel}`;
-  }
   if (p.hasBenchmark && p.similarAvg != null) {
     return `${p.daysOnline} days · Similar avg ${p.similarAvg} · ${p.signalLabel}`;
   }
-  return `${p.daysOnline} days · ${p.signalLabel}`;
+  if (p.daysOnline > 0) {
+    return `${p.daysOnline} days · Not enough comparable data`;
+  }
+  return 'Not enough comparable data';
 }
 
 export function movementTaskHint(perf: VehiclePerformanceItem): string | null {
@@ -65,12 +65,50 @@ export function formatPlatformAssistHint(item: PlatformPerformanceItem): string 
   if (item.totalLeads === 0 && item.avgDaysToMove == null) return null;
   const parts: string[] = [];
   if (item.avgDaysToMove != null) {
-    parts.push(`Similar stock avg ${Math.round(item.avgDaysToMove)}d to move`);
+    parts.push(`Avg move ${Math.round(item.avgDaysToMove)}d`);
+  }
+  if (item.medianDaysToMove != null) {
+    parts.push(`median ${Math.round(item.medianDaysToMove)}d`);
   }
   if (item.totalLeads > 0) {
     parts.push(`${item.totalLeads} observed assist${item.totalLeads !== 1 ? 's' : ''}`);
   }
+  if (item.confidence === 'INSUFFICIENT' || item.confidence === 'LOW') {
+    parts.push('low confidence');
+  }
   return parts.length > 0 ? parts.join(' · ') : null;
+}
+
+export const COMPARABLE_GROUP_RULE =
+  'Similar group: same make & model · year ±3 · price ±5% · 3+ sold comparables';
+
+export function formatPlatformExpandLine(
+  slug: string,
+  leads: number,
+  platform?: PlatformPerformanceItem | null,
+): string {
+  const parts: string[] = [slug];
+  if (leads > 0) {
+    parts.push(`${leads} observed assist${leads !== 1 ? 's' : ''}`);
+  }
+  if (platform?.avgDaysToMove != null) {
+    parts.push(`avg move ${Math.round(platform.avgDaysToMove)}d`);
+  }
+  if (platform?.medianDaysToMove != null) {
+    parts.push(`median ${Math.round(platform.medianDaysToMove)}d`);
+  }
+  if (platform && (platform.confidence === 'INSUFFICIENT' || platform.confidence === 'LOW')) {
+    parts.push('low confidence');
+  }
+  return parts.join(' · ');
+}
+
+export function countLowDataVehicles(items: VehiclePerformanceItem[]): number {
+  return items.filter(v => v.movementSignal === 'LOW_DATA' || !hasSimilarBenchmark(v)).length;
+}
+
+export function countSlowVehicles(items: VehiclePerformanceItem[]): number {
+  return items.filter(v => v.movementSignal === 'SLOW').length;
 }
 
 export function countBenchmarkedVehicles(items: VehiclePerformanceItem[]): number {

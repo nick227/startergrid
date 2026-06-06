@@ -26,6 +26,9 @@ The **Operator Console** (`apps/web/`) is the web front end for the Auto Dealer 
 1. **Inventory** — import vehicles, fix validation issues, bulk-edit fields  
 2. **Platform Accounts** — resolve account states that block publishing  
 3. **Sync** — see readiness, platform outcomes, and auto-sync status  
+4. **Insights** — reference summary of cached movement benchmarks (not the primary workflow)
+
+**v4.1 — Movement benchmarks in workflow:** Inventory is the primary surface (`Days / Signal`: `12 days · Similar avg 19 · Fast`). Sync adds a small movement line under readiness tiles. Platform rows show observed assists and avg move time when useful. No page loads benchmarks automatically — operators refresh on Sync or Insights when needed.
 
 The UI reads and writes the same backend API that powers the CLI pipeline (18 platforms, feed generation, MySQL persistence). Hash-routed SPA optimized for staff who already know DMS and syndication terms.
 

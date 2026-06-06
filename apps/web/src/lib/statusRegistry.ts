@@ -272,7 +272,7 @@ export const EMPTY_STATE_COPY = {
   },
   noPerformanceData: {
     title: 'No performance data yet',
-    subtitle: 'Run a refresh on Sync to see movement signals and observed assists.',
+    subtitle: 'Refresh movement benchmarks on Sync when you want days-online comparisons vs similar stock.',
   },
   noPerformanceVehicles: {
     title: 'No vehicle movement data',

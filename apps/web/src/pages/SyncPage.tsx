@@ -5,7 +5,7 @@ import { useSyncPageData } from '@/hooks/useSyncPageData.ts';
 import { useAsyncQuery } from '@/hooks/useAsyncQuery.ts';
 import { fetchPerformanceSummary, fetchPlatformPerformance, fetchVehiclePerformanceList } from '@/lib/api/sdk.ts';
 import { computeSyncReadiness } from '@/lib/syncPresentation.ts';
-import { countBenchmarkedVehicles, staleStockNumbers } from '@/lib/movementBenchmark.ts';
+import { countBenchmarkedVehicles, countSlowVehicles, staleStockNumbers } from '@/lib/movementBenchmark.ts';
 import { OperatorPage, ErrorState, PanelSkeleton } from '@/components/operator';
 import {
   SyncHero,
@@ -19,12 +19,17 @@ import {
 type Props = OperatorPageBaseProps;
 
 export default function SyncPage({ dealerId, nav, activeTab }: Props) {
-  const { status, history, reload, lastRefresh, isRefreshing } = useSyncPageData(dealerId);
-
-  // Performance summary is loaded once; recompute is user-triggered via PerformanceInsightStrip.
   const perfQuery = useAsyncQuery(() => fetchPerformanceSummary(dealerId), [dealerId]);
   const vehiclePerfQuery = useAsyncQuery(() => fetchVehiclePerformanceList(dealerId), [dealerId]);
   const platformPerfQuery = useAsyncQuery(() => fetchPlatformPerformance(dealerId), [dealerId]);
+
+  const refreshMovement = () => {
+    perfQuery.reload();
+    vehiclePerfQuery.reload();
+    platformPerfQuery.reload();
+  };
+
+  const { status, history, reload, lastRefresh, isRefreshing, autoSync } = useSyncPageData(dealerId, refreshMovement);
 
   const platformPerfBySlug = useMemo(() => {
     const m = new Map<string, PlatformPerformanceItem>();
@@ -37,10 +42,12 @@ export default function SyncPage({ dealerId, nav, activeTab }: Props) {
     const items = vehiclePerfQuery.data?.items ?? [];
     if (!summary?.computedAt) return null;
     return {
+      computedAt: summary.computedAt,
       fastCount: summary.fastCount,
+      slowCount: countSlowVehicles(items),
       staleCount: summary.staleCount,
+      lowDataCount: summary.lowDataCount,
       benchmarkedCount: countBenchmarkedVehicles(items),
-      activeCount: summary.activeCount,
       staleStocks: staleStockNumbers(items),
     };
   }, [perfQuery.data, vehiclePerfQuery.data]);
@@ -99,8 +106,9 @@ export default function SyncPage({ dealerId, nav, activeTab }: Props) {
             <PerformanceInsightStrip
               dealerId={dealerId}
               summary={perfQuery.data?.summary ?? null}
-              loading={perfQuery.loading}
-              onComputed={perfQuery.reload}
+              loading={perfQuery.loading || isRefreshing}
+              autoSync={autoSync}
+              onComputed={refreshMovement}
             />
 
             <SyncInventoryPeek

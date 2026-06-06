@@ -1,7 +1,6 @@
 import 'dotenv/config';
 import { prisma } from '../../lib/prisma.js';
-import { computeVehiclePerformanceCache } from '../../services/performance/vehicleAggregateJob.js';
-import { computePlatformPerformanceSummaries } from '../../services/performance/platformAggregateJob.js';
+import { runPerformanceComputeForDealer } from '../../services/performance/computePerformanceService.js';
 
 // ── Args ──────────────────────────────────────────────────────────────────────
 
@@ -46,18 +45,15 @@ async function main() {
   let totalPlatforms = 0;
 
   for (const dealer of dealers) {
-    const [vResult, pResult] = await Promise.all([
-      computeVehiclePerformanceCache(prisma, dealer.id, { now }),
-      computePlatformPerformanceSummaries(prisma, dealer.id, { now }),
-    ]);
+    const result = await runPerformanceComputeForDealer(prisma, dealer.id, { now });
 
-    const errors = vResult.errors > 0 ? ` (${vResult.errors} errors)` : '';
+    const errors = result.vehicleErrors > 0 ? ` (${result.vehicleErrors} errors)` : '';
     console.log(
-      `  ${dealer.legalName.padEnd(40)} ${String(vResult.computed).padStart(3)} vehicles · ${String(pResult.platforms).padStart(2)} platforms${errors}`,
+      `  ${dealer.legalName.padEnd(40)} ${String(result.vehicles).padStart(3)} vehicles · ${String(result.platforms).padStart(2)} platforms${errors}`,
     );
 
-    totalVehicles += vResult.computed;
-    totalPlatforms += pResult.platforms;
+    totalVehicles += result.vehicles;
+    totalPlatforms += result.platforms;
   }
 
   console.log('─'.repeat(60));

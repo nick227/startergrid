@@ -1,7 +1,12 @@
 import { describe, it } from 'node:test';
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
-import { routeClassifications } from '../server/security.js';
+import { join } from 'node:path';
+import { createRequire } from 'node:module';
+import { routeClassifications, marketplaceRouteClassifications } from '../server/security.js';
+
+const _require = createRequire(import.meta.url);
+const yaml = _require('js-yaml') as { load(src: string): unknown };
 
 type OpenApiOperation = {
   security?: Array<Record<string, unknown>>;
@@ -18,7 +23,7 @@ function normalizePath(path: string): string {
   return path.replace(/\{([^}]+)\}/g, ':$1');
 }
 
-function readSpec(): OpenApiDocument {
+function readOperatorSpec(): OpenApiDocument {
   const raw = fs.readFileSync('openapi/openapi.yaml', 'utf8');
   const paths: OpenApiDocument['paths'] = {};
   let currentPath: string | null = null;
@@ -76,42 +81,75 @@ function readSpec(): OpenApiDocument {
   return { paths };
 }
 
-describe('OpenAPI security consistency', () => {
-  it('matches actual route guard classification', () => {
-    const spec = readSpec();
-    const expectedOperator = new Set<string>(routeClassifications.operator);
-    const expectedPublic = new Set<string>(routeClassifications.public);
-    const expectedPublicWrite = new Set<string>(routeClassifications.publicWrite);
+function readMarketplaceSpec(): OpenApiDocument {
+  const raw = fs.readFileSync(join(process.cwd(), 'openapi', 'openapi-marketplace.yaml'), 'utf8');
+  const doc = yaml.load(raw) as OpenApiDocument;
+  return doc;
+}
 
-    for (const [path, operations] of Object.entries(spec.paths)) {
-      for (const [method, operation] of Object.entries(operations)) {
-        const key = `${method.toUpperCase()} ${normalizePath(path)}`;
-        const classification = operation['x-route-classification'];
+function assertSpecMatchesClassifications(
+  spec: OpenApiDocument,
+  expectedOperator: Set<string>,
+  expectedPublic: Set<string>,
+  expectedPublicWrite: Set<string>,
+  label: string,
+): void {
+  for (const [path, operations] of Object.entries(spec.paths)) {
+    for (const [method, operation] of Object.entries(operations)) {
+      const key = `${method.toUpperCase()} ${normalizePath(path)}`;
 
-        if (expectedOperator.has(key)) {
-          assert.equal(classification, 'operator', `${key} must be classified operator`);
-          assert.deepEqual(operation.security, [{ OperatorAuth: [] }], `${key} must require OperatorAuth`);
-          expectedOperator.delete(key);
-          continue;
-        }
+      if (expectedOperator.has(key)) {
+        assert.equal(operation['x-route-classification'], 'operator', `${label}: ${key} must be classified operator`);
+        assert.deepEqual(operation.security, [{ OperatorAuth: [] }], `${label}: ${key} must require OperatorAuth`);
+        expectedOperator.delete(key);
+        continue;
+      }
 
-        if (expectedPublic.has(key)) {
-          assert.equal(classification, 'public', `${key} must be classified public`);
-          assert.deepEqual(operation.security, [], `${key} must be public`);
-          expectedPublic.delete(key);
-          continue;
-        }
+      if (expectedPublic.has(key)) {
+        assert.equal(operation['x-route-classification'], 'public', `${label}: ${key} must be classified public`);
+        assert.deepEqual(operation.security, [], `${label}: ${key} must be public`);
+        expectedPublic.delete(key);
+        continue;
+      }
 
-        if (expectedPublicWrite.has(key)) {
-          assert.equal(classification, 'public-write', `${key} must be classified public-write`);
-          assert.deepEqual(operation.security, [], `${key} must be public-write without OperatorAuth`);
-          expectedPublicWrite.delete(key);
-        }
+      if (expectedPublicWrite.has(key)) {
+        assert.equal(operation['x-route-classification'], 'public-write', `${label}: ${key} must be classified public-write`);
+        assert.deepEqual(operation.security, [], `${label}: ${key} must be public-write without OperatorAuth`);
+        expectedPublicWrite.delete(key);
       }
     }
+  }
 
-    assert.deepEqual([...expectedOperator], [], 'Missing operator routes in OpenAPI');
-    assert.deepEqual([...expectedPublic], [], 'Missing public routes in OpenAPI');
-    assert.deepEqual([...expectedPublicWrite], [], 'Missing public-write routes in OpenAPI');
+  assert.deepEqual([...expectedOperator], [], `${label}: missing operator routes in OpenAPI`);
+  assert.deepEqual([...expectedPublic], [], `${label}: missing public routes in OpenAPI`);
+  assert.deepEqual([...expectedPublicWrite], [], `${label}: missing public-write routes in OpenAPI`);
+}
+
+describe('OpenAPI security consistency', () => {
+  it('operator routes match openapi.yaml guard classification', () => {
+    const spec = readOperatorSpec();
+    assertSpecMatchesClassifications(
+      spec,
+      new Set(routeClassifications.operator),
+      new Set(routeClassifications.public),
+      new Set(routeClassifications.publicWrite),
+      'openapi.yaml',
+    );
+  });
+
+  it('marketplace routes match openapi-marketplace.yaml guard classification', () => {
+    const spec = readMarketplaceSpec();
+    assertSpecMatchesClassifications(
+      spec,
+      new Set<string>(),
+      new Set(marketplaceRouteClassifications.public),
+      new Set<string>(),
+      'openapi-marketplace.yaml',
+    );
+  });
+
+  it('operator spec does not document marketplace routes', () => {
+    const raw = fs.readFileSync('openapi/openapi.yaml', 'utf8');
+    assert.ok(!raw.includes('/api/marketplace/'), 'openapi.yaml must not contain marketplace routes');
   });
 });

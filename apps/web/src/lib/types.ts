@@ -46,6 +46,8 @@ export type AutoSyncStatus = {
   lastCompletedAt: string | null;
   lastError: string | null;
   lastDispatched: number | null;
+  performanceRefreshPending: boolean;
+  performanceComputedAt: string | null;
 };
 
 export type PublishStatusResponse = {

@@ -2398,7 +2398,7 @@ components:
 
     AutoSyncStatus:
       type: object
-      required: [phase, scheduledFullReconcile, lastCompletedAt, lastError, lastDispatched]
+      required: [phase, scheduledFullReconcile, lastCompletedAt, lastError, lastDispatched, performanceRefreshPending, performanceComputedAt]
       properties:
         phase:
           type: string
@@ -2413,6 +2413,12 @@ components:
           nullable: true
         lastDispatched:
           type: integer
+          nullable: true
+        performanceRefreshPending:
+          type: boolean
+        performanceComputedAt:
+          type: string
+          format: date-time
           nullable: true
 
     LeadCaptureRequest:

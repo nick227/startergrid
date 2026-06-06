@@ -1,10 +1,12 @@
-import { useState, useMemo } from 'react';
-import { fetchInventory, bulkEditVehicles, fetchVehiclePerformanceList } from '@/lib/api/sdk.ts';
-import type { BulkEditPayload, CommitImportResponse, VehiclePerformanceItem } from '@/lib/types.ts';
+import { useCallback, useMemo, useState } from 'react';
+import { fetchInventory, bulkEditVehicles, fetchVehiclePerformanceList, fetchPlatformPerformance } from '@/lib/api/sdk.ts';
+import type { BulkEditPayload, CommitImportResponse, VehiclePerformanceItem, PlatformPerformanceItem } from '@/lib/types.ts';
 import type { OperatorPageBaseProps } from '@/lib/operatorPage.ts';
 import { useAsyncQuery } from '@/hooks/useAsyncQuery.ts';
+import { useAutoSyncWatch } from '@/hooks/useAutoSyncWatch.ts';
 import { OperatorPage, SectionCard, InlineCallout, PageHeader } from '@/components/operator';
 import { EMPTY_STATE_COPY } from '@/lib/statusRegistry.ts';
+import { formatBenchmarkFreshness, hasPerformanceData, isBenchmarksUpdating } from '@/lib/performanceFreshness.ts';
 import { countBenchmarkedVehicles, staleStockNumbers } from '@/lib/movementBenchmark.ts';
 import { Banner, EmptyState } from '@/components/ui';
 import { InfoButton } from '@/components/docs';
@@ -43,11 +45,29 @@ export default function InventoryPage({ dealerId, nav, activeTab }: Props) {
     [dealerId]
   );
 
+  const platformPerf = useAsyncQuery(
+    () => fetchPlatformPerformance(dealerId),
+    [dealerId]
+  );
+
+  const reloadBenchmarks = useCallback(() => {
+    perf.reload();
+    platformPerf.reload();
+  }, [perf.reload, platformPerf.reload]);
+
+  const { autoSync } = useAutoSyncWatch(dealerId, reloadBenchmarks);
+
   const perfMap = useMemo<Map<string, VehiclePerformanceItem>>(() => {
     const m = new Map<string, VehiclePerformanceItem>();
     for (const item of perf.data?.items ?? []) m.set(item.stockNumber, item);
     return m;
   }, [perf.data]);
+
+  const platformPerfBySlug = useMemo(() => {
+    const m = new Map<string, PlatformPerformanceItem>();
+    for (const p of platformPerf.data?.platforms ?? []) m.set(p.platformSlug, p);
+    return m;
+  }, [platformPerf.data]);
 
   const vehicleColumns = useMemo(() => buildVehicleColumns(perfMap), [perfMap]);
 
@@ -119,6 +139,7 @@ export default function InventoryPage({ dealerId, nav, activeTab }: Props) {
     setImportResult(result);
     load();
     perf.reload();
+    platformPerf.reload();
   };
 
   const isEmpty = !loading && vehicles.length === 0;
@@ -165,6 +186,12 @@ export default function InventoryPage({ dealerId, nav, activeTab }: Props) {
             ) : undefined
           }
         />
+
+        {(hasPerformanceData(perf.data?.computedAt) || isBenchmarksUpdating(autoSync.data)) && (
+          <p className={`text-xs -mt-3 ${isBenchmarksUpdating(autoSync.data) ? 'text-amber-600' : 'text-slate-400'}`}>
+            {formatBenchmarkFreshness(perf.data?.computedAt ?? null, autoSync.data)}
+          </p>
+        )}
 
         <IngressPanel
           dealerId={dealerId}
@@ -222,10 +249,10 @@ export default function InventoryPage({ dealerId, nav, activeTab }: Props) {
             {importResult.skipped > 0 && <>, <strong>{importResult.skipped}</strong> skipped</>}
             {importResult.errors > 0 && <>, <strong className="text-red-700">{importResult.errors} errors</strong></>}
             . Platforms will update automatically.
-            {benchmarkCount > 0 ? (
-              <> Benchmarks ready for <strong>{benchmarkCount}</strong> vehicle{benchmarkCount !== 1 ? 's' : ''} — check the Days / Signal column.</>
+            {hasPerformanceData(perf.data?.computedAt) && benchmarkCount > 0 ? (
+              <> Movement benchmarks for <strong>{benchmarkCount}</strong> vehicle{benchmarkCount !== 1 ? 's' : ''} — see Days / Signal.</>
             ) : (
-              <> Open Sync and refresh benchmarks to compare days vs similar stock.</>
+              <> When ready, refresh movement benchmarks on Sync to compare days vs similar stock.</>
             )}
           </Banner>
         )}
@@ -303,7 +330,7 @@ export default function InventoryPage({ dealerId, nav, activeTab }: Props) {
                 expandContent={v => {
                   const vperf = perfMap.get(v.stockNumber);
                   return (v.issues.length > 0 || vperf)
-                    ? <VehicleRowExpand issues={v.issues} perf={vperf} />
+                    ? <VehicleRowExpand issues={v.issues} perf={vperf} platformPerfBySlug={platformPerfBySlug} />
                     : null;
                 }}
                 rowClassName={v => vehicleReadinessRowBg(v.readiness)}

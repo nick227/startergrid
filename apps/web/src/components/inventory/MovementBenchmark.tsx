@@ -1,5 +1,10 @@
 import type { VehiclePerformanceItem } from '../../lib/types.ts';
+import type { PlatformPerformanceItem } from '../../lib/types.ts';
 import {
+  COMPARABLE_GROUP_RULE,
+  formatMovementBenchmarkLine,
+  formatPlatformExpandLine,
+  hasSimilarBenchmark,
   movementBenchmarkParts,
   movementTaskHint,
 } from '../../lib/movementBenchmark.ts';
@@ -11,57 +16,65 @@ type CellProps = { perf: VehiclePerformanceItem };
 export function MovementBenchmarkCell({ perf }: CellProps) {
   const p = movementBenchmarkParts(perf);
 
+  if (!hasSimilarBenchmark(perf)) {
+    return (
+      <span className="text-xs text-slate-500 tabular-nums leading-snug">
+        {p.daysOnline} days · Not enough comparable data
+      </span>
+    );
+  }
+
   return (
     <span className="text-xs text-slate-600 tabular-nums leading-snug">
-      {p.daysOnline} days
-      {p.hasBenchmark && p.similarAvg != null && (
-        <> · Similar avg {p.similarAvg}</>
-      )}
-      {' · '}
-      <span className={`inline-flex align-middle ${p.hasBenchmark ? '' : 'opacity-80'}`}>
+      {p.daysOnline} days · Similar avg {p.similarAvg} ·{' '}
+      <span className="inline-flex align-middle">
         <MovementSignalBadge signal={perf.movementSignal} />
       </span>
     </span>
   );
 }
 
-type ExpandProps = { perf: VehiclePerformanceItem };
+type ExpandProps = {
+  perf: VehiclePerformanceItem;
+  platformPerfBySlug?: Map<string, PlatformPerformanceItem>;
+};
 
 /** Expanded row detail — task-oriented, not a dashboard. */
-export function MovementBenchmarkExpand({ perf }: ExpandProps) {
+export function MovementBenchmarkExpand({ perf, platformPerfBySlug }: ExpandProps) {
   const p = movementBenchmarkParts(perf);
   const hint = movementTaskHint(perf);
   const assistEntries = Object.entries(perf.platformAssists);
 
   return (
-    <div className="text-xs text-slate-600 space-y-1">
+    <div className="text-xs text-slate-600 space-y-1.5">
       <p>
-        <span className="font-medium text-slate-700">Movement · </span>
-        {p.daysOnline} days online
-        {p.hasBenchmark && p.similarMedian != null && (
-          <> · median {p.similarMedian}d</>
-        )}
-        {p.hasBenchmark && p.similarAvg != null && (
-          <span className="text-slate-400"> (avg {p.similarAvg}d)</span>
-        )}
-        {' · '}
-        <MovementSignalBadge signal={perf.movementSignal} />
+        <span className="font-medium text-slate-700">Movement signal · </span>
+        {formatMovementBenchmarkLine(perf)}
       </p>
+
+      <p className="text-slate-400">{COMPARABLE_GROUP_RULE}</p>
+
       {p.hasBenchmark ? (
-        <p className="text-slate-400">
-          {p.sampleSize} similar vehicle{p.sampleSize !== 1 ? 's' : ''} · {p.benchmarkLabel}
+        <p className="text-slate-500">
+          {p.sampleSize} similar sold vehicle{p.sampleSize !== 1 ? 's' : ''}
+          {p.similarAvg != null && <> · similar average {p.similarAvg} days</>}
+          {p.similarMedian != null && <> · median {p.similarMedian} days</>}
         </p>
       ) : (
-        <p className="text-slate-400">{p.benchmarkLabel}</p>
+        <p className="text-slate-500">Not enough comparable data for a benchmark yet.</p>
       )}
+
       {hint && <p className="text-slate-500">{hint}</p>}
+
       {assistEntries.length > 0 && (
-        <p className="text-slate-400">
-          Observed assist:{' '}
-          {assistEntries
-            .map(([slug, d]) => `${slug} (${d.leads} lead${d.leads !== 1 ? 's' : ''})`)
-            .join(', ')}
-        </p>
+        <div className="text-slate-500 space-y-0.5 pt-0.5">
+          <p className="font-medium text-slate-600">Observed assist (not attribution)</p>
+          {assistEntries.map(([slug, d]) => (
+            <p key={slug} className="text-slate-400 pl-2">
+              {formatPlatformExpandLine(slug, d.leads, platformPerfBySlug?.get(slug))}
+            </p>
+          ))}
+        </div>
       )}
     </div>
   );

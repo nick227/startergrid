@@ -22,4 +22,10 @@ describe('scheduleAutoReconcile', () => {
     const st = getAutoSyncStatus('dealer-1');
     assert.equal(st.scheduledFullReconcile, true);
   });
+
+  it('defaults performance freshness fields', () => {
+    const st = getAutoSyncStatus('dealer-new');
+    assert.equal(st.performanceRefreshPending, false);
+    assert.equal(st.performanceComputedAt, null);
+  });
 });

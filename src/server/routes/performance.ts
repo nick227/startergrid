@@ -7,8 +7,7 @@ import {
   listPlatformPerformance,
   getPerformanceSummary,
 } from '../../services/performance/performanceQueryService.js';
-import { computeVehiclePerformanceCache }      from '../../services/performance/vehicleAggregateJob.js';
-import { computePlatformPerformanceSummaries } from '../../services/performance/platformAggregateJob.js';
+import { runPerformanceComputeForDealer } from '../../services/performance/computePerformanceService.js';
 
 type DealerParams  = { dealershipId: string };
 type VehicleParams = { dealershipId: string; stockNumber: string };
@@ -93,22 +92,8 @@ export function registerPerformanceRoutes(app: FastifyInstance, prisma: PrismaCl
       if (!await requireDealer(prisma, dealershipId))
         return reply.status(404).send({ error: 'Dealer not found' });
 
-      const startedAt = Date.now();
-      const now = new Date();
-      const [vResult, pResult] = await Promise.all([
-        computeVehiclePerformanceCache(prisma, dealershipId, { now }),
-        computePlatformPerformanceSummaries(prisma, dealershipId, { now }),
-      ]);
-
-      return reply.send({
-        result: {
-          vehicles:      vResult.computed,
-          vehicleErrors: vResult.errors,
-          platforms:     pResult.platforms,
-          durationMs:    Date.now() - startedAt,
-          computedAt:    now.toISOString(),
-        },
-      });
+      const result = await runPerformanceComputeForDealer(prisma, dealershipId);
+      return reply.send({ result });
     }
   );
 }

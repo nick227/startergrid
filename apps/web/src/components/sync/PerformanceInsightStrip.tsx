@@ -1,12 +1,14 @@
 import { useState } from 'react';
-import type { PerformanceSummaryView, PerformanceComputeResult } from '@/lib/types.ts';
+import type { PerformanceSummaryView, PerformanceComputeResult, AutoSyncStatus } from '@/lib/types.ts';
 import { triggerPerformanceCompute } from '@/lib/api/sdk.ts';
 import { EMPTY_STATE_COPY } from '@/lib/statusRegistry.ts';
+import { formatBenchmarkFreshness, isBenchmarksUpdating } from '@/lib/performanceFreshness.ts';
 
 type Props = {
   dealerId:    string;
   summary:     PerformanceSummaryView | null;
   loading?:    boolean;
+  autoSync?:   AutoSyncStatus | null;
   onComputed?: () => void;
 };
 
@@ -16,7 +18,7 @@ const ELIGIBLE_CONFIDENCE = new Set(['LOW', 'MEDIUM', 'HIGH']);
 
 // ── Component ─────────────────────────────────────────────────────────────────
 
-export function PerformanceInsightStrip({ dealerId, summary, loading, onComputed }: Props) {
+export function PerformanceInsightStrip({ dealerId, summary, loading, autoSync, onComputed }: Props) {
   const [computing, setComputing]       = useState(false);
   const [computeResult, setComputeResult] = useState<PerformanceComputeResult | null>(null);
   const [computeError, setComputeError] = useState<string | null>(null);
@@ -39,9 +41,11 @@ export function PerformanceInsightStrip({ dealerId, summary, loading, onComputed
   const best = summary?.bestObservedPlatform;
   const bestEligible = best && ELIGIBLE_CONFIDENCE.has(best.confidence);
 
+  const benchmarksUpdating = isBenchmarksUpdating(autoSync);
+
   // ── No data yet ────────────────────────────────────────────────────────────
 
-  if (!loading && (!summary || summary.computedAt === null)) {
+  if (!loading && !benchmarksUpdating && (!summary || summary.computedAt === null)) {
     return (
       <div className="rounded-xl border border-slate-200 bg-white px-4 py-4 flex items-center justify-between gap-4">
         <div>
@@ -51,7 +55,7 @@ export function PerformanceInsightStrip({ dealerId, summary, loading, onComputed
           </p>
           {computeResult && (
             <p className="text-[10px] text-emerald-600 mt-1 font-medium">
-              Computed {computeResult.vehicles} vehicle{computeResult.vehicles !== 1 ? 's' : ''}
+              Updated {computeResult.vehicles} vehicle{computeResult.vehicles !== 1 ? 's' : ''}
               {computeResult.platforms > 0 && `, ${computeResult.platforms} platform${computeResult.platforms !== 1 ? 's' : ''}`}
               {computeResult.vehicleErrors > 0 && (
                 <span className="text-amber-600"> · {computeResult.vehicleErrors} error{computeResult.vehicleErrors !== 1 ? 's' : ''}</span>
@@ -70,6 +74,15 @@ export function PerformanceInsightStrip({ dealerId, summary, loading, onComputed
         >
           {computing ? 'Refreshing…' : 'Refresh now'}
         </button>
+      </div>
+    );
+  }
+
+  if (!summary && benchmarksUpdating) {
+    return (
+      <div className="rounded-xl border border-amber-200 bg-amber-50 px-4 py-4">
+        <p className="text-xs font-semibold text-amber-800">Movement signals</p>
+        <p className="text-[10px] text-amber-700 mt-1">{formatBenchmarkFreshness(null, autoSync)}</p>
       </div>
     );
   }
@@ -169,8 +182,8 @@ export function PerformanceInsightStrip({ dealerId, summary, loading, onComputed
       )}
 
       {summary.computedAt && (
-        <p className="text-[10px] text-slate-300">
-          Updated {new Date(summary.computedAt).toLocaleString()}
+        <p className={`text-[10px] ${benchmarksUpdating ? 'text-amber-600' : 'text-slate-300'}`}>
+          {formatBenchmarkFreshness(summary.computedAt, autoSync)}
         </p>
       )}
     </div>

@@ -7,6 +7,7 @@ import { mockVehicles } from '../../fixtures/vehicles/vehicles.fixture.js';
 import { pristineApiDealership, pristineApiVehicles } from '../../fixtures/scenarios/pristineApiValidation.fixture.js';
 import type { DealershipPayload, VehiclePayload } from '../../lib/types.js';
 import { seedPristineDealer } from '../../services/platform/seedService.js';
+import { seedPerformanceBenchmarkDemo } from '../../services/performance/performanceDemoSeed.js';
 import { runControlledBubbleSubmission } from '../../services/platform/platformReadinessService.js';
 import { runRiskMatrix } from '../../services/platform/riskMatrixService.js';
 import { runPortalLifecycle, HAPPY_PATH_FEED, HAPPY_PATH_ASSISTED, HAPPY_PATH_ADF } from '../../services/publishing/partnerPortalService.js';
@@ -69,6 +70,10 @@ async function main() {
   }
   const manifest = await buildProofFolderManifest(prisma, dealershipId, runId);
   console.log(`Readiness: ${overallStatus} (${artifactCount} artifacts)`);
+
+  // 3b. Movement benchmark demo history (sold comparables, sync events, leads)
+  await seedPerformanceBenchmarkDemo(prisma, dealershipId);
+  console.log('Performance benchmark demo seeded.');
 
   // 4. poc:green — all 18 platforms must be GREEN
   console.log('\nRunning poc:green...');

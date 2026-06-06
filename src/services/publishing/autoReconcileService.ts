@@ -1,5 +1,6 @@
 import type { Prisma } from '@prisma/client';
 import { prisma } from '../../lib/prisma.js';
+import { runPerformanceComputeForDealer } from '../performance/computePerformanceService.js';
 import { runPrepareAndPublish } from './prepareAndPublishService.js';
 import { runScheduler } from './schedulerService.js';
 import { recordSyncEvent } from './syncEventService.js';
@@ -14,6 +15,8 @@ export type AutoSyncStatus = {
   lastCompletedAt: string | null;
   lastError: string | null;
   lastDispatched: number | null;
+  performanceRefreshPending: boolean;
+  performanceComputedAt: string | null;
 };
 
 type Pending = {
@@ -32,6 +35,8 @@ function defaultStatus(): AutoSyncStatus {
     lastCompletedAt: null,
     lastError: null,
     lastDispatched: null,
+    performanceRefreshPending: false,
+    performanceComputedAt: null,
   };
 }
 
@@ -73,12 +78,15 @@ async function flushAutoReconcile(dealershipId: string): Promise<void> {
   const ingressRunId = entry?.ingressRunId ?? null;
   pendingByDealer.delete(dealershipId);
 
+  const prior = getAutoSyncStatus(dealershipId);
   const running: AutoSyncStatus = {
     phase: 'running',
     scheduledFullReconcile: false,
-    lastCompletedAt: getAutoSyncStatus(dealershipId).lastCompletedAt,
+    lastCompletedAt: prior.lastCompletedAt,
     lastError: null,
     lastDispatched: null,
+    performanceRefreshPending: false,
+    performanceComputedAt: prior.performanceComputedAt,
   };
   statusByDealer.set(dealershipId, running);
 
@@ -114,20 +122,41 @@ async function flushAutoReconcile(dealershipId: string): Promise<void> {
     }
 
     statusByDealer.set(dealershipId, {
+      ...prior,
+      phase: 'running',
+      scheduledFullReconcile: false,
+      lastError: null,
+      lastDispatched: sched.sentCount,
+      performanceRefreshPending: true,
+    });
+
+    let performanceComputedAt = prior.performanceComputedAt;
+    try {
+      const perf = await runPerformanceComputeForDealer(prisma, dealershipId);
+      performanceComputedAt = perf.computedAt;
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : 'Performance compute failed';
+      console.warn(`Auto-reconcile performance compute skipped for ${dealershipId}: ${message}`);
+    }
+
+    statusByDealer.set(dealershipId, {
       phase: 'idle',
       scheduledFullReconcile: false,
       lastCompletedAt: new Date().toISOString(),
       lastError: null,
       lastDispatched: sched.sentCount,
+      performanceRefreshPending: false,
+      performanceComputedAt,
     });
   } catch (err: unknown) {
     const message = err instanceof Error ? err.message : 'Auto-reconcile failed';
     statusByDealer.set(dealershipId, {
+      ...getAutoSyncStatus(dealershipId),
       phase: 'failed',
       scheduledFullReconcile: false,
-      lastCompletedAt: getAutoSyncStatus(dealershipId).lastCompletedAt,
       lastError: message,
       lastDispatched: null,
+      performanceRefreshPending: false,
     });
   }
 }

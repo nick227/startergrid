@@ -1,105 +1,111 @@
-import type { SyncReadiness } from '@/lib/syncPresentation.ts';
-import { InfoLabel } from '@/components/docs';
-
-export type SyncMovementContext = {
-  fastCount: number;
-  staleCount: number;
-  benchmarkedCount: number;
-  activeCount: number;
-  staleStocks: string[];
-};
-
-type Props = {
-  readiness: SyncReadiness;
-  movement?: SyncMovementContext | null;
-  onReviewInventory?: () => void;
-};
-
-type Tile = {
-  label: string;
-  docId: string;
-  value: number;
-  hint: string;
-  tone: string;
-};
-
-export function SyncSummaryStrip({ readiness, movement, onReviewInventory }: Props) {
-  const tiles: Tile[] = [
-    {
-      label: 'Cars ready',
-      docId: 'inventory/inventory-readiness',
-      value: readiness.carsReady,
-      hint: readiness.carsWarning > 0 ? `${readiness.carsWarning} with warnings` : 'to sync',
-      tone: 'text-emerald-700 bg-emerald-50 border-emerald-100',
-    },
-    {
-      label: 'Cars blocked',
-      docId: 'inventory/inventory-readiness',
-      value: readiness.carsBlocked,
-      hint: readiness.carsBlocked > 0 ? 'fix in inventory' : 'none',
-      tone: readiness.carsBlocked > 0 ? 'text-red-700 bg-red-50 border-red-100' : 'text-slate-500 bg-white border-slate-200',
-    },
-    {
-      label: 'Platforms ready',
-      docId: 'processes/platform-readiness',
-      value: readiness.platformsWillSync + readiness.platformsLive,
-      hint: `${readiness.platformsLive} already live`,
-      tone: 'text-sky-700 bg-sky-50 border-sky-100',
-    },
-    {
-      label: 'Platforms blocked',
-      docId: 'platforms/account-states',
-      value: readiness.platformsBlocked + readiness.platformsNeedYou,
-      hint: readiness.platformsNeedYou > 0 ? `${readiness.platformsNeedYou} pending` : 'need attention',
-      tone:
-        readiness.platformsBlocked + readiness.platformsNeedYou > 0
-          ? 'text-amber-800 bg-amber-50 border-amber-100'
-          : 'text-slate-500 bg-white border-slate-200',
-    },
-  ];
-
-  const showMovement =
-    movement &&
-    movement.benchmarkedCount > 0 &&
-    (movement.staleCount > 0 || movement.fastCount > 0);
-
-  return (
-    <div className="space-y-2">
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
-        {tiles.map(t => (
-          <div key={t.label} className={`rounded-xl border px-4 py-4 ${t.tone}`}>
-            <div className="text-2xl font-bold tabular-nums leading-none">{t.value}</div>
-            <div className="text-xs font-semibold mt-1.5">
-              <InfoLabel term={t.label} docId={t.docId} />
-            </div>
-            <div className="text-[10px] opacity-80 mt-0.5">{t.hint}</div>
-          </div>
-        ))}
-      </div>
-
-      {showMovement && movement && (
-        <p className="text-xs text-slate-500 px-1">
-          <span className="font-medium text-slate-600">Movement vs similar stock · </span>
-          {movement.fastCount > 0 && `${movement.fastCount} fast`}
-          {movement.fastCount > 0 && movement.staleCount > 0 && ' · '}
-          {movement.staleCount > 0 && `${movement.staleCount} stale`}
-          {movement.staleStocks.length > 0 && (
-            <> — review {movement.staleStocks.join(', ')}</>
-          )}
-          {onReviewInventory && movement.staleCount > 0 && (
-            <>
-              {' '}
-              <button
-                type="button"
-                onClick={onReviewInventory}
-                className="font-semibold text-emerald-700 hover:underline"
-              >
-                Open inventory
-              </button>
-            </>
-          )}
-        </p>
-      )}
-    </div>
-  );
-}
+import type { SyncReadiness } from '@/lib/syncPresentation.ts';
+import { InfoLabel } from '@/components/docs';
+import { formatPerformanceUpdated } from '@/lib/performanceFreshness.ts';
+
+export type SyncMovementContext = {
+  computedAt: string | null;
+  fastCount: number;
+  slowCount: number;
+  staleCount: number;
+  lowDataCount: number;
+  benchmarkedCount: number;
+  staleStocks: string[];
+};
+
+type Props = {
+  readiness: SyncReadiness;
+  movement?: SyncMovementContext | null;
+  onReviewInventory?: () => void;
+};
+
+type Tile = {
+  label: string;
+  docId: string;
+  value: number;
+  hint: string;
+  tone: string;
+};
+
+export function SyncSummaryStrip({ readiness, movement, onReviewInventory }: Props) {
+  const tiles: Tile[] = [
+    {
+      label: 'Cars ready',
+      docId: 'inventory/inventory-readiness',
+      value: readiness.carsReady,
+      hint: readiness.carsWarning > 0 ? `${readiness.carsWarning} with warnings` : 'to sync',
+      tone: 'text-emerald-700 bg-emerald-50 border-emerald-100',
+    },
+    {
+      label: 'Cars blocked',
+      docId: 'inventory/inventory-readiness',
+      value: readiness.carsBlocked,
+      hint: readiness.carsBlocked > 0 ? 'fix in inventory' : 'none',
+      tone: readiness.carsBlocked > 0 ? 'text-red-700 bg-red-50 border-red-100' : 'text-slate-500 bg-white border-slate-200',
+    },
+    {
+      label: 'Platforms ready',
+      docId: 'processes/platform-readiness',
+      value: readiness.platformsWillSync + readiness.platformsLive,
+      hint: `${readiness.platformsLive} already live`,
+      tone: 'text-sky-700 bg-sky-50 border-sky-100',
+    },
+    {
+      label: 'Platforms blocked',
+      docId: 'platforms/account-states',
+      value: readiness.platformsBlocked + readiness.platformsNeedYou,
+      hint: readiness.platformsNeedYou > 0 ? `${readiness.platformsNeedYou} pending` : 'need attention',
+      tone:
+        readiness.platformsBlocked + readiness.platformsNeedYou > 0
+          ? 'text-amber-800 bg-amber-50 border-amber-100'
+          : 'text-slate-500 bg-white border-slate-200',
+    },
+  ];
+
+  const showMovement = movement?.computedAt != null;
+
+  return (
+    <div className="space-y-2">
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
+        {tiles.map(t => (
+          <div key={t.label} className={`rounded-xl border px-4 py-4 ${t.tone}`}>
+            <div className="text-2xl font-bold tabular-nums leading-none">{t.value}</div>
+            <div className="text-xs font-semibold mt-1.5">
+              <InfoLabel term={t.label} docId={t.docId} />
+            </div>
+            <div className="text-[10px] opacity-80 mt-0.5">{t.hint}</div>
+          </div>
+        ))}
+      </div>
+
+      {showMovement && movement && (
+        <p className="text-xs text-slate-500 px-1">
+          <span className="font-medium text-slate-600">Movement vs similar stock · </span>
+          {[
+            movement.fastCount > 0 && `${movement.fastCount} fast`,
+            movement.slowCount > 0 && `${movement.slowCount} slow`,
+            movement.staleCount > 0 && `${movement.staleCount} stale`,
+            movement.lowDataCount > 0 && `${movement.lowDataCount} low data`,
+          ].filter(Boolean).join(' · ')}
+          {movement.staleStocks.length > 0 && (
+            <> — review {movement.staleStocks.join(', ')}</>
+          )}
+          {onReviewInventory && (movement.staleCount > 0 || movement.slowCount > 0) && (
+            <>
+              {' '}
+              <button
+                type="button"
+                onClick={onReviewInventory}
+                className="font-semibold text-emerald-700 hover:underline"
+              >
+                Open inventory
+              </button>
+            </>
+          )}
+          <span className="block text-[10px] text-slate-400 mt-0.5">
+            {formatPerformanceUpdated(movement.computedAt)}
+          </span>
+        </p>
+      )}
+    </div>
+  );
+}

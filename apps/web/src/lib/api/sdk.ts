@@ -15,7 +15,6 @@ import type {
 } from '@auto-dealer/api-client';
 import type {
   AutoSyncStatus,
-  PerformanceInsightsResponse,
   PublishStatusResponse,
   PrepareResult,
   HistoryResponse,
@@ -42,6 +41,9 @@ import type {
   PlatformPerformanceListResponse,
   PerformanceSummaryResponse,
   PerformanceComputeResponse,
+  PerformanceSummaryView,
+  VehiclePerformanceItem,
+  PlatformPerformanceItem,
 } from '../types.ts';
 import { toErrorMessage } from '../errors.ts';
 import { configureSdkDevAuth } from '../devAuth.ts';
@@ -247,51 +249,37 @@ export async function triggerPerformanceCompute(
   return fromSdk(PerformanceService.computePerformance({ dealershipId })) as Promise<PerformanceComputeResponse>;
 }
 
-// ── Legacy (pre-Phase-3) ──────────────────────────────────────────────────────
-export async function fetchPerformanceInsights(
-  dealershipId: string
-): Promise<PerformanceInsightsResponse> {
-  await fromSdk(PerformanceService.computePerformance({ dealershipId }));
+/** Read cached performance only — never triggers recompute. */
+export type CachedPerformanceSnapshot = {
+  dealershipId: string;
+  computedAt: string | null;
+  summary: PerformanceSummaryView;
+  vehicles: VehiclePerformanceItem[];
+  platforms: PlatformPerformanceItem[];
+  totalObservedAssists: number;
+};
 
+export async function fetchCachedPerformanceSnapshot(
+  dealershipId: string
+): Promise<CachedPerformanceSnapshot> {
   const [summaryBody, vehiclesBody, platformsBody] = await Promise.all([
     fromSdk(PerformanceService.getPerformanceSummary({ dealershipId })),
     fromSdk(PerformanceService.listVehiclePerformance({ dealershipId })),
     fromSdk(PerformanceService.listPlatformPerformance({ dealershipId })),
   ]);
 
-  const totalLeads = platformsBody.platforms.reduce((s, p) => s + p.totalLeads, 0);
+  const totalObservedAssists = platformsBody.platforms.reduce((s, p) => s + p.totalLeads, 0);
 
   return {
     dealershipId,
-    computedAt: summaryBody.summary.computedAt ?? vehiclesBody.computedAt ?? new Date().toISOString(),
-    summary: {
-      activeVehicles: summaryBody.summary.activeCount,
-      staleCount: summaryBody.summary.staleCount,
-      fastCount: summaryBody.summary.fastCount,
-      totalLeads,
-    },
-    vehicles: vehiclesBody.items.map(v => ({
-      vehicleId: v.vehicleId,
-      stockNumber: v.stockNumber,
-      title: `${v.year} ${v.make} ${v.model}`,
-      daysOnline: v.daysOnline,
-      movementSignal: v.movementSignal,
-      comparableCount: v.comparableCount,
-      avgComparableDays: v.avgComparableDays,
-      medianComparableDays: v.medianComparableDays,
-      benchmarkConfidence: v.benchmarkConfidence,
-      benchmarkLabel: v.benchmarkLabel,
-      platformAssists: v.platformAssists,
-    })),
-    platforms: platformsBody.platforms.map(p => ({
-      platformSlug: p.platformSlug,
-      totalLeads: p.totalLeads,
-      leadsPerVehicle: p.leadsPerVehicle,
-      vehiclesListed: p.vehiclesListed,
-      vehiclesSold: p.vehiclesSold,
-      avgDaysToMove: p.avgDaysToMove,
-      confidence: p.confidence,
-      sampleSize: p.sampleSize,
-    })),
+    computedAt:
+      summaryBody.summary.computedAt
+      ?? vehiclesBody.computedAt
+      ?? platformsBody.computedAt
+      ?? null,
+    summary: summaryBody.summary,
+    vehicles: vehiclesBody.items,
+    platforms: platformsBody.platforms,
+    totalObservedAssists,
   };
 }
