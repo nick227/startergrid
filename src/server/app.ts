@@ -6,7 +6,8 @@ import { registerInventoryRoutes }  from './routes/inventory.js';
 import { registerPublishRoutes }    from './routes/publish.js';
 import { registerAccountRoutes }    from './routes/accounts.js';
 import { registerIngressRoutes }    from './routes/ingress.js';
-import { registerPerformanceRoutes } from './routes/performance.js';
+import { registerPerformanceRoutes }  from './routes/performance.js';
+import { registerMarketplaceRoutes }  from './routes/marketplace.js';
 import { demoFeedPayload }          from '../fixtures/scenarios/connectedInventoryDemo.fixture.js';
 
 export function buildApp(prisma: PrismaClient): FastifyInstance {
@@ -29,6 +30,7 @@ export function buildApp(prisma: PrismaClient): FastifyInstance {
   registerAccountRoutes(app, prisma);
   registerIngressRoutes(app, prisma);
   registerPerformanceRoutes(app, prisma);
+  registerMarketplaceRoutes(app, prisma);
 
   return app;
 }

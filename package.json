@@ -1,9 +1,9 @@
 {
   "name": "auto-dealer-onboarding-poc-v1",
-  "version": "4.0.0",
+  "version": "4.1.1",
   "private": true,
   "type": "module",
-  "description": "V4: DEALER_STOREFRONT owned channel, real feed artifacts, vehicle update propagation, lead capture, dealer-facing status copy, MySQL lifecycle persistence, 18 platforms.",
+  "description": "V4.1.1: Performance compute after import/sync, benchmark freshness, demo seed with FAST/SLOW/STALE; sync engine + 18 platforms; OpenAPI SDK.",
   "scripts": {
     "build": "tsc",
     "typecheck": "tsc --noEmit",
@@ -57,8 +57,10 @@
     "ui:lint":               "npm run lint --prefix apps/web",
     "ui:lint:fix":           "npm run lint:fix --prefix apps/web",
 
-    "openapi:validate":      "redocly lint openapi/openapi.yaml",
-    "client:generate":       "node node_modules/openapi-typescript-codegen/bin/index.js --input openapi/openapi.yaml --output packages/api-client/generated --client fetch --useOptions --exportCore true"
+    "openapi:validate":              "redocly lint openapi/openapi.yaml",
+    "openapi:validate:marketplace":  "redocly lint openapi/openapi-marketplace.yaml",
+    "client:generate":               "node node_modules/openapi-typescript-codegen/bin/index.js --input openapi/openapi.yaml --output packages/api-client/generated --client fetch --useOptions --exportCore true",
+    "client:generate:marketplace":   "node node_modules/openapi-typescript-codegen/bin/index.js --input openapi/openapi-marketplace.yaml --output packages/marketplace-client/generated --client fetch --useOptions --exportCore true"
   },
   "dependencies": {
     "@prisma/client": "^6",

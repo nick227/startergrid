@@ -2,6 +2,16 @@ import type { FastifyReply, FastifyRequest } from 'fastify';
 
 export type RouteClassification = 'public' | 'operator' | 'public-write';
 
+// Marketplace routes are public but tracked separately in marketplaceRouteClassifications
+// because they live in openapi/openapi-marketplace.yaml, not openapi/openapi.yaml.
+export const marketplaceRouteClassifications = {
+  public: [
+    'GET /api/marketplace/vehicles',
+    'GET /api/marketplace/vehicles/:listingId',
+    'GET /api/marketplace/dealers/:dealerId',
+  ],
+} as const;
+
 export const routeClassifications = {
   public: [
     'GET /health',

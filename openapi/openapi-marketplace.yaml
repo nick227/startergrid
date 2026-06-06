@@ -1,0 +1,306 @@
+openapi: 3.0.3
+info:
+  title: Dealer Marketplace API
+  version: 1.0.0
+  description: |
+    Public read-only API for consumer vehicle browse. No authentication required.
+
+    ## Boundary contract
+
+    This spec is intentionally separate from openapi/openapi.yaml (the operator API).
+    No operator-internal fields appear in any schema here:
+      - No VIN (privacy risk; not needed for browse)
+      - No platform account state or sync queue data
+      - No performance cache fields (operator analytics)
+      - No billing, subscription, or credential data
+      - No readiness runs, sync events, or proof artifacts
+      - No raw lead data
+
+    `listingId` is an opaque stable identifier for the detail route. It is not a VIN.
+
+servers:
+  - url: /
+    description: Same-origin
+
+tags:
+  - name: Marketplace
+    description: Public consumer vehicle browse
+
+paths:
+  /api/marketplace/vehicles:
+    get:
+      tags: [Marketplace]
+      security: []
+      x-route-classification: public
+      operationId: listMarketplaceVehicles
+      summary: Browse marketplace-eligible vehicles
+      description: |
+        Returns paginated, cross-dealer vehicle cards for marketplace-eligible inventory.
+        Eligible = active (not sold/removed) + price set.
+        Supports make/model/condition/price/dealer filters.
+      parameters:
+        - name: make
+          in: query
+          schema:
+            type: string
+            maxLength: 80
+        - name: model
+          in: query
+          schema:
+            type: string
+            maxLength: 80
+        - name: condition
+          in: query
+          schema:
+            type: string
+            enum: [NEW, USED, CPO]
+        - name: minPrice
+          in: query
+          description: Minimum priceCents (inclusive)
+          schema:
+            type: integer
+            minimum: 0
+        - name: maxPrice
+          in: query
+          description: Maximum priceCents (inclusive)
+          schema:
+            type: integer
+            minimum: 0
+        - name: dealer
+          in: query
+          description: Filter by dealer ID
+          schema:
+            type: string
+        - name: page
+          in: query
+          schema:
+            type: integer
+            minimum: 1
+            default: 1
+        - name: pageSize
+          in: query
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 100
+            default: 24
+      responses:
+        '200':
+          description: Vehicle listing page
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MarketplaceVehicleListResponse'
+        '400':
+          $ref: '#/components/responses/NotFound'
+
+  /api/marketplace/vehicles/{listingId}:
+    get:
+      tags: [Marketplace]
+      security: []
+      x-route-classification: public
+      operationId: getMarketplaceVehicle
+      summary: Single vehicle detail
+      description: |
+        Returns detail for one marketplace-eligible vehicle by opaque listing ID.
+        Returns 404 for sold, removed, or non-existent vehicles.
+      parameters:
+        - name: listingId
+          in: path
+          required: true
+          description: Opaque vehicle identifier from MarketplaceVehicleCard.listingId
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Vehicle detail
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MarketplaceVehicleDetailResponse'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /api/marketplace/dealers/{dealerId}:
+    get:
+      tags: [Marketplace]
+      security: []
+      x-route-classification: public
+      operationId: getMarketplaceDealerIndex
+      summary: Dealer storefront index
+      description: |
+        Returns dealer info and all marketplace-eligible vehicles for that dealer.
+        Returns 404 when the dealer does not exist.
+      parameters:
+        - name: dealerId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Dealer index
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MarketplaceDealerIndexResponse'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+components:
+  responses:
+    NotFound:
+      description: Not found
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/MarketplaceErrorResponse'
+
+  schemas:
+    MarketplaceErrorResponse:
+      type: object
+      required: [error]
+      properties:
+        error:
+          type: string
+
+    MarketplaceVehicleCard:
+      type: object
+      description: |
+        Consumer-safe vehicle card. Contains no VIN, no operator-internal IDs,
+        no sync state, no performance analytics, no account data.
+      required:
+        - listingId
+        - stockNumber
+        - year
+        - make
+        - model
+        - trim
+        - condition
+        - priceCents
+        - mileage
+        - exteriorColor
+        - mediaUrls
+        - dealerId
+        - dealerName
+        - dealerCity
+        - dealerState
+        - listingUrl
+        - listedAt
+      properties:
+        listingId:
+          type: string
+          description: Opaque stable identifier for the detail route. Not the vehicle VIN.
+        stockNumber:
+          type: string
+        year:
+          type: integer
+          minimum: 1900
+          maximum: 2100
+        make:
+          type: string
+        model:
+          type: string
+        trim:
+          type: string
+          nullable: true
+        condition:
+          type: string
+          enum: [NEW, USED, CPO]
+        priceCents:
+          type: integer
+          minimum: 0
+        mileage:
+          type: integer
+          minimum: 0
+        exteriorColor:
+          type: string
+          nullable: true
+        mediaUrls:
+          type: array
+          maxItems: 8
+          items:
+            type: string
+          description: >
+            First 8 images ordered by sort sequence.
+            Additional images available in the detail endpoint.
+        dealerId:
+          type: string
+        dealerName:
+          type: string
+          description: dbaName when available, otherwise legalName.
+        dealerCity:
+          type: string
+          nullable: true
+        dealerState:
+          type: string
+          nullable: true
+        listingUrl:
+          type: string
+          description: Relative URL to the consumer listing page.
+        listedAt:
+          type: string
+          format: date-time
+          description: When the vehicle was first listed.
+
+    MarketplaceVehicleListResponse:
+      type: object
+      required: [vehicles, total, page, pageSize, nextPage]
+      properties:
+        vehicles:
+          type: array
+          items:
+            $ref: '#/components/schemas/MarketplaceVehicleCard'
+        total:
+          type: integer
+          minimum: 0
+          description: Total eligible vehicles matching the filter (across all pages).
+        page:
+          type: integer
+          minimum: 1
+        pageSize:
+          type: integer
+          minimum: 1
+        nextPage:
+          type: string
+          nullable: true
+          description: Relative URL for the next page, or null on the last page.
+
+    MarketplaceVehicleDetailResponse:
+      type: object
+      required: [vehicle, fullDescription, additionalMediaUrls]
+      properties:
+        vehicle:
+          $ref: '#/components/schemas/MarketplaceVehicleCard'
+        fullDescription:
+          type: string
+          nullable: true
+          description: Long-form vehicle description. Null until Vehicle gains a description field.
+        additionalMediaUrls:
+          type: array
+          items:
+            type: string
+          description: Images beyond the first 8 from the card.
+
+    MarketplaceDealerIndexResponse:
+      type: object
+      required: [dealerId, dealerName, dealerCity, dealerState, websiteUrl, vehicles]
+      properties:
+        dealerId:
+          type: string
+        dealerName:
+          type: string
+        dealerCity:
+          type: string
+          nullable: true
+        dealerState:
+          type: string
+          nullable: true
+        websiteUrl:
+          type: string
+          nullable: true
+        vehicles:
+          type: array
+          items:
+            $ref: '#/components/schemas/MarketplaceVehicleCard'
+          description: All marketplace-eligible vehicles for this dealer.

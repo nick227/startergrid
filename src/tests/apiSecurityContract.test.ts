@@ -6,8 +6,13 @@ import { buildApp } from '../server/app.js';
 function mockPrisma(): PrismaClient {
   return {
     dealershipProfile: {
-      findMany: async () => [],
+      findMany:  async () => [],
       findUnique: async () => null,
+    },
+    vehicle: {
+      count:     async () => 0,
+      findMany:  async () => [],
+      findFirst: async () => null,
     },
   } as unknown as PrismaClient;
 }
@@ -75,5 +80,52 @@ describe('API security contract', () => {
 
     assert.equal(response.statusCode, 400);
     assert.match(response.json().error, /contactName/);
+  });
+});
+
+describe('marketplace routes — public access', () => {
+  it('GET /api/marketplace/vehicles is accessible without auth (returns 200)', async () => {
+    const app = buildApp(mockPrisma());
+
+    const response = await app.inject({ method: 'GET', url: '/api/marketplace/vehicles' });
+
+    assert.equal(response.statusCode, 200);
+    const body = response.json();
+    assert.ok(Array.isArray(body.vehicles), 'response.vehicles must be an array');
+    assert.equal(body.total, 0);
+  });
+
+  it('GET /api/marketplace/vehicles/:listingId returns 404 (no auth required)', async () => {
+    const app = buildApp(mockPrisma());
+
+    const response = await app.inject({ method: 'GET', url: '/api/marketplace/vehicles/unknown-id' });
+
+    assert.equal(response.statusCode, 404);
+  });
+
+  it('GET /api/marketplace/dealers/:dealerId returns 404 (no auth required)', async () => {
+    const app = buildApp(mockPrisma());
+
+    const response = await app.inject({ method: 'GET', url: '/api/marketplace/dealers/unknown-dealer' });
+
+    assert.equal(response.statusCode, 404);
+  });
+
+  it('marketplace routes do not accept x-operator-id as meaningful auth', async () => {
+    const app = buildApp(mockPrisma());
+
+    // With or without operator header, the result is the same — no auth gate
+    const withHeader = await app.inject({
+      method: 'GET',
+      url: '/api/marketplace/vehicles',
+      headers: { 'x-operator-id': 'dev-operator' },
+    });
+    const withoutHeader = await app.inject({
+      method: 'GET',
+      url: '/api/marketplace/vehicles',
+    });
+
+    assert.equal(withHeader.statusCode, withoutHeader.statusCode);
+    assert.equal(withHeader.statusCode, 200);
   });
 });

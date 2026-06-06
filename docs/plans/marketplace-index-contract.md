@@ -1,6 +1,6 @@
 # Marketplace Index Contract
 
-**Status:** Plan — not implemented  
+**Status:** Implemented — backend boundary built; `apps/marketplace/` not yet scaffolded  
 **Date:** 2026-06-05  
 **Scope:** What the consumer marketplace app (`apps/marketplace/`) is allowed to read from the sync engine, and how the boundary is enforced.
 
