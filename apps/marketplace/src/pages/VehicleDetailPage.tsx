@@ -79,11 +79,13 @@ export default function VehicleDetailPage({ listingId }: Props) {
           <CoreHeaderSection core={vehicle.core} commerce={vehicle.commerce} />
           <CommerceSection commerce={vehicle.commerce} />
           <LocationSection location={vehicle.location} />
-          <LeadInquiryForm
-            listingId={vehicle.core.listingId}
-            vehicleLabel={vehicle.core.title}
-            dealerName={vehicle.location.dealerName}
-          />
+          <div id="inquiry">
+            <LeadInquiryForm
+              listingId={vehicle.core.listingId}
+              vehicleLabel={vehicle.core.title}
+              dealerName={vehicle.location.dealerName}
+            />
+          </div>
         </div>
       </div>
 

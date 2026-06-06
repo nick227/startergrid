@@ -1,4 +1,4 @@
-// Maps DB vehicle rows to nested MarketplaceVehicleDetailResponse.
+import { mapDbMediaToDetailMedia } from './mediaSlotFixtures.js';
 
 type DbMedia = {
   id:         string;
@@ -92,14 +92,6 @@ function dealerDisplayName(d: DbVehicleDetailRow['dealership']): string {
 
 function buildListingUrl(dealerId: string, stockNumber: string): string {
   return `/marketplace/dealers/${dealerId}/${encodeURIComponent(stockNumber)}`;
-}
-
-function detailMediaKind(kind: string | undefined): MarketplaceMediaItem['kind'] {
-  const upper = kind?.toUpperCase();
-  if (upper === 'VIDEO') return 'VIDEO';
-  if (upper === 'SPIN_360') return 'SPIN_360';
-  if (upper === 'DOORS_OPEN') return 'DOORS_OPEN';
-  return 'IMAGE';
 }
 
 function emptyFeatures() {
@@ -213,24 +205,7 @@ function shapeWarranty(row: DbVehicleDetailRow) {
 }
 
 function shapeMedia(row: DbVehicleDetailRow) {
-  const items = [...row.media]
-    .sort((a, b) => a.sortOrder - b.sortOrder)
-    .map((m, index): MarketplaceMediaItem => ({
-      id:          m.id,
-      kind:        detailMediaKind(m.kind),
-      url:         m.url,
-      sortOrder:   m.sortOrder,
-      slot:        index === 0 ? 'HERO' : 'OVERFLOW',
-      angle:       null,
-      caption:     null,
-      posterUrl:   null,
-      mimeType:    m.mimeType ?? null,
-      width:       m.width ?? null,
-      height:      m.height ?? null,
-      durationSec: null,
-      embedUrl:    null,
-    }));
-  return { items, tour: null };
+  return mapDbMediaToDetailMedia(row.media);
 }
 
 function shapeContent() {

@@ -548,6 +548,19 @@ describe('MarketplaceVehicleDetailResponse — shape contract', () => {
     assert.equal(detail!.vehicle.media.items.length, 12);
   });
 
+  it('detail media assigns stable mosaic slots and optional tour', async () => {
+    const v = fakeVehicle();
+    const prisma = makeMockPrisma([v]);
+    const detail = await getMarketplaceVehicle(prisma, v.id);
+    const hero = detail!.vehicle.media.items.find(i => i.slot === 'HERO');
+    assert.ok(hero);
+    assert.ok(hero!.angle);
+    if (detail!.vehicle.media.items.length >= 2) {
+      assert.ok(detail!.vehicle.media.tour);
+      assert.equal(detail!.vehicle.media.tour!.enabled, true);
+    }
+  });
+
   it('promotion block is populated for every detail response', async () => {
     const v = fakeVehicle();
     const prisma = makeMockPrisma([v]);
