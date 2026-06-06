@@ -2,441 +2,513 @@
 
 **Created:** 2026-06-06  
 **Updated:** 2026-06-06  
-**Status:** Proposal — design approval before implementation  
-**Route:** `#/vehicle/{listingId}` · `apps/marketplace/src/pages/VehicleDetailPage.tsx`  
-**References:** CarMax-style VDP layout; CarMax-style field richness (example JSON below — illustrative, not exhaustive)
+**Status:** Approved direction — Phase 1 OpenAPI next  
+**Route:** `#/vehicle/{listingId}` · `apps/marketplace/src/pages/VehicleDetailPage.tsx`
 
 Related: [2026-06-06-ui-design-system-design.md](./2026-06-06-ui-design-system-design.md)
 
 ---
 
-## Purpose
+## Agreement summary
 
-Define the **content model**, **media system**, and **page layout** for the marketplace vehicle detail page.
+**Yes — this direction is correct.** The nested `vehicle.*` category model, promotion-platform sourcing, full VIN, embed-first 360, no AR/reviews in v1, and tour-as-curated-walkthrough are the right Phase 1 contract.
 
-Priorities:
+Small alignments baked into this doc:
 
-1. **Structured vehicle data by category** — not a flat blob; each section maps to UI blocks  
-2. **Deterministic media placement** — same angle → same gallery slot on every listing  
-3. **Rich gallery** — photos, video, 360° spin, doors-open views, pinch/zoom, optional **guided tour** (click Next)  
-4. **Photo-forward layout** with improved CTA placement (sticky purchase panel + mobile bar)  
-5. **Company palette** — bright showroom, blue primary CTAs  
-
----
-
-## Content fields by category
-
-Fields are grouped for API schema, operator ingest, and VDP section rendering.  
-**Legend:** ✅ in API today · 🔶 partial · ⬜ proposed  
-
-### 1. Identity
-
-Core listing identity — always shown in purchase panel header.
-
-| Field | Type | Status | VDP use |
-|-------|------|--------|---------|
-| `listingId` | string | ✅ | Route key (opaque; not VIN) |
-| `stockNumber` | string | ✅ | Purchase panel meta (mono) |
-| `year` | integer | ✅ | Title |
-| `make` | string | ✅ | Title, breadcrumbs |
-| `model` | string | ✅ | Title |
-| `trim` | string \| null | ✅ | Subtitle |
-| `condition` | `NEW` \| `USED` \| `CPO` | ✅ | Badge |
-| `vin` | string | ⬜ | **Policy decision:** marketplace is consumer-safe today (no VIN). If added: last-6 mask only or dealer-only toggle |
-
-**Example (CarMax):** `year`, `make`, `model`, `trim`, `stockNumber`, `vin`
+| Your note | Resolution |
+|-----------|------------|
+| `vehicle.legal` vs Phase 1 `content` | API block named **`vehicle.content`** (description + notes + legal copy). UI section label can still say “Legal”. |
+| Phase 1 lists `ratings` | **Removed from v1** per decision to cut reviews. |
+| `pricing` + `availability` as sibling keys | Merged under **`vehicle.commerce`** (one section component, one TypeScript type). |
+| `powertrain` in Phase 1 list | Maps to **`vehicle.engine`** (same fields; name matches ingest). |
+| `dealer` in Phase 1 list | Maps to **`vehicle.location`**. |
 
 ---
 
-### 2. Pricing & commerce
+## Data source
 
-| Field | Type | Status | VDP use |
-|-------|------|--------|---------|
-| `priceCents` | integer | ✅ | Hero price |
-| `listedAt` | datetime | ✅ | “Listed” meta |
-| `listingUrl` | string | ✅ | Canonical share (future) |
-| `shippingPriceCents` | integer \| null | ⬜ | Availability card |
-| `estimatedArrival` | string \| null | ⬜ | e.g. `"6/13–6/20"` — availability card |
-| `priorUse` | string \| null | ⬜ | e.g. `"None"`, `"Rental"`, `"Fleet"` — specs row |
+VDP content is **not scraped third-party inventory**. Each listing is populated from the **online auto promotion platform** — the same system that prepares, validates, and syndicates dealer stock.
 
-**Example:** `price`, `availability.shippingPrice`, `availability.estimatedArrival`, `priorUse`
+Implications:
+
+- Fields are **authoritative** (dealer-entered or DMS-ingested, then platform-normalized)  
+- Every listing carries **promotion metadata** — where and how it is marketed  
+- Media angles, tour steps, and feature groups are **operator-configurable**, not inferred at render time  
+- Consumer API stays **public-safe** but includes **full VIN** by policy (see decisions)
 
 ---
 
-### 3. Location & dealer
+## Response shape (not a flat blob)
 
-| Field | Type | Status | VDP use |
-|-------|------|--------|---------|
-| `dealerId` | string | ✅ | Links |
-| `dealerName` | string | ✅ | Panel + dealer block |
-| `dealerCity` | string \| null | ✅ | Location line |
-| `dealerState` | string \| null | ✅ | Location line |
-| `dealerStoreName` | string \| null | ⬜ | e.g. `"CarMax Texas Stadium"` — subtitle under city/state |
-| `websiteUrl` | string \| null | 🔶 | Dealer block (dealer index) |
+Phase 1 detail response is three top-level objects. The frontend imports **one type per block** — each VDP section consumes exactly one category.
 
-**Example:** `location.city`, `location.state`, `location.store`
+```yaml
+MarketplaceVehicleDetailResponse:
+  required: [vehicle, promotion, ctas]
+  properties:
+    vehicle:
+      $ref: '#/components/schemas/MarketplaceVehicleDetail'
+    promotion:
+      $ref: '#/components/schemas/MarketplaceListingPromotion'
+    ctas:
+      $ref: '#/components/schemas/MarketplaceVehicleCtas'
+```
 
----
+```yaml
+MarketplaceVehicleDetail:
+  required:
+    - core
+    - commerce
+    - location
+    - classification
+    - colors
+    - engine
+    - efficiency
+    - conditionHistory
+    - features
+    - warranty
+    - media
+    - content
+  properties:
+    core:              { $ref: '#/components/schemas/VehicleCore' }
+    commerce:          { $ref: '#/components/schemas/VehicleCommerce' }
+    location:          { $ref: '#/components/schemas/VehicleLocation' }
+    classification:    { $ref: '#/components/schemas/VehicleClassification' }
+    colors:            { $ref: '#/components/schemas/VehicleColors' }
+    engine:            { $ref: '#/components/schemas/VehicleEngine' }
+    efficiency:        { $ref: '#/components/schemas/VehicleEfficiency' }
+    conditionHistory:  { $ref: '#/components/schemas/VehicleConditionHistory' }
+    features:          { $ref: '#/components/schemas/VehicleFeatures' }
+    warranty:          { $ref: '#/components/schemas/VehicleWarranty' }
+    media:             { $ref: '#/components/schemas/VehicleMedia' }
+    content:           { $ref: '#/components/schemas/VehicleContent' }
+```
 
-### 4. Classification & body
+**Frontend mapping (DRY):**
 
-| Field | Type | Status | VDP use |
-|-------|------|--------|---------|
-| `bodyStyle` | string \| null | ⬜ | e.g. `"4D Sport Utility"` — quick specs |
-| `vehicleSize` | string \| null | ⬜ | e.g. `"Midsize"` |
-| `vehicleType` | string \| null | ⬜ | e.g. `"SUVs"` — breadcrumb / filters alignment |
-| `mileage` | integer | ✅ | Quick specs + panel |
+| VDP section | Consumes |
+|-------------|----------|
+| Purchase panel header | `vehicle.core`, `vehicle.commerce` (price slice) |
+| Price & availability card | `vehicle.commerce` |
+| Dealer block | `vehicle.location`, `promotion` (optional badge) |
+| Quick specs / overview | `vehicle.classification`, `vehicle.colors`, `vehicle.engine`, `vehicle.efficiency` |
+| Condition & history | `vehicle.conditionHistory` |
+| Features | `vehicle.features` |
+| Warranty | `vehicle.warranty` |
+| Gallery + tour | `vehicle.media` |
+| Description & legal | `vehicle.content` |
+| Action buttons | `ctas` |
 
-**Example:** `body`, `vehicleSize`, `vehicleType`
-
----
-
-### 5. Colors
-
-| Field | Type | Status | VDP use |
-|-------|------|--------|---------|
-| `exteriorColor` | string \| null | ✅ | Quick specs + overview grid |
-| `interiorColor` | string \| null | ⬜ | Overview grid |
-
-**Example:** `colors.exterior`, `colors.interior`
-
----
-
-### 6. Engine & drivetrain
-
-Nested object — overview grid + optional “Engine” section.
-
-| Field | Type | Status | VDP use |
-|-------|------|--------|---------|
-| `engine.size` | string \| null | ⬜ | e.g. `"2.0L"` |
-| `engine.type` | string \| null | ⬜ | e.g. `"Plug-In Hybrid"` |
-| `engine.cylinders` | integer \| null | ⬜ | |
-| `engine.horsepower` | string \| null | ⬜ | e.g. `"375/5,250 RPM"` |
-| `engine.torque` | string \| null | ⬜ | |
-| `engine.transmission` | string \| null | ⬜ | |
-| `engine.drivetrain` | string \| null | ⬜ | e.g. `"Four Wheel Drive"` |
-
-**Example:** full `engine` object from CarMax sample
-
----
-
-### 7. Features
-
-Three tiers — different UI treatment.
-
-| Field | Type | Status | VDP use |
-|-------|------|--------|---------|
-| `keyFeatures` | string[] | ⬜ | **Highlights row** — chips above fold (max 6–8) |
-| `highlights` | string[] | ⬜ | **Marketing tags** — e.g. `"Advanced Features"` badge strip |
-| `allFeatures` | string[] | ⬜ | **Features section** — searchable checklist / grouped list |
-| `fullDescription` | string \| null | ✅ | Description prose block |
-
-**Example:** `keyFeatures`, `highlights`, `allFeatures`
+Page story order: **vehicle → price → dealer → specs → trust → features → media → description → action**.
 
 ---
 
-### 8. Ratings & reviews
+## Locked product decisions
 
-| Field | Type | Status | VDP use |
-|-------|------|--------|---------|
-| `ratings.averageRating` | number \| null | ⬜ | Stars + score |
-| `ratings.reviewCount` | integer | ⬜ | `"4 reviews"` |
-| `reviews[]` | object[] | ⬜ | **Future phase** — individual review cards |
-
-**Example:** `ratings.averageRating`, `ratings.reviewCount`
+| # | Decision |
+|---|----------|
+| 1 | **Full VIN** shown by default on public dealer inventory VDP |
+| 2 | **360°:** embed URL first; frame sequence support deferred |
+| 3 | **AR:** not in v1 schema (no WebXR, no Quick Look) |
+| 4 | **Tour:** curated walkthrough of highlights **and** disclosed issues (nicks, blemishes, wear) |
+| 5 | **Reviews:** cut from v1 (no ratings block, no review UI) |
+| 6 | **Media kinds v1:** `IMAGE`, `VIDEO`, `SPIN_360` (embed), `DOORS_OPEN` only |
 
 ---
 
-### 9. Media (gallery system)
+## Category field definitions
 
-**Most important category for this proposal.**  
-Today: flat `mediaUrls[]` + `additionalMediaUrls[]` + `mediaItems[]` with `kind: IMAGE | VIDEO` only.
+Legend: ✅ on card/detail today · ⬜ Phase 1 add
 
-#### 9.1 Design principles
+### `vehicle.core` — identity
 
-| Principle | Rule |
-|-----------|------|
-| **Order matters** | `sortOrder` is authoritative; UI never re-sorts by URL or upload time |
-| **Slot placement** | Each exterior/interior **angle** maps to a **fixed mosaic slot** on desktop |
-| **Missing angle** | Slot shows branded placeholder or collapses — never shift other photos |
-| **Mixed media types** | Image, video, 360°, doors-open, AR share one ordered `media[]` array |
-| **Guided tour** | Subset of `media[]` with `tourLabel` — same order as gallery unless `tourOnly` |
+| Field | Type | Notes |
+|-------|------|-------|
+| `listingId` | string | Opaque route id |
+| `stockNumber` | string | Dealer stock # |
+| `vin` | string | **Full VIN, public** |
+| `year` | integer | |
+| `make` | string | |
+| `model` | string | |
+| `trim` | string \| null | |
+| `condition` | `NEW` \| `USED` \| `CPO` | |
+| `title` | string | Platform-computed display title (fallback: `{year} {make} {model}`) |
 
-#### 9.2 Proposed `MarketplaceMediaItem` (extended)
+---
+
+### `vehicle.commerce` — price & availability
+
+| Field | Type | Notes |
+|-------|------|-------|
+| `priceCents` | integer | Current ask |
+| `originalPriceCents` | integer \| null | Was-price for promos |
+| `priceLastChangedAt` | datetime \| null | |
+| `estimatedMonthlyPaymentCents` | integer \| null | Estimate only; disclaimer in `content` |
+| `availabilityStatus` | enum | e.g. `AVAILABLE`, `PENDING`, `SOLD` — platform-sourced |
+| `shippingPriceCents` | integer \| null | |
+| `estimatedArrival` | string \| null | Human range, e.g. `"6/13–6/20"` |
+| `listedAt` | datetime | First published to marketplace |
+
+---
+
+### `vehicle.location` — dealer / storefront
+
+| Field | Type | Notes |
+|-------|------|-------|
+| `dealerId` | string | |
+| `dealerName` | string | DBA or legal |
+| `dealerStoreName` | string \| null | Rooftop / store label |
+| `dealerCity` | string \| null | |
+| `dealerState` | string \| null | |
+| `dealerZip` | string \| null | |
+| `dealerPhone` | string \| null | Click-to-call on mobile |
+| `dealerWebsiteUrl` | string \| null | Validated external URL |
+
+---
+
+### `vehicle.classification`
+
+| Field | Type | Notes |
+|-------|------|-------|
+| `mileage` | integer | Odometer |
+| `bodyStyle` | string \| null | e.g. `"4D Sport Utility"` |
+| `vehicleType` | string \| null | e.g. `"SUVs"` — aligns with browse filters |
+| `vehicleSize` | string \| null | e.g. `"Midsize"` |
+| `doorCount` | integer \| null | |
+| `seatCount` | integer \| null | |
+| `priorUse` | string \| null | e.g. `"None"`, `"Rental"`, `"Fleet"` |
+
+---
+
+### `vehicle.colors` — exterior / interior
+
+| Field | Type | Notes |
+|-------|------|-------|
+| `exteriorColor` | string \| null | |
+| `interiorColor` | string \| null | |
+| `upholsteryMaterial` | string \| null | e.g. `"Leather"`, `"Cloth"` |
+
+---
+
+### `vehicle.engine` — powertrain
+
+| Field | Type | Notes |
+|-------|------|-------|
+| `engineSize` | string \| null | e.g. `"2.0L"` |
+| `engineType` | string \| null | e.g. `"Plug-In Hybrid"` |
+| `fuelType` | string \| null | Gas, diesel, electric, PHEV, etc. |
+| `cylinders` | integer \| null | |
+| `horsepower` | string \| null | Display string ok (`"375/5,250 RPM"`) |
+| `torque` | string \| null | |
+| `transmission` | string \| null | |
+| `drivetrain` | string \| null | |
+
+---
+
+### `vehicle.efficiency`
+
+| Field | Type | Notes |
+|-------|------|-------|
+| `cityMpg` | number \| null | |
+| `highwayMpg` | number \| null | |
+| `combinedMpg` | number \| null | |
+| `mpge` | number \| null | PHEV/EV |
+| `electricRangeMiles` | integer \| null | |
+| `batteryCapacityKwh` | number \| null | |
+| `chargingType` | string \| null | L1/L2/DCFC labels |
+
+---
+
+### `vehicle.conditionHistory` — trust
+
+| Field | Type | Notes |
+|-------|------|-------|
+| `titleStatus` | string \| null | Clean, salvage, etc. |
+| `accidentHistory` | string \| null | Platform-normalized disclosure |
+| `ownersCount` | integer \| null | |
+| `serviceRecordsCount` | integer \| null | |
+| `openRecalls` | integer \| null | Count only in v1 |
+| `inspectionCompleted` | boolean | |
+| `inspectionSummaryUrl` | string \| null | Link to PDF/report |
+| `frameDamageReported` | boolean | |
+
+---
+
+### `vehicle.features`
+
+Grouped features — **not** three loose arrays.
+
+```yaml
+VehicleFeatures:
+  required: [highlights, categories]
+  properties:
+    highlights:
+      type: array
+      items: { type: string }
+      description: Top chips above fold (max ~8)
+    categories:
+      type: object
+      required: [comfort, technology, safety, exterior, performance, utility, entertainment, other]
+      properties:
+        comfort:       { type: array, items: { type: string } }
+        technology:    { type: array, items: { type: string } }
+        safety:        { type: array, items: { type: string } }
+        exterior:      { type: array, items: { type: string } }
+        performance:   { type: array, items: { type: string } }
+        utility:       { type: array, items: { type: string } }
+        entertainment: { type: array, items: { type: string } }
+        other:         { type: array, items: { type: string } }
+```
+
+Empty category arrays omitted or `[]` — UI hides empty groups.
+
+---
+
+### `vehicle.warranty` — protection
+
+| Field | Type | Notes |
+|-------|------|-------|
+| `factoryWarrantyRemaining` | string \| null | e.g. `"3 yr / 36,000 mi"` |
+| `warrantyDescription` | string \| null | |
+| `certifiedProgramName` | string \| null | CPO program label when `condition=CPO` |
+| `returnPolicyDays` | integer \| null | |
+| `protectionPlansAvailable` | boolean | |
+
+---
+
+### `vehicle.media`
+
+Media is ordered, slot-aware, and tour-capable.
+
+#### `VehicleMedia` object
+
+```yaml
+VehicleMedia:
+  required: [items]
+  properties:
+    items:
+      type: array
+      items: { $ref: '#/components/schemas/MarketplaceMediaItem' }
+    tour:
+      $ref: '#/components/schemas/VehicleMediaTour'
+      nullable: true
+```
+
+#### `MarketplaceMediaItem` (v1)
 
 ```yaml
 MarketplaceMediaItem:
-  required: [id, kind, url, sortOrder]
+  required: [id, kind, sortOrder]
   properties:
-    id:           string          # stable within listing
-    kind:         enum            # see below
-    url:          string          # image, video, 360 manifest, or AR scene URL
-    sortOrder:    integer         # global gallery order (0 = hero)
-    slot:         enum | null     # fixed mosaic slot — see slot table
-    angle:        enum | null     # semantic angle — drives slot + alt text + tour
-    tourLabel:    string | null   # guided tour step title, e.g. "Dashboard & tech"
-    tourOrder:    integer | null  # order within guided tour (may differ from sortOrder)
-    caption:      string | null   # accessibility + tour narration hook
-    posterUrl:    string | null   # video / 360 poster
-    mimeType:     string | null
-    width:        integer | null
-    height:       integer | null
-    # 360-specific
-    spinFrames:   string[] | null # ordered frame URLs, or null if url is embed
-    spinFrameCount: integer | null
-    # Video-specific
-    durationSec:  number | null
-    # AR-specific (phase 2)
-    arModelUrl:   string | null
-    arUsdzUrl:    string | null   # iOS Quick Look
+    id:          string
+    kind:        enum [IMAGE, VIDEO, SPIN_360, DOORS_OPEN]
+    url:         string          # image, video, or 360 embed URL
+    sortOrder:   integer         # authoritative gallery order
+    slot:        enum | null     # fixed mosaic slot — see slot table
+    angle:       enum | null     # semantic angle for placement + alt text
+    caption:     string | null
+    posterUrl:   string | null   # video / 360 poster
+    mimeType:    string | null
+    width:       integer | null
+    height:      integer | null
+    durationSec: number | null   # video only
+    embedUrl:    string | null   # SPIN_360 — preferred v1 delivery
 ```
 
-**`kind` enum (proposed):**
+**Not in v1:** `AR`, `spinFrames[]`, WebXR, Quick Look.
 
-| Kind | Description | Gallery behavior |
-|------|-------------|------------------|
-| `IMAGE` | Standard photo | Mosaic slot + lightbox + zoom |
-| `VIDEO` | MP4 / HLS walkaround | Slot shows poster + play; lightbox inline player |
-| `SPIN_360` | Exterior 360° | Slot shows spin icon; lightbox drag-to-rotate or frame scrubber |
-| `DOORS_OPEN` | Doors-open exterior (tagged image or short clip) | **Dedicated slot** — never reuse closed profile slot |
-| `AR` | AR placement / interior preview | Slot badge “View in AR”; launches AR viewer (WebXR / Quick Look) |
-| `DETAIL` | Condition / wear close-up | Detail strip or overflow grid, not hero slots |
+#### Fixed slots (consistent placement)
 
-**`angle` enum (proposed — drives consistency):**
+| Slot | Angle | Content |
+|------|-------|---------|
+| `HERO` | `EXTERIOR_FRONT_34` | Primary exterior |
+| `SLOT_2` | `EXTERIOR_FRONT` | Head-on |
+| `SLOT_3` | `EXTERIOR_REAR_34` | Rear angle |
+| `SLOT_4` | `EXTERIOR_REAR` | Rear |
+| `SLOT_5` | `EXTERIOR_SIDE` | Profile |
+| `SLOT_6` | `EXTERIOR_DOORS_OPEN` | **Doors open** — reserved slot |
+| `SLOT_7` | `INTERIOR_FRONT` | Front seats |
+| `SLOT_8` | `INTERIOR_REAR` | Rear seats |
+| `SLOT_9` | `INTERIOR_DASH` | Dashboard / tech |
+| `SLOT_10` | `INTERIOR_CARGO` | Cargo |
+| `OVERFLOW` | `DETAIL`, `CONDITION` | Extra photos |
 
-| Angle | Default slot | Tour label (default) |
-|-------|--------------|----------------------|
-| `EXTERIOR_FRONT_34` | HERO | Exterior — front angle |
-| `EXTERIOR_FRONT` | SLOT_2 | Front view |
-| `EXTERIOR_REAR_34` | SLOT_3 | Rear angle |
-| `EXTERIOR_REAR` | SLOT_4 | Rear view |
-| `EXTERIOR_SIDE` | SLOT_5 | Side profile |
-| `EXTERIOR_DOORS_OPEN` | SLOT_6 | Doors open |
-| `INTERIOR_FRONT` | SLOT_7 | Front seats |
-| `INTERIOR_REAR` | SLOT_8 | Rear seats |
-| `INTERIOR_DASH` | SLOT_9 | Dashboard & controls |
-| `INTERIOR_CARGO` | SLOT_10 | Cargo area |
-| `WHEEL_DETAIL` | OVERFLOW | Wheels & tires |
-| `CONDITION_DETAIL` | OVERFLOW | Condition details |
+Missing slot → placeholder (no reflow).
 
-Operator ingest / DMS mapping must assign `angle` + `sortOrder`. UI renders by **slot first**, then **sortOrder** within overflow.
+#### Gallery UX (v1)
 
-#### 9.3 Desktop mosaic slot map
+- Mosaic grid + lightbox  
+- **Zoom** on images (pinch / double-tap / wheel)  
+- **Video** inline in lightbox  
+- **360** via `embedUrl` in iframe or vendor widget  
+- **Doors open** always in `SLOT_6` when provided  
 
-Fixed layout — CarMax-inspired hero + 2×2 grid:
+#### `VehicleMediaTour` — guided tour
 
-```
-┌─────────────────────┬────────┬────────┐
-│                     │ SLOT_2 │ SLOT_3 │
-│  HERO               │ front  │ rear   │
-│  EXTERIOR_FRONT_34  ├────────┼────────┤
-│  (image/video/360)  │ SLOT_4 │ SLOT_5 │
-│                     │ rear   │ side   │
-└─────────────────────┴────────┴────────┘
-  [360°] [Video] [Doors open] [View all · Guided tour]
-```
-
-- **HERO** accepts `IMAGE`, `VIDEO` (autoplay muted poster), or `SPIN_360` preview  
-- **SLOT_6 (doors open)** reserved — if missing, show placeholder “Doors open photo not available”  
-- **360 / video entry chips** below mosaic when `kind` present anywhere in `media[]`  
-- **Overflow** (`sortOrder` > hero grid): horizontal strip or “+N more” → lightbox  
-
-#### 9.4 Gallery interactions
-
-| Capability | Behavior |
-|------------|----------|
-| **Lightbox** | Full-screen viewer for all kinds; unified Next/Previous |
-| **Zoom** | Pinch + double-tap on images; scroll-wheel on desktop; max 3×; pan when zoomed |
-| **360° spin** | Drag horizontal to rotate; optional frame dots; respects `prefers-reduced-motion` → static front frame |
-| **Video** | Native `<video controls>` in lightbox; poster in grid; no autoplay with sound |
-| **Doors open** | Always labeled; tour step when present |
-| **AR** | Launch from badge; fallback link if device unsupported |
-| **Guided tour** | Button **“Start tour”** → lightbox tour mode: labeled steps, **Next / Back / Exit tour**, progress `2 / 8` |
-
-**Guided tour rules:**
-
-- Steps = `media.filter(m => m.tourOrder != null).sort(tourOrder)`  
-- If no `tourOrder` on any item, auto-generate from first N angles in canonical angle order  
-- Each step shows `tourLabel` + optional one-line `caption`  
-- **Next** advances step; at end, **Send inquiry** CTA inline in lightbox footer  
-- Keyboard: `ArrowRight` = next, `ArrowLeft` = back, `Escape` = exit tour  
-
-#### 9.5 API surface (detail response)
-
-Proposed `MarketplaceVehicleDetailResponse` shape:
+Tour is **optional**. It is a dealer-curated sequence — not just “all photos in order.”
 
 ```yaml
-vehicle: MarketplaceVehicleCard        # extended with new spec fields
-media: MarketplaceMediaItem[]        # full ordered list — replaces mediaUrls/additional split
-guidedTour:
-  enabled: boolean
-  stepCount: integer
-fullDescription: string | null
-keyFeatures: string[]
-highlights: string[]
-allFeatures: string[]
-engine: EngineSpec | null
-colors: { exterior, interior } | null
-classification: { bodyStyle, vehicleSize, vehicleType, priorUse } | null
-availability: { shippingPriceCents, estimatedArrival } | null
-ratings: { averageRating, reviewCount } | null
+VehicleMediaTour:
+  required: [enabled, steps]
+  properties:
+    enabled:  boolean
+    title:    string | null    # e.g. "Walkthrough"
+    steps:
+      type: array
+      items: { $ref: '#/components/schemas/VehicleTourStep' }
+
+VehicleTourStep:
+  required: [mediaId, label, stepType]
+  properties:
+    mediaId:   string              # references items[].id
+    label:     string              # UI step title
+    stepType:  enum [HIGHLIGHT, ISSUE, NEUTRAL]
+    note:      string | null       # e.g. "Small nick on rear bumper"
+    sortOrder: integer
 ```
 
-**Migration:** deprecate `mediaUrls` / `additionalMediaUrls` on detail endpoint once `media[]` ships; keep on list cards for backward compatibility during transition.
+| `stepType` | Use |
+|------------|-----|
+| `HIGHLIGHT` | Features dealer wants to emphasize (panoroof, wheels, tech) |
+| `ISSUE` | Transparent disclosure — nicks, blemishes, tire wear, interior marks |
+| `NEUTRAL` | Standard angle progression |
 
-**Today (gap):** `mediaItems[]` has `IMAGE | VIDEO` only, no `angle`, `slot`, or tour fields. Detail page ignores `mediaItems` and concatenates URL arrays.
+UI: **Start tour** → lightbox tour mode → **Next / Back** → progress `3 / 12` → final step CTA to inquiry.
 
----
-
-### 10. Narrative & legal
-
-| Field | Type | Status | VDP use |
-|-------|------|--------|---------|
-| `fullDescription` | string \| null | ✅ | Description section |
-| `disclaimer` | string \| null | ⬜ | Footer fine print |
-| `notice` | feed notice | 🔶 | Banner if active promo |
+Issues use `status-warning` styling in tour chrome — honest but not alarmist.
 
 ---
 
-## Page layout (summary)
+### `vehicle.content` — description, notes, legal
 
-Layout unchanged in intent; **content sections bind to categories above.**
-
-### Above fold
-
-| UI block | Data categories |
-|----------|-----------------|
-| Media mosaic + tour entry | **§9 Media** |
-| Sticky purchase panel | **§1 Identity**, **§2 Pricing**, **§3 Location**, CTAs |
-
-### Below fold (recommended order)
-
-| # | Section | Categories |
-|---|---------|------------|
-| 1 | Quick specs icon row | §4 Classification, §5 Colors, §2 mileage/condition |
-| 2 | Key features chips | §7 `keyFeatures` |
-| 3 | Highlights badges | §7 `highlights` |
-| 4 | Engine & drivetrain grid | §6 `engine` |
-| 5 | Full features list | §7 `allFeatures` |
-| 6 | Description | §10 `fullDescription` |
-| 7 | Ratings summary | §8 (when present) |
-| 8 | Dealer card | §3 |
-| 9 | Inquiry form `#inquiry` | Lead API |
-
-### CTA placement
-
-| Placement | Action |
-|-----------|--------|
-| Desktop sticky panel | **Send inquiry** (primary `mp-btn-primary`) |
-| Mobile sticky bottom bar | Price + **Send inquiry** |
-| Guided tour final step | **Send inquiry** secondary prompt |
-| Scroll target | Single `#inquiry` form — no duplicate forms |
+| Field | Type | Notes |
+|-------|------|-------|
+| `fullDescription` | string \| null | Main prose |
+| `dealerNotes` | string \| null | Short dealer voice — optional block |
+| `disclaimer` | string \| null | Price/payment disclaimers |
+| `legalDisclosure` | string \| null | Statutory / marketplace legal copy |
 
 ---
 
-## Visual design
+### `promotion` — platform syndication context
 
-Marketplace tokens from company palette — see design system doc.
+Every promoted listing knows **where** and **how** it is marketed.
 
-| Element | Token |
-|---------|--------|
-| Page | `bg-surface-page-bright` |
-| Cards | `surface-card-marketplace` |
-| Price | `text-ink text-3xl font-bold tabular-nums` |
-| Primary CTA | `mp-btn-primary` (`bg-cta`) |
-| Gallery active border | `border-cta` |
-| Tour progress | `bg-cta-light` bar, `text-navy-700` labels |
-| 360 / video badges | `bg-navy-900/80 text-white` pills on thumbnails |
+```yaml
+MarketplaceListingPromotion:
+  required: [platformListingId, channels, syndicationStatus]
+  properties:
+    platformListingId:
+      type: string
+      description: Internal promotion record id (not VIN)
+    channels:
+      type: array
+      items: { $ref: '#/components/schemas/PromotionChannel' }
+    syndicationStatus:
+      type: string
+      enum: [DRAFT, LIVE, PAUSED, ERROR]
+    lastSyncedAt:
+      type: string
+      format: date-time
+      nullable: true
+    primaryChannelSlug:
+      type: string
+      nullable: true
+      description: Main marketplace surface, e.g. consumer index
 
----
+PromotionChannel:
+  required: [slug, label, status]
+  properties:
+    slug:     string    # e.g. marketplace_web, facebook, cars_com
+    label:    string    # Human name
+    status:   enum [ACTIVE, PENDING, BLOCKED, OFF]
+    liveUrl:  string | null   # Public listing URL on that channel when applicable
+```
 
-## Field coverage matrix (today vs target)
-
-| Category | Today | Target VDP |
-|----------|-------|------------|
-| Identity | ✅ core | + optional masked VIN policy |
-| Pricing | ✅ price | + shipping/arrival |
-| Location | ✅ city/state | + store name |
-| Classification | 🔶 mileage/condition | + body/size/type/priorUse |
-| Colors | 🔶 exterior only | + interior |
-| Engine | ⬜ | full grid |
-| Features | ⬜ | key + highlights + all |
-| Ratings | ⬜ | summary block |
-| Media | 🔶 flat URLs, IMAGE/VIDEO | slots, angles, 360, doors, zoom, tour |
-| Description | ✅ | unchanged |
-
----
-
-## Implementation phases
-
-### Phase 1 — API & ingest model (backend + OpenAPI)
-
-- Extend `MarketplaceMediaItem` (`angle`, `slot`, `sortOrder`, `kind` expansions)  
-- Add spec objects: `engine`, `colors`, `classification`, `features`, `availability`, `ratings`  
-- Detail endpoint returns unified `media[]` + `guidedTour` metadata  
-- Operator ingest: document angle/slot mapping for photo vendors  
-
-### Phase 2 — Gallery core (frontend)
-
-- Slot-based mosaic renderer (fixed positions, placeholders)  
-- `PhotoLightbox` with zoom, video player, 360 scrubber  
-- Migrate off `mediaUrls` concatenation → `mediaItems`  
-
-### Phase 3 — Guided tour + rich kinds
-
-- Tour mode in lightbox (Next/Back, labels, progress)  
-- `DOORS_OPEN`, `SPIN_360` UX polish  
-- Tour completion → inquiry CTA  
-
-### Phase 4 — Page layout + content sections
-
-- Purchase panel, sticky mobile bar  
-- Render all content categories below fold  
-- Token cleanup  
-
-### Phase 5 — AR (optional)
-
-- `AR` kind + WebXR / USDZ Quick Look  
-- Device capability detection + graceful fallback  
+VDP may show subtle “Also listed on …” when `channels` includes external surfaces — optional UI, data always present for ops.
 
 ---
 
-## Accessibility
+### `ctas` — actions
 
-- Alt text template: `{year} {make} {model} — {tourLabel or angle label}`  
-- 360: keyboard alternative (frame slider + left/right arrows)  
-- Video: captions track when `captionUrl` provided (future field)  
-- Tour: announce step changes via `aria-live="polite"`  
-- Zoom: does not trap focus; reset zoom on lightbox close  
-- Reduced motion: disable spin auto-rotate and smooth zoom  
+Keeps inquiry logic out of `vehicle.*`.
+
+```yaml
+MarketplaceVehicleCtas:
+  required: [primary]
+  properties:
+    primary:
+      type: object
+      required: [action, label]
+      properties:
+        action:  enum [INQUIRY, PHONE, EXTERNAL_URL]
+        label:   string
+    secondary:
+      type: array
+      items:
+        type: object
+        properties:
+          action: enum [DEALER_PAGE, DEALER_INVENTORY, EXTERNAL_URL]
+          label:  string
+          href:   string | null
+```
+
+Default primary: `{ action: INQUIRY, label: "Send inquiry" }`.
+
+---
+
+## VDP layout (unchanged intent)
+
+- **Above fold:** `vehicle.media` mosaic + sticky panel (`vehicle.core`, `vehicle.commerce`, `vehicle.location`, `ctas.primary`)  
+- **Below fold:** classification → colors → engine → efficiency → condition → features → warranty → content → `#inquiry` form  
+- **Mobile:** sticky bottom bar (price + primary CTA)  
+- **Tokens:** marketplace palette from design system  
+
+---
+
+## Migration from current API
+
+| Today | Phase 1 |
+|-------|---------|
+| Flat `MarketplaceVehicleCard` on detail | Nested `MarketplaceVehicleDetail` |
+| `mediaUrls` + `additionalMediaUrls` | `vehicle.media.items[]` |
+| `mediaItems` with `IMAGE \| VIDEO` only | Extended kinds + slots + tour |
+| No VIN on card | Full VIN in `vehicle.core` |
+| No promotion block | `promotion` required |
+| `fullDescription` top-level | `vehicle.content.fullDescription` |
+
+List/card endpoint can stay lean; detail endpoint returns full nested shape.
+
+---
+
+## Phase 1 implementation order
+
+1. **OpenAPI** — schemas above + `MarketplaceVehicleDetailResponse`  
+2. **Promotion platform mapper** — DB/feed → nested categories + `promotion`  
+3. **Marketplace query service** — assemble detail DTO  
+4. **Generated client** — typed section props for React  
+5. **Frontend** — one component per `vehicle.*` block; gallery v1 (slots, lightbox, zoom, embed 360, tour)  
+
+**Explicitly not Phase 1:** AR, frame-sequence 360, reviews/ratings, scraped enrichment.
 
 ---
 
 ## Success criteria
 
-- [ ] Same `angle` always renders in same mosaic slot across listings  
-- [ ] Missing angle shows placeholder — no slot shifting  
-- [ ] 360°, video, doors-open, and images share one ordered gallery + lightbox  
-- [ ] Pinch/zoom on photos in lightbox  
-- [ ] Guided tour: click Next through labeled steps; ends with inquiry path  
-- [ ] VDP sections render from categorized fields (not hard-coded flat props)  
-- [ ] Consumer-safe: no raw VIN unless explicit product approval  
+- [ ] Detail response validates against nested schema — no wide flat vehicle object  
+- [ ] Each VDP React section imports one category type only  
+- [ ] Full VIN visible on VDP  
+- [ ] `promotion.channels` populated for every live listing  
+- [ ] Gallery slots stable by `angle`; doors-open uses `SLOT_6`  
+- [ ] Tour supports `HIGHLIGHT` and `ISSUE` step types  
+- [ ] 360 renders via `embedUrl`  
+- [ ] No ratings/reviews UI or schema in v1  
 
 ---
 
-## Open decisions
+## Appendix — illustrative CarMax-style fields
 
-1. **VIN on marketplace** — exclude (current policy) vs last-6 vs full?  
-2. **360 delivery** — image sequence vs third-party embed URL?  
-3. **AR scope** — WebXR only vs iOS Quick Look vs both?  
-4. **Auto tour** — when dealer omits `tourOrder`, use canonical angle sequence (recommended: yes)  
-5. **Reviews** — aggregate rating only in v1, or block until moderation pipeline exists?  
-
----
-
-## Appendix — CarMax example (illustrative field reference)
-
-Not exhaustive. Used to stress-test categories above.
+Reference only — our schema is promotion-platform-native and strictly categorized above.
 
 ```json
 {
@@ -444,40 +516,17 @@ Not exhaustive. Used to stress-test categories above.
   "make": "Jeep",
   "model": "Wrangler 4XE",
   "trim": "PHEV Unlimited Sahara",
-  "price": 28998,
-  "mileage": 43705,
   "stockNumber": "28702505",
   "vin": "1C4JJXP65NW193240",
-  "location": { "city": "Irving", "state": "Texas", "store": "CarMax Texas Stadium" },
-  "availability": { "shippingPrice": 449, "estimatedArrival": "6/13-6/20" },
-  "body": "4D Sport Utility",
-  "vehicleSize": "Midsize",
-  "vehicleType": "SUVs",
-  "priorUse": "None",
-  "colors": { "exterior": "Red", "interior": "Black" },
-  "engine": {
-    "size": "2.0L",
-    "type": "Plug-In Hybrid",
-    "torque": "470/3,000 RPM",
-    "horsepower": "375/5,250 RPM",
-    "cylinders": 4,
-    "drivetrain": "Four Wheel Drive",
-    "transmission": "Automatic"
-  },
-  "keyFeatures": ["4WD/AWD", "Turbo Charged Engine", "Leather Seats", "..."],
-  "highlights": ["Advanced Features"],
-  "allFeatures": ["Hard Top", "Apple CarPlay", "..."],
-  "ratings": { "averageRating": 1.25, "reviewCount": 4 }
+  "price": 28998,
+  "mileage": 43705
 }
 ```
 
-**Media not in example but required by this proposal:** ordered `media[]` with `angle`, `slot`, `kind` (`IMAGE`, `VIDEO`, `SPIN_360`, `DOORS_OPEN`, `AR`), plus optional `tourLabel` / `tourOrder` for guided tour.
+Maps to: `vehicle.core`, `vehicle.commerce`, `vehicle.classification` — not pasted flat into the API root.
 
 ---
 
 ## Next step
 
-Review category completeness and media slot/tour model. After approval:
-
-1. OpenAPI + ingest spec (Phase 1)  
-2. Gallery + lightbox (Phase 2) before long-form spec sections (Phase 4)  
+**Phase 1 OpenAPI PR** — add nested schemas to `openapi/openapi-marketplace.yaml`, migrate `MarketplaceVehicleDetailResponse`, regenerate `packages/marketplace-client`.
