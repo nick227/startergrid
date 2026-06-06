@@ -18,17 +18,20 @@ const vehicles: VehicleListItem[] = [
   {
     id: '1', stockNumber: 'A-1', vin: 'VIN001', year: 2021, make: 'Honda', model: 'Accord',
     trim: null, mileage: 100, priceCents: 100, condition: 'USED', exteriorColor: 'Gray',
-    mediaCount: 1, readiness: 'READY', issues: [], updatedAt: '',
+    mediaCount: 1, readiness: 'READY', issues: [], lifecycleState: 'AVAILABLE',
+    soldAt: null, removedAt: null, reactivatedAt: null, updatedAt: '',
   },
   {
     id: '2', stockNumber: 'B-2', vin: 'VIN002', year: 2022, make: 'Tesla', model: 'Model 3',
     trim: null, mileage: 100, priceCents: 100, condition: 'USED', exteriorColor: 'Gray',
-    mediaCount: 1, readiness: 'BLOCKED', issues: [], updatedAt: '',
+    mediaCount: 1, readiness: 'BLOCKED', issues: [], lifecycleState: 'AVAILABLE',
+    soldAt: null, removedAt: null, reactivatedAt: null, updatedAt: '',
   },
   {
     id: '3', stockNumber: 'C-3', vin: 'VIN003', year: 2020, make: 'Ford', model: 'F-150',
     trim: null, mileage: 100, priceCents: 100, condition: 'USED', exteriorColor: 'Gray',
-    mediaCount: 1, readiness: 'READY', issues: [], updatedAt: '',
+    mediaCount: 1, readiness: 'READY', issues: [], lifecycleState: 'AVAILABLE',
+    soldAt: null, removedAt: null, reactivatedAt: null, updatedAt: '',
   },
 ];
 

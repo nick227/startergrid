@@ -7,24 +7,37 @@ import {
   movementTaskHint,
 } from '@/lib/movementBenchmark.ts';
 import { EMPTY_STATE_COPY } from '@/lib/statusRegistry.ts';
-import { ReadinessBadge, MovementSignalBadge } from './inventoryConfig.tsx';
+import { ReadinessBadge, MovementSignalBadge, LifecycleStateBadge } from './inventoryConfig.tsx';
 import { PlatformMovementCompare } from './PlatformMovementCompare.tsx';
 import { MarketplacePreviewCard } from './MarketplacePreviewCard.tsx';
+import { VehicleLifecycleHistory } from './VehicleLifecycleHistory.tsx';
+import { isActiveLifecycleScope } from '@/lib/lifecycleDisplay.ts';
+import type { LifecycleScope } from '@/lib/types.ts';
 
 type Props = {
   vehicle: VehicleListItem;
   perf?: VehiclePerformanceItem | null;
   platformPerfBySlug?: Map<string, PlatformPerformanceItem>;
   benchmarksUpdating?: boolean;
+  dealerId: string;
+  lifecycleScope?: LifecycleScope;
 };
 
 function formatPrice(cents: number): string {
   return cents > 0 ? `$${(cents / 100).toLocaleString(undefined, { maximumFractionDigits: 0 })}` : '—';
 }
 
-export function VehicleDetailPanel({ vehicle, perf, platformPerfBySlug, benchmarksUpdating }: Props) {
+export function VehicleDetailPanel({
+  vehicle,
+  perf,
+  platformPerfBySlug,
+  benchmarksUpdating,
+  dealerId,
+  lifecycleScope = 'active',
+}: Props) {
   const p = perf ? movementBenchmarkParts(perf) : null;
   const hint = perf ? movementTaskHint(perf) : null;
+  const showMarketplace = isActiveLifecycleScope(lifecycleScope) && vehicle.lifecycleState !== 'SOLD' && vehicle.lifecycleState !== 'REMOVED';
 
   return (
     <div className="rounded-xl border border-slate-200 bg-white shadow-sm overflow-hidden max-w-full">
@@ -39,6 +52,7 @@ export function VehicleDetailPanel({ vehicle, perf, platformPerfBySlug, benchmar
           </p>
         </div>
         <div className="flex flex-wrap items-center gap-2 shrink-0">
+          <LifecycleStateBadge state={vehicle.lifecycleState} />
           <ReadinessBadge readiness={vehicle.readiness} style="pill" />
           {perf && <MovementSignalBadge signal={perf.movementSignal} />}
         </div>
@@ -91,12 +105,22 @@ export function VehicleDetailPanel({ vehicle, perf, platformPerfBySlug, benchmar
               <PlatformMovementCompare perf={perf} platformPerfBySlug={platformPerfBySlug} />
             </section>
           )}
+
+          <VehicleLifecycleHistory dealerId={dealerId} stockNumber={vehicle.stockNumber} />
         </div>
 
-        <section className="min-w-0 order-1 lg:order-2">
-          <h4 className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-2">Marketplace listing preview</h4>
-          <MarketplacePreviewCard vehicle={vehicle} />
-        </section>
+        {showMarketplace ? (
+          <section className="min-w-0 order-1 lg:order-2">
+            <h4 className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-2">Marketplace listing preview</h4>
+            <MarketplacePreviewCard vehicle={vehicle} />
+          </section>
+        ) : (
+          <section className="min-w-0 order-1 lg:order-2 rounded-lg border border-slate-100 bg-slate-50 px-3 py-3 text-xs text-slate-600">
+            {vehicle.lifecycleState === 'SOLD'
+              ? 'This vehicle is sold — marketplace preview is hidden. Lifecycle history shows when status changed.'
+              : 'This vehicle is removed from active inventory — not sold unless marked separately. Check lifecycle history for source.'}
+          </section>
+        )}
       </div>
     </div>
   );

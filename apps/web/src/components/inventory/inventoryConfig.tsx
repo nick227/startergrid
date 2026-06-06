@@ -1,6 +1,7 @@
 import type { Column } from '../generic/DataTable.tsx';
 import type { FieldDef } from '../generic/BulkActionBar.tsx';
 import type { VehicleListItem, VehiclePerformanceItem, MovementSignal } from '../../lib/types.ts';
+import { LIFECYCLE_STATE_LABELS, LIFECYCLE_STATE_PILL } from '../../lib/lifecycleDisplay.ts';
 import {
   VEHICLE_READINESS_REGISTRY,
   movementSignalVisual,
@@ -126,15 +127,30 @@ export const VEHICLE_COLUMNS: Column<VehicleListItem>[] = [
 ];
 
 // ── Vehicle columns with optional performance data ────────────────────────────
+export function LifecycleStateBadge({ state }: { state: VehicleListItem['lifecycleState'] }) {
+  return (
+    <span className={`inline-flex px-2 py-0.5 rounded border text-[10px] font-bold ${LIFECYCLE_STATE_PILL[state]}`}>
+      {LIFECYCLE_STATE_LABELS[state]}
+    </span>
+  );
+}
+
 // buildVehicleColumns closes over a Map so the performance column can read
 // VehiclePerformanceItem data without widening the VehicleListItem type.
 
 export function buildVehicleColumns(
   perfMap: Map<string, VehiclePerformanceItem>,
+  opts?: { showLifecycle?: boolean },
 ): Column<VehicleListItem>[] {
-  return [
-    ...VEHICLE_COLUMNS,
-    {
+  const cols: Column<VehicleListItem>[] = [...VEHICLE_COLUMNS];
+  if (opts?.showLifecycle) {
+    cols.push({
+      key: 'lifecycle',
+      label: 'Status',
+      render: v => <LifecycleStateBadge state={v.lifecycleState} />,
+    });
+  }
+  cols.push({
       key: 'performance',
       label: 'Days / Signal',
       render: v => {
@@ -142,8 +158,8 @@ export function buildVehicleColumns(
         if (!perf) return <span className="text-slate-300 text-xs">—</span>;
         return <MovementBenchmarkCell perf={perf} />;
       },
-    },
-  ];
+    });
+  return cols;
 }
 
 // ── Summary strip item definitions ───────────────────────────────────────────

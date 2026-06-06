@@ -257,6 +257,10 @@ Run locally: `npm run ui:dev` (API on port 3000).
 | Inventory list, filters, bulk edit | Complete |
 | CSV import wizard | Complete |
 | Ingress sources / run history | Complete |
+| Snapshot review + commit (v4.5) | Complete |
+| Lifecycle filters + vehicle history (v4.5) | Complete |
+| Benchmark freshness bar on Inventory (v4.5) | Complete |
+| Inventory walkthrough banner (v4.5) | Complete |
 | Platform accounts list + inline edit | Complete |
 | Knowledge base catalog + reader | Complete |
 | Contextual KB links (InfoLabel/InfoButton) | Complete |

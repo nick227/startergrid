@@ -1,12 +1,13 @@
 import { useCallback, useMemo, useState } from 'react';
 import { fetchInventory, bulkEditVehicles, fetchVehiclePerformanceList, fetchPlatformPerformance } from '@/lib/api/sdk.ts';
-import type { BulkEditPayload, CommitImportResponse, VehiclePerformanceItem, PlatformPerformanceItem } from '@/lib/types.ts';
+import type { BulkEditPayload, CommitImportResponse, VehiclePerformanceItem, PlatformPerformanceItem, LifecycleScope } from '@/lib/types.ts';
 import type { OperatorPageBaseProps } from '@/lib/operatorPage.ts';
 import { useAsyncQuery } from '@/hooks/useAsyncQuery.ts';
 import { useAutoSyncWatch } from '@/hooks/useAutoSyncWatch.ts';
 import { OperatorPage, SectionCard, InlineCallout, PageHeader } from '@/components/operator';
 import { EMPTY_STATE_COPY } from '@/lib/statusRegistry.ts';
-import { formatBenchmarkFreshness, hasPerformanceData, isBenchmarksUpdating } from '@/lib/performanceFreshness.ts';
+import { hasPerformanceData, isBenchmarksUpdating } from '@/lib/performanceFreshness.ts';
+import { isActiveLifecycleScope } from '@/lib/lifecycleDisplay.ts';
 import {
   countBenchmarkedVehicles,
   countLowDataVehicles,
@@ -33,6 +34,9 @@ import {
   IngressPanel,
   MovementFilterBar,
   InventorySortBar,
+  LifecycleFilterBar,
+  BenchmarkFreshnessBar,
+  InventoryWalkthroughBanner,
   buildVehicleColumns,
   SUMMARY_STRIP_ITEMS,
   BULK_EDIT_FIELD_DEFS,
@@ -44,9 +48,10 @@ import type { CleanupFilter } from '@/components/inventory';
 type Props = OperatorPageBaseProps;
 
 export default function InventoryPage({ dealerId, nav, activeTab }: Props) {
+  const [lifecycleScope, setLifecycleScope] = useState<LifecycleScope>('active');
   const { data, loading, error, reload: load, lastRefresh } = useAsyncQuery(
-    () => fetchInventory(dealerId),
-    [dealerId]
+    () => fetchInventory(dealerId, { lifecycleScope }),
+    [dealerId, lifecycleScope],
   );
   const [selected, setSelected] = useState<Set<string>>(new Set());
   const [filter, setFilter] = useState<CleanupFilter>('ALL');
@@ -86,7 +91,10 @@ export default function InventoryPage({ dealerId, nav, activeTab }: Props) {
     return m;
   }, [platformPerf.data]);
 
-  const vehicleColumns = useMemo(() => buildVehicleColumns(perfMap), [perfMap]);
+  const vehicleColumns = useMemo(
+    () => buildVehicleColumns(perfMap, { showLifecycle: lifecycleScope !== 'active' }),
+    [perfMap, lifecycleScope],
+  );
 
   const vehicleRows = data?.vehicles;
   const vehicles = useMemo(() => vehicleRows ?? [], [vehicleRows]);
@@ -161,6 +169,9 @@ export default function InventoryPage({ dealerId, nav, activeTab }: Props) {
     [perf.data],
   );
 
+  const isActiveScope = isActiveLifecycleScope(lifecycleScope);
+  const lifecycleCounts = summary?.lifecycle ?? { active: 0, sold: 0, removed: 0 };
+
   const handleImportCommitted = (result: CommitImportResponse) => {
     setShowImport(false);
     setImportResult(result);
@@ -202,7 +213,7 @@ export default function InventoryPage({ dealerId, nav, activeTab }: Props) {
           infoDocId="inventory/inventory-readiness"
           subtitle="Import stock, fix blockers, then send updates to platforms"
           action={
-            summary && summary.ready > 0 ? (
+            isActiveScope && summary && summary.ready > 0 ? (
               <button
                 type="button"
                 onClick={nav.goToSync}
@@ -214,16 +225,26 @@ export default function InventoryPage({ dealerId, nav, activeTab }: Props) {
           }
         />
 
-        {(hasPerformanceData(perf.data?.computedAt) || isBenchmarksUpdating(autoSync.data)) && (
-          <p className={`text-xs -mt-3 ${isBenchmarksUpdating(autoSync.data) ? 'text-amber-600' : 'text-slate-400'}`}>
-            {formatBenchmarkFreshness(perf.data?.computedAt ?? null, autoSync.data)}
-          </p>
+        <InventoryWalkthroughBanner />
+
+        {(hasPerformanceData(perf.data?.computedAt) || isBenchmarksUpdating(autoSync.data) || !hasPerformanceData(perf.data?.computedAt)) && (
+          <BenchmarkFreshnessBar
+            dealerId={dealerId}
+            computedAt={perf.data?.computedAt}
+            autoSync={autoSync.data}
+            onRefreshed={reloadBenchmarks}
+            compact
+          />
         )}
 
         <IngressPanel
           dealerId={dealerId}
           latestRunId={importResult?.ingressRunId}
           onShowBlockedVehicles={() => setFilter('BLOCKED')}
+          onSnapshotCommitted={() => {
+            load();
+            reloadBenchmarks();
+          }}
         />
 
         {isEmpty && (
@@ -314,26 +335,37 @@ export default function InventoryPage({ dealerId, nav, activeTab }: Props) {
           <>
             <SummaryStrip items={summaryItems} loading={loading && !data} />
 
-            <SectionCard title="Filters" subtitle="Readiness, movement signals, and issue types">
-              <CleanupFilterBar
-                active={filter}
-                counts={chipCounts}
-                readinessCounts={{
-                  total: summary?.total ?? 0,
-                  ready: summary?.ready ?? 0,
-                  warning: summary?.warning ?? 0,
-                  blocked: summary?.blocked ?? 0,
-                }}
-                onSelect={setFilter}
+            <SectionCard title="Filters" subtitle="Lifecycle, readiness, movement signals, and issue types">
+              <LifecycleFilterBar
+                active={lifecycleScope}
+                counts={lifecycleCounts}
+                onSelect={setLifecycleScope}
               />
-              <div className="mt-4 pt-4 border-t border-slate-100">
-                <MovementFilterBar
-                  active={movementFilter}
-                  counts={movementCounts}
-                  onSelect={setMovementFilter}
-                  benchmarksUpdating={benchmarksUpdating}
-                />
-              </div>
+              {isActiveScope && (
+                <>
+                  <div className="mt-4 pt-4 border-t border-slate-100">
+                    <CleanupFilterBar
+                      active={filter}
+                      counts={chipCounts}
+                      readinessCounts={{
+                        total: summary?.total ?? 0,
+                        ready: summary?.ready ?? 0,
+                        warning: summary?.warning ?? 0,
+                        blocked: summary?.blocked ?? 0,
+                      }}
+                      onSelect={setFilter}
+                    />
+                  </div>
+                  <div className="mt-4 pt-4 border-t border-slate-100">
+                    <MovementFilterBar
+                      active={movementFilter}
+                      counts={movementCounts}
+                      onSelect={setMovementFilter}
+                      benchmarksUpdating={benchmarksUpdating}
+                    />
+                  </div>
+                </>
+              )}
             </SectionCard>
 
             <SectionCard title="Import history" subtitle="Recent batch imports for this dealer" noPadding>
@@ -358,10 +390,10 @@ export default function InventoryPage({ dealerId, nav, activeTab }: Props) {
                 onSortKey={setSortKey}
                 onDirection={setSortDirection}
               />
-              {(filter !== 'ALL' || movementFilter !== 'ALL') && (
+              {(filter !== 'ALL' || movementFilter !== 'ALL' || lifecycleScope !== 'active') && (
                 <button
                   type="button"
-                  onClick={() => { setFilter('ALL'); setMovementFilter('ALL'); }}
+                  onClick={() => { setFilter('ALL'); setMovementFilter('ALL'); setLifecycleScope('active'); }}
                   className="text-xs font-semibold text-emerald-700"
                 >
                   Clear filters
@@ -376,7 +408,7 @@ export default function InventoryPage({ dealerId, nav, activeTab }: Props) {
               <DataTable
                 columns={vehicleColumns}
                 rows={visible}
-                selectable
+                selectable={isActiveScope}
                 selected={selected}
                 onToggle={id => setSelected(s => {
                   const ns = new Set(s);
@@ -393,6 +425,8 @@ export default function InventoryPage({ dealerId, nav, activeTab }: Props) {
                     perf={perfMap.get(v.stockNumber)}
                     platformPerfBySlug={platformPerfBySlug}
                     benchmarksUpdating={benchmarksUpdating}
+                    dealerId={dealerId}
+                    lifecycleScope={lifecycleScope}
                   />
                 )}
                 rowClassName={v => vehicleReadinessRowBg(v.readiness)}
@@ -403,7 +437,7 @@ export default function InventoryPage({ dealerId, nav, activeTab }: Props) {
               />
             </SectionCard>
 
-            {summary && summary.ready > 0 && (
+            {isActiveScope && summary && summary.ready > 0 && (
               <InlineCallout
                 tone="success"
                 title="Ready to sync"
@@ -425,7 +459,7 @@ export default function InventoryPage({ dealerId, nav, activeTab }: Props) {
         )}
       </div>
 
-      {selectedInView.length > 0 && (
+      {isActiveScope && selectedInView.length > 0 && (
         <BulkActionBar
           count={selectedInView.length}
           fieldDefs={BULK_EDIT_FIELD_DEFS}

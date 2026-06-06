@@ -1,3 +1,8 @@
+export { LifecycleFilterBar } from './LifecycleFilterBar.tsx';
+export { SnapshotReviewCard } from './SnapshotReviewCard.tsx';
+export { VehicleLifecycleHistory } from './VehicleLifecycleHistory.tsx';
+export { BenchmarkFreshnessBar } from './BenchmarkFreshnessBar.tsx';
+export { InventoryWalkthroughBanner } from './InventoryWalkthroughBanner.tsx';
 export { ImportModal } from './ImportModal.tsx';
 export { IngressPanel } from './IngressPanel.tsx';
 export { CleanupFilterBar } from './CleanupFilterBar.tsx';
@@ -21,6 +26,7 @@ export {
   applyCleanupFilter,
   MovementSignalBadge,
   ReadinessBadge,
+  LifecycleStateBadge,
   vehicleReadinessRowBg,
   buildVehicleColumns,
 } from './inventoryConfig.tsx';

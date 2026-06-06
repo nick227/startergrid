@@ -27,6 +27,9 @@ import type {
   QueueView,
   DealerSummary,
   VehicleListResponse,
+  LifecycleScope,
+  VehicleLifecycleEventsResponse,
+  SnapshotRemovalCommitResponse,
   ImportPreviewResponse,
   CommitImportResponse,
   BulkEditPayload,
@@ -119,8 +122,38 @@ export async function fetchPublishQueue(dealershipId: string): Promise<QueueView
   return fromSdk(PublishService.getPublishQueue({ dealershipId }));
 }
 
-export async function fetchInventory(dealershipId: string): Promise<VehicleListResponse> {
-  return fromSdk(InventoryService.listInventory({ dealershipId }));
+export async function fetchInventory(
+  dealershipId: string,
+  opts?: { lifecycleScope?: LifecycleScope },
+): Promise<VehicleListResponse> {
+  return fromSdk(
+    InventoryService.listInventory({
+      dealershipId,
+      lifecycleScope: opts?.lifecycleScope,
+    } as { dealershipId: string; lifecycleScope?: LifecycleScope }),
+  ) as Promise<VehicleListResponse>;
+}
+
+export async function commitSnapshotRemovals(
+  dealershipId: string,
+  payload: { ingressRunId: string; stockNumbers: string[]; statusChangedAt?: string },
+): Promise<SnapshotRemovalCommitResponse> {
+  return fromSdk(
+    InventoryService.commitSnapshotRemovals({ dealershipId, requestBody: payload }),
+  ) as Promise<SnapshotRemovalCommitResponse>;
+}
+
+export async function fetchVehicleLifecycleEvents(
+  dealershipId: string,
+  opts?: { limit?: number; stockNumber?: string },
+): Promise<VehicleLifecycleEventsResponse> {
+  return fromSdk(
+    InventoryService.listVehicleLifecycleEvents({
+      dealershipId,
+      limit: opts?.limit,
+      stockNumber: opts?.stockNumber,
+    }),
+  ) as Promise<VehicleLifecycleEventsResponse>;
 }
 
 export async function previewInventoryImport(

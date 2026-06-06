@@ -1,4 +1,5 @@
 import type { PrismaClient, Prisma, InventorySourceKind, InventorySourceStatus, IngressRunStatus } from '@prisma/client';
+import { parseIngressSnapshotReview, type IngressSnapshotReview } from './ingressSnapshotReview.js';
 
 // ── Default source constants ──────────────────────────────────────────────────
 
@@ -60,6 +61,7 @@ export type IngressRunView = {
   errorCount:        number;
   summaryJson:       unknown;
   platformImpactJson: unknown;
+  snapshotReview:    IngressSnapshotReview | null;
 };
 
 export type CreateIngressRunOpts = {
@@ -325,6 +327,7 @@ export async function listRuns(
       errorCount:          r.errorCount,
       summaryJson:         r.summaryJson,
       platformImpactJson:  r.platformImpactJson,
+      snapshotReview:      parseIngressSnapshotReview(r.summaryJson),
     })),
     hasMore,
   };

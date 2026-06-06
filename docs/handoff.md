@@ -240,6 +240,21 @@ Authoritative feed snapshot mode with explicit dry-run and commit — no silent 
 - **`GET .../inventory/lifecycle-events`** — recent lifecycle history for debugging
 - **UI** — platform rows show compact exposure copy (`12 active · 4 sold · 2 removed · avg exposure 31d`)
 
+---
+
+## v4.5 — Operator Workflow Polish (implemented)
+
+Make lifecycle and snapshot mechanics operable without reading backend docs.
+
+### Delivered
+
+- **Snapshot review UI** — `SnapshotReviewCard` on ingress runs with dry-run candidates, explicit commit, *missing from latest feed* copy
+- **Lifecycle filters** — `GET /inventory?lifecycleScope=` + Inventory Active / Sold / Removed / All chips
+- **Vehicle detail history** — lifecycle event list on row expand with source labels
+- **Benchmark freshness** — labeled states (updating, stale, fresh, empty) + Refresh on Inventory
+- **Inventory walkthrough** — dismissible 4-step guided banner
+- **Platform exposure line** — Sync + Insights (from v4.4.1, retained)
+
 ### Still deferred
 
 - CSV imports of partner metrics

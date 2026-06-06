@@ -9,8 +9,8 @@ import {
   previewImport,
   commitImport,
   ingestJsonVehicles,
-  classifyVehicleReadiness
 } from '../../services/inventory/importService.js';
+import { listInventoryVehicles, type LifecycleScope } from '../../services/inventory/inventoryListService.js';
 import { requireDealerAccess } from '../security.js';
 import {
   bulkEditSchema,
@@ -34,7 +34,7 @@ export function registerInventoryRoutes(app: FastifyInstance, prisma: PrismaClie
 
   // ── Inventory list ──────────────────────────────────────────────────────────
 
-  app.get<{ Params: DealerParams }>(
+  app.get<{ Params: DealerParams; Querystring: { lifecycleScope?: string } }>(
     '/api/dealers/:dealershipId/inventory',
     async (request, reply) => {
       const { dealershipId } = request.params;
@@ -42,39 +42,14 @@ export function registerInventoryRoutes(app: FastifyInstance, prisma: PrismaClie
       if (!await findDealer(prisma, dealershipId))
         return reply.status(404).send({ error: 'Dealer not found' });
 
-      const vehicles = await prisma.vehicle.findMany({
-        where: { dealershipId, removedAt: null, soldAt: null },
-        select: {
-          id: true, stockNumber: true, vin: true, year: true,
-          make: true, model: true, trim: true, mileage: true,
-          priceCents: true, condition: true, exteriorColor: true,
-          bodyStyle: true, updatedAt: true,
-          _count: { select: { media: true } }
-        },
-        orderBy: { updatedAt: 'desc' }
-      });
+      const rawScope = request.query.lifecycleScope ?? 'active';
+      const scope: LifecycleScope =
+        rawScope === 'sold' || rawScope === 'removed' || rawScope === 'all'
+          ? rawScope
+          : 'active';
 
-      const items = vehicles.map(v => {
-        const { readiness, issues } = classifyVehicleReadiness({ ...v, mediaCount: v._count.media });
-        return {
-          id: v.id, stockNumber: v.stockNumber, vin: v.vin,
-          year: v.year, make: v.make, model: v.model, trim: v.trim,
-          mileage: v.mileage, priceCents: v.priceCents,
-          condition: v.condition, exteriorColor: v.exteriorColor,
-          mediaCount: v._count.media, readiness, issues,
-          updatedAt: v.updatedAt.toISOString(),
-        };
-      });
-
-      return reply.send({
-        vehicles: items,
-        summary: {
-          total: items.length,
-          ready: items.filter(v => v.readiness === 'READY').length,
-          warning: items.filter(v => v.readiness === 'WARNING').length,
-          blocked: items.filter(v => v.readiness === 'BLOCKED').length,
-        }
-      });
+      const result = await listInventoryVehicles(prisma, dealershipId, scope);
+      return reply.send(result);
     }
   );
 

@@ -13,6 +13,7 @@ import type {
   IngressRunPlatformImpact,
 } from '@/lib/types.ts';
 import { ingressRunStatusVisual, EMPTY_STATE_COPY } from '@/lib/statusRegistry.ts';
+import { SnapshotReviewCard } from './SnapshotReviewCard.tsx';
 import { SectionCard } from '@/components/operator';
 import { AsyncPanel } from '@/components/operator/AsyncPanel.tsx';
 import { EmptyState } from '@/components/ui';
@@ -23,6 +24,7 @@ type Props = {
   dealerId: string;
   latestRunId?: string | null;
   onShowBlockedVehicles?: () => void;
+  onSnapshotCommitted?: () => void;
 };
 
 // ── Time helpers ──────────────────────────────────────────────────────────────
@@ -157,7 +159,7 @@ function buildImpactChips(impact: IngressRunPlatformImpact): ImpactChip[] {
 
 // ── Main component ────────────────────────────────────────────────────────────
 
-export function IngressPanel({ dealerId, latestRunId, onShowBlockedVehicles }: Props) {
+export function IngressPanel({ dealerId, latestRunId, onShowBlockedVehicles, onSnapshotCommitted }: Props) {
   const { data: srcData, loading: loadingSrc, error: srcErr, reload: reloadSrc } =
     useAsyncQuery(() => fetchIngressSources(dealerId), [dealerId, latestRunId]);
 
@@ -235,11 +237,13 @@ export function IngressPanel({ dealerId, latestRunId, onShowBlockedVehicles }: P
             {runs.map((run, i) => (
               <RunRow
                 key={run.id}
+                dealerId={dealerId}
                 run={run}
                 isLatest={i === 0 && run.id === latestRunId}
                 onShowBlockedVehicles={
                   run.errorCount > 0 || run.blockedCount > 0 ? onShowBlockedVehicles : undefined
                 }
+                onSnapshotCommitted={onSnapshotCommitted}
               />
             ))}
           </div>
@@ -620,10 +624,12 @@ function SourceRow({
 
 // ── Run row ───────────────────────────────────────────────────────────────────
 
-function RunRow({ run, isLatest, onShowBlockedVehicles }: {
+function RunRow({ dealerId, run, isLatest, onShowBlockedVehicles, onSnapshotCommitted }: {
+  dealerId: string;
   run: IngressRunView;
   isLatest: boolean;
   onShowBlockedVehicles?: () => void;
+  onSnapshotCommitted?: () => void;
 }) {
   const s = ingressRunStatusVisual(run.status);
   const hasIssues = run.errorCount > 0 || run.blockedCount > 0;
@@ -661,6 +667,15 @@ function RunRow({ run, isLatest, onShowBlockedVehicles }: {
         ) : run.status === 'COMMITTED' || run.status === 'PARTIAL' ? (
           <div className="mt-1 text-slate-400 text-xs">{EMPTY_STATE_COPY.noPerformancePlatforms.title}</div>
         ) : null}
+
+        {run.snapshotReview && run.snapshotReview.pendingCount > 0 && (
+          <SnapshotReviewCard
+            dealerId={dealerId}
+            ingressRunId={run.id}
+            review={run.snapshotReview}
+            onCommitted={() => onSnapshotCommitted?.()}
+          />
+        )}
       </div>
 
       {hasIssues && onShowBlockedVehicles && (

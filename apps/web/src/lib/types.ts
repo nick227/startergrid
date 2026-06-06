@@ -155,6 +155,9 @@ export type VehicleIssue = {
   severity: 'FAIL' | 'WARN';
 };
 
+export type VehicleLifecycleState = 'AVAILABLE' | 'SOLD' | 'REMOVED' | 'REACTIVATED';
+export type LifecycleScope = 'active' | 'sold' | 'removed' | 'all';
+
 export type VehicleListItem = {
   id: string;
   stockNumber: string;
@@ -170,12 +173,60 @@ export type VehicleListItem = {
   mediaCount: number;
   readiness: 'READY' | 'BLOCKED' | 'WARNING';
   issues: VehicleIssue[];
+  lifecycleState: VehicleLifecycleState;
+  soldAt: string | null;
+  removedAt: string | null;
+  reactivatedAt: string | null;
   updatedAt: string;
 };
 
 export type VehicleListResponse = {
   vehicles: VehicleListItem[];
-  summary: { total: number; ready: number; warning: number; blocked: number };
+  summary: {
+    total: number;
+    ready: number;
+    warning: number;
+    blocked: number;
+    lifecycle: { active: number; sold: number; removed: number };
+  };
+  lifecycleScope: LifecycleScope;
+};
+
+export type SnapshotRemovedCandidate = {
+  stockNumber: string;
+  vehicleId: string;
+  reason: 'missing_from_feed';
+  label: string;
+};
+
+export type IngressSnapshotReview = {
+  snapshotMode: boolean;
+  snapshotDryRun: boolean;
+  snapshotRemovalsApplied: number;
+  pendingCount: number;
+  candidates: SnapshotRemovedCandidate[];
+};
+
+export type VehicleLifecycleEventView = {
+  id: string;
+  vehicleId: string;
+  stockNumber: string;
+  fromState: VehicleLifecycleState;
+  toState: VehicleLifecycleState;
+  triggerKind: string;
+  source: 'manual' | 'ingress_row' | 'feed_snapshot';
+  ingressRunId: string | null;
+  statusChangedAt: string;
+  note: string | null;
+  createdAt: string;
+};
+
+export type VehicleLifecycleEventsResponse = { events: VehicleLifecycleEventView[] };
+
+export type SnapshotRemovalCommitResponse = {
+  applied: number;
+  skipped: number;
+  rejected: string[];
 };
 
 export type ImportMappedRow = {
@@ -382,6 +433,7 @@ export type IngressRunView = {
   errorCount:        number;
   summaryJson:       unknown;
   platformImpactJson: IngressRunPlatformImpact | null;
+  snapshotReview:    IngressSnapshotReview | null;
 };
 
 export type IngressSourcesResponse = { sources: IngressSourceView[] };

@@ -1,9 +1,9 @@
 {
   "name": "auto-dealer-onboarding-poc-v1",
-  "version": "4.4.1",
+  "version": "4.5.0",
   "private": true,
   "type": "module",
-  "description": "V4.4.1: Ingress snapshot reconcile, lifecycle audit trail, platform exposure UI.",
+  "description": "V4.5: Operator workflow polish — snapshot review UI, lifecycle filters, benchmark freshness.",
   "scripts": {
     "build": "tsc",
     "typecheck": "tsc --noEmit",

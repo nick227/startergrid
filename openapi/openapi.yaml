@@ -258,9 +258,16 @@ paths:
         - OperatorAuth: []
       x-route-classification: operator
       operationId: listInventory
-      summary: Active inventory list with readiness
+      summary: Inventory list with readiness and optional lifecycle scope
       parameters:
         - $ref: '#/components/parameters/dealershipId'
+        - name: lifecycleScope
+          in: query
+          schema:
+            type: string
+            enum: [active, sold, removed, all]
+            default: active
+          description: Filter by lifecycle — active (default), sold, removed, or all
       responses:
         '200':
           description: Vehicles
@@ -1728,13 +1735,36 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/VehicleIssue'
+        lifecycleState:
+          type: string
+          enum: [AVAILABLE, SOLD, REMOVED, REACTIVATED]
+        soldAt:
+          type: string
+          format: date-time
+          nullable: true
+        removedAt:
+          type: string
+          format: date-time
+          nullable: true
+        reactivatedAt:
+          type: string
+          format: date-time
+          nullable: true
         updatedAt:
           type: string
           format: date-time
 
+    VehicleLifecycleCounts:
+      type: object
+      required: [active, sold, removed]
+      properties:
+        active:  { type: integer }
+        sold:    { type: integer }
+        removed: { type: integer }
+
     VehicleListSummary:
       type: object
-      required: [total, ready, warning, blocked]
+      required: [total, ready, warning, blocked, lifecycle]
       properties:
         total:
           type: integer
@@ -1744,10 +1774,12 @@ components:
           type: integer
         blocked:
           type: integer
+        lifecycle:
+          $ref: '#/components/schemas/VehicleLifecycleCounts'
 
     VehicleListResponse:
       type: object
-      required: [vehicles, summary]
+      required: [vehicles, summary, lifecycleScope]
       properties:
         vehicles:
           type: array
@@ -1755,6 +1787,9 @@ components:
             $ref: '#/components/schemas/VehicleListItem'
         summary:
           $ref: '#/components/schemas/VehicleListSummary'
+        lifecycleScope:
+          type: string
+          enum: [active, sold, removed, all]
 
     InventoryImportRequest:
       type: object
@@ -2132,6 +2167,23 @@ components:
         errorCount:   { type: integer }
         summaryJson:  {}
         platformImpactJson: {}
+        snapshotReview:
+          nullable: true
+          allOf:
+            - $ref: '#/components/schemas/IngressSnapshotReview'
+
+    IngressSnapshotReview:
+      type: object
+      required: [snapshotMode, snapshotDryRun, snapshotRemovalsApplied, candidates, pendingCount]
+      properties:
+        snapshotMode: { type: boolean }
+        snapshotDryRun: { type: boolean }
+        snapshotRemovalsApplied: { type: integer }
+        pendingCount: { type: integer }
+        candidates:
+          type: array
+          items:
+            $ref: '#/components/schemas/SnapshotRemovedCandidate'
 
     IngressSourcesResponse:
       type: object
