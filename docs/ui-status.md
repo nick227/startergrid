@@ -30,6 +30,8 @@ The **Operator Console** (`apps/web/`) is the web front end for the Auto Dealer 
 
 **v4.1 — Movement benchmarks in workflow:** Inventory is the primary surface (`Days / Signal`: `12 days · Similar avg 19 · Fast`). Sync adds a small movement line under readiness tiles. Platform rows show observed assists and avg move time when useful. No page loads benchmarks automatically — operators refresh on Sync or Insights when needed.
 
+**v4.2 — Vehicle detail panel (Inventory):** Expand any inventory row (▼) to open a two-column panel on large screens (stacked on narrow). Left column: readiness issues, movement vs similar stock, platform movement comparison. Right column: **marketplace listing preview** loaded via `@dealer-marketplace/client` SDK — consumer-safe fields only; operator-only banner when not eligible. Movement signal filters and sort compose with readiness chips and search.
+
 The UI reads and writes the same backend API that powers the CLI pipeline (18 platforms, feed generation, MySQL persistence). Hash-routed SPA optimized for staff who already know DMS and syndication terms.
 
 ---
@@ -149,10 +151,11 @@ Every dealer-scoped page shares **PageShell**:
 - **Header action** — “Import CSV” (emerald) with KB link
 - **IngressPanel** — Feed sources and recent ingress run impact chips
 - **Summary strip** — total, ready, warning, blocked (clickable)
-- **Filters card** — Readiness + issue-type chips
+- **Filters card** — Readiness + issue-type chips; **movement signal** chips (scoped to current readiness/search)
 - **Import history** — Collapsible batch list
-- **Search** — stock #, VIN, make, model
-- **Data table** — selectable rows, expandable issues, readiness row tint
+- **Search + sort** — stock #, VIN, make, model; sort by movement signal, days online, price, etc.
+- **Data table** — selectable rows; **expand (▼) opens vehicle detail panel** (not a separate route)
+- **Vehicle detail panel** — operator movement context + marketplace consumer preview (no VIN/performance in preview)
 - **Bulk action bar** — fixed bottom bar when rows selected
 - **Callouts** — amber cleanup warning; green ready-for-publishing CTA
 

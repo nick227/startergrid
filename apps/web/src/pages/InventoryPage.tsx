@@ -13,9 +13,9 @@ import {
   staleStockNumbers,
 } from '@/lib/movementBenchmark.ts';
 import {
-  applyMovementFilter,
-  movementFilterCounts,
-  sortInventoryVehicles,
+  composeInventoryList,
+  movementFilterCountsScoped,
+  type InventoryListQuery,
   type InventorySortKey,
   type MovementFilter,
   type SortDirection,
@@ -92,23 +92,22 @@ export default function InventoryPage({ dealerId, nav, activeTab }: Props) {
   const vehicles = useMemo(() => vehicleRows ?? [], [vehicleRows]);
   const summary = data?.summary;
 
-  const visible = useMemo(() => {
-    const filtered = vehicles.filter(v => {
-      if (!applyCleanupFilter(v, filter)) return false;
-      if (!applyMovementFilter(v, perfMap, movementFilter)) return false;
-      if (search) {
-        const q = search.toLowerCase();
-        return v.stockNumber.toLowerCase().includes(q) || v.vin.toLowerCase().includes(q)
-          || v.make.toLowerCase().includes(q) || v.model.toLowerCase().includes(q);
-      }
-      return true;
-    });
-    return sortInventoryVehicles(filtered, perfMap, sortKey, sortDirection);
-  }, [vehicles, filter, movementFilter, search, perfMap, sortKey, sortDirection]);
+  const listQuery = useMemo<InventoryListQuery>(() => ({
+    search,
+    cleanupFilter: filter,
+    movementFilter,
+    sortKey,
+    sortDirection,
+  }), [search, filter, movementFilter, sortKey, sortDirection]);
+
+  const visible = useMemo(
+    () => composeInventoryList(vehicles, perfMap, listQuery, applyCleanupFilter),
+    [vehicles, perfMap, listQuery],
+  );
 
   const movementCounts = useMemo(
-    () => movementFilterCounts(vehicles, perfMap),
-    [vehicles, perfMap],
+    () => movementFilterCountsScoped(vehicles, perfMap, listQuery, applyCleanupFilter),
+    [vehicles, perfMap, listQuery],
   );
   const benchmarksUpdating = isBenchmarksUpdating(autoSync.data);
   const lowDataCount = useMemo(

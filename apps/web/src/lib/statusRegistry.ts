@@ -300,8 +300,12 @@ export const EMPTY_STATE_COPY = {
     subtitle: 'Most vehicles need more sold comparables. Fast / slow signals appear as history builds.',
   },
   marketplacePreviewUnavailable: {
-    title: 'Not on marketplace yet',
-    subtitle: 'Vehicle needs a price and must be active (not sold) to appear in the consumer index.',
+    title: 'Not on marketplace index',
+    subtitle: 'Set a price on active inventory before the consumer listing can appear.',
+  },
+  marketplacePreviewEmpty: {
+    title: 'No consumer listing returned',
+    subtitle: 'Marketplace index has no card for this vehicle yet. Sync after the listing is ready.',
   },
   noAccountBlockers: {
     title: 'No account blockers',

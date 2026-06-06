@@ -1,7 +1,7 @@
 # Handoff Document — Auto Dealer Sales Portal
 
 **Updated:** 2026-06-05  
-**State:** v4.2.0 · Sync engine + Operator Console + vehicle-level UI polish  
+**State:** v4.2.1 · Vehicle detail panel + marketplace preview hardening  
 **Branch:** `main`
 
 ---
@@ -84,6 +84,13 @@ Cached movement benchmarks answer: *Is this vehicle moving faster or slower than
 - Expand any inventory row for **VehicleDetailPanel**: movement vs similar stock, platform movement comparison, marketplace-safe preview (via `@dealer-marketplace/client` SDK — no performance fields).
 - Movement signal **filters** and **sort** on Inventory; no frontend benchmark math (API fields + display rounding only).
 - Sync hierarchy: readiness hero → tiles → inventory peek → platforms → history; movement one-liner links to Insights for full reference.
+
+### v4.2.1 release hardening
+
+- Marketplace preview: loading skeleton, error + retry, empty state; operator-only ineligibility when price unset.
+- `marketplacePreview.ts` + vitest UI tests enforce no VIN/readiness/movement/performance in consumer preview text.
+- `composeInventoryList` — readiness → search → movement → sort; movement chip counts scoped to readiness + search.
+- `npm run test --prefix apps/web` — marketplace isolation + filter composition tests.
 
 ---
 

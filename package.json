@@ -1,13 +1,13 @@
 {
   "name": "auto-dealer-onboarding-poc-v1",
-  "version": "4.2.0",
+  "version": "4.2.1",
   "private": true,
   "type": "module",
-  "description": "V4.2: Vehicle-level operator UI — detail panel, movement filters, marketplace preview; embedded benchmarks in Inventory/Sync.",
+  "description": "V4.2.1: Vehicle detail panel hardening — marketplace preview states, filter composition, UI tests.",
   "scripts": {
     "build": "tsc",
     "typecheck": "tsc --noEmit",
-    "test": "npm run -s build && node --test dist/src/tests/*.test.js",
+    "test": "npm run -s build && node --test dist/src/tests/*.test.js && npm run -s test --prefix apps/web",
 
     "dealer:create":         "npm run -s build && node dist/src/scripts/dealer/dealerCreate.js",
     "dealer:create:pristine":"npm run -s build && node dist/src/scripts/dealer/dealerCreate.js --use-pristine",
@@ -57,9 +57,14 @@
     "ui:lint":               "npm run lint --prefix apps/web",
     "ui:lint:fix":           "npm run lint:fix --prefix apps/web",
 
-    "marketplace:install":   "npm install --prefix apps/marketplace",
-    "marketplace:dev":       "npm run client:generate:marketplace && npm run dev --prefix apps/marketplace",
-    "marketplace:build":     "npm run client:generate:marketplace && npm run build --prefix apps/marketplace",
+    "marketplace:install":          "npm install --prefix apps/marketplace",
+    "marketplace:dev":              "npm run client:generate:marketplace && npm run dev --prefix apps/marketplace",
+    "marketplace:build":            "npm run client:generate:marketplace && npm run build --prefix apps/marketplace",
+    "marketplace:client:generate":  "npm run client:generate:marketplace",
+    "marketplace:boundary:check":   "node scripts/check-marketplace-boundary.js",
+
+    "build:all":   "npm run build && npm run ui:build && npm run marketplace:build",
+    "verify:all":  "npm run test && npm run marketplace:boundary:check && npm run openapi:validate && npm run openapi:validate:marketplace",
 
     "openapi:validate":              "redocly lint openapi/openapi.yaml",
     "openapi:validate:marketplace":  "redocly lint openapi/openapi-marketplace.yaml",

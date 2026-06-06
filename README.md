@@ -1,4 +1,4 @@
-# Auto Dealer Sales Portal — v4.2.0
+# Auto Dealer Sales Portal — v4.2.1
 
 A backend pipeline that onboards auto dealers onto 18 ad and marketplace platforms — validation, feed generation, artifact storage, and proof export — via CLI and the Operator Console web UI.
 
@@ -7,6 +7,8 @@ A backend pipeline that onboards auto dealers onto 18 ad and marketplace platfor
 **v4.1.1** wires benchmarks operationally: performance compute runs after import/sync reconcile (non-blocking on failure), auto-sync exposes refresh-pending/freshness, and demo seed includes sold comparables so FAST/SLOW/STALE show in the portal.
 
 **v4.2** polishes vehicle-level operations in Inventory: expandable detail panel (movement, platform comparison, marketplace-safe preview), movement signal filters/sort, and cleaner Sync hierarchy. Insights stays reference-only.
+
+**v4.2.1** hardens marketplace preview loading/error/empty states, operator-only ineligibility copy, composed inventory filters, responsive detail layout, and UI tests for preview isolation.
 
 **Stack:** TypeScript (ESM) · Prisma 6 · MySQL · Node 22 · node:test
 
@@ -93,7 +95,7 @@ npm run performance:compute -- <dealershipId>
 These 10 commands must always exit 0:
 
 ```
-npm test                         824 tests
+npm test                         824 backend + 11 web UI tests
 npm run smoke:test               6/6 system checks
 npm run poc:green                18/18 GREEN
 npm run poc:risk                 90/90 expectations

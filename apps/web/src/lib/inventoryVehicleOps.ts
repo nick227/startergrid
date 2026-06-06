@@ -1,4 +1,5 @@
 import { MOVEMENT_SIGNAL_SORT_ORDER, movementSignalVisual } from './statusRegistry.ts';
+import type { CleanupFilter } from '../components/inventory/inventoryConfig.tsx';
 import type { MovementSignal, VehicleListItem, VehiclePerformanceItem } from './types.ts';
 
 export type MovementFilter = 'ALL' | MovementSignal;
@@ -13,11 +14,55 @@ export type InventorySortKey =
 
 export type SortDirection = 'asc' | 'desc';
 
+export type InventoryListQuery = {
+  search: string;
+  cleanupFilter: CleanupFilter;
+  movementFilter: MovementFilter;
+  sortKey: InventorySortKey;
+  sortDirection: SortDirection;
+};
+
+type CleanupPredicate = (vehicle: VehicleListItem, filter: CleanupFilter) => boolean;
+
 const READINESS_ORDER: Record<VehicleListItem['readiness'], number> = {
   BLOCKED: 0,
   WARNING: 1,
   READY: 2,
 };
+
+export function matchesInventorySearch(vehicle: VehicleListItem, search: string): boolean {
+  const q = search.trim().toLowerCase();
+  if (!q) return true;
+  return (
+    vehicle.stockNumber.toLowerCase().includes(q)
+    || vehicle.vin.toLowerCase().includes(q)
+    || vehicle.make.toLowerCase().includes(q)
+    || vehicle.model.toLowerCase().includes(q)
+  );
+}
+
+export function passesInventoryFilters(
+  vehicle: VehicleListItem,
+  perfMap: Map<string, VehiclePerformanceItem>,
+  query: Pick<InventoryListQuery, 'search' | 'cleanupFilter' | 'movementFilter'>,
+  applyCleanup: CleanupPredicate,
+): boolean {
+  if (!applyCleanup(vehicle, query.cleanupFilter)) return false;
+  if (!matchesInventorySearch(vehicle, query.search)) return false;
+  if (!applyMovementFilter(vehicle, perfMap, query.movementFilter)) return false;
+  return true;
+}
+
+/** Filter order: readiness/issue chips → search → movement → sort. */
+export function composeInventoryList(
+  vehicles: VehicleListItem[],
+  perfMap: Map<string, VehiclePerformanceItem>,
+  query: InventoryListQuery,
+  applyCleanup: CleanupPredicate,
+): VehicleListItem[] {
+  const filtered = vehicles.filter(v => passesInventoryFilters(v, perfMap, query, applyCleanup));
+  return sortInventoryVehicles(filtered, perfMap, query.sortKey, query.sortDirection);
+}
 
 export function movementFilterCounts(
   vehicles: VehicleListItem[],
@@ -36,6 +81,21 @@ export function movementFilterCounts(
     counts[signal] += 1;
   }
   return counts;
+}
+
+/** Movement chip counts scoped to vehicles matching readiness + search (before movement filter). */
+export function movementFilterCountsScoped(
+  vehicles: VehicleListItem[],
+  perfMap: Map<string, VehiclePerformanceItem>,
+  query: Pick<InventoryListQuery, 'search' | 'cleanupFilter'>,
+  applyCleanup: CleanupPredicate,
+): Record<MovementFilter, number> {
+  const scoped = vehicles.filter(v => {
+    if (!applyCleanup(v, query.cleanupFilter)) return false;
+    if (!matchesInventorySearch(v, query.search)) return false;
+    return true;
+  });
+  return movementFilterCounts(scoped, perfMap);
 }
 
 export function applyMovementFilter(
