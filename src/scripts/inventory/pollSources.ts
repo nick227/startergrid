@@ -132,13 +132,18 @@ async function main() {
     checked++;
 
     try {
-      const result = await checkApiInventorySource(prisma, source.dealershipId, source.id);
+      const result = await checkApiInventorySource(prisma, source.dealershipId, source.id, {
+        trigger: 'scheduled',
+      });
 
       if (result.success) {
         succeeded++;
         console.log(
           `         OK   ${result.vehicleCount ?? 0} vehicles` +
-          ` (${result.created ?? 0} created, ${result.updated ?? 0} updated, ${result.skipped ?? 0} skipped)`
+          ` (${result.created ?? 0} created, ${result.updated ?? 0} updated, ${result.skipped ?? 0} skipped)` +
+          (result.salesStatus?.snapshotRemovedCandidates.length
+            ? ` · ${result.salesStatus.snapshotRemovedCandidates.length} missing (snapshot dry-run)`
+            : '')
         );
       } else {
         failed++;

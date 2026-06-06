@@ -46,6 +46,7 @@ import type {
   UpdateIngressSourcePayload,
   IngressSourceResponse,
   SourceCheckResult,
+  CheckIngressSourcePayload,
   VehiclePerformanceListResponse,
   VehiclePerformanceDetailResponse,
   PlatformPerformanceListResponse,
@@ -253,9 +254,14 @@ export async function updateIngressSource(
 export async function checkIngressSource(
   dealershipId: string,
   sourceId: string,
+  payload?: CheckIngressSourcePayload,
 ): Promise<SourceCheckResult> {
   return fromSdk(
-    InventoryService.checkIngressSource({ dealershipId, sourceId })
+    InventoryService.checkIngressSource({
+      dealershipId,
+      sourceId,
+      requestBody: payload,
+    })
   ) as Promise<SourceCheckResult>;
 }
 

@@ -1,7 +1,7 @@
 # Handoff Document — Auto Dealer Sales Portal
 
 **Updated:** 2026-06-06  
-**State:** v4.6.1 · Sales status sync, snapshot reconcile, operator lifecycle workflow, portal JSON ingest (hardened)  
+**State:** v4.7.0 · Sales status sync, snapshot reconcile, portal JSON ingest, API source snapshot polling  
 **Branch:** `main`
 
 ---
@@ -300,10 +300,25 @@ Operational polish only — no new lifecycle design.
 
 ### Deferred to v4.7
 
-- Scheduled/API source checks opt into snapshot mode
-- “Check now” snapshot dry-run
-- Same `SnapshotReviewCard` for API pulls
-- Never auto-remove from scheduled poll without explicit setting/review
+- ~~Scheduled/API source checks opt into snapshot mode~~ → **v4.7**
+- ~~“Check now” snapshot dry-run~~ → **v4.7**
+- ~~Same `SnapshotReviewCard` for API pulls~~ → **v4.7**
+- ~~Never auto-remove from scheduled poll without explicit setting/review~~ → **v4.7**
+
+---
+
+## v4.7 — API Source Snapshot Polling (implemented)
+
+Extends snapshot dry-run to API feed sources — same lifecycle rules as portal JSON ingest.
+
+### Delivered
+
+- **`snapshotMode` on API sources** — stored in `configJson`; exposed on `IngressSourceView`
+- **Check now** — uses source snapshot setting (or one-off `snapshotMode` in POST body); always dry-run when snapshot on
+- **Scheduled poll** — `ingress:poll-sources` passes `trigger: 'scheduled'`; snapshot sources dry-run only
+- **`SourceCheckResult.salesStatus`** — candidates available immediately; `RunRow` + `SnapshotReviewCard` unchanged
+- **Portal UI** — snapshot checkbox on add/edit API source; badge + “Check now (snapshot dry-run)” label
+- **Never auto-remove on poll** — check/poll paths never set `commitSnapshotRemovals`
 
 ---
 

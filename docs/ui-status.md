@@ -263,6 +263,7 @@ Run locally: `npm run ui:dev` (API on port 3000).
 | Inventory walkthrough banner (v4.5) | Complete |
 | Portal JSON/API ingest panel (v4.6) | Complete |
 | JSON ingest release hardening — E2E, docs, client polish (v4.6.1) | Complete |
+| API source snapshot polling — check/poll dry-run (v4.7) | Complete |
 | Platform accounts list + inline edit | Complete |
 | Knowledge base catalog + reader | Complete |
 | Contextual KB links (InfoLabel/InfoButton) | Complete |

@@ -61,6 +61,7 @@ describe('IngressSourceView shape', () => {
     feedUrl:             null,
     lastCheckError:      null,
     pollIntervalMinutes: null,
+    snapshotMode:        false,
     nextCheckAt:         null,
     lastReceivedAt:      null,
     lastCheckedAt:       null,
@@ -199,7 +200,7 @@ describe('IngressSourceView with feedUrl', () => {
     const v: IngressSourceView = {
       id: 's1', slug: 'csv-manual', label: 'Manual Upload',
       kind: 'CSV', status: 'ACTIVE', feedUrl: null, lastCheckError: null,
-      pollIntervalMinutes: null, nextCheckAt: null,
+      pollIntervalMinutes: null, snapshotMode: false, nextCheckAt: null,
       lastReceivedAt: null, lastCheckedAt: null,
       createdAt: new Date().toISOString(), updatedAt: new Date().toISOString(),
     };
@@ -215,6 +216,7 @@ describe('IngressSourceView with feedUrl', () => {
       feedUrl: 'https://api.example.com/feed',
       lastCheckError: 'Feed returned HTTP 503',
       pollIntervalMinutes: 60,
+      snapshotMode:        true,
       nextCheckAt: new Date().toISOString(),
       lastReceivedAt: null, lastCheckedAt: new Date().toISOString(),
       createdAt: new Date().toISOString(), updatedAt: new Date().toISOString(),
@@ -258,6 +260,13 @@ describe('createIngressSourceSchema — valid inputs', () => {
   it('accepts pollIntervalMinutes: null (no schedule)', () => {
     const r = validateBody(createIngressSourceSchema, {
       label: 'My Feed', feedUrl: 'https://x.com', pollIntervalMinutes: null,
+    });
+    assert.ok(r.ok);
+  });
+
+  it('accepts snapshotMode on create', () => {
+    const r = validateBody(createIngressSourceSchema, {
+      label: 'My Feed', feedUrl: 'https://x.com', snapshotMode: true,
     });
     assert.ok(r.ok);
   });

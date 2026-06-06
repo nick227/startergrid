@@ -38,6 +38,7 @@ export type IngressSourceView = {
   feedUrl:             string | null;
   lastCheckError:      string | null;
   pollIntervalMinutes: number | null;
+  snapshotMode:        boolean;
   nextCheckAt:         string | null;
   lastReceivedAt:      string | null;
   lastCheckedAt:       string | null;
@@ -186,6 +187,7 @@ function mapSourceRow(r: SourceRow): IngressSourceView {
     feedUrl:             typeof cfg?.feedUrl === 'string' ? cfg.feedUrl : null,
     lastCheckError:      typeof cfg?.lastCheckError === 'string' ? cfg.lastCheckError : null,
     pollIntervalMinutes,
+    snapshotMode:        cfg?.snapshotMode === true,
     nextCheckAt,
     lastReceivedAt:      r.lastReceivedAt?.toISOString() ?? null,
     lastCheckedAt,
@@ -232,13 +234,14 @@ export async function listSources(
 export async function createSource(
   prisma: PrismaClient,
   dealershipId: string,
-  payload: { label: string; feedUrl: string; sourceSlug?: string; status?: string; pollIntervalMinutes?: number | null },
+  payload: { label: string; feedUrl: string; sourceSlug?: string; status?: string; pollIntervalMinutes?: number | null; snapshotMode?: boolean },
 ): Promise<IngressSourceView> {
   const base = payload.sourceSlug ? slugify(payload.sourceSlug) : slugify(payload.label);
   const slug = await resolveUniqueSlug(prisma, dealershipId, base || 'api-source');
 
   const configJson: Record<string, unknown> = { feedUrl: payload.feedUrl };
   if (payload.pollIntervalMinutes != null) configJson.pollIntervalMinutes = payload.pollIntervalMinutes;
+  if (payload.snapshotMode === true) configJson.snapshotMode = true;
 
   const row = await prisma.inventorySource.create({
     data: {
@@ -257,7 +260,7 @@ export async function updateSource(
   prisma: PrismaClient,
   dealershipId: string,
   sourceId: string,
-  payload: { label?: string; feedUrl?: string; status?: string; pollIntervalMinutes?: number | null },
+  payload: { label?: string; feedUrl?: string; status?: string; pollIntervalMinutes?: number | null; snapshotMode?: boolean },
 ): Promise<IngressSourceView | null> {
   const existing = await prisma.inventorySource.findFirst({
     where: { id: sourceId, dealershipId },
@@ -267,11 +270,12 @@ export async function updateSource(
   const data: Prisma.InventorySourceUpdateInput = {};
   if (payload.label  !== undefined) data.label  = payload.label;
   if (payload.status !== undefined) data.status = payload.status as InventorySourceStatus;
-  if (payload.feedUrl !== undefined || payload.pollIntervalMinutes !== undefined) {
+  if (payload.feedUrl !== undefined || payload.pollIntervalMinutes !== undefined || payload.snapshotMode !== undefined) {
     const current = existing.configJson as Record<string, unknown> ?? {};
     const updates: Record<string, unknown> = {};
-    if (payload.feedUrl !== undefined)            updates.feedUrl            = payload.feedUrl;
+    if (payload.feedUrl !== undefined)             updates.feedUrl             = payload.feedUrl;
     if (payload.pollIntervalMinutes !== undefined) updates.pollIntervalMinutes = payload.pollIntervalMinutes;
+    if (payload.snapshotMode !== undefined)        updates.snapshotMode        = payload.snapshotMode;
     data.configJson = { ...current, ...updates } as unknown as Prisma.InputJsonValue;
   }
 

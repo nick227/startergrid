@@ -274,6 +274,34 @@ export function IngressPanel({ dealerId, latestRunId, onShowBlockedVehicles, onS
   );
 }
 
+// ── Snapshot mode (API sources) ───────────────────────────────────────────────
+
+function SnapshotModeField({
+  checked,
+  onChange,
+}: {
+  checked: boolean;
+  onChange: (value: boolean) => void;
+}) {
+  return (
+    <label className="flex items-start gap-2 cursor-pointer">
+      <input
+        type="checkbox"
+        data-testid="ingress-source-snapshot"
+        checked={checked}
+        onChange={e => onChange(e.target.checked)}
+        className="mt-0.5 rounded border-slate-300 shrink-0"
+      />
+      <span className="text-xs text-slate-700 min-w-0">
+        <span className="font-semibold">Full inventory snapshot on check/poll</span>
+        <span className="block text-[11px] text-amber-800 mt-0.5">
+          Dry-run only — missing vehicles appear as removal candidates. Scheduled poll never auto-removes.
+        </span>
+      </span>
+    </label>
+  );
+}
+
 // ── Add source form ───────────────────────────────────────────────────────────
 
 function AddSourceForm({
@@ -290,6 +318,7 @@ function AddSourceForm({
   const [status,   setStatus]   = useState<'ACTIVE' | 'PAUSED'>('ACTIVE');
   const [preset,   setPreset]   = useState<PresetKey>('none');
   const [custom,   setCustom]   = useState('');
+  const [snapshotMode, setSnapshotMode] = useState(false);
   const [error,    setError]    = useState<string | null>(null);
   const [saving,   setSaving]   = useState(false);
 
@@ -307,6 +336,7 @@ function AddSourceForm({
         feedUrl:             feedUrl.trim(),
         status,
         pollIntervalMinutes: pollInterval,
+        snapshotMode,
       });
       onSaved();
     } catch (err) {
@@ -352,6 +382,7 @@ function AddSourceForm({
           preset={preset} custom={custom}
           onPreset={setPreset} onCustom={setCustom}
         />
+        <SnapshotModeField checked={snapshotMode} onChange={setSnapshotMode} />
       </div>
       <div className="flex items-center gap-3">
         <button
@@ -395,6 +426,7 @@ function EditSourceForm({
       ? String(source.pollIntervalMinutes)
       : '',
   );
+  const [snapshotMode, setSnapshotMode] = useState(source.snapshotMode);
   const [error,  setError]   = useState<string | null>(null);
   const [saving, setSaving]  = useState(false);
 
@@ -412,6 +444,7 @@ function EditSourceForm({
         feedUrl:             feedUrl.trim(),
         status,
         pollIntervalMinutes: pollInterval,
+        snapshotMode,
       });
       onSaved();
     } catch (err) {
@@ -455,6 +488,7 @@ function EditSourceForm({
           preset={preset} custom={custom}
           onPreset={setPreset} onCustom={setCustom}
         />
+        <SnapshotModeField checked={snapshotMode} onChange={setSnapshotMode} />
       </div>
       <div className="flex items-center gap-3">
         <button
@@ -539,6 +573,7 @@ function SourceRow({
         : source.nextCheckAt
           ? `Next check ${relativeTimeFromNow(source.nextCheckAt)}`
           : `every ${source.pollIntervalMinutes}m`;
+  const scheduleSuffix = source.snapshotMode ? ' · snapshot dry-run' : '';
   const scheduleCls = isError
     ? 'text-red-500'
     : isOverdue
@@ -576,7 +611,7 @@ function SourceRow({
               disabled={checking}
               className={`text-xs font-semibold shrink-0 disabled:opacity-50 ${isError ? 'text-red-600 hover:text-red-800' : 'text-sky-700 hover:text-sky-900'}`}
             >
-              {checking ? 'Checking…' : isError ? 'Retry' : 'Check now'}
+              {checking ? 'Checking…' : isError ? 'Retry' : source.snapshotMode ? 'Check now (snapshot dry-run)' : 'Check now'}
             </button>
           )}
           {isApi && (
@@ -610,7 +645,12 @@ function SourceRow({
                 ? `checked ${relativeTime(source.lastCheckedAt)}`
                 : 'not yet checked'}
             </span>
-            <span className={`shrink-0 ${scheduleCls}`}>{scheduleText}</span>
+            <span className={`shrink-0 ${scheduleCls}`}>{scheduleText}{scheduleSuffix}</span>
+            {source.snapshotMode && (
+              <span className="shrink-0 px-1.5 py-0.5 rounded bg-amber-100 text-amber-800 text-[10px] font-semibold uppercase">
+                Snapshot
+              </span>
+            )}
           </div>
         )}
 

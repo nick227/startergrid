@@ -1,9 +1,9 @@
 {
   "name": "auto-dealer-onboarding-poc-v1",
-  "version": "4.6.1",
+  "version": "4.7.0",
   "private": true,
   "type": "module",
-  "description": "V4.6.1: Portal JSON ingest release hardening — E2E, docs, client polish.",
+  "description": "V4.7: API source snapshot polling — check now and scheduled poll snapshot dry-run.",
   "scripts": {
     "build": "tsc",
     "typecheck": "tsc --noEmit",

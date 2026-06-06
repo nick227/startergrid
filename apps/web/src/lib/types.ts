@@ -407,6 +407,7 @@ export type IngressSourceView = {
   feedUrl:             string | null;
   lastCheckError:      string | null;
   pollIntervalMinutes: number | null;
+  snapshotMode:        boolean;
   nextCheckAt:         string | null;
   lastReceivedAt:      string | null;
   lastCheckedAt:       string | null;
@@ -420,10 +421,16 @@ export type SourceCheckResult = {
   created?:     number;
   updated?:     number;
   skipped?:     number;
+  blocked?:     number;
   errors?:      number;
   ingressRunId?: string;
   error?:       string;
   checkedAt:    string;
+  salesStatus?: SalesStatusReconcileResult;
+};
+
+export type CheckIngressSourcePayload = {
+  snapshotMode?: boolean;
 };
 
 export type CreateIngressSourcePayload = {
@@ -432,6 +439,7 @@ export type CreateIngressSourcePayload = {
   sourceSlug?: string;
   status?: 'ACTIVE' | 'PAUSED';
   pollIntervalMinutes?: number | null;
+  snapshotMode?: boolean;
 };
 
 export type UpdateIngressSourcePayload = {
@@ -439,6 +447,7 @@ export type UpdateIngressSourcePayload = {
   feedUrl?: string;
   status?: 'ACTIVE' | 'PAUSED' | 'DISCONNECTED' | 'ERROR';
   pollIntervalMinutes?: number | null;
+  snapshotMode?: boolean;
 };
 
 export type IngressSourceResponse = { source: IngressSourceView };

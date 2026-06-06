@@ -1,6 +1,13 @@
 import type { PrismaClient, Prisma } from '@prisma/client';
 import { ingestJsonVehicles } from './importService.js';
+import type { JsonIngestResult } from './importService.js';
 import { validateBody, jsonIngestSchema, isValidFeedUrl } from '../../server/requestValidation.js';
+import {
+  resolveSourceCheckIngestOpts,
+  type SourceCheckOptions,
+} from './sourceSnapshotCheck.js';
+
+export type { SourceCheckOptions } from './sourceSnapshotCheck.js';
 
 const FETCH_TIMEOUT_MS   = 30_000;       // 30 s
 const MAX_RESPONSE_BYTES = 5 * 1024 * 1024; // 5 MB
@@ -13,10 +20,12 @@ export type SourceCheckResult = {
   created?:     number;
   updated?:     number;
   skipped?:     number;
+  blocked?:     number;
   errors?:      number;
   ingressRunId?: string;
   error?:       string;
   checkedAt:    string;
+  salesStatus?: JsonIngestResult['salesStatus'];
 };
 
 // ── Main check function ───────────────────────────────────────────────────────
@@ -25,6 +34,7 @@ export async function checkApiInventorySource(
   prisma: PrismaClient,
   dealershipId: string,
   sourceId: string,
+  opts: SourceCheckOptions = {},
 ): Promise<SourceCheckResult> {
   const checkedAt = new Date();
 
@@ -85,10 +95,13 @@ export async function checkApiInventorySource(
 
   // ── Ingest ────────────────────────────────────────────────────────────────
 
+  const snapshotIngest = resolveSourceCheckIngestOpts(cfg, opts);
+
   const result = await ingestJsonVehicles(prisma, dealershipId, parsed.data.vehicles, {
     sourceSlug:  source.slug,
     sourceLabel: source.label,
     sourceKind:  'API',
+    ...snapshotIngest,
   });
 
   return {
@@ -97,8 +110,10 @@ export async function checkApiInventorySource(
     created:      result.created,
     updated:      result.updated,
     skipped:      result.skipped,
+    blocked:      result.blocked,
     errors:       result.errors,
     ingressRunId: result.ingressRunId,
+    salesStatus:  result.salesStatus,
     checkedAt:    checkedAt.toISOString(),
   };
 }

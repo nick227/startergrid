@@ -1,4 +1,4 @@
-# Auto Dealer Sales Portal — v4.6.1
+# Auto Dealer Sales Portal — v4.7.0
 
 A backend pipeline that onboards auto dealers onto 18 ad and marketplace platforms — validation, feed generation, artifact storage, and proof export — via CLI and the Operator Console web UI.
 
@@ -23,6 +23,8 @@ A backend pipeline that onboards auto dealers onto 18 ad and marketplace platfor
 **v4.6** adds portal JSON/API ingest on Inventory — paste or upload feeds, snapshot dry-run toggle, ingest results, and explicit snapshot commit via the existing review card.
 
 **v4.6.1** hardens portal JSON ingest for release: Playwright E2E, operator docs, narrow-viewport layout, client-side invalid/empty/large-file guards, and snapshot candidate edge-case tests.
+
+**v4.7** adds API source snapshot polling — sources can opt into full-inventory snapshot mode; Check now and scheduled poll run snapshot dry-runs; removal candidates review in the same `SnapshotReviewCard`; scheduled poll never auto-removes.
 
 **Release summary (v4.6):** v4.6 completes the operator lifecycle loop: inventory can be ingested from the portal, authoritative snapshots run as safe dry-runs, missing vehicles can be reviewed and explicitly marked removed, lifecycle history records the source, and benchmarks refresh from reliable sold/removed exposure windows.
 
@@ -168,7 +170,7 @@ npm run demo:reset               exits 0
 - Dealer picker with search
 - Sync dashboard — readiness hero, platform list, sync history, movement context, manual benchmark refresh
 - Inventory — CSV import, **Days / Signal** column, row expand with movement + lifecycle history
-- **Lifecycle filters** (active / sold / removed / all), **snapshot review**, **JSON/API ingest panel** (v4.4–v4.6)
+- **Lifecycle filters** (active / sold / removed / all), **snapshot review**, **JSON/API ingest panel**, **API source snapshot mode** (v4.4–v4.7)
 - **Benchmark freshness** states + refresh on Inventory and Sync
 - Platform accounts — list, filter, inline edit (state, account ID, rep, next action)
 - Knowledge base catalog + in-app doc reader (client-facing articles)

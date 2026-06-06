@@ -292,6 +292,8 @@ Inventory → **Intake sources** → **JSON / API ingest** runs the same endpoin
 
 After ingest, the portal reloads inventory, ingress runs, and benchmarks (same refresh path as CSV commit).
 
+**API sources:** enable **Full inventory snapshot on check/poll** when registering or editing a source. Check now and `ingress:poll-sources` run snapshot dry-runs; review candidates on the ingress run row.
+
 **E2E:** `npm run e2e:portal` (Playwright; requires `demo:reset` + API on 3000). See `docs/demo-flow.md` Step 3.
 
 ---

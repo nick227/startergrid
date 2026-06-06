@@ -668,10 +668,20 @@ paths:
         - OperatorAuth: []
       x-route-classification: operator
       operationId: checkIngressSource
-      summary: Fetch the source's feedUrl and ingest returned vehicles
+      summary: Fetch the source feedUrl and ingest returned vehicles
+      description: >
+        When the source has snapshotMode enabled (or snapshotMode is passed in the body),
+        ingest runs as a snapshot dry-run — missing active stock appears as removal candidates
+        on the ingress run. Scheduled polling uses the same dry-run path and never auto-removes.
       parameters:
         - $ref: '#/components/parameters/dealershipId'
         - $ref: '#/components/parameters/sourceId'
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CheckIngressSourceRequest'
       responses:
         '200':
           description: Check result with ingest counts or error
@@ -2069,7 +2079,7 @@ components:
 
     IngressSourceView:
       type: object
-      required: [id, slug, label, kind, status, feedUrl, lastCheckError, pollIntervalMinutes, nextCheckAt, lastReceivedAt, lastCheckedAt, createdAt, updatedAt]
+      required: [id, slug, label, kind, status, feedUrl, lastCheckError, pollIntervalMinutes, snapshotMode, nextCheckAt, lastReceivedAt, lastCheckedAt, createdAt, updatedAt]
       properties:
         id:                  { type: string }
         slug:                { type: string }
@@ -2079,6 +2089,9 @@ components:
         feedUrl:             { type: string, nullable: true }
         lastCheckError:      { type: string, nullable: true }
         pollIntervalMinutes: { type: integer, nullable: true }
+        snapshotMode:
+          type: boolean
+          description: When true, check and scheduled poll treat the feed as full inventory snapshot (dry-run only)
         nextCheckAt:         { type: string, nullable: true }
         lastReceivedAt:      { type: string, nullable: true }
         lastCheckedAt:       { type: string, nullable: true }
@@ -2094,10 +2107,20 @@ components:
         created:      { type: integer }
         updated:      { type: integer }
         skipped:      { type: integer }
+        blocked:      { type: integer }
         errors:       { type: integer }
         ingressRunId: { type: string }
         error:        { type: string }
         checkedAt:    { type: string, format: date-time }
+        salesStatus:
+          $ref: '#/components/schemas/SalesStatusReconcileResult'
+
+    CheckIngressSourceRequest:
+      type: object
+      properties:
+        snapshotMode:
+          type: boolean
+          description: One-off snapshot dry-run for this check; defaults to source config when omitted
 
     IngressSourceResponse:
       type: object
@@ -2128,6 +2151,9 @@ components:
           minimum: 5
           maximum: 10080
           nullable: true
+        snapshotMode:
+          type: boolean
+          description: Treat feed as full inventory on check/poll — dry-run snapshot only
 
     UpdateIngressSourceRequest:
       type: object
@@ -2148,6 +2174,9 @@ components:
           minimum: 5
           maximum: 10080
           nullable: true
+        snapshotMode:
+          type: boolean
+          description: Treat feed as full inventory on check/poll — dry-run snapshot only
 
     IngressRunView:
       type: object
@@ -2169,6 +2198,7 @@ components:
         summaryJson:  {}
         platformImpactJson: {}
         snapshotReview:
+          type: object
           nullable: true
           allOf:
             - $ref: '#/components/schemas/IngressSnapshotReview'

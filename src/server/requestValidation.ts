@@ -111,6 +111,7 @@ export const createIngressSourceSchema = z.object({
   sourceSlug:          optionalText(80),
   status:              z.enum(['ACTIVE', 'PAUSED']).optional(),
   pollIntervalMinutes: z.number().int().min(5).max(10_080).nullable().optional(),
+  snapshotMode:        z.boolean().optional(),
 }).strict();
 
 // operationId: updateIngressSource
@@ -119,10 +120,16 @@ export const updateIngressSourceSchema = z.object({
   feedUrl:             feedUrlSchema(512).optional(),
   status:              z.enum(['ACTIVE', 'PAUSED', 'DISCONNECTED', 'ERROR']).optional(),
   pollIntervalMinutes: z.number().int().min(5).max(10_080).nullable().optional(),
+  snapshotMode:        z.boolean().optional(),
 }).strict().refine(
   body => Object.keys(body).length > 0,
   'At least one field is required'
 );
+
+// operationId: checkIngressSource
+export const checkIngressSourceSchema = z.object({
+  snapshotMode: z.boolean().optional(),
+}).strict().optional();
 
 export type CreateIngressSourceBody = z.infer<typeof createIngressSourceSchema>;
 export type UpdateIngressSourceBody = z.infer<typeof updateIngressSourceSchema>;

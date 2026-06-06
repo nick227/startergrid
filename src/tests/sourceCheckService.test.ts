@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import { describe, it } from 'node:test';
 import type { SourceCheckResult } from '../services/inventory/sourceCheckService.js';
-import { validateBody, jsonIngestSchema } from '../server/requestValidation.js';
+import { validateBody, jsonIngestSchema, checkIngressSourceSchema } from '../server/requestValidation.js';
 
 // ── SourceCheckResult type shape ──────────────────────────────────────────────
 
@@ -87,6 +87,18 @@ describe('feed payload validation', () => {
       vehicles: [validVehicle],
     });
     assert.ok(r.ok);
+  });
+});
+
+describe('checkIngressSourceSchema', () => {
+  it('accepts empty body', () => {
+    assert.ok(validateBody(checkIngressSourceSchema, {}).ok);
+  });
+
+  it('accepts snapshotMode override', () => {
+    const r = validateBody(checkIngressSourceSchema, { snapshotMode: true });
+    assert.ok(r.ok);
+    if (r.ok) assert.equal(r.data?.snapshotMode, true);
   });
 });
 

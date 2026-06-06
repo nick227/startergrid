@@ -10,6 +10,8 @@ npm run ingress:poll-sources
 
 Each registered source stores a `pollIntervalMinutes` in its `configJson`. The poll command checks whether enough time has elapsed since `lastCheckedAt` and only fetches sources that are due. Sources with no `pollIntervalMinutes` set are never considered due (Manual only mode).
 
+Sources with **`snapshotMode: true`** in `configJson` run ingest as a **snapshot dry-run** on poll — vehicles missing from the feed appear as removal candidates on the ingress run. Scheduled poll **never** auto-removes; operators commit via `SnapshotReviewCard` on the run row (same as portal JSON ingest).
+
 The command is a one-shot process, not a daemon. Run it repeatedly from an external scheduler (cron, Windows Task Scheduler, pm2-cron, etc.) at a frequency shorter than your shortest source interval.
 
 **Typical pattern:** run the CLI every 5 minutes; each source's own `pollIntervalMinutes` controls how often it actually fetches.
