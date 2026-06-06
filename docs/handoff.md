@@ -108,6 +108,7 @@ Public read-only consumer vehicle browse. Entirely separate from the operator AP
 |--------|------|---------|
 | GET | `/api/marketplace/vehicles` | Paginated browse. Supports `?make=&model=&condition=&minPrice=&maxPrice=&maxMileage=&dealer=&page=&pageSize=` |
 | GET | `/api/marketplace/vehicles/:listingId` | Single vehicle detail. 404 if sold, removed, or absent. |
+| POST | `/api/marketplace/vehicles/:listingId/leads` | Anonymous vehicle inquiry. Rate-limited. Body: `{contactName, contactEmail, contactPhone, message}`. |
 | GET | `/api/marketplace/dealers/:dealerId` | Dealer storefront — all eligible vehicles for that dealer. |
 
 ### Eligibility rule
@@ -406,8 +407,11 @@ npm run dealer:export -- <id>
 | `sync:approval -- list/approve/hold/reject/release` | Operator approval workflow |
 | `sync:run -- <id>` | Process READY items immediately |
 | `server:start` | Start Fastify API on port 3000 |
-| `ui:dev` | Start Vite operator UI on port 5173 |
+| `ui:dev` / `dev:operator` | Start Vite operator UI on port 5173 |
+| `marketplace:dev` / `dev:marketplace` | Start Vite marketplace on port 5174 |
 | `demo:reset` | Full teardown + reseed + pipeline verification |
+| `verify:all` | OpenAPI validate + 861 tests + boundary check (no DB required) |
+| `build:all` | TypeScript + operator UI + marketplace Vite builds |
 
 ---
 
@@ -451,7 +455,7 @@ VITE_DEV_OPERATOR_ID=dev-operator
 
 All publish endpoints return `nextRecommendedAction` — one of: `fix_blocked_vehicles`, `review_approvals`, `run_scheduler`, `resolve_partner_requirement`, `resolve_account_requirement`, `no_action`.
 
-### Marketplace routes (public — no auth)
+### Marketplace routes (public — no auth on GETs; POST is rate-limited)
 
 Documented in `openapi/openapi-marketplace.yaml`. Client in `packages/marketplace-client/`.
 
@@ -459,6 +463,7 @@ Documented in `openapi/openapi-marketplace.yaml`. Client in `packages/marketplac
 |--------|------|---------|
 | GET | `/api/marketplace/vehicles` | Paginated browse with filters (see Marketplace API section) |
 | GET | `/api/marketplace/vehicles/:listingId` | Single vehicle detail |
+| POST | `/api/marketplace/vehicles/:listingId/leads` | Anonymous vehicle inquiry (rate-limited) |
 | GET | `/api/marketplace/dealers/:dealerId` | Dealer storefront index |
 
 ---
@@ -659,6 +664,7 @@ These rules are enforced in tests. Any label change must pass the language contr
 
 | Doc | Contents |
 |-----|----------|
+| `docs/demo-flow.md` | End-to-end demo guide: setup, stack startup, walkthrough, verification, known limitations |
 | `docs/Market Research Document.md` | Business context and competitive landscape |
 | `docs/go-to-market-playbook.md` | Sales motion |
 | `docs/pricing-and-unit-economics.md` | Revenue model |
