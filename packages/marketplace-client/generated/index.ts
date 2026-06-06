@@ -10,6 +10,7 @@ export type { OpenAPIConfig } from './core/OpenAPI';
 export { MarketplaceChannelEventRequest } from './models/MarketplaceChannelEventRequest';
 export type { MarketplaceChannelEventResponse } from './models/MarketplaceChannelEventResponse';
 export type { MarketplaceDealerIndexResponse } from './models/MarketplaceDealerIndexResponse';
+export type { MarketplaceDealerStatsResponse } from './models/MarketplaceDealerStatsResponse';
 export type { MarketplaceErrorResponse } from './models/MarketplaceErrorResponse';
 export type { MarketplaceLeadCaptureRequest } from './models/MarketplaceLeadCaptureRequest';
 export type { MarketplaceLeadCaptureResponse } from './models/MarketplaceLeadCaptureResponse';

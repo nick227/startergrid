@@ -5,6 +5,7 @@
 import type { MarketplaceChannelEventRequest } from '../models/MarketplaceChannelEventRequest';
 import type { MarketplaceChannelEventResponse } from '../models/MarketplaceChannelEventResponse';
 import type { MarketplaceDealerIndexResponse } from '../models/MarketplaceDealerIndexResponse';
+import type { MarketplaceDealerStatsResponse } from '../models/MarketplaceDealerStatsResponse';
 import type { MarketplaceLeadCaptureRequest } from '../models/MarketplaceLeadCaptureRequest';
 import type { MarketplaceLeadCaptureResponse } from '../models/MarketplaceLeadCaptureResponse';
 import type { MarketplaceVehicleDetailResponse } from '../models/MarketplaceVehicleDetailResponse';
@@ -178,6 +179,31 @@ export class MarketplaceService {
         return __request(OpenAPI, {
             method: 'GET',
             url: '/api/marketplace/dealers/{dealerId}',
+            path: {
+                'dealerId': dealerId,
+            },
+            errors: {
+                404: `Not found`,
+            },
+        });
+    }
+    /**
+     * First-party channel engagement stats for a dealer
+     * Returns aggregated consumer-marketplace engagement counts for one dealer.
+     * All values are totals — no individual visitor data is exposed.
+     * Returns 404 when the dealer does not exist.
+     *
+     * @returns MarketplaceDealerStatsResponse Dealer engagement stats
+     * @throws ApiError
+     */
+    public static getMarketplaceDealerStats({
+        dealerId,
+    }: {
+        dealerId: string,
+    }): CancelablePromise<MarketplaceDealerStatsResponse> {
+        return __request(OpenAPI, {
+            method: 'GET',
+            url: '/api/marketplace/dealers/{dealerId}/stats',
             path: {
                 'dealerId': dealerId,
             },

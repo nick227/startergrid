@@ -26,6 +26,7 @@ const REGISTERED_MARKETPLACE_ROUTES = new Set([
   'POST   /api/marketplace/vehicles/{listingId}/leads',
   'POST   /api/marketplace/events',
   'GET    /api/marketplace/dealers/{dealerId}',
+  'GET    /api/marketplace/dealers/{dealerId}/stats',
 ]);
 
 // ── Parse marketplace OpenAPI spec ───────────────────────────────────────────

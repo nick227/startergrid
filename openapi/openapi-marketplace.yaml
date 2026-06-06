@@ -231,6 +231,33 @@ paths:
         '404':
           $ref: '#/components/responses/NotFound'
 
+  /api/marketplace/dealers/{dealerId}/stats:
+    get:
+      tags: [Marketplace]
+      security: []
+      x-route-classification: public
+      operationId: getMarketplaceDealerStats
+      summary: First-party channel engagement stats for a dealer
+      description: |
+        Returns aggregated consumer-marketplace engagement counts for one dealer.
+        All values are totals — no individual visitor data is exposed.
+        Returns 404 when the dealer does not exist.
+      parameters:
+        - name: dealerId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Dealer engagement stats
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MarketplaceDealerStatsResponse'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
 components:
   responses:
     BadRequest:
@@ -447,3 +474,25 @@ components:
           items:
             $ref: '#/components/schemas/MarketplaceVehicleCard'
           description: All marketplace-eligible vehicles for this dealer.
+
+    MarketplaceDealerStatsResponse:
+      type: object
+      description: |
+        Aggregated first-party engagement counts for one dealer's consumer-marketplace channel.
+        All values are totals; no individual visitor data is included.
+      required: [dealerId, vehicleDetailViews, dealerPageViews, inquirySubmissions]
+      properties:
+        dealerId:
+          type: string
+        vehicleDetailViews:
+          type: integer
+          minimum: 0
+          description: Total vehicle detail page views.
+        dealerPageViews:
+          type: integer
+          minimum: 0
+          description: Total dealer storefront page views.
+        inquirySubmissions:
+          type: integer
+          minimum: 0
+          description: Total inquiry form submissions.
