@@ -1,14 +1,14 @@
 import { useState } from 'react';
 import { useQuery } from '../hooks/useQuery.ts';
 import { fetchVehicle, formatPrice, formatMileage, formatListedDate } from '../lib/api.ts';
+import { dealerLocation, vehicleTitle } from '../lib/vehicleDisplay.ts';
+import { getListReturn } from '../lib/listReturn.ts';
+import { dealerHref } from '../lib/routes.ts';
 import { Shell, LoadingSkeleton, ErrorState } from '../components/Shell.tsx';
-import { dealerHref, listHref } from '../lib/routes.ts';
+import { VehicleImage } from '../components/VehicleImage.tsx';
+import { ConditionBadge } from '../components/ConditionBadge.tsx';
 
 type Props = { listingId: string };
-
-const CONDITION_LABEL: Record<string, string> = {
-  NEW: 'New', USED: 'Used', CPO: 'Certified',
-};
 
 export default function VehicleDetailPage({ listingId }: Props) {
   const { data, loading, error, reload } = useQuery(
@@ -16,116 +16,118 @@ export default function VehicleDetailPage({ listingId }: Props) {
     [listingId]
   );
   const [activeImg, setActiveImg] = useState(0);
+  const backHref = getListReturn();
 
-  if (loading && !data) return (
-    <Shell backHref={listHref()} backLabel="Browse">
-      <LoadingSkeleton label="Loading vehicle…" />
-    </Shell>
-  );
+  if (loading && !data) {
+    return (
+      <Shell backHref={backHref} backLabel="Back to results">
+        <LoadingSkeleton label="Loading vehicle…" />
+      </Shell>
+    );
+  }
 
-  if (error) return (
-    <Shell backHref={listHref()} backLabel="Browse">
-      <ErrorState message={error} onRetry={reload} />
-    </Shell>
-  );
+  if (error) {
+    return (
+      <Shell backHref={backHref} backLabel="Back to results">
+        <ErrorState message={error} onRetry={reload} />
+      </Shell>
+    );
+  }
 
   if (!data) return null;
 
-  const { vehicle, additionalMediaUrls } = data;
+  const { vehicle, additionalMediaUrls, fullDescription } = data;
   const allImages = [...vehicle.mediaUrls, ...additionalMediaUrls];
-  const conditionLabel = CONDITION_LABEL[vehicle.condition] ?? vehicle.condition;
+  const title = vehicleTitle(vehicle);
+  const location = dealerLocation(vehicle.dealerCity, vehicle.dealerState);
 
   return (
-    <Shell backHref={listHref()} backLabel="Browse">
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+    <Shell backHref={backHref} backLabel="Back to results">
+      <div className="grid grid-cols-1 gap-10 lg:grid-cols-2">
+        <section aria-label="Photos">
+          <VehicleImage
+            src={allImages[activeImg]}
+            alt={title}
+            size="hero"
+            className="rounded-2xl"
+          />
 
-        {/* Images */}
-        <div className="space-y-3">
-          <div className="aspect-[4/3] bg-slate-100 rounded-xl overflow-hidden">
-            {allImages[activeImg] ? (
-              <img
-                src={allImages[activeImg]}
-                alt={`${vehicle.year} ${vehicle.make} ${vehicle.model}`}
-                className="w-full h-full object-cover"
-              />
-            ) : (
-              <div className="w-full h-full flex items-center justify-center text-slate-300 text-5xl">
-                🚗
-              </div>
-            )}
-          </div>
           {allImages.length > 1 && (
-            <div className="flex gap-2 overflow-x-auto pb-1">
+            <div className="mt-3 flex gap-2 overflow-x-auto pb-1">
               {allImages.map((url, i) => (
                 <button
-                  key={i}
+                  key={`${url}-${i}`}
+                  type="button"
                   onClick={() => setActiveImg(i)}
-                  className={`shrink-0 w-16 h-12 rounded-lg overflow-hidden border-2 transition-colors ${
+                  aria-label={`Show photo ${i + 1}`}
+                  aria-current={i === activeImg ? 'true' : undefined}
+                  className={`h-16 w-20 shrink-0 overflow-hidden rounded-lg border-2 transition ${
                     i === activeImg ? 'border-blue-500' : 'border-transparent hover:border-slate-300'
                   }`}
                 >
-                  <img src={url} alt="" className="w-full h-full object-cover" />
+                  <img src={url} alt="" className="h-full w-full object-cover" loading="lazy" />
                 </button>
               ))}
             </div>
           )}
-        </div>
+        </section>
 
-        {/* Details */}
-        <div className="space-y-5">
-          <div>
-            <div className="flex items-center gap-2 mb-1">
-              <span className="text-xs font-medium px-2 py-0.5 rounded-full bg-blue-50 text-blue-700">
-                {conditionLabel}
-              </span>
-              <span className="text-xs text-slate-400">Stock #{vehicle.stockNumber}</span>
-            </div>
-            <h1 className="text-2xl font-bold text-slate-900">
+        <section className="space-y-6">
+          <div className="space-y-3">
+            <ConditionBadge condition={vehicle.condition} />
+            <h1 className="text-3xl font-bold tracking-tight text-slate-900">
               {vehicle.year} {vehicle.make} {vehicle.model}
-              {vehicle.trim && <span className="font-normal text-slate-500 text-xl"> {vehicle.trim}</span>}
             </h1>
+            {vehicle.trim && (
+              <p className="text-lg text-slate-600">{vehicle.trim}</p>
+            )}
+            <p className="text-3xl font-bold tabular-nums text-slate-900">
+              {formatPrice(vehicle.priceCents)}
+            </p>
           </div>
-
-          <p className="text-3xl font-bold text-slate-900 tabular-nums">
-            {formatPrice(vehicle.priceCents)}
-          </p>
 
           <dl className="grid grid-cols-2 gap-3">
             {[
-              ['Mileage',    formatMileage(vehicle.mileage)],
-              ['Color',      vehicle.exteriorColor ?? '—'],
-              ['Condition',  conditionLabel],
-              ['Listed',     formatListedDate(vehicle.listedAt)],
+              ['Mileage',   formatMileage(vehicle.mileage)],
+              ['Condition', vehicle.condition === 'CPO' ? 'Certified pre-owned' : vehicle.condition === 'NEW' ? 'New' : 'Used'],
+              ['Exterior',  vehicle.exteriorColor ?? 'Not listed'],
+              ['Listed',    formatListedDate(vehicle.listedAt)],
             ].map(([key, val]) => (
-              <div key={key} className="bg-slate-50 rounded-lg p-3">
-                <dt className="text-xs font-medium text-slate-400 uppercase tracking-wide">{key}</dt>
-                <dd className="mt-0.5 text-sm font-medium text-slate-700">{val}</dd>
+              <div key={key} className="rounded-xl border border-slate-200 bg-white p-4">
+                <dt className="text-xs font-semibold uppercase tracking-wide text-slate-400">{key}</dt>
+                <dd className="mt-1 text-sm font-semibold text-slate-800">{val}</dd>
               </div>
             ))}
           </dl>
 
-          {/* Dealer */}
-          <div className="border border-slate-200 rounded-xl p-4 space-y-1">
-            <p className="text-xs text-slate-400 uppercase tracking-wide font-medium">Listed by</p>
+          {fullDescription && (
+            <div className="rounded-xl border border-slate-200 bg-white p-4">
+              <h2 className="text-sm font-semibold uppercase tracking-wide text-slate-400">Description</h2>
+              <p className="mt-2 whitespace-pre-line text-sm leading-relaxed text-slate-700">
+                {fullDescription}
+              </p>
+            </div>
+          )}
+
+          <aside className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
+            <p className="text-xs font-semibold uppercase tracking-wide text-slate-400">Sold by</p>
             <a
               href={dealerHref(vehicle.dealerId)}
-              className="font-semibold text-slate-900 hover:text-blue-600 transition-colors"
+              className="mt-1 block text-lg font-semibold text-slate-900 transition hover:text-blue-600"
             >
               {vehicle.dealerName}
             </a>
-            {(vehicle.dealerCity || vehicle.dealerState) && (
-              <p className="text-sm text-slate-500">
-                {[vehicle.dealerCity, vehicle.dealerState].filter(Boolean).join(', ')}
-              </p>
+            {location && (
+              <p className="mt-1 text-sm text-slate-600">{location}</p>
             )}
             <a
               href={dealerHref(vehicle.dealerId)}
-              className="inline-block mt-2 text-sm text-blue-600 hover:text-blue-700 transition-colors"
+              className="mt-4 inline-flex text-sm font-semibold text-blue-600 transition hover:text-blue-700"
             >
               View all vehicles from this dealer →
             </a>
-          </div>
-        </div>
+          </aside>
+        </section>
       </div>
     </Shell>
   );

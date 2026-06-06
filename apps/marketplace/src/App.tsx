@@ -15,5 +15,5 @@ export default function App() {
 
   if (route.page === 'listing') return <VehicleDetailPage listingId={route.listingId} />;
   if (route.page === 'dealer')  return <DealerDetailPage  dealerId={route.dealerId} />;
-  return <VehicleListPage />;
+  return <VehicleListPage initialQuery={route.query} />;
 }

@@ -1,67 +1,97 @@
 import { useQuery } from '../hooks/useQuery.ts';
 import { fetchDealer } from '../lib/api.ts';
-import { Shell, LoadingSkeleton, ErrorState, EmptyState } from '../components/Shell.tsx';
+import { dealerLocation } from '../lib/vehicleDisplay.ts';
+import { getListReturn } from '../lib/listReturn.ts';
+import { Shell, LoadingSkeleton, ErrorState, EmptyState, VehicleGridSkeleton } from '../components/Shell.tsx';
 import { VehicleCard } from '../components/VehicleCard.tsx';
-import { listHref } from '../lib/routes.ts';
 
 type Props = { dealerId: string };
+
+function formatWebsiteLabel(url: string): string {
+  try {
+    return new URL(url).hostname.replace(/^www\./, '');
+  } catch {
+    return url;
+  }
+}
 
 export default function DealerDetailPage({ dealerId }: Props) {
   const { data, loading, error, reload } = useQuery(
     () => fetchDealer(dealerId),
     [dealerId]
   );
+  const backHref = getListReturn();
 
-  if (loading && !data) return (
-    <Shell backHref={listHref()} backLabel="Browse">
-      <LoadingSkeleton label="Loading dealer…" />
-    </Shell>
-  );
+  if (loading && !data) {
+    return (
+      <Shell backHref={backHref} backLabel="Back to results">
+        <LoadingSkeleton label="Loading dealer…" />
+        <div className="mt-8">
+          <VehicleGridSkeleton count={3} />
+        </div>
+      </Shell>
+    );
+  }
 
-  if (error) return (
-    <Shell backHref={listHref()} backLabel="Browse">
-      <ErrorState message={error} onRetry={reload} />
-    </Shell>
-  );
+  if (error) {
+    return (
+      <Shell backHref={backHref} backLabel="Back to results">
+        <ErrorState message={error} onRetry={reload} />
+      </Shell>
+    );
+  }
 
   if (!data) return null;
 
-  const location = [data.dealerCity, data.dealerState].filter(Boolean).join(', ');
+  const location = dealerLocation(data.dealerCity, data.dealerState);
+  const count = data.vehicles.length;
 
   return (
-    <Shell backHref={listHref()} backLabel="Browse">
-      {/* Dealer header */}
-      <div className="mb-8 pb-6 border-b border-slate-200">
-        <h1 className="text-2xl font-bold text-slate-900">{data.dealerName}</h1>
-        {location && <p className="text-slate-500 mt-1">{location}</p>}
-        {data.websiteUrl && (
-          <a
-            href={data.websiteUrl}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="inline-block mt-2 text-sm text-blue-600 hover:text-blue-700 transition-colors"
-          >
-            {data.websiteUrl} ↗
-          </a>
-        )}
-      </div>
-
-      {/* Vehicle grid */}
-      <h2 className="text-lg font-semibold text-slate-800 mb-4">
-        {data.vehicles.length > 0
-          ? `${data.vehicles.length} vehicle${data.vehicles.length !== 1 ? 's' : ''} available`
-          : 'Inventory'}
-      </h2>
-
-      {data.vehicles.length === 0 ? (
-        <EmptyState label="No vehicles currently listed." />
-      ) : (
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
-          {data.vehicles.map(card => (
-            <VehicleCard key={card.listingId} card={card} />
-          ))}
+    <Shell backHref={backHref} backLabel="Back to results">
+      <header className="mb-8 overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
+        <div className="bg-gradient-to-r from-slate-900 to-slate-700 px-6 py-8 text-white">
+          <p className="text-xs font-semibold uppercase tracking-widest text-slate-300">Dealer</p>
+          <h1 className="mt-2 text-3xl font-bold tracking-tight">{data.dealerName}</h1>
+          {location && (
+            <p className="mt-2 text-sm text-slate-200">{location}</p>
+          )}
         </div>
-      )}
+
+        {data.websiteUrl && (
+          <div className="border-t border-slate-100 px-6 py-4">
+            <a
+              href={data.websiteUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center gap-1 text-sm font-semibold text-blue-600 transition hover:text-blue-700"
+            >
+              Visit {formatWebsiteLabel(data.websiteUrl)}
+              <span aria-hidden="true">↗</span>
+            </a>
+          </div>
+        )}
+      </header>
+
+      <section>
+        <h2 className="mb-5 text-lg font-semibold text-slate-900">
+          {count > 0
+            ? `${count.toLocaleString()} vehicle${count !== 1 ? 's' : ''} on the marketplace`
+            : 'Marketplace inventory'}
+        </h2>
+
+        {count === 0 ? (
+          <EmptyState
+            title="No vehicles listed right now"
+            description="This dealer has no marketplace-eligible inventory at the moment. Check back later or browse all vehicles."
+          />
+        ) : (
+          <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3">
+            {data.vehicles.map(card => (
+              <VehicleCard key={card.listingId} card={card} />
+            ))}
+          </div>
+        )}
+      </section>
     </Shell>
   );
 }

@@ -1,87 +1,59 @@
 import type { MarketplaceVehicleCard } from '../lib/api.ts';
 import { formatPrice, formatMileage } from '../lib/api.ts';
+import { dealerLocation, vehicleTitle } from '../lib/vehicleDisplay.ts';
 import { listingHref, dealerHref } from '../lib/routes.ts';
+import { VehicleImage } from './VehicleImage.tsx';
+import { ConditionBadge } from './ConditionBadge.tsx';
 
 type Props = { card: MarketplaceVehicleCard };
 
-const CONDITION_LABEL: Record<string, string> = {
-  NEW:  'New',
-  USED: 'Used',
-  CPO:  'Certified',
-};
-
-const CONDITION_STYLE: Record<string, string> = {
-  NEW:  'bg-blue-50 text-blue-700',
-  USED: 'bg-slate-100 text-slate-600',
-  CPO:  'bg-emerald-50 text-emerald-700',
-};
-
 export function VehicleCard({ card }: Props) {
-  const thumb = card.mediaUrls[0];
-  const label = CONDITION_LABEL[card.condition] ?? card.condition;
-  const style = CONDITION_STYLE[card.condition] ?? 'bg-slate-100 text-slate-600';
+  const location = dealerLocation(card.dealerCity, card.dealerState);
+  const title = vehicleTitle(card);
 
   return (
-    <a
-      href={listingHref(card.listingId)}
-      className="group block bg-white rounded-xl border border-slate-200 overflow-hidden hover:border-blue-300 hover:shadow-md transition-all duration-150"
-    >
-      {/* Image */}
-      <div className="aspect-[4/3] bg-slate-100 overflow-hidden">
-        {thumb ? (
-          <img
-            src={thumb}
-            alt={`${card.year} ${card.make} ${card.model}`}
-            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-200"
-          />
-        ) : (
-          <div className="w-full h-full flex items-center justify-center text-slate-300 text-4xl">
-            🚗
+    <article className="group flex h-full flex-col overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm transition hover:border-blue-300 hover:shadow-md">
+      <a href={listingHref(card.listingId)} className="block flex-1">
+        <VehicleImage
+          src={card.mediaUrls[0]}
+          alt={title}
+          imgClassName="transition-transform duration-200 group-hover:scale-105"
+        />
+
+        <div className="space-y-3 p-4">
+          <div className="space-y-1">
+            <h3 className="text-base font-semibold leading-snug text-slate-900">
+              {card.year} {card.make} {card.model}
+            </h3>
+            {card.trim && (
+              <p className="text-sm text-slate-500">{card.trim}</p>
+            )}
           </div>
+
+          <p className="text-xl font-bold tabular-nums text-slate-900">
+            {formatPrice(card.priceCents)}
+          </p>
+
+          <div className="flex flex-wrap items-center gap-2 text-sm text-slate-600">
+            <span>{formatMileage(card.mileage)}</span>
+            <span className="text-slate-300" aria-hidden="true">·</span>
+            <ConditionBadge condition={card.condition} />
+          </div>
+        </div>
+      </a>
+
+      <div className="border-t border-slate-100 px-4 py-3">
+        <p className="text-xs font-medium uppercase tracking-wide text-slate-400">Dealer</p>
+        <a
+          href={dealerHref(card.dealerId)}
+          className="mt-0.5 block text-sm font-medium text-slate-700 transition hover:text-blue-600"
+        >
+          {card.dealerName}
+        </a>
+        {location && (
+          <p className="mt-0.5 text-xs text-slate-500">{location}</p>
         )}
       </div>
-
-      {/* Info */}
-      <div className="p-4 space-y-2">
-        <div className="flex items-start justify-between gap-2">
-          <h3 className="font-semibold text-slate-900 leading-snug">
-            {card.year} {card.make} {card.model}
-            {card.trim && <span className="font-normal text-slate-500"> {card.trim}</span>}
-          </h3>
-          <span className={`shrink-0 text-xs font-medium px-2 py-0.5 rounded-full ${style}`}>
-            {label}
-          </span>
-        </div>
-
-        <p className="text-lg font-bold text-slate-900 tabular-nums">
-          {formatPrice(card.priceCents)}
-        </p>
-
-        <div className="flex items-center gap-3 text-sm text-slate-500">
-          <span>{formatMileage(card.mileage)}</span>
-          {card.exteriorColor && (
-            <>
-              <span className="text-slate-300">·</span>
-              <span>{card.exteriorColor}</span>
-            </>
-          )}
-        </div>
-
-        <div className="pt-1 border-t border-slate-100 text-xs text-slate-500">
-          <a
-            href={dealerHref(card.dealerId)}
-            onClick={e => e.stopPropagation()}
-            className="hover:text-blue-600 transition-colors"
-          >
-            {card.dealerName}
-          </a>
-          {(card.dealerCity || card.dealerState) && (
-            <span className="ml-1 text-slate-400">
-              · {[card.dealerCity, card.dealerState].filter(Boolean).join(', ')}
-            </span>
-          )}
-        </div>
-      </div>
-    </a>
+    </article>
   );
 }
