@@ -6,6 +6,7 @@ import type { MarketplaceChannelEventRequest } from '../models/MarketplaceChanne
 import type { MarketplaceChannelEventResponse } from '../models/MarketplaceChannelEventResponse';
 import type { MarketplaceDealerIndexResponse } from '../models/MarketplaceDealerIndexResponse';
 import type { MarketplaceDealerStatsResponse } from '../models/MarketplaceDealerStatsResponse';
+import type { MarketplaceFeedResponse } from '../models/MarketplaceFeedResponse';
 import type { MarketplaceLeadCaptureRequest } from '../models/MarketplaceLeadCaptureRequest';
 import type { MarketplaceLeadCaptureResponse } from '../models/MarketplaceLeadCaptureResponse';
 import type { MarketplaceVehicleDetailResponse } from '../models/MarketplaceVehicleDetailResponse';
@@ -14,6 +15,67 @@ import type { CancelablePromise } from '../core/CancelablePromise';
 import { OpenAPI } from '../core/OpenAPI';
 import { request as __request } from '../core/request';
 export class MarketplaceService {
+    /**
+     * Browse the mixed marketplace feed
+     * Returns a cursor-based mixed feed for the consumer marketplace.
+     * Vehicle items use marketplace eligibility rules. Promo and notice items
+     * are inserted server-side and do not affect cursor semantics.
+     *
+     * @returns MarketplaceFeedResponse Mixed marketplace feed page
+     * @throws ApiError
+     */
+    public static getMarketplaceFeed({
+        cursor,
+        limit = 24,
+        make,
+        model,
+        condition,
+        minPrice,
+        maxPrice,
+        maxMileage,
+        dealer,
+    }: {
+        cursor?: string,
+        limit?: number,
+        make?: string,
+        model?: string,
+        condition?: 'NEW' | 'USED' | 'CPO',
+        /**
+         * Minimum priceCents (inclusive)
+         */
+        minPrice?: number,
+        /**
+         * Maximum priceCents (inclusive)
+         */
+        maxPrice?: number,
+        /**
+         * Maximum mileage (inclusive). Omit to include all mileages.
+         */
+        maxMileage?: number,
+        /**
+         * Filter by dealer ID
+         */
+        dealer?: string,
+    }): CancelablePromise<MarketplaceFeedResponse> {
+        return __request(OpenAPI, {
+            method: 'GET',
+            url: '/api/marketplace/feed',
+            query: {
+                'cursor': cursor,
+                'limit': limit,
+                'make': make,
+                'model': model,
+                'condition': condition,
+                'minPrice': minPrice,
+                'maxPrice': maxPrice,
+                'maxMileage': maxMileage,
+                'dealer': dealer,
+            },
+            errors: {
+                400: `Bad request — invalid query parameter value`,
+            },
+        });
+    }
     /**
      * Browse marketplace-eligible vehicles
      * Returns paginated, cross-dealer vehicle cards for marketplace-eligible inventory.

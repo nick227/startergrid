@@ -90,7 +90,7 @@ MarketplaceVehicleDetail:
 |-------------|----------|
 | Purchase panel header | `vehicle.core`, `vehicle.commerce` (price slice) |
 | Price & availability card | `vehicle.commerce` |
-| Dealer block | `vehicle.location`, `promotion` (optional badge) |
+| Dealer block | `vehicle.location` |
 | Quick specs / overview | `vehicle.classification`, `vehicle.colors`, `vehicle.engine`, `vehicle.efficiency` |
 | Condition & history | `vehicle.conditionHistory` |
 | Features | `vehicle.features` |
@@ -392,6 +392,8 @@ Issues use `status-warning` styling in tour chrome — honest but not alarmist.
 
 ### `promotion` — platform syndication context
 
+Required on every detail API response. Treat as **operator/context data first** — not default consumer-visible VDP content. Avoid cluttering the page with “also listed on…” unless that becomes an explicit buyer feature.
+
 Every promoted listing knows **where** and **how** it is marketed.
 
 ```yaml
@@ -425,7 +427,7 @@ PromotionChannel:
     liveUrl:  string | null   # Public listing URL on that channel when applicable
 ```
 
-VDP may show subtle “Also listed on …” when `channels` includes external surfaces — optional UI, data always present for ops.
+Frontend default: **do not render** `promotion.channels` on the shopper VDP. Keep typed in the client for operator tooling, analytics hooks, or future buyer-facing badges.
 
 ---
 

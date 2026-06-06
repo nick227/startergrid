@@ -4,19 +4,37 @@
 import {
   ApiError,
   MarketplaceService,
+  type MarketplaceFeedResponse,
   type MarketplaceVehicleListResponse,
   type MarketplaceVehicleDetailResponse,
   type MarketplaceDealerIndexResponse,
   type MarketplaceLeadCaptureResponse,
 } from '@dealer-marketplace/client';
 
-export type { MarketplaceVehicleCard } from '@dealer-marketplace/client';
 export type {
+  MarketplaceVehicleCard,
+  MarketplaceCardMediaItem,
+  MarketplaceFeedResponse,
+  MarketplaceFeedItem,
   MarketplaceVehicleListResponse,
   MarketplaceVehicleDetailResponse,
   MarketplaceDealerIndexResponse,
   MarketplaceLeadCaptureResponse,
-};
+  VehicleCore,
+  VehicleCommerce,
+  VehicleLocation,
+  VehicleClassification,
+  VehicleColors,
+  VehicleEngine,
+  VehicleEfficiency,
+  VehicleConditionHistory,
+  VehicleFeatures,
+  VehicleWarranty,
+  VehicleMedia,
+  VehicleContent,
+  MarketplaceListingPromotion,
+  MarketplaceVehicleCtas,
+} from '@dealer-marketplace/client';
 
 export type LeadCaptureInput = {
   contactName?:  string;
@@ -29,8 +47,17 @@ export type ListFilters = {
   make?:      string;
   model?:     string;
   condition?: 'NEW' | 'USED' | 'CPO';
+  minPrice?:   number;
+  maxPrice?:   number;
+  maxMileage?: number;
+  dealer?:     string;
   page?:      number;
   pageSize?:  number;
+};
+
+export type FeedFilters = Omit<ListFilters, 'page' | 'pageSize'> & {
+  cursor?: string;
+  limit?:  number;
 };
 
 export class FetchError extends Error {
@@ -64,11 +91,29 @@ async function call<T>(fn: () => Promise<T>): Promise<T> {
   }
 }
 
+export function fetchFeed(filters: FeedFilters = {}): Promise<MarketplaceFeedResponse> {
+  return call(() => MarketplaceService.getMarketplaceFeed({
+    cursor:     filters.cursor,
+    limit:      filters.limit,
+    make:       filters.make,
+    model:      filters.model,
+    condition:  filters.condition,
+    minPrice:   filters.minPrice,
+    maxPrice:   filters.maxPrice,
+    maxMileage: filters.maxMileage,
+    dealer:     filters.dealer,
+  }));
+}
+
 export function fetchVehicles(filters: ListFilters = {}): Promise<MarketplaceVehicleListResponse> {
   return call(() => MarketplaceService.listMarketplaceVehicles({
     make:      filters.make,
     model:     filters.model,
     condition: filters.condition,
+    minPrice:   filters.minPrice,
+    maxPrice:   filters.maxPrice,
+    maxMileage: filters.maxMileage,
+    dealer:     filters.dealer,
     page:      filters.page,
     pageSize:  filters.pageSize,
   }));

@@ -8,8 +8,8 @@ info:
     ## Boundary contract
 
     This spec is intentionally separate from openapi/openapi.yaml (the operator API).
-    No operator-internal fields appear in any schema here:
-      - No VIN (privacy risk; not needed for browse)
+    No operator-internal fields appear in card/list schemas here:
+      - No VIN on browse cards (detail exposes full VIN in vehicle.core by policy)
       - No platform account state or sync queue data
       - No performance cache fields (operator analytics)
       - No billing, subscription, or credential data
@@ -27,6 +27,77 @@ tags:
     description: Public consumer vehicle browse
 
 paths:
+  /api/marketplace/feed:
+    get:
+      tags: [Marketplace]
+      security: []
+      x-route-classification: public
+      operationId: getMarketplaceFeed
+      summary: Browse the mixed marketplace feed
+      description: |
+        Returns a cursor-based mixed feed for the consumer marketplace.
+        Vehicle items use marketplace eligibility rules. Promo and notice items
+        are inserted server-side and do not affect cursor semantics.
+      parameters:
+        - name: cursor
+          in: query
+          schema:
+            type: string
+        - name: limit
+          in: query
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 60
+            default: 24
+        - name: make
+          in: query
+          schema:
+            type: string
+            maxLength: 80
+        - name: model
+          in: query
+          schema:
+            type: string
+            maxLength: 80
+        - name: condition
+          in: query
+          schema:
+            type: string
+            enum: [NEW, USED, CPO]
+        - name: minPrice
+          in: query
+          description: Minimum priceCents (inclusive)
+          schema:
+            type: integer
+            minimum: 0
+        - name: maxPrice
+          in: query
+          description: Maximum priceCents (inclusive)
+          schema:
+            type: integer
+            minimum: 0
+        - name: maxMileage
+          in: query
+          description: Maximum mileage (inclusive). Omit to include all mileages.
+          schema:
+            type: integer
+            minimum: 0
+        - name: dealer
+          in: query
+          description: Filter by dealer ID
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Mixed marketplace feed page
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MarketplaceFeedResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+
   /api/marketplace/vehicles:
     get:
       tags: [Marketplace]
@@ -298,6 +369,7 @@ components:
         - mileage
         - exteriorColor
         - mediaUrls
+        - mediaItems
         - dealerId
         - dealerName
         - dealerCity
@@ -341,6 +413,12 @@ components:
           description: >
             First 8 images ordered by sort sequence.
             Additional images available in the detail endpoint.
+        mediaItems:
+          type: array
+          maxItems: 8
+          items:
+            $ref: '#/components/schemas/MarketplaceCardMediaItem'
+          description: First 8 media items ordered by sort sequence.
         dealerId:
           type: string
         dealerName:
@@ -383,21 +461,663 @@ components:
           nullable: true
           description: Relative URL for the next page, or null on the last page.
 
+    MarketplaceCardMediaItem:
+      type: object
+      description: Lean media item for browse cards (IMAGE and VIDEO only).
+      required: [kind, url, width, height, mimeType, posterUrl]
+      properties:
+        kind:
+          type: string
+          enum: [IMAGE, VIDEO]
+        url:
+          type: string
+        width:
+          type: integer
+          nullable: true
+        height:
+          type: integer
+          nullable: true
+        mimeType:
+          type: string
+          nullable: true
+        posterUrl:
+          type: string
+          nullable: true
+
     MarketplaceVehicleDetailResponse:
       type: object
-      required: [vehicle, fullDescription, additionalMediaUrls]
+      description: |
+        Nested vehicle detail for the consumer VDP. promotion is required for
+        platform/operator context; the default UI does not surface syndication
+        channels to shoppers unless explicitly productized.
+      required: [vehicle, promotion, ctas]
       properties:
         vehicle:
-          $ref: '#/components/schemas/MarketplaceVehicleCard'
+          $ref: '#/components/schemas/MarketplaceVehicleDetail'
+        promotion:
+          $ref: '#/components/schemas/MarketplaceListingPromotion'
+        ctas:
+          $ref: '#/components/schemas/MarketplaceVehicleCtas'
+
+    MarketplaceVehicleDetail:
+      type: object
+      required:
+        - core
+        - commerce
+        - location
+        - classification
+        - colors
+        - engine
+        - efficiency
+        - conditionHistory
+        - features
+        - warranty
+        - media
+        - content
+      properties:
+        core:
+          $ref: '#/components/schemas/VehicleCore'
+        commerce:
+          $ref: '#/components/schemas/VehicleCommerce'
+        location:
+          $ref: '#/components/schemas/VehicleLocation'
+        classification:
+          $ref: '#/components/schemas/VehicleClassification'
+        colors:
+          $ref: '#/components/schemas/VehicleColors'
+        engine:
+          $ref: '#/components/schemas/VehicleEngine'
+        efficiency:
+          $ref: '#/components/schemas/VehicleEfficiency'
+        conditionHistory:
+          $ref: '#/components/schemas/VehicleConditionHistory'
+        features:
+          $ref: '#/components/schemas/VehicleFeatures'
+        warranty:
+          $ref: '#/components/schemas/VehicleWarranty'
+        media:
+          $ref: '#/components/schemas/VehicleMedia'
+        content:
+          $ref: '#/components/schemas/VehicleContent'
+
+    VehicleCore:
+      type: object
+      required: [listingId, stockNumber, vin, year, make, model, trim, condition, title]
+      properties:
+        listingId:
+          type: string
+        stockNumber:
+          type: string
+        vin:
+          type: string
+          description: Full VIN — public on detail by policy.
+        year:
+          type: integer
+          minimum: 1900
+          maximum: 2100
+        make:
+          type: string
+        model:
+          type: string
+        trim:
+          type: string
+          nullable: true
+        condition:
+          type: string
+          enum: [NEW, USED, CPO]
+        title:
+          type: string
+          description: Platform-computed display title.
+
+    VehicleCommerce:
+      type: object
+      required: [priceCents, availabilityStatus, listedAt]
+      properties:
+        priceCents:
+          type: integer
+          minimum: 0
+        originalPriceCents:
+          type: integer
+          nullable: true
+          minimum: 0
+        priceLastChangedAt:
+          type: string
+          format: date-time
+          nullable: true
+        estimatedMonthlyPaymentCents:
+          type: integer
+          nullable: true
+          minimum: 0
+        availabilityStatus:
+          type: string
+          enum: [AVAILABLE, PENDING, SOLD]
+        shippingPriceCents:
+          type: integer
+          nullable: true
+          minimum: 0
+        estimatedArrival:
+          type: string
+          nullable: true
+        listedAt:
+          type: string
+          format: date-time
+
+    VehicleLocation:
+      type: object
+      required: [dealerId, dealerName, dealerCity, dealerState, dealerZip, dealerPhone, dealerWebsiteUrl, dealerStoreName]
+      properties:
+        dealerId:
+          type: string
+        dealerName:
+          type: string
+        dealerStoreName:
+          type: string
+          nullable: true
+        dealerCity:
+          type: string
+          nullable: true
+        dealerState:
+          type: string
+          nullable: true
+        dealerZip:
+          type: string
+          nullable: true
+        dealerPhone:
+          type: string
+          nullable: true
+        dealerWebsiteUrl:
+          type: string
+          nullable: true
+
+    VehicleClassification:
+      type: object
+      required: [mileage, bodyStyle, vehicleType, vehicleSize, doorCount, seatCount, priorUse]
+      properties:
+        mileage:
+          type: integer
+          minimum: 0
+        bodyStyle:
+          type: string
+          nullable: true
+        vehicleType:
+          type: string
+          nullable: true
+        vehicleSize:
+          type: string
+          nullable: true
+        doorCount:
+          type: integer
+          nullable: true
+        seatCount:
+          type: integer
+          nullable: true
+        priorUse:
+          type: string
+          nullable: true
+
+    VehicleColors:
+      type: object
+      required: [exteriorColor, interiorColor, upholsteryMaterial]
+      properties:
+        exteriorColor:
+          type: string
+          nullable: true
+        interiorColor:
+          type: string
+          nullable: true
+        upholsteryMaterial:
+          type: string
+          nullable: true
+
+    VehicleEngine:
+      type: object
+      required: [engineSize, engineType, fuelType, cylinders, horsepower, torque, transmission, drivetrain]
+      properties:
+        engineSize:
+          type: string
+          nullable: true
+        engineType:
+          type: string
+          nullable: true
+        fuelType:
+          type: string
+          nullable: true
+        cylinders:
+          type: integer
+          nullable: true
+        horsepower:
+          type: string
+          nullable: true
+        torque:
+          type: string
+          nullable: true
+        transmission:
+          type: string
+          nullable: true
+        drivetrain:
+          type: string
+          nullable: true
+
+    VehicleEfficiency:
+      type: object
+      required: [cityMpg, highwayMpg, combinedMpg, mpge, electricRangeMiles, batteryCapacityKwh, chargingType]
+      properties:
+        cityMpg:
+          type: number
+          nullable: true
+        highwayMpg:
+          type: number
+          nullable: true
+        combinedMpg:
+          type: number
+          nullable: true
+        mpge:
+          type: number
+          nullable: true
+        electricRangeMiles:
+          type: integer
+          nullable: true
+        batteryCapacityKwh:
+          type: number
+          nullable: true
+        chargingType:
+          type: string
+          nullable: true
+
+    VehicleConditionHistory:
+      type: object
+      required: [titleStatus, accidentHistory, ownersCount, serviceRecordsCount, openRecalls, inspectionCompleted, inspectionSummaryUrl, frameDamageReported]
+      properties:
+        titleStatus:
+          type: string
+          nullable: true
+        accidentHistory:
+          type: string
+          nullable: true
+        ownersCount:
+          type: integer
+          nullable: true
+        serviceRecordsCount:
+          type: integer
+          nullable: true
+        openRecalls:
+          type: integer
+          nullable: true
+        inspectionCompleted:
+          type: boolean
+        inspectionSummaryUrl:
+          type: string
+          nullable: true
+        frameDamageReported:
+          type: boolean
+
+    VehicleFeatureCategories:
+      type: object
+      required: [comfort, technology, safety, exterior, performance, utility, entertainment, other]
+      properties:
+        comfort:
+          type: array
+          items: { type: string }
+        technology:
+          type: array
+          items: { type: string }
+        safety:
+          type: array
+          items: { type: string }
+        exterior:
+          type: array
+          items: { type: string }
+        performance:
+          type: array
+          items: { type: string }
+        utility:
+          type: array
+          items: { type: string }
+        entertainment:
+          type: array
+          items: { type: string }
+        other:
+          type: array
+          items: { type: string }
+
+    VehicleFeatures:
+      type: object
+      required: [highlights, categories]
+      properties:
+        highlights:
+          type: array
+          items: { type: string }
+        categories:
+          $ref: '#/components/schemas/VehicleFeatureCategories'
+
+    VehicleWarranty:
+      type: object
+      required: [factoryWarrantyRemaining, warrantyDescription, certifiedProgramName, returnPolicyDays, protectionPlansAvailable]
+      properties:
+        factoryWarrantyRemaining:
+          type: string
+          nullable: true
+        warrantyDescription:
+          type: string
+          nullable: true
+        certifiedProgramName:
+          type: string
+          nullable: true
+        returnPolicyDays:
+          type: integer
+          nullable: true
+        protectionPlansAvailable:
+          type: boolean
+
+    VehicleMedia:
+      type: object
+      required: [items]
+      properties:
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/MarketplaceMediaItem'
+        tour:
+          $ref: '#/components/schemas/VehicleMediaTour'
+          nullable: true
+
+    MarketplaceMediaItem:
+      type: object
+      description: Full media item for detail gallery (extended kinds, slots, tour refs).
+      required: [id, kind, url, sortOrder, slot, angle, caption, posterUrl, mimeType, width, height, durationSec, embedUrl]
+      properties:
+        id:
+          type: string
+        kind:
+          type: string
+          enum: [IMAGE, VIDEO, SPIN_360, DOORS_OPEN]
+        url:
+          type: string
+        sortOrder:
+          type: integer
+        slot:
+          type: string
+          nullable: true
+          enum: [HERO, SLOT_2, SLOT_3, SLOT_4, SLOT_5, SLOT_6, SLOT_7, SLOT_8, SLOT_9, SLOT_10, OVERFLOW]
+        angle:
+          type: string
+          nullable: true
+          enum: [EXTERIOR_FRONT_34, EXTERIOR_FRONT, EXTERIOR_REAR_34, EXTERIOR_REAR, EXTERIOR_SIDE, EXTERIOR_DOORS_OPEN, INTERIOR_FRONT, INTERIOR_REAR, INTERIOR_DASH, INTERIOR_CARGO, DETAIL, CONDITION]
+        caption:
+          type: string
+          nullable: true
+        posterUrl:
+          type: string
+          nullable: true
+        mimeType:
+          type: string
+          nullable: true
+        width:
+          type: integer
+          nullable: true
+        height:
+          type: integer
+          nullable: true
+        durationSec:
+          type: number
+          nullable: true
+        embedUrl:
+          type: string
+          nullable: true
+
+    VehicleMediaTour:
+      type: object
+      required: [enabled, title, steps]
+      properties:
+        enabled:
+          type: boolean
+        title:
+          type: string
+          nullable: true
+        steps:
+          type: array
+          items:
+            $ref: '#/components/schemas/VehicleTourStep'
+
+    VehicleTourStep:
+      type: object
+      required: [mediaId, label, stepType, note, sortOrder]
+      properties:
+        mediaId:
+          type: string
+        label:
+          type: string
+        stepType:
+          type: string
+          enum: [HIGHLIGHT, ISSUE, NEUTRAL]
+        note:
+          type: string
+          nullable: true
+        sortOrder:
+          type: integer
+
+    VehicleContent:
+      type: object
+      required: [fullDescription, dealerNotes, disclaimer, legalDisclosure]
+      properties:
         fullDescription:
           type: string
           nullable: true
-          description: Long-form vehicle description. Null until Vehicle gains a description field.
-        additionalMediaUrls:
+        dealerNotes:
+          type: string
+          nullable: true
+        disclaimer:
+          type: string
+          nullable: true
+        legalDisclosure:
+          type: string
+          nullable: true
+
+    MarketplaceListingPromotion:
+      type: object
+      description: |
+        Platform syndication context — required on every detail response.
+        Operator/context data first; not default consumer-visible VDP content.
+      required: [platformListingId, channels, syndicationStatus, lastSyncedAt, primaryChannelSlug]
+      properties:
+        platformListingId:
+          type: string
+        channels:
           type: array
           items:
-            type: string
-          description: Images beyond the first 8 from the card.
+            $ref: '#/components/schemas/PromotionChannel'
+        syndicationStatus:
+          type: string
+          enum: [DRAFT, LIVE, PAUSED, ERROR]
+        lastSyncedAt:
+          type: string
+          format: date-time
+          nullable: true
+        primaryChannelSlug:
+          type: string
+          nullable: true
+
+    PromotionChannel:
+      type: object
+      required: [slug, label, status, liveUrl]
+      properties:
+        slug:
+          type: string
+        label:
+          type: string
+        status:
+          type: string
+          enum: [ACTIVE, PENDING, BLOCKED, OFF]
+        liveUrl:
+          type: string
+          nullable: true
+
+    MarketplaceVehicleCtas:
+      type: object
+      required: [primary, secondary]
+      properties:
+        primary:
+          $ref: '#/components/schemas/MarketplaceVehicleCtaPrimary'
+        secondary:
+          type: array
+          items:
+            $ref: '#/components/schemas/MarketplaceVehicleCtaSecondary'
+
+    MarketplaceVehicleCtaPrimary:
+      type: object
+      required: [action, label]
+      properties:
+        action:
+          type: string
+          enum: [INQUIRY, PHONE, EXTERNAL_URL]
+        label:
+          type: string
+
+    MarketplaceVehicleCtaSecondary:
+      type: object
+      required: [action, label, href]
+      properties:
+        action:
+          type: string
+          enum: [DEALER_PAGE, DEALER_INVENTORY, EXTERNAL_URL]
+        label:
+          type: string
+        href:
+          type: string
+          nullable: true
+
+    MarketplaceFeedResponse:
+      type: object
+      required: [items, nextCursor, totalEstimate, appliedFilters]
+      properties:
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/MarketplaceFeedItem'
+        nextCursor:
+          type: string
+          nullable: true
+        totalEstimate:
+          type: integer
+          minimum: 0
+        appliedFilters:
+          $ref: '#/components/schemas/MarketplaceFeedAppliedFilters'
+
+    MarketplaceFeedAppliedFilters:
+      type: object
+      required: [make, model, condition, minPrice, maxPrice, maxMileage, dealer]
+      properties:
+        make:
+          type: string
+          nullable: true
+        model:
+          type: string
+          nullable: true
+        condition:
+          type: string
+          nullable: true
+          enum: [NEW, USED, CPO]
+        minPrice:
+          type: integer
+          nullable: true
+          minimum: 0
+        maxPrice:
+          type: integer
+          nullable: true
+          minimum: 0
+        maxMileage:
+          type: integer
+          nullable: true
+          minimum: 0
+        dealer:
+          type: string
+          nullable: true
+
+    MarketplaceFeedItem:
+      oneOf:
+        - $ref: '#/components/schemas/MarketplaceVehicleFeedItem'
+        - $ref: '#/components/schemas/MarketplaceDealerPromoFeedItem'
+        - $ref: '#/components/schemas/MarketplaceNoticeFeedItem'
+      discriminator:
+        propertyName: type
+        mapping:
+          vehicle: '#/components/schemas/MarketplaceVehicleFeedItem'
+          dealerPromo: '#/components/schemas/MarketplaceDealerPromoFeedItem'
+          marketplaceNotice: '#/components/schemas/MarketplaceNoticeFeedItem'
+
+    MarketplaceVehicleFeedItem:
+      type: object
+      required: [type, id, impressionKey, vehicle]
+      properties:
+        type:
+          type: string
+          enum: [vehicle]
+        id:
+          type: string
+        impressionKey:
+          type: string
+        vehicle:
+          $ref: '#/components/schemas/MarketplaceVehicleCard'
+
+    MarketplaceDealerPromoFeedItem:
+      type: object
+      required: [type, id, impressionKey, promo]
+      properties:
+        type:
+          type: string
+          enum: [dealerPromo]
+        id:
+          type: string
+        impressionKey:
+          type: string
+        promo:
+          $ref: '#/components/schemas/MarketplaceDealerPromo'
+
+    MarketplaceDealerPromo:
+      type: object
+      required: [title, body, dealerName, dealerId, ctaLabel, ctaHref, mediaUrl]
+      properties:
+        title:
+          type: string
+        body:
+          type: string
+        dealerName:
+          type: string
+        dealerId:
+          type: string
+        ctaLabel:
+          type: string
+        ctaHref:
+          type: string
+        mediaUrl:
+          type: string
+          nullable: true
+
+    MarketplaceNoticeFeedItem:
+      type: object
+      required: [type, id, impressionKey, notice]
+      properties:
+        type:
+          type: string
+          enum: [marketplaceNotice]
+        id:
+          type: string
+        impressionKey:
+          type: string
+        notice:
+          $ref: '#/components/schemas/MarketplaceNotice'
+
+    MarketplaceNotice:
+      type: object
+      required: [title, body, tone]
+      properties:
+        title:
+          type: string
+        body:
+          type: string
+        tone:
+          type: string
+          enum: [info]
 
     MarketplaceLeadCaptureRequest:
       type: object

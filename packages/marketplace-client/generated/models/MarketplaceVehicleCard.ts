@@ -2,6 +2,7 @@
 /* istanbul ignore file */
 /* tslint:disable */
 /* eslint-disable */
+import type { MarketplaceCardMediaItem } from './MarketplaceCardMediaItem';
 /**
  * Consumer-safe vehicle card. Contains no VIN, no operator-internal IDs,
  * no sync state, no performance analytics, no account data.
@@ -26,6 +27,10 @@ export type MarketplaceVehicleCard = {
      *
      */
     mediaUrls: Array<string>;
+    /**
+     * First 8 media items ordered by sort sequence.
+     */
+    mediaItems: Array<MarketplaceCardMediaItem>;
     dealerId: string;
     /**
      * dbaName when available, otherwise legalName.

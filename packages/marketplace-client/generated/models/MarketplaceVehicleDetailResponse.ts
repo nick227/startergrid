@@ -2,16 +2,18 @@
 /* istanbul ignore file */
 /* tslint:disable */
 /* eslint-disable */
-import type { MarketplaceVehicleCard } from './MarketplaceVehicleCard';
+import type { MarketplaceListingPromotion } from './MarketplaceListingPromotion';
+import type { MarketplaceVehicleCtas } from './MarketplaceVehicleCtas';
+import type { MarketplaceVehicleDetail } from './MarketplaceVehicleDetail';
+/**
+ * Nested vehicle detail for the consumer VDP. promotion is required for
+ * platform/operator context; the default UI does not surface syndication
+ * channels to shoppers unless explicitly productized.
+ *
+ */
 export type MarketplaceVehicleDetailResponse = {
-    vehicle: MarketplaceVehicleCard;
-    /**
-     * Long-form vehicle description. Null until Vehicle gains a description field.
-     */
-    fullDescription: string | null;
-    /**
-     * Images beyond the first 8 from the card.
-     */
-    additionalMediaUrls: Array<string>;
+    vehicle: MarketplaceVehicleDetail;
+    promotion: MarketplaceListingPromotion;
+    ctas: MarketplaceVehicleCtas;
 };
 

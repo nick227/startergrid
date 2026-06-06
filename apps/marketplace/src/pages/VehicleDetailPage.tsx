@@ -1,13 +1,7 @@
 import { useQuery, queryErrorMessage } from '../hooks/useQuery.ts';
 import { usePageMeta } from '../hooks/usePageMeta.ts';
 import { fetchVehicle, isNotFoundError } from '../lib/api.ts';
-import {
-  formatPrice,
-  formatMileage,
-  formatListedDate,
-  conditionLabel,
-  vehicleTitle,
-} from '../lib/display.ts';
+import { formatPrice, formatMileage } from '../lib/display.ts';
 import { getListReturn } from '../lib/listReturn.ts';
 import { MarketplaceEventType } from '../lib/events.ts';
 import { useTrackMarketplaceEvent } from '../hooks/useTrackMarketplaceEvent.ts';
@@ -15,12 +9,19 @@ import { PageShell } from '../components/layout/PageShell.tsx';
 import { DetailPageSkeleton } from '../components/ui/SkeletonGrid.tsx';
 import { ErrorState } from '../components/ui/ErrorState.tsx';
 import { NotFoundState } from '../components/ui/NotFoundState.tsx';
-import { ConditionBadge } from '../components/ui/ConditionBadge.tsx';
-import { VehicleGallery } from '../components/ui/VehicleGallery.tsx';
-import { SpecGrid } from '../components/ui/SpecGrid.tsx';
-import { DealerBlock } from '../components/ui/DealerBlock.tsx';
-import { SectionCard } from '../components/ui/SectionCard.tsx';
 import { LeadInquiryForm } from '../components/ui/LeadInquiryForm.tsx';
+import { CoreHeaderSection } from '../components/vdp/CoreHeaderSection.tsx';
+import { CommerceSection } from '../components/vdp/CommerceSection.tsx';
+import { LocationSection } from '../components/vdp/LocationSection.tsx';
+import { ClassificationSection } from '../components/vdp/ClassificationSection.tsx';
+import { ColorsSection } from '../components/vdp/ColorsSection.tsx';
+import { EngineSection } from '../components/vdp/EngineSection.tsx';
+import { EfficiencySection } from '../components/vdp/EfficiencySection.tsx';
+import { ConditionHistorySection } from '../components/vdp/ConditionHistorySection.tsx';
+import { FeaturesSection } from '../components/vdp/FeaturesSection.tsx';
+import { WarrantySection } from '../components/vdp/WarrantySection.tsx';
+import { MediaSection } from '../components/vdp/MediaSection.tsx';
+import { ContentSection } from '../components/vdp/ContentSection.tsx';
 
 type Props = { listingId: string };
 
@@ -31,9 +32,10 @@ export default function VehicleDetailPage({ listingId }: Props) {
   );
   const backHref = getListReturn();
 
-  const title = data ? vehicleTitle(data.vehicle) : 'Vehicle details';
+  const { core, commerce } = data?.vehicle ?? {};
+  const title = core?.title ?? 'Vehicle details';
   const metaDescription = data
-    ? `${formatPrice(data.vehicle.priceCents)} · ${formatMileage(data.vehicle.mileage)}`
+    ? `${formatPrice(commerce!.priceCents)} · ${formatMileage(data.vehicle.classification.mileage)}`
     : undefined;
 
   usePageMeta(title, metaDescription);
@@ -66,57 +68,34 @@ export default function VehicleDetailPage({ listingId }: Props) {
 
   if (!data) return null;
 
-  const { vehicle, additionalMediaUrls, fullDescription } = data;
-  const allImages = [...vehicle.mediaUrls, ...additionalMediaUrls];
-  const heading = vehicleTitle(vehicle);
+  const { vehicle } = data;
 
   return (
     <PageShell backHref={backHref} backLabel="Back to results">
       <div className="grid grid-cols-1 gap-8 lg:grid-cols-2 lg:gap-10">
-        <VehicleGallery images={allImages} alt={heading} />
+        <MediaSection media={vehicle.media} alt={vehicle.core.title} />
 
         <div className="space-y-6">
-          <header className="space-y-3">
-            <ConditionBadge condition={vehicle.condition} />
-            <h1 className="text-2xl font-bold tracking-tight text-slate-900 sm:text-3xl">
-              {vehicle.year} {vehicle.make} {vehicle.model}
-            </h1>
-            {vehicle.trim && <p className="text-base text-slate-600 sm:text-lg">{vehicle.trim}</p>}
-            <p className="text-2xl font-bold tabular-nums text-slate-900 sm:text-3xl">
-              {formatPrice(vehicle.priceCents)}
-            </p>
-          </header>
-
-          <SpecGrid
-            specs={[
-              { label: 'Mileage',   value: formatMileage(vehicle.mileage) },
-              { label: 'Condition', value: conditionLabel(vehicle.condition) },
-              { label: 'Exterior',  value: vehicle.exteriorColor ?? 'Not listed' },
-              { label: 'Listed',    value: formatListedDate(vehicle.listedAt) },
-            ]}
-          />
-
-          {fullDescription && (
-            <SectionCard title="Description">
-              <p className="whitespace-pre-line text-sm leading-relaxed text-slate-700">
-                {fullDescription}
-              </p>
-            </SectionCard>
-          )}
-
-          <DealerBlock
-            dealerId={vehicle.dealerId}
-            dealerName={vehicle.dealerName}
-            city={vehicle.dealerCity}
-            state={vehicle.dealerState}
-          />
-
+          <CoreHeaderSection core={vehicle.core} commerce={vehicle.commerce} />
+          <CommerceSection commerce={vehicle.commerce} />
+          <LocationSection location={vehicle.location} />
           <LeadInquiryForm
-            listingId={vehicle.listingId}
-            vehicleLabel={heading}
-            dealerName={vehicle.dealerName}
+            listingId={vehicle.core.listingId}
+            vehicleLabel={vehicle.core.title}
+            dealerName={vehicle.location.dealerName}
           />
         </div>
+      </div>
+
+      <div className="mt-10 space-y-6">
+        <ClassificationSection classification={vehicle.classification} />
+        <ColorsSection colors={vehicle.colors} />
+        <EngineSection engine={vehicle.engine} />
+        <EfficiencySection efficiency={vehicle.efficiency} />
+        <ConditionHistorySection conditionHistory={vehicle.conditionHistory} />
+        <FeaturesSection features={vehicle.features} />
+        <WarrantySection warranty={vehicle.warranty} />
+        <ContentSection content={vehicle.content} />
       </div>
     </PageShell>
   );

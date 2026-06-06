@@ -13,17 +13,26 @@ import { describe, it } from 'node:test';
 import type { PrismaClient } from '@prisma/client';
 import {
   listMarketplaceVehicles,
+  getMarketplaceFeed,
   getMarketplaceVehicle,
   getMarketplaceDealerIndex,
   type MarketplaceVehicleCard,
-  type MarketplaceVehicleDetail,
+  type MarketplaceVehicleDetailResponse,
   type MarketplaceDealerIndex,
   type MarketplaceVehicleListResponse,
 } from '../services/marketplace/marketplaceQueryService.js';
 
 // ── Fake DB row types ─────────────────────────────────────────────────────────
 
-type FakeMedia = { url: string; sortOrder: number; kind?: string };
+type FakeMedia = {
+  id: string;
+  url: string;
+  sortOrder: number;
+  kind?: string;
+  width?: number | null;
+  height?: number | null;
+  mimeType?: string | null;
+};
 
 type FakeDealership = {
   id:             string;
@@ -83,8 +92,8 @@ function fakeVehicle(overrides: Partial<FakeVehicle> = {}): FakeVehicle {
     removedAt:    null,
     dealershipId: 'dealer-1',
     media:        [
-      { url: 'https://cdn.example.com/img1.jpg', sortOrder: 0 },
-      { url: 'https://cdn.example.com/img2.jpg', sortOrder: 1 },
+      { id: 'media-1', url: 'https://cdn.example.com/img1.jpg', sortOrder: 0, kind: 'IMAGE', width: 1200, height: 900, mimeType: 'image/jpeg' },
+      { id: 'media-2', url: 'https://cdn.example.com/walkaround.mp4', sortOrder: 1, kind: 'VIDEO', width: 1280, height: 720, mimeType: 'video/mp4' },
     ],
     dealership:   DEALER,
     ...overrides,
@@ -131,6 +140,7 @@ const REQUIRED_CARD_FIELDS: (keyof MarketplaceVehicleCard)[] = [
   'mileage',
   'exteriorColor',
   'mediaUrls',
+  'mediaItems',
   'dealerId',
   'dealerName',
   'dealerCity',
@@ -150,14 +160,20 @@ describe('MarketplaceVehicleCard — shape contract', () => {
     }
   });
 
-  it('all required fields are present in vehicle detail response', async () => {
+  it('detail response exposes nested vehicle categories', async () => {
     const v = fakeVehicle();
     const prisma = makeMockPrisma([v]);
     const detail = await getMarketplaceVehicle(prisma, v.id);
     assert.ok(detail !== null);
-    for (const field of REQUIRED_CARD_FIELDS) {
-      assert.ok(field in detail.vehicle, `detail.vehicle missing required field: ${field}`);
+    const CATEGORIES = [
+      'core', 'commerce', 'location', 'classification', 'colors', 'engine',
+      'efficiency', 'conditionHistory', 'features', 'warranty', 'media', 'content',
+    ] as const;
+    for (const field of CATEGORIES) {
+      assert.ok(field in detail.vehicle, `detail.vehicle missing category: ${field}`);
     }
+    assert.ok('promotion' in detail);
+    assert.ok('ctas' in detail);
   });
 
   it('all required fields are present in dealer index vehicles', async () => {
@@ -174,6 +190,20 @@ describe('MarketplaceVehicleCard — shape contract', () => {
     const prisma = makeMockPrisma([fakeVehicle()]);
     const result = await listMarketplaceVehicles(prisma);
     assert.ok(Array.isArray(result.vehicles[0]!.mediaUrls));
+  });
+
+  it('mediaItems includes image and video metadata in sort order', async () => {
+    const prisma = makeMockPrisma([fakeVehicle()]);
+    const result = await listMarketplaceVehicles(prisma);
+    const mediaItems = result.vehicles[0]!.mediaItems;
+    assert.equal(mediaItems.length, 2);
+    assert.equal(mediaItems[0]!.kind, 'IMAGE');
+    assert.equal(mediaItems[0]!.width, 1200);
+    assert.equal(mediaItems[0]!.height, 900);
+    assert.equal(mediaItems[0]!.mimeType, 'image/jpeg');
+    assert.equal(mediaItems[0]!.posterUrl, null);
+    assert.equal(mediaItems[1]!.kind, 'VIDEO');
+    assert.equal(mediaItems[1]!.mimeType, 'video/mp4');
   });
 
   it('listedAt is an ISO date string', async () => {
@@ -195,7 +225,6 @@ describe('MarketplaceVehicleCard — shape contract', () => {
 // Proves that operator-only fields are NEVER present in any response.
 
 const FORBIDDEN_FIELDS = [
-  'vin',                // vehicle identification number — PII risk
   'movementSignal',     // performance cache — operator analytics
   'avgComparableDays',  // performance cache
   'medianComparableDays', // performance cache
@@ -219,13 +248,20 @@ const FORBIDDEN_FIELDS = [
 ];
 
 function assertNoForbiddenFields(obj: unknown, path = 'root'): void {
-  if (!obj || typeof obj !== 'object' || Array.isArray(obj)) return;
+  if (!obj || typeof obj !== 'object') return;
+  if (Array.isArray(obj)) {
+    obj.forEach((item, i) => assertNoForbiddenFields(item, `${path}[${i}]`));
+    return;
+  }
   const o = obj as Record<string, unknown>;
   for (const field of FORBIDDEN_FIELDS) {
     assert.ok(
       !(field in o),
       `Forbidden field "${field}" found at ${path} — operator data must not leak to marketplace`
     );
+  }
+  for (const [key, value] of Object.entries(o)) {
+    assertNoForbiddenFields(value, `${path}.${key}`);
   }
 }
 
@@ -236,12 +272,12 @@ describe('private field exclusion — operator data must not leak', () => {
     assertNoForbiddenFields(result.vehicles[0], 'vehicles[0]');
   });
 
-  it('VehicleDetail response contains no forbidden fields', async () => {
+  it('VehicleDetail response contains no forbidden operator fields', async () => {
     const v = fakeVehicle();
     const prisma = makeMockPrisma([v]);
     const detail = await getMarketplaceVehicle(prisma, v.id);
-    assertNoForbiddenFields(detail?.vehicle, 'detail.vehicle');
     assertNoForbiddenFields(detail, 'detail');
+    assert.equal(detail!.vehicle.core.vin, v.vin);
   });
 
   it('DealerIndex response contains no forbidden fields', async () => {
@@ -249,6 +285,17 @@ describe('private field exclusion — operator data must not leak', () => {
     const index = await getMarketplaceDealerIndex(prisma, 'dealer-1');
     assertNoForbiddenFields(index, 'dealerIndex');
     assertNoForbiddenFields(index?.vehicles[0], 'dealerIndex.vehicles[0]');
+  });
+
+  it('mixed feed response contains no forbidden fields at any nesting level', async () => {
+    const vehicles = Array.from({ length: 12 }, (_, i) => fakeVehicle({
+      id: `vehicle-${i + 1}`,
+      stockNumber: `PR-${String(i + 1).padStart(3, '0')}`,
+      createdAt: new Date(`2026-05-${String(i + 1).padStart(2, '0')}T00:00:00.000Z`),
+    }));
+    const prisma = makeMockPrisma(vehicles);
+    const feed = await getMarketplaceFeed(prisma, { limit: 12 });
+    assertNoForbiddenFields(feed, 'feed');
   });
 
   it('VIN is specifically absent from every card', async () => {
@@ -267,11 +314,9 @@ describe('private field exclusion — operator data must not leak', () => {
     const prisma = makeMockPrisma([v]);
     const detail = await getMarketplaceVehicle(prisma, v.id);
     const PERF_FIELDS = ['movementSignal', 'avgComparableDays', 'benchmarkLabel', 'comparableCount'];
+    const serialized = JSON.stringify(detail);
     for (const f of PERF_FIELDS) {
-      assert.ok(
-        !((detail?.vehicle as unknown as Record<string, unknown>)[f] !== undefined),
-        `Performance field "${f}" must not appear in marketplace detail`
-      );
+      assert.ok(!serialized.includes(`"${f}"`), `Performance field "${f}" must not appear in marketplace detail`);
     }
   });
 });
@@ -367,6 +412,51 @@ describe('pagination contract', () => {
   });
 });
 
+// ── Mixed feed contract ───────────────────────────────────────────────────────
+
+describe('MarketplaceFeed — mixed feed contract', () => {
+  it('feed response includes mixed item union, totalEstimate, appliedFilters, and nextCursor', async () => {
+    const vehicles = Array.from({ length: 12 }, (_, i) => fakeVehicle({
+      id: `vehicle-${i + 1}`,
+      stockNumber: `PR-${String(i + 1).padStart(3, '0')}`,
+      createdAt: new Date(`2026-05-${String(i + 1).padStart(2, '0')}T00:00:00.000Z`),
+    }));
+    const prisma = makeMockPrisma(vehicles);
+    const feed = await getMarketplaceFeed(prisma, { limit: 12, make: 'Toyota', maxMileage: 30_000 });
+    assert.ok(Array.isArray(feed.items));
+    assert.equal(feed.totalEstimate, 12);
+    assert.equal(feed.appliedFilters.make, 'Toyota');
+    assert.equal(feed.appliedFilters.maxMileage, 30_000);
+    assert.ok(feed.items.some(item => item.type === 'vehicle'));
+    assert.ok(feed.items.some(item => item.type === 'dealerPromo'));
+    assert.ok(feed.items.some(item => item.type === 'marketplaceNotice'));
+  });
+
+  it('vehicle feed item contains compatibility mediaUrls and new mediaItems', async () => {
+    const prisma = makeMockPrisma([fakeVehicle()]);
+    const feed = await getMarketplaceFeed(prisma, { limit: 1 });
+    const item = feed.items.find(i => i.type === 'vehicle');
+    assert.ok(item && item.type === 'vehicle');
+    assert.ok(Array.isArray(item.vehicle.mediaUrls));
+    assert.ok(Array.isArray(item.vehicle.mediaItems));
+    assert.equal(item.vehicle.mediaItems[1]!.kind, 'VIDEO');
+  });
+
+  it('nextCursor is null when all vehicles fit in the cursor page', async () => {
+    const prisma = makeMockPrisma([fakeVehicle()]);
+    const feed = await getMarketplaceFeed(prisma, { limit: 24 });
+    assert.equal(feed.nextCursor, null);
+  });
+
+  it('nextCursor is present when more vehicle rows exist than the requested limit', async () => {
+    const vehicles = [fakeVehicle({ id: 'vehicle-1' }), fakeVehicle({ id: 'vehicle-2' })];
+    const prisma = makeMockPrisma(vehicles);
+    const feed = await getMarketplaceFeed(prisma, { limit: 1 });
+    assert.equal(feed.items.filter(i => i.type === 'vehicle').length, 1);
+    assert.ok(feed.nextCursor);
+  });
+});
+
 // ── DealerIndex contract ──────────────────────────────────────────────────────
 
 describe('MarketplaceDealerIndex — shape contract', () => {
@@ -419,44 +509,51 @@ describe('MarketplaceDealerIndex — shape contract', () => {
 
 // ── VehicleDetail contract ────────────────────────────────────────────────────
 
-describe('MarketplaceVehicleDetail — shape contract', () => {
-  it('detail response has vehicle, fullDescription, and additionalMediaUrls', async () => {
+describe('MarketplaceVehicleDetailResponse — shape contract', () => {
+  it('detail response has vehicle, promotion, and ctas', async () => {
     const v = fakeVehicle();
     const prisma = makeMockPrisma([v]);
     const detail = await getMarketplaceVehicle(prisma, v.id);
     assert.ok(detail !== null);
-    const REQUIRED: (keyof MarketplaceVehicleDetail)[] = [
-      'vehicle', 'fullDescription', 'additionalMediaUrls',
-    ];
+    const REQUIRED: (keyof MarketplaceVehicleDetailResponse)[] = ['vehicle', 'promotion', 'ctas'];
     for (const f of REQUIRED) {
       assert.ok(f in detail, `detail missing field: ${f}`);
     }
   });
 
-  it('fullDescription is null (field not yet in Vehicle model)', async () => {
+  it('content.fullDescription is null (field not yet in Vehicle model)', async () => {
     const v = fakeVehicle();
     const prisma = makeMockPrisma([v]);
     const detail = await getMarketplaceVehicle(prisma, v.id);
-    assert.equal(detail!.fullDescription, null);
+    assert.equal(detail!.vehicle.content.fullDescription, null);
   });
 
-  it('additionalMediaUrls is an array', async () => {
+  it('vehicle.media.items is an array with all media', async () => {
     const v = fakeVehicle();
     const prisma = makeMockPrisma([v]);
     const detail = await getMarketplaceVehicle(prisma, v.id);
-    assert.ok(Array.isArray(detail!.additionalMediaUrls));
+    assert.ok(Array.isArray(detail!.vehicle.media.items));
+    assert.equal(detail!.vehicle.media.items.length, 2);
   });
 
-  it('vehicles with more than 8 images put extras in additionalMediaUrls', async () => {
+  it('vehicles with many images include all items in vehicle.media.items', async () => {
     const manyMedia: FakeMedia[] = Array.from({ length: 12 }, (_, i) => ({
+      id: `media-${i}`,
       url: `https://cdn.example.com/img${i + 1}.jpg`,
       sortOrder: i,
     }));
     const v = fakeVehicle({ media: manyMedia });
     const prisma = makeMockPrisma([v]);
     const detail = await getMarketplaceVehicle(prisma, v.id);
-    assert.equal(detail!.vehicle.mediaUrls.length, 8);
-    assert.equal(detail!.additionalMediaUrls.length, 4);
+    assert.equal(detail!.vehicle.media.items.length, 12);
+  });
+
+  it('promotion block is populated for every detail response', async () => {
+    const v = fakeVehicle();
+    const prisma = makeMockPrisma([v]);
+    const detail = await getMarketplaceVehicle(prisma, v.id);
+    assert.equal(detail!.promotion.syndicationStatus, 'LIVE');
+    assert.ok(detail!.promotion.channels.length > 0);
   });
 });
 
