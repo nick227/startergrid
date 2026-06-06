@@ -57,6 +57,10 @@
     "ui:lint":               "npm run lint --prefix apps/web",
     "ui:lint:fix":           "npm run lint:fix --prefix apps/web",
 
+    "marketplace:install":   "npm install --prefix apps/marketplace",
+    "marketplace:dev":       "npm run client:generate:marketplace && npm run dev --prefix apps/marketplace",
+    "marketplace:build":     "npm run client:generate:marketplace && npm run build --prefix apps/marketplace",
+
     "openapi:validate":              "redocly lint openapi/openapi.yaml",
     "openapi:validate:marketplace":  "redocly lint openapi/openapi-marketplace.yaml",
     "client:generate":               "node node_modules/openapi-typescript-codegen/bin/index.js --input openapi/openapi.yaml --output packages/api-client/generated --client fetch --useOptions --exportCore true",

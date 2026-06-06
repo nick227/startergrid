@@ -1,0 +1,33 @@
+import { useState, useEffect, useCallback } from 'react';
+
+export type QueryState<T> = {
+  data:    T | null;
+  loading: boolean;
+  error:   string | null;
+  reload:  () => void;
+};
+
+export function useQuery<T>(
+  loader: () => Promise<T>,
+  deps: readonly unknown[],
+): QueryState<T> {
+  const [data,    setData]    = useState<T | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error,   setError]   = useState<string | null>(null);
+  const [tick,    setTick]    = useState(0);
+
+  const reload = useCallback(() => setTick(t => t + 1), []);
+
+  useEffect(() => {
+    let active = true;
+    setLoading(true);
+    setError(null);
+    loader()
+      .then(d  => { if (active) { setData(d);  setLoading(false); } })
+      .catch(e => { if (active) { setError(e instanceof Error ? e.message : 'Error'); setLoading(false); } });
+    return () => { active = false; };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [...deps, tick]);
+
+  return { data, loading, error, reload };
+}
