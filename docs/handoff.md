@@ -107,21 +107,43 @@ Dedicated CRM/sales system — full customer workflow (later)
 
 Do **not** assume every platform provides every metric. Do **not** hard-depend on partner-reported numbers. Normalize vocabulary where possible; always preserve **source confidence**.
 
+### Measurement foundation (product stance)
+
+We only build measurement from data we can **observe**, receive **automatically**, or already need for **operations**. We do **not** ask dealers to maintain analytics.
+
+| Priority | Source | Role |
+|----------|--------|------|
+| 1 | **Inventory status sync** | Listed, sold, removed, price, make/model/year — core ops data |
+| 2 | **Marketplace first-party events** | Views, detail views, dealer page views (`observed_first_party`) |
+| 3 | **Marketplace inquiries** | Lead capture + `INQUIRY_SUBMITTED` channel events |
+| 4 | **Sales / sold status** | `soldAt`, movement end date for benchmarks |
+| 5 | **Platform publish / listing status** | `SUBMISSION_SENT`, live window per slug |
+| 6 | **Optional future direct API integrations** | Partner engagement only when an integration supplies it — not manual imports |
+
+**Wired into sales/inventory status is enough for the core thesis.** With listed date, platform submitted/live date, sold date, removed date, price, make/model/year, platform exposure, and marketplace views/inquiries, we can answer:
+
+- Which platforms had the car?
+- How long was it online?
+- Which cars moved fastest / which similar cars moved slower?
+- Was marketplace generating visible demand?
+
+We **infer movement** from inventory status and platform exposure. We **measure** first-party marketplace activity directly. We **only add** partner engagement metrics when an integration can supply them automatically.
+
 ### Today vs target (honest state)
 
 | Layer | Today | Target |
 |-------|--------|--------|
-| Performance cache | `totalLeads`, `platformAssistsJson`, movement benchmarks, **`channelMetricsJson`** on platform rows | Same + partner imports when available (v4.4+) |
+| Performance cache | `totalLeads`, `platformAssistsJson`, movement benchmarks, **`channelMetricsJson`** on platform rows | Same; richer **exposure windows** and **sold/removed reconciliation** (v4.4) |
 | Marketplace | Lead capture + first-party **`POST /api/marketplace/events`** | Dealer inbox slice later (`apps/marketplace/dealer`) |
-| Third-party platforms | Leads counted when `Lead.platformSlug` matches | + **imported** metrics when partner APIs/portals provide them |
-| `apps/web` | Platform rows: leads, avg days to move, observed assists | Channel comparison table (views · clicks · inquiries · move time) |
+| Third-party platforms | Leads counted when `Lead.platformSlug` matches | Optional **direct API** metrics later — never CSV/manual report ingestion in v4.4 |
+| `apps/web` | Platform rows: channel metrics (where known), leads, avg days to move | Movement summaries by platform from accurate sold/removed lifecycle |
 | `apps/marketplace/dealer` | Not built | **Marketplace-only** lightweight stats for dealers without `apps/web` |
 
 **Slug note:** sync/feed destination may use `marketplace`; first-party measurement + leads use **`consumer-marketplace`** today. Align in platform registry when marketplace is added as a formal platform profile.
 
 ### Which of the big 18 can report clicks/views/contacts?
 
-**Not uniform.** Treat partner metrics as **optional imports**, never as guaranteed inputs.
+**Not uniform.** Treat partner metrics as **optional direct integrations**, never as guaranteed inputs. **Do not** build CSV imports, manual report ingestion, or fake click/view parity to match partners before real APIs exist.
 
 | Category | Platforms | Typical partner-reported metrics | Confidence |
 |----------|-----------|----------------------------------|------------|
@@ -185,6 +207,38 @@ Marketplace **inquiries** still feed **`apps/web` aggregate performance** for op
 - **Do** emit/store marketplace events server-side; roll up in existing performance jobs.
 - **Do** label metrics with confidence; hide or dash when `unavailable`.
 - **Do** register `consumer-marketplace` in platform profiles when sync + measurement are wired together.
+
+---
+
+## v4.4 — Sales Status Sync Foundation (planned)
+
+**Replaces** the earlier “Partner Metrics Import Foundation” direction. Cleaner and more sellable: movement from inventory + exposure, marketplace measured directly, partner engagement only via future automated integrations.
+
+### Goal
+
+Keep inventory sold/removed/available state accurate, then use that status to improve movement benchmarks and platform exposure windows.
+
+### Scope
+
+- Stronger sold/removed lifecycle (consistent ops paths, reconciliation after sync)
+- Sales status ingestion from existing inventory/sales source (DMS / ingress — not dealer-entered analytics)
+- Reconcile sold vehicles after sync (close exposure windows, trigger benchmark recompute)
+- Platform exposure window accuracy (`SUBMISSION_SENT` → sold/removed)
+- Benchmark recompute after sold/removed changes
+- Movement summaries by platform in `apps/web` (from status + exposure, not imported partner reports)
+
+### Defer or avoid
+
+- CSV imports of partner metrics
+- Manual report ingestion
+- Fake click/view parity with partner portals
+- Normalizing partner reports before real integrations exist
+- CRM / customer workflow in `apps/web`
+
+### Out of scope for v4.4 (unchanged)
+
+- Dealer marketplace stats UI (`GET .../dealers/{id}/stats`)
+- ROI, attribution, lead quality, or customer response claims
 
 ---
 

@@ -14,6 +14,8 @@ A backend pipeline that onboards auto dealers onto 18 ad and marketplace platfor
 
 **v4.3.1** polishes confidence-aware channel metric display in the operator UI, seeds demo marketplace events on `demo:reset`, and documents the measurement model in `docs/channel-measurement.md`.
 
+**Measurement stance:** movement from inventory status + platform exposure; marketplace activity observed first-party; partner engagement metrics only via future direct integrations — not dealer-maintained analytics or CSV imports. **v4.4 (planned):** Sales Status Sync Foundation — see `docs/handoff.md`.
+
 **Stack:** TypeScript (ESM) · Prisma 6 · MySQL · Node 22 · node:test
 
 **Architecture:** `src/` = sync engine (source of truth). `apps/web` = operator portal (OpenAPI SDK). `apps/marketplace` = consumer app (marketplace index APIs only — planned). See `docs/handoff.md` for the HTTP route contract.

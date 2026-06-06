@@ -1,6 +1,14 @@
 # Channel measurement — ChannelEvent, Lead, and performance cache
 
-This document describes how engagement is stored and surfaced in **v4.3+**. It is the reference before partner metric imports (v4.4+).
+This document describes how engagement is stored and surfaced in **v4.3+**. **v4.4** focuses on **sales status sync** and exposure-window accuracy — not partner metric imports.
+
+## Product stance
+
+- We do **not** ask dealers to maintain analytics.
+- We **infer movement** from inventory status (listed / sold / removed) and platform exposure (sync submission events).
+- We **measure** first-party marketplace activity directly (`observed_first_party`).
+- We **only add** partner engagement metrics when a **direct integration** can supply them automatically.
+- CSV imports, manual report uploads, and fabricated click/view parity are **out of scope** until real APIs exist.
 
 ## Three layers
 
@@ -91,8 +99,10 @@ Aggregation rules (`aggregateChannelMetrics`):
 
 `npm run demo:reset` seeds marketplace channel events on the pristine dealer so `consumer-marketplace` appears in platform performance with views, detail views, and inquiries. Re-run compute after reset if needed (`performance:compute` or Sync refresh).
 
-## Out of scope (v4.3.x)
+## Out of scope (v4.3.x – v4.4)
 
-- Partner metric import jobs
+- CSV / manual partner metric imports
 - Dealer marketplace stats UI (`GET .../dealers/{id}/stats`)
 - CRM workflow, pipeline, or customer records in `apps/web`
+
+**v4.4** adds sales status sync and sold/removed reconciliation to sharpen movement benchmarks — see **`docs/handoff.md`** § v4.4.
