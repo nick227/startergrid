@@ -37,6 +37,70 @@ src/                  Sync engine + core DB truth
 
 ---
 
+## Product boundaries — leads, customers, CRM
+
+**Leads are not “just another tab.”** They imply customers, conversations, follow-up, privacy, sales process, assignments, notes, statuses, reminders, and eventually CRM. Do **not** casually cram that into `apps/web`.
+
+### Three surfaces — three jobs
+
+| Surface | Purpose | Answers |
+|---------|---------|---------|
+| **`apps/web`** | Platform + content operations | Are our platforms working, and where should we publish/promote inventory? |
+| **`apps/marketplace`** | Public buyer marketplace + **light** dealer access | What buyer activity came from the marketplace? |
+| **Future sales platform / CRM** | Dedicated lead and customer management | Who is the customer, what happened, and what is the next sales action? |
+
+### `apps/web` — analytics input only, not workflow owner
+
+**OK to show (aggregate / platform performance):**
+
+- Facebook: 31 leads · Marketplace: 18 leads · Google: 12 leads
+- Avg days to move: 14 · Observed assists: 7
+
+**Not OK in `apps/web` (CRM workflow — belongs elsewhere):**
+
+- Call Sarah · Assign lead to Mike · Write customer notes
+- Mark customer interested · Schedule follow-up · Manage pipeline
+- Full lead inbox · Conversation history · Sales pipeline stages
+
+`apps/web` manages **platforms**. It may consume lead counts as **performance input** (`totalLeads`, `platformAssistsJson`, observed assists). It must not become the customer-relationship system.
+
+### `apps/marketplace` — buyer-facing + light dealer inbox (near-term)
+
+**Shopper scope (done / in progress):** browse vehicles, submit inquiries (`POST /api/marketplace/vehicles/:listingId/leads`).
+
+**Planned dealer area:** `apps/marketplace/dealer` (dealer auth later) — **not** a full CRM:
+
+- See marketplace-origin inquiries only
+- View safe vehicle context (no VIN / operator fields)
+- Export / download leads
+- Maybe mark read / contacted
+- Forward to email / webhook / external CRM
+- **No** deep CRM: assignments, notes, reminders, pipeline, customer records
+
+### Future CRM / sales platform
+
+Full workflow: lead inbox, customer records, follow-up states, assignments, notes, reminders, conversation history, sales pipeline, CRM integrations.
+
+### Data flow (target architecture)
+
+```
+Marketplace inquiry captured
+        ↓
+Lead stored as marketplace-origin event (platformSlug: consumer-marketplace)
+        ↓
+apps/marketplace/dealer — simple inbox (light dealer login)
+        ↓
+Aggregate counts feed platform performance cache
+        ↓
+apps/web — platform/source performance summaries only
+        ↓
+Dedicated CRM/sales system — full customer workflow (later)
+```
+
+**Rule for agents:** Do **not** build a full Leads tab or CRM workflow in `apps/web`. Build lightweight marketplace dealer access for marketplace-origin inquiries. Keep the operator console from becoming a messy all-in-one dashboard.
+
+---
+
 ## HTTP Route Contract (mandatory)
 
 Any HTTP route touched or added must follow, in the same commit:
@@ -102,7 +166,7 @@ Public read-only consumer vehicle browse. Entirely separate from the operator AP
 
 **Generated client:** `packages/marketplace-client/` — regenerate with `npm run marketplace:client:generate`. Consumer app imports `@dealer-marketplace/client` exclusively.
 
-### Routes (all `x-route-classification: public`, no auth required)
+### Routes (GET: `public`; lead POST: `public-write`; no auth required)
 
 | Method | Path | Purpose |
 |--------|------|---------|
