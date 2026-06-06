@@ -230,6 +230,59 @@ export function generateOwnedStorefrontJson(dealership: DealershipPayload, vehic
   };
 }
 
+// ─── Consumer Marketplace listing artifact (public-safe) ─────────────────────
+// Produces a public-safe inventory snapshot for the first-party marketplace.
+//
+// Boundary contract (same as marketplaceQueryService.ts):
+//   - No VIN at any level
+//   - No operator-internal fields (syncEvents, performanceCache, accounts, etc.)
+//   - Filters to priceCents > 0 (soldAt/removedAt already excluded upstream)
+//   - mediaUrls capped at 8 per listing (consistent with browse API)
+
+export function generateMarketplaceListingJson(
+  dealership: DealershipPayload,
+  vehicles:   VehiclePayload[]
+): FeedArtifact {
+  const addr    = dealership.rooftopAddress as Record<string, string> | null | undefined;
+  const dealerName = dealership.dbaName?.trim() || dealership.legalName;
+
+  // Apply marketplace eligibility filter: priceCents > 0 (soldAt/removedAt filtered upstream)
+  const eligible = vehicles.filter(v => (v.priceCents ?? 0) > 0);
+
+  const listings = eligible.map(v => ({
+    listingId:    v.stockNumber,          // opaque identifier — not the VIN
+    stockNumber:  v.stockNumber,
+    year:         v.year         ?? null,
+    make:         v.make         ?? '',
+    model:        v.model        ?? '',
+    trim:         v.trim         ?? null,
+    condition:    v.condition    ?? '',
+    priceCents:   v.priceCents   ?? 0,
+    mileage:      v.mileage      ?? null,
+    exteriorColor: v.exteriorColor ?? null,
+    mediaUrls:    (v.media ?? [])
+                    .filter(m => m.kind === 'IMAGE')
+                    .slice(0, 8)
+                    .map(m => m.url ?? ''),
+    dealerName,
+    dealerCity:  addr?.city  ?? null,
+    dealerState: addr?.state ?? null,
+  }));
+
+  return {
+    platformSlug: 'consumer-marketplace',
+    format:       'MARKETPLACE_LISTING_JSON',
+    filename:     'marketplace-listings.json',
+    content: JSON.stringify({
+      dealerName,
+      eligibleCount: listings.length,
+      listings,
+      generatedAt: new Date().toISOString(),
+    }, null, 2),
+    generatedAt: new Date().toISOString(),
+  };
+}
+
 // ─── Platform dispatcher ─────────────────────────────────────────────────────
 
 export function generateFeedForPlatform(
@@ -238,6 +291,8 @@ export function generateFeedForPlatform(
   vehicles: VehiclePayload[]
 ): FeedArtifact {
   switch (platform.slug) {
+    case 'consumer-marketplace':
+      return generateMarketplaceListingJson(dealership, vehicles);
     case 'dealer-storefront':
       return generateOwnedStorefrontJson(dealership, vehicles);
     case 'google-vehicle-ads':

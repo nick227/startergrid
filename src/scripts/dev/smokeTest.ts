@@ -53,7 +53,7 @@ async function run(): Promise<void> {
   // 5. validate:pristine
   try {
     execSync('npm run -s validate:pristine', { stdio: 'pipe' });
-    check('validate:pristine', true, '18/18 GREEN, 0 RED');
+    check('validate:pristine', true, '19/19 GREEN, 0 RED');
   } catch {
     check('validate:pristine', false, 'one or more platforms failed');
   }

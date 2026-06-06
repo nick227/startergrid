@@ -33,6 +33,43 @@ export const platformProfiles: PlatformProfileSeed[] = [
     requiredMediaRules: { minImages: 1 },
     testFixtures: { validatesOwnedChannel: true, supportsLeadCapture: true, requiresDealerAccount: false }
   },
+  // ── First-party owned marketplace ───────────────────────────────────────
+  {
+    slug: 'consumer-marketplace',
+    name: 'Consumer Marketplace (First-Party Channel)',
+    kind: 'MARKETPLACE',
+    integrationClass: 'OWNED',
+    schemaVersion: 'v4.3.0-owned-marketplace',
+    lastVerifiedAt: '2026-06-06T00:00:00.000Z',
+    profileConfidence: 'HIGH',
+    needsReview: false,
+    sourceNote: 'First-party owned marketplace index (apps/marketplace). Eligibility is enforced at query time: soldAt null, removedAt null, priceCents > 0. No VIN or operator-internal fields are ever included in the listing artifact or public API. Dispatch refreshes the public-safe listing index; no external partner approval required. SyncEvents record marketplace inventory updates in the operator history.',
+    mockEndpoint: 'mock://platform/consumer-marketplace',
+    integrationUrls: {
+      partnerPortalUrl: '/api/marketplace/dealers',
+      developerDocsUrl: '/openapi/openapi-marketplace.yaml',
+      apiBaseUrl: '/api/marketplace/',
+      notes: 'First-party channel — no partner agreements, no external account setup. Public browse at /marketplace/. Inventory is live from the DB query layer; the listing artifact is a public-safe snapshot for audit and sync history.'
+    },
+    outputFormat: 'MARKETPLACE_LISTING_JSON',
+    submissionMethods: ['MOCK_API'],
+    sourceUrls: [],
+    requiredDealershipFields: [
+      'legalName', 'rooftopAddress.city', 'rooftopAddress.state'
+    ],
+    // VIN is intentionally excluded — marketplace APIs never expose VIN.
+    // Eligibility check (priceCents > 0) is enforced at query time, not in the feed artifact.
+    requiredVehicleFields: [
+      'stockNumber', 'year', 'make', 'model', 'priceCents', 'condition', 'media[0].url'
+    ],
+    requiredMediaRules: { minImages: 1, notes: 'At least one image required for marketplace listing visibility.' },
+    testFixtures: {
+      validatesOwnedMarketplace: true,
+      supportsLeadCapture: true,
+      requiresDealerAccount: false,
+      vinNeverIncluded: true
+    }
+  },
   // ── Feedable — self-serve API/feed submission ─────────────────────────────
   {
     slug: 'google-vehicle-ads',
