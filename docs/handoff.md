@@ -101,6 +101,91 @@ Dedicated CRM/sales system — full customer workflow (later)
 
 ---
 
+## Channel performance — every destination is measurable
+
+**Principle:** Every destination/platform is a measurable channel. **Marketplace is one of those channels** (first-party, fully controlled). **`apps/web` is where channels are compared.** **`apps/marketplace` is the channel surface**, not the cross-platform BI layer.
+
+Do **not** assume every platform provides every metric. Do **not** hard-depend on partner-reported numbers. Normalize vocabulary where possible; always preserve **source confidence**.
+
+### Today vs target (honest state)
+
+| Layer | Today | Target |
+|-------|--------|--------|
+| Performance cache | `totalLeads`, `platformAssistsJson`, movement benchmarks | Same + **views / detail views / clicks / inquiries** per slug when known |
+| Marketplace | Lead capture → `Lead` with `platformSlug: consumer-marketplace` | + first-party **engagement events** (impression, VDP view, dealer page, gallery, inquiry) |
+| Third-party platforms | Leads counted when `Lead.platformSlug` matches | + **imported** metrics when partner APIs/portals provide them |
+| `apps/web` | Platform rows: leads, avg days to move, observed assists | Channel comparison table (views · clicks · inquiries · move time) |
+| `apps/marketplace/dealer` | Not built | **Marketplace-only** lightweight stats for dealers without `apps/web` |
+
+**Slug note:** sync/feed destination may use `marketplace`; first-party measurement + leads use **`consumer-marketplace`** today. Align in platform registry when marketplace is added as a formal platform profile.
+
+### Which of the big 18 can report clicks/views/contacts?
+
+**Not uniform.** Treat partner metrics as **optional imports**, never as guaranteed inputs.
+
+| Category | Platforms | Typical partner-reported metrics | Confidence |
+|----------|-----------|----------------------------------|------------|
+| **Paid ad APIs** | Google VLA, Meta, TikTok, Microsoft, Pinterest, Reddit, X, Snapchat, LinkedIn, Nextdoor | Impressions/views, clicks, spend, sometimes lead/conversion events | `platform_reported` when imported; varies by account + API access |
+| **Assisted marketplaces** | CarGurus, Autotrader/Cox, Cars.com, eBay Motors, TrueCar | Listings views, contacts, sometimes leads — usually **partner portal / reports**, not a single public API | `platform_reported` or `manual_imported`; often delayed |
+| **Lead routing** | ADF/XML | **Leads/contacts**, not page views | `platform_reported` / feed events |
+| **Owned first-party** | `dealer-storefront`, **`consumer-marketplace`** | Full event stream we control (views, VDP, gallery, inquiry) | `observed_first_party` |
+| **Local listings** | Apple Business Connect | Place/listing actions — different shape than VDP metrics | `platform_reported` when available |
+
+**“Product clicked”** (Meta/Google dynamic product ads) is a **platform-reported** engagement event when the ads API / pixel / conversions API is connected — not something we infer from sync alone.
+
+### Normalized channel vocabulary
+
+Use the same **display words** across channels; store **provenance** separately:
+
+| Metric (display) | Marketplace source | Third-party source |
+|------------------|-------------------|-------------------|
+| Views / impressions | First-party list/card impression event | Ad network or listing portal report |
+| Detail views | First-party VDP view | Listing portal “VDP views” when provided |
+| Clicks | Gallery/interaction or outbound click if tracked | Ad click reports |
+| Inquiries / contacts | `POST .../leads` (observed) | `Lead` rows + partner lead imports |
+
+**Source confidence** (required on stored/imported metrics):
+
+- `observed_first_party` — marketplace, storefront, our own beacons
+- `platform_reported` — partner API or automated import
+- `manual_imported` — dealer/ops CSV or portal paste
+- `unavailable` — show “—” in UI; never fabricate
+
+### Architecture flow
+
+```
+Shopper activity (marketplace UI)
+        ↓
+First-party events + inquiries  ──→  platformSlug: consumer-marketplace
+        ↓
+Performance aggregate jobs (same tables as other slugs)
+        ↓
+apps/web — compare Google · Meta · Marketplace · Cars.com · …
+        ↓
+apps/marketplace/dealer — marketplace-only slice (dealers without web)
+        ↓
+Future CRM — customer workflow only (not in web)
+```
+
+### Dual audience
+
+| Dealer type | Where they see performance |
+|-------------|---------------------------|
+| **Full system** (`apps/web` + marketplace) | Cross-platform channel comparison in web; marketplace is one row among 18 |
+| **Marketplace-only** (no web access) | Light stats inside `apps/marketplace/dealer` — views, detail views, inquiries — **not** full platform BI |
+
+Marketplace **inquiries** still feed **`apps/web` aggregate performance** for operators who use the full stack. Marketplace UI shows **page views + request info** as first-party facts; it does **not** replace web’s cross-channel ops view.
+
+### Implementation guardrails
+
+- **Do not** add views/clicks columns to marketplace public browse APIs or cards.
+- **Do not** build CRM workflow in `apps/web` when adding channel metrics.
+- **Do** emit/store marketplace events server-side; roll up in existing performance jobs.
+- **Do** label metrics with confidence; hide or dash when `unavailable`.
+- **Do** register `consumer-marketplace` in platform profiles when sync + measurement are wired together.
+
+---
+
 ## HTTP Route Contract (mandatory)
 
 Any HTTP route touched or added must follow, in the same commit:
