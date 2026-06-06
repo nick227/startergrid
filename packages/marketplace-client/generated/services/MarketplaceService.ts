@@ -24,6 +24,7 @@ export class MarketplaceService {
         condition,
         minPrice,
         maxPrice,
+        maxMileage,
         dealer,
         page = 1,
         pageSize = 24,
@@ -40,6 +41,10 @@ export class MarketplaceService {
          */
         maxPrice?: number,
         /**
+         * Maximum mileage (inclusive). Omit to include all mileages.
+         */
+        maxMileage?: number,
+        /**
          * Filter by dealer ID
          */
         dealer?: string,
@@ -55,12 +60,13 @@ export class MarketplaceService {
                 'condition': condition,
                 'minPrice': minPrice,
                 'maxPrice': maxPrice,
+                'maxMileage': maxMileage,
                 'dealer': dealer,
                 'page': page,
                 'pageSize': pageSize,
             },
             errors: {
-                400: `Not found`,
+                400: `Bad request — invalid query parameter value`,
             },
         });
     }

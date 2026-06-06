@@ -14,38 +14,48 @@ type ListingParams = { listingId: string };
 type DealerParams  = { dealerId: string };
 
 type ListQuery = {
-  make?:     string;
-  model?:    string;
-  condition?: string;
-  minPrice?: string;
-  maxPrice?: string;
-  dealer?:   string;
-  page?:     string;
-  pageSize?: string;
+  make?:       string;
+  model?:      string;
+  condition?:  string;
+  minPrice?:   string;
+  maxPrice?:   string;
+  maxMileage?: string;
+  dealer?:     string;
+  page?:       string;
+  pageSize?:   string;
 };
 
-function parseIntParam(value: string | undefined, fallback: number): number {
+// Parses a positive integer (> 0). Returns fallback for zero, negative, or non-numeric.
+function parsePosIntParam(value: string | undefined, fallback: number): number {
   const n = parseInt(value ?? '', 10);
   return Number.isFinite(n) && n > 0 ? n : fallback;
+}
+
+// Parses a non-negative integer (>= 0). Returns undefined for negative or non-numeric.
+function parseNonNegIntParam(value: string | undefined): number | undefined {
+  if (!value) return undefined;
+  const n = parseInt(value, 10);
+  return Number.isFinite(n) && n >= 0 ? n : undefined;
 }
 
 export function registerMarketplaceRoutes(app: FastifyInstance, prisma: PrismaClient): void {
 
   // GET /api/marketplace/vehicles
-  // Paginated cross-dealer browse. Supports make/model/condition/price/dealer filters.
+  // Paginated cross-dealer browse. Supports make/model/condition/price/mileage/dealer filters.
   app.get<{ Querystring: ListQuery }>(
     '/api/marketplace/vehicles',
     async (request, reply) => {
       const q = request.query;
       const filters: MarketplaceListFilters = {
-        make:      q.make      || undefined,
-        model:     q.model     || undefined,
-        condition: q.condition || undefined,
-        dealer:    q.dealer    || undefined,
-        minPrice:  q.minPrice  ? parseIntParam(q.minPrice,  0)  : undefined,
-        maxPrice:  q.maxPrice  ? parseIntParam(q.maxPrice,  0)  : undefined,
-        page:      parseIntParam(q.page,     1),
-        pageSize:  parseIntParam(q.pageSize, 24),
+        make:       q.make      || undefined,
+        model:      q.model     || undefined,
+        condition:  q.condition || undefined,
+        dealer:     q.dealer    || undefined,
+        minPrice:   parseNonNegIntParam(q.minPrice),
+        maxPrice:   parseNonNegIntParam(q.maxPrice),
+        maxMileage: parseNonNegIntParam(q.maxMileage),
+        page:       parsePosIntParam(q.page,     1),
+        pageSize:   parsePosIntParam(q.pageSize, 24),
       };
       return reply.send(await listMarketplaceVehicles(prisma, filters));
     }

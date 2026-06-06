@@ -66,6 +66,12 @@ paths:
           schema:
             type: integer
             minimum: 0
+        - name: maxMileage
+          in: query
+          description: Maximum mileage (inclusive). Omit to include all mileages.
+          schema:
+            type: integer
+            minimum: 0
         - name: dealer
           in: query
           description: Filter by dealer ID
@@ -92,7 +98,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/MarketplaceVehicleListResponse'
         '400':
-          $ref: '#/components/responses/NotFound'
+          $ref: '#/components/responses/BadRequest'
 
   /api/marketplace/vehicles/{listingId}:
     get:
@@ -149,6 +155,12 @@ paths:
 
 components:
   responses:
+    BadRequest:
+      description: Bad request — invalid query parameter value
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/MarketplaceErrorResponse'
     NotFound:
       description: Not found
       content:

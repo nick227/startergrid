@@ -1,7 +1,7 @@
 # Handoff Document — Auto Dealer Sales Portal
 
-**Updated:** 2026-06-05  
-**State:** v4.2.1 · Vehicle detail panel + marketplace preview hardening  
+**Updated:** 2026-06-06  
+**State:** v4.2.1 · Marketplace Index Quality — hardened query layer, boundary guardrails, 861 tests  
 **Branch:** `main`
 
 ---
@@ -12,8 +12,8 @@ A sync engine that owns dealer inventory truth, ingress, platform readiness, pub
 
 Two frontends consume different API surfaces:
 
-- **Operator portal** (`apps/web/`) — inventory, ingress, accounts, publish/sync, **movement benchmarks in workflow** (Inventory primary; Sync context; Insights reference). Uses the generated OpenAPI SDK.
-- **Consumer marketplace** (`apps/marketplace/`, not built) — multi-dealer browse/search. Reads curated marketplace index APIs only. Must not couple to sync-engine internals (queues, account states, operator workflow).
+- **Operator portal** (`apps/web/`) — inventory, ingress, accounts, publish/sync, **movement benchmarks in workflow** (Inventory primary; Sync context; Insights reference). Uses the generated operator OpenAPI SDK (`@auto-dealer/api-client`).
+- **Consumer marketplace** (`apps/marketplace/`) — multi-dealer browse/search. Reads curated marketplace index APIs only; imports `@dealer-marketplace/client` exclusively. Must not couple to sync-engine internals (queues, account states, operator workflow).
 
 CLI scripts remain available for all sync-engine operations.
 
@@ -22,11 +22,11 @@ CLI scripts remain available for all sync-engine operations.
 ## Application Architecture
 
 ```
-apps/web              Operator portal — generated OpenAPI SDK
-apps/marketplace      Consumer multi-dealer app (planned) — marketplace index APIs only
+apps/web              Operator portal — generated operator OpenAPI SDK (@auto-dealer/api-client)
+apps/marketplace      Consumer multi-dealer app — @dealer-marketplace/client only; no operator coupling
 src/                  Sync engine + core DB truth
   server/routes/
-    marketplace-ingest.ts   Third-party contract: sync dispatches marketplace-ready inventory here
+    marketplace.ts    Public consumer browse API — no auth; eligibility filter applied at query time
 ```
 
 **Source of truth (sync engine owns):** inventory, ingress, platform readiness, platform dispatch, performance cache.
@@ -91,6 +91,97 @@ Cached movement benchmarks answer: *Is this vehicle moving faster or slower than
 - `marketplacePreview.ts` + vitest UI tests enforce no VIN/readiness/movement/performance in consumer preview text.
 - `composeInventoryList` — readiness → search → movement → sort; movement chip counts scoped to readiness + search.
 - `npm run test --prefix apps/web` — marketplace isolation + filter composition tests.
+
+---
+
+## Marketplace API (v4.2.1)
+
+Public read-only consumer vehicle browse. Entirely separate from the operator API surface.
+
+**OpenAPI spec:** `openapi/openapi-marketplace.yaml` — isolated from `openapi/openapi.yaml`. Validated independently with `npm run openapi:validate:marketplace`.
+
+**Generated client:** `packages/marketplace-client/` — regenerate with `npm run marketplace:client:generate`. Consumer app imports `@dealer-marketplace/client` exclusively.
+
+### Routes (all `x-route-classification: public`, no auth required)
+
+| Method | Path | Purpose |
+|--------|------|---------|
+| GET | `/api/marketplace/vehicles` | Paginated browse. Supports `?make=&model=&condition=&minPrice=&maxPrice=&maxMileage=&dealer=&page=&pageSize=` |
+| GET | `/api/marketplace/vehicles/:listingId` | Single vehicle detail. 404 if sold, removed, or absent. |
+| GET | `/api/marketplace/dealers/:dealerId` | Dealer storefront — all eligible vehicles for that dealer. |
+
+### Eligibility rule
+
+A vehicle is marketplace-eligible when all three conditions hold at query time:
+- `soldAt IS NULL`
+- `removedAt IS NULL`
+- `priceCents > 0`
+
+No readiness check, no dealer status check at this layer. Eligibility is a WHERE clause filter — not a stored flag.
+
+### Public-safe fields (MarketplaceVehicleCard)
+
+| Field | Type | Notes |
+|-------|------|-------|
+| `listingId` | `string` | Opaque stable ID — not the VIN |
+| `stockNumber` | `string` | |
+| `year` | `number` | |
+| `make` | `string` | |
+| `model` | `string` | |
+| `trim` | `string \| null` | |
+| `condition` | `NEW \| USED \| CPO` | |
+| `priceCents` | `number` | |
+| `mileage` | `number` | |
+| `exteriorColor` | `string \| null` | |
+| `mediaUrls` | `string[]` | First 8 images by sort order |
+| `dealerId` | `string` | |
+| `dealerName` | `string` | `dbaName ?? legalName` |
+| `dealerCity` | `string \| null` | |
+| `dealerState` | `string \| null` | |
+| `listingUrl` | `string` | Relative path to consumer listing page |
+| `listedAt` | `string` | ISO 8601 |
+
+### Forbidden / private fields
+
+The following must never appear in any marketplace response. Enforcement: `VEHICLE_CARD_SELECT` and `VEHICLE_DETAIL_SELECT` in `marketplaceQueryService.ts` use explicit Prisma `select` — VIN and all operator fields are **never fetched from the database**.
+
+| Field / relation | Reason |
+|-----------------|--------|
+| `vin` | PII risk — not needed for consumer browse |
+| `syncEvents`, `publishQueue` | Dispatch internals |
+| `performanceCache`, `movementSignal`, `avgComparableDays` | Operator analytics — competitive timing data |
+| `platformAccounts`, `applications` | Account management state |
+| `subscription` | Billing data |
+| `credentialRefs` | API security credentials |
+| `readinessRuns`, `generatedArtifacts` | Internal validation artifacts |
+| `notifications` | Internal operator comms |
+| `syncPolicies`, `leadCaptureUrl` | Operator workflow config |
+| `interiorColor`, `bodyStyle`, `drivetrain`, `fuelType`, `transmission`, `options`, `starCore` | Internal vehicle fields not part of public card |
+
+### Filters (applied as Prisma WHERE — never client-side)
+
+| Filter | Query param | Notes |
+|--------|-------------|-------|
+| Make | `make` | Exact match |
+| Model | `model` | Exact match |
+| Condition | `condition` | `NEW`, `USED`, or `CPO` |
+| Min price (cents) | `minPrice` | Inclusive. Negative values ignored. `priceCents > 0` eligibility always applied. |
+| Max price (cents) | `maxPrice` | Inclusive |
+| Max mileage | `maxMileage` | Inclusive. Negative values ignored. |
+| Dealer | `dealer` | Filter by dealership ID |
+| Page | `page` | Default 1; min 1 |
+| Page size | `pageSize` | Default 24; max 100 |
+
+### Stable sort
+
+`ORDER BY createdAt DESC, id ASC` — the `id` tie-breaker makes pagination deterministic when multiple vehicles share the same `createdAt` timestamp.
+
+### Boundary guardrails
+
+Two enforced layers prevent `apps/marketplace` from coupling to operator internals:
+
+1. **Import scanner** (`scripts/check-marketplace-boundary.js`) — scans all `.ts/.tsx` files in `apps/marketplace/src/`; exits non-zero if any import matches `@auto-dealer/api-client`, root backend, or backend source paths. Run: `npm run marketplace:boundary:check`.
+2. **TypeScript type assertions** (`apps/marketplace/src/lib/marketplace-boundary.check.ts`) — compile-time checks that `MarketplaceVehicleCard` does not contain forbidden fields. Caught by `tsc --noEmit` in the marketplace typecheck.
 
 ---
 
@@ -164,7 +255,7 @@ src/
     poc/                      pocGreen, pocPortalLifecycle, pocRiskMatrix
     server.ts                 Fastify entry point (port 3000)
 
-  tests/                      node:test suite — 769 tests, all pure (no DB)
+  tests/                      node:test suite — 861 tests, all pure (no DB)
 
 apps/
   web/                        Operator portal (Vite + React + Tailwind)
@@ -172,13 +263,21 @@ apps/
     src/pages/InsightsPage.tsx          Performance Insights tab — summary tiles, vehicle table, platform cards
     src/components/sync/
       PerformanceInsightStrip.tsx       Movement signal + stale risk strip on Inventory and Sync pages
-  marketplace/                Consumer multi-dealer app (not built yet)
+  marketplace/                Consumer multi-dealer app (Vite + React + Tailwind)
+                              Dev: npm run marketplace:dev
+    src/pages/VehicleListPage.tsx       Paginated browse — make/model/condition filters
+    src/pages/VehicleDetailPage.tsx     Single vehicle detail + image gallery
+    src/pages/DealerDetailPage.tsx      Dealer storefront index
+    src/lib/api.ts                      API wrapper — imports only @dealer-marketplace/client
+    src/lib/marketplace-boundary.check.ts  Compile-time field exclusion assertions
 
 openapi/
-  openapi.yaml                API contract — source of truth for HTTP surface
+  openapi.yaml                Operator API contract — source of truth for operator HTTP surface
+  openapi-marketplace.yaml    Marketplace API contract — isolated; no operator schemas or auth
 
 packages/
-  api-client/                 Generated SDK (`npm run client:generate`)
+  api-client/                 Generated operator SDK (`npm run client:generate`)
+  marketplace-client/         Generated marketplace SDK (`npm run marketplace:client:generate`)
 
 docs/                         Design, planning, and handoff documents
 exports/                      Generated feed artifacts — gitignored
@@ -250,9 +349,14 @@ Run all of these after any change. None may fail before shipping.
 
 ```bash
 # Core
-npm test                              # 769 tests, 0 failing
+npm test                              # 861 tests, 0 failing (backend + web)
 npm run smoke:test                    # 6/6 system checks (DB, profiles, typecheck)
 npm run typecheck                     # TypeScript, no emit
+
+# Marketplace
+npm run marketplace:boundary:check    # 0 forbidden imports in apps/marketplace/src/
+npm run openapi:validate:marketplace  # marketplace spec valid
+npm run marketplace:build             # client generate + Vite build
 
 # Validation
 npm run poc:green                     # 18/18 platforms GREEN (in-memory)
@@ -282,7 +386,7 @@ npm run dealer:export -- <id>
 | `db:push` | Sync schema to MySQL (safe, additive) |
 | `db:seed` | Seed platform profiles + pristine demo dealer |
 | `db:reset` | Force-reset DB + re-seed (destructive) |
-| `test` | Build + run all 409 tests |
+| `test` | Build + run all 861 tests (backend + web) |
 | `typecheck` | TypeScript check, no emit |
 | `smoke:test` | DB connectivity, profile count, typecheck, validate:pristine |
 | `poc:green` | 18/18 GREEN in-memory |
@@ -346,6 +450,16 @@ VITE_DEV_OPERATOR_ID=dev-operator
 | POST | `/api/dealers/:id/performance/compute` | Trigger manual cache recomputation |
 
 All publish endpoints return `nextRecommendedAction` — one of: `fix_blocked_vehicles`, `review_approvals`, `run_scheduler`, `resolve_partner_requirement`, `resolve_account_requirement`, `no_action`.
+
+### Marketplace routes (public — no auth)
+
+Documented in `openapi/openapi-marketplace.yaml`. Client in `packages/marketplace-client/`.
+
+| Method | Path | Purpose |
+|--------|------|---------|
+| GET | `/api/marketplace/vehicles` | Paginated browse with filters (see Marketplace API section) |
+| GET | `/api/marketplace/vehicles/:listingId` | Single vehicle detail |
+| GET | `/api/marketplace/dealers/:dealerId` | Dealer storefront index |
 
 ---
 
@@ -523,7 +637,7 @@ These rules are enforced in tests. Any label change must pass the language contr
 
 ## What's Not Built Yet
 
-1. **Internal marketplace loop** — `apps/marketplace/` consumer app, marketplace index read APIs, real HTTP dispatch to ingest endpoint, `MarketplaceListing` projection. Route and ingest contract defined in `docs/plans/marketplace-index-contract.md`.
+1. **Marketplace publish-pipeline integration** — real HTTP dispatch from the sync engine to a `marketplace` ingest endpoint; `MarketplaceListing` projection table for pre-projected rows at scale. The consumer app (`apps/marketplace/`) and the read-only API are built and boundary-hardened. Contract: `docs/plans/marketplace-index-contract.md`.
 2. **Production auth** — dev operator header only; no login, sessions, or dealer/admin role model.
 3. **Sandbox / production API calls** — all `SubmissionAttempt` rows are MOCK.
 4. **Background scheduler daemon** — sync runs on-demand via CLI/API.

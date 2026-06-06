@@ -9,8 +9,10 @@
 //   • raw lead data
 //   • internal operator notes
 //
-// Every query function returns typed shapes that contain only marketplace-safe fields.
-// Tests in src/tests/marketplaceContract.test.ts enforce these exclusions.
+// Enforcement: VEHICLE_CARD_SELECT and VEHICLE_DETAIL_SELECT use explicit Prisma
+// select objects — only the listed fields are fetched from the DB. VIN is never
+// selected. Tests in src/tests/marketplaceContract.test.ts and
+// src/tests/marketplaceQueryFilters.test.ts enforce shape and WHERE correctness.
 
 import type { PrismaClient, Prisma } from '@prisma/client';
 
@@ -69,14 +71,15 @@ export type MarketplaceVehicleListResponse = {
 };
 
 export type MarketplaceListFilters = {
-  make?:     string;
-  model?:    string;
-  condition?: string;
-  minPrice?: number;
-  maxPrice?: number;
-  dealer?:   string;
-  page?:     number;
-  pageSize?: number;
+  make?:       string;
+  model?:      string;
+  condition?:  string;
+  minPrice?:   number;
+  maxPrice?:   number;
+  maxMileage?: number;
+  dealer?:     string;
+  page?:       number;
+  pageSize?:   number;
 };
 
 // ── Internal DB row types ─────────────────────────────────────────────────────
@@ -129,7 +132,7 @@ function buildListingUrl(dealerId: string, stockNumber: string): string {
   return `/marketplace/dealers/${dealerId}/${encodeURIComponent(stockNumber)}`;
 }
 
-// ── Shape function ────────────────────────────────────────────────────────────
+// ── Shape functions ───────────────────────────────────────────────────────────
 
 function shapeCard(row: DbVehicleRow): MarketplaceVehicleCard {
   const addr = extractAddress(row.dealership.rooftopAddress);
@@ -169,23 +172,64 @@ function shapeDetail(row: DbVehicleRow): MarketplaceVehicleDetail {
   };
 }
 
-// ── Dealership select fields ──────────────────────────────────────────────────
-// Used in all queries to ensure we never accidentally pull operator-only fields.
+// ── Prisma select constants ───────────────────────────────────────────────────
+// Explicit field lists prevent VIN and operator fields from being fetched at all.
+// Never add: vin, soldAt, removedAt, updatedAt, interiorColor, bodyStyle,
+//            drivetrain, fuelType, transmission, options, starCore,
+//            leads, updates, queueItems, syncEvents, performanceCache.
 
-const DEALER_SELECT = {
+const DEALER_SELECT: Prisma.DealershipProfileSelect = {
   id:             true,
   legalName:      true,
   dbaName:        true,
   rooftopAddress: true,
   websiteUrl:     true,
-} as const;
-
-const DEALER_ONLY_SELECT = {
-  ...DEALER_SELECT,
   // EXCLUDED: subscription, applications, platformAccounts, syncPolicies,
   //           publishQueue, syncRuns, syncEvents, notifications, credentialRefs
-  // (Prisma does not select relations unless you ask — this comment is the contract.)
-} as const;
+};
+
+// Card select — includes media limited to MAX_CARD_IMAGES.
+const VEHICLE_CARD_SELECT: Prisma.VehicleSelect = {
+  id:            true,
+  dealershipId:  true,
+  stockNumber:   true,
+  year:          true,
+  make:          true,
+  model:         true,
+  trim:          true,
+  condition:     true,
+  priceCents:    true,
+  mileage:       true,
+  exteriorColor: true,
+  createdAt:     true,
+  media: {
+    select:  { url: true, sortOrder: true },
+    orderBy: { sortOrder: 'asc' },
+    take:    MAX_CARD_IMAGES,
+  },
+  dealership: { select: DEALER_SELECT },
+};
+
+// Detail select — all media, no take limit.
+const VEHICLE_DETAIL_SELECT: Prisma.VehicleSelect = {
+  id:            true,
+  dealershipId:  true,
+  stockNumber:   true,
+  year:          true,
+  make:          true,
+  model:         true,
+  trim:          true,
+  condition:     true,
+  priceCents:    true,
+  mileage:       true,
+  exteriorColor: true,
+  createdAt:     true,
+  media: {
+    select:  { url: true, sortOrder: true },
+    orderBy: { sortOrder: 'asc' },
+  },
+  dealership: { select: DEALER_SELECT },
+};
 
 // ── Query functions ───────────────────────────────────────────────────────────
 
@@ -196,32 +240,37 @@ export async function listMarketplaceVehicles(
   const page     = Math.max(1, filters.page     ?? 1);
   const pageSize = Math.min(100, Math.max(1, filters.pageSize ?? 24));
 
+  // Price filter: always preserve priceCents > 0 (eligibility rule).
+  // When caller provides minPrice > 0, gte is the effective lower bound.
+  // When caller provides minPrice = 0 or omits it, gt: 0 is the floor.
+  const priceFilter: Prisma.IntFilter<'Vehicle'> = { gt: 0 };
+  if (filters.minPrice != null && filters.minPrice > 0) priceFilter.gte = filters.minPrice;
+  if (filters.maxPrice != null) priceFilter.lte = filters.maxPrice;
+
   const where: Prisma.VehicleWhereInput = {
     soldAt:    null,
     removedAt: null,
-    priceCents: { gt: 0 },
+    priceCents: priceFilter,
   };
 
   if (filters.make)      where.make  = filters.make;
   if (filters.model)     where.model = filters.model;
   if (filters.condition) where.condition    = filters.condition;
   if (filters.dealer)    where.dealershipId = filters.dealer;
-  if (filters.minPrice != null || filters.maxPrice != null) {
-    const priceFilter: Prisma.IntFilter = {};
-    if (filters.minPrice != null) priceFilter.gte = filters.minPrice;
-    if (filters.maxPrice != null) priceFilter.lte = filters.maxPrice;
-    where.priceCents = priceFilter;
-  }
+  if (filters.maxMileage != null) where.mileage = { lte: filters.maxMileage };
+
+  // Stable sort: primary = newest first; secondary = id for deterministic tie-breaking.
+  const orderBy: Prisma.VehicleOrderByWithRelationInput[] = [
+    { createdAt: 'desc' },
+    { id:        'asc'  },
+  ];
 
   const [total, rows] = await Promise.all([
     prisma.vehicle.count({ where }),
     prisma.vehicle.findMany({
       where,
-      include: {
-        media:      { orderBy: { sortOrder: 'asc' }, take: MAX_CARD_IMAGES },
-        dealership: { select: DEALER_SELECT },
-      },
-      orderBy: { createdAt: 'desc' },
+      select:  VEHICLE_CARD_SELECT,
+      orderBy,
       skip:    (page - 1) * pageSize,
       take:    pageSize,
     }),
@@ -241,11 +290,8 @@ export async function getMarketplaceVehicle(
   listingId: string,
 ): Promise<MarketplaceVehicleDetail | null> {
   const row = await prisma.vehicle.findFirst({
-    where: { id: listingId, soldAt: null, removedAt: null, priceCents: { gt: 0 } },
-    include: {
-      media:      { orderBy: { sortOrder: 'asc' } },
-      dealership: { select: DEALER_SELECT },
-    },
+    where:  { id: listingId, soldAt: null, removedAt: null, priceCents: { gt: 0 } },
+    select: VEHICLE_DETAIL_SELECT,
   });
   return row ? shapeDetail(row as unknown as DbVehicleRow) : null;
 }
@@ -256,24 +302,21 @@ export async function getMarketplaceDealerIndex(
 ): Promise<MarketplaceDealerIndex | null> {
   const dealer = await prisma.dealershipProfile.findUnique({
     where:  { id: dealerId },
-    select: DEALER_ONLY_SELECT,
+    select: DEALER_SELECT,
   });
   if (!dealer) return null;
 
   const rows = await prisma.vehicle.findMany({
-    where:   { dealershipId: dealerId, soldAt: null, removedAt: null, priceCents: { gt: 0 } },
-    include: {
-      media:      { orderBy: { sortOrder: 'asc' }, take: MAX_CARD_IMAGES },
-      dealership: { select: DEALER_SELECT },
-    },
-    orderBy: { createdAt: 'desc' },
+    where: { dealershipId: dealerId, soldAt: null, removedAt: null, priceCents: { gt: 0 } },
+    select:  VEHICLE_CARD_SELECT,
+    orderBy: [{ createdAt: 'desc' }, { id: 'asc' }],
   });
 
   const addr = extractAddress(dealer.rooftopAddress);
 
   return {
     dealerId:   dealer.id,
-    dealerName: dealerDisplayName(dealer as DbDealership),
+    dealerName: dealerDisplayName(dealer as unknown as DbDealership),
     city:       addr.city,
     state:      addr.state,
     websiteUrl: dealer.websiteUrl,
