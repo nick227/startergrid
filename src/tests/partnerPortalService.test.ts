@@ -36,12 +36,20 @@ describe('mock portal response coverage', () => {
 });
 
 describe('simulatePortalInteraction — status transitions', () => {
-  it('PORTAL_ACCEPTED transitions to PLATFORM_REVIEWING for marketplace platforms', () => {
-    const marketplaces = platformProfiles.filter(p => p.kind === 'MARKETPLACE');
+  it('PORTAL_ACCEPTED transitions to PLATFORM_REVIEWING for partner marketplace platforms', () => {
+    const marketplaces = platformProfiles.filter(
+      p => p.kind === 'MARKETPLACE' && p.integrationClass !== 'OWNED',
+    );
     for (const platform of marketplaces) {
       const result = simulatePortalInteraction(platform, 'PORTAL_ACCEPTED');
       assert.equal(result.toStatus, 'PLATFORM_REVIEWING', `${platform.slug} expected PLATFORM_REVIEWING`);
     }
+  });
+
+  it('PORTAL_ACCEPTED transitions directly to ACTIVE for owned consumer marketplace', () => {
+    const mp = platformProfiles.find(p => p.slug === 'consumer-marketplace')!;
+    const result = simulatePortalInteraction(mp, 'PORTAL_ACCEPTED');
+    assert.equal(result.toStatus, 'ACTIVE');
   });
 
   it('PORTAL_ACCEPTED transitions directly to ACTIVE for ADF/XML lead routing', () => {

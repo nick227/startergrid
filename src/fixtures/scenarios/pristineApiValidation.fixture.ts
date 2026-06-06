@@ -21,6 +21,7 @@ export const pristineApiDealership: DealershipPayload = {
   inventorySize: 64,
   desiredChannels: [
     'dealer-storefront',
+    'consumer-marketplace',
     'google-vehicle-ads',
     'meta-automotive-ads',
     'tiktok-automotive-ads',

@@ -88,10 +88,12 @@ describe('consumer-marketplace platform registry', () => {
     }
   });
 
-  it('has exactly one MARKETPLACE platform', () => {
-    const marketplacePlatforms = platformProfiles.filter(p => p.kind === 'MARKETPLACE');
-    assert.equal(marketplacePlatforms.length, 1);
-    assert.equal(marketplacePlatforms[0]?.slug, 'consumer-marketplace');
+  it('is the only OWNED MARKETPLACE platform', () => {
+    const ownedMarketplaces = platformProfiles.filter(
+      p => p.kind === 'MARKETPLACE' && p.integrationClass === 'OWNED',
+    );
+    assert.equal(ownedMarketplaces.length, 1);
+    assert.equal(ownedMarketplaces[0]?.slug, 'consumer-marketplace');
   });
 
   it('OWNED platforms now include consumer-marketplace', () => {

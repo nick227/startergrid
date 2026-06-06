@@ -55,7 +55,7 @@ export const platformProfiles: PlatformProfileSeed[] = [
     submissionMethods: ['MOCK_API'],
     sourceUrls: [],
     requiredDealershipFields: [
-      'legalName', 'rooftopAddress.city', 'rooftopAddress.state'
+      'legalName', 'rooftopAddress.city', 'rooftopAddress.state', 'primaryContact.email'
     ],
     // VIN is intentionally excluded — marketplace APIs never expose VIN.
     // Eligibility check (priceCents > 0) is enforced at query time, not in the feed artifact.

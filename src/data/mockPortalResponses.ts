@@ -694,8 +694,38 @@ const dealerStorefront: PlatformResponses = {
   )
 };
 
+const consumerMarketplace: PlatformResponses = {
+  PORTAL_ACCEPTED: r(
+    'consumer-marketplace', 'PORTAL_ACCEPTED', 201,
+    { type: 'MARKETPLACE_INDEX_REFRESHED', dealerId: 'dealer-mock-001', eligibleListings: 37, indexLive: true, leadCaptureEnabled: true, activatedAt: '2026-06-06T12:00:00.000Z' },
+    'ACTIVE', null,
+    'First-party marketplace index refreshed instantly. Eligible listings are public-safe; no partner review required.'
+  ),
+  PORTAL_REJECTED: r(
+    'consumer-marketplace', 'PORTAL_REJECTED', 400,
+    { type: 'INDEX_REFRESH_FAILED', reason: 'NO_ELIGIBLE_LISTINGS', message: 'No vehicles met marketplace eligibility (priceCents > 0, active lifecycle).' },
+    'REJECTED',
+    'Ensure at least one vehicle has a price and is active before refreshing the marketplace index.',
+    'Marketplace index refresh rejected — no eligible inventory to publish.'
+  ),
+  PORTAL_NEEDS_INFO: r(
+    'consumer-marketplace', 'PORTAL_NEEDS_INFO', 200,
+    { type: 'PROFILE_INCOMPLETE', missingFields: ['primaryContact.email', 'rooftopAddress.city'], message: 'Dealer profile is missing required fields for marketplace listing context.' },
+    'DEALER_ACTION_NEEDED',
+    'Complete the dealer profile: add primary contact email and rooftop city/state.',
+    'Marketplace index refresh held — dealer profile missing required public context fields.'
+  ),
+  PORTAL_ERROR: r(
+    'consumer-marketplace', 'PORTAL_ERROR', 500,
+    { type: 'INDEX_REFRESH_ERROR', error: 'Internal marketplace index service error', retryAfter: 'PT5M' },
+    'SUBMITTED', null,
+    'Transient marketplace index error. Retry after 5 minutes.'
+  )
+};
+
 export const mockPortalResponses: Record<string, PlatformResponses> = {
   'dealer-storefront': dealerStorefront,
+  'consumer-marketplace': consumerMarketplace,
   'google-vehicle-ads': googleVehicleAds,
   'meta-automotive-ads': metaAutomotiveAds,
   'tiktok-automotive-ads': tiktokAutomotiveAds,
