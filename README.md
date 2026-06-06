@@ -158,12 +158,14 @@ npm run demo:reset               exits 0
 - Vehicle price/photo/sold/removed updates
 - Publish prepare, status, history, queue, auto-sync, platform accounts
 - Platform account read/update per slug
-- Ingress feed sources, source check, run history
+- Ingress feed sources, source check, run history, **portal JSON ingest with snapshot dry-run**
 
 *Portal (`apps/web/`, port 5173) — dealer + admin roles*
 - Dealer picker with search
 - Sync dashboard — readiness hero, platform list, sync history, movement context, manual benchmark refresh
-- Inventory — CSV import, **Days / Signal** column (`12 days · Similar avg 19 · Fast`), row expand with comparable group + observed assists
+- Inventory — CSV import, **Days / Signal** column, row expand with movement + lifecycle history
+- **Lifecycle filters** (active / sold / removed / all), **snapshot review**, **JSON/API ingest panel** (v4.4–v4.6)
+- **Benchmark freshness** states + refresh on Inventory and Sync
 - Platform accounts — list, filter, inline edit (state, account ID, rep, next action)
 - Knowledge base catalog + in-app doc reader (client-facing articles)
 - Insights tab — reference summary only (reads cached benchmarks; refresh is explicit)
