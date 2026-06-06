@@ -6,6 +6,7 @@ import {
   isComparable,
   computeDaysOnline,
   platformAssistLabel,
+  benchmarkLabel,
   median,
 } from '../services/performance/performanceMath.js';
 
@@ -280,6 +281,39 @@ describe('platformAssistLabel', () => {
     for (const c of ['INSUFFICIENT', 'LOW', 'MEDIUM', 'HIGH'] as const) {
       assert.ok(!platformAssistLabel(c).includes('sold'), `"${c}" label must not say "sold"`);
     }
+  });
+});
+
+// ── benchmarkLabel ────────────────────────────────────────────────────────────
+
+describe('benchmarkLabel', () => {
+  it('returns "not enough comparable data" for INSUFFICIENT confidence', () => {
+    assert.equal(benchmarkLabel('INSUFFICIENT'), 'not enough comparable data');
+  });
+
+  it('returns "limited comparable data" for LOW confidence', () => {
+    assert.equal(benchmarkLabel('LOW'), 'limited comparable data');
+  });
+
+  it('returns "comparable benchmark" for MEDIUM confidence', () => {
+    assert.equal(benchmarkLabel('MEDIUM'), 'comparable benchmark');
+  });
+
+  it('returns "strong comparable benchmark" for HIGH confidence', () => {
+    assert.equal(benchmarkLabel('HIGH'), 'strong comparable benchmark');
+  });
+
+  it('label does not imply predictive power (no "will" or "predicts")', () => {
+    for (const c of ['INSUFFICIENT', 'LOW', 'MEDIUM', 'HIGH'] as const) {
+      const label = benchmarkLabel(c);
+      assert.ok(!label.includes('will'), `"${c}" label must not say "will"`);
+      assert.ok(!label.includes('predict'), `"${c}" label must not say "predict"`);
+      assert.ok(!label.includes('sold'), `"${c}" label must not say "sold"`);
+    }
+  });
+
+  it('INSUFFICIENT label explicitly says "not enough" — conservative framing', () => {
+    assert.ok(benchmarkLabel('INSUFFICIENT').includes('not enough'));
   });
 });
 

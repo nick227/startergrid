@@ -205,6 +205,91 @@ describe('buildPlatformRowsFromEvents', () => {
   });
 });
 
+// ── buildVehiclePerformanceRows — benchmark fields ────────────────────────────
+
+describe('buildVehiclePerformanceRows — medianComparableDays and benchmarkConfidence', () => {
+  it('returns null medianComparableDays and INSUFFICIENT confidence when no comparables', () => {
+    const rows = buildVehiclePerformanceRows([BASE_VEHICLE], [], NOW);
+    assert.equal(rows[0]!.medianComparableDays, null);
+    assert.equal(rows[0]!.benchmarkConfidence, 'INSUFFICIENT');
+  });
+
+  it('returns INSUFFICIENT confidence with 2 sold comparables (threshold is < 3)', () => {
+    const comp1: VehiclePerfInput = { ...BASE_VEHICLE, id: 'v2', stockNumber: 'S002', soldAt: days(10) };
+    const comp2: VehiclePerfInput = { ...BASE_VEHICLE, id: 'v3', stockNumber: 'S003', soldAt: days(20) };
+    const rows = buildVehiclePerformanceRows([BASE_VEHICLE, comp1, comp2], [], NOW);
+    const active = rows.find(r => r.vehicleId === 'v1')!;
+    assert.equal(active.benchmarkConfidence, 'INSUFFICIENT');
+    assert.equal(active.medianComparableDays, 15);  // median of [10, 20]
+  });
+
+  it('returns LOW confidence with exactly 3 sold comparables', () => {
+    const comps: VehiclePerfInput[] = [
+      { ...BASE_VEHICLE, id: 'v2', stockNumber: 'S002', soldAt: days(10) },
+      { ...BASE_VEHICLE, id: 'v3', stockNumber: 'S003', soldAt: days(20) },
+      { ...BASE_VEHICLE, id: 'v4', stockNumber: 'S004', soldAt: days(30) },
+    ];
+    const rows = buildVehiclePerformanceRows([BASE_VEHICLE, ...comps], [], NOW);
+    const active = rows.find(r => r.vehicleId === 'v1')!;
+    assert.equal(active.benchmarkConfidence, 'LOW');
+    assert.equal(active.comparableCount, 3);
+  });
+
+  it('medianComparableDays differs from avgComparableDays on skewed samples', () => {
+    // 3 comparables: 5, 10, 90 days → avg = 35, median = 10
+    const comps: VehiclePerfInput[] = [
+      { ...BASE_VEHICLE, id: 'v2', stockNumber: 'S002', createdAt: days(40), soldAt: days(35) },   // 5 days
+      { ...BASE_VEHICLE, id: 'v3', stockNumber: 'S003', createdAt: days(50), soldAt: days(40) },   // 10 days
+      { ...BASE_VEHICLE, id: 'v4', stockNumber: 'S004', createdAt: days(120), soldAt: days(30) },  // 90 days
+    ];
+    const rows = buildVehiclePerformanceRows([BASE_VEHICLE, ...comps], [], NOW);
+    const active = rows.find(r => r.vehicleId === 'v1')!;
+    assert.equal(active.comparableCount, 3);
+    assert.ok(Math.abs(active.avgComparableDays! - 35) < 0.01, `avg should be ~35, got ${active.avgComparableDays}`);
+    assert.equal(active.medianComparableDays, 10);
+  });
+
+  it('medianComparableDays is set even for INSUFFICIENT benchmark (1 comparable)', () => {
+    const comp: VehiclePerfInput = { ...BASE_VEHICLE, id: 'v2', stockNumber: 'S002', createdAt: days(25), soldAt: days(15) };
+    const rows = buildVehiclePerformanceRows([BASE_VEHICLE, comp], [], NOW);
+    const active = rows.find(r => r.vehicleId === 'v1')!;
+    assert.equal(active.comparableCount, 1);
+    assert.equal(active.medianComparableDays, 10);  // single comparable: 10 days
+    assert.equal(active.benchmarkConfidence, 'INSUFFICIENT');
+  });
+
+  it('benchmarkConfidence is MEDIUM with 10 sold comparables', () => {
+    const comps: VehiclePerfInput[] = Array.from({ length: 10 }, (_, i) => ({
+      ...BASE_VEHICLE, id: `v${i + 2}`, stockNumber: `S00${i + 2}`, soldAt: days(5 + i),
+    }));
+    const rows = buildVehiclePerformanceRows([BASE_VEHICLE, ...comps], [], NOW);
+    const active = rows.find(r => r.vehicleId === 'v1')!;
+    assert.equal(active.benchmarkConfidence, 'MEDIUM');
+    assert.equal(active.comparableCount, 10);
+  });
+
+  it('benchmarkConfidence is HIGH with 30+ sold comparables', () => {
+    const comps: VehiclePerfInput[] = Array.from({ length: 30 }, (_, i) => ({
+      ...BASE_VEHICLE, id: `v${i + 2}`, stockNumber: `S0${String(i + 2).padStart(2, '0')}`, soldAt: days(5 + i),
+    }));
+    const rows = buildVehiclePerformanceRows([BASE_VEHICLE, ...comps], [], NOW);
+    const active = rows.find(r => r.vehicleId === 'v1')!;
+    assert.equal(active.benchmarkConfidence, 'HIGH');
+    assert.equal(active.comparableCount, 30);
+  });
+
+  it('sold vehicles are excluded from active rows but still count as comparables for others', () => {
+    const soldComp: VehiclePerfInput = { ...BASE_VEHICLE, id: 'v2', stockNumber: 'S002', soldAt: days(20) };
+    const comp2: VehiclePerfInput    = { ...BASE_VEHICLE, id: 'v3', stockNumber: 'S003', soldAt: days(10) };
+    const comp3: VehiclePerfInput    = { ...BASE_VEHICLE, id: 'v4', stockNumber: 'S004', soldAt: days(30) };
+    const rows = buildVehiclePerformanceRows([BASE_VEHICLE, soldComp, comp2, comp3], [], NOW);
+    assert.equal(rows.length, 1);  // only BASE_VEHICLE is active
+    assert.equal(rows[0]!.vehicleId, 'v1');
+    assert.equal(rows[0]!.comparableCount, 3);
+    assert.equal(rows[0]!.benchmarkConfidence, 'LOW');
+  });
+});
+
 // ── buildVehiclePerformanceRows — LOW_DATA edge cases ────────────────────────
 
 describe('buildVehiclePerformanceRows — stale and low-data edge cases', () => {

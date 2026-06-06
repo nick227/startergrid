@@ -7,25 +7,28 @@
 //   observedAssistLabel is produced by platformAssistLabel() — never "sold by"
 
 import type { PrismaClient } from '@prisma/client';
-import { platformAssistLabel, type Confidence } from './performanceMath.js';
+import { benchmarkLabel, platformAssistLabel, type Confidence } from './performanceMath.js';
 
 // ── Public types ──────────────────────────────────────────────────────────────
 
 export type VehiclePerformanceItem = {
-  vehicleId:         string;
-  stockNumber:       string;
-  year:              number;
-  make:              string;
-  model:             string;
-  condition:         string;
-  priceCents:        number;
-  daysOnline:        number;
-  firstListedAt:     string;
-  comparableCount:   number;
-  avgComparableDays: number | null;
-  movementSignal:    string;
-  platformAssists:   Record<string, { leads: number }>;
-  computedAt:        string;
+  vehicleId:            string;
+  stockNumber:          string;
+  year:                 number;
+  make:                 string;
+  model:                string;
+  condition:            string;
+  priceCents:           number;
+  daysOnline:           number;
+  firstListedAt:        string;
+  comparableCount:      number;
+  avgComparableDays:    number | null;
+  medianComparableDays: number | null;
+  benchmarkConfidence:  string;
+  benchmarkLabel:       string;
+  movementSignal:       string;
+  platformAssists:      Record<string, { leads: number }>;
+  computedAt:           string;
 };
 
 export type PlatformPerformanceItem = {
@@ -56,20 +59,22 @@ export type PerformanceSummaryView = {
 // ── Shape helpers ─────────────────────────────────────────────────────────────
 
 type CacheRow = {
-  vehicleId:           string;
-  stockNumber:         string;
-  year:                number;
-  make:                string;
-  model:               string;
-  condition:           string;
-  priceCents:          number;
-  daysOnline:          number;
-  firstListedAt:       Date;
-  comparableCount:     number;
-  avgComparableDays:   number | null;
-  movementSignal:      string;
-  platformAssistsJson: unknown;
-  computedAt:          Date;
+  vehicleId:            string;
+  stockNumber:          string;
+  year:                 number;
+  make:                 string;
+  model:                string;
+  condition:            string;
+  priceCents:           number;
+  daysOnline:           number;
+  firstListedAt:        Date;
+  comparableCount:      number;
+  avgComparableDays:    number | null;
+  medianComparableDays: number | null;
+  benchmarkConfidence:  string;
+  movementSignal:       string;
+  platformAssistsJson:  unknown;
+  computedAt:           Date;
 };
 
 type SummaryRow = {
@@ -86,21 +91,25 @@ type SummaryRow = {
 };
 
 function shapeVehicle(v: CacheRow): VehiclePerformanceItem {
+  const conf = v.benchmarkConfidence as Confidence;
   return {
-    vehicleId:         v.vehicleId,
-    stockNumber:       v.stockNumber,
-    year:              v.year,
-    make:              v.make,
-    model:             v.model,
-    condition:         v.condition,
-    priceCents:        v.priceCents,
-    daysOnline:        v.daysOnline,
-    firstListedAt:     v.firstListedAt.toISOString(),
-    comparableCount:   v.comparableCount,
-    avgComparableDays: v.avgComparableDays,
-    movementSignal:    v.movementSignal,
-    platformAssists:   (v.platformAssistsJson ?? {}) as Record<string, { leads: number }>,
-    computedAt:        v.computedAt.toISOString(),
+    vehicleId:            v.vehicleId,
+    stockNumber:          v.stockNumber,
+    year:                 v.year,
+    make:                 v.make,
+    model:                v.model,
+    condition:            v.condition,
+    priceCents:           v.priceCents,
+    daysOnline:           v.daysOnline,
+    firstListedAt:        v.firstListedAt.toISOString(),
+    comparableCount:      v.comparableCount,
+    avgComparableDays:    v.avgComparableDays,
+    medianComparableDays: v.medianComparableDays,
+    benchmarkConfidence:  v.benchmarkConfidence,
+    benchmarkLabel:       benchmarkLabel(conf),
+    movementSignal:       v.movementSignal,
+    platformAssists:      (v.platformAssistsJson ?? {}) as Record<string, { leads: number }>,
+    computedAt:           v.computedAt.toISOString(),
   };
 }
 

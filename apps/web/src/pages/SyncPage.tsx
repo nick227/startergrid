@@ -1,9 +1,11 @@
 import { useMemo } from 'react';
 import type { OperatorPageBaseProps } from '@/lib/operatorPage.ts';
+import type { PlatformPerformanceItem } from '@/lib/types.ts';
 import { useSyncPageData } from '@/hooks/useSyncPageData.ts';
 import { useAsyncQuery } from '@/hooks/useAsyncQuery.ts';
-import { fetchPerformanceSummary } from '@/lib/api/sdk.ts';
+import { fetchPerformanceSummary, fetchPlatformPerformance, fetchVehiclePerformanceList } from '@/lib/api/sdk.ts';
 import { computeSyncReadiness } from '@/lib/syncPresentation.ts';
+import { countBenchmarkedVehicles, staleStockNumbers } from '@/lib/movementBenchmark.ts';
 import { OperatorPage, ErrorState, PanelSkeleton } from '@/components/operator';
 import {
   SyncHero,
@@ -21,6 +23,27 @@ export default function SyncPage({ dealerId, nav, activeTab }: Props) {
 
   // Performance summary is loaded once; recompute is user-triggered via PerformanceInsightStrip.
   const perfQuery = useAsyncQuery(() => fetchPerformanceSummary(dealerId), [dealerId]);
+  const vehiclePerfQuery = useAsyncQuery(() => fetchVehiclePerformanceList(dealerId), [dealerId]);
+  const platformPerfQuery = useAsyncQuery(() => fetchPlatformPerformance(dealerId), [dealerId]);
+
+  const platformPerfBySlug = useMemo(() => {
+    const m = new Map<string, PlatformPerformanceItem>();
+    for (const p of platformPerfQuery.data?.platforms ?? []) m.set(p.platformSlug, p);
+    return m;
+  }, [platformPerfQuery.data]);
+
+  const movementContext = useMemo(() => {
+    const summary = perfQuery.data?.summary;
+    const items = vehiclePerfQuery.data?.items ?? [];
+    if (!summary?.computedAt) return null;
+    return {
+      fastCount: summary.fastCount,
+      staleCount: summary.staleCount,
+      benchmarkedCount: countBenchmarkedVehicles(items),
+      activeCount: summary.activeCount,
+      staleStocks: staleStockNumbers(items),
+    };
+  }, [perfQuery.data, vehiclePerfQuery.data]);
 
   const statusData = status.data;
   const readiness = useMemo(
@@ -67,7 +90,11 @@ export default function SyncPage({ dealerId, nav, activeTab }: Props) {
               onFixAccounts={nav.goToAccounts}
             />
 
-            <SyncSummaryStrip readiness={readiness} />
+            <SyncSummaryStrip
+              readiness={readiness}
+              movement={movementContext}
+              onReviewInventory={nav.goToInventory}
+            />
 
             <PerformanceInsightStrip
               dealerId={dealerId}
@@ -84,6 +111,7 @@ export default function SyncPage({ dealerId, nav, activeTab }: Props) {
 
             <SyncPlatformList
               platforms={statusData.platforms}
+              platformPerfBySlug={platformPerfBySlug}
               onFixAccounts={nav.goToAccounts}
             />
 

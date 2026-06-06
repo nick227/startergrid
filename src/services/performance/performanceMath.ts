@@ -100,6 +100,17 @@ export function platformAssistLabel(confidence: Confidence): string {
   return 'strong observed assist';
 }
 
+// ── Benchmark label ───────────────────────────────────────────────────────────
+
+// Returns a conservative label describing the comparable benchmark quality.
+// Callers must not reword these labels to imply predictive power.
+export function benchmarkLabel(confidence: Confidence): string {
+  if (confidence === 'INSUFFICIENT') return 'not enough comparable data';
+  if (confidence === 'LOW') return 'limited comparable data';
+  if (confidence === 'MEDIUM') return 'comparable benchmark';
+  return 'strong comparable benchmark';
+}
+
 // ── Statistical helpers ───────────────────────────────────────────────────────
 
 // Returns the median of a numeric array. Handles both odd and even lengths.

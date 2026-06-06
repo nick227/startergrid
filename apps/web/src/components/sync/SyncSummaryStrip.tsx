@@ -1,7 +1,19 @@
 import type { SyncReadiness } from '@/lib/syncPresentation.ts';
 import { InfoLabel } from '@/components/docs';
 
-type Props = { readiness: SyncReadiness };
+export type SyncMovementContext = {
+  fastCount: number;
+  staleCount: number;
+  benchmarkedCount: number;
+  activeCount: number;
+  staleStocks: string[];
+};
+
+type Props = {
+  readiness: SyncReadiness;
+  movement?: SyncMovementContext | null;
+  onReviewInventory?: () => void;
+};
 
 type Tile = {
   label: string;
@@ -11,7 +23,7 @@ type Tile = {
   tone: string;
 };
 
-export function SyncSummaryStrip({ readiness }: Props) {
+export function SyncSummaryStrip({ readiness, movement, onReviewInventory }: Props) {
   const tiles: Tile[] = [
     {
       label: 'Cars ready',
@@ -38,7 +50,7 @@ export function SyncSummaryStrip({ readiness }: Props) {
       label: 'Platforms blocked',
       docId: 'platforms/account-states',
       value: readiness.platformsBlocked + readiness.platformsNeedYou,
-      hint: readiness.platformsNeedYou > 0 ? `${readiness.platformsNeedYou} need you` : 'need attention',
+      hint: readiness.platformsNeedYou > 0 ? `${readiness.platformsNeedYou} pending` : 'need attention',
       tone:
         readiness.platformsBlocked + readiness.platformsNeedYou > 0
           ? 'text-amber-800 bg-amber-50 border-amber-100'
@@ -46,17 +58,48 @@ export function SyncSummaryStrip({ readiness }: Props) {
     },
   ];
 
+  const showMovement =
+    movement &&
+    movement.benchmarkedCount > 0 &&
+    (movement.staleCount > 0 || movement.fastCount > 0);
+
   return (
-    <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
-      {tiles.map(t => (
-        <div key={t.label} className={`rounded-xl border px-4 py-4 ${t.tone}`}>
-          <div className="text-2xl font-bold tabular-nums leading-none">{t.value}</div>
-          <div className="text-xs font-semibold mt-1.5">
-            <InfoLabel term={t.label} docId={t.docId} />
+    <div className="space-y-2">
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
+        {tiles.map(t => (
+          <div key={t.label} className={`rounded-xl border px-4 py-4 ${t.tone}`}>
+            <div className="text-2xl font-bold tabular-nums leading-none">{t.value}</div>
+            <div className="text-xs font-semibold mt-1.5">
+              <InfoLabel term={t.label} docId={t.docId} />
+            </div>
+            <div className="text-[10px] opacity-80 mt-0.5">{t.hint}</div>
           </div>
-          <div className="text-[10px] opacity-80 mt-0.5">{t.hint}</div>
-        </div>
-      ))}
+        ))}
+      </div>
+
+      {showMovement && movement && (
+        <p className="text-xs text-slate-500 px-1">
+          <span className="font-medium text-slate-600">Movement vs similar stock · </span>
+          {movement.fastCount > 0 && `${movement.fastCount} fast`}
+          {movement.fastCount > 0 && movement.staleCount > 0 && ' · '}
+          {movement.staleCount > 0 && `${movement.staleCount} stale`}
+          {movement.staleStocks.length > 0 && (
+            <> — review {movement.staleStocks.join(', ')}</>
+          )}
+          {onReviewInventory && movement.staleCount > 0 && (
+            <>
+              {' '}
+              <button
+                type="button"
+                onClick={onReviewInventory}
+                className="font-semibold text-emerald-700 hover:underline"
+              >
+                Open inventory
+              </button>
+            </>
+          )}
+        </p>
+      )}
     </div>
   );
 }

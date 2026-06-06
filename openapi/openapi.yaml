@@ -2145,8 +2145,9 @@ components:
       type: string
       enum: [INSUFFICIENT, LOW, MEDIUM, HIGH]
       description: >
-        Based on the count of sold vehicles observed for the platform.
+        Data quality level based on sold-vehicle sample size.
         INSUFFICIENT = 0–2, LOW = 3–9, MEDIUM = 10–29, HIGH = 30+.
+        Used for both comparable vehicle benchmarks and platform performance summaries.
 
     VehiclePerformanceItem:
       type: object
@@ -2162,6 +2163,9 @@ components:
         - firstListedAt
         - comparableCount
         - avgComparableDays
+        - medianComparableDays
+        - benchmarkConfidence
+        - benchmarkLabel
         - movementSignal
         - platformAssists
         - computedAt
@@ -2189,10 +2193,26 @@ components:
         comparableCount:
           type: integer
           minimum: 0
+          description: Number of sold comparable vehicles used as the benchmark sample.
         avgComparableDays:
           type: number
           nullable: true
-          description: Null when fewer than 3 comparable sold vehicles exist.
+          description: Average days-online for sold comparables. Null when comparableCount < 3.
+        medianComparableDays:
+          type: number
+          nullable: true
+          description: Median days-online for sold comparables. More robust than average; null when comparableCount < 1.
+        benchmarkConfidence:
+          $ref: '#/components/schemas/PerformanceConfidence'
+          description: >
+            Data quality of the comparable benchmark, derived from comparableCount.
+            INSUFFICIENT = 0–2 sold comparables, LOW = 3–9, MEDIUM = 10–29, HIGH = 30+.
+        benchmarkLabel:
+          type: string
+          description: >
+            Human-readable benchmark quality: "not enough comparable data" |
+            "limited comparable data" | "comparable benchmark" | "strong comparable benchmark".
+            Derived from benchmarkConfidence. Never implies predictive power.
         movementSignal:
           $ref: '#/components/schemas/MovementSignal'
         platformAssists:

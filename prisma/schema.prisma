@@ -685,9 +685,11 @@ model VehiclePerformanceCache {
   condition         String   @db.VarChar(10)
   daysOnline        Int
   firstListedAt     DateTime
-  comparableCount   Int      @default(0)
-  avgComparableDays Float?
-  movementSignal    String   @db.VarChar(16)  // FAST|ON_TRACK|SLOW|STALE|LOW_DATA
+  comparableCount      Int      @default(0)
+  avgComparableDays    Float?
+  medianComparableDays Float?                              // median days for sold comparables
+  benchmarkConfidence  String   @db.VarChar(16) @default("INSUFFICIENT")  // INSUFFICIENT|LOW|MEDIUM|HIGH
+  movementSignal       String   @db.VarChar(16)            // FAST|ON_TRACK|SLOW|STALE|LOW_DATA
   platformAssistsJson Json?                    // { [slug]: { leads: number } }
   computedAt        DateTime @default(now())
   updatedAt         DateTime @updatedAt

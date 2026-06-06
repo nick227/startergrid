@@ -6,6 +6,7 @@ import {
   movementSignalVisual,
   type VehicleReadinessKey,
 } from '../../lib/statusRegistry.ts';
+import { MovementBenchmarkCell } from './MovementBenchmark.tsx';
 import { Badge } from '../ui/Badge.tsx';
 import type { BadgeColor } from '../ui/Badge.tsx';
 
@@ -135,16 +136,11 @@ export function buildVehicleColumns(
     ...VEHICLE_COLUMNS,
     {
       key: 'performance',
-      label: 'Days / Movement signal',
+      label: 'Days / Signal',
       render: v => {
         const perf = perfMap.get(v.stockNumber);
         if (!perf) return <span className="text-slate-300 text-xs">—</span>;
-        return (
-          <span className="inline-flex items-center gap-1.5">
-            <span className="text-xs text-slate-400 tabular-nums">{perf.daysOnline}d</span>
-            <MovementSignalBadge signal={perf.movementSignal} />
-          </span>
-        );
+        return <MovementBenchmarkCell perf={perf} />;
       },
     },
   ];

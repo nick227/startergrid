@@ -391,22 +391,23 @@ export type MovementSignal = 'FAST' | 'ON_TRACK' | 'SLOW' | 'STALE' | 'LOW_DATA'
 export type PerformanceConfidence = 'INSUFFICIENT' | 'LOW' | 'MEDIUM' | 'HIGH';
 
 export type VehiclePerformanceItem = {
-  vehicleId:         string;
-  stockNumber:       string;
-  year:              number;
-  make:              string;
-  model:             string;
-  condition:         string;
-  priceCents:        number;
-  daysOnline:        number;
-  firstListedAt:     string;
-  comparableCount:   number;
-  avgComparableDays: number | null;
-  movementSignal:    MovementSignal;
-  platformAssists:   Record<string, { leads: number }>;
-  avgVdpDwellMs:     number | null;
-  vdpSessionCount:   number;
-  computedAt:        string;
+  vehicleId:            string;
+  stockNumber:          string;
+  year:                 number;
+  make:                 string;
+  model:                string;
+  condition:            string;
+  priceCents:           number;
+  daysOnline:           number;
+  firstListedAt:        string;
+  comparableCount:      number;
+  avgComparableDays:    number | null;
+  medianComparableDays: number | null;
+  benchmarkConfidence:  PerformanceConfidence;
+  benchmarkLabel:       string;
+  movementSignal:       MovementSignal;
+  platformAssists:      Record<string, { leads: number }>;
+  computedAt:           string;
 };
 
 export type PlatformPerformanceItem = {
@@ -453,6 +454,9 @@ export type VehiclePerformanceInsight = {
   movementSignal: MovementSignal;
   comparableCount: number;
   avgComparableDays: number | null;
+  medianComparableDays: number | null;
+  benchmarkConfidence: PerformanceConfidence;
+  benchmarkLabel: string;
   platformAssists: Record<string, { leads: number }>;
 };
 

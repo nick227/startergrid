@@ -5,6 +5,7 @@ import type { OperatorPageBaseProps } from '@/lib/operatorPage.ts';
 import { useAsyncQuery } from '@/hooks/useAsyncQuery.ts';
 import { OperatorPage, SectionCard, InlineCallout, PageHeader } from '@/components/operator';
 import { EMPTY_STATE_COPY } from '@/lib/statusRegistry.ts';
+import { countBenchmarkedVehicles, staleStockNumbers } from '@/lib/movementBenchmark.ts';
 import { Banner, EmptyState } from '@/components/ui';
 import { InfoButton } from '@/components/docs';
 import { SearchField } from '@/components/ui/SearchField.tsx';
@@ -104,10 +105,20 @@ export default function InventoryPage({ dealerId, nav, activeTab }: Props) {
     SUSPICIOUS_PRICE: vehicles.filter(v => v.issues.some(i => i.path === 'priceCents')).length,
   }), [vehicles]);
 
+  const benchmarkCount = useMemo(
+    () => countBenchmarkedVehicles(perf.data?.items ?? []),
+    [perf.data],
+  );
+  const staleStocks = useMemo(
+    () => staleStockNumbers(perf.data?.items ?? []),
+    [perf.data],
+  );
+
   const handleImportCommitted = (result: CommitImportResponse) => {
     setShowImport(false);
     setImportResult(result);
     load();
+    perf.reload();
   };
 
   const isEmpty = !loading && vehicles.length === 0;
@@ -211,7 +222,18 @@ export default function InventoryPage({ dealerId, nav, activeTab }: Props) {
             {importResult.skipped > 0 && <>, <strong>{importResult.skipped}</strong> skipped</>}
             {importResult.errors > 0 && <>, <strong className="text-red-700">{importResult.errors} errors</strong></>}
             . Platforms will update automatically.
+            {benchmarkCount > 0 ? (
+              <> Benchmarks ready for <strong>{benchmarkCount}</strong> vehicle{benchmarkCount !== 1 ? 's' : ''} — check the Days / Signal column.</>
+            ) : (
+              <> Open Sync and refresh benchmarks to compare days vs similar stock.</>
+            )}
           </Banner>
+        )}
+
+        {!importResult && staleStocks.length > 0 && (
+          <InlineCallout tone="warning" title="Slower than similar stock" icon="!">
+            Review {staleStocks.join(', ')} in the Days / Signal column — price or photos may need attention.
+          </InlineCallout>
         )}
 
         {error && (

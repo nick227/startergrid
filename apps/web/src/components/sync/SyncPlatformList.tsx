@@ -1,17 +1,19 @@
-import type { PlatformPublishResult } from '@/lib/types.ts';
+import type { PlatformPublishResult, PlatformPerformanceItem } from '@/lib/types.ts';
 import {
   friendlyPlatformDetail,
   platformOutcomeMeta,
   sortPlatformsForSync,
 } from '@/lib/syncPresentation.ts';
+import { formatPlatformAssistHint } from '@/lib/movementBenchmark.ts';
 import { SectionCard } from '@/components/operator';
 
 type Props = {
   platforms: PlatformPublishResult[];
+  platformPerfBySlug?: Map<string, PlatformPerformanceItem>;
   onFixAccounts?: () => void;
 };
 
-export function SyncPlatformList({ platforms, onFixAccounts }: Props) {
+export function SyncPlatformList({ platforms, platformPerfBySlug, onFixAccounts }: Props) {
   const sorted = sortPlatformsForSync(platforms);
   const pass = sorted.filter(p => {
     const o = platformSyncOutcomeQuick(p.state);
@@ -38,7 +40,12 @@ export function SyncPlatformList({ platforms, onFixAccounts }: Props) {
     >
       <ul className="divide-y divide-slate-50">
         {sorted.map(p => (
-          <SyncPlatformRow key={p.platformSlug} platform={p} onFixAccounts={onFixAccounts} />
+          <SyncPlatformRow
+            key={p.platformSlug}
+            platform={p}
+            perf={platformPerfBySlug?.get(p.platformSlug)}
+            onFixAccounts={onFixAccounts}
+          />
         ))}
       </ul>
     </SectionCard>
@@ -53,13 +60,16 @@ function platformSyncOutcomeQuick(state: string): 'live' | 'ready' | 'other' {
 
 function SyncPlatformRow({
   platform: p,
+  perf,
   onFixAccounts,
 }: {
   platform: PlatformPublishResult;
+  perf?: PlatformPerformanceItem;
   onFixAccounts?: () => void;
 }) {
   const meta = platformOutcomeMeta(p);
   const detail = friendlyPlatformDetail(p);
+  const valueHint = perf ? formatPlatformAssistHint(perf) : null;
   const showAccounts =
     onFixAccounts &&
     (p.accountState === 'BLOCKED' ||
@@ -74,13 +84,18 @@ function SyncPlatformRow({
         meta.outcome === 'blocked' || meta.outcome === 'waiting' ? 'bg-red-50/30' : ''
       }`}
     >
-      <div className="flex items-center gap-3 min-w-0 flex-1">
-        <span
-          className={`shrink-0 px-2.5 py-1 rounded-lg text-xs font-bold border ${meta.pill}`}
-        >
-          {meta.label}
-        </span>
-        <span className="text-sm font-semibold text-slate-900 truncate">{p.platformName}</span>
+      <div className="flex flex-col min-w-0 flex-1 gap-0.5">
+        <div className="flex items-center gap-3 min-w-0">
+          <span
+            className={`shrink-0 px-2.5 py-1 rounded-lg text-xs font-bold border ${meta.pill}`}
+          >
+            {meta.label}
+          </span>
+          <span className="text-sm font-semibold text-slate-900 truncate">{p.platformName}</span>
+        </div>
+        {valueHint && (
+          <p className="text-[11px] text-slate-400 pl-0.5 truncate">{valueHint}</p>
+        )}
       </div>
       <div className="flex items-center gap-3 sm:justify-end">
         {detail && <span className="text-xs text-slate-500 truncate max-w-xs">{detail}</span>}

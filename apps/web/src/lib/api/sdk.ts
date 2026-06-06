@@ -278,6 +278,9 @@ export async function fetchPerformanceInsights(
       movementSignal: v.movementSignal,
       comparableCount: v.comparableCount,
       avgComparableDays: v.avgComparableDays,
+      medianComparableDays: v.medianComparableDays,
+      benchmarkConfidence: v.benchmarkConfidence,
+      benchmarkLabel: v.benchmarkLabel,
       platformAssists: v.platformAssists,
     })),
     platforms: platformsBody.platforms.map(p => ({

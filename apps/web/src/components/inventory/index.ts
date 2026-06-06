@@ -2,6 +2,7 @@ export { ImportModal } from './ImportModal.tsx';
 export { IngressPanel } from './IngressPanel.tsx';
 export { CleanupFilterBar } from './CleanupFilterBar.tsx';
 export { ImportBatchHistory } from './ImportBatchHistory.tsx';
+export { MovementBenchmarkCell, MovementBenchmarkExpand } from './MovementBenchmark.tsx';
 export { VehicleRowExpand } from './VehicleRowExpand.tsx';
 export { ImportStepUpload } from './ImportStepUpload.tsx';
 export { ImportStepMapping } from './ImportStepMapping.tsx';

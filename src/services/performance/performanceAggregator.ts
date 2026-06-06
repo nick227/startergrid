@@ -8,6 +8,8 @@ import {
   type MovementSignal,
 } from './performanceMath.js';
 
+export type { Confidence, MovementSignal };
+
 export type VehiclePerfInput = {
   id: string;
   stockNumber: string;
@@ -33,6 +35,8 @@ export type VehiclePerfRow = {
   firstListedAt: Date;
   comparableCount: number;
   avgComparableDays: number | null;
+  medianComparableDays: number | null;
+  benchmarkConfidence: Confidence;
   movementSignal: MovementSignal;
   platformAssistsJson: Record<string, { leads: number }>;
 };
@@ -84,9 +88,11 @@ export function buildVehiclePerformanceRows(
 
   return active.map(vehicle => {
     const compDays = soldComparables(vehicles, vehicle, now);
-    const avgComparableDays = compDays.length > 0
-      ? compDays.reduce((s, d) => s + d, 0) / compDays.length
+    const comparableCount = compDays.length;
+    const avgComparableDays = comparableCount > 0
+      ? compDays.reduce((s, d) => s + d, 0) / comparableCount
       : null;
+    const medianComparableDays = median(compDays);
     const daysOnline = computeDaysOnline(vehicle.createdAt, null, now);
 
     return {
@@ -99,9 +105,11 @@ export function buildVehiclePerformanceRows(
       condition: vehicle.condition,
       daysOnline,
       firstListedAt: vehicle.createdAt,
-      comparableCount: compDays.length,
+      comparableCount,
       avgComparableDays,
-      movementSignal: deriveMovementSignal(daysOnline, avgComparableDays, compDays.length),
+      medianComparableDays,
+      benchmarkConfidence: deriveConfidence(comparableCount),
+      movementSignal: deriveMovementSignal(daysOnline, avgComparableDays, comparableCount),
       platformAssistsJson: assists.get(vehicle.id) ?? {},
     };
   });

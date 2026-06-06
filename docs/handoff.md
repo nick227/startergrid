@@ -1,7 +1,7 @@
 # Handoff Document — Auto Dealer Sales Portal
 
 **Updated:** 2026-06-05  
-**State:** v4.1.0 · Sync engine + Operator Console + Performance Insights · 707 tests passing  
+**State:** v4.2.0 · Sync engine + Operator Console + Performance Insights · 721 tests passing  
 **Branch:** `main`
 
 ---
@@ -123,7 +123,7 @@ src/
     poc/                      pocGreen, pocPortalLifecycle, pocRiskMatrix
     server.ts                 Fastify entry point (port 3000)
 
-  tests/                      node:test suite — 707 tests, all pure (no DB)
+  tests/                      node:test suite — 721 tests, all pure (no DB)
 
 apps/
   web/                        Operator portal (Vite + React + Tailwind)
@@ -209,7 +209,7 @@ Run all of these after any change. None may fail before shipping.
 
 ```bash
 # Core
-npm test                              # 707 tests, 0 failing
+npm test                              # 721 tests, 0 failing
 npm run smoke:test                    # 6/6 system checks (DB, profiles, typecheck)
 npm run typecheck                     # TypeScript, no emit
 
@@ -343,7 +343,7 @@ PlatformProfileVersion (versioned snapshots, SHA-256 checked)
 
 **Performance cache models:**
 
-`VehiclePerformanceCache` — keyed `(dealershipId, vehicleId)`. Stores `movementSignal` (FAST | ON_TRACK | SLOW | STALE | LOW_DATA), `daysOnline`, `comparableCount`, `avgComparableDays`, and `platformAssistsJson` (per-slug lead counts). Populated by `POST /performance/compute`; read by GET endpoints. Never written by query routes.
+`VehiclePerformanceCache` — keyed `(dealershipId, vehicleId)`. Stores `movementSignal` (FAST | ON_TRACK | SLOW | STALE | LOW_DATA), `daysOnline`, `comparableCount`, `avgComparableDays`, `medianComparableDays`, `benchmarkConfidence` (INSUFFICIENT | LOW | MEDIUM | HIGH), and `platformAssistsJson` (per-slug lead counts). Populated by `POST /performance/compute`; read by GET endpoints. `benchmarkLabel` is derived at query time via `benchmarkLabel()` — never stored.
 
 `PlatformPerformanceSummary` — keyed `(dealershipId, platformSlug)`. Stores `vehiclesListed`, `vehiclesSold`, `avgDaysToMove`, `medianDaysToMove`, `totalLeads`, `leadsPerVehicle`, `confidence` (INSUFFICIENT | LOW | MEDIUM | HIGH), and `sampleSize`. `observedAssistLabel` is derived at query time via `platformAssistLabel()` — never stored.
 
@@ -356,8 +356,11 @@ PlatformProfileVersion (versioned snapshots, SHA-256 checked)
 **Performance language guardrails.** The performance engine surfaces correlation signals, not causal attribution. The enforced vocabulary:
 - Use **"movement signal"** (FAST / ON_TRACK / SLOW / STALE / LOW_DATA) — never "velocity score" or "sell-through rate."
 - Use **"observed assist"** for platform contribution labels — never "sold by [platform]" or "drove X sales."
-- `platformAssistLabel()` in `performanceMath.ts` is the single source of label text. Do not inline or reword these labels in UI or API responses.
-- `confidence` levels (INSUFFICIENT / LOW / MEDIUM / HIGH) describe sample size only — they do not indicate quality of the platform or likelihood of future performance.
+- Use **"comparable benchmark"** for per-vehicle comparisons — never "predicted sell time" or "expected days."
+- `platformAssistLabel()` in `performanceMath.ts` is the single source of platform label text.
+- `benchmarkLabel()` in `performanceMath.ts` is the single source of benchmark quality label text ("not enough comparable data" / "limited comparable data" / "comparable benchmark" / "strong comparable benchmark").
+- `PerformanceConfidence` levels (INSUFFICIENT / LOW / MEDIUM / HIGH) describe sample size only — they do not indicate quality of the platform or likelihood of future performance.
+- Confidence thresholds: INSUFFICIENT = 0–2 sold comparables, LOW = 3–9, MEDIUM = 10–29, HIGH = 30+. Same function (`deriveConfidence`) used for both vehicle benchmarks and platform summaries.
 
 **Why Prisma ^6, not ^7?** Prisma 7 removed datasource URL from `schema.prisma` and requires a driver adapter. Pinned to `^6` — upgrade path exists when there's time.
 
