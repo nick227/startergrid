@@ -60,39 +60,39 @@ export default function DealerPicker({ onSelect }: Props) {
             {error && (
               <div className="p-4">
                 <ErrorState message={error} onRetry={() => window.location.reload()} />
-                <p className="text-center text-xs text-slate-400 mt-2">Is the API server running on port 3000?</p>
+                <p className="text-center text-xs text-ink-faint mt-2">Is the API server running on port 3000?</p>
               </div>
             )}
             {!loading && !error && filtered.length === 0 && (
-              <div className="p-8 text-center text-slate-400 text-sm">No dealers found</div>
+              <div className="p-8 text-center text-ink-faint text-sm">No dealers found</div>
             )}
             {filtered.map((d: DealerSummary) => (
               <button
                 key={d.id}
                 type="button"
                 onClick={() => onSelect(d.id)}
-                className="w-full text-left px-5 py-4 hover:bg-emerald-50/80 border-b border-slate-50 last:border-0 transition-colors"
+                className="w-full text-left px-5 py-4 hover:bg-orange-100/60 border-b border-silver-100 last:border-0 transition-colors"
               >
-                <div className="font-semibold text-slate-900 text-sm">{d.legalName}</div>
+                <div className="font-semibold text-ink-heading text-sm">{d.legalName}</div>
                 {d.dbaName && d.dbaName !== d.legalName && (
-                  <div className="text-slate-400 text-xs mt-0.5">dba {d.dbaName}</div>
+                  <div className="text-ink-faint text-xs mt-0.5">dba {d.dbaName}</div>
                 )}
-                <div className="text-slate-400 text-xs font-mono mt-1">{d.id}</div>
+                <div className="text-ink-faint text-xs font-mono mt-1">{d.id}</div>
               </button>
             ))}
           </div>
 
-          <div className="px-4 py-3 border-t border-slate-100 bg-white text-center">
+          <div className="px-4 py-3 border-t border-silver-200 bg-surface-card text-center">
             <button
               type="button"
               onClick={() => { window.location.hash = '#/knowledge'; }}
-              className="text-xs font-semibold text-slate-600 hover:text-emerald-700 transition-colors"
+              className="text-xs font-semibold text-ink-muted hover:text-orange-600 transition-colors"
             >
               Knowledge base →
             </button>
           </div>
 
-          <div className="p-4 bg-slate-50 border-t border-slate-100">
+          <div className="p-4 bg-surface-inset border-t border-silver-200">
             <div className="flex gap-2">
               <input
                 type="text"
@@ -100,13 +100,13 @@ export default function DealerPicker({ onSelect }: Props) {
                 value={manualId}
                 onChange={e => setManualId(e.target.value)}
                 onKeyDown={e => e.key === 'Enter' && manualId.trim() && onSelect(manualId.trim())}
-                className="flex-1 px-3 py-2.5 text-sm border border-slate-200 rounded-xl font-mono focus:ring-2 focus:ring-emerald-500/40"
+                className="field-input flex-1 !rounded-md font-mono"
               />
               <button
                 type="button"
                 onClick={() => manualId.trim() && onSelect(manualId.trim())}
                 disabled={!manualId.trim()}
-                className="px-5 py-2.5 bg-slate-900 text-white text-sm font-semibold rounded-xl hover:bg-slate-800 disabled:opacity-40"
+                className="btn-primary-operator !px-5 !py-2.5 disabled:opacity-40"
               >
                 Open
               </button>

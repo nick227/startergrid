@@ -13,12 +13,12 @@ export function SyncHero({ readiness, dealerName, onFixInventory, onFixAccounts 
   const failed = readiness.autoSyncPhase === 'failed';
 
   const tone = failed
-    ? 'from-red-500 to-rose-600'
+    ? 'from-red-700 to-red-900'
     : busy
-      ? 'from-sky-500 to-indigo-600'
+      ? 'from-navy-700 to-navy-500'
       : readiness.carsBlocked > 0
-        ? 'from-amber-500 to-orange-600'
-        : 'from-emerald-500 to-teal-600';
+        ? 'from-orange-600 to-orange-500'
+        : 'from-navy-900 to-navy-700';
 
   const fix =
     readiness.blocker?.fixTarget === 'inventory'
@@ -29,7 +29,7 @@ export function SyncHero({ readiness, dealerName, onFixInventory, onFixAccounts 
 
   return (
     <section
-      className={`rounded-2xl bg-gradient-to-br ${tone} text-white shadow-xl shadow-slate-900/15 overflow-hidden`}
+      className={`rounded-xl bg-gradient-to-br ${tone} text-white shadow-elevation-3 overflow-hidden`}
     >
       <div className="px-6 py-6 sm:px-8 sm:py-8">
         <div className="flex flex-wrap items-center gap-2 mb-2">
@@ -57,7 +57,7 @@ export function SyncHero({ readiness, dealerName, onFixInventory, onFixAccounts 
             <button
               type="button"
               onClick={fix}
-              className="px-5 py-3 bg-white text-slate-900 text-sm font-bold rounded-xl shadow-md hover:bg-slate-50 transition-colors"
+              className="btn-primary-operator !bg-white !text-navy-900 hover:!bg-silver-100 !px-5 !py-3 !text-sm !rounded-md"
             >
               {readiness.blocker.fixLabel} →
             </button>

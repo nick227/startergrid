@@ -16,7 +16,7 @@ export function ExternalLink({ href, children, className = '' }: Props) {
       href={safe}
       target="_blank"
       rel="noopener noreferrer nofollow"
-      className={`mp-focus inline-flex items-center gap-1 text-blue-600 transition hover:text-blue-700 ${className}`}
+      className={`mp-focus inline-flex items-center gap-1 text-cta transition hover:text-cta-hover ${className}`}
     >
       {children}
       <span aria-hidden="true">↗</span>

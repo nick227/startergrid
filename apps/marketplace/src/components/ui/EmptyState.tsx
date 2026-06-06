@@ -17,9 +17,9 @@ export function EmptyState({
 }: Props) {
   return (
     <div className="mp-card border-dashed px-5 py-12 text-center sm:px-8 sm:py-16" role="status">
-      <p className="text-lg font-semibold text-slate-800">{title}</p>
+      <p className="text-lg font-semibold text-ink-heading">{title}</p>
       {description && (
-        <p className="mx-auto mt-2 max-w-md text-sm leading-relaxed text-slate-500">{description}</p>
+        <p className="mx-auto mt-2 max-w-md text-sm leading-relaxed text-ink-muted">{description}</p>
       )}
       {(actionLabel || secondaryLabel) && (
         <div className="mt-6 flex flex-col items-center justify-center gap-2 sm:flex-row sm:gap-3">

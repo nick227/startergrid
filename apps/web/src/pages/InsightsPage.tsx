@@ -44,10 +44,10 @@ export default function InsightsPage({ dealerId, nav, activeTab }: Props) {
 
   const hasData = data?.computedAt != null;
   const summaryItems: SummaryItem[] = data ? [
-    { key: 'active', label: 'Active vehicles', value: data.summary.activeCount, colorClass: 'text-slate-700' },
-    { key: 'fast', label: 'Fast movers', value: data.summary.fastCount, colorClass: 'text-emerald-700' },
-    { key: 'stale', label: 'Stale risks', value: data.summary.staleCount, colorClass: 'text-red-700' },
-    { key: 'low', label: 'Low data', value: data.summary.lowDataCount, colorClass: 'text-slate-500' },
+    { key: 'active', label: 'Active vehicles', value: data.summary.activeCount, colorClass: 'text-ink-body' },
+    { key: 'fast', label: 'Fast movers', value: data.summary.fastCount, colorClass: 'text-status-success-text' },
+    { key: 'stale', label: 'Stale risks', value: data.summary.staleCount, colorClass: 'text-status-error-text' },
+    { key: 'low', label: 'Low data', value: data.summary.lowDataCount, colorClass: 'text-ink-muted' },
   ] : [];
 
   return (
@@ -78,11 +78,11 @@ export default function InsightsPage({ dealerId, nav, activeTab }: Props) {
 
         <p className="text-xs text-slate-500 -mt-2">
           Day-to-day work lives in{' '}
-          <button type="button" onClick={nav.goToInventory} className="font-semibold text-emerald-700 hover:underline">
+          <button type="button" onClick={nav.goToInventory} className="font-semibold text-orange-600 hover:underline">
             Inventory
           </button>
           {' '}and{' '}
-          <button type="button" onClick={nav.goToSync} className="font-semibold text-emerald-700 hover:underline">
+          <button type="button" onClick={nav.goToSync} className="font-semibold text-orange-600 hover:underline">
             Sync
           </button>
           . Observed assists are not sales attribution.
@@ -213,7 +213,7 @@ export default function InsightsPage({ dealerId, nav, activeTab }: Props) {
                   <SectionCard title="Quick lists" subtitle="Mirrors Sync movement strip">
                     <div className="grid sm:grid-cols-2 gap-4 text-xs">
                       <div>
-                        <p className="font-semibold text-emerald-700 mb-1">Fast movers</p>
+                        <p className="font-semibold text-status-success-text mb-1">Fast movers</p>
                         <ul className="space-y-1 text-slate-600">
                           {data.summary.topMovers.map(v => (
                             <li key={v.vehicleId}>{v.stockNumber} · {formatMovementBenchmarkLine(v)}</li>

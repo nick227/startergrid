@@ -206,7 +206,7 @@ export default function InventoryPage({ dealerId, nav, activeTab }: Props) {
           <button
             type="button"
             onClick={() => { setImportResult(null); setShowImport(true); }}
-            className="px-4 py-1.5 text-xs font-semibold bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg"
+            className="btn-primary-operator"
           >
             Import CSV
           </button>
@@ -223,7 +223,7 @@ export default function InventoryPage({ dealerId, nav, activeTab }: Props) {
               <button
                 type="button"
                 onClick={nav.goToSync}
-                className="px-5 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white text-sm font-bold rounded-xl shadow-sm"
+                className="btn-primary-operator !px-5 !py-2.5 !text-sm shadow-elevation-1"
               >
                 {summary.ready} ready — Sync →
               </button>
@@ -401,7 +401,7 @@ export default function InventoryPage({ dealerId, nav, activeTab }: Props) {
                 <button
                   type="button"
                   onClick={() => { setFilter('ALL'); setMovementFilter('ALL'); setLifecycleScope('active'); }}
-                  className="text-xs font-semibold text-emerald-700"
+                  className="text-xs font-semibold text-orange-600"
                 >
                   Clear filters
                 </button>
@@ -453,7 +453,7 @@ export default function InventoryPage({ dealerId, nav, activeTab }: Props) {
                   <button
                     type="button"
                     onClick={nav.goToSync}
-                    className="px-4 py-2 bg-emerald-600 text-white text-xs font-bold rounded-lg"
+                    className="btn-primary-operator"
                   >
                     Go to Sync
                   </button>

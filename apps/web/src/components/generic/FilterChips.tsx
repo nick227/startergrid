@@ -12,17 +12,17 @@ type Props = {
 };
 
 const ACTIVE: Record<string, string> = {
-  green: 'bg-green-100 text-green-700 border-green-200',
-  amber: 'bg-amber-100 text-amber-700 border-amber-200',
-  red:   'bg-red-100   text-red-700   border-red-200',
-  slate: 'bg-slate-200 text-slate-700 border-slate-300',
+  green: 'bg-status-success-bg text-status-success-text border-status-success-border',
+  amber: 'bg-status-warning-bg text-status-warning-text border-status-warning-border',
+  red:   'bg-status-error-bg text-status-error-text border-status-error-border',
+  slate: 'bg-navy-800 text-white border-navy-700',
 };
 
 const INACTIVE: Record<string, string> = {
-  green: 'bg-white text-slate-500 border-slate-200 hover:border-green-300 hover:text-green-700',
-  amber: 'bg-white text-slate-500 border-slate-200 hover:border-amber-300 hover:text-amber-700',
-  red:   'bg-white text-slate-500 border-slate-200 hover:border-red-300   hover:text-red-700',
-  slate: 'bg-white text-slate-500 border-slate-200 hover:border-slate-400',
+  green: 'bg-surface-card text-ink-muted border-silver-200 hover:border-status-success-border hover:text-status-success-text',
+  amber: 'bg-surface-card text-ink-muted border-silver-200 hover:border-status-warning-border hover:text-status-warning-text',
+  red:   'bg-surface-card text-ink-muted border-silver-200 hover:border-status-error-border hover:text-status-error-text',
+  slate: 'bg-surface-card text-ink-muted border-silver-200 hover:border-silver-300 hover:text-ink-body',
 };
 
 export function FilterChips({ chips, activeKey, onSelect }: Props) {
@@ -42,7 +42,7 @@ export function FilterChips({ chips, activeKey, onSelect }: Props) {
             {chip.label}
             {chip.count !== undefined && chip.count > 0 && (
               <span className={`text-xs font-bold leading-none
-                ${isActive ? 'opacity-70' : 'text-slate-400'}`}>
+                ${isActive ? 'opacity-70' : 'text-ink-faint'}`}>
                 {chip.count}
               </span>
             )}

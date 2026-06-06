@@ -5,6 +5,9 @@ import type {
   PublishStatusResponse,
   SyncEvent,
 } from './types.ts';
+import { statusPill } from '../../../../packages/design-tokens/colors.ts';
+
+const P = statusPill;
 
 export type SyncPlatformOutcome = 'live' | 'ready' | 'waiting' | 'blocked';
 
@@ -16,10 +19,10 @@ export type SyncPlatformOutcomeMeta = {
 };
 
 const OUTCOME_META: Record<SyncPlatformOutcome, Omit<SyncPlatformOutcomeMeta, 'outcome'>> = {
-  live: { label: 'Active', pill: 'bg-emerald-100 text-emerald-800 border-emerald-200', sort: 3 },
-  ready: { label: 'Scheduled', pill: 'bg-sky-100 text-sky-800 border-sky-200', sort: 2 },
-  waiting: { label: 'Pending', pill: 'bg-amber-100 text-amber-900 border-amber-200', sort: 1 },
-  blocked: { label: 'Blocked', pill: 'bg-red-100 text-red-800 border-red-200', sort: 0 },
+  live: { label: 'Active', pill: P.success, sort: 3 },
+  ready: { label: 'Scheduled', pill: P.info, sort: 2 },
+  waiting: { label: 'Pending', pill: P.warning, sort: 1 },
+  blocked: { label: 'Blocked', pill: P.danger, sort: 0 },
 };
 
 export function platformSyncOutcome(state: string): SyncPlatformOutcome {

@@ -87,12 +87,12 @@ export default function AccountManagementPage({ dealerId, nav, activeTab }: Prop
   );
 
   const summaryItems: SummaryItem[] = summary ? [
-    { key: 'total',          label: 'Total',          value: summary.total,          colorClass: 'text-slate-700' },
-    { key: 'active',         label: 'Active',         value: summary.active,         colorClass: 'text-emerald-700' },
-    { key: 'needsSetup',     label: 'Needs setup',    value: summary.needsSetup,     colorClass: 'text-amber-700' },
-    { key: 'pendingReview',  label: 'Pending Review', value: summary.pendingReview,  colorClass: 'text-sky-700' },
-    { key: 'blocked',        label: 'Blocked',        value: summary.blocked,        colorClass: 'text-red-700' },
-    { key: 'partnerRequired',label: 'Partner required', value: summary.partnerRequired, colorClass: 'text-slate-500' },
+    { key: 'total',          label: 'Total',          value: summary.total,          colorClass: 'text-ink-body' },
+    { key: 'active',         label: 'Active',         value: summary.active,         colorClass: 'text-status-success-text' },
+    { key: 'needsSetup',     label: 'Needs setup',    value: summary.needsSetup,     colorClass: 'text-status-warning-text' },
+    { key: 'pendingReview',  label: 'Pending Review', value: summary.pendingReview,  colorClass: 'text-status-info-text' },
+    { key: 'blocked',        label: 'Blocked',        value: summary.blocked,        colorClass: 'text-status-error-text' },
+    { key: 'partnerRequired',label: 'Partner required', value: summary.partnerRequired, colorClass: 'text-ink-muted' },
   ] : [];
 
   const summaryActiveKey =
@@ -181,7 +181,7 @@ export default function AccountManagementPage({ dealerId, nav, activeTab }: Prop
             className="flex-1 max-w-md"
           />
           {filter !== 'ALL' && (
-            <button type="button" onClick={() => setFilter('ALL')} className="text-xs font-semibold text-emerald-700">
+            <button type="button" onClick={() => setFilter('ALL')} className="text-xs font-semibold text-orange-600">
               Clear
             </button>
           )}

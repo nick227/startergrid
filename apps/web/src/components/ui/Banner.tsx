@@ -3,10 +3,10 @@ import type { ReactNode } from 'react';
 type Variant = 'success' | 'warning' | 'error' | 'info';
 
 const STYLES: Record<Variant, { bg: string; border: string; text: string }> = {
-  success: { bg: 'bg-green-50', border: 'border-green-200', text: 'text-green-800' },
-  warning: { bg: 'bg-amber-50', border: 'border-amber-200', text: 'text-amber-800' },
-  error:   { bg: 'bg-red-50',   border: 'border-red-200',   text: 'text-red-600'   },
-  info:    { bg: 'bg-blue-50',  border: 'border-blue-200',  text: 'text-blue-800'  },
+  success: { bg: 'bg-status-success-bg', border: 'border-status-success-border', text: 'text-status-success-text' },
+  warning: { bg: 'bg-status-warning-bg', border: 'border-status-warning-border', text: 'text-status-warning-text' },
+  error:   { bg: 'bg-status-error-bg',   border: 'border-status-error-border',   text: 'text-status-error-text'   },
+  info:    { bg: 'bg-status-info-bg',    border: 'border-status-info-border',    text: 'text-status-info-text'    },
 };
 
 type Props = {

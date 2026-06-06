@@ -16,7 +16,7 @@ export function InlineCallout({ tone = 'info', title, children, action, icon }: 
       {icon && <span className="text-lg leading-none mt-0.5 shrink-0">{icon}</span>}
       <div className="flex-1 min-w-0">
         {title && <p className={`text-sm font-semibold ${s.accent}`}>{title}</p>}
-        <div className={`text-sm ${title ? 'mt-0.5 text-slate-600' : s.accent}`}>{children}</div>
+        <div className={`text-sm ${title ? 'mt-0.5 text-ink-muted' : s.accent}`}>{children}</div>
       </div>
       {action && <div className="shrink-0">{action}</div>}
     </div>

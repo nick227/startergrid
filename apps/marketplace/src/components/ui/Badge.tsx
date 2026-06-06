@@ -1,10 +1,10 @@
 import type { ReactNode } from 'react';
 
 const TONE_CLASS = {
-  neutral: 'bg-slate-100 text-slate-700 ring-slate-200',
-  sky:     'bg-sky-50 text-sky-800 ring-sky-100',
-  slate:   'bg-slate-100 text-slate-700 ring-slate-200',
-  emerald: 'bg-emerald-50 text-emerald-800 ring-emerald-100',
+  neutral: 'bg-status-neutral-bg text-status-neutral-text ring-status-neutral-border',
+  sky:     'bg-status-info-bg text-status-info-text ring-status-info-border',
+  slate:   'bg-status-neutral-bg text-status-neutral-text ring-status-neutral-border',
+  emerald: 'bg-status-success-bg text-status-success-text ring-status-success-border',
 } as const;
 
 type Tone = keyof typeof TONE_CLASS;

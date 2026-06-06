@@ -10,13 +10,13 @@ export function PageHeader({ title, subtitle, eyebrow, as: Tag = 'h1', className
   return (
     <header className={`mb-6 space-y-2 sm:mb-8 ${className}`}>
       {eyebrow && (
-        <p className="mp-label text-slate-400">{eyebrow}</p>
+        <p className="mp-label text-ink-faint">{eyebrow}</p>
       )}
-      <Tag className="text-2xl font-bold tracking-tight text-slate-900 sm:text-3xl">
+      <Tag className="text-2xl font-bold tracking-tight text-ink-heading sm:text-3xl">
         {title}
       </Tag>
       {subtitle && (
-        <p className="max-w-2xl text-sm leading-relaxed text-slate-600 sm:text-base">
+        <p className="max-w-2xl text-sm leading-relaxed text-ink-muted sm:text-base">
           {subtitle}
         </p>
       )}

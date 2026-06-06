@@ -30,7 +30,7 @@ export function SyncPlatformList({ platforms, platformPerfBySlug, onFixAccounts 
           <button
             type="button"
             onClick={onFixAccounts}
-            className="text-xs font-bold text-emerald-700 hover:underline"
+            className="text-xs font-bold text-orange-600 hover:underline"
           >
             Fix accounts →
           </button>
@@ -38,7 +38,7 @@ export function SyncPlatformList({ platforms, platformPerfBySlug, onFixAccounts 
       }
       noPadding
     >
-      <ul className="divide-y divide-slate-50">
+      <ul className="divide-y divide-silver-100">
         {sorted.map(p => (
           <SyncPlatformRow
             key={p.platformSlug}
@@ -88,7 +88,7 @@ function SyncPlatformRow({
   return (
     <li
       className={`px-5 py-3.5 flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4 ${
-        meta.outcome === 'blocked' || meta.outcome === 'waiting' ? 'bg-red-50/30' : ''
+        meta.outcome === 'blocked' || meta.outcome === 'waiting' ? 'bg-status-error-bg/30' : ''
       }`}
     >
       <div className="flex flex-col min-w-0 flex-1 gap-0.5">
@@ -98,25 +98,25 @@ function SyncPlatformRow({
           >
             {meta.label}
           </span>
-          <span className="text-sm font-semibold text-slate-900 truncate">{p.platformName}</span>
+          <span className="text-sm font-semibold text-ink-heading truncate">{p.platformName}</span>
         </div>
         {exposureLine && (
-          <p className="text-[11px] text-slate-500 pl-0.5 truncate">{exposureLine}</p>
+          <p className="text-[11px] text-ink-muted pl-0.5 truncate">{exposureLine}</p>
         )}
         {valueHint && (
-          <p className="text-[11px] text-slate-400 pl-0.5 truncate">{valueHint}</p>
+          <p className="text-[11px] text-ink-faint pl-0.5 truncate">{valueHint}</p>
         )}
         {showChannelFootnote && (
-          <p className="text-[10px] text-slate-400 pl-0.5 truncate">{channelFootnote}</p>
+          <p className="text-[10px] text-ink-faint pl-0.5 truncate">{channelFootnote}</p>
         )}
       </div>
       <div className="flex items-center gap-3 sm:justify-end">
-        {detail && <span className="text-xs text-slate-500 truncate max-w-xs">{detail}</span>}
+        {detail && <span className="text-xs text-ink-muted truncate max-w-xs">{detail}</span>}
         {showAccounts && (
           <button
             type="button"
             onClick={onFixAccounts}
-            className="text-xs font-bold text-red-700 whitespace-nowrap"
+            className="text-xs font-bold text-status-error-text whitespace-nowrap"
           >
             Fix →
           </button>

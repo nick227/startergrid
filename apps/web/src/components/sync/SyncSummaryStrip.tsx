@@ -36,21 +36,23 @@ export function SyncSummaryStrip({ readiness, movement, autoSync, onReviewInvent
       docId: 'inventory/inventory-readiness',
       value: readiness.carsReady,
       hint: readiness.carsWarning > 0 ? `${readiness.carsWarning} with warnings` : 'to sync',
-      tone: 'text-emerald-700 bg-emerald-50 border-emerald-100',
+      tone: 'text-status-success-text bg-status-success-bg border-status-success-border',
     },
     {
       label: 'Cars blocked',
       docId: 'inventory/inventory-readiness',
       value: readiness.carsBlocked,
       hint: readiness.carsBlocked > 0 ? 'fix in inventory' : 'none',
-      tone: readiness.carsBlocked > 0 ? 'text-red-700 bg-red-50 border-red-100' : 'text-slate-500 bg-white border-slate-200',
+      tone: readiness.carsBlocked > 0
+        ? 'text-status-error-text bg-status-error-bg border-status-error-border'
+        : 'text-ink-muted bg-surface-card border-silver-200',
     },
     {
       label: 'Platforms ready',
       docId: 'processes/platform-readiness',
       value: readiness.platformsWillSync + readiness.platformsLive,
       hint: `${readiness.platformsLive} already live`,
-      tone: 'text-sky-700 bg-sky-50 border-sky-100',
+      tone: 'text-status-info-text bg-status-info-bg border-status-info-border',
     },
     {
       label: 'Platforms blocked',
@@ -59,8 +61,8 @@ export function SyncSummaryStrip({ readiness, movement, autoSync, onReviewInvent
       hint: readiness.platformsNeedYou > 0 ? `${readiness.platformsNeedYou} pending` : 'need attention',
       tone:
         readiness.platformsBlocked + readiness.platformsNeedYou > 0
-          ? 'text-amber-800 bg-amber-50 border-amber-100'
-          : 'text-slate-500 bg-white border-slate-200',
+          ? 'text-status-warning-text bg-status-warning-bg border-status-warning-border'
+          : 'text-ink-muted bg-surface-card border-silver-200',
     },
   ];
 
@@ -81,8 +83,8 @@ export function SyncSummaryStrip({ readiness, movement, autoSync, onReviewInvent
       </div>
 
       {showMovement && movement && (
-        <p className="text-xs text-slate-500 px-1">
-          <span className="font-medium text-slate-600">Movement vs similar stock · </span>
+        <p className="text-xs text-ink-muted px-1">
+          <span className="font-medium text-ink-body">Movement vs similar stock · </span>
           {[
             movement.fastCount > 0 && `${movement.fastCount} fast`,
             movement.slowCount > 0 && `${movement.slowCount} slow`,
@@ -98,7 +100,7 @@ export function SyncSummaryStrip({ readiness, movement, autoSync, onReviewInvent
               <button
                 type="button"
                 onClick={onReviewInventory}
-                className="font-semibold text-emerald-700 hover:underline"
+                className="font-semibold text-orange-600 hover:underline"
               >
                 Open inventory
               </button>
@@ -110,13 +112,13 @@ export function SyncSummaryStrip({ readiness, movement, autoSync, onReviewInvent
               <button
                 type="button"
                 onClick={onOpenInsights}
-                className="font-semibold text-slate-500 hover:text-slate-700 hover:underline"
+                className="font-semibold text-navy-600 hover:text-navy-800 hover:underline"
               >
                 Full summary on Insights
               </button>
             </>
           )}
-          <span className="block text-[10px] text-slate-400 mt-0.5">
+          <span className="block text-[10px] text-ink-faint mt-0.5">
             {formatBenchmarkFreshness(movement.computedAt, autoSync ?? undefined)}
           </span>
         </p>

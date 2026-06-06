@@ -71,7 +71,7 @@ export function LeadInquiryForm({ listingId, vehicleLabel, dealerName }: Props) 
 
   return (
     <SectionCard title="Contact dealer">
-      <p className="mb-4 text-sm text-slate-600">
+      <p className="mb-4 text-sm text-ink-muted">
         Send a basic inquiry about this {vehicleLabel} to {dealerName}. No account required.
       </p>
 
@@ -130,7 +130,7 @@ export function LeadInquiryForm({ listingId, vehicleLabel, dealerName }: Props) 
         </div>
 
         <label className="flex flex-col gap-1.5">
-          <span className="mp-label">Message <span className="font-normal normal-case text-slate-400">(optional)</span></span>
+          <span className="mp-label">Message <span className="font-normal normal-case text-ink-faint">(optional)</span></span>
           <textarea
             value={values.message}
             onChange={e => updateField('message', e.target.value)}
