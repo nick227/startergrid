@@ -87,6 +87,18 @@ Aggregation rules (`aggregateChannelMetrics`):
 
 **Platform row inclusion:** a slug appears when it has sync submissions **or** channel events. Leads alone do not create a platform row.
 
+## Vehicle lifecycle (v4.4)
+
+Internal states: **`AVAILABLE`**, **`SOLD`**, **`REMOVED`**, **`REACTIVATED`** (derived from `soldAt`, `removedAt`, `reactivatedAt`).
+
+| Transition | Effect |
+|------------|--------|
+| `SOLD` | Sets `soldAt`, clears `removedAt` / `reactivatedAt`; stops days-online accumulation |
+| `REMOVED` | Sets `removedAt`; closes platform exposure without a sale |
+| `RELISTED` | Clears sold/removed; sets `reactivatedAt` for a new exposure window |
+
+Ingress JSON may include optional `availability` (`available` \| `sold` \| `removed`) and `statusChangedAt`. Performance jobs recompute after lifecycle changes.
+
 ## apps/web display rules
 
 - Show counts with conservative labels: **observed**, **reported**, **imported**, **unavailable**.
