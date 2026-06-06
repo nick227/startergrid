@@ -30,6 +30,8 @@ import type {
   LifecycleScope,
   VehicleLifecycleEventsResponse,
   SnapshotRemovalCommitResponse,
+  JsonIngestResponse,
+  JsonIngestRequest,
   ImportPreviewResponse,
   CommitImportResponse,
   BulkEditPayload,
@@ -132,6 +134,15 @@ export async function fetchInventory(
       lifecycleScope: opts?.lifecycleScope,
     } as { dealershipId: string; lifecycleScope?: LifecycleScope }),
   ) as Promise<VehicleListResponse>;
+}
+
+export async function ingestJsonInventory(
+  dealershipId: string,
+  requestBody: JsonIngestRequest,
+): Promise<JsonIngestResponse> {
+  return fromSdk(
+    InventoryService.ingestJsonInventory({ dealershipId, requestBody }),
+  ) as Promise<JsonIngestResponse>;
 }
 
 export async function commitSnapshotRemovals(

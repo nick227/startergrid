@@ -1,3 +1,4 @@
+export { JsonIngestPanel } from './JsonIngestPanel.tsx';
 export { LifecycleFilterBar } from './LifecycleFilterBar.tsx';
 export { SnapshotReviewCard } from './SnapshotReviewCard.tsx';
 export { VehicleLifecycleHistory } from './VehicleLifecycleHistory.tsx';

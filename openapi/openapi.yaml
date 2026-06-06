@@ -1934,7 +1934,7 @@ components:
 
     JsonIngestResponse:
       type: object
-      required: [status, ingressRunId, created, updated, skipped, errors, vehicleCount]
+      required: [status, ingressRunId, created, updated, skipped, blocked, errors, vehicleCount]
       properties:
         status:
           type: string
@@ -1943,6 +1943,7 @@ components:
         created:      { type: integer }
         updated:      { type: integer }
         skipped:      { type: integer }
+        blocked:      { type: integer }
         errors:       { type: integer }
         vehicleCount: { type: integer }
         batchId:      { type: string }

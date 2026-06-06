@@ -61,6 +61,7 @@ export default function InventoryPage({ dealerId, nav, activeTab }: Props) {
   const [search, setSearch] = useState('');
   const [showImport, setShowImport] = useState(false);
   const [importResult, setImportResult] = useState<CommitImportResponse | null>(null);
+  const [latestIngestRunId, setLatestIngestRunId] = useState<string | null>(null);
 
   const perf = useAsyncQuery(
     () => fetchVehiclePerformanceList(dealerId),
@@ -76,6 +77,11 @@ export default function InventoryPage({ dealerId, nav, activeTab }: Props) {
     perf.reload();
     platformPerf.reload();
   }, [perf.reload, platformPerf.reload]);
+
+  const handleIntakeRefresh = useCallback(() => {
+    load();
+    reloadBenchmarks();
+  }, [load, reloadBenchmarks]);
 
   const { autoSync } = useAutoSyncWatch(dealerId, reloadBenchmarks);
 
@@ -239,12 +245,13 @@ export default function InventoryPage({ dealerId, nav, activeTab }: Props) {
 
         <IngressPanel
           dealerId={dealerId}
-          latestRunId={importResult?.ingressRunId}
+          latestRunId={importResult?.ingressRunId ?? latestIngestRunId}
           onShowBlockedVehicles={() => setFilter('BLOCKED')}
-          onSnapshotCommitted={() => {
-            load();
-            reloadBenchmarks();
+          onIngestComplete={(ingressRunId) => {
+            setLatestIngestRunId(ingressRunId);
+            handleIntakeRefresh();
           }}
+          onSnapshotCommitted={handleIntakeRefresh}
         />
 
         {isEmpty && (

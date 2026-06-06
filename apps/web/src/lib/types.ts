@@ -229,6 +229,39 @@ export type SnapshotRemovalCommitResponse = {
   rejected: string[];
 };
 
+export type SalesStatusReconcileResult = {
+  sold: number;
+  removed: number;
+  reactivated: number;
+  skipped: number;
+  snapshotRemovedCandidates: SnapshotRemovedCandidate[];
+  snapshotRemovalsApplied: number;
+  snapshotDryRun: boolean;
+};
+
+export type JsonIngestResponse = {
+  status: 'COMMITTED' | 'PARTIAL' | 'FAILED';
+  ingressRunId: string;
+  created: number;
+  updated: number;
+  skipped: number;
+  blocked: number;
+  errors: number;
+  vehicleCount: number;
+  batchId?: string;
+  salesStatus?: SalesStatusReconcileResult;
+};
+
+export type JsonIngestRequest = {
+  sourceSlug?: string;
+  sourceLabel?: string;
+  mode?: 'upsert';
+  snapshotMode?: boolean;
+  dryRun?: boolean;
+  commitSnapshotRemovals?: boolean;
+  vehicles: unknown[];
+};
+
 export type ImportMappedRow = {
   stockNumber?: string;
   vin?: string;

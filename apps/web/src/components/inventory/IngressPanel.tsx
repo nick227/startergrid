@@ -14,6 +14,7 @@ import type {
 } from '@/lib/types.ts';
 import { ingressRunStatusVisual, EMPTY_STATE_COPY } from '@/lib/statusRegistry.ts';
 import { SnapshotReviewCard } from './SnapshotReviewCard.tsx';
+import { JsonIngestPanel } from './JsonIngestPanel.tsx';
 import { SectionCard } from '@/components/operator';
 import { AsyncPanel } from '@/components/operator/AsyncPanel.tsx';
 import { EmptyState } from '@/components/ui';
@@ -25,6 +26,7 @@ type Props = {
   latestRunId?: string | null;
   onShowBlockedVehicles?: () => void;
   onSnapshotCommitted?: () => void;
+  onIngestComplete?: (ingressRunId: string) => void;
 };
 
 // ── Time helpers ──────────────────────────────────────────────────────────────
@@ -159,7 +161,7 @@ function buildImpactChips(impact: IngressRunPlatformImpact): ImpactChip[] {
 
 // ── Main component ────────────────────────────────────────────────────────────
 
-export function IngressPanel({ dealerId, latestRunId, onShowBlockedVehicles, onSnapshotCommitted }: Props) {
+export function IngressPanel({ dealerId, latestRunId, onShowBlockedVehicles, onSnapshotCommitted, onIngestComplete }: Props) {
   const { data: srcData, loading: loadingSrc, error: srcErr, reload: reloadSrc } =
     useAsyncQuery(() => fetchIngressSources(dealerId), [dealerId, latestRunId]);
 
@@ -179,6 +181,11 @@ export function IngressPanel({ dealerId, latestRunId, onShowBlockedVehicles, onS
 
   const handleSourceSaved = () => { setAddingSource(false); reloadSrc(); };
   const handleSourceUpdated = () => { reloadSrc(); reloadRuns(); };
+  const handleIngestComplete = (ingressRunId: string) => {
+    reloadRuns();
+    reloadSrc();
+    onIngestComplete?.(ingressRunId);
+  };
 
   return (
     <SectionCard title="Intake sources" subtitle={subtitle} noPadding>
@@ -230,6 +237,12 @@ export function IngressPanel({ dealerId, latestRunId, onShowBlockedVehicles, onS
             </button>
           </div>
         )}
+
+        <JsonIngestPanel
+          dealerId={dealerId}
+          sources={sources}
+          onIngestComplete={handleIngestComplete}
+        />
 
         {/* ── Run rows ─────────────────────────────────────────────────────── */}
         {runs.length > 0 ? (

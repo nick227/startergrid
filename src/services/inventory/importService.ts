@@ -499,6 +499,7 @@ export type JsonIngestResult = {
   created:      number;
   updated:      number;
   skipped:      number;
+  blocked:      number;
   errors:       number;
   vehicleCount: number;
   ingressRunId: string;
@@ -539,7 +540,7 @@ export async function ingestJsonVehicles(
   const sourceLabel = opts.sourceLabel ?? DEFAULT_JSON_SOURCE.label;
 
   const result: JsonIngestResult = {
-    status: 'COMMITTED', created: 0, updated: 0, skipped: 0,
+    status: 'COMMITTED', created: 0, updated: 0, skipped: 0, blocked: 0,
     errors: 0, vehicleCount: vehicles.length, ingressRunId: '', batchId: '',
   };
 
@@ -569,6 +570,7 @@ export async function ingestJsonVehicles(
     if (issues.some(iss => iss.severity === 'FAIL')) {
       blockedCount++;
       result.skipped++;
+      result.blocked++;
       continue;
     }
 

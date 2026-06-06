@@ -1,4 +1,4 @@
-# Auto Dealer Sales Portal — v4.5.0
+# Auto Dealer Sales Portal — v4.6.0
 
 A backend pipeline that onboards auto dealers onto 18 ad and marketplace platforms — validation, feed generation, artifact storage, and proof export — via CLI and the Operator Console web UI.
 
@@ -19,6 +19,8 @@ A backend pipeline that onboards auto dealers onto 18 ad and marketplace platfor
 **v4.4.1** adds authoritative feed snapshot reconcile (dry-run candidates + explicit commit), lifecycle audit events, and compact platform exposure copy in Sync/Insights.
 
 **v4.5** polishes operator workflow in Inventory: snapshot review UI, lifecycle filters and vehicle history, benchmark freshness states, and a dismissible inventory walkthrough.
+
+**v4.6** adds portal JSON/API ingest on Inventory — paste or upload feeds, snapshot dry-run toggle, ingest results, and explicit snapshot commit via the existing review card.
 
 **Stack:** TypeScript (ESM) · Prisma 6 · MySQL · Node 22 · node:test
 

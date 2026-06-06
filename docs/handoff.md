@@ -255,6 +255,20 @@ Make lifecycle and snapshot mechanics operable without reading backend docs.
 - **Inventory walkthrough** — dismissible 4-step guided banner
 - **Platform exposure line** — Sync + Insights (from v4.4.1, retained)
 
+---
+
+## v4.6 — Portal JSON/API Intake (implemented)
+
+Run JSON ingest from Inventory without CLI — reuses existing ingest + snapshot commit APIs.
+
+### Delivered
+
+- **`JsonIngestPanel`** under Intake sources — paste/upload JSON, optional source tag
+- **Snapshot toggle** — “Treat this feed as the full current inventory” → dry-run by default
+- **Ingest results** — created, updated, blocked, skipped, errors, missing-from-feed candidates
+- **`ingestJsonInventory` SDK** — portal calls only; explicit `SnapshotReviewCard` commit
+- **`blocked` count** on `JsonIngestResponse` for validation failures
+
 ### Still deferred
 
 - CSV imports of partner metrics

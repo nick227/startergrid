@@ -13,7 +13,7 @@ export const INVENTORY_WALKTHROUGH_STEPS: InventoryWalkthroughStep[] = [
   {
     id: 'snapshot',
     title: '2 · Review feed snapshots',
-    body: 'When a feed is authoritative, dry-run snapshot mode lists vehicles missing from the latest payload — not sold. Commit removals explicitly.',
+    body: 'Use JSON/API ingest with “full current inventory” for a dry-run. Missing vehicles are removal candidates — not sold. Commit explicitly in the panel.',
   },
   {
     id: 'movement',

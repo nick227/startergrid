@@ -193,7 +193,7 @@ describe('IngestVehicleInput type', () => {
 describe('JsonIngestResult type', () => {
   it('represents a COMMITTED result', () => {
     const r: JsonIngestResult = {
-      status: 'COMMITTED', created: 5, updated: 2, skipped: 1,
+      status: 'COMMITTED', created: 5, updated: 2, skipped: 1, blocked: 1,
       errors: 0, vehicleCount: 8, ingressRunId: 'run-1', batchId: 'evt-1',
     };
     assert.equal(r.status, 'COMMITTED');
@@ -202,7 +202,7 @@ describe('JsonIngestResult type', () => {
 
   it('represents a PARTIAL result', () => {
     const r: JsonIngestResult = {
-      status: 'PARTIAL', created: 3, updated: 0, skipped: 0,
+      status: 'PARTIAL', created: 3, updated: 0, skipped: 0, blocked: 0,
       errors: 2, vehicleCount: 5, ingressRunId: 'run-2', batchId: 'evt-2',
     };
     assert.equal(r.status, 'PARTIAL');
@@ -211,7 +211,7 @@ describe('JsonIngestResult type', () => {
 
   it('represents a FAILED result', () => {
     const r: JsonIngestResult = {
-      status: 'FAILED', created: 0, updated: 0, skipped: 0,
+      status: 'FAILED', created: 0, updated: 0, skipped: 0, blocked: 0,
       errors: 3, vehicleCount: 3, ingressRunId: 'run-3', batchId: 'evt-3',
     };
     assert.equal(r.status, 'FAILED');
