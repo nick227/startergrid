@@ -1,19 +1,19 @@
-import { useQuery } from '../hooks/useQuery.ts';
-import { fetchDealer } from '../lib/api.ts';
-import { dealerLocation } from '../lib/vehicleDisplay.ts';
-import { getListReturn } from '../lib/listReturn.ts';
-import { Shell, LoadingSkeleton, ErrorState, EmptyState, VehicleGridSkeleton } from '../components/Shell.tsx';
+import { useQuery, queryErrorMessage } from '../hooks/useQuery.ts';
+import { usePageMeta } from '../hooks/usePageMeta.ts';
+import { fetchDealer, isNotFoundError } from '../lib/api.ts';
+import { formatResultCount } from '../lib/display.ts';
+import { getListReturn, saveListReturn } from '../lib/listReturn.ts';
+import { listHref } from '../lib/routes.ts';
+import { PageShell } from '../components/layout/PageShell.tsx';
 import { VehicleCard } from '../components/VehicleCard.tsx';
+import { DealerHero } from '../components/ui/DealerBlock.tsx';
+import { VehicleGrid } from '../components/ui/VehicleGrid.tsx';
+import { DealerHeaderSkeleton, SkeletonGrid } from '../components/ui/SkeletonGrid.tsx';
+import { ErrorState } from '../components/ui/ErrorState.tsx';
+import { EmptyState } from '../components/ui/EmptyState.tsx';
+import { NotFoundState } from '../components/ui/NotFoundState.tsx';
 
 type Props = { dealerId: string };
-
-function formatWebsiteLabel(url: string): string {
-  try {
-    return new URL(url).hostname.replace(/^www\./, '');
-  } catch {
-    return url;
-  }
-}
 
 export default function DealerDetailPage({ dealerId }: Props) {
   const { data, loading, error, reload } = useQuery(
@@ -22,76 +22,77 @@ export default function DealerDetailPage({ dealerId }: Props) {
   );
   const backHref = getListReturn();
 
+  usePageMeta(
+    data?.dealerName ?? 'Dealer',
+    data ? `${formatResultCount(data.vehicles.length)} on the marketplace` : undefined,
+  );
+
   if (loading && !data) {
     return (
-      <Shell backHref={backHref} backLabel="Back to results">
-        <LoadingSkeleton label="Loading dealer…" />
+      <PageShell backHref={backHref} backLabel="Back to results">
+        <DealerHeaderSkeleton />
         <div className="mt-8">
-          <VehicleGridSkeleton count={3} />
+          <SkeletonGrid count={3} />
         </div>
-      </Shell>
+      </PageShell>
     );
   }
 
   if (error) {
     return (
-      <Shell backHref={backHref} backLabel="Back to results">
-        <ErrorState message={error} onRetry={reload} />
-      </Shell>
+      <PageShell backHref={backHref} backLabel="Back to results">
+        {isNotFoundError(error) ? (
+          <NotFoundState
+            title="Dealer not found"
+            description="This dealer page is not available on the marketplace."
+            backHref={backHref}
+            backLabel="Back to results"
+          />
+        ) : (
+          <ErrorState message={queryErrorMessage(error)} onRetry={reload} />
+        )}
+      </PageShell>
     );
   }
 
   if (!data) return null;
 
-  const location = dealerLocation(data.dealerCity, data.dealerState);
   const count = data.vehicles.length;
 
   return (
-    <Shell backHref={backHref} backLabel="Back to results">
-      <header className="mb-8 overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
-        <div className="bg-gradient-to-r from-slate-900 to-slate-700 px-6 py-8 text-white">
-          <p className="text-xs font-semibold uppercase tracking-widest text-slate-300">Dealer</p>
-          <h1 className="mt-2 text-3xl font-bold tracking-tight">{data.dealerName}</h1>
-          {location && (
-            <p className="mt-2 text-sm text-slate-200">{location}</p>
-          )}
-        </div>
-
-        {data.websiteUrl && (
-          <div className="border-t border-slate-100 px-6 py-4">
-            <a
-              href={data.websiteUrl}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="inline-flex items-center gap-1 text-sm font-semibold text-blue-600 transition hover:text-blue-700"
-            >
-              Visit {formatWebsiteLabel(data.websiteUrl)}
-              <span aria-hidden="true">↗</span>
-            </a>
-          </div>
-        )}
-      </header>
+    <PageShell backHref={backHref} backLabel="Back to results">
+      <DealerHero
+        dealerName={data.dealerName}
+        city={data.dealerCity}
+        state={data.dealerState}
+        websiteUrl={data.websiteUrl}
+      />
 
       <section>
-        <h2 className="mb-5 text-lg font-semibold text-slate-900">
+        <h2 className="mp-section-title mb-4 sm:mb-5">
           {count > 0
-            ? `${count.toLocaleString()} vehicle${count !== 1 ? 's' : ''} on the marketplace`
+            ? `${formatResultCount(count)} on the marketplace`
             : 'Marketplace inventory'}
         </h2>
 
         {count === 0 ? (
           <EmptyState
             title="No vehicles listed right now"
-            description="This dealer has no marketplace-eligible inventory at the moment. Check back later or browse all vehicles."
+            description="This dealer has no marketplace-eligible inventory at the moment."
+            actionLabel="Browse all vehicles"
+            onAction={() => {
+              saveListReturn({});
+              window.location.hash = listHref().slice(1);
+            }}
           />
         ) : (
-          <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3">
+          <VehicleGrid>
             {data.vehicles.map(card => (
               <VehicleCard key={card.listingId} card={card} />
             ))}
-          </div>
+          </VehicleGrid>
         )}
       </section>
-    </Shell>
+    </PageShell>
   );
 }

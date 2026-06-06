@@ -16,30 +16,32 @@ export function Pagination({ page, pageSize, total, hasNext, onPageChange }: Pro
 
   return (
     <nav
-      className="mt-10 flex flex-col items-center gap-4 sm:flex-row sm:justify-between"
+      className="mt-8 flex flex-col items-stretch gap-4 sm:mt-10 sm:flex-row sm:items-center sm:justify-between"
       aria-label="Results pagination"
     >
-      <p className="text-sm text-slate-500">
+      <p className="text-center text-sm text-slate-500 sm:text-left">
         Showing {start.toLocaleString()}–{end.toLocaleString()} of {total.toLocaleString()}
       </p>
 
-      <div className="flex items-center gap-2">
+      <div className="flex items-center justify-center gap-2">
         <button
           type="button"
           onClick={() => onPageChange(page - 1)}
           disabled={!hasPrev}
-          className="rounded-lg border border-slate-200 bg-white px-4 py-2 text-sm font-medium text-slate-700 transition-colors hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-40"
+          aria-disabled={!hasPrev}
+          className="mp-btn-secondary min-w-[6.5rem]"
         >
           Previous
         </button>
-        <span className="min-w-[7rem] text-center text-sm text-slate-600">
+        <span className="min-w-[7rem] text-center text-sm text-slate-600" aria-live="polite">
           Page {page} of {totalPages}
         </span>
         <button
           type="button"
           onClick={() => onPageChange(page + 1)}
           disabled={!hasNext}
-          className="rounded-lg border border-slate-200 bg-white px-4 py-2 text-sm font-medium text-slate-700 transition-colors hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-40"
+          aria-disabled={!hasNext}
+          className="mp-btn-secondary min-w-[6.5rem]"
         >
           Next
         </button>

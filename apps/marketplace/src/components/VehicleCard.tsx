@@ -1,19 +1,18 @@
 import type { MarketplaceVehicleCard } from '../lib/api.ts';
-import { formatPrice, formatMileage } from '../lib/api.ts';
-import { dealerLocation, vehicleTitle } from '../lib/vehicleDisplay.ts';
+import { formatPrice, formatMileage, formatLocation, vehicleHeading } from '../lib/display.ts';
 import { listingHref, dealerHref } from '../lib/routes.ts';
-import { VehicleImage } from './VehicleImage.tsx';
-import { ConditionBadge } from './ConditionBadge.tsx';
+import { VehicleImage } from './ui/VehicleImage.tsx';
+import { ConditionBadge } from './ui/ConditionBadge.tsx';
 
 type Props = { card: MarketplaceVehicleCard };
 
 export function VehicleCard({ card }: Props) {
-  const location = dealerLocation(card.dealerCity, card.dealerState);
-  const title = vehicleTitle(card);
+  const location = formatLocation(card.dealerCity, card.dealerState);
+  const title = vehicleHeading(card);
 
   return (
-    <article className="group flex h-full flex-col overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm transition hover:border-blue-300 hover:shadow-md">
-      <a href={listingHref(card.listingId)} className="block flex-1">
+    <article className="group mp-card flex h-full flex-col overflow-hidden transition hover:border-blue-300 hover:shadow-md">
+      <a href={listingHref(card.listingId)} className="mp-focus block flex-1 rounded-t-2xl">
         <VehicleImage
           src={card.mediaUrls[0]}
           alt={title}
@@ -22,12 +21,8 @@ export function VehicleCard({ card }: Props) {
 
         <div className="space-y-3 p-4">
           <div className="space-y-1">
-            <h3 className="text-base font-semibold leading-snug text-slate-900">
-              {card.year} {card.make} {card.model}
-            </h3>
-            {card.trim && (
-              <p className="text-sm text-slate-500">{card.trim}</p>
-            )}
+            <h3 className="text-base font-semibold leading-snug text-slate-900">{title}</h3>
+            {card.trim && <p className="text-sm text-slate-500">{card.trim}</p>}
           </div>
 
           <p className="text-xl font-bold tabular-nums text-slate-900">
@@ -43,16 +38,14 @@ export function VehicleCard({ card }: Props) {
       </a>
 
       <div className="border-t border-slate-100 px-4 py-3">
-        <p className="text-xs font-medium uppercase tracking-wide text-slate-400">Dealer</p>
+        <p className="mp-label text-slate-400">Dealer</p>
         <a
           href={dealerHref(card.dealerId)}
-          className="mt-0.5 block text-sm font-medium text-slate-700 transition hover:text-blue-600"
+          className="mp-focus mt-0.5 block text-sm font-medium text-slate-700 hover:text-blue-600"
         >
           {card.dealerName}
         </a>
-        {location && (
-          <p className="mt-0.5 text-xs text-slate-500">{location}</p>
-        )}
+        {location && <p className="mt-0.5 text-xs text-slate-500">{location}</p>}
       </div>
     </article>
   );

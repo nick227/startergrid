@@ -1,4 +1,6 @@
-import type { ListFilters } from '../lib/api.ts';
+import { useEffect, useRef } from 'react';
+import type { ListFilters } from '../../lib/api.ts';
+import { SectionCard } from './SectionCard.tsx';
 
 type Props = {
   make: string;
@@ -10,12 +12,10 @@ type Props = {
   onSubmit: () => void;
   onClear: () => void;
   hasActiveFilters: boolean;
+  focusToken?: number;
 };
 
-const inputClass =
-  'w-full rounded-lg border border-slate-200 bg-white px-3 py-2.5 text-sm text-slate-900 shadow-sm transition focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/20';
-
-export function ListFilterBar({
+export function FilterBar({
   make,
   model,
   condition,
@@ -25,41 +25,52 @@ export function ListFilterBar({
   onSubmit,
   onClear,
   hasActiveFilters,
+  focusToken = 0,
 }: Props) {
+  const makeRef = useRef<HTMLInputElement>(null);
+
+  useEffect(() => {
+    if (focusToken > 0) makeRef.current?.focus();
+  }, [focusToken]);
+
   return (
-    <section className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm sm:p-5">
+    <SectionCard padded={false} className="p-4 sm:p-5">
       <form
         onSubmit={e => { e.preventDefault(); onSubmit(); }}
-        className="grid gap-4 sm:grid-cols-2 lg:grid-cols-[1fr_1fr_auto_auto_auto]"
+        className="grid gap-4 sm:grid-cols-2 lg:grid-cols-[1fr_1fr_12rem_auto]"
+        aria-label="Search vehicles"
       >
         <label className="flex flex-col gap-1.5">
-          <span className="text-xs font-semibold uppercase tracking-wide text-slate-500">Make</span>
+          <span className="mp-label">Make</span>
           <input
-            type="text"
+            ref={makeRef}
+            type="search"
             value={make}
             onChange={e => onMakeChange(e.target.value)}
             placeholder="Any make"
-            className={inputClass}
+            className="mp-input"
+            autoComplete="off"
           />
         </label>
 
         <label className="flex flex-col gap-1.5">
-          <span className="text-xs font-semibold uppercase tracking-wide text-slate-500">Model</span>
+          <span className="mp-label">Model</span>
           <input
-            type="text"
+            type="search"
             value={model}
             onChange={e => onModelChange(e.target.value)}
             placeholder="Any model"
-            className={inputClass}
+            className="mp-input"
+            autoComplete="off"
           />
         </label>
 
         <label className="flex flex-col gap-1.5 sm:col-span-2 lg:col-span-1">
-          <span className="text-xs font-semibold uppercase tracking-wide text-slate-500">Condition</span>
+          <span className="mp-label">Condition</span>
           <select
             value={condition ?? ''}
             onChange={e => onConditionChange((e.target.value as ListFilters['condition']) || undefined)}
-            className={inputClass}
+            className="mp-input"
           >
             <option value="">Any condition</option>
             <option value="NEW">New</option>
@@ -68,24 +79,17 @@ export function ListFilterBar({
           </select>
         </label>
 
-        <div className="flex items-end gap-2 sm:col-span-2 lg:col-span-2">
-          <button
-            type="submit"
-            className="rounded-lg bg-blue-600 px-5 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-blue-700"
-          >
+        <div className="flex flex-col gap-2 sm:col-span-2 sm:flex-row sm:items-end lg:col-span-1">
+          <button type="submit" className="mp-btn-primary w-full sm:w-auto">
             Search
           </button>
           {hasActiveFilters && (
-            <button
-              type="button"
-              onClick={onClear}
-              className="rounded-lg px-4 py-2.5 text-sm font-medium text-slate-600 transition hover:bg-slate-100 hover:text-slate-900"
-            >
+            <button type="button" onClick={onClear} className="mp-btn-ghost w-full sm:w-auto">
               Clear filters
             </button>
           )}
         </div>
       </form>
-    </section>
+    </SectionCard>
   );
 }

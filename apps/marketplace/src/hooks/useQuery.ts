@@ -3,9 +3,14 @@ import { useState, useEffect, useCallback } from 'react';
 export type QueryState<T> = {
   data:    T | null;
   loading: boolean;
-  error:   string | null;
+  error:   unknown;
   reload:  () => void;
 };
+
+export function queryErrorMessage(error: unknown): string {
+  if (error instanceof Error) return error.message;
+  return 'Something went wrong';
+}
 
 export function useQuery<T>(
   loader: () => Promise<T>,
@@ -13,7 +18,7 @@ export function useQuery<T>(
 ): QueryState<T> {
   const [data,    setData]    = useState<T | null>(null);
   const [loading, setLoading] = useState(true);
-  const [error,   setError]   = useState<string | null>(null);
+  const [error,   setError]   = useState<unknown>(null);
   const [tick,    setTick]    = useState(0);
 
   const reload = useCallback(() => setTick(t => t + 1), []);
@@ -24,7 +29,7 @@ export function useQuery<T>(
     setError(null);
     loader()
       .then(d  => { if (active) { setData(d);  setLoading(false); } })
-      .catch(e => { if (active) { setError(e instanceof Error ? e.message : 'Error'); setLoading(false); } });
+      .catch(e => { if (active) { setError(e); setLoading(false); } });
     return () => { active = false; };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [...deps, tick]);

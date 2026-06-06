@@ -1,18 +1,19 @@
 import { useState, useCallback, useEffect } from 'react';
-import { useQuery } from '../hooks/useQuery.ts';
+import { useQuery, queryErrorMessage } from '../hooks/useQuery.ts';
+import { usePageMeta } from '../hooks/usePageMeta.ts';
 import { fetchVehicles, type ListFilters } from '../lib/api.ts';
+import { formatResultCount } from '../lib/display.ts';
 import { saveListReturn } from '../lib/listReturn.ts';
 import { listHref, parseRoute, type ListQuery } from '../lib/routes.ts';
 import { VehicleCard } from '../components/VehicleCard.tsx';
-import { ListFilterBar } from '../components/ListFilterBar.tsx';
-import { Pagination } from '../components/Pagination.tsx';
-import {
-  Shell,
-  PageHero,
-  VehicleGridSkeleton,
-  ErrorState,
-  EmptyState,
-} from '../components/Shell.tsx';
+import { PageShell } from '../components/layout/PageShell.tsx';
+import { PageHeader } from '../components/ui/PageHeader.tsx';
+import { FilterBar } from '../components/ui/FilterBar.tsx';
+import { Pagination } from '../components/ui/Pagination.tsx';
+import { VehicleGrid } from '../components/ui/VehicleGrid.tsx';
+import { SkeletonGrid } from '../components/ui/SkeletonGrid.tsx';
+import { ErrorState } from '../components/ui/ErrorState.tsx';
+import { EmptyState } from '../components/ui/EmptyState.tsx';
 
 const PAGE_SIZE = 24;
 
@@ -23,6 +24,12 @@ export default function VehicleListPage({ initialQuery = {} }: Props) {
   const [model,     setModel]     = useState(initialQuery.model ?? '');
   const [condition, setCondition] = useState<ListFilters['condition']>(initialQuery.condition);
   const [page,      setPage]      = useState(initialQuery.page ?? 1);
+  const [focusToken, setFocusToken] = useState(0);
+
+  usePageMeta(
+    'Browse vehicles',
+    'Compare price, mileage, and condition from participating dealers.',
+  );
 
   const listQuery: ListQuery = {
     make:      make.trim()  || undefined,
@@ -67,6 +74,7 @@ export default function VehicleListPage({ initialQuery = {} }: Props) {
     setModel('');
     setCondition(undefined);
     setPage(1);
+    setFocusToken(t => t + 1);
   }
 
   const vehicles = data?.vehicles ?? [];
@@ -75,14 +83,14 @@ export default function VehicleListPage({ initialQuery = {} }: Props) {
   const hasActiveFilters = Boolean(make.trim() || model.trim() || condition);
 
   return (
-    <Shell>
-      <PageHero
+    <PageShell>
+      <PageHeader
         title="Browse vehicles"
         subtitle="Compare price, mileage, and condition from participating dealers. Read-only listings — no account required."
       />
 
-      <div className="mb-8">
-        <ListFilterBar
+      <div className="mb-6 sm:mb-8">
+        <FilterBar
           make={make}
           model={model}
           condition={condition}
@@ -92,31 +100,32 @@ export default function VehicleListPage({ initialQuery = {} }: Props) {
           onSubmit={reload}
           onClear={resetFilters}
           hasActiveFilters={hasActiveFilters}
+          focusToken={focusToken}
         />
       </div>
 
       {loading && !data ? (
-        <VehicleGridSkeleton />
+        <SkeletonGrid />
       ) : error ? (
-        <ErrorState message={error} onRetry={reload} />
+        <ErrorState message={queryErrorMessage(error)} onRetry={reload} />
       ) : vehicles.length === 0 ? (
         <EmptyState
           title="No vehicles match your search"
-          description="Try different make or model keywords, or clear filters to see everything available."
-          actionLabel={hasActiveFilters ? 'Clear filters' : undefined}
+          description="Try different make or model keywords, or reset filters to browse everything available."
+          actionLabel={hasActiveFilters ? 'Reset filters' : undefined}
           onAction={hasActiveFilters ? resetFilters : undefined}
         />
       ) : (
         <>
-          <p className="mb-5 text-sm font-medium text-slate-600">
-            {total.toLocaleString()} vehicle{total !== 1 ? 's' : ''} available
+          <p className="mb-4 text-sm font-medium text-slate-600 sm:mb-5">
+            {formatResultCount(total)} available
           </p>
 
-          <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3">
+          <VehicleGrid>
             {vehicles.map(card => (
               <VehicleCard key={card.listingId} card={card} />
             ))}
-          </div>
+          </VehicleGrid>
 
           <Pagination
             page={page}
@@ -127,6 +136,6 @@ export default function VehicleListPage({ initialQuery = {} }: Props) {
           />
         </>
       )}
-    </Shell>
+    </PageShell>
   );
 }

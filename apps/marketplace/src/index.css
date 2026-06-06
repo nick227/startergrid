@@ -11,3 +11,53 @@
     @apply underline-offset-2;
   }
 }
+
+@layer components {
+  .mp-page {
+    @apply mx-auto max-w-6xl px-4 py-6 sm:px-6 sm:py-8;
+  }
+
+  .mp-card {
+    @apply rounded-2xl border border-slate-200 bg-white shadow-sm;
+  }
+
+  .mp-grid-vehicles {
+    @apply grid grid-cols-1 gap-4 sm:grid-cols-2 sm:gap-5 lg:grid-cols-3;
+  }
+
+  .mp-aspect-vehicle {
+    @apply aspect-[4/3];
+  }
+
+  .mp-input {
+    @apply mp-focus w-full rounded-lg border border-slate-200 bg-white px-3 py-2.5 text-sm text-slate-900 shadow-sm transition placeholder:text-slate-400;
+  }
+
+  .mp-btn {
+    @apply mp-focus inline-flex items-center justify-center rounded-lg px-4 py-2.5 text-sm font-semibold transition disabled:cursor-not-allowed disabled:opacity-40;
+  }
+
+  .mp-btn-primary {
+    @apply mp-btn bg-blue-600 text-white shadow-sm hover:bg-blue-700;
+  }
+
+  .mp-btn-secondary {
+    @apply mp-btn border border-slate-200 bg-white text-slate-700 hover:bg-slate-50;
+  }
+
+  .mp-btn-ghost {
+    @apply mp-btn text-slate-600 hover:bg-slate-100 hover:text-slate-900;
+  }
+
+  .mp-focus {
+    @apply focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2;
+  }
+
+  .mp-label {
+    @apply text-xs font-semibold uppercase tracking-wide text-slate-500;
+  }
+
+  .mp-section-title {
+    @apply text-lg font-semibold text-slate-900 sm:text-xl;
+  }
+}

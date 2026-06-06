@@ -9,7 +9,7 @@ import {
   type MarketplaceDealerIndexResponse,
 } from '@dealer-marketplace/client';
 
-export type { MarketplaceVehicleCard }    from '@dealer-marketplace/client';
+export type { MarketplaceVehicleCard } from '@dealer-marketplace/client';
 export type { MarketplaceVehicleListResponse, MarketplaceVehicleDetailResponse, MarketplaceDealerIndexResponse };
 
 export type ListFilters = {
@@ -20,20 +20,34 @@ export type ListFilters = {
   pageSize?:  number;
 };
 
-function toMessage(e: unknown): string {
+export class FetchError extends Error {
+  readonly status: number | undefined;
+
+  constructor(message: string, status?: number) {
+    super(message);
+    this.name = 'FetchError';
+    this.status = status;
+  }
+}
+
+export function isNotFoundError(error: unknown): boolean {
+  return error instanceof FetchError && error.status === 404;
+}
+
+function toFetchError(e: unknown): FetchError {
   if (e instanceof ApiError) {
     const body = e.body as { error?: string } | undefined;
-    return body?.error ?? e.message ?? 'Request failed';
+    return new FetchError(body?.error ?? e.message ?? 'Request failed', e.status);
   }
-  if (e instanceof Error) return e.message;
-  return 'Unknown error';
+  if (e instanceof Error) return new FetchError(e.message);
+  return new FetchError('Unknown error');
 }
 
 async function call<T>(fn: () => Promise<T>): Promise<T> {
   try {
     return await fn();
   } catch (e) {
-    throw new Error(toMessage(e));
+    throw toFetchError(e);
   }
 }
 
@@ -53,16 +67,4 @@ export function fetchVehicle(listingId: string): Promise<MarketplaceVehicleDetai
 
 export function fetchDealer(dealerId: string): Promise<MarketplaceDealerIndexResponse> {
   return call(() => MarketplaceService.getMarketplaceDealerIndex({ dealerId }));
-}
-
-export function formatPrice(priceCents: number): string {
-  return new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD', maximumFractionDigits: 0 }).format(priceCents / 100);
-}
-
-export function formatMileage(mileage: number): string {
-  return new Intl.NumberFormat('en-US').format(mileage) + ' mi';
-}
-
-export function formatListedDate(isoString: string): string {
-  return new Date(isoString).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' });
 }
