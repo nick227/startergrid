@@ -1,7 +1,7 @@
-// Phase 3A hardening — cross-category marketplace boundary tests.
+// Phase 3A/3B hardening — cross-category marketplace boundary tests.
 //
-// Proves AUTOMOTIVE and TRAILERS_POWERSPORTS_RV inventory cannot leak across
-// category-scoped list, detail, feed, dealer index, and favorites routes.
+// Proves AUTOMOTIVE, TRAILERS_POWERSPORTS_RV, and BOATS inventory cannot leak
+// across category-scoped list, detail, feed, dealer index, and favorites routes.
 
 import assert from 'node:assert/strict';
 import { describe, it } from 'node:test';
@@ -38,6 +38,67 @@ const TRAILERS_DEALER = {
   businessCategory: 'TRAILERS_POWERSPORTS_RV' as const,
 };
 
+const BOATS_DEALER = {
+  id: 'dealer-boats',
+  legalName: 'Harborline Marine LLC',
+  dbaName: 'Harborline Marine',
+  rooftopAddress: { city: 'Fort Lauderdale', state: 'FL' },
+  websiteUrl: null,
+  businessCategory: 'BOATS' as const,
+};
+
+type MarketplaceCategory = 'AUTOMOTIVE' | 'TRAILERS_POWERSPORTS_RV' | 'BOATS';
+
+const CATEGORY_CONFIG: Record<
+  MarketplaceCategory,
+  {
+    dealer: typeof AUTOMOTIVE_DEALER | typeof TRAILERS_DEALER | typeof BOATS_DEALER;
+    id: string;
+    stockNumber: string;
+    vin: string;
+    make: string;
+    model: string;
+    mileage: number;
+    categoryPayload: unknown;
+  }
+> = {
+  AUTOMOTIVE: {
+    dealer: AUTOMOTIVE_DEALER,
+    id: 'listing-auto-1',
+    stockNumber: 'AUTO-001',
+    vin: '1HGCM82633A004352',
+    make: 'Toyota',
+    model: 'Camry',
+    mileage: 18_000,
+    categoryPayload: null,
+  },
+  TRAILERS_POWERSPORTS_RV: {
+    dealer: TRAILERS_DEALER,
+    id: 'listing-trailer-1',
+    stockNumber: 'STR-RV-001',
+    vin: '1UJBJ0BT5K1A01234',
+    make: 'Jayco',
+    model: 'Redhawk SE',
+    mileage: 125,
+    categoryPayload: { usageUnit: 'hours', unitType: 'ATV' },
+  },
+  BOATS: {
+    dealer: BOATS_DEALER,
+    id: 'listing-boat-1',
+    stockNumber: 'HLM-BW-001',
+    vin: 'BOS12345A223',
+    make: 'Boston Whaler',
+    model: '280 Outrage',
+    mileage: 450,
+    categoryPayload: {
+      usageUnit: 'hours',
+      vesselType: 'Center Console',
+      lengthFt: 28,
+      engineHours: 450,
+    },
+  },
+};
+
 type InventoryRow = {
   id: string;
   stockNumber: string;
@@ -56,40 +117,38 @@ type InventoryRow = {
   dealershipId: string;
   categoryPayload?: unknown;
   media: Array<{ url: string; sortOrder: number; kind?: string }>;
-  dealership: typeof AUTOMOTIVE_DEALER | typeof TRAILERS_DEALER;
+  dealership: typeof AUTOMOTIVE_DEALER | typeof TRAILERS_DEALER | typeof BOATS_DEALER;
 };
 
 function inventoryRow(
-  category: 'AUTOMOTIVE' | 'TRAILERS_POWERSPORTS_RV',
+  category: MarketplaceCategory,
   overrides: Partial<InventoryRow> = {},
 ): InventoryRow {
-  const dealer = category === 'AUTOMOTIVE' ? AUTOMOTIVE_DEALER : TRAILERS_DEALER;
+  const config = CATEGORY_CONFIG[category];
   return {
-    id: category === 'AUTOMOTIVE' ? 'listing-auto-1' : 'listing-trailer-1',
-    stockNumber: category === 'AUTOMOTIVE' ? 'AUTO-001' : 'STR-RV-001',
-    vin: category === 'AUTOMOTIVE' ? '1HGCM82633A004352' : '1UJBJ0BT5K1A01234',
+    id: config.id,
+    stockNumber: config.stockNumber,
+    vin: config.vin,
     year: 2022,
-    make: category === 'AUTOMOTIVE' ? 'Toyota' : 'Jayco',
-    model: category === 'AUTOMOTIVE' ? 'Camry' : 'Redhawk SE',
+    make: config.make,
+    model: config.model,
     trim: null,
-    mileage: category === 'AUTOMOTIVE' ? 18_000 : 125,
+    mileage: config.mileage,
     priceCents: 2_499_900,
     condition: 'USED',
     exteriorColor: 'Black',
     createdAt: new Date('2026-06-01T00:00:00.000Z'),
     soldAt: null,
     removedAt: null,
-    dealershipId: dealer.id,
-    categoryPayload: category === 'TRAILERS_POWERSPORTS_RV'
-      ? { usageUnit: 'hours', unitType: 'ATV' }
-      : null,
+    dealershipId: config.dealer.id,
+    categoryPayload: config.categoryPayload,
     media: [{ url: 'https://cdn.example.com/1.jpg', sortOrder: 0, kind: 'IMAGE' }],
-    dealership: dealer,
+    dealership: config.dealer,
     ...overrides,
   };
 }
 
-function makeDualCategoryPrisma(rows: InventoryRow[]): PrismaClient {
+function makeCategoryPrisma(rows: InventoryRow[]): PrismaClient {
   const eligible = rows.filter(r => !r.soldAt && !r.removedAt && r.priceCents > 0);
 
   function matchesWhere(row: InventoryRow, where?: Record<string, unknown>): boolean {
@@ -131,7 +190,11 @@ function makeDualCategoryPrisma(rows: InventoryRow[]): PrismaClient {
         if (!dealerId) return null;
         return rows.find(r => r.dealership.id === dealerId)?.dealership ?? null;
       },
-      findMany: async () => [AUTOMOTIVE_DEALER, TRAILERS_DEALER],
+      findMany: async () => {
+        const dealers = new Map<string, InventoryRow['dealership']>();
+        for (const row of rows) dealers.set(row.dealership.id, row.dealership);
+        return [...dealers.values()];
+      },
     },
   } as unknown as PrismaClient;
 }
@@ -141,7 +204,7 @@ describe('marketplace query — AUTOMOTIVE vs TRAILERS isolation', () => {
     inventoryRow('AUTOMOTIVE'),
     inventoryRow('TRAILERS_POWERSPORTS_RV'),
   ];
-  const prisma = makeDualCategoryPrisma(rows);
+  const prisma = makeCategoryPrisma(rows);
 
   it('list returns only matching category inventory', async () => {
     const automotive = await listMarketplaceVehicles(prisma, { category: 'AUTOMOTIVE' });
@@ -229,6 +292,55 @@ describe('marketplace query — AUTOMOTIVE vs TRAILERS isolation', () => {
     assert.ok(!('vin' in card));
     assert.equal(card.usageUnit, 'hours');
     assert.equal(JSON.stringify(card).includes('1UJBJ0BT5K1A01234'), false);
+  });
+});
+
+describe('marketplace query — three-way category isolation', () => {
+  const rows = [
+    inventoryRow('AUTOMOTIVE'),
+    inventoryRow('TRAILERS_POWERSPORTS_RV'),
+    inventoryRow('BOATS'),
+  ];
+  const prisma = makeCategoryPrisma(rows);
+  const categories: MarketplaceCategory[] = ['AUTOMOTIVE', 'TRAILERS_POWERSPORTS_RV', 'BOATS'];
+
+  it('each category list returns only its own inventory', async () => {
+    for (const category of categories) {
+      const result = await listMarketplaceVehicles(prisma, { category });
+      assert.equal(result.vehicles.length, 1);
+      assert.equal(result.vehicles[0]!.listingId, CATEGORY_CONFIG[category].id);
+    }
+  });
+
+  it('detail 404s for every cross-category pairing', async () => {
+    for (const listingCategory of categories) {
+      for (const queryCategory of categories) {
+        if (listingCategory === queryCategory) continue;
+        const detail = await getMarketplaceVehicle(
+          prisma,
+          CATEGORY_CONFIG[listingCategory].id,
+          queryCategory,
+        );
+        assert.equal(detail, null, `${listingCategory} listing under ${queryCategory} query`);
+      }
+    }
+  });
+
+  it('boats detail exposes marine classification fields', async () => {
+    const detail = await getMarketplaceVehicle(prisma, 'listing-boat-1', 'BOATS');
+    assert.ok(detail);
+    assert.equal(detail!.vehicle.classification.usageUnit, 'hours');
+    assert.equal(detail!.vehicle.classification.unitType, 'Center Console');
+    assert.equal(detail!.vehicle.classification.lengthFt, 28);
+    assert.equal(detail!.vehicle.classification.engineHours, 450);
+  });
+
+  it('boats browse cards expose usageUnit and never expose HIN', async () => {
+    const boats = await listMarketplaceVehicles(prisma, { category: 'BOATS' });
+    const card = boats.vehicles[0]!;
+    assert.ok(!('vin' in card));
+    assert.equal(card.usageUnit, 'hours');
+    assert.equal(JSON.stringify(card).includes('BOS12345A223'), false);
   });
 });
 
@@ -328,5 +440,61 @@ describe('HTTP — marketplace category boundaries', () => {
       headers: { Cookie: `mp_session=${rawToken}` },
     });
     assert.equal(res.statusCode, 404);
+  });
+
+  it('GET boat detail 200s under matching category with marine fields', async () => {
+    const boatRow = {
+      ...inventoryRow('BOATS'),
+      interiorColor: null,
+      bodyStyle: 'Center Console',
+      drivetrain: null,
+      fuelType: null,
+      transmission: null,
+      media: [{
+        id: 'media-boat-1',
+        url: 'https://cdn.example.com/boat.jpg',
+        sortOrder: 0,
+        kind: 'IMAGE',
+        width: 1200,
+        height: 900,
+        mimeType: 'image/jpeg',
+      }],
+    };
+
+    const prisma = {
+      vehicle: {
+        findFirst: async ({ where }: { where?: Record<string, unknown> }) => {
+          if (where?.id === boatRow.id) return boatRow;
+          return null;
+        },
+        findMany: async () => [],
+        count: async () => 0,
+        groupBy: async () => [],
+      },
+      dealershipProfile: {
+        findUnique: async () => boatRow.dealership,
+        findMany: async () => [boatRow.dealership],
+      },
+    } as unknown as PrismaClient;
+
+    const app = buildApp(prisma);
+    const wrong = await app.inject({
+      method: 'GET',
+      url: `/api/marketplace/vehicles/${boatRow.id}?category=AUTOMOTIVE`,
+    });
+    assert.equal(wrong.statusCode, 404);
+
+    const res = await app.inject({
+      method: 'GET',
+      url: `/api/marketplace/vehicles/${boatRow.id}?category=BOATS`,
+    });
+    assert.equal(res.statusCode, 200, res.body);
+    const body = res.json() as {
+      vehicle: { classification: { usageUnit: string | null; unitType: string | null; lengthFt: number | null; engineHours: number | null } };
+    };
+    assert.equal(body.vehicle.classification.usageUnit, 'hours');
+    assert.equal(body.vehicle.classification.unitType, 'Center Console');
+    assert.equal(body.vehicle.classification.lengthFt, 28);
+    assert.equal(body.vehicle.classification.engineHours, 450);
   });
 });

@@ -119,6 +119,12 @@ export default function GenericListingDetailPage({ listingId }: Props) {
             {classification.unitType && (
               <Spec label="Type" value={classification.unitType} className="col-span-2" />
             )}
+            {classification.lengthFt != null && (
+              <Spec label="Length" value={`${classification.lengthFt} ft`} className="col-span-2" />
+            )}
+            {classification.engineHours != null && (
+              <Spec label="Engine hours" value={formatUsage(classification.engineHours, 'hours')} className="col-span-2" />
+            )}
             {classification.bodyStyle && (
               <Spec label="Body style" value={classification.bodyStyle} className="col-span-2" />
             )}

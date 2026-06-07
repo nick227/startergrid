@@ -153,7 +153,9 @@ function shapeClassification(row: DbVehicleDetailRow) {
   return {
     mileage:     row.mileage,
     usageUnit:   usageUnitFromPayload(row.categoryPayload) ?? null,
-    unitType:    payload.unitType ?? null,
+    unitType:    payload.vesselType ?? payload.unitType ?? null,
+    lengthFt:    payload.lengthFt ?? null,
+    engineHours: payload.engineHours ?? null,
     bodyStyle:   row.bodyStyle,
     vehicleType: null,
     vehicleSize: null,

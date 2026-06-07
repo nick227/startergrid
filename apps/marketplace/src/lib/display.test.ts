@@ -17,9 +17,10 @@ describe('formatUsage — null-safety', () => {
   });
 });
 
-describe('category label isolation — no automotive leak on trailers', () => {
+describe('category label isolation — no automotive leak on trailers or boats', () => {
   const automotive = resolveCategorySchema('AUTOMOTIVE');
   const trailers = resolveCategorySchema('TRAILERS_POWERSPORTS_RV');
+  const boats = resolveCategorySchema('BOATS');
 
   it('trailers schema uses unit labels, not vehicle/vin defaults', () => {
     expect(trailers.asset.singular).toBe('unit');
@@ -37,5 +38,20 @@ describe('category label isolation — no automotive leak on trailers', () => {
     const trailersUsage = trailers.fields.find(f => f.key === 'mileage')?.label;
     const automotiveUsage = automotive.fields.find(f => f.key === 'mileage')?.label;
     expect(trailersUsage).not.toBe(automotiveUsage);
+  });
+
+  it('boats schema uses HIN and Hours labels, not vehicle/vin defaults', () => {
+    expect(boats.asset.singular).toBe('boat');
+    expect(boats.asset.idLabel).toBe('HIN');
+    expect(boats.fields.find(f => f.key === 'mileage')?.label).toBe('Hours');
+    expect(boats.copy.titleColumn).toBe('Boat');
+  });
+
+  it('boats labels differ from automotive and trailers', () => {
+    expect(boats.asset.idLabel).not.toBe(automotive.asset.idLabel);
+    expect(boats.asset.idLabel).not.toBe(trailers.asset.idLabel);
+    expect(boats.fields.find(f => f.key === 'mileage')?.label).not.toBe(
+      automotive.fields.find(f => f.key === 'mileage')?.label,
+    );
   });
 });

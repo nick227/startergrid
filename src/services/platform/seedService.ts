@@ -3,6 +3,7 @@ import type { PrismaClient, Prisma } from '@prisma/client';
 import { platformProfiles } from '../../data/platformProfiles.js';
 import { pristineApiDealership, pristineApiVehicles } from '../../fixtures/scenarios/pristineApiValidation.fixture.js';
 import { trailersDealerPayload, trailersDealerVehicles } from '../../fixtures/scenarios/trailersDealer.fixture.js';
+import { boatsDealerPayload, boatsDealerVehicles } from '../../fixtures/scenarios/boatsDealer.fixture.js';
 import type { VehiclePayload } from '../../lib/types.js';
 
 function sha256(content: string): string {
@@ -98,7 +99,7 @@ export async function seedPristineDealer(prisma: PrismaClient): Promise<string> 
   return dealership.id;
 }
 
-function trailersVehicleCreateInput(v: VehiclePayload): Prisma.VehicleCreateWithoutDealershipInput {
+function categoryVehicleCreateInput(v: VehiclePayload): Prisma.VehicleCreateWithoutDealershipInput {
   return {
     vin: v.vin!,
     stockNumber: v.stockNumber,
@@ -144,7 +145,7 @@ async function ensureTrailersInventory(prisma: PrismaClient, dealershipId: strin
     await prisma.vehicle.create({
       data: {
         dealershipId,
-        ...trailersVehicleCreateInput(fixture),
+        ...categoryVehicleCreateInput(fixture),
       },
     });
   }
@@ -182,11 +183,69 @@ export async function seedTrailersDealer(prisma: PrismaClient): Promise<string> 
       inventorySize: trailersDealerPayload.inventorySize,
       desiredChannels: trailersDealerPayload.desiredChannels as unknown as Prisma.InputJsonValue,
       vehicles: {
-        create: trailersDealerVehicles.map(v => trailersVehicleCreateInput(v)),
+        create: trailersDealerVehicles.map(v => categoryVehicleCreateInput(v)),
       },
     },
   });
 
   console.log(`seeded trailers dealer: ${dealership.legalName} (${dealership.id})`);
+  return dealership.id;
+}
+
+async function ensureBoatsInventory(prisma: PrismaClient, dealershipId: string): Promise<number> {
+  const rows = await prisma.vehicle.findMany({
+    where: { dealershipId },
+    select: { stockNumber: true },
+  });
+  const existing = new Set(rows.map(row => row.stockNumber));
+  const missing = boatsDealerVehicles.filter(v => !existing.has(v.stockNumber));
+  for (const fixture of missing) {
+    await prisma.vehicle.create({
+      data: {
+        dealershipId,
+        ...categoryVehicleCreateInput(fixture),
+      },
+    });
+  }
+  return missing.length;
+}
+
+export async function seedBoatsDealer(prisma: PrismaClient): Promise<string> {
+  const existing = await prisma.dealershipProfile.findFirst({
+    where: { legalName: boatsDealerPayload.legalName },
+  });
+
+  if (existing) {
+    if (existing.businessCategory !== 'BOATS') {
+      await prisma.dealershipProfile.update({
+        where: { id: existing.id },
+        data: { businessCategory: 'BOATS' },
+      });
+    }
+    const added = await ensureBoatsInventory(prisma, existing.id);
+    if (added > 0) {
+      console.log(`backfilled ${added} boats for ${existing.legalName}`);
+    }
+    return existing.id;
+  }
+
+  const dealership = await prisma.dealershipProfile.create({
+    data: {
+      legalName: boatsDealerPayload.legalName,
+      dbaName: boatsDealerPayload.dbaName,
+      dealerLicense: boatsDealerPayload.dealerLicense,
+      businessCategory: 'BOATS',
+      rooftopAddress: boatsDealerPayload.rooftopAddress as unknown as Prisma.InputJsonValue,
+      websiteUrl: boatsDealerPayload.websiteUrl,
+      primaryContact: boatsDealerPayload.primaryContact as unknown as Prisma.InputJsonValue,
+      inventorySize: boatsDealerPayload.inventorySize,
+      desiredChannels: boatsDealerPayload.desiredChannels as unknown as Prisma.InputJsonValue,
+      vehicles: {
+        create: boatsDealerVehicles.map(v => categoryVehicleCreateInput(v)),
+      },
+    },
+  });
+
+  console.log(`seeded boats dealer: ${dealership.legalName} (${dealership.id})`);
   return dealership.id;
 }
