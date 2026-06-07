@@ -51,6 +51,8 @@ Junction record linking an operator account to one or more dealerships. Not all 
 
 Unique constraint on `(operatorAccountId, dealershipId)`.
 
+**Business category:** Inventory/content category is stored on `DealershipProfile.businessCategory` (not on `OperatorAccount`). Operators inherit the active org's category after dealer pick. See [business-category-schema.md](./business-category-schema.md).
+
 ### 1.3 — `OperatorSession`
 
 Server-side session record for token revocation and audit. Operator sessions use opaque tokens (not JWTs) so revocation is immediate.

@@ -1,0 +1,10 @@
+{
+  "name": "@auto-dealer/category-schemas",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Declarative business category schemas for operator console copy and asset presentation",
+  "exports": {
+    ".": "./src/index.ts"
+  }
+}

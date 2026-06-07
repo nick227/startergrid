@@ -10,6 +10,7 @@ servers:
     description: Same-origin (Vite proxy in dev)
 
 tags:
+  - name: Auth
   - name: Health
   - name: Dealers
   - name: Publish
@@ -20,6 +21,64 @@ tags:
   - name: Performance
 
 paths:
+  /api/auth/login:
+    post:
+      tags: [Auth]
+      security: []
+      x-route-classification: auth
+      operationId: operatorLogin
+      summary: Operator login — issues op_session HttpOnly cookie
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/OperatorLoginRequest'
+      responses:
+        '200':
+          description: Login successful
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OperatorIdentityResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+
+  /api/auth/logout:
+    post:
+      tags: [Auth]
+      security: []
+      x-route-classification: auth
+      operationId: operatorLogout
+      summary: Operator logout — revokes session and clears cookie
+      responses:
+        '200':
+          description: Logged out (succeeds even when no session exists)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OkResponse'
+
+  /api/auth/me:
+    get:
+      tags: [Auth]
+      security:
+        - CookieAuth: []
+      x-route-classification: auth
+      operationId: getOperatorMe
+      summary: Get current operator identity
+      responses:
+        '200':
+          description: Authenticated operator identity
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OperatorIdentityResponse'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+
   /health:
     get:
       tags: [Health]
@@ -933,10 +992,18 @@ paths:
 components:
   securitySchemes:
     OperatorAuth:
-      type: http
-      scheme: bearer
-      bearerFormat: dev-placeholder
-      description: Operator auth placeholder. In development, the Fastify guard also accepts x-operator-id or DEV_OPERATOR_ID.
+      type: apiKey
+      in: cookie
+      name: op_session
+      description: |
+        Operator session cookie issued by POST /api/auth/login (8-hour lifetime, HttpOnly, Secure in production).
+        In development/test the Fastify guard also accepts an x-operator-id request header as a fallback;
+        that path is never active when NODE_ENV=production.
+    CookieAuth:
+      type: apiKey
+      in: cookie
+      name: op_session
+      description: HttpOnly session cookie issued by POST /api/auth/login. Secure flag set in production.
 
   parameters:
     dealershipId:
@@ -991,6 +1058,43 @@ components:
             $ref: '#/components/schemas/ErrorResponse'
 
   schemas:
+    OkResponse:
+      type: object
+      required: [ok]
+      properties:
+        ok:
+          type: boolean
+
+    OperatorLoginRequest:
+      type: object
+      required: [email, password]
+      properties:
+        email:
+          type: string
+          format: email
+          maxLength: 255
+        password:
+          type: string
+          minLength: 8
+          maxLength: 128
+
+    OperatorIdentityResponse:
+      type: object
+      required: [id, email, role, dealerAccessIds]
+      properties:
+        id:
+          type: string
+        email:
+          type: string
+        role:
+          type: string
+          enum: [SUPER_ADMIN, OPERATOR, DEALER_OPERATOR]
+        dealerAccessIds:
+          type: array
+          items:
+            type: string
+          description: Dealership IDs the operator can access. Empty for SUPER_ADMIN (global access).
+
     ErrorResponse:
       type: object
       required: [error]
@@ -1531,9 +1635,29 @@ components:
         summary:
           $ref: '#/components/schemas/QueueSummary'
 
+    BusinessCategory:
+      type: string
+      enum:
+        - AUTOMOTIVE
+        - SONGS
+        - EBOOKS
+        - WATCHES
+        - SNEAKERS
+        - COLLECTIBLES
+        - APPAREL
+        - VACATION_RENTALS
+        - APARTMENTS
+        - HOMES
+        - COMMERCIAL_PROPERTY
+        - BOATS
+        - TRAILERS_POWERSPORTS_RV
+        - HEAVY_EQUIPMENT
+        - FURNITURE
+        - VIDEO_DISTRIBUTION
+
     DealerSummary:
       type: object
-      required: [id, legalName, dbaName, createdAt]
+      required: [id, legalName, dbaName, businessCategory, createdAt]
       properties:
         id:
           type: string
@@ -1542,6 +1666,8 @@ components:
         dbaName:
           type: string
           nullable: true
+        businessCategory:
+          $ref: '#/components/schemas/BusinessCategory'
         createdAt:
           type: string
           format: date-time

@@ -100,6 +100,7 @@ describe('dbDealershipToPayload', () => {
     id: 'd-001',
     legalName: 'Prairie Ridge Motors LLC',
     dbaName: 'Prairie Ridge Motors',
+    businessCategory: 'AUTOMOTIVE',
     dealerLicense: 'TX-PDM-482917',
     rooftopAddress: { street: '2148 Ridgepoint Pkwy', city: 'Plano', state: 'TX', postalCode: '75024', country: 'US' },
     websiteUrl: 'https://example.com',

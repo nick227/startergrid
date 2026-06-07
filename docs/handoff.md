@@ -795,7 +795,7 @@ Defined in `src/data/platformProfiles.ts`.
 ## Data Model (Key Tables)
 
 ```
-DealershipProfile
+DealershipProfile                    businessCategory (enum, default AUTOMOTIVE) — one category per org
   └── Vehicle → VehicleMedia
   └── PlatformApplication → SubmissionAttempt, AuthorizationPacket
   └── Lead

@@ -9,6 +9,25 @@ datasource db {
 
 // ─── Enums ───────────────────────────────────────────────────────────────────
 
+enum BusinessCategory {
+  AUTOMOTIVE
+  SONGS
+  EBOOKS
+  WATCHES
+  SNEAKERS
+  COLLECTIBLES
+  APPAREL
+  VACATION_RENTALS
+  APARTMENTS
+  HOMES
+  COMMERCIAL_PROPERTY
+  BOATS
+  TRAILERS_POWERSPORTS_RV
+  HEAVY_EQUIPMENT
+  FURNITURE
+  VIDEO_DISTRIBUTION
+}
+
 enum PlatformKind {
   MARKETPLACE
   AD_NETWORK
@@ -94,13 +113,113 @@ enum Environment {
   PRODUCTION
 }
 
+// ─── Auth enums and models ────────────────────────────────────────────────────
+
+enum OperatorRole {
+  SUPER_ADMIN     // Full platform access; no dealer scoping restrictions
+  OPERATOR        // Platform access scoped to assigned dealerships
+  DEALER_OPERATOR // Read-only access to own dealership data (Phase D — defined now for schema stability)
+}
+
+model OperatorAccount {
+  id           String       @id @default(cuid())
+  email        String       @unique @db.VarChar(255)
+  passwordHash String       @db.VarChar(255)
+  role         OperatorRole @default(OPERATOR)
+  isActive     Boolean      @default(true)
+  lastLoginAt  DateTime?
+  createdAt    DateTime     @default(now())
+  updatedAt    DateTime     @updatedAt
+
+  sessions     OperatorSession[]
+  dealerAccess OperatorDealerAccess[]
+}
+
+model OperatorDealerAccess {
+  id                String   @id @default(cuid())
+  operatorAccountId String
+  dealershipId      String
+  grantedAt         DateTime @default(now())
+  grantedBy         String   @db.VarChar(30) // OperatorAccount.id of the granting account (audit only, loose ref)
+
+  operator   OperatorAccount   @relation(fields: [operatorAccountId], references: [id], onDelete: Cascade)
+  dealership DealershipProfile @relation(fields: [dealershipId], references: [id], onDelete: Cascade)
+
+  @@unique([operatorAccountId, dealershipId])
+  @@index([operatorAccountId])
+  @@index([dealershipId])
+}
+
+model OperatorSession {
+  id                String    @id @default(cuid())
+  tokenHash         String    @unique @db.VarChar(64) // SHA-256 hex of the raw opaque token
+  operatorAccountId String
+  createdAt         DateTime  @default(now())
+  expiresAt         DateTime
+  revokedAt         DateTime?
+  ipAddress         String?   @db.VarChar(45)
+  userAgent         String?   @db.VarChar(255)
+
+  account OperatorAccount @relation(fields: [operatorAccountId], references: [id], onDelete: Cascade)
+
+  @@index([operatorAccountId])
+  @@index([expiresAt])
+}
+
+// ─── Marketplace user models ──────────────────────────────────────────────────
+// Separate domain from operator auth. Tokens are not interchangeable.
+
+model MarketplaceUser {
+  id           String    @id @default(cuid())
+  email        String    @unique @db.VarChar(255)
+  passwordHash String    @db.VarChar(255)
+  displayName  String?   @db.VarChar(160)
+  isActive     Boolean   @default(true)
+  lastLoginAt  DateTime?
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+
+  sessions  MarketplaceSession[]
+  favorites MarketplaceFavorite[]
+}
+
+model MarketplaceSession {
+  id                String    @id @default(cuid())
+  tokenHash         String    @unique @db.VarChar(64) // SHA-256 hex of the raw opaque token
+  marketplaceUserId String
+  createdAt         DateTime  @default(now())
+  expiresAt         DateTime
+  revokedAt         DateTime?
+  ipAddress         String?   @db.VarChar(45)
+  userAgent         String?   @db.VarChar(255)
+
+  user MarketplaceUser @relation(fields: [marketplaceUserId], references: [id], onDelete: Cascade)
+
+  @@index([marketplaceUserId])
+  @@index([expiresAt])
+}
+
+model MarketplaceFavorite {
+  id                String   @id @default(cuid())
+  marketplaceUserId String
+  vehicleId         String   // Vehicle.id (listing ID only — VIN is never stored here)
+  savedAt           DateTime @default(now())
+
+  user    MarketplaceUser @relation(fields: [marketplaceUserId], references: [id], onDelete: Cascade)
+  vehicle Vehicle         @relation(fields: [vehicleId], references: [id], onDelete: Cascade)
+
+  @@unique([marketplaceUserId, vehicleId])
+  @@index([marketplaceUserId])
+}
+
 // ─── Core models ─────────────────────────────────────────────────────────────
 
 model DealershipProfile {
-  id              String   @id @default(cuid())
-  legalName       String   @db.VarChar(160)
-  dbaName         String?  @db.VarChar(160)
-  dealerLicense   String?  @db.VarChar(80)
+  id               String           @id @default(cuid())
+  legalName        String           @db.VarChar(160)
+  dbaName          String?          @db.VarChar(160)
+  businessCategory BusinessCategory @default(AUTOMOTIVE)
+  dealerLicense    String?          @db.VarChar(80)
   rooftopAddress  Json
   websiteUrl      String?  @db.VarChar(255)
   primaryContact  Json
@@ -131,6 +250,7 @@ model DealershipProfile {
   vehiclePerformanceCaches     VehiclePerformanceCache[]
   platformPerformanceSummaries PlatformPerformanceSummary[]
   channelEvents                ChannelEvent[]
+  operatorAccess               OperatorDealerAccess[]
 }
 
 model Vehicle {
@@ -168,6 +288,7 @@ model Vehicle {
   syncEvents        SyncEvent[]
   performanceCache  VehiclePerformanceCache?
   channelEvents     ChannelEvent[]
+  favorites         MarketplaceFavorite[]
 
   @@index([dealershipId])
   @@unique([dealershipId, stockNumber])
@@ -455,12 +576,13 @@ model PlatformCredentialRef {
 }
 
 model DealerNotification {
-  id           String    @id @default(cuid())
-  dealershipId String
-  type         String    @db.VarChar(60)
-  payload      Json
-  deliveredAt  DateTime?
-  createdAt    DateTime  @default(now())
+  id             String    @id @default(cuid())
+  dealershipId   String
+  type           String    @db.VarChar(60)
+  payload        Json
+  deliveryStatus String    @default("PENDING") @db.VarChar(20)
+  deliveredAt    DateTime?
+  createdAt      DateTime  @default(now())
 
   dealership   DealershipProfile @relation(fields: [dealershipId], references: [id], onDelete: Cascade)
 
