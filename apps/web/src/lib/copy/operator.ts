@@ -27,6 +27,15 @@ export const operatorCopy = {
     noneConfigured: 'No channels configured yet.',
     fixSetup: 'Fix setup',
     openQueue: 'Open queue',
+    assetsListed: 'Assets listed',
+    observedAssists: 'Observed assists',
+    avgExposure: 'Avg exposure',
+    signals: 'Signals',
+    rowActions: {
+      details: 'Details',
+      queue: 'Queue',
+      history: 'History',
+    },
   },
   queue: {
     title: 'Queue',

@@ -4,7 +4,9 @@ import { movementBenchmarkParts, hasSimilarBenchmark } from './movementBenchmark
 import { LIFECYCLE_STATE_LABELS } from './lifecycleDisplay.ts';
 import { inventoryLabels } from './copy/index.ts';
 
-export type AssetDesktopField = { label: string; value: string };
+import type { OpsRowField } from './opsRowPresentation.ts';
+
+export type { OpsRowField as AssetDesktopField };
 
 function formatPrice(cents: number): string {
   return `$${(cents / 100).toLocaleString(undefined, { minimumFractionDigits: 0 })}`;
@@ -48,9 +50,9 @@ export function assetDesktopFields(
   vehicle: VehicleListItem,
   perf: VehiclePerformanceItem | null | undefined,
   showLifecycle: boolean
-): AssetDesktopField[] {
+): OpsRowField[] {
   const labels = inventoryLabels();
-  const fields: AssetDesktopField[] = [
+  const fields: OpsRowField[] = [
     { label: labels.refColumn, value: vehicle.stockNumber },
     {
       label: 'Price',

@@ -3,20 +3,17 @@ import { fetchPublishStatus, fetchAccounts, fetchPlatformPerformance } from '@/l
 import type { PlatformAccountDetail, PlatformPerformanceItem } from '@/lib/types.ts';
 import type { OperatorPageBaseProps } from '@/lib/operatorPage.ts';
 import { useAsyncQuery } from '@/hooks/useAsyncQuery.ts';
-import { OperatorPage, ErrorState, PanelSkeleton } from '@/components/operator';
-import { PageSituation, ControlBlock, OperationalRowCard } from '@/components/layout';
+import { OperatorPage, ErrorState } from '@/components/operator';
+import { PageSituation, ControlBlock } from '@/components/layout';
 import { FilterChips } from '@/components/generic';
-import { PlatformDetailDrawer } from '@/components/platforms/PlatformDetailDrawer.tsx';
+import { PlatformChannelList } from '@/components/platforms/PlatformChannelList.tsx';
 import {
   PLATFORM_CONNECTION_FILTERS,
-  platformConnection,
   platformMatchesFilter,
-  platformMetaLine,
   platformSituationSummary,
   sortPlatformsForDisplay,
   type PlatformConnectionFilter,
 } from '@/lib/platformPresentation.ts';
-import { formatPlatformAssistHint, formatPlatformExposureLine } from '@/lib/movementBenchmark.ts';
 import { operatorCopy } from '@/lib/copy/operator.ts';
 
 type Props = OperatorPageBaseProps & {
@@ -72,10 +69,6 @@ export default function PlatformsPage({ dealerId, nav, activeTab, initialPlatfor
     return sortPlatformsForDisplay(list, sort);
   }, [platforms, filter, search, sort]);
 
-  const selectedPlatform = selectedSlug
-    ? platforms.find(p => p.platformSlug === selectedSlug) ?? null
-    : null;
-
   const handleRefresh = () => {
     reload();
     accountsQuery.reload();
@@ -121,58 +114,21 @@ export default function PlatformsPage({ dealerId, nav, activeTab, initialPlatfor
         }
       />
 
-      <div className={`${selectedPlatform ? 'lg:grid lg:grid-cols-[1fr_min(22rem,38%)] lg:gap-4 lg:items-start' : ''}`}>
-        <div className="space-y-3">
-          {loading && !data ? (
-            <PanelSkeleton rows={6} />
-          ) : visible.length === 0 ? (
-            <p className="text-sm text-ink-muted py-8 text-center">{operatorCopy.platforms.emptyFilter}</p>
-          ) : (
-            visible.map(p => {
-              const conn = platformConnection(p);
-              const perf = perfBySlug.get(p.platformSlug);
-              const exposure = perf ? formatPlatformExposureLine(perf) : null;
-              const assist = perf ? formatPlatformAssistHint(perf) : null;
-              const metaParts = [platformMetaLine(p), exposure, assist].filter(Boolean);
-              const needsFix =
-                conn.connection === 'blocked' ||
-                conn.connection === 'inactive';
-
-              return (
-                <OperationalRowCard
-                  key={p.platformSlug}
-                  lead={p.platformName}
-                  statusLabel={conn.label}
-                  statusClassName={conn.pill}
-                  meta={metaParts.join(' · ')}
-                  selected={selectedSlug === p.platformSlug}
-                  onPress={() => setSelectedSlug(p.platformSlug)}
-                  actionLabel={needsFix ? operatorCopy.platforms.fixSetup : operatorCopy.platforms.openQueue}
-                  onAction={() => {
-                    if (needsFix) setSelectedSlug(p.platformSlug);
-                    else nav.goToPlatformQueue(p.platformSlug);
-                  }}
-                />
-              );
-            })
-          )}
-        </div>
-
-        {selectedPlatform && (
-          <PlatformDetailDrawer
-            platform={selectedPlatform}
-            account={accountBySlug.get(selectedPlatform.platformSlug) ?? null}
-            dealerId={dealerId}
-            nav={nav}
-            open
-            onClose={() => setSelectedSlug(null)}
-            onSaved={() => {
-              accountsQuery.reload();
-              reload();
-            }}
-          />
-        )}
-      </div>
+      <PlatformChannelList
+        platforms={visible}
+        perfBySlug={perfBySlug}
+        accountBySlug={accountBySlug}
+        dealerId={dealerId}
+        nav={nav}
+        selectedSlug={selectedSlug}
+        onSelectSlug={setSelectedSlug}
+        onAccountSaved={() => {
+          accountsQuery.reload();
+          reload();
+        }}
+        loading={loading && !data}
+        emptyMessage={operatorCopy.platforms.emptyFilter}
+      />
     </OperatorPage>
   );
 }

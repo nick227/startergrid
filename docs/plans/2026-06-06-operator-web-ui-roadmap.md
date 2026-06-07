@@ -81,7 +81,7 @@ When production pilot needs it.
 
 - [x] Platforms is home — 18+ sites as row cards
 - [x] Queue + History work cross-platform; drill-downs per site
-- [ ] Every core page: situation → controls → rows → drawer
+- [x] Every core page: situation → controls → rows → drawer
 - [ ] Inventory and Reports on new layout; old Sync/Accounts/Insights gone
 - [ ] Nav and copy match experience design doc
 
@@ -93,4 +93,4 @@ When production pilot needs it.
 
 **Sprint 2:** **Queue** + **History** + copy modules + platform drill-downs — **shipped** (queue actions read-only until approve API)  
 **Sprint 3:** Inventory row-card layout + Reports copy — **shipped** (InventoryAssetList; table removed)  
-**Sprint 4:** Platforms row cards, Queue/History polish, retire/redirect legacy Sync and Accounts, token purge, auth.
+**Sprint 4:** Platforms row cards — **shipped** (OpsRowCard + PlatformChannelList) · Queue/History polish · retire Sync/Accounts redirects · token purge · auth.

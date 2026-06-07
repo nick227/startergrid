@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import type { VehicleListItem, VehiclePerformanceItem, PlatformPerformanceItem, LifecycleScope } from '@/lib/types.ts';
 import type { OperatorNavHandlers } from '@/lib/operatorNav.ts';
-import { AssetRowCard } from '@/components/layout/AssetRowCard.tsx';
+import { OpsRowCard } from '@/components/layout/OpsRowCard.tsx';
 import { RowDetailDrawer } from '@/components/layout';
 import { PanelSkeleton } from '@/components/operator';
 import { VehicleDetailPanel } from './VehicleDetailPanel.tsx';
@@ -78,7 +78,7 @@ export function InventoryAssetList({
           const title = assetTitle(vehicle);
 
           return (
-            <AssetRowCard
+            <OpsRowCard
               key={vehicle.id}
               title={title}
               statusLabel={readiness.label}
