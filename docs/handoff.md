@@ -1,7 +1,7 @@
 # Handoff Document — Auto Dealer Sales Portal
 
 **Updated:** 2026-06-06  
-**State:** v4.7.0 · Sales status sync, snapshot reconcile, portal JSON ingest, API source snapshot polling  
+**State:** v4.7.0 + Phase B operator auth + Phase C2/C3 marketplace auth & favorites  
 **Branch:** `main`
 
 ---
@@ -635,8 +635,8 @@ Run all of these after any change. None may fail before shipping.
 
 ```bash
 # Core
-npm test                              # 900+ tests, 0 failing (backend + web + marketplace)
-npm run smoke:test                    # 6/6 system checks (DB, profiles, typecheck)
+npm test                              # 1270+ tests, 0 failing (backend + web + marketplace)
+npm run smoke:test                    # 9/9 system checks (DB, profiles, typecheck, env validation, dev auth)
 npm run typecheck                     # TypeScript, no emit
 
 # Marketplace
@@ -704,45 +704,52 @@ npm run dealer:export -- <id>
 
 Server runs on port 3000. The Vite UI proxies `/api` automatically in dev.
 
-Operator routes require the dev auth placeholder. For local UI work, set the same operator id on both sides:
+**Production operator auth:** login via `POST /api/auth/login` to receive an `op_session` HttpOnly cookie. All operator routes require a valid session cookie. The `x-operator-id` header and `DEV_OPERATOR_ID` env var are rejected in production.
+
+**Dev / local operator auth:** `op_session` cookie takes priority if present. Falls back to `x-operator-id` request header, then `DEV_OPERATOR_ID` env var. Create a local operator account with `npm run db:seed` (seeds `admin@example.local`) or via `authSeedService`.
 
 ```bash
-# API process (.env)
-DEV_OPERATOR_ID=dev-operator
-DEV_OPERATOR_DEALER_IDS=
+# Dev convenience — allows x-operator-id header without a real session
+DEV_OPERATOR_ID=dev-operator          # API process .env — fallback operator id
+DEV_OPERATOR_DEALER_IDS=              # comma-separated dealership allowlist; blank = unrestricted
 
-# Vite web app (apps/web/.env.local)
+# Vite web app (apps/web/.env.local) — sends x-operator-id header via SDK
 VITE_DEV_OPERATOR_ID=dev-operator
 ```
 
-`DEV_OPERATOR_DEALER_IDS` is an optional comma-separated dealership allowlist. Leave it blank to allow the dev operator to access every seeded dealership. Public storefront reads stay anonymous; lead capture is public-write and rate-limited.
+`DEV_OPERATOR_DEALER_IDS` is an optional comma-separated dealership allowlist. Leave it blank to allow the dev operator to access every seeded dealership. Both vars are banned in production by `validateEnv()`. Public storefront reads stay anonymous; lead capture is public-write and rate-limited.
 
-| Method | Path | Purpose |
-|--------|------|---------|
-| GET | `/health` | Liveness check |
-| GET | `/api/dealers` | List all dealers (operator picker) |
-| GET | `/api/dealers/:id/storefront` | Dealer storefront JSON |
-| GET | `/api/dealers/:id/vehicles/:stock` | Single vehicle listing |
-| POST | `/api/dealers/:id/leads` | Capture lead from storefront |
-| PATCH | `/api/dealers/:id/vehicles/:stock/price` | Update price |
-| PATCH | `/api/dealers/:id/vehicles/:stock/photos` | Update photos |
-| POST | `/api/dealers/:id/vehicles/:stock/sold` | Mark sold |
-| POST | `/api/dealers/:id/vehicles/:stock/removed` | Mark removed |
-| POST | `/api/dealers/:id/publish/prepare` | Prepare & Publish (body: `{dryRun, platforms}`) |
-| GET | `/api/dealers/:id/publish/status` | Current publish status grid |
-| GET | `/api/dealers/:id/publish/history` | SyncEvent history (cursor-paginated) |
-| GET | `/api/dealers/:id/publish/accounts` | Platform account + application summary |
-| GET | `/api/dealers/:id/performance/vehicles` | All vehicle performance cache rows |
-| GET | `/api/dealers/:id/performance/vehicles/:stock` | Single vehicle performance by stock number |
-| GET | `/api/dealers/:id/performance/platforms` | Per-platform observed assist summaries |
-| GET | `/api/dealers/:id/performance/summary` | Aggregated view: counts, top movers, stale risks, best platform |
-| POST | `/api/dealers/:id/performance/compute` | Trigger manual cache recomputation |
+| Method | Path | Auth | Purpose |
+|--------|------|------|---------|
+| GET | `/health` | public | Liveness check |
+| POST | `/api/auth/login` | public | Email + password → op_session HttpOnly cookie (8 h) |
+| POST | `/api/auth/logout` | public | Revoke session, clear cookie |
+| GET | `/api/auth/me` | op_session | Current operator identity: `{ id, email, role, dealerAccessIds }` |
+| GET | `/api/dealers` | op_session | List all dealers (operator picker) |
+| GET | `/api/dealers/:id/storefront` | public | Dealer storefront JSON |
+| GET | `/api/dealers/:id/vehicles/:stock` | public | Single vehicle listing |
+| POST | `/api/dealers/:id/leads` | public-write | Capture lead from storefront (rate-limited) |
+| PATCH | `/api/dealers/:id/vehicles/:stock/price` | op_session | Update price |
+| PATCH | `/api/dealers/:id/vehicles/:stock/photos` | op_session | Update photos |
+| POST | `/api/dealers/:id/vehicles/:stock/sold` | op_session | Mark sold |
+| POST | `/api/dealers/:id/vehicles/:stock/removed` | op_session | Mark removed |
+| POST | `/api/dealers/:id/publish/prepare` | op_session | Prepare & Publish (body: `{dryRun, platforms}`) |
+| GET | `/api/dealers/:id/publish/status` | op_session | Current publish status grid |
+| GET | `/api/dealers/:id/publish/history` | op_session | SyncEvent history (cursor-paginated) |
+| GET | `/api/dealers/:id/publish/accounts` | op_session | Platform account + application summary |
+| GET | `/api/dealers/:id/performance/vehicles` | op_session | All vehicle performance cache rows |
+| GET | `/api/dealers/:id/performance/vehicles/:stock` | op_session | Single vehicle performance by stock number |
+| GET | `/api/dealers/:id/performance/platforms` | op_session | Per-platform observed assist summaries |
+| GET | `/api/dealers/:id/performance/summary` | op_session | Aggregated view: counts, top movers, stale risks, best platform |
+| POST | `/api/dealers/:id/performance/compute` | op_session | Trigger manual cache recomputation |
 
 All publish endpoints return `nextRecommendedAction` — one of: `fix_blocked_vehicles`, `review_approvals`, `run_scheduler`, `resolve_partner_requirement`, `resolve_account_requirement`, `no_action`.
 
-### Marketplace routes (public — no auth on GETs; POST is rate-limited)
+### Marketplace routes
 
-Documented in `openapi/openapi-marketplace.yaml`. Client in `packages/marketplace-client/`.
+Documented in `openapi/openapi-marketplace.yaml`. Client in `packages/marketplace-client/`. Public browse routes never check `op_session`. Consumer-auth routes (`/api/marketplace/auth/*`, `/api/marketplace/me/*`) require an `mp_session` HttpOnly cookie — operator cookies are silently ignored.
+
+**Public browse (no auth required):**
 
 | Method | Path | Purpose |
 |--------|------|---------|
@@ -752,6 +759,23 @@ Documented in `openapi/openapi-marketplace.yaml`. Client in `packages/marketplac
 | POST | `/api/marketplace/events` | First-party channel event capture — `vehicle_detail_view`, `dealer_page_view`, `vehicle_impression` (rate-limited) |
 | GET | `/api/marketplace/dealers/:dealerId` | Dealer storefront index |
 | GET | `/api/marketplace/dealers/:dealerId/stats` | Aggregate observed marketplace activity — vehicleDetailViews, dealerPageViews, inquirySubmissions |
+| GET | `/api/marketplace/feed` | Cursor-based mixed feed (vehicles + promo + notice items) |
+
+**Consumer auth (mp_session required — Phase C2):**
+
+| Method | Path | Purpose |
+|--------|------|---------|
+| POST | `/api/marketplace/auth/login` | Email + password → `mp_session` HttpOnly cookie (30 days). Unknown email and wrong password return identical 401 to prevent enumeration. |
+| POST | `/api/marketplace/auth/logout` | Revoke session, clear cookie. Always 200. |
+| GET | `/api/marketplace/auth/me` | Consumer identity: `{ id, email, displayName }`. 401 if cookie missing, invalid, revoked, expired, or account inactive. |
+
+**Favorites (mp_session required — Phase C3):**
+
+| Method | Path | Purpose |
+|--------|------|---------|
+| GET | `/api/marketplace/me/favorites` | List saved vehicles. Returns `{ favorites: MarketplaceVehicleCard[], total }`. Ineligible listings omitted (row preserved). |
+| POST | `/api/marketplace/me/favorites/:listingId` | Save a listing. Idempotent. 404 if listing not found or not eligible (sold/removed/unpriced). |
+| DELETE | `/api/marketplace/me/favorites/:listingId` | Remove a listing. Idempotent — always 200, even if never saved. |
 
 ---
 
@@ -787,7 +811,59 @@ DealershipProfile
 
 PlatformProfile (seeded registry of 19)
 PlatformProfileVersion (versioned snapshots, SHA-256 checked)
+
+OperatorAccount                        Operator identity — email + argon2id password hash + role
+  └── OperatorSession                  Server-side session — SHA-256 token hash, expiresAt, revokedAt
+  └── OperatorDealerAccess             Dealer scope grant — operatorAccountId + dealershipId
+
+MarketplaceUser                        Consumer identity — email + argon2id password hash; no operator fields; no role field
+  └── MarketplaceSession               Server-side session — SHA-256 token hash, expiresAt (30 days), revokedAt
+  └── MarketplaceFavorite              Saved listing join — (marketplaceUserId, vehicleId); VIN never stored
+        └── Vehicle (FK)              Cascade-deletes if vehicle is hard-deleted
 ```
+
+### Operator Auth
+
+| Table | Purpose |
+|-------|---------|
+| `OperatorAccount` | Operator login identity: `id`, `email`, `passwordHash` (argon2id), `role` (SUPER_ADMIN \| OPERATOR), `isActive`, `lastLoginAt` |
+| `OperatorSession` | Server-side session record: `tokenHash` (SHA-256 of the 32-byte random raw token), `operatorAccountId`, `expiresAt` (8 h), `revokedAt` (set on logout), `ipAddress`, `userAgent` |
+| `OperatorDealerAccess` | Junction: grants `operatorAccountId` access to `dealershipId`; SUPER_ADMIN bypasses this check |
+
+**Auth flow:** `POST /api/auth/login` → verifies password, creates `OperatorSession`, sends raw token as `op_session` HttpOnly cookie (Secure in production). All operator routes call `requireOperator(prisma, request, reply)` which validates the cookie against the session table.
+
+**Role behavior:**
+- `SUPER_ADMIN` — global dealer access; `requireDealerAccess` always passes.
+- `OPERATOR` — access restricted to dealerships in `OperatorDealerAccess`; 403 if not listed.
+
+**Dev/test:** `op_session` cookie still takes priority. Falls back to `x-operator-id` request header or `DEV_OPERATOR_ID` env var (both banned in production by `validateEnv()`). `DEV_OPERATOR_DEALER_IDS` env restricts dealer access on the dev-header path.
+
+### Marketplace Auth (Phase C2/C3)
+
+| Table | Purpose |
+|-------|---------|
+| `MarketplaceUser` | Consumer login identity: `id`, `email`, `passwordHash` (argon2id), `displayName?`, `isActive`, `lastLoginAt`. No role field — domain boundary (`MarketplaceSession`) is the scope. |
+| `MarketplaceSession` | Server-side session — same structure as `OperatorSession` but in a separate table. `tokenHash` (SHA-256), `marketplaceUserId`, `expiresAt` (30 days). Tokens cannot be replayed against operator routes. |
+| `MarketplaceFavorite` | Saved listing join: `(marketplaceUserId, vehicleId)`. Unique constraint. VIN is never stored here. Row is preserved when vehicle becomes ineligible — card reappears if re-listed. |
+
+**Auth flow:** `POST /api/marketplace/auth/login` → verifies password, creates `MarketplaceSession`, sends raw token as `mp_session` HttpOnly cookie (`Path=/api/marketplace`, `SameSite=Strict`, Secure in production, 30-day Max-Age). Auth routes and favorites routes call `requireMarketplaceUser(prisma, request, reply)` from `src/server/security.ts`.
+
+**Cookie isolation:** `mp_session` is a different name and `Path` from `op_session`. Sending `op_session` to marketplace routes or `mp_session` to operator routes is silently ignored — no cross-domain token replay is possible at the HTTP level.
+
+**Safe identity fields returned:** `id`, `email`, `displayName`. Never: `passwordHash`, `tokenHash`, `isActive`, `role`, `dealerAccessIds`, operator fields.
+
+**Favorites eligibility policy:** A vehicle can be favorited only when it is marketplace-eligible (`soldAt IS NULL`, `removedAt IS NULL`, `priceCents > 0`). Ineligible listings return 404 on POST. GET favorites returns only currently-eligible vehicles — sold/removed/unpriced listings are silently omitted from the response. The `MarketplaceFavorite` row is **preserved**: if a vehicle is re-listed, the card reappears automatically without the user re-favoriting it.
+
+**Services:**
+- `src/services/auth/marketplaceSessionService.ts` — `createMarketplaceSession`, `revokeMarketplaceSession`, `getMarketplaceUserFromSessionToken`, `MarketplaceAuthError`
+- `src/services/marketplace/marketplaceFavoriteService.ts` — `addFavorite` (idempotent), `removeFavorite` (idempotent), `isVehicleEligible`
+- `src/services/marketplace/marketplaceQueryService.ts` — `getMarketplaceFavoriteCards` (omits ineligible vehicles, no VIN)
+
+**Routes:** `src/server/routes/marketplaceAuth.ts` and `src/server/routes/marketplaceFavorites.ts` — both registered in `src/server/app.ts`.
+
+**OpenAPI:** all 6 new routes in `openapi/openapi-marketplace.yaml` under the `MarketplaceAuth` tag. Security scheme `MarketplaceCookieAuth` (cookie: `mp_session`). Regenerated SDK in `packages/marketplace-client/` includes `MarketplaceAuthService`, `MarketplaceUserIdentity`, `MarketplaceFavoritesResponse`, `MarketplaceFavoriteAddResponse`, `MarketplaceFavoriteRemoveResponse`.
+
+**UI wiring:** not yet connected. `apps/marketplace` has no login/favorites pages; that is separate future work.
 
 **Channel measurement models** — see `docs/channel-measurement.md` for full contract.
 
@@ -935,17 +1011,24 @@ These rules are enforced in tests. Any label change must pass the language contr
 | Marketplace channel event capture (`POST /api/marketplace/events`) | OpenAPI: `openapi/openapi-marketplace.yaml` |
 | Marketplace dealer stats (`GET .../dealers/:id/stats`) | Returns vehicleDetailViews, dealerPageViews, inquirySubmissions |
 | Channel performance in operator portal | Platform rows show `channelMetricsJson` (views, inquiries per slug) |
+| Operator login / session auth | `POST /api/auth/login` → op_session HttpOnly cookie; `POST /api/auth/logout`; `GET /api/auth/me` |
+| Operator route protection | All 29 operator routes protected by `requireOperator` + `requireDealerAccess` (real session in production) |
+| SUPER_ADMIN global dealer access | Session with role SUPER_ADMIN passes `requireDealerAccess` for any dealership |
+| OPERATOR scoped dealer access | Session with role OPERATOR restricted to OperatorDealerAccess rows; 403 if not listed |
+| Marketplace consumer auth | `POST /api/marketplace/auth/login` → mp_session HttpOnly cookie (30 days); `POST /api/marketplace/auth/logout`; `GET /api/marketplace/auth/me` |
+| Marketplace favorites | `GET/POST/DELETE /api/marketplace/me/favorites/:listingId` — mp_session required; VIN never in response; ineligible listings omitted from list |
+| Auth domain isolation | mp_session cannot authenticate operator routes; op_session cannot authenticate marketplace routes; separate session tables; cookie names and Path differ |
 
 ---
 
 ## What's Not Built Yet
 
 1. **Marketplace publish-pipeline integration** — real HTTP dispatch from the sync engine to a `marketplace` ingest endpoint; `MarketplaceListing` projection table for pre-projected rows at scale. The consumer app (`apps/marketplace/`) and the read-only API are built and boundary-hardened. Contract: `docs/plans/marketplace-index-contract.md`.
-2. **Production auth** — dev operator header only; no login, sessions, or dealer/admin role model.
+2. **Marketplace auth (Phase C2/C3)** — `MarketplaceUser` + `MarketplaceSession` + `MarketplaceFavorite` are implemented with full auth and favorites API. Public browse/lead routes remain anonymous. UI wiring (`apps/marketplace` login/favorites pages) is separate future work.
 3. **Sandbox / production API calls** — all `SubmissionAttempt` rows are MOCK.
 4. **Background scheduler daemon** — sync runs on-demand via CLI/API.
-5. **Real SMTP delivery** — `DealerNotification` writes to DB; MOCK env only.
-6. **Dealer self-service capability gating** — operator portal exists; role-based dealer depth not implemented.
+5. **Real SMTP delivery** — transport seam in place (`emailTransport.ts`); `smtpSend()` throws `SmtpNotImplementedError` until a library (e.g. nodemailer) is wired. `DealerNotification.deliveryStatus` tracks PENDING → SENT / FAILED.
+6. **Dealer self-service capability gating** — `DEALER_OPERATOR` role defined in schema; no routes or UI for it yet (deferred to Phase D).
 
 ---
 

@@ -1,5 +1,6 @@
 import Fastify, { type FastifyInstance } from 'fastify';
 import type { PrismaClient } from '@prisma/client';
+import { registerAuthRoutes }        from './routes/auth.js';
 import { registerDealerRoutes }     from './routes/dealers.js';
 import { registerStorefrontRoutes } from './routes/storefront.js';
 import { registerInventoryRoutes }  from './routes/inventory.js';
@@ -8,6 +9,8 @@ import { registerAccountRoutes }    from './routes/accounts.js';
 import { registerIngressRoutes }    from './routes/ingress.js';
 import { registerPerformanceRoutes }  from './routes/performance.js';
 import { registerMarketplaceRoutes }  from './routes/marketplace.js';
+import { registerMarketplaceAuthRoutes }     from './routes/marketplaceAuth.js';
+import { registerMarketplaceFavoritesRoutes } from './routes/marketplaceFavorites.js';
 import { demoFeedPayload }          from '../fixtures/scenarios/connectedInventoryDemo.fixture.js';
 
 export function buildApp(prisma: PrismaClient): FastifyInstance {
@@ -24,6 +27,7 @@ export function buildApp(prisma: PrismaClient): FastifyInstance {
     });
   }
 
+  registerAuthRoutes(app, prisma);
   registerDealerRoutes(app, prisma);
   registerStorefrontRoutes(app, prisma);
   registerInventoryRoutes(app, prisma);
@@ -32,6 +36,8 @@ export function buildApp(prisma: PrismaClient): FastifyInstance {
   registerIngressRoutes(app, prisma);
   registerPerformanceRoutes(app, prisma);
   registerMarketplaceRoutes(app, prisma);
+  registerMarketplaceAuthRoutes(app, prisma);
+  registerMarketplaceFavoritesRoutes(app, prisma);
 
   return app;
 }

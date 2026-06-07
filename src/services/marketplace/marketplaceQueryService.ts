@@ -531,6 +531,26 @@ export async function getMarketplaceVehicle(
   return row ? shapeDetail(row as unknown as DbVehicleDetailRow) : null;
 }
 
+// Returns marketplace-safe vehicle cards for all currently-eligible vehicles that
+// the given user has favorited. Sold/removed/unpriced vehicles are silently omitted —
+// the MarketplaceFavorite row is preserved so cards reappear if the vehicle is re-listed.
+export async function getMarketplaceFavoriteCards(
+  prisma: PrismaClient,
+  userId: string,
+): Promise<MarketplaceVehicleCard[]> {
+  const rows = await prisma.vehicle.findMany({
+    where: {
+      soldAt:    null,
+      removedAt: null,
+      priceCents: { gt: 0 },
+      favorites: { some: { marketplaceUserId: userId } },
+    },
+    select:  VEHICLE_CARD_SELECT,
+    orderBy: [{ createdAt: 'desc' }, { id: 'asc' }],
+  });
+  return (rows as unknown as DbVehicleRow[]).map(shapeCard);
+}
+
 export async function getMarketplaceDealerIndex(
   prisma: PrismaClient,
   dealerId: string,

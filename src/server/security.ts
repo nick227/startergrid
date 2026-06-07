@@ -5,6 +5,13 @@ import {
   OperatorAuthError,
   type OperatorIdentity,
 } from '../services/auth/sessionService.js';
+import {
+  getMarketplaceUserFromSessionToken,
+  MarketplaceAuthError,
+  type MarketplaceUserIdentity,
+} from '../services/auth/marketplaceSessionService.js';
+
+export type { MarketplaceUserIdentity };
 
 export type RouteClassification = 'public' | 'operator' | 'public-write';
 
@@ -27,6 +34,9 @@ export const marketplaceRouteClassifications = {
     'POST /api/marketplace/auth/login',
     'POST /api/marketplace/auth/logout',
     'GET /api/marketplace/auth/me',
+    'GET /api/marketplace/me/favorites',
+    'POST /api/marketplace/me/favorites/:listingId',
+    'DELETE /api/marketplace/me/favorites/:listingId',
   ],
 } as const;
 
@@ -194,6 +204,33 @@ export async function requireDealerAccess(
     return false;
   }
   return true;
+}
+
+// Authenticates a marketplace consumer from the mp_session cookie.
+// Returns the consumer identity or null (reply is already sent with 401 on failure).
+// op_session is never checked here — the two domains are structurally separate.
+export async function requireMarketplaceUser(
+  prisma: PrismaClient,
+  request: FastifyRequest,
+  reply: FastifyReply,
+): Promise<MarketplaceUserIdentity | null> {
+  const rawToken = parseCookieHeader(
+    request.headers['cookie'] as string | undefined,
+    'mp_session'
+  );
+  if (!rawToken) {
+    reply.status(401).send({ error: 'Marketplace authentication required' });
+    return null;
+  }
+  try {
+    return await getMarketplaceUserFromSessionToken(prisma, rawToken);
+  } catch (err) {
+    if (err instanceof MarketplaceAuthError) {
+      reply.status(401).send({ error: 'Marketplace authentication required' });
+      return null;
+    }
+    throw err;
+  }
 }
 
 type RateBucket = { count: number; resetAt: number };

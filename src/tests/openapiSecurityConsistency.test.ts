@@ -121,11 +121,13 @@ function assertSpecMatchesClassifications(
       }
 
       if (expectedMarketplaceAuth.has(key)) {
-        if (key === 'GET /api/marketplace/auth/me') {
-          assert.equal(operation['x-route-classification'], 'marketplace-auth', `${label}: ${key} must be marketplace-auth`);
+        const opClass = operation['x-route-classification'];
+        if (opClass === 'marketplace-auth') {
+          // Routes that require mp_session cookie.
           assert.deepEqual(operation.security, [{ MarketplaceCookieAuth: [] }], `${label}: ${key} must require MarketplaceCookieAuth`);
         } else {
-          assert.equal(operation['x-route-classification'], 'public', `${label}: ${key} must be classified public (login/logout)`);
+          // Routes in the marketplaceAuth group that are themselves public (login/logout).
+          assert.equal(opClass, 'public', `${label}: ${key} must be classified public (login/logout)`);
           assert.deepEqual(operation.security, [], `${label}: ${key} must not require auth`);
         }
         expectedMarketplaceAuth.delete(key);

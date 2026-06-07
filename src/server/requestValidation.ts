@@ -206,6 +206,22 @@ export const marketplaceLeadCaptureSchema = z.object({
 
 export type MarketplaceLeadCaptureBody = z.infer<typeof marketplaceLeadCaptureSchema>;
 
+// operationId: operatorLogin
+export const operatorLoginSchema = z.object({
+  email:    z.string().trim().email().max(255),
+  password: z.string().min(8).max(128),
+}).strict();
+
+export type OperatorLoginBody = z.infer<typeof operatorLoginSchema>;
+
+// operationId: marketplaceLogin
+export const marketplaceLoginSchema = z.object({
+  email:    z.string().trim().email().max(255),
+  password: z.string().min(8).max(128),
+}).strict();
+
+export type MarketplaceLoginBody = z.infer<typeof marketplaceLoginSchema>;
+
 // operationId: captureMarketplaceChannelEvent
 export const marketplaceChannelEventSchema = z.object({
   eventType: z.enum(['vehicle_impression', 'vehicle_detail_view', 'dealer_page_view']),

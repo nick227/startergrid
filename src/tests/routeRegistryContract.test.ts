@@ -36,6 +36,7 @@ function parseSpec(relativePath: string): Map<string, Op> {
 
 function registryClassForGroup(group: string): string {
   if (group === 'publicWrite') return 'public-write';
+  if (group === 'marketplaceAuth') return 'marketplace-auth';
   return group;
 }
 

@@ -3,7 +3,13 @@ info:
   title: Dealer Marketplace API
   version: 1.0.0
   description: |
-    Public read-only API for consumer vehicle browse. No authentication required.
+    Consumer vehicle browse and auth API.
+
+    ## Auth
+
+    Consumer login issues an `mp_session` HttpOnly cookie (30-day lifetime).
+    Authenticated endpoints require this cookie.
+    The operator `op_session` cookie is never accepted here.
 
     ## Boundary contract
 
@@ -25,8 +31,166 @@ servers:
 tags:
   - name: Marketplace
     description: Public consumer vehicle browse
+  - name: MarketplaceAuth
+    description: Consumer authentication (mp_session cookie)
 
 paths:
+  /api/marketplace/auth/login:
+    post:
+      tags: [MarketplaceAuth]
+      security: []
+      x-route-classification: public
+      operationId: marketplaceLogin
+      summary: Consumer login
+      description: |
+        Accepts email + password. Returns a safe consumer identity and sets an
+        `mp_session` HttpOnly cookie (30 days). Unknown email and wrong password
+        return the same 401 to prevent email enumeration.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/MarketplaceLoginRequest'
+      responses:
+        '200':
+          description: Login successful
+          headers:
+            Set-Cookie:
+              description: mp_session HttpOnly cookie (30-day lifetime)
+              schema:
+                type: string
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MarketplaceUserIdentity'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+
+  /api/marketplace/auth/logout:
+    post:
+      tags: [MarketplaceAuth]
+      security: []
+      x-route-classification: public
+      operationId: marketplaceLogout
+      summary: Consumer logout
+      description: |
+        Revokes the current mp_session if present and clears the cookie.
+        Always returns 200 — safe to call unconditionally.
+      responses:
+        '200':
+          description: Logged out
+          headers:
+            Set-Cookie:
+              description: mp_session cookie cleared (Max-Age=0)
+              schema:
+                type: string
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MarketplaceLogoutResponse'
+
+  /api/marketplace/auth/me:
+    get:
+      tags: [MarketplaceAuth]
+      security:
+        - MarketplaceCookieAuth: []
+      x-route-classification: marketplace-auth
+      operationId: getMarketplaceMe
+      summary: Get current consumer identity
+      description: |
+        Returns the authenticated consumer's identity from a valid mp_session cookie.
+        Returns 401 when the cookie is missing, invalid, revoked, expired, or the
+        account is inactive.
+      responses:
+        '200':
+          description: Authenticated consumer identity
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MarketplaceUserIdentity'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+
+  /api/marketplace/me/favorites:
+    get:
+      tags: [MarketplaceAuth]
+      security:
+        - MarketplaceCookieAuth: []
+      x-route-classification: marketplace-auth
+      operationId: getMarketplaceFavorites
+      summary: List saved favorites
+      description: |
+        Returns marketplace-safe vehicle cards for all currently-eligible favorited listings.
+        Sold, removed, or unpriced vehicles are silently omitted from this response.
+        The underlying favorite record is preserved — cards reappear if the vehicle is re-listed.
+      responses:
+        '200':
+          description: Favorites list
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MarketplaceFavoritesResponse'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+
+  /api/marketplace/me/favorites/{listingId}:
+    post:
+      tags: [MarketplaceAuth]
+      security:
+        - MarketplaceCookieAuth: []
+      x-route-classification: marketplace-auth
+      operationId: addMarketplaceFavorite
+      summary: Save a listing to favorites
+      description: |
+        Idempotent add. Saving an already-saved listing is a no-op.
+        Returns 404 when the listing does not exist or is not marketplace-eligible
+        (sold, removed, or unpriced).
+      parameters:
+        - name: listingId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Favorite saved (or already saved)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MarketplaceFavoriteAddResponse'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+    delete:
+      tags: [MarketplaceAuth]
+      security:
+        - MarketplaceCookieAuth: []
+      x-route-classification: marketplace-auth
+      operationId: removeMarketplaceFavorite
+      summary: Remove a listing from favorites
+      description: |
+        Idempotent remove. Always returns 200 — safe to call even when the listing
+        was never favorited.
+      parameters:
+        - name: listingId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Favorite removed (or was not present)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MarketplaceFavoriteRemoveResponse'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+
   /api/marketplace/feed:
     get:
       tags: [Marketplace]
@@ -330,6 +494,13 @@ paths:
           $ref: '#/components/responses/NotFound'
 
 components:
+  securitySchemes:
+    MarketplaceCookieAuth:
+      type: apiKey
+      in: cookie
+      name: mp_session
+      description: Consumer session cookie set by POST /api/marketplace/auth/login
+
   responses:
     BadRequest:
       description: Bad request — invalid query parameter value
@@ -343,8 +514,81 @@ components:
         application/json:
           schema:
             $ref: '#/components/schemas/MarketplaceErrorResponse'
+    Unauthorized:
+      description: Authentication required or session invalid
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/MarketplaceErrorResponse'
 
   schemas:
+    MarketplaceLoginRequest:
+      type: object
+      required: [email, password]
+      additionalProperties: false
+      properties:
+        email:
+          type: string
+          format: email
+          maxLength: 255
+        password:
+          type: string
+          minLength: 8
+          maxLength: 128
+
+    MarketplaceUserIdentity:
+      type: object
+      description: Safe consumer identity — no passwordHash, no tokenHash, no operator fields.
+      required: [id, email, displayName]
+      properties:
+        id:
+          type: string
+        email:
+          type: string
+        displayName:
+          type: string
+          nullable: true
+
+    MarketplaceFavoritesResponse:
+      type: object
+      required: [favorites, total]
+      properties:
+        favorites:
+          type: array
+          description: |
+            Marketplace-safe vehicle cards for currently-eligible favorited listings.
+            Sold, removed, or unpriced vehicles are omitted. Their favorite record is
+            preserved and will reappear if the vehicle becomes eligible again.
+          items:
+            $ref: '#/components/schemas/MarketplaceVehicleCard'
+        total:
+          type: integer
+          minimum: 0
+          description: Count of eligible favorited vehicles in this response.
+
+    MarketplaceFavoriteAddResponse:
+      type: object
+      required: [favorited, listingId]
+      properties:
+        favorited:
+          type: boolean
+        listingId:
+          type: string
+
+    MarketplaceFavoriteRemoveResponse:
+      type: object
+      required: [ok]
+      properties:
+        ok:
+          type: boolean
+
+    MarketplaceLogoutResponse:
+      type: object
+      required: [ok]
+      properties:
+        ok:
+          type: boolean
+
     MarketplaceErrorResponse:
       type: object
       required: [error]

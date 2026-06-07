@@ -18,6 +18,7 @@ const yaml = _require('js-yaml') as { load(src: string): unknown };
 // Keep in sync with src/server/routes/marketplace.ts and src/server/app.ts.
 
 const REGISTERED_MARKETPLACE_ROUTES = new Set([
+  // Public browse routes (Phase A/B)
   'GET    /api/marketplace/feed',
   'GET    /api/marketplace/vehicles',
   'GET    /api/marketplace/vehicles/{listingId}',
@@ -25,14 +26,18 @@ const REGISTERED_MARKETPLACE_ROUTES = new Set([
   'POST   /api/marketplace/events',
   'GET    /api/marketplace/dealers/{dealerId}',
   'GET    /api/marketplace/dealers/{dealerId}/stats',
-]);
-
-/** Documented in OpenAPI; Fastify handlers ship in Phase C (mp_session). */
-const PHASE_C_SPEC_ONLY_ROUTES = new Set([
+  // Consumer auth routes (Phase C2)
   'POST   /api/marketplace/auth/login',
   'POST   /api/marketplace/auth/logout',
   'GET    /api/marketplace/auth/me',
+  // Favorites routes (Phase C3)
+  'GET    /api/marketplace/me/favorites',
+  'POST   /api/marketplace/me/favorites/{listingId}',
+  'DELETE /api/marketplace/me/favorites/{listingId}',
 ]);
+
+/** All Phase C handlers are now live — no spec-only stubs remain. */
+const PHASE_C_SPEC_ONLY_ROUTES = new Set<string>();
 
 // ── Parse marketplace OpenAPI spec ───────────────────────────────────────────
 
@@ -156,12 +161,21 @@ describe('marketplace security declarations', () => {
     );
   });
 
-  it('only getMarketplaceMe requires MarketplaceCookieAuth', () => {
-    const violations = specOps.filter(o => o.hasMarketplaceCookieAuth && o.operationId !== 'getMarketplaceMe');
+  it('all routes requiring MarketplaceCookieAuth must have marketplace-auth classification', () => {
+    const violations = specOps.filter(o => o.hasMarketplaceCookieAuth && o.classification !== 'marketplace-auth');
     assert.deepEqual(
       violations.map(o => `${o.operationId} (${o.key})`),
       [],
-      'Only getMarketplaceMe may require MarketplaceCookieAuth:'
+      'Only marketplace-auth classified routes may require MarketplaceCookieAuth:'
+    );
+  });
+
+  it('all marketplace-auth classified routes require MarketplaceCookieAuth', () => {
+    const violations = specOps.filter(o => o.classification === 'marketplace-auth' && !o.hasMarketplaceCookieAuth);
+    assert.deepEqual(
+      violations.map(o => `${o.operationId} (${o.key})`),
+      [],
+      'All marketplace-auth routes must require MarketplaceCookieAuth:'
     );
   });
 
