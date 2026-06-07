@@ -86,7 +86,7 @@ const CATEGORY_CONFIG: Record<
     dealer: BOATS_DEALER,
     id: 'listing-boat-1',
     stockNumber: 'HLM-BW-001',
-    vin: 'BOS12345A223',
+    vin: 'BHS12345A223',
     make: 'Boston Whaler',
     model: '280 Outrage',
     mileage: 450,
@@ -340,7 +340,7 @@ describe('marketplace query — three-way category isolation', () => {
     const card = boats.vehicles[0]!;
     assert.ok(!('vin' in card));
     assert.equal(card.usageUnit, 'hours');
-    assert.equal(JSON.stringify(card).includes('BOS12345A223'), false);
+    assert.equal(JSON.stringify(card).includes('BHS12345A223'), false);
   });
 });
 

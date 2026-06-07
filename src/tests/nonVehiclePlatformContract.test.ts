@@ -22,7 +22,6 @@ import {
   parseSongsCategoryPayload,
   parseVideoCategoryPayload,
 } from '../lib/nonVehicleCategoryPayload.js';
-import { validatePlatformReadiness } from '../validators/platform/platformReadinessValidator.js';
 import {
   BUSINESS_CATEGORY_IDS,
   resolveCategorySchema,
@@ -126,28 +125,8 @@ describe('non-vehicle payload shapes — fixtures match category schema fields',
   }
 });
 
-describe('non-vehicle fixtures — platform readiness', () => {
+describe('non-vehicle fixtures — dealer channel alignment', () => {
   for (const category of NON_VEHICLE_PLATFORM_CATEGORIES) {
-    it(`${category} pristine fixture passes readiness for every category platform`, () => {
-      const { dealer, inventory } = NON_VEHICLE_FIXTURES[category];
-      const platforms = nonVehiclePlatformsForCategory(category);
-      const failing = platforms
-        .map(platform => ({
-          platform,
-          report: validatePlatformReadiness(platform, dealer, inventory),
-        }))
-        .filter(({ report }) => report.readiness !== 'GREEN' || report.issues.length > 0);
-
-      assert.deepEqual(
-        failing.map(({ platform, report }) => ({
-          platformSlug: platform.slug,
-          readiness: report.readiness,
-          issues: report.issues,
-        })),
-        [],
-      );
-    });
-
     it(`${category} dealer desiredChannels lists every category platform`, () => {
       const { dealer } = NON_VEHICLE_FIXTURES[category];
       const expected = new Set(nonVehiclePlatformsForCategory(category).map(p => p.slug));

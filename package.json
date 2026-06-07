@@ -8,6 +8,7 @@
     "build": "tsc",
     "typecheck": "tsc --noEmit",
     "test": "npm run -s build && node --test dist/src/tests/*.test.js && npm run -s test --prefix apps/web && npm run -s test --prefix apps/marketplace",
+    "test:platforms": "npm run -s build && node --test dist/src/tests/platformReadinessContract.test.js dist/src/tests/pristineApiValidationFixture.test.js dist/src/tests/nonVehiclePlatformContract.test.js dist/src/tests/partnerPortalService.test.js dist/src/tests/feedGeneratorService.test.js dist/src/tests/consumerMarketplacePlatform.test.js",
     "dealer:create": "npm run -s build && node dist/src/scripts/dealer/dealerCreate.js",
     "dealer:create:pristine": "npm run -s build && node dist/src/scripts/dealer/dealerCreate.js --use-pristine",
     "dealer:status": "npm run -s build && node dist/src/scripts/dealer/dealerStatus.js",
@@ -56,7 +57,7 @@
     "marketplace:build": "npm run client:generate:marketplace && npm run build --prefix apps/marketplace",
     "marketplace:client:generate": "npm run client:generate:marketplace",
     "marketplace:boundary:check": "node scripts/check-marketplace-boundary.js",
-    "operator:boundary:check":   "node scripts/check-operator-boundary.js",
+    "operator:boundary:check": "node scripts/check-operator-boundary.js",
     "dev:operator": "npm run ui:dev",
     "dev:marketplace": "npm run marketplace:dev",
     "build:all": "npm run build && npm run ui:build && npm run marketplace:build",
@@ -67,6 +68,7 @@
     "client:generate:marketplace": "node node_modules/openapi-typescript-codegen/bin/index.js --input openapi/openapi-marketplace.yaml --output packages/marketplace-client/generated --client fetch --useOptions --exportCore true"
   },
   "dependencies": {
+    "@fastify/cors": "^11.2.0",
     "@node-rs/argon2": "^2.0.2",
     "@prisma/client": "^6",
     "dotenv": "latest",

@@ -31,7 +31,7 @@ export const boatsDealerPayload: DealershipPayload = {
 
 export const boatsDealerVehicles: VehiclePayload[] = [
   {
-    vin: 'BOS12345A223',
+    vin: 'BHS12345A223',
     stockNumber: 'HLM-BW-001',
     year: 2021,
     make: 'Boston Whaler',
@@ -60,7 +60,7 @@ export const boatsDealerVehicles: VehiclePayload[] = [
     }],
   },
   {
-    vin: 'BOS67890B319',
+    vin: 'BHS67890B319',
     stockNumber: 'HLM-SR-014',
     year: 2019,
     make: 'Sea Ray',
@@ -89,7 +89,7 @@ export const boatsDealerVehicles: VehiclePayload[] = [
     }],
   },
   {
-    vin: 'BOS11223C424',
+    vin: 'BHS11223C424',
     stockNumber: 'HLM-YAM-003',
     year: 2024,
     make: 'Yamaha',
@@ -118,7 +118,7 @@ export const boatsDealerVehicles: VehiclePayload[] = [
     }],
   },
   {
-    vin: 'BOS44556D220',
+    vin: 'BHS44556D220',
     stockNumber: 'HLM-CH-008',
     year: 2020,
     make: 'Chaparral',
@@ -147,7 +147,7 @@ export const boatsDealerVehicles: VehiclePayload[] = [
     }],
   },
   {
-    vin: 'BOS77889E218',
+    vin: 'BHS77889E218',
     stockNumber: 'HLM-GW-005',
     year: 2018,
     make: 'Grady-White',
