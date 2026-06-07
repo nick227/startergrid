@@ -1,5 +1,7 @@
-import { createContext, useContext, type ReactNode } from 'react';
+import { createContext, useContext, useEffect, type ReactNode } from 'react';
 import type { CategorySchema } from '@auto-dealer/category-schemas';
+import { resetActiveCategoryCopy, setActiveCategorySchema } from '@/lib/copy/activeCategoryCopy.ts';
+import { verticalAdapterFromCategorySchema } from '@/lib/copy/verticalFromSchema.ts';
 
 const CategoryContext = createContext<CategorySchema | null>(null);
 
@@ -10,6 +12,12 @@ export function CategoryProvider({
   schema: CategorySchema;
   children: ReactNode;
 }) {
+  setActiveCategorySchema(schema);
+
+  useEffect(() => {
+    return () => resetActiveCategoryCopy();
+  }, []);
+
   return <CategoryContext.Provider value={schema}>{children}</CategoryContext.Provider>;
 }
 
@@ -23,14 +31,10 @@ export function useCategoryCopy() {
   return useCategorySchema().copy;
 }
 
+export function useVerticalCopy() {
+  return verticalAdapterFromCategorySchema(useCategorySchema());
+}
+
 export function useInventoryLabels() {
-  const { copy, asset } = useCategorySchema();
-  return {
-    refColumn: copy.refColumn,
-    titleColumn: copy.titleColumn,
-    searchPlaceholder: copy.searchPlaceholder,
-    invalidIdentifierLabel: copy.invalidIdentifierLabel,
-    canonicalRef: asset.refLabel,
-    canonicalId: asset.idLabel,
-  };
+  return useVerticalCopy().inventory;
 }

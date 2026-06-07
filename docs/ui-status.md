@@ -91,8 +91,10 @@ Search, filter, and sort logic unchanged from table era; only presentation is ro
 ## Copy and verticals
 
 - Shell strings: `apps/web/src/lib/copy/operator.ts`
-- Adapters: `apps/web/src/lib/copy/vertical.ts` — `activeVertical = genericVertical` (automotive override available for Stock # / VIN / Sold)
-- API fields may still say `vehicleTitle`, `stockNumber`, `dealerId`; UI maps to asset / ref / organization
+- Org category: `DealershipProfile.businessCategory` → `resolveCategorySchema()` via `useDealerCategorySchema(dealerId)`
+- `CategoryProvider` syncs schema → `activeCategoryCopy` (inventory labels, task actions, platform filtering)
+- Hooks: `useCategorySchema()`, `useInventoryLabels()`, `useVerticalCopy()`
+- Presentation modules call `inventoryLabels()` / `taskActionLabel()` — synced from active org schema
 
 ---
 
@@ -110,17 +112,15 @@ Search, filter, and sort logic unchanged from table era; only presentation is ro
 | Asset-scoped Queue/History from row actions | **Not started** (see above) |
 | Token / emerald purge | **Shipped** — navy + orange semantic tokens; slate/emerald removed from operator UI |
 | Auth UI + route guards | **Shipped** — login page, session cookie, 401 → sign-in, scoped org picker |
-| Org-scoped category loading | Planned |
+| Org-scoped category loading | **Shipped** — `CategoryProvider` + schema-driven vertical copy per org |
 | Reports row-card polish | Planned |
 
 ---
 
 ## Next priorities
 
-1. **`docs/ui-status.md`** — keep aligned with shipped IA (this file)
-2. **Dealer/org-scoped category loading** — vertical adapter per tenant
-3. **Reports row-card / reporting polish**
-4. **Asset-scoped Queue/History filters** — row actions pass `assetId`/ref into queue/history search
+1. **Reports row-card / reporting polish**
+2. **Asset-scoped Queue/History filters** — row actions pass `assetId`/ref into queue/history search
 
 ---
 

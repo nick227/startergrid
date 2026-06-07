@@ -2,6 +2,7 @@ import { OperatorNav } from './OperatorNav.tsx';
 import type { OperatorTab, OperatorNavHandlers } from '../../lib/operatorNav.ts';
 import { operatorCopy } from '../../lib/copy/operator.ts';
 import { useAuth } from '@/contexts/AuthContext.tsx';
+import { useCategorySchema } from '@/contexts/CategoryContext.tsx';
 
 type Props = {
   dealerId: string;
@@ -42,6 +43,7 @@ export function PageShell({
   sectionLabel,
 }: Props) {
   const { user, logout } = useAuth();
+  const categorySchema = useCategorySchema();
 
   return (
     <div className={`min-h-screen bg-surface-page ${footerPad ? 'pb-20' : ''}`}>
@@ -64,6 +66,8 @@ export function PageShell({
                   )}
                   <p className="text-ink-faint text-xs mt-1 hidden sm:block">
                     {sectionLabel ?? TAB_LABELS[activeTab]}
+                    <span className="text-silver-300"> · </span>
+                    <span>{categorySchema.label}</span>
                   </p>
                 </div>
               </div>

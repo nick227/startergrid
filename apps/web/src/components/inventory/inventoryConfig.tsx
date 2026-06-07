@@ -198,10 +198,12 @@ export const BULK_EDIT_FIELD_DEFS: FieldDef[] = [
 
 // ── Canonical field options (import column mapping) ───────────────────────────
 
-export const CANONICAL_OPTIONS: { value: string; label: string }[] = [
+export function canonicalImportOptions(): { value: string; label: string }[] {
+  const labels = inventoryLabels();
+  return [
   { value: '',              label: '(skip)'                        },
-  { value: 'stockNumber',   label: inventoryLabels().canonicalRef  },
-  { value: 'vin',           label: inventoryLabels().canonicalId   },
+  { value: 'stockNumber',   label: labels.canonicalRef  },
+  { value: 'vin',           label: labels.canonicalId   },
   { value: 'year',          label: 'Year'                          },
   { value: 'make',          label: 'Make'                          },
   { value: 'model',         label: 'Model'                         },
@@ -216,7 +218,8 @@ export const CANONICAL_OPTIONS: { value: string; label: string }[] = [
   { value: 'fuelType',      label: 'Fuel Type'                     },
   { value: 'transmission',  label: 'Transmission'                  },
   { value: 'photoUrls',     label: 'Photo URLs (comma-separated)'  },
-];
+  ];
+}
 
 // ── Wizard step labels for ImportModal ────────────────────────────────────────
 
@@ -239,11 +242,14 @@ export type FilterChipDef = {
 };
 
 // Extended filters that supplement the SummaryStrip (issue-specific)
-export const CLEANUP_FILTER_DEFS: FilterChipDef[] = [
+export function cleanupFilterDefs(): FilterChipDef[] {
+  const labels = inventoryLabels();
+  return [
   { key: 'MISSING_PHOTOS',   label: 'Missing photos',    color: 'amber' },
-  { key: 'INVALID_IDENTIFIER',      label: inventoryLabels().invalidIdentifierLabel, color: 'red'   },
+  { key: 'INVALID_IDENTIFIER',      label: labels.invalidIdentifierLabel, color: 'red'   },
   { key: 'SUSPICIOUS_PRICE', label: 'Suspicious price',  color: 'amber' },
-];
+  ];
+}
 
 export function applyCleanupFilter(vehicle: VehicleListItem, filter: CleanupFilter): boolean {
   switch (filter) {
@@ -259,9 +265,11 @@ export function applyCleanupFilter(vehicle: VehicleListItem, filter: CleanupFilt
 }
 
 // Required canonical field display labels (used in mapping UX)
-export const REQUIRED_FIELD_LABELS: Record<string, string> = {
-  stockNumber: inventoryLabels().canonicalRef,
-  vin:         inventoryLabels().canonicalId,
+export function requiredFieldLabels(): Record<string, string> {
+  const labels = inventoryLabels();
+  return {
+  stockNumber: labels.canonicalRef,
+  vin:         labels.canonicalId,
   year:        'Year',
   make:        'Make',
   model:       'Model',
@@ -269,4 +277,5 @@ export const REQUIRED_FIELD_LABELS: Record<string, string> = {
   price:       'Price',
   condition:   'Condition',
   exteriorColor: 'Exterior Color',
-};
+  };
+}

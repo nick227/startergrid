@@ -23,7 +23,7 @@ export {
   getAssetColumns,
   SUMMARY_STRIP_ITEMS,
   BULK_EDIT_FIELD_DEFS,
-  CLEANUP_FILTER_DEFS,
+  cleanupFilterDefs,
   IMPORT_WIZARD_STEPS,
   applyCleanupFilter,
   MovementSignalBadge,

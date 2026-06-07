@@ -83,11 +83,11 @@ Registry → resolveCategorySchema(category) → CategorySchema
 - [x] `packages/category-schemas` with automotive + 15 placeholders
 - [x] Tests: enum/registry parity, resolution, API field, defaults
 
-## Phase 2 (next)
+## Phase 2 (done)
 
-- [ ] `CategoryProvider` in `apps/web` after org pick
-- [ ] Replace `activeVertical` with resolved schema context
-- [ ] Move `inventoryConfig` columns → `automotive/fields`
+- [x] `CategoryProvider` in `apps/web` after org pick
+- [x] Replace `activeVertical` with resolved schema context (`activeCategoryCopy.ts`)
+- [ ] Move `inventoryConfig` columns → `automotive/fields` (backlog)
 
 ## Explicitly out of scope
 

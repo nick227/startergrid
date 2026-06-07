@@ -1,6 +1,6 @@
 import { useMemo } from 'react';
 import { Select } from '../ui/Select.tsx';
-import { CANONICAL_OPTIONS, REQUIRED_FIELD_LABELS } from './inventoryConfig.tsx';
+import { canonicalImportOptions, requiredFieldLabels } from './inventoryConfig.tsx';
 
 type Props = {
   headers: string[];
@@ -34,9 +34,12 @@ export function ImportStepMapping({ headers, rows, mapping, suggestedMapping, on
     return s;
   }, [headers, mapping, suggestedMapping]);
 
+  const fieldLabels = requiredFieldLabels();
+  const importOptions = canonicalImportOptions();
+
   const missingRequired = useMemo(
-    () => Object.keys(REQUIRED_FIELD_LABELS).filter(k => !mappedCanonicals.has(k)),
-    [mappedCanonicals]
+    () => Object.keys(requiredFieldLabels()).filter(k => !mappedCanonicals.has(k)),
+    [mappedCanonicals],
   );
 
   const autoMappedCount = headers.filter(h => Boolean(suggestedMapping[h])).length;
@@ -62,7 +65,7 @@ export function ImportStepMapping({ headers, rows, mapping, suggestedMapping, on
           <div className="flex flex-wrap gap-1.5">
             {missingRequired.map(k => (
               <span key={k} className="px-1.5 py-0.5 bg-amber-100 text-amber-700 text-xs rounded border border-amber-200">
-                {REQUIRED_FIELD_LABELS[k]}
+                {fieldLabels[k]}
               </span>
             ))}
           </div>
@@ -84,7 +87,7 @@ export function ImportStepMapping({ headers, rows, mapping, suggestedMapping, on
         {headers.map(h => {
           const current = mapping[h] ?? suggestedMapping[h] ?? '';
           const isAutoMapped = Boolean(suggestedMapping[h]) && current === suggestedMapping[h];
-          const isRequired = current && REQUIRED_FIELD_LABELS[current];
+          const isRequired = current && fieldLabels[current];
           const preview = columnPreviews[h] ?? [];
 
           return (
@@ -104,7 +107,7 @@ export function ImportStepMapping({ headers, rows, mapping, suggestedMapping, on
               {/* Mapping select */}
               <Select
                 value={current}
-                options={CANONICAL_OPTIONS}
+                options={importOptions}
                 onChange={v => onChange(h, v)}
                 highlighted
                 className="w-44"

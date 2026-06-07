@@ -1,4 +1,4 @@
-import { CLEANUP_FILTER_DEFS, type CleanupFilter } from './inventoryConfig.tsx';
+import { cleanupFilterDefs, type CleanupFilter } from './inventoryConfig.tsx';
 import { VEHICLE_READINESS_REGISTRY } from '../../lib/statusRegistry.ts';
 
 type Props = {
@@ -11,6 +11,7 @@ type Props = {
 const READINESS_FILTERS: CleanupFilter[] = ['ALL', 'READY', 'WARNING', 'BLOCKED'];
 
 export function CleanupFilterBar({ active, counts, readinessCounts, onSelect }: Props) {
+  const issueFilters = cleanupFilterDefs();
   const readinessMeta = {
     READY: VEHICLE_READINESS_REGISTRY.READY,
     WARNING: VEHICLE_READINESS_REGISTRY.WARNING,
@@ -49,12 +50,12 @@ export function CleanupFilterBar({ active, counts, readinessCounts, onSelect }: 
         })}
       </div>
 
-      {CLEANUP_FILTER_DEFS.some(d => (counts[d.key] ?? 0) > 0) && (
+      {issueFilters.some(d => (counts[d.key] ?? 0) > 0) && (
         <div className="flex flex-wrap gap-2 pt-1 border-t border-silver-100">
           <span className="text-[10px] font-bold text-ink-faint uppercase tracking-widest w-full mb-1">
             Issue filters
           </span>
-          {CLEANUP_FILTER_DEFS.map(def => {
+          {issueFilters.map(def => {
             const count = counts[def.key] ?? 0;
             if (count === 0) return null;
             const isActive = active === def.key;
