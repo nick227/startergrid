@@ -175,7 +175,7 @@ export default function VehicleListPage({ initialQuery = {} }: Props) {
 
           {appendError && (
             <div className="mt-8">
-              <ErrorState message={queryErrorMessage(feed.error)} onRetry={feed.retry} title="Could not load more vehicles" />
+              <ErrorState message={queryErrorMessage(feed.error)} onRetry={feed.retry} title={`Could not load more ${schema.asset.plural}`} />
             </div>
           )}
 

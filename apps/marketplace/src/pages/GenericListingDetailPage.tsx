@@ -72,7 +72,16 @@ export default function GenericListingDetailPage({ listingId }: Props) {
 
   const { vehicle } = data;
   const condition = vehicle.core.condition as MarketplaceVehicleCard['condition'];
-  const dealerLocation = formatLocation(vehicle.location.dealerCity, vehicle.location.dealerState);
+  const classification = vehicle.classification;
+  const colors = vehicle.colors;
+  const location = vehicle.location;
+  const usageUnit = classification.usageUnit === 'hours'
+    ? 'hours'
+    : classification.usageUnit === 'miles'
+      ? 'miles'
+      : undefined;
+  const dealerLocation = formatLocation(location.dealerCity, location.dealerState);
+  const usageValue = formatUsage(classification.mileage ?? 0, usageUnit);
 
   return (
     <PageShell backHref={backHref} backLabel="Back to results">
@@ -106,15 +115,15 @@ export default function GenericListingDetailPage({ listingId }: Props) {
             <Spec label="Year" value={String(vehicle.core.year)} />
             <Spec label="Make" value={vehicle.core.make} />
             <Spec label="Model" value={vehicle.core.model} />
-            <Spec label={usageFieldLabel} value={formatUsage(vehicle.classification.mileage, usageUnit)} />
-            {vehicle.classification.unitType && (
-              <Spec label="Type" value={vehicle.classification.unitType} className="col-span-2" />
+            <Spec label={usageFieldLabel} value={usageValue} />
+            {classification.unitType && (
+              <Spec label="Type" value={classification.unitType} className="col-span-2" />
             )}
-            {vehicle.classification.bodyStyle && (
-              <Spec label="Body style" value={vehicle.classification.bodyStyle} className="col-span-2" />
+            {classification.bodyStyle && (
+              <Spec label="Body style" value={classification.bodyStyle} className="col-span-2" />
             )}
-            {vehicle.colors.exteriorColor && (
-              <Spec label="Color" value={vehicle.colors.exteriorColor} className="col-span-2" />
+            {colors.exteriorColor && (
+              <Spec label="Color" value={colors.exteriorColor} className="col-span-2" />
             )}
             <Spec label="Condition" value={conditionLabel(condition)} />
             {dealerLocation && (
@@ -129,7 +138,7 @@ export default function GenericListingDetailPage({ listingId }: Props) {
 
           <div className="rounded-xl border border-silver-200 bg-white p-5">
             <p className="mp-label text-ink-faint">Seller</p>
-            <p className="mt-1 text-lg font-semibold text-ink-heading">{vehicle.location.dealerName}</p>
+            <p className="mt-1 text-lg font-semibold text-ink-heading">{location.dealerName}</p>
             {dealerLocation && <p className="mt-1 text-sm text-ink-muted">{dealerLocation}</p>}
           </div>
 
@@ -137,7 +146,7 @@ export default function GenericListingDetailPage({ listingId }: Props) {
             <LeadInquiryForm
               listingId={vehicle.core.listingId}
               vehicleLabel={vehicle.core.title}
-              dealerName={vehicle.location.dealerName}
+              dealerName={location.dealerName}
             />
           </div>
         </div>

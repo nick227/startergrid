@@ -57,6 +57,7 @@ type FakeVehicle = {
   priceCents:   number;
   condition:    string;
   exteriorColor: string;
+  categoryPayload?: unknown;
   createdAt:    Date;
   soldAt:       Date | null;
   removedAt:    Date | null;
@@ -654,5 +655,26 @@ describe('Marketplace category scoping', () => {
     const prisma = makeMockPrisma([v]);
     const index = await getMarketplaceDealerIndex(prisma, 'dealer-1', 'WATCHES');
     assert.equal(index, null);
+  });
+
+  it('TRAILERS list excludes AUTOMOTIVE rows when both are present', async () => {
+    const auto = fakeVehicle({ id: 'auto-1', make: 'Toyota' });
+    const trailer = fakeVehicle({
+      id: 'trailer-1',
+      make: 'Jayco',
+      dealershipId: 'dealer-trailers',
+      dealership: {
+        ...DEALER,
+        id: 'dealer-trailers',
+        businessCategory: 'TRAILERS_POWERSPORTS_RV',
+      },
+      categoryPayload: { usageUnit: 'hours' },
+    });
+    const prisma = makeMockPrisma([auto, trailer], trailer.dealership);
+    const automotive = await listMarketplaceVehicles(prisma, { category: 'AUTOMOTIVE' });
+    const trailers = await listMarketplaceVehicles(prisma, { category: 'TRAILERS_POWERSPORTS_RV' });
+    assert.equal(automotive.vehicles.length, 1);
+    assert.equal(trailers.vehicles.length, 1);
+    assert.equal(trailers.vehicles[0]!.usageUnit, 'hours');
   });
 });

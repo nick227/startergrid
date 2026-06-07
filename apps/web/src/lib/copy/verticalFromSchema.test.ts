@@ -81,6 +81,29 @@ describe('verticalAdapterFromCategorySchema', () => {
   });
 });
 
+const trailersSchema: CategorySchema = {
+  ...automotiveSchema,
+  id: 'TRAILERS_POWERSPORTS_RV',
+  status: 'active',
+  label: 'Trailers, powersports & RV',
+  copy: {
+    ...automotiveSchema.copy,
+    refColumn: 'Stock #',
+    titleColumn: 'Unit',
+    searchPlaceholder: 'Search stock #, serial #, make, model…',
+    invalidIdentifierLabel: 'Invalid serial #',
+  },
+  asset: {
+    singular: 'unit',
+    plural: 'units',
+    refLabel: 'Stock #',
+    idLabel: 'Serial #',
+    titleLabel: 'Unit',
+    idFieldKey: 'vin',
+  },
+  marketplace: { slug: 'trailers-powersports-rv', consumerEnabled: true, tagline: '' },
+};
+
 describe('setActiveCategorySchema', () => {
   it('updates inventoryLabels and taskActionLabel for active org', () => {
     setActiveCategorySchema(automotiveSchema);
@@ -90,5 +113,14 @@ describe('setActiveCategorySchema', () => {
     setActiveCategorySchema(songsSchema);
     expect(inventoryLabels().refColumn).toBe('Ref #');
     expect(taskActionLabel('SOLD')).toBe('Sold');
+  });
+
+  it('maps trailers org to Serial # / Unit operator labels', () => {
+    setActiveCategorySchema(trailersSchema);
+    expect(inventoryLabels().refColumn).toBe('Stock #');
+    expect(inventoryLabels().titleColumn).toBe('Unit');
+    expect(inventoryLabels().searchPlaceholder.toLowerCase()).toContain('serial #');
+    expect(inventoryLabels().searchPlaceholder).not.toContain('VIN');
+    expect(inventoryLabels().invalidIdentifierLabel).toBe('Invalid serial #');
   });
 });

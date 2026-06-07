@@ -74,6 +74,8 @@ describe('resolveCategorySchema — known categories', () => {
     assert.equal(schema.asset.idLabel, 'Serial #');
     assert.equal(schema.marketplace.consumerEnabled, true);
     assert.equal(schema.marketplace.slug, 'trailers-powersports-rv');
+    assert.notEqual(schema.asset.idLabel, resolveCategorySchema('AUTOMOTIVE').asset.idLabel);
+    assert.notEqual(schema.copy.invalidIdentifierLabel, resolveCategorySchema('AUTOMOTIVE').copy.invalidIdentifierLabel);
   });
 
   it('trailers assetMeta formatter shows hours from categoryPayload', () => {

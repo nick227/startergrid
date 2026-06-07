@@ -44,6 +44,7 @@ export function formatMileage(mileage: number): string {
 }
 
 export function formatUsage(mileage: number, usageUnit?: 'miles' | 'hours' | null): string {
+  if (!Number.isFinite(mileage)) return '—';
   const suffix = usageUnit === 'hours' ? 'hrs' : 'mi';
   return `${new Intl.NumberFormat('en-US').format(mileage)} ${suffix}`;
 }

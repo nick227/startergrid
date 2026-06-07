@@ -1,5 +1,5 @@
 import { useAuth } from '../../contexts/AuthContext.tsx';
-import { useCategoryId } from '../../contexts/CategoryContext.tsx';
+import { useCategoryId, useCategorySchema } from '../../contexts/CategoryContext.tsx';
 
 type Props = {
   listingId: string;
@@ -9,7 +9,9 @@ type Props = {
 export function FavoriteButton({ listingId, className = '' }: Props) {
   const { isFavorited, toggleFavorite } = useAuth();
   const categoryId = useCategoryId();
+  const schema = useCategorySchema();
   const saved = isFavorited(listingId);
+  const noun = schema.asset.singular;
 
   function handleClick(e: React.MouseEvent) {
     e.preventDefault();
@@ -21,7 +23,7 @@ export function FavoriteButton({ listingId, className = '' }: Props) {
     <button
       type="button"
       onClick={handleClick}
-      aria-label={saved ? 'Remove from saved vehicles' : 'Save vehicle'}
+      aria-label={saved ? `Remove from saved ${schema.asset.plural}` : `Save ${noun}`}
       aria-pressed={saved}
       className={`mp-focus flex size-8 items-center justify-center rounded-full bg-white/90 shadow-elevation-2 transition hover:bg-white ${saved ? 'text-red-500' : 'text-ink-muted hover:text-red-500'} ${className}`}
     >
