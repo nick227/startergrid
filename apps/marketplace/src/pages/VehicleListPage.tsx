@@ -22,6 +22,7 @@ export default function VehicleListPage({ initialQuery = {} }: Props) {
   const slug = useCategorySlug();
   const schema = useCategorySchema();
   const automotive = isAutomotiveSlug(slug);
+  const consumerActive = schema.status === 'active';
   const [make,      setMake]      = useState(initialQuery.make ?? '');
   const [model,     setModel]     = useState(initialQuery.model ?? '');
   const [condition, setCondition] = useState<ListQuery['condition']>(initialQuery.condition);
@@ -145,9 +146,13 @@ export default function VehicleListPage({ initialQuery = {} }: Props) {
         <ErrorState message={queryErrorMessage(feed.error)} onRetry={feed.retry} />
       ) : !hasItems ? (
         <EmptyState
-          title={automotive ? 'No vehicles match your search' : `${schema.label} marketplace coming soon`}
-          description={automotive
-            ? 'Try different make or model keywords, or reset filters to browse everything available.'
+          title={consumerActive
+            ? `No ${schema.asset.plural} match your search`
+            : `${schema.label} marketplace coming soon`}
+          description={consumerActive
+            ? automotive
+              ? 'Try different make or model keywords, or reset filters to browse everything available.'
+              : `Try adjusting your search or check back soon for new ${schema.asset.plural}.`
             : `Listings for ${schema.label.toLowerCase()} will appear here when sellers join this marketplace.`}
           actionLabel={hasActiveFilters ? 'Reset filters' : undefined}
           onAction={hasActiveFilters ? resetFilters : undefined}
@@ -155,7 +160,7 @@ export default function VehicleListPage({ initialQuery = {} }: Props) {
       ) : (
         <>
           <p className="mb-4 text-sm font-medium text-slate-600 sm:mb-5">
-            {formatResultCount(feed.totalEstimate)} available
+            {formatResultCount(feed.totalEstimate, schema.asset.singular)}
           </p>
 
           <VehicleGrid>

@@ -253,14 +253,17 @@ export function cleanupFilterDefs(): FilterChipDef[] {
 
 export function applyCleanupFilter(vehicle: VehicleListItem, filter: CleanupFilter): boolean {
   switch (filter) {
-    case 'ALL':             return true;
-    case 'READY':           return vehicle.readiness === 'READY';
-    case 'WARNING':         return vehicle.readiness === 'WARNING';
-    case 'BLOCKED':         return vehicle.readiness === 'BLOCKED';
-    case 'MISSING_PHOTOS':  return vehicle.issues.some(i => i.path === 'media');
-    case 'INVALID_IDENTIFIER':     return vehicle.issues.some(i => i.path === 'vin' && i.severity === 'FAIL');
-    case 'SUSPICIOUS_PRICE':return vehicle.issues.some(i => i.path === 'priceCents');
-    default:                return true;
+    case 'ALL':               return true;
+    case 'READY':             return vehicle.readiness === 'READY';
+    case 'WARNING':           return vehicle.readiness === 'WARNING';
+    case 'BLOCKED':           return vehicle.readiness === 'BLOCKED';
+    case 'MISSING_PHOTOS':    return vehicle.issues.some(i => i.path === 'media');
+    case 'INVALID_IDENTIFIER': {
+      const idKey = inventoryLabels().idFieldKey;
+      return idKey ? vehicle.issues.some(i => i.path === idKey && i.severity === 'FAIL') : false;
+    }
+    case 'SUSPICIOUS_PRICE':  return vehicle.issues.some(i => i.path === 'priceCents');
+    default:                  return true;
   }
 }
 

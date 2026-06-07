@@ -3,14 +3,11 @@ import type { VerticalCopyAdapter } from './vertical.ts';
 
 /** Map resolved org category schema → shell vertical copy adapter. */
 export function verticalAdapterFromCategorySchema(schema: CategorySchema): VerticalCopyAdapter {
-  const taskActionOverrides: VerticalCopyAdapter['taskActionOverrides'] = {};
-  if (schema.id === 'AUTOMOTIVE') {
-    taskActionOverrides.SOLD = schema.lifecycle.sold;
-  }
-
   return {
     id: schema.id.toLowerCase(),
-    taskActionOverrides,
+    taskActionOverrides: {
+      SOLD: schema.lifecycle.sold,
+    },
     inventory: {
       refColumn: schema.copy.refColumn,
       titleColumn: schema.copy.titleColumn,
@@ -18,6 +15,7 @@ export function verticalAdapterFromCategorySchema(schema: CategorySchema): Verti
       invalidIdentifierLabel: schema.copy.invalidIdentifierLabel,
       canonicalRef: schema.asset.refLabel,
       canonicalId: schema.asset.idLabel,
+      idFieldKey: schema.asset.idFieldKey,
     },
   };
 }

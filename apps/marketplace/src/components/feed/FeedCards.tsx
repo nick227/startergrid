@@ -2,9 +2,9 @@ import type {
   MarketplaceFeedItem,
   MarketplaceVehicleCard,
 } from '../../lib/api.ts';
-import { formatLocation, formatMileage, formatPrice, vehicleHeading } from '../../lib/display.ts';
+import { formatLocation, formatPrice, formatUsage, vehicleHeading } from '../../lib/display.ts';
 import { listingHref, sellerHref } from '../../lib/routes.ts';
-import { useCategoryId, useCategorySlug } from '../../contexts/CategoryContext.tsx';
+import { useCategoryId, useCategorySchema, useCategorySlug } from '../../contexts/CategoryContext.tsx';
 import { useTrackVisibleMarketplaceItem } from '../../hooks/useTrackVisibleMarketplaceItem.ts';
 import { ConditionBadge } from '../ui/ConditionBadge.tsx';
 import { FeedMediaCarousel } from '../ui/FeedMediaCarousel.tsx';
@@ -31,6 +31,8 @@ function VehicleFeedCard({
   const card = item.vehicle;
   const slug = useCategorySlug();
   const categoryId = useCategoryId();
+  const schema = useCategorySchema();
+  const usageLabel = schema.fields.find(field => field.key === 'mileage')?.label ?? 'Mileage';
   const ref = useTrackVisibleMarketplaceItem<HTMLElement>({
     type: item.type,
     impressionKey: item.impressionKey,
@@ -67,10 +69,10 @@ function VehicleFeedCard({
           {card.trim && <p className="text-sm leading-snug text-ink-muted">{card.trim}</p>}
         </div>
 
-        <VehicleMeta card={card} location={location ?? ''} />
+        <VehicleMeta card={card} location={location ?? ''} usageLabel={usageLabel} />
 
         <div className="mt-auto border-t border-silver-200 pt-4">
-          <p className="mp-label text-ink-faint">Dealer</p>
+          <p className="mp-label text-ink-faint">Seller</p>
           <a href={sellerHref(slug, card.dealerId)} className="mp-focus mt-1 block text-sm font-semibold text-ink-body hover:text-cta">
             {card.dealerName}
           </a>
@@ -81,7 +83,16 @@ function VehicleFeedCard({
   );
 }
 
-function VehicleMeta({ card, location }: { card: MarketplaceVehicleCard; location: string }) {
+function VehicleMeta({
+  card,
+  location,
+  usageLabel,
+}: {
+  card: MarketplaceVehicleCard;
+  location: string;
+  usageLabel: string;
+}) {
+  const usageUnit = card.usageUnit === 'hours' ? 'hours' : card.usageUnit === 'miles' ? 'miles' : undefined;
   return (
     <div className="grid grid-cols-2 gap-3 rounded-lg bg-surface-inset p-3">
       <div className="col-span-2">
@@ -89,7 +100,7 @@ function VehicleMeta({ card, location }: { card: MarketplaceVehicleCard; locatio
         <p className="text-2xl font-bold tabular-nums text-ink">{formatPrice(card.priceCents)}</p>
       </div>
       <MetaCell label="Year" value={String(card.year)} />
-      <MetaCell label="Mileage" value={formatMileage(card.mileage)} />
+      <MetaCell label={usageLabel} value={formatUsage(card.mileage, usageUnit)} />
       <MetaCell label="Make" value={card.make} />
       <MetaCell label="Model" value={card.model} />
       {location && <MetaCell label="Location" value={location} className="col-span-2" />}

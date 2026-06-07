@@ -4,8 +4,11 @@ import { platformProfiles } from '../data/platformProfiles.js';
 import { pristineApiDealership, pristineApiVehicles } from '../fixtures/scenarios/pristineApiValidation.fixture.js';
 import { validatePlatformReadiness, validatePlatformReadinessStrict } from '../validators/platform/platformReadinessValidator.js';
 
-test('pristine API fixture passes baseline readiness for every registered platform', () => {
-  const failing = platformProfiles
+test('pristine API fixture passes baseline readiness for every automotive platform', () => {
+  const automotivePlatforms = platformProfiles.filter(platform =>
+    platform.supportedCategories.includes('AUTOMOTIVE'),
+  );
+  const failing = automotivePlatforms
     .map((platform) => ({ platform, report: validatePlatformReadiness(platform, pristineApiDealership, pristineApiVehicles) }))
     .filter(({ report }) => report.readiness !== 'GREEN' || report.issues.length > 0);
 
@@ -15,8 +18,11 @@ test('pristine API fixture passes baseline readiness for every registered platfo
   );
 });
 
-test('pristine API fixture produces strict readiness without RED platforms', () => {
-  const red = platformProfiles
+test('pristine API fixture produces strict readiness without RED automotive platforms', () => {
+  const automotivePlatforms = platformProfiles.filter(platform =>
+    platform.supportedCategories.includes('AUTOMOTIVE'),
+  );
+  const red = automotivePlatforms
     .map((platform) => ({ platform, report: validatePlatformReadinessStrict(platform, pristineApiDealership, pristineApiVehicles) }))
     .filter(({ report }) => report.readiness === 'RED');
 
@@ -27,7 +33,12 @@ test('pristine API fixture produces strict readiness without RED platforms', () 
 });
 
 test('pristine API fixture carries documentation-grade dealer and inventory fields', () => {
-  assert.equal(pristineApiDealership.desiredChannels.length, platformProfiles.length);
+  const dealerChannels = new Set(pristineApiDealership.desiredChannels);
+  for (const platform of platformProfiles) {
+    if (platform.supportedCategories.includes('AUTOMOTIVE')) {
+      assert.ok(dealerChannels.has(platform.slug), `missing desired channel ${platform.slug}`);
+    }
+  }
   assert.equal(pristineApiVehicles.length >= 3, true);
 
   for (const vehicle of pristineApiVehicles) {

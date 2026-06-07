@@ -29,8 +29,10 @@ function marketplacePrisma(): PrismaClient {
       findMany:  async () => [],
       findFirst: async () => null,
       count:     async () => 0,
+      groupBy:   async () => [],
     },
     dealershipProfile: {
+      findMany:   async () => [],
       findFirst:  async () => null,
       findUnique: async () => null,
     },
@@ -57,6 +59,7 @@ function toUrl(route: string): { method: string; path: string } {
   const [method, rawPath] = route.split(' ');
   const path = rawPath
     .replace(':listingId', 'test-listing-001')
+    .replace(':sellerId',  'test-seller-001')
     .replace(':dealerId',  'test-dealer-001');
   return { method: method.trim(), path };
 }

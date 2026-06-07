@@ -26,4 +26,4 @@ export {
   listMarketplaceCategories,
 } from './marketplace/helpers.js';
 export { automotiveSchema } from './automotive/schema.js';
-export { createPlaceholderSchema, createUnknownFallbackSchema } from './generic/schema.js';
+export { createPlaceholderSchema, createUnknownFallbackSchema, genericOperatorFallback } from './generic/schema.js';

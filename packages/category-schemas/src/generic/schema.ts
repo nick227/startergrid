@@ -27,9 +27,17 @@ export function createPlaceholderSchema(
     readiness: { ...genericReadiness },
     performance: { ...genericPerformance },
     formatters: genericFormatters,
-    marketplace: buildMarketplaceMeta(id, label),
+    marketplace: buildMarketplaceMeta(id, label, { consumerEnabled: false }),
   };
 }
+
+/**
+ * Neutral schema used while a dealer's real category is loading.
+ * Uses generic copy ("Ref #", "Asset") so AUTOMOTIVE labels never flash for
+ * non-automotive orgs during the initial fetch window.
+ * id === 'SONGS' ensures zero platforms match during the loading window.
+ */
+export const genericOperatorFallback: CategorySchema = createPlaceholderSchema('SONGS', 'this category');
 
 /** Fallback when category is not registered — never throws. */
 export function createUnknownFallbackSchema(category: string): CategorySchema {

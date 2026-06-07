@@ -23,6 +23,7 @@ const baseDbVehicle: DbVehicle = {
   transmission: 'Automatic',
   options: ['Adaptive Cruise Control', 'Apple CarPlay'],
   starCore: { Vehicle: { VIN: '1HGCV1F30JA000001', ModelYear: 2021 } },
+  categoryPayload: null,
   soldAt: null,
   removedAt: null,
   reactivatedAt: null,

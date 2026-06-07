@@ -12,6 +12,8 @@ export type VerticalCopyAdapter = {
     invalidIdentifierLabel: string;
     canonicalRef: string;
     canonicalId: string;
+    /** Backend field path for identifier-failure issues. Empty string = no check. */
+    idFieldKey: string;
   };
 };
 
@@ -25,6 +27,7 @@ export const genericVertical: VerticalCopyAdapter = {
     invalidIdentifierLabel: 'Invalid identifier',
     canonicalRef: 'Ref number',
     canonicalId: 'Identifier',
+    idFieldKey: '',
   },
 };
 
@@ -41,5 +44,6 @@ export const automotiveVertical: VerticalCopyAdapter = {
     invalidIdentifierLabel: 'Invalid VIN',
     canonicalRef: 'Stock number',
     canonicalId: 'VIN',
+    idFieldKey: 'vin',
   },
 };

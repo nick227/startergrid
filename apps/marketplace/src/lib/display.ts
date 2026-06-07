@@ -43,6 +43,11 @@ export function formatMileage(mileage: number): string {
   return `${new Intl.NumberFormat('en-US').format(mileage)} mi`;
 }
 
+export function formatUsage(mileage: number, usageUnit?: 'miles' | 'hours' | null): string {
+  const suffix = usageUnit === 'hours' ? 'hrs' : 'mi';
+  return `${new Intl.NumberFormat('en-US').format(mileage)} ${suffix}`;
+}
+
 export function formatListedDate(isoString: string): string {
   return new Date(isoString).toLocaleDateString('en-US', {
     year: 'numeric',

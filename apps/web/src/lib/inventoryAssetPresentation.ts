@@ -17,7 +17,13 @@ function formatMileage(mi: number): string {
 }
 
 export function assetTitle(vehicle: VehicleListItem): string {
-  const base = `${vehicle.year} ${vehicle.make} ${vehicle.model}`;
+  const parts = [
+    vehicle.year > 0 ? String(vehicle.year) : null,
+    vehicle.make || null,
+    vehicle.model || null,
+  ].filter((p): p is string => p !== null);
+  if (parts.length === 0) return vehicle.stockNumber || 'Unknown asset';
+  const base = parts.join(' ');
   return vehicle.trim ? `${base} · ${vehicle.trim}` : base;
 }
 
@@ -37,10 +43,9 @@ export function assetMovementSummary(perf: VehiclePerformanceItem | null | undef
 
 export function assetSecondaryMeta(vehicle: VehicleListItem): string {
   const labels = inventoryLabels();
-  const parts: string[] = [
-    `${labels.refColumn} ${vehicle.stockNumber}`,
-    `${labels.canonicalId} ${vehicle.vin}`,
-  ];
+  const parts: string[] = [];
+  if (vehicle.stockNumber) parts.push(`${labels.refColumn} ${vehicle.stockNumber}`);
+  if (vehicle.vin) parts.push(`${labels.canonicalId} ${vehicle.vin}`);
   if (vehicle.exteriorColor) parts.push(vehicle.exteriorColor);
   if (vehicle.condition) parts.push(vehicle.condition);
   return parts.join(' · ');

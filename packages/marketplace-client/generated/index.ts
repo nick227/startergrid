@@ -42,7 +42,7 @@ export type { MarketplaceVehicleDetailResponse } from './models/MarketplaceVehic
 export type { MarketplaceVehicleFeedItem } from './models/MarketplaceVehicleFeedItem';
 export type { MarketplaceVehicleListResponse } from './models/MarketplaceVehicleListResponse';
 export { PromotionChannel } from './models/PromotionChannel';
-export type { VehicleClassification } from './models/VehicleClassification';
+export { VehicleClassification } from './models/VehicleClassification';
 export type { VehicleColors } from './models/VehicleColors';
 export { VehicleCommerce } from './models/VehicleCommerce';
 export type { VehicleConditionHistory } from './models/VehicleConditionHistory';

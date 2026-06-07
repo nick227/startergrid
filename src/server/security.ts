@@ -19,9 +19,11 @@ export type RouteClassification = 'public' | 'operator' | 'public-write';
 // because they live in openapi/openapi-marketplace.yaml, not openapi/openapi.yaml.
 export const marketplaceRouteClassifications = {
   public: [
+    'GET /api/marketplace/sites',
     'GET /api/marketplace/feed',
     'GET /api/marketplace/vehicles',
     'GET /api/marketplace/vehicles/:listingId',
+    'GET /api/marketplace/sellers/:sellerId',
     'GET /api/marketplace/dealers/:dealerId',
     'GET /api/marketplace/dealers/:dealerId/stats',
   ],

@@ -22,6 +22,7 @@ const automotiveSchema: CategorySchema = {
     refLabel: 'Stock #',
     idLabel: 'VIN',
     titleLabel: 'Vehicle',
+    idFieldKey: 'vin',
   },
   channel: { singular: 'channel', plural: 'channels' },
   fields: [],
@@ -50,6 +51,7 @@ const songsSchema: CategorySchema = {
     refLabel: 'Ref #',
     idLabel: 'Identifier',
     titleLabel: 'Asset',
+    idFieldKey: '',
   },
 };
 
@@ -64,7 +66,7 @@ describe('verticalAdapterFromCategorySchema', () => {
   it('uses generic ref labels for placeholder categories', () => {
     const adapter = verticalAdapterFromCategorySchema(songsSchema);
     expect(adapter.inventory.refColumn).toBe('Ref #');
-    expect(adapter.taskActionOverrides.SOLD).toBeUndefined();
+    expect(adapter.taskActionOverrides.SOLD).toBe('Sold');
   });
 
   it('uses schema asset labels for canonical fields', () => {
@@ -87,6 +89,6 @@ describe('setActiveCategorySchema', () => {
 
     setActiveCategorySchema(songsSchema);
     expect(inventoryLabels().refColumn).toBe('Ref #');
-    expect(taskActionLabel('SOLD')).toBe('Delist');
+    expect(taskActionLabel('SOLD')).toBe('Sold');
   });
 });

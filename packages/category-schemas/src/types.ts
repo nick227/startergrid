@@ -43,6 +43,8 @@ export type CategoryAssetLabels = {
   refLabel: string;
   idLabel: string;
   titleLabel: string;
+  /** Backend field path used for identifier-failure issue matching (e.g. 'vin'). Empty string = no identifier filter. */
+  idFieldKey: string;
 };
 
 export type CategoryChannelLabels = {

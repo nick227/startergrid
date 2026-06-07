@@ -66,15 +66,37 @@ describe('resolveCategorySchema — known categories', () => {
     });
     assert.equal(lead, '2024 Honda Civic · Stock #A123');
   });
+
+  it('TRAILERS_POWERSPORTS_RV is active with unit labels', () => {
+    const schema = resolveCategorySchema('TRAILERS_POWERSPORTS_RV');
+    assert.equal(schema.status, 'active');
+    assert.equal(schema.asset.singular, 'unit');
+    assert.equal(schema.asset.idLabel, 'Serial #');
+    assert.equal(schema.marketplace.consumerEnabled, true);
+    assert.equal(schema.marketplace.slug, 'trailers-powersports-rv');
+  });
+
+  it('trailers assetMeta formatter shows hours from categoryPayload', () => {
+    const schema = resolveCategorySchema('TRAILERS_POWERSPORTS_RV');
+    const meta = schema.formatters.assetMeta({
+      mileage: 125,
+      priceCents: 749900,
+      categoryPayload: { usageUnit: 'hours' },
+    });
+    assert.match(meta, /125 hrs/);
+  });
 });
 
 describe('resolveCategorySchema — placeholders', () => {
-  const placeholderIds = BUSINESS_CATEGORY_IDS.filter((id) => id !== 'AUTOMOTIVE');
+  const placeholderIds = BUSINESS_CATEGORY_IDS.filter(
+    id => id !== 'AUTOMOTIVE' && id !== 'TRAILERS_POWERSPORTS_RV',
+  );
 
   for (const id of placeholderIds) {
     it(`${id} resolves as placeholder with generic asset/channel labels`, () => {
       const schema = resolveCategorySchema(id);
       assert.equal(schema.status, 'placeholder');
+      assert.equal(schema.marketplace.consumerEnabled, false);
       assert.equal(schema.asset.singular, 'asset');
       assert.equal(schema.asset.plural, 'assets');
       assert.equal(schema.asset.refLabel, 'Ref #');

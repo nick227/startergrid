@@ -51,10 +51,28 @@ describe('listMarketplaceSites service', () => {
     } as unknown as PrismaClient;
 
     const { sites } = await listMarketplaceSites(prisma);
-    const watches = sites.find(site => site.slug === 'watches');
-    assert.ok(watches);
-    assert.equal(watches!.listingCount, 0);
-    assert.equal(watches!.status, 'coming_soon');
+    const trailers = sites.find(site => site.slug === 'trailers-powersports-rv');
+    assert.ok(trailers);
+    assert.equal(trailers!.listingCount, 0);
+    assert.equal(trailers!.status, 'coming_soon');
+    assert.equal(sites.some(site => site.slug === 'watches'), false);
+  });
+
+  it('returns active trailers site when inventory exists', async () => {
+    const prisma = {
+      vehicle: {
+        groupBy: async () => [{ dealershipId: 'dealer-trailers', _count: { _all: 3 } }],
+      },
+      dealershipProfile: {
+        findMany: async () => [{ id: 'dealer-trailers', businessCategory: 'TRAILERS_POWERSPORTS_RV' }],
+      },
+    } as unknown as PrismaClient;
+
+    const { sites } = await listMarketplaceSites(prisma);
+    const trailers = sites.find(site => site.slug === 'trailers-powersports-rv');
+    assert.ok(trailers);
+    assert.equal(trailers!.status, 'active');
+    assert.equal(trailers!.listingCount, 3);
   });
 });
 

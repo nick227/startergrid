@@ -15,6 +15,7 @@ export const automotiveSchema: CategorySchema = {
     refLabel: 'Stock #',
     idLabel: 'VIN',
     titleLabel: 'Vehicle',
+    idFieldKey: 'vin',
   },
   channel: { ...genericChannel },
   fields: [

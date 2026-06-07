@@ -16,6 +16,7 @@
 
 import type { PrismaClient, Prisma, BusinessCategory } from '@prisma/client';
 import { categoryIdToSlug } from '../../../packages/category-schemas/src/index.js';
+import { usageUnitFromPayload } from '../../lib/categoryPayload.js';
 import {
   shapeDetailResponse,
   type DbVehicleDetailRow,
@@ -45,6 +46,7 @@ export type MarketplaceVehicleCard = {
   condition:    string;
   priceCents:   number;
   mileage:      number;
+  usageUnit?:   'miles' | 'hours';
   exteriorColor: string | null;
   mediaUrls:    string[];      // first MAX_CARD_IMAGES, ordered by sortOrder
   mediaItems:   MarketplaceMediaItem[];
@@ -188,6 +190,7 @@ type DbVehicleRow = {
   priceCents:   number;
   condition:    string;
   exteriorColor: string;
+  categoryPayload?: unknown;
   createdAt:    Date;
   dealershipId: string;
   media:        DbMedia[];
@@ -244,6 +247,7 @@ function shapeCard(row: DbVehicleRow): MarketplaceVehicleCard {
     condition:    row.condition,
     priceCents:   row.priceCents,
     mileage:      row.mileage,
+    usageUnit:    usageUnitFromPayload(row.categoryPayload),
     exteriorColor: row.exteriorColor ?? null,
     mediaUrls,
     mediaItems,
@@ -290,6 +294,7 @@ const VEHICLE_CARD_SELECT: Prisma.VehicleSelect = {
   priceCents:    true,
   mileage:       true,
   exteriorColor: true,
+  categoryPayload: true,
   createdAt:     true,
   media: {
     select:  { url: true, kind: true, sortOrder: true, width: true, height: true, mimeType: true },
@@ -318,6 +323,7 @@ const VEHICLE_DETAIL_SELECT: Prisma.VehicleSelect = {
   drivetrain:    true,
   fuelType:      true,
   transmission:  true,
+  categoryPayload: true,
   createdAt:     true,
   media: {
     select:  { id: true, url: true, kind: true, sortOrder: true, width: true, height: true, mimeType: true },

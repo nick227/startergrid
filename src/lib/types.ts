@@ -60,6 +60,7 @@ export type VehiclePayload = {
   transmission?: string | null;
   options?: unknown;
   starCore?: unknown;
+  categoryPayload?: unknown;
   media?: VehicleMediaPayload[];
 };
 

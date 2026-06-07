@@ -723,6 +723,43 @@ const consumerMarketplace: PlatformResponses = {
   )
 };
 
+function assistedMarketplaceStub(slug: string, label: string): PlatformResponses {
+  return {
+    PORTAL_ACCEPTED: r(
+      slug, 'PORTAL_ACCEPTED', 200,
+      { type: 'EMAIL_ACKNOWLEDGED', ticketId: `${slug.toUpperCase()}-MOCK-00001`, message: `${label} onboarding packet received.` },
+      'PLATFORM_REVIEWING', null,
+      `${label} partner onboarding acknowledged. Account setup is partner-assisted.`,
+    ),
+    PORTAL_REJECTED: r(
+      slug, 'PORTAL_REJECTED', 200,
+      { type: 'APPLICATION_DECLINED', reason: 'Incomplete listing packet', message: `${label} declined the onboarding packet.` },
+      'REJECTED',
+      `Resubmit a complete inventory packet for ${label}.`,
+      `${label} declined application due to missing documentation.`,
+    ),
+    PORTAL_NEEDS_INFO: r(
+      slug, 'PORTAL_NEEDS_INFO', 200,
+      { type: 'ADDITIONAL_INFO_REQUESTED', fields: ['dealerLicenseDocument', 'inventoryFeedSampleUrl'], message: `${label} requested additional documents.` },
+      'DEALER_ACTION_NEEDED',
+      `Upload required documents to continue ${label} onboarding.`,
+      `${label} requested additional documents before review can continue.`,
+    ),
+    PORTAL_ERROR: r(
+      slug, 'PORTAL_ERROR', 500,
+      { type: 'DELIVERY_FAILED', error: 'Partner portal email delivery failed', retryAfter: 'PT1H' },
+      'SUBMITTED', null,
+      `${label} partner email delivery failed. Retry recommended after 1 hour.`,
+    ),
+  };
+}
+
+const rvTrader = assistedMarketplaceStub('rv-trader', 'RV Trader');
+const cycleTrader = assistedMarketplaceStub('cycle-trader', 'Cycle Trader');
+const atvTrader = assistedMarketplaceStub('atv-trader', 'ATV Trader');
+const trailerTrader = assistedMarketplaceStub('trailer-trader', 'Trailer Trader');
+const facebookMarketplaceGeneral = assistedMarketplaceStub('facebook-marketplace-general', 'Facebook Marketplace');
+
 export const mockPortalResponses: Record<string, PlatformResponses> = {
   'dealer-storefront': dealerStorefront,
   'consumer-marketplace': consumerMarketplace,
@@ -742,7 +779,12 @@ export const mockPortalResponses: Record<string, PlatformResponses> = {
   'truecar-dealer-network': truecarDealerNetwork,
   'adf-xml-lead-routing': adfXmlLeadRouting,
   'nextdoor-ads': nextdoorAds,
-  'apple-business-connect': appleBusinessConnect
+  'apple-business-connect': appleBusinessConnect,
+  'rv-trader': rvTrader,
+  'cycle-trader': cycleTrader,
+  'atv-trader': atvTrader,
+  'trailer-trader': trailerTrader,
+  'facebook-marketplace-general': facebookMarketplaceGeneral,
 };
 
 export function getMockPortalResponse(platformSlug: string, condition: MockPortalCondition): MockPortalResponse | undefined {

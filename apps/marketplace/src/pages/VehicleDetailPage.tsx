@@ -4,6 +4,7 @@ import { fetchVehicle, isNotFoundError } from '../lib/api.ts';
 import { formatPrice, formatMileage } from '../lib/display.ts';
 import { getListReturn } from '../lib/listReturn.ts';
 import { isAutomotiveSlug } from '../lib/routes.ts';
+import GenericListingDetailPage from './GenericListingDetailPage.tsx';
 import { MarketplaceEventType } from '../lib/events.ts';
 import { useTrackMarketplaceEvent } from '../hooks/useTrackMarketplaceEvent.ts';
 import { useCategoryId, useCategorySchema, useCategorySlug } from '../contexts/CategoryContext.tsx';
@@ -29,16 +30,38 @@ import { ContentSection } from '../components/vdp/ContentSection.tsx';
 type Props = { listingId: string };
 
 export default function VehicleDetailPage({ listingId }: Props) {
+  const slug = useCategorySlug();
+  const schema = useCategorySchema();
+  const backHref = getListReturn(slug);
+
+  if (!isAutomotiveSlug(slug)) {
+    if (schema.status === 'active') {
+      return <GenericListingDetailPage listingId={listingId} />;
+    }
+    return (
+      <PageShell backHref={backHref} backLabel="Back to results">
+        <NotFoundState
+          title="Listing details coming soon"
+          description={`Item detail pages for the ${schema.label.toLowerCase()} marketplace are not available yet.`}
+          backHref={backHref}
+          backLabel="Back to results"
+        />
+      </PageShell>
+    );
+  }
+
+  return <AutomotiveVehicleDetailPage listingId={listingId} />;
+}
+
+function AutomotiveVehicleDetailPage({ listingId }: Props) {
   const categoryId = useCategoryId();
   const slug = useCategorySlug();
   const schema = useCategorySchema();
   const backHref = getListReturn(slug);
-  const automotive = isAutomotiveSlug(slug);
 
   const { data, loading, error, reload } = useQuery(
     () => fetchVehicle(listingId, categoryId),
     [listingId, categoryId],
-    { enabled: automotive },
   );
 
   const { core, commerce } = data?.vehicle ?? {};
@@ -53,19 +76,6 @@ export default function VehicleDetailPage({ listingId }: Props) {
     listingId,
     category: categoryId,
   } : null);
-
-  if (!automotive) {
-    return (
-      <PageShell backHref={backHref} backLabel="Back to results">
-        <NotFoundState
-          title="Listing details coming soon"
-          description={`Item detail pages for the ${schema.label.toLowerCase()} marketplace are not available yet.`}
-          backHref={backHref}
-          backLabel="Back to results"
-        />
-      </PageShell>
-    );
-  }
 
   if (loading && !data) {
     return (

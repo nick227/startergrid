@@ -798,6 +798,11 @@ components:
         mileage:
           type: integer
           minimum: 0
+        usageUnit:
+          type: string
+          nullable: true
+          enum: [miles, hours]
+          description: Optional usage suffix for non-automotive inventory (defaults to miles when omitted).
         exteriorColor:
           type: string
           nullable: true
@@ -1032,6 +1037,14 @@ components:
         mileage:
           type: integer
           minimum: 0
+        usageUnit:
+          type: string
+          nullable: true
+          enum: [miles, hours]
+        unitType:
+          type: string
+          nullable: true
+          description: Optional unit subtype label (RV, ATV, Trailer, etc.).
         bodyStyle:
           type: string
           nullable: true

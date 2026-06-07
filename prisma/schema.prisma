@@ -273,6 +273,7 @@ model Vehicle {
   transmission    String?  @db.VarChar(80)
   options         Json
   starCore        Json
+  categoryPayload Json?
   soldAt          DateTime?
   removedAt       DateTime?
   reactivatedAt   DateTime?

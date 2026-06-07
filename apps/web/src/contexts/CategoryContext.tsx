@@ -12,11 +12,16 @@ export function CategoryProvider({
   schema: CategorySchema;
   children: ReactNode;
 }) {
+  // Synchronous call keeps the module singleton correct for children that read
+  // inventoryLabels() during the same render pass (parents render before children).
   setActiveCategorySchema(schema);
 
+  // useEffect tracks schema changes and handles cleanup on unmount, so the
+  // singleton is reset to generic defaults when no provider is active.
   useEffect(() => {
+    setActiveCategorySchema(schema);
     return () => resetActiveCategoryCopy();
-  }, []);
+  }, [schema]);
 
   return <CategoryContext.Provider value={schema}>{children}</CategoryContext.Provider>;
 }

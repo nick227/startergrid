@@ -90,6 +90,14 @@ export default function PlatformsPage({ dealerId, nav, activeTab, initialPlatfor
 
   const situation = data ? platformSituationSummary(platforms) : operatorCopy.platforms.loading;
 
+  // Distinguish "category has no platforms" from "user filter excluded results".
+  const noUserFilter = filter === 'ALL' && !search.trim();
+  const noCategoryPlatforms = !!data && platforms.length === 0;
+  const channelEmptyMessage =
+    noCategoryPlatforms && noUserFilter
+      ? `No platforms are configured for ${categorySchema.label} yet.`
+      : operatorCopy.platforms.emptyFilter;
+
   return (
     <OperatorPage
       dealerId={dealerId}
@@ -132,7 +140,7 @@ export default function PlatformsPage({ dealerId, nav, activeTab, initialPlatfor
           reload();
         }}
         loading={loading && !data}
-        emptyMessage={operatorCopy.platforms.emptyFilter}
+        emptyMessage={channelEmptyMessage}
       />
     </OperatorPage>
   );

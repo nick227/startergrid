@@ -1,4 +1,6 @@
 import type { VehicleIssue, VehicleListItem, VehiclePerformanceItem, PlatformPerformanceItem } from '@/lib/types.ts';
+import { useCategorySchema } from '@/contexts/CategoryContext.tsx';
+import { assetTitle } from '@/lib/inventoryAssetPresentation.ts';
 import {
   COMPARABLE_GROUP_RULE,
   formatMovementBenchmarkLine,
@@ -35,6 +37,7 @@ export function VehicleDetailPanel({
   dealerId,
   lifecycleScope = 'active',
 }: Props) {
+  const schema = useCategorySchema();
   const p = perf ? movementBenchmarkParts(perf) : null;
   const hint = perf ? movementTaskHint(perf) : null;
   const showMarketplace = isActiveLifecycleScope(lifecycleScope) && vehicle.lifecycleState !== 'SOLD' && vehicle.lifecycleState !== 'REMOVED';
@@ -44,11 +47,10 @@ export function VehicleDetailPanel({
       <div className="px-3 sm:px-4 py-3 border-b border-silver-100 bg-silver-100 flex flex-col sm:flex-row sm:flex-wrap sm:items-start sm:justify-between gap-3">
         <div className="min-w-0">
           <p className="text-sm font-bold text-ink-heading break-words">
-            {vehicle.year} {vehicle.make} {vehicle.model}
-            {vehicle.trim ? <span className="text-ink-muted font-normal"> · {vehicle.trim}</span> : null}
+            {assetTitle(vehicle)}
           </p>
           <p className="text-xs text-ink-muted mt-0.5 font-mono truncate">
-            {vehicle.stockNumber} · {formatPrice(vehicle.priceCents)}
+            {vehicle.stockNumber ? `${vehicle.stockNumber} · ` : ''}{formatPrice(vehicle.priceCents)}
           </p>
         </div>
         <div className="flex flex-wrap items-center gap-2 shrink-0">
@@ -117,8 +119,8 @@ export function VehicleDetailPanel({
         ) : (
           <section className="min-w-0 order-1 lg:order-2 rounded-lg border border-silver-100 bg-silver-100 px-3 py-3 text-xs text-ink-body">
             {vehicle.lifecycleState === 'SOLD'
-              ? 'This vehicle is sold — marketplace preview is hidden. Lifecycle history shows when status changed.'
-              : 'This vehicle is removed from active inventory — not sold unless marked separately. Check lifecycle history for source.'}
+              ? `This ${schema.asset.singular} is ${schema.lifecycle.sold.toLowerCase()} — marketplace preview is hidden. Lifecycle history shows when status changed.`
+              : `This ${schema.asset.singular} is no longer active in inventory — not ${schema.lifecycle.sold.toLowerCase()} unless marked separately. Check lifecycle history for source.`}
           </section>
         )}
       </div>

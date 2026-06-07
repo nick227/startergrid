@@ -14,6 +14,7 @@ export const genericAsset: CategoryAssetLabels = {
   refLabel: 'Ref #',
   idLabel: 'Identifier',
   titleLabel: 'Asset',
+  idFieldKey: '',
 };
 
 export const genericChannel: CategoryChannelLabels = {

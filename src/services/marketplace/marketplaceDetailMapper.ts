@@ -1,4 +1,5 @@
 import { mapDbMediaToDetailMedia } from './mediaSlotFixtures.js';
+import { parseCategoryPayload, usageUnitFromPayload } from '../../lib/categoryPayload.js';
 
 type DbMedia = {
   id:         string;
@@ -27,6 +28,7 @@ export type DbVehicleDetailRow = {
   drivetrain:    string | null;
   fuelType:      string | null;
   transmission:  string | null;
+  categoryPayload?: unknown;
   createdAt:     Date;
   dealershipId:  string;
   media:         DbMedia[];
@@ -147,8 +149,11 @@ function shapeLocation(row: DbVehicleDetailRow) {
 }
 
 function shapeClassification(row: DbVehicleDetailRow) {
+  const payload = parseCategoryPayload(row.categoryPayload);
   return {
     mileage:     row.mileage,
+    usageUnit:   usageUnitFromPayload(row.categoryPayload) ?? null,
+    unitType:    payload.unitType ?? null,
     bodyStyle:   row.bodyStyle,
     vehicleType: null,
     vehicleSize: null,

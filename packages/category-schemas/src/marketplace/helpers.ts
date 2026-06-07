@@ -9,6 +9,7 @@ const TAGLINES: Partial<Record<BusinessCategoryId, string>> = {
   SNEAKERS: 'Shop authenticated sneakers from verified sellers',
   HOMES: 'Explore homes listed by participating brokerages',
   BOATS: 'Browse boats and watercraft from participating dealers',
+  TRAILERS_POWERSPORTS_RV: 'Browse RVs, trailers, ATVs, and powersports from participating dealers',
 };
 
 export function categoryIdToSlug(id: BusinessCategoryId): string {

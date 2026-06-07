@@ -21,6 +21,10 @@ export type MarketplaceVehicleCard = {
     condition: MarketplaceVehicleCard.condition;
     priceCents: number;
     mileage: number;
+    /**
+     * Optional usage suffix for non-automotive inventory (defaults to miles when omitted).
+     */
+    usageUnit?: MarketplaceVehicleCard.usageUnit | null;
     exteriorColor: string | null;
     /**
      * First 8 images ordered by sort sequence. Additional images available in the detail endpoint.
@@ -52,6 +56,13 @@ export namespace MarketplaceVehicleCard {
         NEW = 'NEW',
         USED = 'USED',
         CPO = 'CPO',
+    }
+    /**
+     * Optional usage suffix for non-automotive inventory (defaults to miles when omitted).
+     */
+    export enum usageUnit {
+        MILES = 'miles',
+        HOURS = 'hours',
     }
 }
 

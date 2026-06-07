@@ -42,11 +42,13 @@ import {
   applyCleanupFilter,
 } from '@/components/inventory';
 import type { CleanupFilter } from '@/components/inventory';
-import { operatorCopy, inventoryLabels } from '@/lib/copy/index.ts';
+import { operatorCopy } from '@/lib/copy/index.ts';
+import { useInventoryLabels } from '@/contexts/CategoryContext.tsx';
 
 type Props = OperatorPageBaseProps;
 
 export default function InventoryPage({ dealerId, nav, activeTab }: Props) {
+  const inventoryLbls = useInventoryLabels();
   const [lifecycleScope, setLifecycleScope] = useState<LifecycleScope>('active');
   const { data, loading, error, reload: load, lastRefresh } = useAsyncQuery(
     () => fetchInventory(dealerId, { lifecycleScope }),
@@ -154,11 +156,16 @@ export default function InventoryPage({ dealerId, nav, activeTab }: Props) {
     value: (summary as Record<string, number> | undefined)?.[def.key] ?? 0,
   }));
 
-  const chipCounts = useMemo(() => ({
-    MISSING_PHOTOS: vehicles.filter(v => v.issues.some(i => i.path === 'media')).length,
-    INVALID_IDENTIFIER: vehicles.filter(v => v.issues.some(i => i.path === 'vin' && i.severity === 'FAIL')).length,
-    SUSPICIOUS_PRICE: vehicles.filter(v => v.issues.some(i => i.path === 'priceCents')).length,
-  }), [vehicles]);
+  const chipCounts = useMemo(() => {
+    const idKey = inventoryLbls.idFieldKey;
+    return {
+      MISSING_PHOTOS: vehicles.filter(v => v.issues.some(i => i.path === 'media')).length,
+      INVALID_IDENTIFIER: idKey
+        ? vehicles.filter(v => v.issues.some(i => i.path === idKey && i.severity === 'FAIL')).length
+        : 0,
+      SUSPICIOUS_PRICE: vehicles.filter(v => v.issues.some(i => i.path === 'priceCents')).length,
+    };
+  }, [vehicles, inventoryLbls.idFieldKey]);
 
   const benchmarkCount = useMemo(
     () => countBenchmarkedVehicles(perf.data?.items ?? []),
@@ -382,7 +389,7 @@ export default function InventoryPage({ dealerId, nav, activeTab }: Props) {
               <SearchField
                 value={search}
                 onChange={setSearch}
-                placeholder={inventoryLabels().searchPlaceholder}
+                placeholder={inventoryLbls.searchPlaceholder}
                 className="flex-1 max-w-md"
               />
               <InventorySortBar
