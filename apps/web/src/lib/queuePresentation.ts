@@ -68,6 +68,7 @@ export function filterQueueItems(
       i =>
         (i.assetTitle?.toLowerCase().includes(q) ?? false) ||
         (i.assetRef?.toLowerCase().includes(q) ?? false) ||
+        (i.assetId?.toLowerCase().includes(q) ?? false) ||
         i.platformName.toLowerCase().includes(q) ||
         i.platformSlug.toLowerCase().includes(q)
     );

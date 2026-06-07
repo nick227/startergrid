@@ -6,6 +6,7 @@ import { RowDetailDrawer } from '@/components/layout';
 import { PanelSkeleton } from '@/components/operator';
 import { MovementBenchmarkExpand } from '@/components/inventory/MovementBenchmark.tsx';
 import { operatorCopy } from '@/lib/copy/operator.ts';
+import { performanceItemRowScope } from '@/lib/rowNavScope.ts';
 import {
   reportAssetDesktopFields,
   reportAssetSecondaryMeta,
@@ -54,9 +55,18 @@ export function ReportAssetList({
               surfaceClassName={reportAssetSurface(item.movementSignal)}
               actions={[
                 { label: actions.details, onClick: () => setDetailId(item.vehicleId) },
-                { label: actions.queue, onClick: () => nav.goToQueue() },
-                { label: actions.history, onClick: () => nav.goToHistory() },
-                { label: actions.inventory, onClick: () => nav.goToInventory() },
+                {
+                  label: actions.queue,
+                  onClick: () => nav.goToQueue(performanceItemRowScope(item)),
+                },
+                {
+                  label: actions.history,
+                  onClick: () => nav.goToHistory(performanceItemRowScope(item)),
+                },
+                {
+                  label: actions.inventory,
+                  onClick: () => nav.goToInventory(performanceItemRowScope(item)),
+                },
               ]}
             />
           );

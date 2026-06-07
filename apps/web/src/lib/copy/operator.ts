@@ -36,9 +36,9 @@ export const operatorCopy = {
      * Row action labels on OpsRowCard lists (Inventory, Platforms, Queue, History).
      * Routing contract — see docs/ui-status.md § Row actions:
      * - Details  → local drawer on the current page (no navigation)
-     * - Queue    → global or platform-scoped queue tab; asset prefilter NOT YET
-     * - History  → global or platform-scoped history tab; asset prefilter NOT YET
-     * - Inventory → asset source editor tab; no row context passed yet
+     * - Queue    → global or platform queue with ?ref= / ?assetId= search prefill
+     * - History  → global or platform history with ?ref= / ?assetId= search prefill
+     * - Inventory → inventory tab with ?ref= search prefill
      */
     rowActions: {
       details: 'Details',

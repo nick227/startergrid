@@ -1,4 +1,4 @@
-import { useCallback, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { fetchInventory, bulkEditVehicles, fetchVehiclePerformanceList, fetchPlatformPerformance } from '@/lib/api/sdk.ts';
 import type { BulkEditPayload, CommitImportResponse, VehiclePerformanceItem, PlatformPerformanceItem, LifecycleScope } from '@/lib/types.ts';
 import type { OperatorPageBaseProps } from '@/lib/operatorPage.ts';
@@ -44,11 +44,13 @@ import {
 import type { CleanupFilter } from '@/components/inventory';
 import { operatorCopy } from '@/lib/copy/index.ts';
 import { useInventoryLabels } from '@/contexts/CategoryContext.tsx';
+import { useOperatorRoute } from '@/hooks/useOperatorRoute.ts';
 
 type Props = OperatorPageBaseProps;
 
 export default function InventoryPage({ dealerId, nav, activeTab }: Props) {
   const inventoryLbls = useInventoryLabels();
+  const { route } = useOperatorRoute();
   const [lifecycleScope, setLifecycleScope] = useState<LifecycleScope>('active');
   const { data, loading, error, reload: load, lastRefresh } = useAsyncQuery(
     () => fetchInventory(dealerId, { lifecycleScope }),
@@ -59,8 +61,12 @@ export default function InventoryPage({ dealerId, nav, activeTab }: Props) {
   const [movementFilter, setMovementFilter] = useState<MovementFilter>('ALL');
   const [sortKey, setSortKey] = useState<InventorySortKey>('movementSignal');
   const [sortDirection, setSortDirection] = useState<SortDirection>('asc');
-  const [search, setSearch] = useState('');
+  const [search, setSearch] = useState(route.assetRef ?? '');
   const [showImport, setShowImport] = useState(false);
+
+  useEffect(() => {
+    if (route.assetRef) setSearch(route.assetRef);
+  }, [route.assetRef]);
   const [importResult, setImportResult] = useState<CommitImportResponse | null>(null);
   const [latestIngestRunId, setLatestIngestRunId] = useState<string | null>(null);
 

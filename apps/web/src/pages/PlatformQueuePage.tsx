@@ -1,5 +1,6 @@
 import type { OperatorPageBaseProps } from '@/lib/operatorPage.ts';
 import { QueueListPanel } from '@/components/queue/QueueListPanel.tsx';
+import { useOperatorRoute } from '@/hooks/useOperatorRoute.ts';
 
 type Props = OperatorPageBaseProps & {
   platformSlug: string;
@@ -13,6 +14,7 @@ export default function PlatformQueuePage({
   platformSlug,
   platformName,
 }: Props) {
+  const { route } = useOperatorRoute();
   return (
     <QueueListPanel
       dealerId={dealerId}
@@ -21,6 +23,7 @@ export default function PlatformQueuePage({
       platformSlug={platformSlug}
       platformName={platformName}
       showBackLink
+      initialAssetRef={route.assetRef ?? undefined}
     />
   );
 }

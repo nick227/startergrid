@@ -1,6 +1,7 @@
 import type { SyncEvent } from './types.ts';
 import type { OpsRowField } from './opsRowPresentation.ts';
 import { operatorCopy } from './copy/operator.ts';
+import { syncEventSearchBlob } from './rowNavScope.ts';
 
 const KIND_LABELS: Record<string, string> = {
   SUBMISSION_SENT: 'Sent to channel',
@@ -70,11 +71,7 @@ export function filterHistoryEvents(
   }
   if (search.trim()) {
     const q = search.toLowerCase();
-    list = list.filter(
-      e =>
-        e.kind.toLowerCase().includes(q) ||
-        (e.platformSlug?.toLowerCase().includes(q) ?? false)
-    );
+    list = list.filter(e => syncEventSearchBlob(e).includes(q));
   }
   return list;
 }

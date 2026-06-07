@@ -1,14 +1,16 @@
 export type OperatorTab = 'platforms' | 'queue' | 'history' | 'reports' | 'inventory' | 'help';
 
+import type { RowNavScope } from './rowNavScope.ts';
+
 export type OperatorNavHandlers = {
   goToPlatforms: () => void;
-  goToQueue: () => void;
-  goToHistory: () => void;
+  goToQueue: (scope?: RowNavScope) => void;
+  goToHistory: (scope?: RowNavScope) => void;
   goToReports: () => void;
-  goToInventory: () => void;
+  goToInventory: (scope?: RowNavScope) => void;
   goToHelp: () => void;
-  goToPlatformQueue: (platformSlug: string) => void;
-  goToPlatformHistory: (platformSlug: string) => void;
+  goToPlatformQueue: (platformSlug: string, scope?: RowNavScope) => void;
+  goToPlatformHistory: (platformSlug: string, scope?: RowNavScope) => void;
   /** @deprecated use goToPlatforms */
   goToSync: () => void;
   /** @deprecated use Platforms drawer */

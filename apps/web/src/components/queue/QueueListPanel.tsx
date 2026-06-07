@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import type { OperatorNavHandlers } from '@/lib/operatorNav.ts';
 import { useAsyncQuery } from '@/hooks/useAsyncQuery.ts';
 import { fetchPublishQueue } from '@/lib/api/sdk.ts';
@@ -22,6 +22,7 @@ import {
 } from '@/lib/queueRowPresentation.ts';
 import { operatorCopy } from '@/lib/copy/operator.ts';
 import type { OperatorTab } from '@/lib/operatorNav.ts';
+import { queueItemRowScope } from '@/lib/rowNavScope.ts';
 
 type Props = {
   dealerId: string;
@@ -30,6 +31,7 @@ type Props = {
   platformSlug?: string | null;
   platformName?: string;
   showBackLink?: boolean;
+  initialAssetRef?: string;
 };
 
 export function QueueListPanel({
@@ -39,15 +41,20 @@ export function QueueListPanel({
   platformSlug,
   platformName,
   showBackLink,
+  initialAssetRef,
 }: Props) {
   const { data, loading, error, reload, lastRefresh } = useAsyncQuery(
     () => fetchPublishQueue(dealerId),
     [dealerId]
   );
 
-  const [search, setSearch] = useState('');
+  const [search, setSearch] = useState(initialAssetRef ?? '');
   const [filter, setFilter] = useState<QueueTaskFilter>('ALL');
   const [selectedId, setSelectedId] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (initialAssetRef) setSearch(initialAssetRef);
+  }, [initialAssetRef]);
 
   const items = useMemo(
     () => (data ? filterQueueItems(data, filter, platformSlug, search) : []),
@@ -56,7 +63,6 @@ export function QueueListPanel({
 
   const selected = selectedId ? items.find(i => i.id === selectedId) ?? null : null;
   const actions = operatorCopy.channels.rowActions;
-  // Row action routing: see docs/ui-status.md — Queue/History navigate only; no asset prefilter yet.
 
   const title = platformName ?? operatorCopy.queue.title;
   const situation = data ? queueSituationSummary(data) : operatorCopy.queue.loading;
@@ -133,12 +139,20 @@ export function QueueListPanel({
                     { label: actions.details, onClick: () => setSelectedId(item.id) },
                     {
                       label: actions.history,
-                      onClick: () =>
-                        item.platformSlug
-                          ? nav.goToPlatformHistory(item.platformSlug)
-                          : nav.goToHistory(),
+                      onClick: () => {
+                        const scope = queueItemRowScope(item);
+                        if (item.platformSlug) nav.goToPlatformHistory(item.platformSlug, scope);
+                        else nav.goToHistory(scope);
+                      },
                     },
-                    { label: actions.inventory, onClick: () => nav.goToInventory() },
+                    {
+                      label: actions.inventory,
+                      onClick: () => {
+                        const scope = queueItemRowScope(item);
+                        if (scope) nav.goToInventory(scope);
+                        else nav.goToInventory();
+                      },
+                    },
                   ]}
                 />
               );

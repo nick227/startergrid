@@ -44,11 +44,11 @@ Hash-based SPA (`useOperatorRoute`):
 |-----|--------|
 | `#/` | Organization picker |
 | `#/{orgId}/platforms` | Platforms (default home) |
-| `#/{orgId}/queue` | Queue (all channels) |
-| `#/{orgId}/history` | History (all channels) |
-| `#/{orgId}/platforms/{slug}/queue` | Platform-scoped queue |
-| `#/{orgId}/platforms/{slug}/history` | Platform-scoped history |
-| `#/{orgId}/inventory` | Inventory |
+| `#/{orgId}/queue` | Queue (all channels); optional `?ref=` / `?assetId=` |
+| `#/{orgId}/history` | History (all channels); optional `?ref=` / `?assetId=` |
+| `#/{orgId}/platforms/{slug}/queue` | Platform-scoped queue; optional asset query |
+| `#/{orgId}/platforms/{slug}/history` | Platform-scoped history; optional asset query |
+| `#/{orgId}/inventory` | Inventory; optional `?ref=` search prefill |
 | `#/{orgId}/reports` | Reports |
 | `#/{orgId}/help` | Help / KB |
 
@@ -58,17 +58,17 @@ Redirects: `#/{id}/sync`, `/accounts` → `platforms`; `/insights` → `reports`
 
 ## Row actions (OpsRowCard)
 
-Every core list page uses **`OpsRowCard`** with the same four action labels from `operatorCopy.channels.rowActions`. **Do not assume deep-link filtering yet.**
+Every core list page uses **`OpsRowCard`** with the same four action labels from `operatorCopy.channels.rowActions`.
 
-| Action | Current behavior | Planned |
-|--------|------------------|---------|
-| **Details** | Opens **local drawer** on the current page (asset detail, channel setup, queue task, or history event). No route change. | Same |
-| **Queue** | Navigates to **global Queue** or **platform Queue** (`#/…/platforms/{slug}/queue`) when the row has a `platformSlug`. Does **not** pre-filter by asset/ref. | Prefilter queue by `assetId` / ref when hash or session carries row context |
-| **History** | Navigates to **global History** or **platform History**. Does **not** pre-filter by asset. | Prefilter history by `assetId` / ref |
-| **Inventory** | Navigates to **Inventory** tab. Does **not** scroll to or highlight the asset. | Open asset in inventory drawer / search prefill |
+| Action | Behavior |
+|--------|----------|
+| **Details** | Opens **local drawer** on the current page (asset detail, channel setup, queue task, or history event). No route change. |
+| **Queue** | Navigates to **global Queue** or **platform Queue** with `?ref=` / `?assetId=` hash query; search field prefilled on arrival. |
+| **History** | Navigates to **global History** or **platform History** with asset query; search prefilled (matches ref, vehicle id, payload). |
+| **Inventory** | Navigates to **Inventory** with `?ref=` search prefill when row has a stock/ref number. |
 
 Platform rows: Details · Queue · History (no Inventory — channel rows are not assets).  
-Inventory rows: Details · Queue · History · Inventory.
+Inventory rows: Details · Queue · History (no Inventory action — already on inventory).
 
 ---
 
@@ -109,7 +109,7 @@ Search, filter, and sort logic unchanged from table era; only presentation is ro
 | Generic operator copy | Shipped |
 | Legacy Sync / Accounts redirect | Shipped |
 | Queue approve/retry actions | Not exposed (read-only queue) |
-| Asset-scoped Queue/History from row actions | **Not started** (see above) |
+| Asset-scoped Queue/History from row actions | **Shipped** — `?ref=` / `?assetId=` hash query + search prefill |
 | Token / emerald purge | **Shipped** — navy + orange semantic tokens; slate/emerald removed from operator UI |
 | Auth UI + route guards | **Shipped** — login page, session cookie, 401 → sign-in, scoped org picker |
 | Org-scoped category loading | **Shipped** — `CategoryProvider` + schema-driven vertical copy per org |
@@ -119,7 +119,7 @@ Search, filter, and sort logic unchanged from table era; only presentation is ro
 
 ## Next priorities
 
-1. **Asset-scoped Queue/History filters** — row actions pass `assetId`/ref into queue/history search
+_(None on the current stack — pick from backlog: queue approve/retry API, legacy Sync tree cleanup, server-side dealer list filtering.)_
 
 ---
 

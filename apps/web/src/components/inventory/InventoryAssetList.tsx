@@ -13,6 +13,7 @@ import {
   assetDesktopFields,
 } from '@/lib/inventoryAssetPresentation.ts';
 import { operatorCopy } from '@/lib/copy/operator.ts';
+import { assetRowScope } from '@/lib/rowNavScope.ts';
 
 type Props = {
   rows: VehicleListItem[];
@@ -92,8 +93,14 @@ export function InventoryAssetList({
               surfaceClassName={vehicleReadinessRowBg(vehicle.readiness)}
               actions={[
                 { label: operatorCopy.channels.rowActions.details, onClick: () => setDetailId(vehicle.id) },
-                { label: operatorCopy.channels.rowActions.queue, onClick: () => nav.goToQueue() },
-                { label: operatorCopy.channels.rowActions.history, onClick: () => nav.goToHistory() },
+                {
+                  label: operatorCopy.channels.rowActions.queue,
+                  onClick: () => nav.goToQueue(assetRowScope(vehicle)),
+                },
+                {
+                  label: operatorCopy.channels.rowActions.history,
+                  onClick: () => nav.goToHistory(assetRowScope(vehicle)),
+                },
               ]}
             />
           );

@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import type { OperatorNavHandlers, OperatorTab } from '@/lib/operatorNav.ts';
 import { useAsyncQuery } from '@/hooks/useAsyncQuery.ts';
 import { fetchPublishHistory, fetchPublishStatus } from '@/lib/api/sdk.ts';
@@ -17,6 +17,7 @@ import {
   type HistoryKindFilter,
 } from '@/lib/historyPresentation.ts';
 import { operatorCopy } from '@/lib/copy/operator.ts';
+import { historyEventRowScope } from '@/lib/rowNavScope.ts';
 
 type Props = {
   dealerId: string;
@@ -25,6 +26,7 @@ type Props = {
   platformSlug?: string | null;
   platformName?: string;
   showBackLink?: boolean;
+  initialAssetRef?: string;
 };
 
 export function HistoryListPanel({
@@ -34,6 +36,7 @@ export function HistoryListPanel({
   platformSlug,
   platformName,
   showBackLink,
+  initialAssetRef,
 }: Props) {
   const dealerQuery = useAsyncQuery(() => fetchPublishStatus(dealerId), [dealerId]);
   const historyQuery = useAsyncQuery(
@@ -41,9 +44,13 @@ export function HistoryListPanel({
     [dealerId, platformSlug]
   );
 
-  const [search, setSearch] = useState('');
+  const [search, setSearch] = useState(initialAssetRef ?? '');
   const [kindFilter, setKindFilter] = useState<HistoryKindFilter>('ALL');
   const [selectedId, setSelectedId] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (initialAssetRef) setSearch(initialAssetRef);
+  }, [initialAssetRef]);
 
   const events = historyQuery.data?.events ?? [];
   const visible = useMemo(
@@ -53,7 +60,6 @@ export function HistoryListPanel({
 
   const selected = selectedId ? visible.find(e => e.id === selectedId) ?? null : null;
   const actions = operatorCopy.channels.rowActions;
-  // Row action routing: see docs/ui-status.md — Queue/History navigate only; no asset prefilter yet.
 
   const reload = () => {
     historyQuery.reload();
@@ -132,12 +138,20 @@ export function HistoryListPanel({
                   { label: actions.details, onClick: () => setSelectedId(event.id) },
                   {
                     label: actions.queue,
-                    onClick: () =>
-                      event.platformSlug
-                        ? nav.goToPlatformQueue(event.platformSlug)
-                        : nav.goToQueue(),
+                    onClick: () => {
+                      const scope = historyEventRowScope(event);
+                      if (event.platformSlug) nav.goToPlatformQueue(event.platformSlug, scope);
+                      else nav.goToQueue(scope);
+                    },
                   },
-                  { label: actions.inventory, onClick: () => nav.goToInventory() },
+                  {
+                    label: actions.inventory,
+                    onClick: () => {
+                      const scope = historyEventRowScope(event);
+                      if (scope) nav.goToInventory(scope);
+                      else nav.goToInventory();
+                    },
+                  },
                 ]}
               />
             ))
