@@ -65,6 +65,20 @@ export function isReportSlug(value: string): value is ReportSlug {
   return REPORTS_CATALOG.some(r => r.slug === value);
 }
 
+export type LiveReportRange = '7d' | '30d' | '90d';
+
+/** Phase 1–2 reports have backend + UI; phase 3 remains teaser-only. */
+export function isReportShipped(def: ReportDefinition): boolean {
+  return def.phase <= 2;
+}
+
+/** Map hash range to API query param; snapshot "now" falls back to catalog default. */
+export function apiReportRange(range: ReportRangePreset, fallback: ReportRangePreset): LiveReportRange {
+  if (range === '7d' || range === '30d' || range === '90d') return range;
+  if (fallback === '7d' || fallback === '30d' || fallback === '90d') return fallback;
+  return '7d';
+}
+
 export function parseReportRange(query: string): ReportRangePreset {
   const params = new URLSearchParams(query.startsWith('?') ? query.slice(1) : query);
   const raw = params.get('range');

@@ -11,11 +11,13 @@ import { EMPTY_STATE_COPY } from '@/lib/statusRegistry.ts';
 import {
   ACTION_REPORTS,
   MANAGEMENT_REPORTS,
+  isReportShipped,
   type ReportDefinition,
 } from '@/lib/reportsCatalog.ts';
 import { reportCatalogCopy } from '@/lib/reportCopy.ts';
 import { reportDetailHash } from '@/lib/reportRoutes.ts';
 import { ReportTeaserCard } from '@/components/reports/ReportTeaserCard.tsx';
+import { usePhase2HubTeasers } from '@/hooks/usePhase2Report.ts';
 import {
   engagementSortedPlatforms,
   lowestCoveragePct,
@@ -34,7 +36,17 @@ function teaserMetric(
   def: ReportDefinition,
   perf: ReturnType<typeof useReportsData>['perf']['data'],
   publish: ReturnType<typeof useReportsData>['publish']['data'],
+  phase2: ReturnType<typeof usePhase2HubTeasers>,
 ): string | number {
+  if (def.slug === 'throughput') {
+    return phase2.throughput.data?.summary.failedInPeriod ?? '—';
+  }
+  if (def.slug === 'demand') {
+    return phase2.demand.data?.summary.highAgeZeroDemandCount ?? '—';
+  }
+  if (def.slug === 'sync-summary') {
+    return phase2.sync.data?.summary.totalEvents ?? '—';
+  }
   if (def.phase !== 1) return '—';
   const vehicles = perf?.vehicles ?? [];
   const platforms = perf?.platforms ?? [];
@@ -60,7 +72,16 @@ function teaserPreview(
   def: ReportDefinition,
   perf: ReturnType<typeof useReportsData>['perf']['data'],
   publish: ReturnType<typeof useReportsData>['publish']['data'],
+  phase2: ReturnType<typeof usePhase2HubTeasers>,
 ) {
+  if (def.slug === 'throughput' && phase2.throughput.data?.channels.length) {
+    const top = [...phase2.throughput.data.channels].sort((a, b) => b.failedInPeriod - a.failedInPeriod)[0];
+    return top ? <p className="text-xs text-ink-muted">Most failures: {top.channelSlug}</p> : null;
+  }
+  if (def.slug === 'sync-summary' && phase2.sync.data?.channels.length) {
+    const top = [...phase2.sync.data.channels].sort((a, b) => b.totalEvents - a.totalEvents)[0];
+    return top ? <p className="text-xs text-ink-muted">Busiest: {top.channelSlug}</p> : null;
+  }
   if (def.phase !== 1) return null;
   if (def.slug === 'movement' && perf?.vehicles.length) {
     const top = topMovementRows(perf.vehicles, 3);
@@ -82,6 +103,7 @@ function teaserPreview(
 
 export default function ReportsHubPage({ dealerId, nav, activeTab }: Props) {
   const { perf, publish, reload, loading, error } = useReportsData(dealerId);
+  const phase2 = usePhase2HubTeasers(dealerId);
   const [refreshing, setRefreshing] = useState(false);
   const [refreshError, setRefreshError] = useState<string | null>(null);
 
@@ -112,10 +134,10 @@ export default function ReportsHubPage({ dealerId, nav, activeTab }: Props) {
               title={copy.title}
               decision={copy.decision}
               metricLabel={copy.primaryMetric}
-              metricValue={teaserMetric(def, perf.data, publish.data)}
+              metricValue={teaserMetric(def, perf.data, publish.data, phase2)}
               href={reportDetailHash(dealerId, def.family, def.slug, def.defaultRange)}
-              phaseAvailable={def.phase === 1}
-              preview={teaserPreview(def, perf.data, publish.data)}
+              phaseAvailable={isReportShipped(def)}
+              preview={teaserPreview(def, perf.data, publish.data, phase2)}
             />
           );
         })}
@@ -145,7 +167,7 @@ export default function ReportsHubPage({ dealerId, nav, activeTab }: Props) {
 
       <p className="text-xs text-ink-muted mb-4 -mt-2">
         {operatorCopy.reports.dayToDayNote}{' '}
-        <button type="button" onClick={nav.goToInventory} className="font-semibold text-orange-600 hover:underline">
+        <button type="button" onClick={() => nav.goToInventory()} className="font-semibold text-orange-600 hover:underline">
           Inventory
         </button>
         {' '}and{' '}

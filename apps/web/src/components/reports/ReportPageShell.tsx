@@ -13,7 +13,7 @@ type Props = {
   line: string;
   onRefresh?: () => void;
   refreshing?: boolean;
-  lastRefresh?: string;
+  lastRefresh?: Date;
   toolbar?: ReactNode;
   children: ReactNode;
 };

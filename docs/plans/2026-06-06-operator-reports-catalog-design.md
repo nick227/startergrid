@@ -155,13 +155,13 @@ Ship detail routes + hub teasers for reports backed by performance cache and pub
 - **5** Exposure & Coverage *(refactor current platform list)*
 - **6** Observed Assist & Engagement *(platform cache + existing channel metrics)*
 
-### Phase 2 — Light event aggregation (shipped backend)
+### Phase 2 — Light event aggregation (shipped)
 
 - **3** Publish Throughput & Reliability — `GET .../reports/publish-throughput`
 - **7** Sync Activity Summary — `GET .../reports/sync-activity`
 - **4** Observed Demand by Asset — `GET .../reports/observed-demand`
 
-Query: `?range=7d|30d|90d`. UI wiring pending.
+Query: `?range=7d|30d|90d`. Hub teasers + detail pages with live range picker shipped in operator web UI.
 
 ### Phase 3 — Heavier period / cohort reports
 

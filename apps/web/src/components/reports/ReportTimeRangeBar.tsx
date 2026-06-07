@@ -2,7 +2,7 @@ import type { ReportRangePreset } from '@/lib/reportsCatalog.ts';
 import { operatorCopy } from '@/lib/copy/operator.ts';
 import { reportRangeLabel } from '@/lib/reportCopy.ts';
 
-const PRESETS: ReportRangePreset[] = ['now', '7d', '30d', '90d'];
+const LIVE_PRESETS: ReportRangePreset[] = ['7d', '30d', '90d'];
 
 type Props = {
   value: ReportRangePreset;
@@ -19,10 +19,12 @@ export function ReportTimeRangeBar({ value, snapshotOnly, onChange }: Props) {
     );
   }
 
+  const presets = LIVE_PRESETS;
+
   return (
     <div className="flex flex-wrap items-center gap-2 mb-4">
       <span className="text-xs font-semibold text-ink-muted uppercase tracking-wide">Range</span>
-      {PRESETS.map(preset => (
+      {presets.map(preset => (
         <button
           key={preset}
           type="button"

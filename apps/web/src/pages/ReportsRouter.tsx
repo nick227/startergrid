@@ -1,21 +1,25 @@
 import type { OperatorPageBaseProps } from '@/lib/operatorPage.ts';
-import { findReport } from '@/lib/reportsCatalog.ts';
+import { findReport, isReportShipped, type ReportRangePreset } from '@/lib/reportsCatalog.ts';
 import ReportsHubPage from '@/pages/ReportsHubPage.tsx';
 import MovementReportPage from '@/pages/reports/MovementReportPage.tsx';
 import ReadinessReportPage from '@/pages/reports/ReadinessReportPage.tsx';
 import ExposureReportPage from '@/pages/reports/ExposureReportPage.tsx';
 import EngagementReportPage from '@/pages/reports/EngagementReportPage.tsx';
+import ThroughputReportPage from '@/pages/reports/ThroughputReportPage.tsx';
+import ObservedDemandReportPage from '@/pages/reports/ObservedDemandReportPage.tsx';
+import SyncActivityReportPage from '@/pages/reports/SyncActivityReportPage.tsx';
 import ReportComingSoonPage from '@/pages/reports/ReportComingSoonPage.tsx';
 
 type Props = OperatorPageBaseProps & {
   reportSlug: string | null;
+  reportRange: ReportRangePreset;
 };
 
-export default function ReportsRouter({ dealerId, nav, activeTab, reportSlug }: Props) {
+export default function ReportsRouter({ dealerId, nav, activeTab, reportSlug, reportRange }: Props) {
   if (!reportSlug) return <ReportsHubPage dealerId={dealerId} nav={nav} activeTab={activeTab} />;
 
   const def = findReport(reportSlug);
-  if (!def || def.phase !== 1) {
+  if (!def || !isReportShipped(def)) {
     return (
       <ReportComingSoonPage
         dealerId={dealerId}
@@ -35,6 +39,33 @@ export default function ReportsRouter({ dealerId, nav, activeTab, reportSlug }: 
       return <ExposureReportPage dealerId={dealerId} nav={nav} activeTab={activeTab} />;
     case 'engagement':
       return <EngagementReportPage dealerId={dealerId} nav={nav} activeTab={activeTab} />;
+    case 'throughput':
+      return (
+        <ThroughputReportPage
+          dealerId={dealerId}
+          nav={nav}
+          activeTab={activeTab}
+          reportRange={reportRange}
+        />
+      );
+    case 'demand':
+      return (
+        <ObservedDemandReportPage
+          dealerId={dealerId}
+          nav={nav}
+          activeTab={activeTab}
+          reportRange={reportRange}
+        />
+      );
+    case 'sync-summary':
+      return (
+        <SyncActivityReportPage
+          dealerId={dealerId}
+          nav={nav}
+          activeTab={activeTab}
+          reportRange={reportRange}
+        />
+      );
     default:
       return (
         <ReportComingSoonPage

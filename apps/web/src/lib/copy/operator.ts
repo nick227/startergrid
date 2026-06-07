@@ -171,6 +171,13 @@ export const operatorCopy = {
     searchAssets: 'Search ref, make, model…',
     searchPlatforms: 'Search platform slug…',
     searchReadiness: 'Search ref #, issue…',
+    searchChannels: 'Search channel slug…',
+    observedDemandDisclaimer: 'Observed demand counts leads and inquiry-style channel events — not sales attribution.',
+    throughputSummary: (sent: number, failed: number, open: number) =>
+      `${sent} sent · ${failed} failed · ${open} open queue`,
+    syncSummaryLine: (total: number) => `${total} sync events in period`,
+    demandSummaryLine: (withDemand: number, highAgeZero: number) =>
+      `${withDemand} assets with demand · ${highAgeZero} high-age with none`,
     rangeNow: 'As of now',
     range7d: 'Last 7 days',
     range30d: 'Last 30 days',
@@ -290,9 +297,17 @@ export const operatorCopy = {
       title: 'No matches',
       subtitle: 'Try another filter or search term.',
     },
+    noThroughputChannels: {
+      title: 'No publish activity in this range',
+      subtitle: 'Queue sends and sync events will appear after inventory is submitted to channels.',
+    },
     noSyncActivity: {
-      title: 'No sync activity yet',
-      subtitle: 'Once inventory is ready, updates to channels will show up here.',
+      title: 'No sync activity in this range',
+      subtitle: 'Operational sync events appear after prepare, queue, and channel runs occur.',
+    },
+    noObservedDemand: {
+      title: 'No observed demand in this range',
+      subtitle: 'Leads and inquiry-style channel events will appear as shoppers engage with listings.',
     },
   },
 } as const;

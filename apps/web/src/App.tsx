@@ -20,7 +20,7 @@ import { canAccessDealer } from '@/lib/operatorAccess.ts';
 function OperatorApp() {
   const { user, authReady } = useAuth();
   const { route, nav, activeTab, selectDealer } = useOperatorRoute();
-  const { dealerId, page, platformSlug, platformView, reportSlug } = route;
+  const { dealerId, page, platformSlug, platformView, reportSlug, reportRange } = route;
   const categorySchema = useDealerCategorySchema(dealerId ?? null);
 
   const helpStandalone = (page === 'help' || page === 'knowledge') && !dealerId;
@@ -52,7 +52,7 @@ function OperatorApp() {
       ) : page === 'history' ? (
         <HistoryPage dealerId={dealerId} nav={nav} activeTab={activeTab} />
       ) : page === 'reports' ? (
-        <ReportsRouter dealerId={dealerId} nav={nav} activeTab={activeTab} reportSlug={reportSlug} />
+        <ReportsRouter dealerId={dealerId} nav={nav} activeTab={activeTab} reportSlug={reportSlug} reportRange={reportRange} />
       ) : page === 'inventory' ? (
         <InventoryPage dealerId={dealerId} nav={nav} activeTab={activeTab} />
       ) : (
