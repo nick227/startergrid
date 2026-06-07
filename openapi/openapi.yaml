@@ -1071,6 +1071,86 @@ paths:
         '404':
           $ref: '#/components/responses/NotFound'
 
+  /api/dealers/{dealershipId}/reports/lifecycle-flow:
+    get:
+      tags: [Reports]
+      security:
+        - OperatorAuth: []
+      x-route-classification: operator
+      operationId: getLifecycleFlowReport
+      summary: Lifecycle flow report
+      description: Intake vs sold vs removed transitions in the selected range.
+      parameters:
+        - $ref: '#/components/parameters/dealershipId'
+        - $ref: '#/components/parameters/reportRange'
+      responses:
+        '200':
+          description: Lifecycle flow report
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LifecycleFlowReport'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /api/dealers/{dealershipId}/reports/merchandising-activity:
+    get:
+      tags: [Reports]
+      security:
+        - OperatorAuth: []
+      x-route-classification: operator
+      operationId: getMerchandisingActivityReport
+      summary: Merchandising activity report
+      description: Price, photo, and detail updates by asset in the selected range.
+      parameters:
+        - $ref: '#/components/parameters/dealershipId'
+        - $ref: '#/components/parameters/reportRange'
+      responses:
+        '200':
+          description: Merchandising activity report
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MerchandisingActivityReport'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /api/dealers/{dealershipId}/reports/channel-velocity:
+    get:
+      tags: [Reports]
+      security:
+        - OperatorAuth: []
+      x-route-classification: operator
+      operationId: getChannelVelocityReport
+      summary: Channel velocity and outcomes report
+      description: |
+        Median observed days from first channel send to sold/removed outcome for assets exiting in range.
+        Not sales attribution — observed time-to-outcome only.
+      parameters:
+        - $ref: '#/components/parameters/dealershipId'
+        - $ref: '#/components/parameters/reportRange'
+      responses:
+        '200':
+          description: Channel velocity report
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ChannelVelocityReport'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
 components:
   securitySchemes:
     OperatorAuth:
@@ -3125,6 +3205,135 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/ObservedDemandAssetRow'
+
+    LifecycleTransitionRow:
+      type: object
+      required: [transitionState, count]
+      properties:
+        transitionState:
+          type: string
+        count:
+          type: integer
+          minimum: 0
+
+    LifecycleFlowReport:
+      type: object
+      required: [meta, summary, transitions]
+      properties:
+        meta:
+          $ref: '#/components/schemas/ReportBaseMeta'
+        summary:
+          type: object
+          required: [intakeCount, soldExits, removedExits, reactivatedCount, netChange]
+          properties:
+            intakeCount:
+              type: integer
+              minimum: 0
+            soldExits:
+              type: integer
+              minimum: 0
+            removedExits:
+              type: integer
+              minimum: 0
+            reactivatedCount:
+              type: integer
+              minimum: 0
+            netChange:
+              type: integer
+        transitions:
+          type: array
+          items:
+            $ref: '#/components/schemas/LifecycleTransitionRow'
+
+    MerchandisingKindRow:
+      type: object
+      required: [updateKind, count]
+      properties:
+        updateKind:
+          type: string
+        count:
+          type: integer
+          minimum: 0
+
+    MerchandisingAssetRow:
+      type: object
+      required: [assetId, assetRef, updateCount, byKind]
+      properties:
+        assetId:
+          type: string
+        assetRef:
+          type: string
+        updateCount:
+          type: integer
+          minimum: 0
+        byKind:
+          type: array
+          items:
+            $ref: '#/components/schemas/MerchandisingKindRow'
+
+    MerchandisingActivityReport:
+      type: object
+      required: [meta, summary, assets]
+      properties:
+        meta:
+          $ref: '#/components/schemas/ReportBaseMeta'
+        summary:
+          type: object
+          required: [assetsWithActivity, totalUpdates, activeAssetsNeglected]
+          properties:
+            assetsWithActivity:
+              type: integer
+              minimum: 0
+            totalUpdates:
+              type: integer
+              minimum: 0
+            activeAssetsNeglected:
+              type: integer
+              minimum: 0
+        assets:
+          type: array
+          items:
+            $ref: '#/components/schemas/MerchandisingAssetRow'
+
+    ChannelVelocityRow:
+      type: object
+      required: [channelSlug, observedOutcomeCount, soldOutcomes, removedOutcomes, medianDaysToOutcome]
+      properties:
+        channelSlug:
+          type: string
+        observedOutcomeCount:
+          type: integer
+          minimum: 0
+        soldOutcomes:
+          type: integer
+          minimum: 0
+        removedOutcomes:
+          type: integer
+          minimum: 0
+        medianDaysToOutcome:
+          type: number
+          nullable: true
+
+    ChannelVelocityReport:
+      type: object
+      required: [meta, summary, channels]
+      properties:
+        meta:
+          $ref: '#/components/schemas/ReportBaseMeta'
+        summary:
+          type: object
+          required: [cohortOutcomeCount, channelsWithOutcomes]
+          properties:
+            cohortOutcomeCount:
+              type: integer
+              minimum: 0
+            channelsWithOutcomes:
+              type: integer
+              minimum: 0
+        channels:
+          type: array
+          items:
+            $ref: '#/components/schemas/ChannelVelocityRow'
 
     AutoSyncStatus:
       type: object

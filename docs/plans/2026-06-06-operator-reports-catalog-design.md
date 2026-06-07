@@ -163,14 +163,13 @@ Ship detail routes + hub teasers for reports backed by performance cache and pub
 
 Query: `?range=7d|30d|90d`. Hub teasers + detail pages with live range picker shipped in operator web UI.
 
-### Phase 3 — Heavier period / cohort reports
+### Phase 3 — Period / cohort reports (shipped)
 
-- **8** Lifecycle Flow
-- **9** Merchandising Activity
-- **10** Channel Velocity & Outcomes *(sold/removed cohort math)*
-- **4** Demand by Asset *(full ChannelEvent grain)*
+- **8** Lifecycle Flow — `GET .../reports/lifecycle-flow`
+- **9** Merchandising Activity — `GET .../reports/merchandising-activity`
+- **10** Channel Velocity & Outcomes — `GET .../reports/channel-velocity`
 
-Do not paginate full history client-side for period reports.
+Query: `?range=7d|30d|90d`. Hub teasers + detail pages shipped.
 
 ---
 

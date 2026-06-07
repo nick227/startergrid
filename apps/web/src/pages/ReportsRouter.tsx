@@ -8,6 +8,9 @@ import EngagementReportPage from '@/pages/reports/EngagementReportPage.tsx';
 import ThroughputReportPage from '@/pages/reports/ThroughputReportPage.tsx';
 import ObservedDemandReportPage from '@/pages/reports/ObservedDemandReportPage.tsx';
 import SyncActivityReportPage from '@/pages/reports/SyncActivityReportPage.tsx';
+import LifecycleReportPage from '@/pages/reports/LifecycleReportPage.tsx';
+import MerchandisingReportPage from '@/pages/reports/MerchandisingReportPage.tsx';
+import VelocityReportPage from '@/pages/reports/VelocityReportPage.tsx';
 import ReportComingSoonPage from '@/pages/reports/ReportComingSoonPage.tsx';
 
 type Props = OperatorPageBaseProps & {
@@ -60,6 +63,33 @@ export default function ReportsRouter({ dealerId, nav, activeTab, reportSlug, re
     case 'sync-summary':
       return (
         <SyncActivityReportPage
+          dealerId={dealerId}
+          nav={nav}
+          activeTab={activeTab}
+          reportRange={reportRange}
+        />
+      );
+    case 'lifecycle':
+      return (
+        <LifecycleReportPage
+          dealerId={dealerId}
+          nav={nav}
+          activeTab={activeTab}
+          reportRange={reportRange}
+        />
+      );
+    case 'merchandising':
+      return (
+        <MerchandisingReportPage
+          dealerId={dealerId}
+          nav={nav}
+          activeTab={activeTab}
+          reportRange={reportRange}
+        />
+      );
+    case 'velocity':
+      return (
+        <VelocityReportPage
           dealerId={dealerId}
           nav={nav}
           activeTab={activeTab}

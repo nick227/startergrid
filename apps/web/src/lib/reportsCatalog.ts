@@ -67,9 +67,9 @@ export function isReportSlug(value: string): value is ReportSlug {
 
 export type LiveReportRange = '7d' | '30d' | '90d';
 
-/** Phase 1–2 reports have backend + UI; phase 3 remains teaser-only. */
+/** Phase 1–3 reports have backend + UI shipped. */
 export function isReportShipped(def: ReportDefinition): boolean {
-  return def.phase <= 2;
+  return def.phase <= 3;
 }
 
 /** Map hash range to API query param; snapshot "now" falls back to catalog default. */

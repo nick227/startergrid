@@ -16,6 +16,9 @@ import type {
   PublishThroughputReport,
   SyncActivityReport,
   ObservedDemandReport,
+  LifecycleFlowReport,
+  MerchandisingActivityReport,
+  ChannelVelocityReport,
 } from '@auto-dealer/api-client';
 import type {
   AutoSyncStatus,
@@ -342,7 +345,7 @@ export async function fetchCachedPerformanceSnapshot(
 
 export type ReportRangeParam = '7d' | '30d' | '90d';
 
-export type { PublishThroughputReport, SyncActivityReport, ObservedDemandReport };
+export type { PublishThroughputReport, SyncActivityReport, ObservedDemandReport, LifecycleFlowReport, MerchandisingActivityReport, ChannelVelocityReport };
 
 export async function fetchPublishThroughputReport(
   dealershipId: string,
@@ -363,4 +366,25 @@ export async function fetchObservedDemandReport(
   range: ReportRangeParam = '7d',
 ): Promise<ObservedDemandReport> {
   return fromSdk(ReportsService.getObservedDemandReport({ dealershipId, range }));
+}
+
+export async function fetchLifecycleFlowReport(
+  dealershipId: string,
+  range: ReportRangeParam = '30d',
+): Promise<LifecycleFlowReport> {
+  return fromSdk(ReportsService.getLifecycleFlowReport({ dealershipId, range }));
+}
+
+export async function fetchMerchandisingActivityReport(
+  dealershipId: string,
+  range: ReportRangeParam = '30d',
+): Promise<MerchandisingActivityReport> {
+  return fromSdk(ReportsService.getMerchandisingActivityReport({ dealershipId, range }));
+}
+
+export async function fetchChannelVelocityReport(
+  dealershipId: string,
+  range: ReportRangeParam = '90d',
+): Promise<ChannelVelocityReport> {
+  return fromSdk(ReportsService.getChannelVelocityReport({ dealershipId, range }));
 }

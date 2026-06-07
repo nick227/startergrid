@@ -12,7 +12,7 @@ describe('isReportShipped', () => {
   it('ships phase 1 and 2 reports', () => {
     expect(isReportShipped(findReport('movement')!)).toBe(true);
     expect(isReportShipped(findReport('throughput')!)).toBe(true);
-    expect(isReportShipped(findReport('lifecycle')!)).toBe(false);
+    expect(isReportShipped(findReport('lifecycle')!)).toBe(true);
   });
 });
 

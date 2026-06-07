@@ -18,6 +18,7 @@ import { reportCatalogCopy } from '@/lib/reportCopy.ts';
 import { reportDetailHash } from '@/lib/reportRoutes.ts';
 import { ReportTeaserCard } from '@/components/reports/ReportTeaserCard.tsx';
 import { usePhase2HubTeasers } from '@/hooks/usePhase2Report.ts';
+import { usePhase3HubTeasers } from '@/hooks/usePhase3Report.ts';
 import {
   engagementSortedPlatforms,
   lowestCoveragePct,
@@ -37,7 +38,14 @@ function teaserMetric(
   perf: ReturnType<typeof useReportsData>['perf']['data'],
   publish: ReturnType<typeof useReportsData>['publish']['data'],
   phase2: ReturnType<typeof usePhase2HubTeasers>,
+  phase3: ReturnType<typeof usePhase3HubTeasers>,
 ): string | number {
+  if (def.slug === 'lifecycle') return phase3.lifecycle.data?.summary.netChange ?? '—';
+  if (def.slug === 'merchandising') return phase3.merchandising.data?.summary.activeAssetsNeglected ?? '—';
+  if (def.slug === 'velocity') {
+    const top = phase3.velocity.data?.channels[0];
+    return top?.medianDaysToOutcome != null ? `${Math.round(top.medianDaysToOutcome)}d` : '—';
+  }
   if (def.slug === 'throughput') {
     return phase2.throughput.data?.summary.failedInPeriod ?? '—';
   }
@@ -47,7 +55,6 @@ function teaserMetric(
   if (def.slug === 'sync-summary') {
     return phase2.sync.data?.summary.totalEvents ?? '—';
   }
-  if (def.phase !== 1) return '—';
   const vehicles = perf?.vehicles ?? [];
   const platforms = perf?.platforms ?? [];
   const active = perf?.summary.activeCount ?? publish?.vehicles.total ?? 0;
@@ -73,7 +80,23 @@ function teaserPreview(
   perf: ReturnType<typeof useReportsData>['perf']['data'],
   publish: ReturnType<typeof useReportsData>['publish']['data'],
   phase2: ReturnType<typeof usePhase2HubTeasers>,
+  phase3: ReturnType<typeof usePhase3HubTeasers>,
 ) {
+  if (def.slug === 'lifecycle' && phase3.lifecycle.data) {
+    const s = phase3.lifecycle.data.summary;
+    return (
+      <p className="text-xs text-ink-muted">
+        {s.intakeCount} intake · {s.soldExits} sold · {s.removedExits} removed
+      </p>
+    );
+  }
+  if (def.slug === 'merchandising' && phase3.merchandising.data) {
+    return (
+      <p className="text-xs text-ink-muted">
+        {phase3.merchandising.data.summary.assetsWithActivity} assets worked
+      </p>
+    );
+  }
   if (def.slug === 'throughput' && phase2.throughput.data?.channels.length) {
     const top = [...phase2.throughput.data.channels].sort((a, b) => b.failedInPeriod - a.failedInPeriod)[0];
     return top ? <p className="text-xs text-ink-muted">Most failures: {top.channelSlug}</p> : null;
@@ -104,6 +127,7 @@ function teaserPreview(
 export default function ReportsHubPage({ dealerId, nav, activeTab }: Props) {
   const { perf, publish, reload, loading, error } = useReportsData(dealerId);
   const phase2 = usePhase2HubTeasers(dealerId);
+  const phase3 = usePhase3HubTeasers(dealerId);
   const [refreshing, setRefreshing] = useState(false);
   const [refreshError, setRefreshError] = useState<string | null>(null);
 
@@ -134,10 +158,10 @@ export default function ReportsHubPage({ dealerId, nav, activeTab }: Props) {
               title={copy.title}
               decision={copy.decision}
               metricLabel={copy.primaryMetric}
-              metricValue={teaserMetric(def, perf.data, publish.data, phase2)}
+              metricValue={teaserMetric(def, perf.data, publish.data, phase2, phase3)}
               href={reportDetailHash(dealerId, def.family, def.slug, def.defaultRange)}
               phaseAvailable={isReportShipped(def)}
-              preview={teaserPreview(def, perf.data, publish.data, phase2)}
+              preview={teaserPreview(def, perf.data, publish.data, phase2, phase3)}
             />
           );
         })}

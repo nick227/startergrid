@@ -74,3 +74,59 @@ export type ObservedDemandReport = {
   };
   assets: ObservedDemandAssetRow[];
 };
+
+export type LifecycleTransitionRow = {
+  transitionState: string;
+  count: number;
+};
+
+export type LifecycleFlowReport = {
+  meta: ReportBaseMeta;
+  summary: {
+    intakeCount: number;
+    soldExits: number;
+    removedExits: number;
+    reactivatedCount: number;
+    netChange: number;
+  };
+  transitions: LifecycleTransitionRow[];
+};
+
+export type MerchandisingKindRow = {
+  updateKind: string;
+  count: number;
+};
+
+export type MerchandisingAssetRow = {
+  assetId: string;
+  assetRef: string;
+  updateCount: number;
+  byKind: MerchandisingKindRow[];
+};
+
+export type MerchandisingActivityReport = {
+  meta: ReportBaseMeta;
+  summary: {
+    assetsWithActivity: number;
+    totalUpdates: number;
+    activeAssetsNeglected: number;
+  };
+  assets: MerchandisingAssetRow[];
+};
+
+export type ChannelVelocityRow = {
+  channelSlug: string;
+  observedOutcomeCount: number;
+  soldOutcomes: number;
+  removedOutcomes: number;
+  medianDaysToOutcome: number | null;
+};
+
+export type ChannelVelocityReport = {
+  meta: ReportBaseMeta;
+  summary: {
+    cohortOutcomeCount: number;
+    channelsWithOutcomes: number;
+  };
+  channels: ChannelVelocityRow[];
+};

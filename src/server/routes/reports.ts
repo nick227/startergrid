@@ -6,6 +6,9 @@ import {
   buildPublishThroughputReport,
   buildSyncActivityReport,
   buildObservedDemandReport,
+  buildLifecycleFlowReport,
+  buildMerchandisingActivityReport,
+  buildChannelVelocityReport,
 } from '../../services/reports/index.js';
 
 type DealerParams = { dealershipId: string };
@@ -56,6 +59,45 @@ export function registerReportsRoutes(app: FastifyInstance, prisma: PrismaClient
       }
       const window = parseReportRangePreset(request.query.range);
       return reply.send(await buildObservedDemandReport(prisma, dealershipId, window));
+    },
+  );
+
+  app.get<{ Params: DealerParams; Querystring: ReportQuery }>(
+    '/api/dealers/:dealershipId/reports/lifecycle-flow',
+    async (request, reply) => {
+      const { dealershipId } = request.params;
+      if (!await requireDealerAccess(prisma, request, reply, dealershipId)) return;
+      if (!await requireDealer(prisma, dealershipId)) {
+        return reply.status(404).send({ error: 'Dealer not found' });
+      }
+      const window = parseReportRangePreset(request.query.range);
+      return reply.send(await buildLifecycleFlowReport(prisma, dealershipId, window));
+    },
+  );
+
+  app.get<{ Params: DealerParams; Querystring: ReportQuery }>(
+    '/api/dealers/:dealershipId/reports/merchandising-activity',
+    async (request, reply) => {
+      const { dealershipId } = request.params;
+      if (!await requireDealerAccess(prisma, request, reply, dealershipId)) return;
+      if (!await requireDealer(prisma, dealershipId)) {
+        return reply.status(404).send({ error: 'Dealer not found' });
+      }
+      const window = parseReportRangePreset(request.query.range);
+      return reply.send(await buildMerchandisingActivityReport(prisma, dealershipId, window));
+    },
+  );
+
+  app.get<{ Params: DealerParams; Querystring: ReportQuery }>(
+    '/api/dealers/:dealershipId/reports/channel-velocity',
+    async (request, reply) => {
+      const { dealershipId } = request.params;
+      if (!await requireDealerAccess(prisma, request, reply, dealershipId)) return;
+      if (!await requireDealer(prisma, dealershipId)) {
+        return reply.status(404).send({ error: 'Dealer not found' });
+      }
+      const window = parseReportRangePreset(request.query.range);
+      return reply.send(await buildChannelVelocityReport(prisma, dealershipId, window));
     },
   );
 }

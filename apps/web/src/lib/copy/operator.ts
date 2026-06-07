@@ -178,6 +178,13 @@ export const operatorCopy = {
     syncSummaryLine: (total: number) => `${total} sync events in period`,
     demandSummaryLine: (withDemand: number, highAgeZero: number) =>
       `${withDemand} assets with demand · ${highAgeZero} high-age with none`,
+    lifecycleSummaryLine: (intake: number, sold: number, removed: number, net: number) =>
+      `${intake} intake · ${sold} sold · ${removed} removed · net ${net >= 0 ? '+' : ''}${net}`,
+    merchandisingSummaryLine: (active: number, neglected: number, total: number) =>
+      `${active} assets worked · ${neglected} active neglected · ${total} updates`,
+    velocitySummaryLine: (cohort: number, channels: number) =>
+      `${cohort} outcomes · ${channels} channels with observed time-to-outcome`,
+    velocityDisclaimer: 'Observed time-to-outcome is not sales attribution.',
     rangeNow: 'As of now',
     range7d: 'Last 7 days',
     range30d: 'Last 30 days',
@@ -308,6 +315,18 @@ export const operatorCopy = {
     noObservedDemand: {
       title: 'No observed demand in this range',
       subtitle: 'Leads and inquiry-style channel events will appear as shoppers engage with listings.',
+    },
+    noLifecycleFlow: {
+      title: 'No lifecycle activity in this range',
+      subtitle: 'Intake, sold, and removed transitions appear as inventory changes over time.',
+    },
+    noMerchandisingActivity: {
+      title: 'No merchandising updates in this range',
+      subtitle: 'Price, photo, and detail changes will appear when assets are actively worked.',
+    },
+    noChannelVelocity: {
+      title: 'No observed outcomes in this range',
+      subtitle: 'Time-to-outcome appears after assets sell or are removed with prior channel sends.',
     },
   },
 } as const;
