@@ -1,5 +1,6 @@
 import type { PlatformPublishResult } from './types.ts';
 import { friendlyPlatformDetail, platformOutcomeMeta, sortPlatformsForSync } from './syncPresentation.ts';
+import { operatorCopy } from './copy/operator.ts';
 
 export type PlatformConnection = 'inactive' | 'connected' | 'blocked' | 'updating';
 
@@ -26,18 +27,18 @@ export function platformConnection(p: PlatformPublishResult): PlatformConnection
     p.state === 'Blocked' ||
     p.state === 'Failed'
   ) {
-    return { connection: 'blocked', label: 'Blocked', sort: 0, pill: CONNECTION_PILL.blocked };
+    return { connection: 'blocked', label: operatorCopy.connection.blocked, sort: 0, pill: CONNECTION_PILL.blocked };
   }
   if (acct === 'ACCOUNT_NEEDED' || acct === 'CREDENTIALS_NEEDED') {
-    return { connection: 'inactive', label: 'Setup needed', sort: 1, pill: CONNECTION_PILL.inactive };
+    return { connection: 'inactive', label: operatorCopy.connection.setupNeeded, sort: 1, pill: CONNECTION_PILL.inactive };
   }
   if (p.state === 'Scheduled' || p.state === 'Ready' || p.state === 'Needs Approval') {
-    return { connection: 'updating', label: 'Updating', sort: 2, pill: CONNECTION_PILL.updating };
+    return { connection: 'updating', label: operatorCopy.connection.updating, sort: 2, pill: CONNECTION_PILL.updating };
   }
   if (p.state === 'Active') {
-    return { connection: 'connected', label: 'Connected', sort: 3, pill: CONNECTION_PILL.connected };
+    return { connection: 'connected', label: operatorCopy.connection.connected, sort: 3, pill: CONNECTION_PILL.connected };
   }
-  return { connection: 'inactive', label: 'Inactive', sort: 1, pill: CONNECTION_PILL.inactive };
+  return { connection: 'inactive', label: operatorCopy.connection.inactive, sort: 1, pill: CONNECTION_PILL.inactive };
 }
 
 export type PlatformConnectionFilter = 'ALL' | PlatformConnection;
@@ -56,7 +57,7 @@ export function platformMetaLine(p: PlatformPublishResult): string {
 
 export function platformSituationSummary(platforms: PlatformPublishResult[]): string {
   const total = platforms.length;
-  if (!total) return 'No listing sites configured yet.';
+  if (!total) return operatorCopy.platforms.noneConfigured;
 
   let connected = 0;
   let setup = 0;
@@ -90,8 +91,8 @@ export function sortPlatformsForDisplay(
 
 export const PLATFORM_CONNECTION_FILTERS: Array<{ key: PlatformConnectionFilter; label: string }> = [
   { key: 'ALL', label: 'All' },
-  { key: 'connected', label: 'Connected' },
-  { key: 'inactive', label: 'Setup needed' },
-  { key: 'blocked', label: 'Blocked' },
-  { key: 'updating', label: 'Updating' },
+  { key: 'connected', label: operatorCopy.connection.connected },
+  { key: 'inactive', label: operatorCopy.connection.setupNeeded },
+  { key: 'blocked', label: operatorCopy.connection.blocked },
+  { key: 'updating', label: operatorCopy.connection.updating },
 ];

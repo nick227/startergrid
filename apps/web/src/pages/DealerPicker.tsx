@@ -5,7 +5,7 @@ import { useAsyncQuery } from '@/hooks/useAsyncQuery.ts';
 import { Skeleton } from '@/components/ui/Skeleton.tsx';
 import { SearchField } from '@/components/ui/SearchField.tsx';
 import { ErrorState } from '@/components/operator/ErrorState.tsx';
-import { InfoLabel } from '@/components/docs';
+import { operatorCopy } from '@/lib/copy/operator.ts';
 
 type Props = { onSelect: (id: string) => void };
 
@@ -32,16 +32,9 @@ export default function DealerPicker({ onSelect }: Props) {
           <div className="w-16 h-16 rounded-xl bg-gradient-to-br from-navy-800 to-navy-700 flex items-center justify-center text-2xl mx-auto mb-4 shadow-chrome">
             📡
           </div>
-          <h1 className="text-2xl font-bold text-white tracking-tight">Operator Console</h1>
-          <p className="text-ink-faint mt-2 text-sm max-w-xs mx-auto leading-relaxed">
-            <InfoLabel
-              term="Dealer context"
-              docId="dealerships/dealer-context"
-              inverted
-              termClassName="text-silver-200"
-              className="justify-center"
-            />
-            {' '}— pick a rooftop, then inventory → accounts → sync.
+          <h1 className="text-2xl font-bold text-white tracking-tight">{operatorCopy.app.title}</h1>
+          <p className="text-ink-faint mt-2 text-sm max-w-sm mx-auto leading-relaxed">
+            {operatorCopy.scope.pickerTitle} — {operatorCopy.app.tagline}
           </p>
         </div>
 
@@ -50,7 +43,7 @@ export default function DealerPicker({ onSelect }: Props) {
             <SearchField
               value={query}
               onChange={setQuery}
-              placeholder="Search dealer name or ID…"
+              placeholder={operatorCopy.scope.searchPlaceholder}
               autoFocus
             />
           </div>
@@ -64,7 +57,7 @@ export default function DealerPicker({ onSelect }: Props) {
               </div>
             )}
             {!loading && !error && filtered.length === 0 && (
-              <div className="p-8 text-center text-ink-faint text-sm">No dealers found</div>
+              <div className="p-8 text-center text-ink-faint text-sm">{operatorCopy.scope.noResults}</div>
             )}
             {filtered.map((d: DealerSummary) => (
               <button
@@ -96,7 +89,7 @@ export default function DealerPicker({ onSelect }: Props) {
             <div className="flex gap-2">
               <input
                 type="text"
-                placeholder="Paste dealer ID…"
+                placeholder={operatorCopy.scope.pasteIdPlaceholder}
                 value={manualId}
                 onChange={e => setManualId(e.target.value)}
                 onKeyDown={e => e.key === 'Enter' && manualId.trim() && onSelect(manualId.trim())}
@@ -108,7 +101,7 @@ export default function DealerPicker({ onSelect }: Props) {
                 disabled={!manualId.trim()}
                 className="btn-primary-operator !px-5 !py-2.5 disabled:opacity-40"
               >
-                Open
+                {operatorCopy.scope.manualOpen}
               </button>
             </div>
           </div>

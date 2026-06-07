@@ -1,6 +1,8 @@
 import type { QueueItemView, QueueView } from './types.ts';
 import { queueStatusVisual } from './statusRegistry.ts';
-import { operatorCopy } from './copy/operator.ts';
+import { operatorCopy, taskActionLabel } from './copy/index.ts';
+
+export { taskActionLabel };
 
 export type QueueTaskFilter =
   | 'ALL'
@@ -20,14 +22,6 @@ export const QUEUE_TASK_FILTERS: Array<{ key: QueueTaskFilter; label: string }> 
   { key: 'FAILED', label: 'Failed' },
   { key: 'SENT', label: 'Sent' },
 ];
-
-export function taskActionLabel(triggerKind: string): string {
-  const k = triggerKind.toUpperCase();
-  if (k === 'SOLD') return operatorCopy.taskActions.sold;
-  if (k === 'REMOVED') return operatorCopy.taskActions.remove;
-  if (k === 'INITIAL_PUBLISH' || k === 'NEW') return operatorCopy.taskActions.post;
-  return operatorCopy.taskActions.update;
-}
 
 export function queueSituationSummary(view: QueueView): string {
   const s = view.summary;

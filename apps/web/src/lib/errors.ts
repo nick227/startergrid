@@ -13,7 +13,7 @@ export function toErrorMessage(e: unknown, fallback = 'Failed'): string {
   }
 
   if (status === 403 || message === 'Operator does not have access to this dealership') {
-    return 'This operator is not allowed to access the selected dealership. Update DEV_OPERATOR_DEALER_IDS or choose an allowed dealer.';
+    return 'This operator is not allowed to access the selected organization. Update DEV_OPERATOR_DEALER_IDS or choose an allowed organization.';
   }
 
   return message;

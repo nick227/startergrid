@@ -3,6 +3,7 @@ import { friendlyPlatformDetail, platformOutcomeMeta } from '@/lib/syncPresentat
 import { platformConnection } from '@/lib/platformPresentation.ts';
 import type { OperatorNavHandlers } from '@/lib/operatorNav.ts';
 import { AccountEditForm } from './AccountEditForm.tsx';
+import { operatorCopy } from '@/lib/copy/operator.ts';
 import { RowDetailDrawer } from '@/components/layout';
 
 type Props = {
@@ -33,11 +34,11 @@ export function PlatformDetailDrawer({
       <div className="space-y-5">
         <div className="space-y-2 text-sm">
           <p>
-            <span className="font-semibold text-ink-heading">Connection: </span>
+            <span className="font-semibold text-ink-heading">{operatorCopy.drawer.connection}: </span>
             <span>{connection.label}</span>
           </p>
           <p>
-            <span className="font-semibold text-ink-heading">Publish status: </span>
+            <span className="font-semibold text-ink-heading">{operatorCopy.drawer.publishStatus}: </span>
             <span>{publish.label}</span>
           </p>
           {detail && <p className="text-ink-muted text-xs">{detail}</p>}
@@ -49,20 +50,20 @@ export function PlatformDetailDrawer({
             onClick={() => nav.goToPlatformQueue(platform.platformSlug)}
             className="text-xs font-semibold text-orange-600 hover:underline"
           >
-            Open queue →
+            {operatorCopy.drawer.openQueue}
           </button>
           <button
             type="button"
             onClick={() => nav.goToPlatformHistory(platform.platformSlug)}
             className="text-xs font-semibold text-navy-600 hover:underline"
           >
-            View history →
+            {operatorCopy.drawer.viewHistory}
           </button>
         </div>
 
         {account ? (
           <div className="border-t border-silver-200 pt-4">
-            <h4 className="text-xs font-bold uppercase tracking-wider text-ink-faint mb-3">Account setup</h4>
+            <h4 className="text-xs font-bold uppercase tracking-wider text-ink-faint mb-3">{operatorCopy.drawer.accountSetup}</h4>
             <AccountEditForm
               account={account}
               dealerId={dealerId}
@@ -70,7 +71,7 @@ export function PlatformDetailDrawer({
             />
           </div>
         ) : (
-          <p className="text-xs text-ink-muted">Account details loading…</p>
+          <p className="text-xs text-ink-muted">{operatorCopy.drawer.accountLoading}</p>
         )}
       </div>
     </RowDetailDrawer>

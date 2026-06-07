@@ -17,6 +17,7 @@ import {
   type PlatformConnectionFilter,
 } from '@/lib/platformPresentation.ts';
 import { formatPlatformAssistHint, formatPlatformExposureLine } from '@/lib/movementBenchmark.ts';
+import { operatorCopy } from '@/lib/copy/operator.ts';
 
 type Props = OperatorPageBaseProps & {
   initialPlatformSlug?: string | null;
@@ -89,7 +90,7 @@ export default function PlatformsPage({ dealerId, nav, activeTab, initialPlatfor
     );
   }
 
-  const situation = data ? platformSituationSummary(platforms) : 'Loading listing sites…';
+  const situation = data ? platformSituationSummary(platforms) : operatorCopy.platforms.loading;
 
   return (
     <OperatorPage
@@ -102,12 +103,12 @@ export default function PlatformsPage({ dealerId, nav, activeTab, initialPlatfor
       lastRefresh={lastRefresh ?? undefined}
       hideDealerId
     >
-      <PageSituation title="Platforms" line={situation} />
+      <PageSituation title={operatorCopy.platforms.title} line={situation} />
 
       <ControlBlock
         search={search}
         onSearchChange={setSearch}
-        searchPlaceholder="Search listing sites"
+        searchPlaceholder={operatorCopy.platforms.searchPlaceholder}
         sort={sort}
         sortOptions={SORT_OPTIONS}
         onSortChange={v => setSort(v as 'urgency' | 'name')}
@@ -125,7 +126,7 @@ export default function PlatformsPage({ dealerId, nav, activeTab, initialPlatfor
           {loading && !data ? (
             <PanelSkeleton rows={6} />
           ) : visible.length === 0 ? (
-            <p className="text-sm text-ink-muted py-8 text-center">No listing sites match your filters.</p>
+            <p className="text-sm text-ink-muted py-8 text-center">{operatorCopy.platforms.emptyFilter}</p>
           ) : (
             visible.map(p => {
               const conn = platformConnection(p);
@@ -146,7 +147,7 @@ export default function PlatformsPage({ dealerId, nav, activeTab, initialPlatfor
                   meta={metaParts.join(' · ')}
                   selected={selectedSlug === p.platformSlug}
                   onPress={() => setSelectedSlug(p.platformSlug)}
-                  actionLabel={needsFix ? 'Fix setup' : 'Open queue'}
+                  actionLabel={needsFix ? operatorCopy.platforms.fixSetup : operatorCopy.platforms.openQueue}
                   onAction={() => {
                     if (needsFix) setSelectedSlug(p.platformSlug);
                     else nav.goToPlatformQueue(p.platformSlug);

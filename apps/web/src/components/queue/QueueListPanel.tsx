@@ -15,8 +15,7 @@ import {
   taskActionLabel,
   type QueueTaskFilter,
 } from '@/lib/queuePresentation.ts';
-import { assetLeadLine, automotiveCopy } from '@/lib/copy/automotive.ts';
-import { operatorCopy } from '@/lib/copy/operator.ts';
+import { formatAssetLead, operatorCopy } from '@/lib/copy/index.ts';
 import type { OperatorTab } from '@/lib/operatorNav.ts';
 
 type Props = {
@@ -53,9 +52,7 @@ export function QueueListPanel({
   const selected = selectedId ? items.find(i => i.id === selectedId) ?? null : null;
 
   const title = platformName ?? operatorCopy.queue.title;
-  const situation = data
-    ? queueSituationSummary(data)
-    : 'Loading tasks…';
+  const situation = data ? queueSituationSummary(data) : operatorCopy.queue.loading;
 
   if (error && !data) {
     return (
@@ -80,14 +77,14 @@ export function QueueListPanel({
       {showBackLink && (
         <p className="text-sm text-ink-muted mb-3">
           <button type="button" onClick={nav.goToPlatforms} className="text-navy-600 hover:underline">
-            ← All channels
+            ← {operatorCopy.channels.all}
           </button>
         </p>
       )}
 
       <PageSituation
         title={title}
-        line={platformSlug ? `${situation} · ${automotiveCopy.queue.subtitle}` : situation}
+        line={platformSlug ? `${situation} · ${operatorCopy.queue.subtitle}` : situation}
       />
 
       <ControlBlock
@@ -115,7 +112,7 @@ export function QueueListPanel({
           ) : (
             items.map(item => {
               const st = queueItemStatus(item);
-              const lead = `${assetLeadLine(item.vehicleTitle, item.stockNumber)} · ${taskActionLabel(item.triggerKind)}`;
+              const lead = `${formatAssetLead(item.vehicleTitle, item.stockNumber)} · ${taskActionLabel(item.triggerKind)}`;
               return (
                 <OperationalRowCard
                   key={item.id}
@@ -125,7 +122,7 @@ export function QueueListPanel({
                   meta={queueItemMeta(item)}
                   selected={selectedId === item.id}
                   onPress={() => setSelectedId(item.id)}
-                  actionLabel="Details"
+                  actionLabel={operatorCopy.queue.details}
                   onAction={() => setSelectedId(item.id)}
                 />
               );

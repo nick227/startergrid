@@ -82,7 +82,7 @@ export function HistoryListPanel({
       {showBackLink && (
         <p className="text-sm text-ink-muted mb-3">
           <button type="button" onClick={nav.goToPlatforms} className="text-navy-600 hover:underline">
-            ← All channels
+            ← {operatorCopy.channels.all}
           </button>
         </p>
       )}
@@ -115,7 +115,7 @@ export function HistoryListPanel({
             <OperationalRowCard
               key={event.id}
               lead={historyEventLead(event)}
-              statusLabel="Recorded"
+              statusLabel={operatorCopy.history.recorded}
               statusClassName="bg-silver-100 text-ink-muted border-silver-200"
               meta={historyEventMeta(event)}
             />

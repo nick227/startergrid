@@ -1,5 +1,6 @@
 import { OperatorNav } from './OperatorNav.tsx';
 import type { OperatorTab, OperatorNavHandlers } from '../../lib/operatorNav.ts';
+import { operatorCopy } from '../../lib/copy/operator.ts';
 
 type Props = {
   dealerId: string;
@@ -73,7 +74,7 @@ export function PageShell({
               onClick={nav.changeDealer}
               className="text-xs text-ink-faint hover:text-white transition-colors"
             >
-              ← Change dealer
+              ← {operatorCopy.scope.changeAction}
             </button>
             <div className="flex items-center gap-2">
               {lastRefresh && !refreshing && (

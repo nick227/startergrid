@@ -51,11 +51,11 @@ Deprecate tabs: Sync, Accounts, Insights (redirect or remove).
 
 Parallel with steps 2–3.
 
-- Shell copy: `apps/web/src/lib/copy/operator.ts` (channel, queue, connection — generic)
-- Automotive copy: `apps/web/src/lib/copy/automotive.ts` (vehicle, VIN, dealer — v1 vertical)
+- Shell copy: `apps/web/src/lib/copy/operator.ts` (organization, channel, asset, queue — generic)
+- Vertical adapters: `apps/web/src/lib/copy/vertical.ts` + `index.ts` (`activeVertical` — swap per tenant)
+- Automotive overrides: `automotiveVertical` (Stock #, VIN, Sold) — inventory only until migrated
 - Plain status words on every row
 - Purge emerald/slate; navy + orange tokens
-- **Later:** `VerticalAdapter` interface — schema, readiness, copy, reporting formatters
 
 ---
 
