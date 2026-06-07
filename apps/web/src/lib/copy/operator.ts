@@ -18,6 +18,12 @@ export const operatorCopy = {
     singular: 'channel',
     plural: 'channels',
     all: 'All channels',
+    rowActions: {
+      details: 'Details',
+      queue: 'Queue',
+      history: 'History',
+      inventory: 'Inventory',
+    },
   },
   platforms: {
     title: 'Platforms',
@@ -31,11 +37,6 @@ export const operatorCopy = {
     observedAssists: 'Observed assists',
     avgExposure: 'Avg exposure',
     signals: 'Signals',
-    rowActions: {
-      details: 'Details',
-      queue: 'Queue',
-      history: 'History',
-    },
   },
   queue: {
     title: 'Queue',
@@ -117,11 +118,6 @@ export const operatorCopy = {
     intakeAssetCount: (n: number) =>
       `${n} ${n === 1 ? operatorCopy.asset.singular : operatorCopy.asset.plural}`,
     dryRunRemovalNote: 'Dry-run only — missing assets appear as removal candidates. Scheduled poll never auto-removes.',
-    rowActions: {
-      details: 'Details',
-      queue: 'Queue',
-      history: 'History',
-    },
   },
   reports: {
     title: 'Reports',

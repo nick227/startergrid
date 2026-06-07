@@ -97,16 +97,16 @@ export function buildOperatorNav(dealerId: string): OperatorNavHandlers {
   };
 }
 
-/** Redirect legacy hash paths to new IA. */
+/** Redirect legacy hash paths (#/dealer/sync, accounts, insights) to new IA. */
 export function normalizeOperatorHash(): void {
   const raw = window.location.hash.replace(/^#/, '');
   if (raw === '/knowledge' || raw === 'knowledge') {
     window.location.replace('#/help');
     return;
   }
-  const m = raw.match(/^\/([^/]+)\/(accounts|insights)(?:\/.*)?$/);
+  const m = raw.match(/^\/([^/]+)\/(accounts|insights|sync)(?:\/.*)?$/);
   if (!m) return;
   const [, dealerId, legacy] = m;
-  const next = legacy === 'accounts' ? 'platforms' : 'reports';
+  const next = legacy === 'insights' ? 'reports' : 'platforms';
   window.location.replace(`#/${dealerId}/${next}`);
 }

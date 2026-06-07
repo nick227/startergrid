@@ -93,4 +93,4 @@ When production pilot needs it.
 
 **Sprint 2:** **Queue** + **History** + copy modules + platform drill-downs — **shipped** (queue actions read-only until approve API)  
 **Sprint 3:** Inventory row-card layout + Reports copy — **shipped** (InventoryAssetList; table removed)  
-**Sprint 4:** Platforms row cards — **shipped** (OpsRowCard + PlatformChannelList) · Queue/History polish · retire Sync/Accounts redirects · token purge · auth.
+**Sprint 4:** Platforms row cards — **shipped** · Queue/History OpsRowCard + legacy sync/accounts redirect — **shipped** · token purge · auth.

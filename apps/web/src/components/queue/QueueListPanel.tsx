@@ -3,19 +3,24 @@ import type { OperatorNavHandlers } from '@/lib/operatorNav.ts';
 import { useAsyncQuery } from '@/hooks/useAsyncQuery.ts';
 import { fetchPublishQueue } from '@/lib/api/sdk.ts';
 import { OperatorPage, ErrorState, PanelSkeleton } from '@/components/operator';
-import { PageSituation, ControlBlock, OperationalRowCard } from '@/components/layout';
+import { PageSituation, ControlBlock } from '@/components/layout';
+import { OpsRowCard } from '@/components/layout/OpsRowCard.tsx';
 import { FilterChips } from '@/components/generic';
 import { QueueDetailDrawer } from './QueueDetailDrawer.tsx';
 import {
   QUEUE_TASK_FILTERS,
   filterQueueItems,
-  queueItemMeta,
-  queueItemStatus,
-  queueSituationSummary,
-  taskActionLabel,
   type QueueTaskFilter,
 } from '@/lib/queuePresentation.ts';
-import { formatAssetLead, operatorCopy } from '@/lib/copy/index.ts';
+import { queueSituationSummary } from '@/lib/queuePresentation.ts';
+import {
+  queueTaskTitle,
+  queueTaskSecondaryMeta,
+  queueDesktopFields,
+  queueRowSurface,
+  queueItemStatusVisual,
+} from '@/lib/queueRowPresentation.ts';
+import { operatorCopy } from '@/lib/copy/operator.ts';
 import type { OperatorTab } from '@/lib/operatorNav.ts';
 
 type Props = {
@@ -50,6 +55,7 @@ export function QueueListPanel({
   );
 
   const selected = selectedId ? items.find(i => i.id === selectedId) ?? null : null;
+  const actions = operatorCopy.channels.rowActions;
 
   const title = platformName ?? operatorCopy.queue.title;
   const situation = data ? queueSituationSummary(data) : operatorCopy.queue.loading;
@@ -111,19 +117,28 @@ export function QueueListPanel({
             <p className="text-sm text-ink-muted py-8 text-center">{operatorCopy.queue.emptyFilter}</p>
           ) : (
             items.map(item => {
-              const st = queueItemStatus(item);
-              const lead = `${formatAssetLead(item.vehicleTitle, item.stockNumber)} · ${taskActionLabel(item.triggerKind)}`;
+              const st = queueItemStatusVisual(item);
               return (
-                <OperationalRowCard
+                <OpsRowCard
                   key={item.id}
-                  lead={lead}
+                  title={queueTaskTitle(item)}
                   statusLabel={st.label}
                   statusClassName={st.pill}
-                  meta={queueItemMeta(item)}
-                  selected={selectedId === item.id}
-                  onPress={() => setSelectedId(item.id)}
-                  actionLabel={operatorCopy.queue.details}
-                  onAction={() => setSelectedId(item.id)}
+                  secondaryMeta={queueTaskSecondaryMeta(item)}
+                  desktopFields={queueDesktopFields(item)}
+                  detailOpen={selectedId === item.id}
+                  surfaceClassName={queueRowSurface(item.status)}
+                  actions={[
+                    { label: actions.details, onClick: () => setSelectedId(item.id) },
+                    {
+                      label: actions.history,
+                      onClick: () =>
+                        item.platformSlug
+                          ? nav.goToPlatformHistory(item.platformSlug)
+                          : nav.goToHistory(),
+                    },
+                    { label: actions.inventory, onClick: () => nav.goToInventory() },
+                  ]}
                 />
               );
             })

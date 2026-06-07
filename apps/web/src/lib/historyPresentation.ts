@@ -1,4 +1,5 @@
 import type { SyncEvent } from './types.ts';
+import type { OpsRowField } from './opsRowPresentation.ts';
 import { operatorCopy } from './copy/operator.ts';
 
 const KIND_LABELS: Record<string, string> = {
@@ -13,8 +14,35 @@ const KIND_LABELS: Record<string, string> = {
   SYNC_RUN_FAILED: 'Sync failed',
 };
 
+export function historyEventKindLabel(event: SyncEvent): string {
+  return KIND_LABELS[event.kind] ?? event.kind.replace(/_/g, ' ').toLowerCase();
+}
+
+export function historyEventTitle(event: SyncEvent): string {
+  return historyEventKindLabel(event);
+}
+
+export function historyEventSecondaryMeta(event: SyncEvent): string {
+  const parts: string[] = [];
+  if (event.platformSlug) parts.push(event.platformSlug);
+  parts.push(historyEventMeta(event));
+  return parts.join(' · ');
+}
+
+export function historyDesktopFields(event: SyncEvent): OpsRowField[] {
+  const fields: OpsRowField[] = [
+    { label: 'Recorded', value: historyEventMeta(event) },
+    { label: 'Event type', value: event.kind },
+  ];
+  if (event.platformSlug) {
+    fields.unshift({ label: operatorCopy.drawer.channel, value: event.platformSlug });
+  }
+  return fields;
+}
+
+/** @deprecated Use historyEventTitle + historyEventSecondaryMeta */
 export function historyEventLead(event: SyncEvent): string {
-  const label = KIND_LABELS[event.kind] ?? event.kind.replace(/_/g, ' ').toLowerCase();
+  const label = historyEventKindLabel(event);
   if (event.platformSlug) return `${label} · ${event.platformSlug}`;
   return label;
 }

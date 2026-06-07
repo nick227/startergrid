@@ -64,15 +64,15 @@ export function PlatformChannelList({
               surfaceClassName={channelRowSurface(conn.connection)}
               actions={[
                 {
-                  label: operatorCopy.platforms.rowActions.details,
+                  label: operatorCopy.channels.rowActions.details,
                   onClick: () => onSelectSlug(platform.platformSlug),
                 },
                 {
-                  label: operatorCopy.platforms.rowActions.queue,
+                  label: operatorCopy.channels.rowActions.queue,
                   onClick: () => nav.goToPlatformQueue(platform.platformSlug),
                 },
                 {
-                  label: operatorCopy.platforms.rowActions.history,
+                  label: operatorCopy.channels.rowActions.history,
                   onClick: () => nav.goToPlatformHistory(platform.platformSlug),
                 },
               ]}
