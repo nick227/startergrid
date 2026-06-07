@@ -22,7 +22,7 @@ export { ImportStepPreview } from './ImportStepPreview.tsx';
 export {
   getAssetColumns,
   SUMMARY_STRIP_ITEMS,
-  BULK_EDIT_FIELD_DEFS,
+  bulkEditFieldDefs,
   cleanupFilterDefs,
   IMPORT_WIZARD_STEPS,
   applyCleanupFilter,

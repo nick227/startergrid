@@ -1,6 +1,5 @@
 import type { OperatorNavHandlers, OperatorPageSegment } from './operatorNav.ts';
 import { appendRowNavScope, parseRowNavScope, splitOperatorHash, type RowNavScope } from './rowNavScope.ts';
-import type { ReportRangePreset } from './reportsCatalog.ts';
 import { parseReportRoute } from './reportRoutes.ts';
 
 export type { RowNavScope };

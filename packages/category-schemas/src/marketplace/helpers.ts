@@ -10,6 +10,11 @@ const TAGLINES: Partial<Record<BusinessCategoryId, string>> = {
   HOMES: 'Explore homes listed by participating brokerages',
   BOATS: 'Browse boats and watercraft from participating dealers',
   TRAILERS_POWERSPORTS_RV: 'Browse RVs, trailers, ATVs, and powersports from participating dealers',
+  APPAREL: 'Browse apparel and fashion from participating sellers',
+  SONGS: 'Browse music releases from participating artists',
+  VIDEO_DISTRIBUTION: 'Browse videos from participating creators',
+  PAWN: 'Browse pre-owned items from participating shops',
+  DIGITAL_ART: 'Browse digital artworks from participating artists',
 };
 
 export function categoryIdToSlug(id: BusinessCategoryId): string {

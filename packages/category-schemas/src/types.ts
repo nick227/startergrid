@@ -13,6 +13,8 @@ export const BUSINESS_CATEGORY_IDS = [
   'COMMERCIAL_PROPERTY',
   'BOATS',
   'TRAILERS_POWERSPORTS_RV',
+  'PAWN',
+  'DIGITAL_ART',
   'HEAVY_EQUIPMENT',
   'FURNITURE',
   'VIDEO_DISTRIBUTION',
@@ -21,6 +23,8 @@ export const BUSINESS_CATEGORY_IDS = [
 export type BusinessCategoryId = (typeof BUSINESS_CATEGORY_IDS)[number];
 
 export type CategoryStatus = 'active' | 'placeholder';
+
+export type CategoryLifecycleMode = 'physical_inventory' | 'digital_distribution';
 
 export type CategoryFieldDef = {
   key: string;
@@ -84,6 +88,7 @@ export type CategorySchema = {
   id: BusinessCategoryId;
   status: CategoryStatus;
   label: string;
+  lifecycleMode: CategoryLifecycleMode;
   copy: CategoryCopyBundle;
   asset: CategoryAssetLabels;
   channel: CategoryChannelLabels;

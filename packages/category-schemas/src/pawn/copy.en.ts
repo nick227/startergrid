@@ -1,10 +1,10 @@
 import type { CategoryCopyBundle } from '../types.js';
 
-export const apparelCopy: CategoryCopyBundle = {
+export const pawnCopy: CategoryCopyBundle = {
   inventoryTitle: 'Inventory',
   inventorySubtitle: 'Import items, fix blockers, then publish to channels.',
-  searchPlaceholder: 'Search SKU, brand, style…',
-  refColumn: 'SKU',
+  searchPlaceholder: 'Search ticket #, serial #, brand…',
+  refColumn: 'Ticket #',
   titleColumn: 'Item',
-  invalidIdentifierLabel: 'Invalid SKU',
+  invalidIdentifierLabel: 'Invalid ticket #',
 };

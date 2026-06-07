@@ -38,17 +38,18 @@ import {
   InventoryWalkthroughBanner,
   InventoryAssetList,
   SUMMARY_STRIP_ITEMS,
-  BULK_EDIT_FIELD_DEFS,
+  bulkEditFieldDefs,
   applyCleanupFilter,
 } from '@/components/inventory';
 import type { CleanupFilter } from '@/components/inventory';
 import { operatorCopy } from '@/lib/copy/index.ts';
-import { useInventoryLabels } from '@/contexts/CategoryContext.tsx';
+import { useCategorySchema, useInventoryLabels } from '@/contexts/CategoryContext.tsx';
 import { useOperatorRoute } from '@/hooks/useOperatorRoute.ts';
 
 type Props = OperatorPageBaseProps;
 
 export default function InventoryPage({ dealerId, nav, activeTab }: Props) {
+  const categorySchema = useCategorySchema();
   const inventoryLbls = useInventoryLabels();
   const { route } = useOperatorRoute();
   const [lifecycleScope, setLifecycleScope] = useState<LifecycleScope>('active');
@@ -472,7 +473,7 @@ export default function InventoryPage({ dealerId, nav, activeTab }: Props) {
       {isActiveScope && selectedInView.length > 0 && (
         <BulkActionBar
           count={selectedInView.length}
-          fieldDefs={BULK_EDIT_FIELD_DEFS}
+          fieldDefs={bulkEditFieldDefs(categorySchema)}
           onApply={handleBulkApply}
           onClear={() => setSelected(new Set())}
         />

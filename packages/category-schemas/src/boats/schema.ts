@@ -7,6 +7,7 @@ import { boatsFormatters } from './formatters.js';
 export const boatsSchema: CategorySchema = {
   id: 'BOATS',
   status: 'active',
+  lifecycleMode: 'physical_inventory',
   label: 'Boats',
   copy: boatsCopy,
   asset: {

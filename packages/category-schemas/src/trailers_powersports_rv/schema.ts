@@ -7,6 +7,7 @@ import { trailersPowersportsRvFormatters } from './formatters.js';
 export const trailersPowersportsRvSchema: CategorySchema = {
   id: 'TRAILERS_POWERSPORTS_RV',
   status: 'active',
+  lifecycleMode: 'physical_inventory',
   label: 'Trailers, powersports & RV',
   copy: trailersPowersportsRvCopy,
   asset: {
@@ -26,6 +27,7 @@ export const trailersPowersportsRvSchema: CategorySchema = {
     { key: 'model', label: 'Model', kind: 'text' },
     { key: 'mileage', label: 'Miles / Hours', kind: 'number' },
     { key: 'priceCents', label: 'Price', kind: 'currency' },
+    { key: 'condition', label: 'Condition', kind: 'text' },
   ],
   lifecycle: { ...genericLifecycle },
   readiness: { ...genericReadiness },

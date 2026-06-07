@@ -1,4 +1,4 @@
-import type { BusinessCategoryId, CategoryCopyBundle, CategorySchema } from '../types.js';
+import type { BusinessCategoryId, CategoryCopyBundle, CategoryLifecycleMode, CategorySchema } from '../types.js';
 import { buildMarketplaceMeta } from '../marketplace/helpers.js';
 import {
   genericAsset,
@@ -18,6 +18,7 @@ export function createPlaceholderSchema(
   return {
     id,
     status: 'placeholder',
+    lifecycleMode: 'physical_inventory' as CategoryLifecycleMode,
     label,
     copy: { ...genericCopy, ...copyOverrides },
     asset: { ...genericAsset },
@@ -35,9 +36,10 @@ export function createPlaceholderSchema(
  * Neutral schema used while a dealer's real category is loading.
  * Uses generic copy ("Ref #", "Asset") so AUTOMOTIVE labels never flash for
  * non-automotive orgs during the initial fetch window.
- * id === 'SONGS' ensures zero platforms match during the loading window.
+ * id === 'WATCHES' ensures zero platforms ever match this loading-state sentinel,
+ * and avoids conflicting with the real Music (SONGS) schema.
  */
-export const genericOperatorFallback: CategorySchema = createPlaceholderSchema('SONGS', 'this category');
+export const genericOperatorFallback: CategorySchema = createPlaceholderSchema('WATCHES', 'this category');
 
 /** Fallback when category is not registered — never throws. */
 export function createUnknownFallbackSchema(category: string): CategorySchema {
@@ -45,6 +47,7 @@ export function createUnknownFallbackSchema(category: string): CategorySchema {
   return {
     id: category as BusinessCategoryId,
     status: 'placeholder',
+    lifecycleMode: 'physical_inventory' as CategoryLifecycleMode,
     label,
     copy: { ...genericCopy },
     asset: { ...genericAsset },

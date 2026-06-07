@@ -1,6 +1,7 @@
 import { useMemo } from 'react';
 import { Select } from '../ui/Select.tsx';
 import { canonicalImportOptions, requiredFieldLabels } from './inventoryConfig.tsx';
+import { useCategorySchema } from '@/contexts/CategoryContext.tsx';
 
 type Props = {
   headers: string[];
@@ -12,6 +13,8 @@ type Props = {
 };
 
 export function ImportStepMapping({ headers, rows, mapping, suggestedMapping, onChange, error }: Props) {
+  const schema = useCategorySchema();
+
   // Compute first 3 non-empty values per column for the preview column
   const columnPreviews = useMemo(() => {
     const out: Record<string, string[]> = {};
@@ -34,12 +37,12 @@ export function ImportStepMapping({ headers, rows, mapping, suggestedMapping, on
     return s;
   }, [headers, mapping, suggestedMapping]);
 
-  const fieldLabels = requiredFieldLabels();
-  const importOptions = canonicalImportOptions();
+  const fieldLabels = requiredFieldLabels(schema);
+  const importOptions = canonicalImportOptions(schema);
 
   const missingRequired = useMemo(
-    () => Object.keys(requiredFieldLabels()).filter(k => !mappedCanonicals.has(k)),
-    [mappedCanonicals],
+    () => Object.keys(fieldLabels).filter(k => !mappedCanonicals.has(k)),
+    [mappedCanonicals, fieldLabels],
   );
 
   const autoMappedCount = headers.filter(h => Boolean(suggestedMapping[h])).length;

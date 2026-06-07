@@ -15,7 +15,7 @@ export type VerticalCopyAdapter = {
     /** Backend field path for identifier-failure issues. Empty string = no check. */
     idFieldKey: string;
     /** Usage column label from category schema (Mileage, Hours, etc.). */
-    mileageLabel?: string;
+    mileageLabel: string;
   };
 };
 
@@ -30,6 +30,7 @@ export const genericVertical: VerticalCopyAdapter = {
     canonicalRef: 'Ref number',
     canonicalId: 'Identifier',
     idFieldKey: '',
+    mileageLabel: 'Mileage',
   },
 };
 
@@ -47,5 +48,6 @@ export const automotiveVertical: VerticalCopyAdapter = {
     canonicalRef: 'Stock number',
     canonicalId: 'VIN',
     idFieldKey: 'vin',
+    mileageLabel: 'Mileage',
   },
 };

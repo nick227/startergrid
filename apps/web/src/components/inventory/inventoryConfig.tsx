@@ -1,3 +1,4 @@
+import type { CategorySchema } from '@auto-dealer/category-schemas';
 import type { Column } from '../generic/DataTable.tsx';
 import type { FieldDef } from '../generic/BulkActionBar.tsx';
 import type { VehicleListItem, VehiclePerformanceItem, MovementSignal } from '../../lib/types.ts';
@@ -95,7 +96,7 @@ function baseAssetColumns(): Column<VehicleListItem>[] {
   },
   {
     key: 'mileage',
-    label: 'Mileage',
+    label: labels.mileageLabel,
     render: v => <span className="text-xs text-ink-body">{v.mileage > 0 ? formatMileage(v.mileage) : '—'}</span>,
   },
   {
@@ -182,43 +183,43 @@ export const SUMMARY_STRIP_ITEMS: Array<{ key: string; label: string; colorClass
 
 // ── Bulk edit field definitions ───────────────────────────────────────────────
 
-export const BULK_EDIT_FIELD_DEFS: FieldDef[] = [
-  { key: 'priceDollars',  type: 'text',   placeholder: 'Price $',    width: 'w-24' },
-  { key: 'mileage',       type: 'text',   placeholder: 'Mileage',    width: 'w-24' },
-  { key: 'condition',     type: 'select', options: [
-    { value: '',     label: 'Condition' },
-    { value: 'NEW',  label: 'New'       },
-    { value: 'USED', label: 'Used'      },
-    { value: 'CPO',  label: 'CPO'       },
-  ]},
-  { key: 'exteriorColor', type: 'text', placeholder: 'Ext. color', width: 'w-28' },
-  { key: 'interiorColor', type: 'text', placeholder: 'Int. color', width: 'w-28' },
-  { key: 'bodyStyle',     type: 'text', placeholder: 'Body style', width: 'w-28' },
-];
+export function bulkEditFieldDefs(schema: CategorySchema): FieldDef[] {
+  const fieldKeys = new Set(schema.fields.map(f => f.key));
+  const mileageField = schema.fields.find(f => f.key === 'mileage');
+  const defs: FieldDef[] = [
+    { key: 'priceDollars', type: 'text', placeholder: 'Price $', width: 'w-24' },
+  ];
+  if (mileageField) {
+    defs.push({ key: 'mileage', type: 'text', placeholder: mileageField.label, width: 'w-24' });
+  }
+  if (fieldKeys.has('condition')) {
+    const conditionOptions: { value: string; label: string }[] = [
+      { value: '', label: 'Condition' },
+      { value: 'NEW', label: 'New' },
+      { value: 'USED', label: 'Used' },
+    ];
+    if (schema.id === 'AUTOMOTIVE') conditionOptions.push({ value: 'CPO', label: 'CPO' });
+    defs.push({ key: 'condition', type: 'select', options: conditionOptions });
+  }
+  if (fieldKeys.has('exteriorColor')) defs.push({ key: 'exteriorColor', type: 'text', placeholder: 'Ext. color', width: 'w-28' });
+  if (fieldKeys.has('interiorColor')) defs.push({ key: 'interiorColor', type: 'text', placeholder: 'Int. color', width: 'w-28' });
+  if (fieldKeys.has('bodyStyle')) defs.push({ key: 'bodyStyle', type: 'text', placeholder: 'Body style', width: 'w-28' });
+  return defs;
+}
 
 // ── Canonical field options (import column mapping) ───────────────────────────
 
-export function canonicalImportOptions(): { value: string; label: string }[] {
-  const labels = inventoryLabels();
-  return [
-  { value: '',              label: '(skip)'                        },
-  { value: 'stockNumber',   label: labels.canonicalRef  },
-  { value: 'vin',           label: labels.canonicalId   },
-  { value: 'year',          label: 'Year'                          },
-  { value: 'make',          label: 'Make'                          },
-  { value: 'model',         label: 'Model'                         },
-  { value: 'trim',          label: 'Trim'                          },
-  { value: 'mileage',       label: 'Mileage'                       },
-  { value: 'price',         label: 'Price (dollars)'               },
-  { value: 'condition',     label: 'Condition'                     },
-  { value: 'exteriorColor', label: 'Exterior Color'                },
-  { value: 'interiorColor', label: 'Interior Color'                },
-  { value: 'bodyStyle',     label: 'Body Style'                    },
-  { value: 'drivetrain',    label: 'Drivetrain'                    },
-  { value: 'fuelType',      label: 'Fuel Type'                     },
-  { value: 'transmission',  label: 'Transmission'                  },
-  { value: 'photoUrls',     label: 'Photo URLs (comma-separated)'  },
-  ];
+export function canonicalImportOptions(schema: CategorySchema): { value: string; label: string }[] {
+  const options: { value: string; label: string }[] = [{ value: '', label: '(skip)' }];
+  for (const field of schema.fields) {
+    if (field.key === 'priceCents') {
+      options.push({ value: 'price', label: 'Price (dollars)' });
+    } else {
+      options.push({ value: field.key, label: field.label });
+    }
+  }
+  options.push({ value: 'photoUrls', label: 'Photo URLs (comma-separated)' });
+  return options;
 }
 
 // ── Wizard step labels for ImportModal ────────────────────────────────────────
