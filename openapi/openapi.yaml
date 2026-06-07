@@ -989,6 +989,88 @@ paths:
         '404':
           $ref: '#/components/responses/NotFound'
 
+  /api/dealers/{dealershipId}/reports/publish-throughput:
+    get:
+      tags: [Reports]
+      security:
+        - OperatorAuth: []
+      x-route-classification: operator
+      operationId: getPublishThroughputReport
+      summary: Publish throughput and reliability report
+      description: |
+        Aggregates queue send/fail/retry outcomes and open queue counts for a date range.
+        Uses generic channel/asset naming — category-specific labels belong in UI copy.
+      parameters:
+        - $ref: '#/components/parameters/dealershipId'
+        - $ref: '#/components/parameters/reportRange'
+      responses:
+        '200':
+          description: Publish throughput report
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PublishThroughputReport'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /api/dealers/{dealershipId}/reports/sync-activity:
+    get:
+      tags: [Reports]
+      security:
+        - OperatorAuth: []
+      x-route-classification: operator
+      operationId: getSyncActivityReport
+      summary: Sync activity summary report
+      description: Sync events grouped by channel and event kind for the selected range.
+      parameters:
+        - $ref: '#/components/parameters/dealershipId'
+        - $ref: '#/components/parameters/reportRange'
+      responses:
+        '200':
+          description: Sync activity report
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SyncActivityReport'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /api/dealers/{dealershipId}/reports/observed-demand:
+    get:
+      tags: [Reports]
+      security:
+        - OperatorAuth: []
+      x-route-classification: operator
+      operationId: getObservedDemandReport
+      summary: Observed demand by asset report
+      description: |
+        Observed leads and inquiry-style channel events by asset and channel.
+        Not sales attribution — observed activity only.
+      parameters:
+        - $ref: '#/components/parameters/dealershipId'
+        - $ref: '#/components/parameters/reportRange'
+      responses:
+        '200':
+          description: Observed demand report
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ObservedDemandReport'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
 components:
   securitySchemes:
     OperatorAuth:
@@ -1030,6 +1112,15 @@ components:
       required: true
       schema:
         type: string
+    reportRange:
+      name: range
+      in: query
+      required: false
+      description: Report window preset. Defaults to 7d when omitted or invalid.
+      schema:
+        type: string
+        enum: [7d, 30d, 90d]
+        default: 7d
 
   responses:
     NotFound:
@@ -2819,6 +2910,221 @@ components:
             computedAt:
               type: string
               format: date-time
+
+    ReportTimeWindow:
+      type: object
+      required: [preset, from, to]
+      properties:
+        preset:
+          type: string
+          enum: [7d, 30d, 90d]
+        from:
+          type: string
+          format: date-time
+        to:
+          type: string
+          format: date-time
+
+    ReportBaseMeta:
+      type: object
+      required: [dealershipId, generatedAt, range]
+      properties:
+        dealershipId:
+          type: string
+        generatedAt:
+          type: string
+          format: date-time
+        range:
+          $ref: '#/components/schemas/ReportTimeWindow'
+
+    PublishThroughputChannelRow:
+      type: object
+      required:
+        - channelSlug
+        - sentInPeriod
+        - failedInPeriod
+        - retryEventsInPeriod
+        - dispatchFailuresInPeriod
+        - openQueueCount
+      properties:
+        channelSlug:
+          type: string
+        sentInPeriod:
+          type: integer
+          minimum: 0
+        failedInPeriod:
+          type: integer
+          minimum: 0
+        retryEventsInPeriod:
+          type: integer
+          minimum: 0
+        dispatchFailuresInPeriod:
+          type: integer
+          minimum: 0
+        openQueueCount:
+          type: integer
+          minimum: 0
+
+    PublishThroughputReport:
+      type: object
+      required: [meta, summary, channels]
+      properties:
+        meta:
+          $ref: '#/components/schemas/ReportBaseMeta'
+        summary:
+          type: object
+          required:
+            - sentInPeriod
+            - failedInPeriod
+            - retryEventsInPeriod
+            - dispatchFailuresInPeriod
+            - openQueueCount
+            - medianHoursToSend
+          properties:
+            sentInPeriod:
+              type: integer
+              minimum: 0
+            failedInPeriod:
+              type: integer
+              minimum: 0
+            retryEventsInPeriod:
+              type: integer
+              minimum: 0
+            dispatchFailuresInPeriod:
+              type: integer
+              minimum: 0
+            openQueueCount:
+              type: integer
+              minimum: 0
+            medianHoursToSend:
+              type: number
+              nullable: true
+        channels:
+          type: array
+          items:
+            $ref: '#/components/schemas/PublishThroughputChannelRow'
+
+    SyncActivityKindRow:
+      type: object
+      required: [eventKind, count]
+      properties:
+        eventKind:
+          type: string
+        count:
+          type: integer
+          minimum: 0
+
+    SyncActivityChannelRow:
+      type: object
+      required: [channelSlug, totalEvents, byKind]
+      properties:
+        channelSlug:
+          type: string
+        totalEvents:
+          type: integer
+          minimum: 0
+        byKind:
+          type: array
+          items:
+            $ref: '#/components/schemas/SyncActivityKindRow'
+
+    SyncActivityReport:
+      type: object
+      required: [meta, summary, byKind, channels]
+      properties:
+        meta:
+          $ref: '#/components/schemas/ReportBaseMeta'
+        summary:
+          type: object
+          required: [totalEvents]
+          properties:
+            totalEvents:
+              type: integer
+              minimum: 0
+        byKind:
+          type: array
+          items:
+            $ref: '#/components/schemas/SyncActivityKindRow'
+        channels:
+          type: array
+          items:
+            $ref: '#/components/schemas/SyncActivityChannelRow'
+
+    ObservedDemandChannelRow:
+      type: object
+      required: [channelSlug, observedLeads, observedChannelEvents]
+      properties:
+        channelSlug:
+          type: string
+        observedLeads:
+          type: integer
+          minimum: 0
+        observedChannelEvents:
+          type: integer
+          minimum: 0
+
+    ObservedDemandAssetRow:
+      type: object
+      required:
+        - assetId
+        - assetRef
+        - daysOnline
+        - movementSignal
+        - observedDemandCount
+        - observedLeads
+        - observedChannelEvents
+        - byChannel
+      properties:
+        assetId:
+          type: string
+        assetRef:
+          type: string
+        daysOnline:
+          type: integer
+          nullable: true
+        movementSignal:
+          type: string
+          nullable: true
+        observedDemandCount:
+          type: integer
+          minimum: 0
+        observedLeads:
+          type: integer
+          minimum: 0
+        observedChannelEvents:
+          type: integer
+          minimum: 0
+        byChannel:
+          type: array
+          items:
+            $ref: '#/components/schemas/ObservedDemandChannelRow'
+
+    ObservedDemandReport:
+      type: object
+      required: [meta, summary, assets]
+      properties:
+        meta:
+          $ref: '#/components/schemas/ReportBaseMeta'
+        summary:
+          type: object
+          required:
+            - assetsWithObservedDemand
+            - totalObservedDemand
+            - highAgeZeroDemandCount
+          properties:
+            assetsWithObservedDemand:
+              type: integer
+              minimum: 0
+            totalObservedDemand:
+              type: integer
+              minimum: 0
+            highAgeZeroDemandCount:
+              type: integer
+              minimum: 0
+        assets:
+          type: array
+          items:
+            $ref: '#/components/schemas/ObservedDemandAssetRow'
 
     AutoSyncStatus:
       type: object

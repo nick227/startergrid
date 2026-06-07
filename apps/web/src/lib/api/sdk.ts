@@ -5,6 +5,7 @@ import {
   InventoryService,
   AccountsService,
   PerformanceService,
+  ReportsService,
   type AutoSyncStatus as SdkAutoSyncStatus,
 } from '@auto-dealer/api-client';
 import type {
@@ -12,6 +13,9 @@ import type {
   BulkEditPayload as SdkBulkEditPayload,
   CreateIngressSourceRequest as SdkCreateIngressSourceRequest,
   UpdateIngressSourceRequest as SdkUpdateIngressSourceRequest,
+  PublishThroughputReport,
+  SyncActivityReport,
+  ObservedDemandReport,
 } from '@auto-dealer/api-client';
 import type {
   AutoSyncStatus,
@@ -334,4 +338,29 @@ export async function fetchCachedPerformanceSnapshot(
     platforms: platformsBody.platforms,
     totalObservedAssists,
   };
+}
+
+export type ReportRangeParam = '7d' | '30d' | '90d';
+
+export type { PublishThroughputReport, SyncActivityReport, ObservedDemandReport };
+
+export async function fetchPublishThroughputReport(
+  dealershipId: string,
+  range: ReportRangeParam = '7d',
+): Promise<PublishThroughputReport> {
+  return fromSdk(ReportsService.getPublishThroughputReport({ dealershipId, range }));
+}
+
+export async function fetchSyncActivityReport(
+  dealershipId: string,
+  range: ReportRangeParam = '7d',
+): Promise<SyncActivityReport> {
+  return fromSdk(ReportsService.getSyncActivityReport({ dealershipId, range }));
+}
+
+export async function fetchObservedDemandReport(
+  dealershipId: string,
+  range: ReportRangeParam = '7d',
+): Promise<ObservedDemandReport> {
+  return fromSdk(ReportsService.getObservedDemandReport({ dealershipId, range }));
 }

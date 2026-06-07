@@ -7,7 +7,7 @@ import HistoryPage from './pages/HistoryPage.tsx';
 import PlatformQueuePage from './pages/PlatformQueuePage.tsx';
 import PlatformHistoryPage from './pages/PlatformHistoryPage.tsx';
 import InventoryPage from './pages/InventoryPage.tsx';
-import InsightsPage from './pages/InsightsPage.tsx';
+import ReportsRouter from './pages/ReportsRouter.tsx';
 import KnowledgeBasePage from './pages/KnowledgeBasePage.tsx';
 import { AuthLoadingScreen } from '@/components/auth/AuthLoadingScreen.tsx';
 import { useAuth } from '@/contexts/AuthContext.tsx';
@@ -20,7 +20,7 @@ import { canAccessDealer } from '@/lib/operatorAccess.ts';
 function OperatorApp() {
   const { user, authReady } = useAuth();
   const { route, nav, activeTab, selectDealer } = useOperatorRoute();
-  const { dealerId, page, platformSlug, platformView } = route;
+  const { dealerId, page, platformSlug, platformView, reportSlug, reportRange } = route;
   const categorySchema = useDealerCategorySchema(dealerId ?? null);
 
   const helpStandalone = (page === 'help' || page === 'knowledge') && !dealerId;
@@ -52,7 +52,7 @@ function OperatorApp() {
       ) : page === 'history' ? (
         <HistoryPage dealerId={dealerId} nav={nav} activeTab={activeTab} />
       ) : page === 'reports' ? (
-        <InsightsPage dealerId={dealerId} nav={nav} activeTab={activeTab} />
+        <ReportsRouter dealerId={dealerId} nav={nav} activeTab={activeTab} reportSlug={reportSlug} reportRange={reportRange} />
       ) : page === 'inventory' ? (
         <InventoryPage dealerId={dealerId} nav={nav} activeTab={activeTab} />
       ) : (

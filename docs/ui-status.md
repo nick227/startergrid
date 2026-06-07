@@ -114,12 +114,13 @@ Search, filter, and sort logic unchanged from table era; only presentation is ro
 | Auth UI + route guards | **Shipped** — login page, session cookie, 401 → sign-in, scoped org picker |
 | Org-scoped category loading | **Shipped** — `CategoryProvider` + schema-driven vertical copy per org |
 | Reports row-card polish | **Shipped** — OpsRowCard lists, situation/control block, signal + section filters |
+| Reports catalog (10 reports) | **Phase 1 + Phase 2 UI shipped** (7 live reports); Phase 3 pending; [design](./plans/2026-06-06-operator-reports-catalog-design.md) |
 
 ---
 
 ## Next priorities
 
-_(None on the current stack — pick from backlog: queue approve/retry API, legacy Sync tree cleanup, server-side dealer list filtering.)_
+1. **Reports catalog Phase 3** — lifecycle, merchandising, velocity cohort reports
 
 ---
 

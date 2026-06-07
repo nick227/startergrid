@@ -143,7 +143,12 @@ export const operatorCopy = {
   },
   reports: {
     title: 'Reports',
-    subtitle: 'Channel performance and movement signals — reference view, not a separate workflow.',
+    subtitle: 'What needs action today — plus channel and inventory performance reference.',
+    hubActionHeading: 'Action reports',
+    hubManagementHeading: 'Management reports',
+    viewFullReport: 'View full report',
+    comingSoon: 'Coming in a later release — aggregation API required.',
+    backToHub: '← All reports',
     refreshBenchmarks: 'Refresh benchmarks',
     refreshing: 'Refreshing…',
     dayToDayNote: 'Day-to-day work lives in Inventory and Platforms.',
@@ -165,6 +170,71 @@ export const operatorCopy = {
     noChannelActivity: 'No channel activity recorded for this platform.',
     searchAssets: 'Search ref, make, model…',
     searchPlatforms: 'Search platform slug…',
+    searchReadiness: 'Search ref #, issue…',
+    searchChannels: 'Search channel slug…',
+    observedDemandDisclaimer: 'Observed demand counts leads and inquiry-style channel events — not sales attribution.',
+    throughputSummary: (sent: number, failed: number, open: number) =>
+      `${sent} sent · ${failed} failed · ${open} open queue`,
+    syncSummaryLine: (total: number) => `${total} sync events in period`,
+    demandSummaryLine: (withDemand: number, highAgeZero: number) =>
+      `${withDemand} assets with demand · ${highAgeZero} high-age with none`,
+    rangeNow: 'As of now',
+    range7d: 'Last 7 days',
+    range30d: 'Last 30 days',
+    range90d: 'Last 90 days',
+    snapshotOnlyHint: 'Point-in-time report — range locked to as of now.',
+    catalog: {
+      movement: {
+        title: 'Movement & Aging',
+        decision: 'Which active assets are stale or slow vs similar stock — reprice, rephoto, or review today?',
+        primaryMetric: 'Stale + slow',
+      },
+      readiness: {
+        title: 'Readiness & Publish Blockers',
+        decision: 'Which assets cannot reach channels yet — and what issue type should I fix first?',
+        primaryMetric: 'Blocked assets',
+      },
+      throughput: {
+        title: 'Publish Throughput & Reliability',
+        decision: 'Which channels are failing or stalling sends — where is the pipe broken?',
+        primaryMetric: 'Failed sends',
+      },
+      demand: {
+        title: 'Observed Demand by Asset',
+        decision: 'Which assets got interest — and which aged assets got none?',
+        primaryMetric: 'Zero-lead stale',
+      },
+      exposure: {
+        title: 'Channel Exposure & Coverage',
+        decision: 'How much of active inventory is actually live on each channel?',
+        primaryMetric: 'Lowest coverage',
+      },
+      engagement: {
+        title: 'Observed Assist & Engagement',
+        decision: 'Which channels show the strongest engagement signals per listed asset?',
+        primaryMetric: 'Top assists',
+      },
+      syncSummary: {
+        title: 'Sync Activity Summary',
+        decision: 'What operational volume hit each channel in this period?',
+        primaryMetric: 'Events',
+      },
+      lifecycle: {
+        title: 'Lifecycle Flow',
+        decision: 'Did inventory grow or shrink healthily — intake vs sold vs removed?',
+        primaryMetric: 'Net change',
+      },
+      merchandising: {
+        title: 'Merchandising Activity',
+        decision: 'Which assets were actively worked — and which were neglected?',
+        primaryMetric: 'No changes',
+      },
+      velocity: {
+        title: 'Channel Velocity & Outcomes',
+        decision: 'For assets that sold or were removed, which channels had the best median time-to-exit?',
+        primaryMetric: 'Fastest median',
+      },
+    },
   },
   emptyStates: {
     noInventory: {
@@ -227,9 +297,17 @@ export const operatorCopy = {
       title: 'No matches',
       subtitle: 'Try another filter or search term.',
     },
+    noThroughputChannels: {
+      title: 'No publish activity in this range',
+      subtitle: 'Queue sends and sync events will appear after inventory is submitted to channels.',
+    },
     noSyncActivity: {
-      title: 'No sync activity yet',
-      subtitle: 'Once inventory is ready, updates to channels will show up here.',
+      title: 'No sync activity in this range',
+      subtitle: 'Operational sync events appear after prepare, queue, and channel runs occur.',
+    },
+    noObservedDemand: {
+      title: 'No observed demand in this range',
+      subtitle: 'Leads and inquiry-style channel events will appear as shoppers engage with listings.',
     },
   },
 } as const;

@@ -8,6 +8,7 @@ import { registerPublishRoutes }    from './routes/publish.js';
 import { registerAccountRoutes }    from './routes/accounts.js';
 import { registerIngressRoutes }    from './routes/ingress.js';
 import { registerPerformanceRoutes }  from './routes/performance.js';
+import { registerReportsRoutes }      from './routes/reports.js';
 import { registerMarketplaceRoutes }  from './routes/marketplace.js';
 import { registerMarketplaceAuthRoutes }     from './routes/marketplaceAuth.js';
 import { registerMarketplaceFavoritesRoutes } from './routes/marketplaceFavorites.js';
@@ -35,6 +36,7 @@ export function buildApp(prisma: PrismaClient): FastifyInstance {
   registerAccountRoutes(app, prisma);
   registerIngressRoutes(app, prisma);
   registerPerformanceRoutes(app, prisma);
+  registerReportsRoutes(app, prisma);
   registerMarketplaceRoutes(app, prisma);
   registerMarketplaceAuthRoutes(app, prisma);
   registerMarketplaceFavoritesRoutes(app, prisma);
