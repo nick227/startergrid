@@ -114,11 +114,21 @@ describe('resolveCategorySchema — known categories', () => {
 });
 
 describe('resolveCategorySchema — placeholders', () => {
-  const placeholderIds = BUSINESS_CATEGORY_IDS.filter(
-    id => id !== 'AUTOMOTIVE' && id !== 'TRAILERS_POWERSPORTS_RV' && id !== 'BOATS',
+  const activeIds = new Set<typeof BUSINESS_CATEGORY_IDS[number]>([
+    'AUTOMOTIVE',
+    'TRAILERS_POWERSPORTS_RV',
+    'BOATS',
+  ]);
+
+  /** Minimal placeholders built via createPlaceholderSchema — generic shell labels only. */
+  const genericPlaceholderIds = BUSINESS_CATEGORY_IDS.filter(
+    id => !activeIds.has(id) && !['SONGS', 'EBOOKS', 'APPAREL', 'PAWN', 'DIGITAL_ART', 'VIDEO_DISTRIBUTION'].includes(id),
   );
 
-  for (const id of placeholderIds) {
+  /** Rich placeholder schemas with category-specific field labels but not yet active. */
+  const richPlaceholderIds = ['SONGS', 'EBOOKS', 'APPAREL', 'PAWN', 'DIGITAL_ART', 'VIDEO_DISTRIBUTION'] as const;
+
+  for (const id of genericPlaceholderIds) {
     it(`${id} resolves as placeholder with generic asset/channel labels`, () => {
       const schema = resolveCategorySchema(id);
       assert.equal(schema.status, 'placeholder');
@@ -129,6 +139,17 @@ describe('resolveCategorySchema — placeholders', () => {
       assert.equal(schema.channel.singular, 'channel');
       assert.equal(schema.channel.plural, 'channels');
       assert.equal(schema.fields.length, 0);
+    });
+  }
+
+  for (const id of richPlaceholderIds) {
+    it(`${id} resolves as placeholder with category-specific labels`, () => {
+      const schema = resolveCategorySchema(id);
+      assert.equal(schema.status, 'placeholder');
+      assert.equal(schema.marketplace.consumerEnabled, false);
+      assert.ok(schema.asset.singular.length > 0);
+      assert.ok(schema.asset.plural.length > 0);
+      assert.ok(schema.fields.length > 0);
     });
   }
 });

@@ -43,3 +43,11 @@ export function useVerticalCopy() {
 export function useInventoryLabels() {
   return useVerticalCopy().inventory;
 }
+
+export function useAssetLabels() {
+  return useCategorySchema().asset;
+}
+
+export function usePerformanceLabels() {
+  return useCategorySchema().performance;
+}

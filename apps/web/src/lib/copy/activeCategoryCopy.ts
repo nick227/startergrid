@@ -4,13 +4,20 @@ import { genericVertical, type VerticalCopyAdapter } from './vertical.ts';
 import { verticalAdapterFromCategorySchema } from './verticalFromSchema.ts';
 
 let activeAdapter: VerticalCopyAdapter = genericVertical;
+let activeSchema: CategorySchema | null = null;
 
 export function setActiveCategorySchema(schema: CategorySchema): void {
+  activeSchema = schema;
   activeAdapter = verticalAdapterFromCategorySchema(schema);
 }
 
 export function resetActiveCategoryCopy(): void {
+  activeSchema = null;
   activeAdapter = genericVertical;
+}
+
+export function getActiveCategorySchema(): CategorySchema | null {
+  return activeSchema;
 }
 
 export function getActiveVerticalAdapter(): VerticalCopyAdapter {

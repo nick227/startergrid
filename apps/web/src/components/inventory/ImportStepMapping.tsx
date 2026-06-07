@@ -37,7 +37,7 @@ export function ImportStepMapping({ headers, rows, mapping, suggestedMapping, on
     return s;
   }, [headers, mapping, suggestedMapping]);
 
-  const fieldLabels = requiredFieldLabels(schema);
+  const fieldLabels = requiredFieldLabels();
   const importOptions = canonicalImportOptions(schema);
 
   const missingRequired = useMemo(

@@ -1,7 +1,8 @@
 import { useState } from 'react';
 import { parseCSV } from '@/lib/parseCSV.ts';
 import type { ParsedCSV } from '@/lib/parseCSV.ts';
-import { previewInventoryImport, commitInventoryImport } from '@/lib/api.ts';
+import { previewInventoryImport, commitInventoryImport } from '@/lib/api/sdk.ts';
+import { useAssetLabels } from '@/contexts/CategoryContext.tsx';
 import type { ImportPreviewResponse, CommitImportResponse } from '@/lib/types.ts';
 import { WizardModal } from '@/components/generic/WizardModal.tsx';
 import { ImportStepUpload } from './ImportStepUpload.tsx';
@@ -16,6 +17,7 @@ type Props = {
 };
 
 export function ImportModal({ dealerId, onClose, onCommitted }: Props) {
+  const asset = useAssetLabels();
   const [step, setStep] = useState(0);
   const [rawText, setRawText] = useState('');
   const [parsed, setParsed] = useState<ParsedCSV | null>(null);
@@ -82,7 +84,7 @@ export function ImportModal({ dealerId, onClose, onCommitted }: Props) {
   const primaryLabel =
     step === 0 ? 'Continue →' :
     step === 1 ? (loading ? 'Loading…' : 'Preview →') :
-    committing ? 'Importing…' : `Import ${commitableCount} vehicle${commitableCount !== 1 ? 's' : ''}`;
+    committing ? 'Importing…' : `Import ${commitableCount} ${commitableCount === 1 ? asset.singular : asset.plural}`;
 
   const primaryDisabled =
     step === 0 ? !parsed :

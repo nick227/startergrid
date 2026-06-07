@@ -6,6 +6,19 @@ import type {
   SyncEvent,
 } from './types.ts';
 import { statusPill } from '../../../../packages/design-tokens/colors.ts';
+import { getActiveCategorySchema } from './copy/activeCategoryCopy.ts';
+
+function assetCount(n: number): string {
+  const asset = getActiveCategorySchema()?.asset;
+  const word = n === 1 ? (asset?.singular ?? 'asset') : (asset?.plural ?? 'assets');
+  return `${n} ${word}`;
+}
+
+function channelCount(n: number): string {
+  const channel = getActiveCategorySchema()?.channel;
+  const word = n === 1 ? (channel?.singular ?? 'channel') : (channel?.plural ?? 'channels');
+  return `${n} ${word}`;
+}
 
 const P = statusPill;
 
@@ -86,7 +99,7 @@ const BLOCKER_BY_ACTION: Record<
 > = {
   fix_blocked_vehicles: {
     title: 'Fix inventory first',
-    detail: n => `${n} vehicle${n !== 1 ? 's' : ''} cannot sync until data issues are cleared.`,
+    detail: n => `${assetCount(n)} cannot sync until data issues are cleared.`,
     fixLabel: 'Open inventory',
     fixTarget: 'inventory',
   },
@@ -165,9 +178,9 @@ export function computeSyncReadiness(data: PublishStatusResponse): SyncReadiness
   const subline = autoPhase === 'failed' && auto?.lastError
     ? auto.lastError
     : autoPhase === 'running' || autoPhase === 'scheduled'
-      ? `Pushing ${willMove} ready vehicle${willMove !== 1 ? 's' : ''} toward ${targetPlatforms || platformTotal} platform${(targetPlatforms || platformTotal) !== 1 ? 's' : ''} — no action needed.`
+      ? `Pushing ${assetCount(willMove)} ready toward ${channelCount(targetPlatforms || platformTotal)} — no action needed.`
       : canSyncNow
-        ? `${willMove} vehicle${willMove !== 1 ? 's' : ''} stay aligned across ${targetPlatforms || platformTotal} platform${(targetPlatforms || platformTotal) !== 1 ? 's' : ''}. Save in Inventory and we handle the rest.`
+        ? `${assetCount(willMove)} stay aligned across ${channelCount(targetPlatforms || platformTotal)}. Save in Inventory and we handle the rest.`
         : blocker?.detail ?? 'Fix the blocker below; other platforms keep updating when they can.';
 
   const autoSyncLine =

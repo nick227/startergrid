@@ -1,11 +1,19 @@
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import {
+  buildInventoryWalkthroughSteps,
   dismissInventoryWalkthrough,
-  INVENTORY_WALKTHROUGH_STEPS,
   isInventoryWalkthroughDismissed,
 } from '@/lib/inventoryWalkthrough.ts';
+import { useAssetLabels, useCategorySchema, usePerformanceLabels } from '@/contexts/CategoryContext.tsx';
 
 export function InventoryWalkthroughBanner() {
+  const schema = useCategorySchema();
+  const asset = useAssetLabels();
+  const performance = usePerformanceLabels();
+  const steps = useMemo(
+    () => buildInventoryWalkthroughSteps(asset, performance),
+    [asset, performance],
+  );
   const [dismissed, setDismissed] = useState(isInventoryWalkthroughDismissed);
   const [open, setOpen] = useState(!dismissed);
 
@@ -31,7 +39,7 @@ export function InventoryWalkthroughBanner() {
     <div className="rounded-xl border border-status-success-border bg-status-success-bg/40 p-4 space-y-3">
       <div className="flex items-start justify-between gap-3">
         <div>
-          <p className="text-sm font-bold text-ink-heading">Inventory walkthrough</p>
+          <p className="text-sm font-bold text-ink-heading">{schema.copy.inventoryTitle} walkthrough</p>
           <p className="text-xs text-ink-body mt-0.5">
             Trust the flow — import, snapshot review, movement checks, then sync.
           </p>
@@ -45,7 +53,7 @@ export function InventoryWalkthroughBanner() {
         </button>
       </div>
       <ol className="grid gap-2 sm:grid-cols-2">
-        {INVENTORY_WALKTHROUGH_STEPS.map(step => (
+        {steps.map(step => (
           <li key={step.id} className="rounded-lg bg-white/80 border border-status-success-border/80 px-3 py-2">
             <p className="text-xs font-bold text-navy-800">{step.title}</p>
             <p className="text-[11px] text-ink-body mt-0.5 leading-snug">{step.body}</p>

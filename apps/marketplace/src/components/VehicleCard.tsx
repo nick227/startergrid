@@ -1,6 +1,6 @@
 import { useEffect, useRef } from 'react';
 import type { MarketplaceVehicleCard } from '../lib/api.ts';
-import { formatPrice, formatMileage, formatLocation, vehicleHeading } from '../lib/display.ts';
+import { formatPrice, formatUsage, formatLocation, vehicleHeading } from '../lib/display.ts';
 import { listingHref, sellerHref } from '../lib/routes.ts';
 import { useCategoryId, useCategorySlug } from '../contexts/CategoryContext.tsx';
 import { trackMarketplaceEvent, MarketplaceEventType } from '../lib/events.ts';
@@ -13,6 +13,7 @@ type Props = { card: MarketplaceVehicleCard };
 export function VehicleCard({ card }: Props) {
   const slug = useCategorySlug();
   const categoryId = useCategoryId();
+  const usageUnit = card.usageUnit === 'hours' ? 'hours' : card.usageUnit === 'miles' ? 'miles' : undefined;
   const tracked = useRef(false);
   const location = formatLocation(card.dealerCity, card.dealerState);
   const title = vehicleHeading(card);
@@ -54,7 +55,7 @@ export function VehicleCard({ card }: Props) {
           </p>
 
           <div className="flex flex-wrap items-center gap-2 text-sm text-ink-muted">
-            <span>{formatMileage(card.mileage)}</span>
+            <span>{formatUsage(card.mileage, usageUnit)}</span>
             <span className="text-silver-300" aria-hidden="true">·</span>
             <ConditionBadge condition={card.condition} />
           </div>
@@ -62,7 +63,7 @@ export function VehicleCard({ card }: Props) {
       </a>
 
       <div className="border-t border-silver-200 px-4 py-3">
-        <p className="mp-label text-ink-faint">Dealer</p>
+        <p className="mp-label text-ink-faint">Seller</p>
         <a
           href={sellerHref(slug, card.dealerId)}
           className="mp-focus mt-0.5 block text-sm font-medium text-ink-body hover:text-cta"

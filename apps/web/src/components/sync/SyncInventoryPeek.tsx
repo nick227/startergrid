@@ -1,5 +1,6 @@
 import type { VehicleReadinessItem } from '@/lib/types.ts';
 import { SectionCard } from '@/components/operator';
+import { useAssetLabels } from '@/contexts/CategoryContext.tsx';
 
 type Props = {
   blocked: VehicleReadinessItem[];
@@ -8,12 +9,14 @@ type Props = {
 };
 
 export function SyncInventoryPeek({ blocked, warningCount, onOpenInventory }: Props) {
+  const asset = useAssetLabels();
+
   if (blocked.length === 0 && warningCount === 0) return null;
 
   return (
     <SectionCard
       title="Inventory blockers"
-      subtitle="Vehicles that must be fixed before platforms can update"
+      subtitle={`${asset.plural.charAt(0).toUpperCase() + asset.plural.slice(1)} that must be fixed before platforms can update`}
       action={
         <button
           type="button"
@@ -38,14 +41,14 @@ export function SyncInventoryPeek({ blocked, warningCount, onOpenInventory }: Pr
             </li>
           ))}
           {blocked.length > 3 && (
-            <p className="text-xs text-ink-muted">+{blocked.length - 3} more blocked vehicles</p>
+            <p className="text-xs text-ink-muted">+{blocked.length - 3} more blocked {asset.plural}</p>
           )}
         </ul>
       )}
 
       {warningCount > 0 && blocked.length === 0 && (
         <p className="text-sm text-amber-800">
-          {warningCount} vehicle{warningCount !== 1 ? 's' : ''} need review — check inventory before syncing.
+          {warningCount} {warningCount === 1 ? asset.singular : asset.plural} need review — check inventory before syncing.
         </p>
       )}
     </SectionCard>

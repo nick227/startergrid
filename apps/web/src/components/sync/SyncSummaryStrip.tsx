@@ -2,6 +2,7 @@ import type { SyncReadiness } from '@/lib/syncPresentation.ts';
 import type { AutoSyncStatus } from '@/lib/types.ts';
 import { InfoLabel } from '@/components/docs';
 import { formatBenchmarkFreshness } from '@/lib/performanceFreshness.ts';
+import { useAssetLabels, usePerformanceLabels } from '@/contexts/CategoryContext.tsx';
 
 export type SyncMovementContext = {
   computedAt: string | null;
@@ -30,16 +31,20 @@ type Tile = {
 };
 
 export function SyncSummaryStrip({ readiness, movement, autoSync, onReviewInventory, onOpenInsights }: Props) {
+  const asset = useAssetLabels();
+  const performance = usePerformanceLabels();
+  const assetsTitle = asset.plural.charAt(0).toUpperCase() + asset.plural.slice(1);
+
   const tiles: Tile[] = [
     {
-      label: 'Cars ready',
+      label: `${assetsTitle} ready`,
       docId: 'inventory/inventory-readiness',
       value: readiness.carsReady,
       hint: readiness.carsWarning > 0 ? `${readiness.carsWarning} with warnings` : 'to sync',
       tone: 'text-status-success-text bg-status-success-bg border-status-success-border',
     },
     {
-      label: 'Cars blocked',
+      label: `${assetsTitle} blocked`,
       docId: 'inventory/inventory-readiness',
       value: readiness.carsBlocked,
       hint: readiness.carsBlocked > 0 ? 'fix in inventory' : 'none',
@@ -84,7 +89,7 @@ export function SyncSummaryStrip({ readiness, movement, autoSync, onReviewInvent
 
       {showMovement && movement && (
         <p className="text-xs text-ink-muted px-1">
-          <span className="font-medium text-ink-body">Movement vs similar stock · </span>
+          <span className="font-medium text-ink-body">{performance.benchmarksLabel} · </span>
           {[
             movement.fastCount > 0 && `${movement.fastCount} fast`,
             movement.slowCount > 0 && `${movement.slowCount} slow`,

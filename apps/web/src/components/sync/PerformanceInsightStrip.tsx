@@ -3,6 +3,7 @@ import type { PerformanceSummaryView, PerformanceComputeResult, AutoSyncStatus }
 import { triggerPerformanceCompute } from '@/lib/api/sdk.ts';
 import { EMPTY_STATE_COPY } from '@/lib/statusRegistry.ts';
 import { formatBenchmarkFreshness, isBenchmarksUpdating } from '@/lib/performanceFreshness.ts';
+import { useAssetLabels } from '@/contexts/CategoryContext.tsx';
 
 type Props = {
   dealerId:    string;
@@ -19,6 +20,7 @@ const ELIGIBLE_CONFIDENCE = new Set(['LOW', 'MEDIUM', 'HIGH']);
 // ── Component ─────────────────────────────────────────────────────────────────
 
 export function PerformanceInsightStrip({ dealerId, summary, loading, autoSync, onComputed }: Props) {
+  const asset = useAssetLabels();
   const [computing, setComputing]       = useState(false);
   const [computeResult, setComputeResult] = useState<PerformanceComputeResult | null>(null);
   const [computeError, setComputeError] = useState<string | null>(null);
@@ -55,7 +57,7 @@ export function PerformanceInsightStrip({ dealerId, summary, loading, autoSync, 
           </p>
           {computeResult && (
             <p className="text-[10px] text-status-success-text mt-1 font-medium">
-              Updated {computeResult.vehicles} vehicle{computeResult.vehicles !== 1 ? 's' : ''}
+              Updated {computeResult.vehicles} {computeResult.vehicles === 1 ? asset.singular : asset.plural}
               {computeResult.platforms > 0 && `, ${computeResult.platforms} platform${computeResult.platforms !== 1 ? 's' : ''}`}
               {computeResult.vehicleErrors > 0 && (
                 <span className="text-status-warning-text"> · {computeResult.vehicleErrors} error{computeResult.vehicleErrors !== 1 ? 's' : ''}</span>
@@ -170,7 +172,7 @@ export function PerformanceInsightStrip({ dealerId, summary, loading, autoSync, 
 
       {computeResult && (
         <p className="text-[10px] text-status-success-text font-medium">
-          Refreshed: {computeResult.vehicles} vehicle{computeResult.vehicles !== 1 ? 's' : ''}
+          Refreshed: {computeResult.vehicles} {computeResult.vehicles === 1 ? asset.singular : asset.plural}
           {computeResult.platforms > 0 && `, ${computeResult.platforms} platform${computeResult.platforms !== 1 ? 's' : ''}`}
           {computeResult.vehicleErrors > 0 && (
             <span className="text-status-warning-text"> · {computeResult.vehicleErrors} error{computeResult.vehicleErrors !== 1 ? 's' : ''}</span>

@@ -11,10 +11,11 @@
 // and dataSafetyBoundary.test.ts (which covers the data-content boundary).
 
 import assert from 'node:assert/strict';
+import { createRequire } from 'node:module';
 import { describe, it } from 'node:test';
-import { readFileSync, readdirSync, statSync } from 'node:fs';
-import { join, extname, relative } from 'node:path';
+import { join } from 'node:path';
 import { fileURLToPath } from 'node:url';
+import type { BoundaryViolation } from '../../scripts/lib/boundaryPatterns.js';
 import type { PrismaClient } from '@prisma/client';
 import type { FastifyInstance } from 'fastify';
 import { buildApp } from '../server/app.js';
@@ -155,51 +156,22 @@ describe('marketplace public-write routes — no auth gate (with or without op_s
 
 const ROOT = join(fileURLToPath(new URL('.', import.meta.url)), '..', '..', '..');
 const MARKETPLACE_SRC = join(ROOT, 'apps', 'marketplace', 'src');
-
-const OPERATOR_SDK_PATTERNS = [
-  '@auto-dealer/api-client',
-  'auto-dealer-onboarding-poc-v1',
-  '/src/services',
-  '/src/server',
-  '/src/lib/prisma',
-  '../../../src',
-  '../../src',
-];
-
-function walkTs(dir: string): string[] {
-  const results: string[] = [];
-  for (const entry of readdirSync(dir)) {
-    const full = join(dir, entry);
-    if (statSync(full).isDirectory()) {
-      results.push(...walkTs(full));
-    } else if (['.ts', '.tsx'].includes(extname(entry))) {
-      results.push(full);
-    }
-  }
-  return results;
-}
+const { MARKETPLACE_FORBIDDEN, scanForbiddenImports } = createRequire(import.meta.url)(
+  join(ROOT, 'scripts', 'lib', 'boundaryPatterns.js'),
+) as typeof import('../../scripts/lib/boundaryPatterns.js');
 
 describe('apps/marketplace source — no operator SDK imports', () => {
-  const files = walkTs(MARKETPLACE_SRC);
+  const { files, violations } = scanForbiddenImports(ROOT, MARKETPLACE_SRC, MARKETPLACE_FORBIDDEN);
 
   it('at least one marketplace source file exists (guard against empty walk)', () => {
     assert.ok(files.length > 0, 'expected to find .ts/.tsx files in apps/marketplace/src/');
   });
 
-  for (const pattern of OPERATOR_SDK_PATTERNS) {
+  for (const { pattern } of MARKETPLACE_FORBIDDEN) {
     it(`no file imports "${pattern}" (operator boundary)`, () => {
-      const violations: string[] = [];
-      for (const file of files) {
-        const content = readFileSync(file, 'utf-8');
-        const relPath  = relative(ROOT, file).replace(/\\/g, '/');
-        for (const line of content.split('\n')) {
-          if (/\bimport\b|\brequire\b/.test(line) && line.includes(pattern)) {
-            violations.push(`${relPath}: ${line.trim()}`);
-          }
-        }
-      }
-      assert.deepEqual(violations, [],
-        `Marketplace boundary violated — import of "${pattern}" found:\n${violations.join('\n')}`);
+      const hits = violations.filter((v: BoundaryViolation) => v.pattern === pattern).map((v: BoundaryViolation) => `${v.relPath}: ${v.text}`);
+      assert.deepEqual(hits, [],
+        `Marketplace boundary violated — import of "${pattern}" found:\n${hits.join('\n')}`);
     });
   }
 });

@@ -29,11 +29,15 @@ export class SmtpNotImplementedError extends Error {
  *
  * Accepts an env map so tests can pass synthetic configs without touching process.env.
  */
+function smtpEnabled(env: Record<string, string | undefined>): boolean {
+  return env['SMTP_ENABLED']?.trim().toLowerCase() === 'true';
+}
+
 export async function emailTransport(
   msg: EmailMessage,
   env: Record<string, string | undefined> = process.env
 ): Promise<void> {
-  if (env['NODE_ENV'] === 'production') {
+  if (env['NODE_ENV'] === 'production' && smtpEnabled(env)) {
     await smtpSend(msg, env);
   } else {
     await writeMockEmail({

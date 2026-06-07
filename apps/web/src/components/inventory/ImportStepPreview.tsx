@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import type { ImportPreviewResponse, ImportPreviewRow, ExistingSnapshot, ImportMappedRow } from '../../lib/types.ts';
 import { ReadinessBadge, ActionBadge } from './inventoryConfig.tsx';
+import { useInventoryLabels } from '@/contexts/CategoryContext.tsx';
 
 type Props = {
   preview: ImportPreviewResponse;
@@ -29,6 +30,7 @@ function ChangeSummary({ existing, mapped }: { existing: ExistingSnapshot; mappe
 }
 
 export function ImportStepPreview({ preview, error, userSkips, onSkipToggle }: Props) {
+  const labels = useInventoryLabels();
   const effectiveCommit = preview.rows.filter(
     r => (r.action === 'CREATE' || r.action === 'UPDATE') && !userSkips.has(r.rowIndex)
   ).length;
@@ -72,7 +74,7 @@ export function ImportStepPreview({ preview, error, userSkips, onSkipToggle }: P
       {/* Row table */}
       <div className="border border-silver-200 rounded-lg overflow-hidden">
         <div className="grid grid-cols-[2rem_6rem_7rem_1fr_5rem_4rem_4rem] px-3 py-2 bg-silver-100 border-b border-silver-200 gap-2 text-xs">
-          {['#', 'Stock', 'VIN', 'Vehicle', 'Status', 'Action', ''].map(h => (
+          {['#', labels.refColumn, labels.canonicalId, labels.titleColumn, 'Status', 'Action', ''].map(h => (
             <span key={h} className="font-semibold text-ink-muted uppercase tracking-wide">{h}</span>
           ))}
         </div>
@@ -105,7 +107,7 @@ function PreviewRowItem({
 }) {
   const [expanded, setExpanded] = useState(false);
   const m = row.mapped;
-  const vehicle = [m.year, m.make, m.model, m.trim].filter(Boolean).join(' ');
+  const title = [m.year, m.make, m.model, m.trim].filter(Boolean).join(' ');
   const canSkip = row.action === 'CREATE' || row.action === 'UPDATE';
   const canExpand = row.issues.length > 0 || (row.action === 'UPDATE' && row.existing != null);
 
@@ -120,7 +122,7 @@ function PreviewRowItem({
         <span className="text-ink-faint font-mono">{row.rowIndex}</span>
         <span className="font-mono text-ink-body truncate">{m.stockNumber ?? '—'}</span>
         <span className="font-mono text-ink-faint truncate">{m.vin ? `${m.vin.slice(0, 8)}…` : '—'}</span>
-        <span className="text-ink-body truncate">{vehicle || '—'}</span>
+        <span className="text-ink-body truncate">{title || '—'}</span>
         <ReadinessBadge readiness={row.readiness} style="pill" />
         <ActionBadge action={skipped ? 'SKIP' : row.action} />
         {/* Skip toggle */}

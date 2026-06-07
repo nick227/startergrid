@@ -17,7 +17,11 @@ const VALID_PROD: Record<string, string> = {
   SESSION_SECRET:            'a'.repeat(32),
   PUBLIC_WRITE_RATE_LIMIT:   '20',
   PUBLIC_WRITE_RATE_WINDOW_MS: '60000',
-  // SMTP vars required in production (Phase 4)
+};
+
+const VALID_PROD_SMTP: Record<string, string> = {
+  ...VALID_PROD,
+  SMTP_ENABLED: 'true',
   SMTP_HOST: 'smtp.example.com',
   SMTP_PORT: '587',
   SMTP_USER: 'dealer@example.com',
@@ -295,47 +299,51 @@ describe('app — /dev/demo-feed production gate', () => {
 // ── Production SMTP vars ──────────────────────────────────────────────────────
 
 describe('validateEnv — production SMTP vars', () => {
-  it('valid production config with all SMTP vars passes', () => {
+  it('valid production config without SMTP_ENABLED passes', () => {
     assert.doesNotThrow(() => validateEnv(prod()));
   });
 
-  it('rejects missing SMTP_HOST in production', () => {
-    const errs = errors(prod({ SMTP_HOST: undefined }));
+  it('valid production config with SMTP_ENABLED=true and all SMTP vars passes', () => {
+    assert.doesNotThrow(() => validateEnv(VALID_PROD_SMTP));
+  });
+
+  it('rejects missing SMTP_HOST when SMTP_ENABLED=true', () => {
+    const errs = errors({ ...VALID_PROD_SMTP, SMTP_HOST: undefined });
     assert.ok(errs.some(e => e.includes('SMTP_HOST')));
   });
 
-  it('rejects missing SMTP_PORT in production', () => {
-    const errs = errors(prod({ SMTP_PORT: undefined }));
+  it('rejects missing SMTP_PORT when SMTP_ENABLED=true', () => {
+    const errs = errors({ ...VALID_PROD_SMTP, SMTP_PORT: undefined });
     assert.ok(errs.some(e => e.includes('SMTP_PORT')));
   });
 
-  it('rejects missing SMTP_USER in production', () => {
-    const errs = errors(prod({ SMTP_USER: undefined }));
+  it('rejects missing SMTP_USER when SMTP_ENABLED=true', () => {
+    const errs = errors({ ...VALID_PROD_SMTP, SMTP_USER: undefined });
     assert.ok(errs.some(e => e.includes('SMTP_USER')));
   });
 
-  it('rejects missing SMTP_PASS in production', () => {
-    const errs = errors(prod({ SMTP_PASS: undefined }));
+  it('rejects missing SMTP_PASS when SMTP_ENABLED=true', () => {
+    const errs = errors({ ...VALID_PROD_SMTP, SMTP_PASS: undefined });
     assert.ok(errs.some(e => e.includes('SMTP_PASS')));
   });
 
-  it('rejects missing SMTP_FROM in production', () => {
-    const errs = errors(prod({ SMTP_FROM: undefined }));
+  it('rejects missing SMTP_FROM when SMTP_ENABLED=true', () => {
+    const errs = errors({ ...VALID_PROD_SMTP, SMTP_FROM: undefined });
     assert.ok(errs.some(e => e.includes('SMTP_FROM')));
   });
 
-  it('rejects non-integer SMTP_PORT', () => {
-    const errs = errors(prod({ SMTP_PORT: 'many' }));
+  it('rejects non-integer SMTP_PORT when SMTP_ENABLED=true', () => {
+    const errs = errors({ ...VALID_PROD_SMTP, SMTP_PORT: 'many' });
     assert.ok(errs.some(e => e.includes('SMTP_PORT') && e.includes('positive integer')));
   });
 
-  it('rejects zero SMTP_PORT', () => {
-    const errs = errors(prod({ SMTP_PORT: '0' }));
+  it('rejects zero SMTP_PORT when SMTP_ENABLED=true', () => {
+    const errs = errors({ ...VALID_PROD_SMTP, SMTP_PORT: '0' });
     assert.ok(errs.some(e => e.includes('SMTP_PORT') && e.includes('positive integer')));
   });
 
-  it('reports all five missing SMTP vars in one throw', () => {
-    const base = { ...VALID_PROD };
+  it('reports all five missing SMTP vars in one throw when SMTP_ENABLED=true', () => {
+    const base = { ...VALID_PROD_SMTP };
     delete (base as Record<string, string | undefined>)['SMTP_HOST'];
     delete (base as Record<string, string | undefined>)['SMTP_PORT'];
     delete (base as Record<string, string | undefined>)['SMTP_USER'];

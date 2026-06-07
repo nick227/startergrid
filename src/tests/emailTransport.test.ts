@@ -91,19 +91,34 @@ describe('emailTransport — development', () => {
 // ── emailTransport — production routing ──────────────────────────────────────
 
 describe('emailTransport — production', () => {
-  it('throws SmtpNotImplementedError in production (SMTP not yet wired)', async () => {
+  it('uses mock outbox by default in production (SMTP_ENABLED unset)', async () => {
+    const tmpDir = path.join(os.tmpdir(), `et-prod-default-${Date.now()}`);
+    const prevDir = process.env['MOCK_OUTBOX_DIR'];
+    process.env['MOCK_OUTBOX_DIR'] = tmpDir;
+    try {
+      await emailTransport(SAMPLE_MSG, { NODE_ENV: 'production' });
+      const files = await fs.readdir(tmpDir);
+      assert.ok(files.length > 0, 'production without SMTP_ENABLED must use mock outbox');
+    } finally {
+      if (prevDir === undefined) delete process.env['MOCK_OUTBOX_DIR'];
+      else process.env['MOCK_OUTBOX_DIR'] = prevDir;
+      await fs.rm(tmpDir, { recursive: true, force: true });
+    }
+  });
+
+  it('throws SmtpNotImplementedError when SMTP_ENABLED=true (SMTP not yet wired)', async () => {
     await assert.rejects(
-      () => emailTransport(SAMPLE_MSG, PROD_ENV),
+      () => emailTransport(SAMPLE_MSG, { ...PROD_ENV, SMTP_ENABLED: 'true' }),
       SmtpNotImplementedError
     );
   });
 
-  it('does not write to mock outbox in production', async () => {
+  it('does not write to mock outbox when SMTP_ENABLED=true', async () => {
     const tmpDir = path.join(os.tmpdir(), `et-prod-${Date.now()}`);
     const prevDir = process.env['MOCK_OUTBOX_DIR'];
     process.env['MOCK_OUTBOX_DIR'] = tmpDir;
     try {
-      await emailTransport(SAMPLE_MSG, PROD_ENV).catch(() => {});
+      await emailTransport(SAMPLE_MSG, { ...PROD_ENV, SMTP_ENABLED: 'true' }).catch(() => {});
       let files: string[] = [];
       try { files = await fs.readdir(tmpDir); } catch { /* dir may not exist */ }
       assert.equal(files.length, 0, 'production must not write to mock outbox');

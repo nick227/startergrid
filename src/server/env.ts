@@ -74,16 +74,19 @@ export function validateEnv(env: Record<string, string | undefined> = process.en
       errors.push(`PUBLIC_WRITE_RATE_WINDOW_MS must be a positive integer, got: "${window}"`);
     }
 
-    // SMTP vars: all five required in production for email delivery
-    const SMTP_VARS = ['SMTP_HOST', 'SMTP_PORT', 'SMTP_USER', 'SMTP_PASS', 'SMTP_FROM'] as const;
-    for (const varName of SMTP_VARS) {
-      if (!env[varName]?.trim()) {
-        errors.push(`${varName} is required in production`);
+    // SMTP vars required only when SMTP_ENABLED=true (transport not yet wired — opt-in)
+    const smtpEnabled = env['SMTP_ENABLED']?.trim().toLowerCase() === 'true';
+    if (smtpEnabled) {
+      const SMTP_VARS = ['SMTP_HOST', 'SMTP_PORT', 'SMTP_USER', 'SMTP_PASS', 'SMTP_FROM'] as const;
+      for (const varName of SMTP_VARS) {
+        if (!env[varName]?.trim()) {
+          errors.push(`${varName} is required in production when SMTP_ENABLED=true`);
+        }
       }
-    }
-    const smtpPort = env['SMTP_PORT']?.trim();
-    if (smtpPort && !isPositiveInt(smtpPort)) {
-      errors.push(`SMTP_PORT must be a positive integer, got: "${smtpPort}"`);
+      const smtpPort = env['SMTP_PORT']?.trim();
+      if (smtpPort && !isPositiveInt(smtpPort)) {
+        errors.push(`SMTP_PORT must be a positive integer, got: "${smtpPort}"`);
+      }
     }
 
     // Dev-only vars must be absent in production

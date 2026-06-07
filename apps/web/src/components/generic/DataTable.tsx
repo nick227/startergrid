@@ -20,6 +20,7 @@ type Props<T extends { id: string }> = {
   onToggleAll?: () => void;
   allSelected?: boolean;
   expandContent?: (row: T) => ReactNode | null;
+  expandDetailLabel?: string;
   rowClassName?: (row: T) => string;
   loading?: boolean;
   emptyState?: ReactNode;
@@ -27,7 +28,7 @@ type Props<T extends { id: string }> = {
 
 export function DataTable<T extends { id: string }>({
   columns, rows, selectable, selected, onToggle, onToggleAll, allSelected,
-  expandContent, rowClassName, loading, emptyState,
+  expandContent, expandDetailLabel = 'detail', rowClassName, loading, emptyState,
 }: Props<T>) {
   const [expanded, setExpanded] = useState<Set<string>>(new Set());
 
@@ -100,7 +101,7 @@ export function DataTable<T extends { id: string }>({
                       onClick={() => toggleExpand(row.id)}
                       className="text-xs text-ink-faint hover:text-ink-body transition-colors"
                       aria-expanded={isExpanded}
-                      aria-label={isExpanded ? 'Collapse vehicle detail' : 'Expand vehicle detail'}
+                      aria-label={isExpanded ? `Collapse ${expandDetailLabel}` : `Expand ${expandDetailLabel}`}
                     >
                       {isExpanded ? '▲' : '▼'}
                     </button>
