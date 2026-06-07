@@ -24,12 +24,11 @@ import {
 import { Banner, EmptyState } from '@/components/ui';
 import { InfoButton } from '@/components/docs';
 import { SearchField } from '@/components/ui/SearchField.tsx';
-import { BulkActionBar, DataTable, SummaryStrip } from '@/components/generic';
+import { BulkActionBar, SummaryStrip } from '@/components/generic';
 import type { SummaryItem } from '@/components/generic';
 import {
   ImportModal,
   CleanupFilterBar,
-  VehicleRowExpand,
   ImportBatchHistory,
   IngressPanel,
   MovementFilterBar,
@@ -37,10 +36,9 @@ import {
   LifecycleFilterBar,
   BenchmarkFreshnessBar,
   InventoryWalkthroughBanner,
-  buildVehicleColumns,
+  InventoryAssetList,
   SUMMARY_STRIP_ITEMS,
   BULK_EDIT_FIELD_DEFS,
-  vehicleReadinessRowBg,
   applyCleanupFilter,
 } from '@/components/inventory';
 import type { CleanupFilter } from '@/components/inventory';
@@ -97,11 +95,6 @@ export default function InventoryPage({ dealerId, nav, activeTab }: Props) {
     for (const p of platformPerf.data?.platforms ?? []) m.set(p.platformSlug, p);
     return m;
   }, [platformPerf.data]);
-
-  const vehicleColumns = useMemo(
-    () => buildVehicleColumns(perfMap, { showLifecycle: lifecycleScope !== 'active' }),
-    [perfMap, lifecycleScope],
-  );
 
   const vehicleRows = data?.vehicles;
   const vehicles = useMemo(() => vehicleRows ?? [], [vehicleRows]);
@@ -413,36 +406,32 @@ export default function InventoryPage({ dealerId, nav, activeTab }: Props) {
             </div>
 
             <SectionCard noPadding>
-              <DataTable
-                columns={vehicleColumns}
-                rows={visible}
-                selectable={isActiveScope}
-                selected={selected}
-                onToggle={id => setSelected(s => {
-                  const ns = new Set(s);
-                  if (ns.has(id)) ns.delete(id);
-                  else ns.add(id);
-                  return ns;
-                })}
-                onToggleAll={toggleAll}
-                allSelected={allVisibleSelected}
-                expandContent={v => (
-                  <VehicleRowExpand
-                    vehicle={v}
-                    issues={v.issues}
-                    perf={perfMap.get(v.stockNumber)}
-                    platformPerfBySlug={platformPerfBySlug}
-                    benchmarksUpdating={benchmarksUpdating}
-                    dealerId={dealerId}
-                    lifecycleScope={lifecycleScope}
-                  />
-                )}
-                rowClassName={v => vehicleReadinessRowBg(v.readiness)}
-                loading={loading && !data}
-                emptyState={
-                  <EmptyState icon="🔍" title={EMPTY_STATE_COPY.noInventoryFilter.title} subtitle={EMPTY_STATE_COPY.noInventoryFilter.subtitle} />
-                }
-              />
+              <div className="p-4">
+                <InventoryAssetList
+                  rows={visible}
+                  perfMap={perfMap}
+                  platformPerfBySlug={platformPerfBySlug}
+                  benchmarksUpdating={benchmarksUpdating}
+                  dealerId={dealerId}
+                  nav={nav}
+                  lifecycleScope={lifecycleScope}
+                  selectable={isActiveScope}
+                  selected={selected}
+                  onToggle={id => setSelected(s => {
+                    const ns = new Set(s);
+                    if (ns.has(id)) ns.delete(id);
+                    else ns.add(id);
+                    return ns;
+                  })}
+                  onToggleAll={toggleAll}
+                  allSelected={allVisibleSelected}
+                  loading={loading && !data}
+                  showLifecycle={lifecycleScope !== 'active'}
+                  emptyState={
+                    <EmptyState icon="🔍" title={EMPTY_STATE_COPY.noInventoryFilter.title} subtitle={EMPTY_STATE_COPY.noInventoryFilter.subtitle} />
+                  }
+                />
+              </div>
             </SectionCard>
 
             {isActiveScope && summary && summary.ready > 0 && (

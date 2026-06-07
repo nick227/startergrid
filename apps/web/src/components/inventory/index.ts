@@ -14,6 +14,7 @@ export { PlatformMovementCompare } from './PlatformMovementCompare.tsx';
 export { MarketplacePreviewCard } from './MarketplacePreviewCard.tsx';
 export { MovementFilterBar } from './MovementFilterBar.tsx';
 export { InventorySortBar } from './InventorySortBar.tsx';
+export { InventoryAssetList } from './InventoryAssetList.tsx';
 export { VehicleRowExpand } from './VehicleRowExpand.tsx';
 export { ImportStepUpload } from './ImportStepUpload.tsx';
 export { ImportStepMapping } from './ImportStepMapping.tsx';

@@ -94,7 +94,7 @@ export const operatorCopy = {
     showBlocked: 'Show blocked',
     slowerThanPeers: 'Slower than similar assets',
     staleReview: (refs: string) =>
-      `Review ${refs} in the Days / Signal column — listing details may need attention.`,
+      `Review ${refs} — check Days / Signal on each card; listing details may need attention.`,
     blockedCallout: (n: number) =>
       `${n} ${n === 1 ? operatorCopy.asset.singular : operatorCopy.asset.plural} blocked — fix before channels can update.`,
     readyCallout: (n: number) =>
@@ -102,7 +102,7 @@ export const operatorCopy = {
     readyCta: (n: number) => `${n} ready — Queue →`,
     importCompletePlatforms: 'Channels will update automatically.',
     movementBenchmarks: (n: number) =>
-      `Movement benchmarks for ${n} ${n === 1 ? operatorCopy.asset.singular : operatorCopy.asset.plural} — expand a row for detail.`,
+      `Movement benchmarks for ${n} ${n === 1 ? operatorCopy.asset.singular : operatorCopy.asset.plural} — open Details on a row for more.`,
     movementWhenSync: 'When auto-sync finishes, expand an asset for movement vs similar listings.',
     filtersSubtitle: 'Lifecycle, readiness, movement signals, and issue types',
     intakeAssetCount: (n: number) =>
