@@ -79,8 +79,8 @@ When production pilot needs it.
 
 ## Done when
 
-- [ ] Platforms is home — 18+ sites as row cards
-- [ ] Queue + History work cross-platform; drill-downs per site
+- [x] Platforms is home — 18+ sites as row cards
+- [x] Queue + History work cross-platform; drill-downs per site
 - [ ] Every core page: situation → controls → rows → drawer
 - [ ] Inventory and Reports on new layout; old Sync/Accounts/Insights gone
 - [ ] Nav and copy match experience design doc
@@ -89,8 +89,8 @@ When production pilot needs it.
 
 ## Start here
 
-**Sprint 1 (in progress):** Layout primitives + **Platforms** page — **shipped** · Queue/History stubs — **partial**
+**Sprint 1:** Layout primitives + **Platforms** page — **shipped** · Queue/History stubs — **shipped (stub)**
 
-**Sprint 2:** **Queue** + **History**.  
-**Sprint 3:** Platform drill-downs + Inventory row-card migration + Reports.  
+**Sprint 2:** **Queue** + **History** + copy modules + platform drill-downs — **shipped** (queue actions read-only until approve API)  
+**Sprint 3:** Inventory row-card migration + Reports wrapper.  
 **Sprint 4:** Copy pass, token purge, auth if needed.
