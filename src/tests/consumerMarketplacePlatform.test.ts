@@ -68,8 +68,8 @@ describe('consumer-marketplace platform registry', () => {
     assert.equal(p.outputFormat, 'MARKETPLACE_LISTING_JSON');
   });
 
-  it('platform registry now has 27 entries', () => {
-    assert.equal(platformProfiles.length, 27, 'expected 27 platforms after Phase 3B boat stubs');
+  it('platform registry now has 39 entries', () => {
+    assert.equal(platformProfiles.length, 39, 'expected 39 platforms after non-vehicle stubs');
   });
 
   it('vin is NOT in requiredVehicleFields', () => {

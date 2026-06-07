@@ -764,6 +764,19 @@ const boatTrader = assistedMarketplaceStub('boat-trader', 'Boat Trader');
 const yachtWorld = assistedMarketplaceStub('yachtworld', 'YachtWorld');
 const boatsCom = assistedMarketplaceStub('boats-com', 'Boats.com');
 
+const distrokid = assistedMarketplaceStub('distrokid', 'DistroKid');
+const spotifyForArtists = assistedMarketplaceStub('spotify-for-artists', 'Spotify for Artists');
+const amazonKdp = assistedMarketplaceStub('amazon-kdp', 'Amazon KDP');
+const appleBooks = assistedMarketplaceStub('apple-books', 'Apple Books');
+const shopifyCatalog = assistedMarketplaceStub('shopify-catalog', 'Shopify Product Catalog');
+const etsy = assistedMarketplaceStub('etsy', 'Etsy');
+const opensea = assistedMarketplaceStub('opensea', 'OpenSea');
+const artstationMarketplace = assistedMarketplaceStub('artstation-marketplace', 'ArtStation Marketplace');
+const youtubeCreator = assistedMarketplaceStub('youtube-creator', 'YouTube Creator Studio');
+const vimeoOtt = assistedMarketplaceStub('vimeo-ott', 'Vimeo OTT');
+const ebayResale = assistedMarketplaceStub('ebay-resale', 'eBay Seller Hub');
+const mercari = assistedMarketplaceStub('mercari', 'Mercari');
+
 export const mockPortalResponses: Record<string, PlatformResponses> = {
   'dealer-storefront': dealerStorefront,
   'consumer-marketplace': consumerMarketplace,
@@ -792,6 +805,18 @@ export const mockPortalResponses: Record<string, PlatformResponses> = {
   'boat-trader': boatTrader,
   'yachtworld': yachtWorld,
   'boats-com': boatsCom,
+  'distrokid': distrokid,
+  'spotify-for-artists': spotifyForArtists,
+  'amazon-kdp': amazonKdp,
+  'apple-books': appleBooks,
+  'shopify-catalog': shopifyCatalog,
+  'etsy': etsy,
+  'opensea': opensea,
+  'artstation-marketplace': artstationMarketplace,
+  'youtube-creator': youtubeCreator,
+  'vimeo-ott': vimeoOtt,
+  'ebay-resale': ebayResale,
+  'mercari': mercari,
 };
 
 export function getMockPortalResponse(platformSlug: string, condition: MockPortalCondition): MockPortalResponse | undefined {

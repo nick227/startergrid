@@ -1,4 +1,5 @@
 import type { PlatformProfileSeed } from '../lib/types.js';
+import { nonVehiclePlatformStubs } from './nonVehiclePlatformStubs.js';
 
 export const platformProfiles: PlatformProfileSeed[] = [
   // ── Owned channel ────────────────────────────────────────────────────────
@@ -869,4 +870,6 @@ export const platformProfiles: PlatformProfileSeed[] = [
     requiredMediaRules: { minImages: 1 },
     testFixtures: { validatesBoatsChannelStub: true, requiresDealerAccount: true },
   },
+  // ── Non-vehicle category stubs (digital + physical inventory) ─────────────
+  ...nonVehiclePlatformStubs,
 ];
