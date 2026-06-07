@@ -56,6 +56,7 @@ export function QueueListPanel({
 
   const selected = selectedId ? items.find(i => i.id === selectedId) ?? null : null;
   const actions = operatorCopy.channels.rowActions;
+  // Row action routing: see docs/ui-status.md — Queue/History navigate only; no asset prefilter yet.
 
   const title = platformName ?? operatorCopy.queue.title;
   const situation = data ? queueSituationSummary(data) : operatorCopy.queue.loading;

@@ -1,96 +1,79 @@
 # Operator Web UI — Roadmap
 
 **Created:** 2026-06-06  
+**Updated:** 2026-06-06  
 **Goal:** Channel ops console shell — connectivity, queue, history, reporting. Cars-first; vertical-agnostic structure.  
-**Plans:** [design](./2026-06-06-operator-web-design.md) · [architecture](./2026-06-06-operator-channel-console-architecture.md) · [experience](./2026-06-06-operator-web-experience-design.md)
+**Plans:** [design](./2026-06-06-operator-web-design.md) · [architecture](./2026-06-06-operator-channel-console-architecture.md) · [experience](./2026-06-06-operator-web-experience-design.md) · [UI status](../ui-status.md)
 
 ---
 
-## 1. Layout primitives
+## Shipped (Sprints 1–4)
 
-Build once, reuse everywhere.
-
-- `PageSituation` — headline + one sentence
-- `ControlBlock` — search, filter, sort, refresh
-- `OperationalRowCard` — lead, status, meta, action
-- `RowDetailDrawer` — side pane desktop, full sheet mobile
-- `StickyActionBar` — bulk actions (Queue, Inventory)
-- Update `PageShell` nav: **Platforms · Queue · History · Reports · Inventory · Help**
-- Remove workflow strip (Inventory → Accounts → Sync)
-- Default route after dealer pick: `#/{dealerId}/platforms`
+- Layout primitives · Platforms home · Queue · History · platform drill-downs
+- Generic copy + vertical adapters (`genericVertical` default)
+- Inventory + Platforms + Queue + History on **`OpsRowCard`**
+- Legacy Sync / Accounts / Insights hash redirects
+- Unified row action labels (`operatorCopy.channels.rowActions`)
 
 ---
 
-## 2. Core five pages
+## Row action contract (important)
 
-Ship in this order. Reuse existing APIs and components; change IA and presentation.
+Same four labels on asset and channel rows. **Navigation only — no asset prefilter yet.**
 
-| Step | Page | Source / API |
-|------|------|----------------|
-| **2a** | **Platforms** | `SyncPlatformList` + account state → row cards + setup drawer |
-| **2b** | **Queue** | `GET /api/dealers/:id/publish/queue` → editable task rows |
-| **2c** | **History** | Sync events + channel metrics → read-only rows |
-| **2d** | **Platform Queue** | Queue filtered by `{platformSlug}` |
-| **2e** | **Platform History** | History filtered by `{platformSlug}` |
+| Action | Now | Later |
+|--------|-----|-------|
+| **Details** | Local drawer on current page | Same |
+| **Queue** | Global or `{platformSlug}` queue route | + prefilter by asset/ref |
+| **History** | Global or `{platformSlug}` history route | + prefilter by asset/ref |
+| **Inventory** | Inventory tab | Asset drawer / search prefill |
 
-Deprecate tabs: Sync, Accounts, Insights (redirect or remove).
-
----
-
-## 3. Supporting pages
-
-| Page | Work |
-|------|------|
-| **Inventory** | Same row-card pattern; collapse import/feeds above list; drawer for blockers + preview |
-| **Reports** | Replace Insights; roll-ups from History; reference-only |
-| **Help** | Rename Knowledge Base in nav; keep doc reader |
+See [UI status — Row actions](../ui-status.md#row-actions-opsrowcard).
 
 ---
 
-## 4. Copy and vertical adapters
+## Next priorities
 
-Parallel with steps 2–3.
-
-- Shell copy: `apps/web/src/lib/copy/operator.ts` (organization, channel, asset, queue — generic)
-- Vertical adapters: `apps/web/src/lib/copy/vertical.ts` + `index.ts` (`activeVertical` — swap per tenant)
-- Automotive overrides: `automotiveVertical` (Stock #, VIN, Sold) — inventory only until migrated
-- Plain status words on every row
-- Purge emerald/slate; navy + orange tokens
-
----
-
-## 5. Auth and admin (pilot)
-
-When production pilot needs it.
-
-- Login, logout, session guard, 401 → login
-- Dealer picker scoped to `dealerAccessIds`
-- Admin-only: Support View, Audit (later)
-
----
-
-## 6. Later (not blocking core UI)
-
-- Inventory ops: lifecycle, cost fields, sold outcomes, aging
-- QuickBooks export, deal packet, light lead handoff
-- Full token/storybook polish
+| # | Work |
+|---|------|
+| 1 | **Token / emerald purge** — navy + orange tokens; remove Sync-era emerald/slate |
+| 2 | **`docs/ui-status.md`** — keep in sync with shipped IA (ongoing) |
+| 3 | **Auth UI + route guards** — login, session, 401 → login, scoped org picker |
+| 4 | **Dealer/org-scoped category loading** — `activeVertical` per tenant |
+| 5 | **Reports row-card / reporting polish** |
+| 6 | **Asset-scoped Queue/History** — row actions pass context into queue/history filters |
 
 ---
 
 ## Done when
 
-- [x] Platforms is home — 18+ sites as row cards
-- [x] Queue + History work cross-platform; drill-downs per site
-- [x] Every core page: situation → controls → rows → drawer
-- [ ] Inventory and Reports on new layout; old Sync/Accounts/Insights gone
-- [ ] Nav and copy match experience design doc
+- [x] Platforms is home — channels as row cards
+- [x] Queue + History work cross-platform; platform drill-downs
+- [x] Every core page: situation → controls → OpsRowCard → drawer
+- [x] Inventory on row-card layout; Sync/Accounts redirected
+- [ ] Token purge complete; nav/copy match design system doc
+- [ ] Auth pilot; asset-scoped row action deep links
 
 ---
 
-## Start here
+## Reference — layout primitives
 
-**Sprint 1:** Layout primitives + **Platforms** page — **shipped** · Queue/History stubs — **shipped (stub)**
+- `PageSituation` · `ControlBlock` · `OpsRowCard` · `RowDetailDrawer` · `StickyActionBar` (Queue/Inventory bulk — partial)
+- Nav: **Platforms · Queue · History · Reports · Inventory · Help**
+- Default route: `#/{orgId}/platforms`
 
-**Sprint 2:** **Queue** + **History** + copy modules + platform drill-downs — **shipped** (queue actions read-only until approve API)  
-**Sprint 3:** Inventory row-card layout + Reports copy — **shipped** (InventoryAssetList; table removed)  
-**Sprint 4:** Platforms row cards — **shipped** · Queue/History OpsRowCard + legacy sync/accounts redirect — **shipped** · token purge · auth.
+---
+
+## Reference — copy
+
+- Shell: `apps/web/src/lib/copy/operator.ts`
+- Vertical: `apps/web/src/lib/copy/vertical.ts` + `index.ts` (`activeVertical`)
+- Automotive north star: car field labels on `automotiveVertical`; generic default for shell
+
+---
+
+## Later (not blocking)
+
+- Queue approve/retry API wiring
+- Inventory ops backlog (lifecycle, cost, aging board)
+- Full Storybook / component gallery

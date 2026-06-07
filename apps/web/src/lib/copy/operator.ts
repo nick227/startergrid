@@ -18,6 +18,14 @@ export const operatorCopy = {
     singular: 'channel',
     plural: 'channels',
     all: 'All channels',
+    /**
+     * Row action labels on OpsRowCard lists (Inventory, Platforms, Queue, History).
+     * Routing contract — see docs/ui-status.md § Row actions:
+     * - Details  → local drawer on the current page (no navigation)
+     * - Queue    → global or platform-scoped queue tab; asset prefilter NOT YET
+     * - History  → global or platform-scoped history tab; asset prefilter NOT YET
+     * - Inventory → asset source editor tab; no row context passed yet
+     */
     rowActions: {
       details: 'Details',
       queue: 'Queue',

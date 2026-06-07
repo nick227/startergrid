@@ -53,6 +53,7 @@ export function HistoryListPanel({
 
   const selected = selectedId ? visible.find(e => e.id === selectedId) ?? null : null;
   const actions = operatorCopy.channels.rowActions;
+  // Row action routing: see docs/ui-status.md — Queue/History navigate only; no asset prefilter yet.
 
   const reload = () => {
     historyQuery.reload();
