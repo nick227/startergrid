@@ -49,7 +49,6 @@ function mapDetailToCard(detail: PreviewDetailJson): MarketplaceVehicleCard {
     mileage:       classification.mileage,
     exteriorColor: colors.exteriorColor,
     mediaUrls,
-    mediaItems:    [],
     dealerId:      location.dealerId,
     dealerName:    location.dealerName,
     dealerCity:    location.dealerCity,

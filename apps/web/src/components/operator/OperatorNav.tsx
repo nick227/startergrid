@@ -7,14 +7,16 @@ type Props = {
 
 export function OperatorNav({ active, nav }: Props) {
   const handlers: Record<OperatorTab, () => void> = {
-    sync: nav.goToSync,
+    platforms: nav.goToPlatforms,
+    queue: nav.goToQueue,
+    history: nav.goToHistory,
+    reports: nav.goToReports,
     inventory: nav.goToInventory,
-    accounts: nav.goToAccounts,
-    insights: nav.goToInsights,
+    help: nav.goToHelp,
   };
 
   return (
-    <nav className="flex items-center gap-1 p-1 bg-navy-800/60 rounded-xl" aria-label="Operator sections">
+    <nav className="flex flex-wrap items-center gap-1 p-1 bg-navy-800/60 rounded-xl" aria-label="Main">
       {OPERATOR_TABS.map(tab => {
         const isActive = tab.id === active;
         return (
@@ -22,7 +24,7 @@ export function OperatorNav({ active, nav }: Props) {
             key={tab.id}
             type="button"
             onClick={handlers[tab.id]}
-            className={`px-4 py-2 text-xs font-semibold rounded-lg transition-all ${
+            className={`px-3 py-2 text-xs font-semibold rounded-lg transition-all ${
               isActive
                 ? 'bg-white text-ink-heading shadow-elevation-1'
                 : 'text-silver-200 hover:text-white hover:bg-navy-700/50'

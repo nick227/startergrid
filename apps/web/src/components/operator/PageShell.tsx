@@ -1,5 +1,4 @@
 import { OperatorNav } from './OperatorNav.tsx';
-import { WorkflowStrip } from './WorkflowStrip.tsx';
 import type { OperatorTab, OperatorNavHandlers } from '../../lib/operatorNav.ts';
 
 type Props = {
@@ -17,6 +16,15 @@ type Props = {
   sectionLabel?: string;
 };
 
+const TAB_LABELS: Record<OperatorTab, string> = {
+  platforms: 'Platforms',
+  queue: 'Queue',
+  history: 'History',
+  reports: 'Reports',
+  inventory: 'Inventory',
+  help: 'Help',
+};
+
 export function PageShell({
   dealerId,
   dealerName,
@@ -31,58 +39,42 @@ export function PageShell({
   hideDealerId,
   sectionLabel,
 }: Props) {
-  const tabTitles: Record<OperatorTab, string> = {
-    sync: 'Sync',
-    inventory: 'Inventory',
-    accounts: 'Platform Accounts',
-    insights: 'Insights',
-  };
-
   return (
     <div className={`min-h-screen bg-surface-page ${footerPad ? 'pb-20' : ''}`}>
       <header className="bg-navy-950 text-white sticky top-0 z-30 shadow-chrome">
         <div className="max-w-7xl mx-auto px-4 sm:px-6">
-          <div className="py-4 flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
-            <div className="flex items-start gap-4 min-w-0">
-              <div className="w-11 h-11 rounded-xl bg-gradient-to-br from-navy-800 to-navy-700 flex items-center justify-center text-lg shrink-0 shadow-elevation-1">
-                📡
+          <div className="py-4 flex flex-col gap-4">
+            <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
+              <div className="flex items-start gap-4 min-w-0">
+                <div className="w-11 h-11 rounded-xl bg-gradient-to-br from-navy-800 to-navy-700 flex items-center justify-center text-lg shrink-0 shadow-elevation-1">
+                  📡
+                </div>
+                <div className="min-w-0">
+                  {dealerName ? (
+                    <h1 className="font-bold text-base sm:text-lg tracking-tight truncate">{dealerName}</h1>
+                  ) : (
+                    <div className="h-5 w-40 bg-navy-800 rounded-md animate-pulse" />
+                  )}
+                  {!hideDealerId && (
+                    <p className="text-ink-faint text-xs font-mono mt-0.5 truncate">{dealerId}</p>
+                  )}
+                  <p className="text-ink-faint text-xs mt-1 hidden sm:block">
+                    {sectionLabel ?? TAB_LABELS[activeTab]}
+                  </p>
+                </div>
               </div>
-              <div className="min-w-0">
-                {dealerName ? (
-                  <h1 className="font-bold text-base sm:text-lg tracking-tight truncate">{dealerName}</h1>
-                ) : (
-                  <div className="h-5 w-40 bg-navy-800 rounded-md animate-pulse" />
-                )}
-                {!hideDealerId && (
-                  <p className="text-ink-faint text-xs font-mono mt-0.5 truncate">{dealerId}</p>
-                )}
-                <p className="text-ink-faint text-xs mt-1 hidden sm:block">{sectionLabel ?? tabTitles[activeTab]}</p>
-              </div>
-            </div>
-
-            <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
-              <WorkflowStrip active={activeTab} />
               <OperatorNav active={activeTab} nav={nav} />
             </div>
           </div>
 
           <div className="pb-3 flex items-center justify-between gap-3 flex-wrap border-t border-navy-800/80 pt-3">
-            <div className="flex items-center gap-4">
-              <button
-                type="button"
-                onClick={nav.changeDealer}
-                className="text-xs text-ink-faint hover:text-white transition-colors"
-              >
-                ← Change dealer
-              </button>
-              <button
-                type="button"
-                onClick={nav.goToKnowledge}
-                className="text-xs text-ink-faint hover:text-white transition-colors"
-              >
-                Knowledge base
-              </button>
-            </div>
+            <button
+              type="button"
+              onClick={nav.changeDealer}
+              className="text-xs text-ink-faint hover:text-white transition-colors"
+            >
+              ← Change dealer
+            </button>
             <div className="flex items-center gap-2">
               {lastRefresh && !refreshing && (
                 <span className="text-navy-500 text-xs">Updated {lastRefresh.toLocaleTimeString()}</span>

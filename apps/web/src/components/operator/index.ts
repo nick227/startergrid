@@ -1,7 +1,6 @@
 export { PageShell } from './PageShell.tsx';
 export { OperatorPage } from './OperatorPage.tsx';
 export { OperatorNav } from './OperatorNav.tsx';
-export { WorkflowStrip } from './WorkflowStrip.tsx';
 export { SectionCard } from './SectionCard.tsx';
 export { PageHeader } from './PageHeader.tsx';
 export { InlineCallout } from './InlineCallout.tsx';

@@ -1,34 +1,64 @@
-import type { OperatorNavHandlers } from './operatorNav.ts';
-
-export type OperatorPageSegment = 'inventory' | 'accounts' | 'insights' | 'knowledge';
+import type { OperatorNavHandlers, OperatorPageSegment } from './operatorNav.ts';
 
 export type OperatorRoute = {
   dealerId: string | null;
   page: OperatorPageSegment | null;
+  platformSlug: string | null;
+  platformView: 'queue' | 'history' | null;
 };
+
+const LEGACY_SEGMENT_MAP: Record<string, OperatorPageSegment> = {
+  accounts: 'platforms',
+  insights: 'reports',
+  sync: 'platforms',
+};
+
+function parsePageSegment(segment: string | undefined): OperatorPageSegment | null {
+  if (!segment) return 'platforms';
+  if (segment === 'knowledge') return 'help';
+  const legacy = LEGACY_SEGMENT_MAP[segment];
+  if (legacy) return legacy;
+  if (
+    segment === 'platforms' ||
+    segment === 'queue' ||
+    segment === 'history' ||
+    segment === 'reports' ||
+    segment === 'inventory' ||
+    segment === 'help'
+  ) {
+    return segment;
+  }
+  return 'platforms';
+}
 
 export function parseOperatorRoute(): OperatorRoute {
   const hash = window.location.hash.replace(/^#/, '');
-  if (hash === '/knowledge' || hash === 'knowledge') {
-    return { dealerId: null, page: 'knowledge' };
+  if (hash === '/help' || hash === 'help' || hash === '/knowledge' || hash === 'knowledge') {
+    return { dealerId: null, page: 'help', platformSlug: null, platformView: null };
   }
 
   const match = window.location.hash.match(/^#\/([^/]+)(?:\/(.+))?/);
-  if (!match) return { dealerId: null, page: null };
+  if (!match) return { dealerId: null, page: null, platformSlug: null, platformView: null };
 
-  const segment = match[2];
-  const page: OperatorPageSegment | null =
-    segment === 'inventory' ? 'inventory'
-      : segment === 'accounts' ? 'accounts'
-        : segment === 'insights' ? 'insights'
-          : segment === 'knowledge' ? 'knowledge'
-            : null;
+  const dealerId = match[1] ?? null;
+  const rest = match[2] ?? '';
 
-  return { dealerId: match[1] ?? null, page };
+  const platformMatch = rest.match(/^platforms\/([^/]+)(?:\/(queue|history))?$/);
+  if (platformMatch) {
+    return {
+      dealerId,
+      page: 'platforms',
+      platformSlug: platformMatch[1] ?? null,
+      platformView: (platformMatch[2] as 'queue' | 'history') ?? null,
+    };
+  }
+
+  const page = parsePageSegment(rest || undefined);
+  return { dealerId, page, platformSlug: null, platformView: null };
 }
 
 export function knowledgeHash(dealerId?: string | null): string {
-  return dealerId ? `#/${dealerId}/knowledge` : '#/knowledge';
+  return dealerId ? `#/${dealerId}/help` : '#/help';
 }
 
 export function dealerPickerHash(): string {
@@ -36,17 +66,47 @@ export function dealerPickerHash(): string {
 }
 
 export function operatorHash(dealerId: string, page?: OperatorPageSegment | null): string {
-  if (!page) return `#/${dealerId}`;
-  return `#/${dealerId}/${page}`;
+  const resolved = page ?? 'platforms';
+  if (resolved === 'platforms') return `#/${dealerId}/platforms`;
+  return `#/${dealerId}/${resolved}`;
+}
+
+export function platformQueueHash(dealerId: string, platformSlug: string): string {
+  return `#/${dealerId}/platforms/${platformSlug}/queue`;
+}
+
+export function platformHistoryHash(dealerId: string, platformSlug: string): string {
+  return `#/${dealerId}/platforms/${platformSlug}/history`;
 }
 
 export function buildOperatorNav(dealerId: string): OperatorNavHandlers {
   return {
-    goToSync: () => { window.location.hash = operatorHash(dealerId); },
+    goToPlatforms: () => { window.location.hash = operatorHash(dealerId, 'platforms'); },
+    goToQueue: () => { window.location.hash = operatorHash(dealerId, 'queue'); },
+    goToHistory: () => { window.location.hash = operatorHash(dealerId, 'history'); },
+    goToReports: () => { window.location.hash = operatorHash(dealerId, 'reports'); },
     goToInventory: () => { window.location.hash = operatorHash(dealerId, 'inventory'); },
-    goToAccounts: () => { window.location.hash = operatorHash(dealerId, 'accounts'); },
-    goToInsights: () => { window.location.hash = operatorHash(dealerId, 'insights'); },
-    goToKnowledge: () => { window.location.hash = operatorHash(dealerId, 'knowledge'); },
+    goToHelp: () => { window.location.hash = operatorHash(dealerId, 'help'); },
+    goToPlatformQueue: slug => { window.location.hash = platformQueueHash(dealerId, slug); },
+    goToPlatformHistory: slug => { window.location.hash = platformHistoryHash(dealerId, slug); },
+    goToSync: () => { window.location.hash = operatorHash(dealerId, 'platforms'); },
+    goToAccounts: () => { window.location.hash = operatorHash(dealerId, 'platforms'); },
+    goToInsights: () => { window.location.hash = operatorHash(dealerId, 'reports'); },
+    goToKnowledge: () => { window.location.hash = operatorHash(dealerId, 'help'); },
     changeDealer: () => { window.location.hash = dealerPickerHash(); },
   };
+}
+
+/** Redirect legacy hash paths to new IA. */
+export function normalizeOperatorHash(): void {
+  const raw = window.location.hash.replace(/^#/, '');
+  if (raw === '/knowledge' || raw === 'knowledge') {
+    window.location.replace('#/help');
+    return;
+  }
+  const m = raw.match(/^\/([^/]+)\/(accounts|insights)(?:\/.*)?$/);
+  if (!m) return;
+  const [, dealerId, legacy] = m;
+  const next = legacy === 'accounts' ? 'platforms' : 'reports';
+  window.location.replace(`#/${dealerId}/${next}`);
 }

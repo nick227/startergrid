@@ -1,0 +1,177 @@
+import { useMemo, useState, useEffect } from 'react';
+import { fetchPublishStatus, fetchAccounts, fetchPlatformPerformance } from '@/lib/api/sdk.ts';
+import type { PlatformAccountDetail, PlatformPerformanceItem } from '@/lib/types.ts';
+import type { OperatorPageBaseProps } from '@/lib/operatorPage.ts';
+import { useAsyncQuery } from '@/hooks/useAsyncQuery.ts';
+import { OperatorPage, ErrorState, PanelSkeleton } from '@/components/operator';
+import { PageSituation, ControlBlock, OperationalRowCard } from '@/components/layout';
+import { FilterChips } from '@/components/generic';
+import { PlatformDetailDrawer } from '@/components/platforms/PlatformDetailDrawer.tsx';
+import {
+  PLATFORM_CONNECTION_FILTERS,
+  platformConnection,
+  platformMatchesFilter,
+  platformMetaLine,
+  platformSituationSummary,
+  sortPlatformsForDisplay,
+  type PlatformConnectionFilter,
+} from '@/lib/platformPresentation.ts';
+import { formatPlatformAssistHint, formatPlatformExposureLine } from '@/lib/movementBenchmark.ts';
+
+type Props = OperatorPageBaseProps & {
+  initialPlatformSlug?: string | null;
+};
+
+const SORT_OPTIONS = [
+  { value: 'urgency', label: 'Needs attention first' },
+  { value: 'name', label: 'Name A–Z' },
+];
+
+export default function PlatformsPage({ dealerId, nav, activeTab, initialPlatformSlug }: Props) {
+  const { data, loading, error, reload, lastRefresh } = useAsyncQuery(
+    () => fetchPublishStatus(dealerId),
+    [dealerId]
+  );
+  const accountsQuery = useAsyncQuery(() => fetchAccounts(dealerId), [dealerId]);
+  const perfQuery = useAsyncQuery(() => fetchPlatformPerformance(dealerId), [dealerId]);
+
+  const [search, setSearch] = useState('');
+  const [filter, setFilter] = useState<PlatformConnectionFilter>('ALL');
+  const [sort, setSort] = useState<'urgency' | 'name'>('urgency');
+  const [selectedSlug, setSelectedSlug] = useState<string | null>(initialPlatformSlug ?? null);
+
+  useEffect(() => {
+    if (initialPlatformSlug) setSelectedSlug(initialPlatformSlug);
+  }, [initialPlatformSlug]);
+
+  const accountBySlug = useMemo(() => {
+    const m = new Map<string, PlatformAccountDetail>();
+    for (const a of accountsQuery.data?.accounts ?? []) m.set(a.platformSlug, a);
+    return m;
+  }, [accountsQuery.data]);
+
+  const perfBySlug = useMemo(() => {
+    const m = new Map<string, PlatformPerformanceItem>();
+    for (const p of perfQuery.data?.platforms ?? []) m.set(p.platformSlug, p);
+    return m;
+  }, [perfQuery.data]);
+
+  const platforms = data?.platforms ?? [];
+
+  const visible = useMemo(() => {
+    let list = platforms.filter(p => platformMatchesFilter(p, filter));
+    if (search.trim()) {
+      const q = search.toLowerCase();
+      list = list.filter(
+        p =>
+          p.platformName.toLowerCase().includes(q) ||
+          p.platformSlug.toLowerCase().includes(q)
+      );
+    }
+    return sortPlatformsForDisplay(list, sort);
+  }, [platforms, filter, search, sort]);
+
+  const selectedPlatform = selectedSlug
+    ? platforms.find(p => p.platformSlug === selectedSlug) ?? null
+    : null;
+
+  const handleRefresh = () => {
+    reload();
+    accountsQuery.reload();
+    perfQuery.reload();
+  };
+
+  if (error && !data) {
+    return (
+      <OperatorPage dealerId={dealerId} activeTab={activeTab} nav={nav} onRefresh={handleRefresh}>
+        <ErrorState message={error} onRetry={handleRefresh} />
+      </OperatorPage>
+    );
+  }
+
+  const situation = data ? platformSituationSummary(platforms) : 'Loading listing sites…';
+
+  return (
+    <OperatorPage
+      dealerId={dealerId}
+      dealerName={data?.dealerName}
+      activeTab={activeTab}
+      nav={nav}
+      onRefresh={handleRefresh}
+      refreshing={loading}
+      lastRefresh={lastRefresh ?? undefined}
+      hideDealerId
+    >
+      <PageSituation title="Platforms" line={situation} />
+
+      <ControlBlock
+        search={search}
+        onSearchChange={setSearch}
+        searchPlaceholder="Search listing sites"
+        sort={sort}
+        sortOptions={SORT_OPTIONS}
+        onSortChange={v => setSort(v as 'urgency' | 'name')}
+        filters={
+          <FilterChips
+            chips={PLATFORM_CONNECTION_FILTERS.map(f => ({ key: f.key, label: f.label }))}
+            activeKey={filter}
+            onSelect={key => setFilter(key as PlatformConnectionFilter)}
+          />
+        }
+      />
+
+      <div className={`${selectedPlatform ? 'lg:grid lg:grid-cols-[1fr_min(22rem,38%)] lg:gap-4 lg:items-start' : ''}`}>
+        <div className="space-y-3">
+          {loading && !data ? (
+            <PanelSkeleton rows={6} />
+          ) : visible.length === 0 ? (
+            <p className="text-sm text-ink-muted py-8 text-center">No listing sites match your filters.</p>
+          ) : (
+            visible.map(p => {
+              const conn = platformConnection(p);
+              const perf = perfBySlug.get(p.platformSlug);
+              const exposure = perf ? formatPlatformExposureLine(perf) : null;
+              const assist = perf ? formatPlatformAssistHint(perf) : null;
+              const metaParts = [platformMetaLine(p), exposure, assist].filter(Boolean);
+              const needsFix =
+                conn.connection === 'blocked' ||
+                conn.connection === 'inactive';
+
+              return (
+                <OperationalRowCard
+                  key={p.platformSlug}
+                  lead={p.platformName}
+                  statusLabel={conn.label}
+                  statusClassName={conn.pill}
+                  meta={metaParts.join(' · ')}
+                  selected={selectedSlug === p.platformSlug}
+                  onPress={() => setSelectedSlug(p.platformSlug)}
+                  actionLabel={needsFix ? 'Fix setup' : 'Open queue'}
+                  onAction={() => {
+                    if (needsFix) setSelectedSlug(p.platformSlug);
+                    else nav.goToPlatformQueue(p.platformSlug);
+                  }}
+                />
+              );
+            })
+          )}
+        </div>
+
+        {selectedPlatform && (
+          <PlatformDetailDrawer
+            platform={selectedPlatform}
+            account={accountBySlug.get(selectedPlatform.platformSlug) ?? null}
+            dealerId={dealerId}
+            nav={nav}
+            open
+            onClose={() => setSelectedSlug(null)}
+            onSaved={() => {
+              accountsQuery.reload();
+              reload();
+            }}
+          />
+        )}
+      </div>
+    </OperatorPage>
+  );
+}
