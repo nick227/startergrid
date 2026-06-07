@@ -91,9 +91,9 @@ export function InventoryAssetList({
               onSelect={() => onToggle(vehicle.id)}
               surfaceClassName={vehicleReadinessRowBg(vehicle.readiness)}
               actions={[
-                { label: operatorCopy.queue.details, onClick: () => setDetailId(vehicle.id) },
-                { label: operatorCopy.queue.title, onClick: () => nav.goToQueue() },
-                { label: operatorCopy.history.title, onClick: () => nav.goToHistory() },
+                { label: operatorCopy.inventory.rowActions.details, onClick: () => setDetailId(vehicle.id) },
+                { label: operatorCopy.inventory.rowActions.queue, onClick: () => nav.goToQueue() },
+                { label: operatorCopy.inventory.rowActions.history, onClick: () => nav.goToHistory() },
               ]}
             />
           );

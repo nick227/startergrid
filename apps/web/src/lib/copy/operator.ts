@@ -108,6 +108,11 @@ export const operatorCopy = {
     intakeAssetCount: (n: number) =>
       `${n} ${n === 1 ? operatorCopy.asset.singular : operatorCopy.asset.plural}`,
     dryRunRemovalNote: 'Dry-run only — missing assets appear as removal candidates. Scheduled poll never auto-removes.',
+    rowActions: {
+      details: 'Details',
+      queue: 'Queue',
+      history: 'History',
+    },
   },
   reports: {
     title: 'Reports',
