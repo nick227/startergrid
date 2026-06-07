@@ -155,13 +155,13 @@ Ship detail routes + hub teasers for reports backed by performance cache and pub
 - **5** Exposure & Coverage *(refactor current platform list)*
 - **6** Observed Assist & Engagement *(platform cache + existing channel metrics)*
 
-### Phase 2 — Light event aggregation (new read APIs)
+### Phase 2 — Light event aggregation (shipped backend)
 
-Single-dealer aggregation endpoints (or one `reportsQuery` service) over existing tables:
+- **3** Publish Throughput & Reliability — `GET .../reports/publish-throughput`
+- **7** Sync Activity Summary — `GET .../reports/sync-activity`
+- **4** Observed Demand by Asset — `GET .../reports/observed-demand`
 
-- **3** Publish Throughput & Reliability
-- **7** Sync Activity Summary
-- **4** Observed Demand by Asset *(partial — leads + simple roll-up)*
+Query: `?range=7d|30d|90d`. UI wiring pending.
 
 ### Phase 3 — Heavier period / cohort reports
 
