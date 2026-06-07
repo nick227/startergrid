@@ -12,6 +12,9 @@ const yaml = _require('js-yaml') as { load(src: string): unknown };
 
 const REGISTERED_ROUTES = new Set([
   'GET    /health',
+  'POST   /api/auth/login',
+  'POST   /api/auth/logout',
+  'GET    /api/auth/me',
   'GET    /api/dealers',
   'GET    /api/dealers/{dealershipId}/publish/status',
   'GET    /api/dealers/{dealershipId}/publish/auto-sync',

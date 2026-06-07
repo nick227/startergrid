@@ -156,7 +156,7 @@ export default function InventoryPage({ dealerId, nav, activeTab }: Props) {
 
   const chipCounts = useMemo(() => ({
     MISSING_PHOTOS: vehicles.filter(v => v.issues.some(i => i.path === 'media')).length,
-    INVALID_VIN: vehicles.filter(v => v.issues.some(i => i.path === 'vin' && i.severity === 'FAIL')).length,
+    INVALID_IDENTIFIER: vehicles.filter(v => v.issues.some(i => i.path === 'vin' && i.severity === 'FAIL')).length,
     SUSPICIOUS_PRICE: vehicles.filter(v => v.issues.some(i => i.path === 'priceCents')).length,
   }), [vehicles]);
 

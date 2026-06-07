@@ -17,6 +17,12 @@ const VALID_PROD: Record<string, string> = {
   SESSION_SECRET:            'a'.repeat(32),
   PUBLIC_WRITE_RATE_LIMIT:   '20',
   PUBLIC_WRITE_RATE_WINDOW_MS: '60000',
+  // SMTP vars required in production (Phase 4)
+  SMTP_HOST: 'smtp.example.com',
+  SMTP_PORT: '587',
+  SMTP_USER: 'dealer@example.com',
+  SMTP_PASS: 'smtp-secret',
+  SMTP_FROM: 'no-reply@example.com',
 };
 
 function prod(overrides: Record<string, string | undefined> = {}): Record<string, string | undefined> {
@@ -283,5 +289,67 @@ describe('app — /dev/demo-feed production gate', () => {
       if (prevEnv === undefined) delete process.env['NODE_ENV'];
       else process.env['NODE_ENV'] = prevEnv;
     }
+  });
+});
+
+// ── Production SMTP vars ──────────────────────────────────────────────────────
+
+describe('validateEnv — production SMTP vars', () => {
+  it('valid production config with all SMTP vars passes', () => {
+    assert.doesNotThrow(() => validateEnv(prod()));
+  });
+
+  it('rejects missing SMTP_HOST in production', () => {
+    const errs = errors(prod({ SMTP_HOST: undefined }));
+    assert.ok(errs.some(e => e.includes('SMTP_HOST')));
+  });
+
+  it('rejects missing SMTP_PORT in production', () => {
+    const errs = errors(prod({ SMTP_PORT: undefined }));
+    assert.ok(errs.some(e => e.includes('SMTP_PORT')));
+  });
+
+  it('rejects missing SMTP_USER in production', () => {
+    const errs = errors(prod({ SMTP_USER: undefined }));
+    assert.ok(errs.some(e => e.includes('SMTP_USER')));
+  });
+
+  it('rejects missing SMTP_PASS in production', () => {
+    const errs = errors(prod({ SMTP_PASS: undefined }));
+    assert.ok(errs.some(e => e.includes('SMTP_PASS')));
+  });
+
+  it('rejects missing SMTP_FROM in production', () => {
+    const errs = errors(prod({ SMTP_FROM: undefined }));
+    assert.ok(errs.some(e => e.includes('SMTP_FROM')));
+  });
+
+  it('rejects non-integer SMTP_PORT', () => {
+    const errs = errors(prod({ SMTP_PORT: 'many' }));
+    assert.ok(errs.some(e => e.includes('SMTP_PORT') && e.includes('positive integer')));
+  });
+
+  it('rejects zero SMTP_PORT', () => {
+    const errs = errors(prod({ SMTP_PORT: '0' }));
+    assert.ok(errs.some(e => e.includes('SMTP_PORT') && e.includes('positive integer')));
+  });
+
+  it('reports all five missing SMTP vars in one throw', () => {
+    const base = { ...VALID_PROD };
+    delete (base as Record<string, string | undefined>)['SMTP_HOST'];
+    delete (base as Record<string, string | undefined>)['SMTP_PORT'];
+    delete (base as Record<string, string | undefined>)['SMTP_USER'];
+    delete (base as Record<string, string | undefined>)['SMTP_PASS'];
+    delete (base as Record<string, string | undefined>)['SMTP_FROM'];
+    const errs = errors(base);
+    assert.ok(errs.length >= 5, `expected ≥5 SMTP errors, got ${errs.length}: ${errs.join(', ')}`);
+  });
+
+  it('SMTP vars are not required in development', () => {
+    assert.doesNotThrow(() => validateEnv(dev()));
+  });
+
+  it('SMTP vars are not required in test environment', () => {
+    assert.doesNotThrow(() => validateEnv(dev({ NODE_ENV: 'test' })));
   });
 });

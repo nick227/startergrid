@@ -1,42 +1,47 @@
-import { useState, useCallback, useEffect } from 'react';
-import { useQuery, queryErrorMessage } from '../hooks/useQuery.ts';
+import { useEffect, useMemo, useRef, useState } from 'react';
+import { queryErrorMessage } from '../hooks/useQuery.ts';
+import { useInfiniteMarketplaceFeed } from '../hooks/useInfiniteMarketplaceFeed.ts';
 import { usePageMeta } from '../hooks/usePageMeta.ts';
-import { fetchVehicles, type ListFilters } from '../lib/api.ts';
 import { formatResultCount } from '../lib/display.ts';
 import { saveListReturn } from '../lib/listReturn.ts';
 import { listHref, parseRoute, type ListQuery } from '../lib/routes.ts';
-import { VehicleCard } from '../components/VehicleCard.tsx';
 import { PageShell } from '../components/layout/PageShell.tsx';
 import { PageHeader } from '../components/ui/PageHeader.tsx';
 import { FilterBar } from '../components/ui/FilterBar.tsx';
-import { Pagination } from '../components/ui/Pagination.tsx';
 import { VehicleGrid } from '../components/ui/VehicleGrid.tsx';
-import { SkeletonGrid } from '../components/ui/SkeletonGrid.tsx';
 import { ErrorState } from '../components/ui/ErrorState.tsx';
 import { EmptyState } from '../components/ui/EmptyState.tsx';
-
-const PAGE_SIZE = 24;
+import { FeedItemCard } from '../components/feed/FeedCards.tsx';
+import { ActiveFilterChips, hasFeedFilters } from '../components/feed/ActiveFilterChips.tsx';
+import { EndOfFeedState, FeedCardSkeleton, LoadingMoreState } from '../components/feed/FeedStates.tsx';
 
 type Props = { initialQuery?: ListQuery };
 
 export default function VehicleListPage({ initialQuery = {} }: Props) {
   const [make,      setMake]      = useState(initialQuery.make ?? '');
   const [model,     setModel]     = useState(initialQuery.model ?? '');
-  const [condition, setCondition] = useState<ListFilters['condition']>(initialQuery.condition);
-  const [page,      setPage]      = useState(initialQuery.page ?? 1);
+  const [condition, setCondition] = useState<ListQuery['condition']>(initialQuery.condition);
+  const [minPrice, setMinPrice] = useState(formatMoneyInput(initialQuery.minPrice));
+  const [maxPrice, setMaxPrice] = useState(formatMoneyInput(initialQuery.maxPrice));
+  const [maxMileage, setMaxMileage] = useState(formatNumberInput(initialQuery.maxMileage));
   const [focusToken, setFocusToken] = useState(0);
+  const sentinelRef = useRef<HTMLDivElement | null>(null);
 
   usePageMeta(
     'Browse vehicles',
     'Compare price, mileage, and condition from participating dealers.',
   );
 
-  const listQuery: ListQuery = {
+  const listQuery = useMemo<ListQuery>(() => ({
     make:      make.trim()  || undefined,
     model:     model.trim() || undefined,
     condition,
-    page:      page > 1 ? page : undefined,
-  };
+    minPrice:   dollarsToCents(minPrice),
+    maxPrice:   dollarsToCents(maxPrice),
+    maxMileage: parseNonNegative(maxMileage),
+  }), [condition, make, maxMileage, maxPrice, minPrice, model]);
+
+  const feed = useInfiniteMarketplaceFeed(listQuery);
 
   useEffect(() => {
     saveListReturn(listQuery);
@@ -44,7 +49,7 @@ export default function VehicleListPage({ initialQuery = {} }: Props) {
     if (window.location.hash !== target) {
       window.location.hash = target.slice(1);
     }
-  }, [make, model, condition, page]);
+  }, [listQuery]);
 
   useEffect(() => {
     function syncFromHash() {
@@ -54,33 +59,47 @@ export default function VehicleListPage({ initialQuery = {} }: Props) {
       setMake(q.make ?? '');
       setModel(q.model ?? '');
       setCondition(q.condition);
-      setPage(q.page ?? 1);
+      setMinPrice(formatMoneyInput(q.minPrice));
+      setMaxPrice(formatMoneyInput(q.maxPrice));
+      setMaxMileage(formatNumberInput(q.maxMileage));
     }
     window.addEventListener('hashchange', syncFromHash);
     return () => window.removeEventListener('hashchange', syncFromHash);
   }, []);
 
-  const filters: ListFilters = { ...listQuery, page, pageSize: PAGE_SIZE };
-
-  const loader = useCallback(
-    () => fetchVehicles(filters),
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    [make, model, condition, page]
-  );
-  const { data, loading, error, reload } = useQuery(loader, [make, model, condition, page]);
+  useEffect(() => {
+    const node = sentinelRef.current;
+    if (!node || !feed.hasMore) return;
+    const observer = new IntersectionObserver(entries => {
+      if (entries.some(entry => entry.isIntersecting)) feed.loadMore();
+    }, { rootMargin: '900px 0px' });
+    observer.observe(node);
+    return () => observer.disconnect();
+  }, [feed]);
 
   function resetFilters() {
     setMake('');
     setModel('');
     setCondition(undefined);
-    setPage(1);
+    setMinPrice('');
+    setMaxPrice('');
+    setMaxMileage('');
     setFocusToken(t => t + 1);
   }
 
-  const vehicles = data?.vehicles ?? [];
-  const total    = data?.total    ?? 0;
-  const hasNext  = data?.nextPage != null;
-  const hasActiveFilters = Boolean(make.trim() || model.trim() || condition);
+  function applyChipQuery(query: ListQuery) {
+    setMake(query.make ?? '');
+    setModel(query.model ?? '');
+    setCondition(query.condition);
+    setMinPrice(formatMoneyInput(query.minPrice));
+    setMaxPrice(formatMoneyInput(query.maxPrice));
+    setMaxMileage(formatNumberInput(query.maxMileage));
+  }
+
+  const hasActiveFilters = hasFeedFilters(listQuery);
+  const hasItems = feed.items.length > 0;
+  const initialError = feed.error && !hasItems;
+  const appendError = feed.error && hasItems;
 
   return (
     <PageShell>
@@ -94,21 +113,29 @@ export default function VehicleListPage({ initialQuery = {} }: Props) {
           make={make}
           model={model}
           condition={condition}
-          onMakeChange={v => { setMake(v); setPage(1); }}
-          onModelChange={v => { setModel(v); setPage(1); }}
-          onConditionChange={v => { setCondition(v); setPage(1); }}
-          onSubmit={reload}
+          minPrice={minPrice}
+          maxPrice={maxPrice}
+          maxMileage={maxMileage}
+          onMakeChange={setMake}
+          onModelChange={setModel}
+          onConditionChange={setCondition}
+          onMinPriceChange={setMinPrice}
+          onMaxPriceChange={setMaxPrice}
+          onMaxMileageChange={setMaxMileage}
+          onSubmit={feed.reload}
           onClear={resetFilters}
           hasActiveFilters={hasActiveFilters}
           focusToken={focusToken}
         />
       </div>
 
-      {loading && !data ? (
-        <SkeletonGrid />
-      ) : error ? (
-        <ErrorState message={queryErrorMessage(error)} onRetry={reload} />
-      ) : vehicles.length === 0 ? (
+      <ActiveFilterChips query={listQuery} onChange={applyChipQuery} onClearAll={resetFilters} />
+
+      {feed.loadingInitial ? (
+        <FeedCardSkeleton />
+      ) : initialError ? (
+        <ErrorState message={queryErrorMessage(feed.error)} onRetry={feed.retry} />
+      ) : !hasItems ? (
         <EmptyState
           title="No vehicles match your search"
           description="Try different make or model keywords, or reset filters to browse everything available."
@@ -118,24 +145,53 @@ export default function VehicleListPage({ initialQuery = {} }: Props) {
       ) : (
         <>
           <p className="mb-4 text-sm font-medium text-slate-600 sm:mb-5">
-            {formatResultCount(total)} available
+            {formatResultCount(feed.totalEstimate)} available
           </p>
 
           <VehicleGrid>
-            {vehicles.map(card => (
-              <VehicleCard key={card.listingId} card={card} />
+            {feed.items.map((item, index) => (
+              <FeedItemCard key={item.id} item={item} index={index} />
             ))}
           </VehicleGrid>
 
-          <Pagination
-            page={page}
-            pageSize={PAGE_SIZE}
-            total={total}
-            hasNext={hasNext}
-            onPageChange={setPage}
-          />
+          <div ref={sentinelRef} aria-hidden="true" className="h-1" />
+
+          {feed.loadingMore && <LoadingMoreState />}
+
+          {appendError && (
+            <div className="mt-8">
+              <ErrorState message={queryErrorMessage(feed.error)} onRetry={feed.retry} title="Could not load more vehicles" />
+            </div>
+          )}
+
+          {!feed.hasMore && !feed.loadingMore && (
+            <EndOfFeedState
+              canClear={hasActiveFilters}
+              onClear={resetFilters}
+              onTop={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
+            />
+          )}
         </>
       )}
     </PageShell>
   );
+}
+
+function parseNonNegative(value: string): number | undefined {
+  if (!value.trim()) return undefined;
+  const parsed = Number(value);
+  return Number.isFinite(parsed) && parsed >= 0 ? parsed : undefined;
+}
+
+function dollarsToCents(value: string): number | undefined {
+  const dollars = parseNonNegative(value);
+  return dollars == null ? undefined : Math.round(dollars * 100);
+}
+
+function formatMoneyInput(cents: number | undefined): string {
+  return cents == null ? '' : String(Math.round(cents / 100));
+}
+
+function formatNumberInput(value: number | undefined): string {
+  return value == null ? '' : String(value);
 }

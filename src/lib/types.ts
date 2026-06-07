@@ -169,6 +169,7 @@ export type PlatformProfileSeed = {
   submissionMethods: SubmissionMethod[];
   sourceUrls: string[];
   requiredDealershipFields: string[];
+  supportedCategories: string[];
   requiredVehicleFields: string[];
   requiredMediaRules: MediaRules;
   testFixtures: JsonRecord;

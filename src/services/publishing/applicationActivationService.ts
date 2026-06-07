@@ -9,6 +9,7 @@ import type {
 } from '../../lib/types.js';
 import { createAuthorizationPacket } from './packetGenerator.js';
 import { writeAndRegisterArtifact } from './artifactWriterService.js';
+import { getDispatchEnvironment } from './dispatchAdapter.js';
 
 export type ApplicationActivationResult = {
   applicationId: string;
@@ -102,7 +103,7 @@ export async function activateApplicationAfterCreate(
       status: 'PASS',
       mockAccepted: true,
       artifactPath: submissionArtifactPath,
-      environment: 'MOCK'
+      environment: getDispatchEnvironment()
     }
   });
 

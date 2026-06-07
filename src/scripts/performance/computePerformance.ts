@@ -1,6 +1,7 @@
 import 'dotenv/config';
 import { prisma } from '../../lib/prisma.js';
 import { runPerformanceComputeForDealer } from '../../services/performance/computePerformanceService.js';
+import { jobStarted } from '../../lib/jobLog.js';
 
 // ── Args ──────────────────────────────────────────────────────────────────────
 
@@ -17,6 +18,9 @@ const dryRun = args.includes('--dry-run');
 // ── Main ──────────────────────────────────────────────────────────────────────
 
 async function main() {
+  const now = new Date();
+  jobStarted('PerformanceCompute', now);
+
   if (dryRun) {
     console.log('Dry run: would compute performance caches (no DB writes).');
     await prisma.$disconnect();
@@ -34,10 +38,10 @@ async function main() {
 
   if (dealers.length === 0) {
     console.error('No dealers found. Run npm run db:seed first.');
+    await prisma.$disconnect();
     process.exit(1);
   }
 
-  const now = new Date();
   console.log(`\nPerformance Cache Compute — ${now.toISOString()}`);
   console.log('═'.repeat(60));
 

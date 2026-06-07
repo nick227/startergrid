@@ -4,11 +4,14 @@
 import {
   ApiError,
   MarketplaceService,
+  MarketplaceAuthService,
   type MarketplaceFeedResponse,
   type MarketplaceVehicleListResponse,
   type MarketplaceVehicleDetailResponse,
   type MarketplaceDealerIndexResponse,
   type MarketplaceLeadCaptureResponse,
+  type MarketplaceUserIdentity,
+  type MarketplaceFavoritesResponse,
 } from '@dealer-marketplace/client';
 
 export type {
@@ -20,6 +23,8 @@ export type {
   MarketplaceVehicleDetailResponse,
   MarketplaceDealerIndexResponse,
   MarketplaceLeadCaptureResponse,
+  MarketplaceUserIdentity,
+  MarketplaceFavoritesResponse,
   VehicleCore,
   VehicleCommerce,
   VehicleLocation,
@@ -135,4 +140,28 @@ export function submitVehicleLead(
     listingId,
     requestBody: input,
   }));
+}
+
+export function fetchMe(): Promise<MarketplaceUserIdentity> {
+  return call(() => MarketplaceAuthService.getMarketplaceMe());
+}
+
+export function login(email: string, password: string): Promise<MarketplaceUserIdentity> {
+  return call(() => MarketplaceAuthService.marketplaceLogin({ requestBody: { email, password } }));
+}
+
+export function logout(): Promise<void> {
+  return call(() => MarketplaceAuthService.marketplaceLogout().then(() => undefined));
+}
+
+export function fetchFavorites(): Promise<MarketplaceFavoritesResponse> {
+  return call(() => MarketplaceAuthService.getMarketplaceFavorites());
+}
+
+export function addFavorite(listingId: string): Promise<void> {
+  return call(() => MarketplaceAuthService.addMarketplaceFavorite({ listingId }).then(() => undefined));
+}
+
+export function removeFavorite(listingId: string): Promise<void> {
+  return call(() => MarketplaceAuthService.removeMarketplaceFavorite({ listingId }).then(() => undefined));
 }

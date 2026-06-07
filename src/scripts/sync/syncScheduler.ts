@@ -1,7 +1,9 @@
 ﻿import 'dotenv/config';
 import { prisma } from '../../lib/prisma.js';
 import { runScheduler, MAX_ATTEMPTS } from '../../services/publishing/schedulerService.js';
+import { getDispatchEnvironment } from '../../services/publishing/dispatchAdapter.js';
 import { platformProfiles } from '../../data/platformProfiles.js';
+import { jobStarted } from '../../lib/jobLog.js';
 
 const profileBySlug = new Map(platformProfiles.map(p => [p.slug, p]));
 
@@ -10,9 +12,14 @@ async function main() {
   const dealershipId = args.find(a => !a.startsWith('--'));
   const dryRun = args.includes('--dry-run');
 
+  jobStarted('SyncScheduler');
+
+  const dispatchEnv = getDispatchEnvironment();
+
   console.log(`\nSync Scheduler${dryRun ? ' [DRY RUN]' : ''}`);
   console.log('─'.repeat(60));
   if (dealershipId) console.log(`Dealer filter: ${dealershipId}`);
+  console.log(`Dispatch env:  ${dispatchEnv}`);
   console.log(`Max attempts: ${MAX_ATTEMPTS} | Backoff: 5m → 30m → 1h`);
   console.log('');
 
@@ -46,7 +53,7 @@ async function main() {
     console.log(`Scheduler ID:  ${result.schedulerId}`);
     console.log(`Eligible:      ${result.eligibleCount}`);
     console.log(`Claimed:       ${result.claimedCount}`);
-    console.log(`Sent:          ${result.sentCount}  (MOCK env — no real API calls)`);
+    console.log(`Sent:          ${result.sentCount}  [${result.dispatchEnvironment} — no real API calls in MOCK]`);
     console.log(`Failed:        ${result.failedCount}`);
     console.log(`Skipped:       ${result.skippedCount}  (race condition or none due)`);
     if (result.syncRunIds.length > 0) {

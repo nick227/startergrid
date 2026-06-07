@@ -17,7 +17,8 @@
     "noFallthroughCasesInSwitch": true,
     "baseUrl": ".",
     "paths": {
-      "@/*": ["src/*"]
+      "@/*": ["src/*"],
+      "@auto-dealer/category-schemas": ["../../packages/category-schemas/src/index.ts"]
     }
   },
   "include": ["src"],

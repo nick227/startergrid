@@ -27,7 +27,7 @@ export function registerAccountRoutes(app: FastifyInstance, prisma: PrismaClient
     '/api/dealers/:dealershipId/accounts',
     async (request, reply) => {
       const { dealershipId } = request.params;
-      if (!requireDealerAccess(request, reply, dealershipId)) return;
+      if (!await requireDealerAccess(prisma, request, reply, dealershipId)) return;
       if (!await requireDealer(prisma, dealershipId))
         return reply.status(404).send({ error: 'Dealer not found' });
 
@@ -41,7 +41,7 @@ export function registerAccountRoutes(app: FastifyInstance, prisma: PrismaClient
     '/api/dealers/:dealershipId/accounts/:platformSlug',
     async (request, reply) => {
       const { dealershipId, platformSlug } = request.params;
-      if (!requireDealerAccess(request, reply, dealershipId)) return;
+      if (!await requireDealerAccess(prisma, request, reply, dealershipId)) return;
       const parsed = validateBody(accountUpdateSchema, request.body ?? {});
       if (!parsed.ok) return reply.status(400).send({ error: parsed.error });
 

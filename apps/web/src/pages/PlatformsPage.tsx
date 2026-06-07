@@ -15,6 +15,7 @@ import {
   type PlatformConnectionFilter,
 } from '@/lib/platformPresentation.ts';
 import { operatorCopy } from '@/lib/copy/operator.ts';
+import { useCategorySchema } from '@/contexts/CategoryContext.tsx';
 
 type Props = OperatorPageBaseProps & {
   initialPlatformSlug?: string | null;
@@ -26,6 +27,7 @@ const SORT_OPTIONS = [
 ];
 
 export default function PlatformsPage({ dealerId, nav, activeTab, initialPlatformSlug }: Props) {
+  const categorySchema = useCategorySchema();
   const { data, loading, error, reload, lastRefresh } = useAsyncQuery(
     () => fetchPublishStatus(dealerId),
     [dealerId]
@@ -54,7 +56,10 @@ export default function PlatformsPage({ dealerId, nav, activeTab, initialPlatfor
     return m;
   }, [perfQuery.data]);
 
-  const platforms = data?.platforms ?? [];
+  const platforms = useMemo(
+    () => (data?.platforms ?? []).filter(p => p.supportedCategories.includes(categorySchema.id)),
+    [data, categorySchema.id]
+  );
 
   const visible = useMemo(() => {
     let list = platforms.filter(p => platformMatchesFilter(p, filter));

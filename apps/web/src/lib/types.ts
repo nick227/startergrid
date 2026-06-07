@@ -23,6 +23,7 @@ export type PlatformPublishResult = {
   platformSlug: string;
   platformName: string;
   integrationClass: IntegrationClass;
+  supportedCategories: string[];
   readiness: ReadinessColor;
   state: PublishState;
   detail: string;
@@ -120,14 +121,15 @@ export type DealerSummary = {
   id: string;
   legalName: string;
   dbaName: string | null;
+  businessCategory: string;
   createdAt: string;
 };
 
 export type QueueItemView = {
   id: string;
-  stockNumber: string | null;
-  vehicleTitle: string | null;
-  vehicleId: string | null;
+  assetRef: string | null;
+  assetTitle: string | null;
+  assetId: string | null;
   platformSlug: string;
   platformName: string;
   integrationClass: IntegrationClass;

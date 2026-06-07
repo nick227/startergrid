@@ -6,9 +6,15 @@ type Props = {
   make: string;
   model: string;
   condition: ListFilters['condition'];
+  minPrice: string;
+  maxPrice: string;
+  maxMileage: string;
   onMakeChange: (value: string) => void;
   onModelChange: (value: string) => void;
   onConditionChange: (value: ListFilters['condition']) => void;
+  onMinPriceChange: (value: string) => void;
+  onMaxPriceChange: (value: string) => void;
+  onMaxMileageChange: (value: string) => void;
   onSubmit: () => void;
   onClear: () => void;
   hasActiveFilters: boolean;
@@ -19,9 +25,15 @@ export function FilterBar({
   make,
   model,
   condition,
+  minPrice,
+  maxPrice,
+  maxMileage,
   onMakeChange,
   onModelChange,
   onConditionChange,
+  onMinPriceChange,
+  onMaxPriceChange,
+  onMaxMileageChange,
   onSubmit,
   onClear,
   hasActiveFilters,
@@ -37,7 +49,7 @@ export function FilterBar({
     <SectionCard padded={false} className="p-4 sm:p-5">
       <form
         onSubmit={e => { e.preventDefault(); onSubmit(); }}
-        className="grid gap-4 sm:grid-cols-2 lg:grid-cols-[1fr_1fr_12rem_auto]"
+        className="grid gap-4 sm:grid-cols-2 lg:grid-cols-[1fr_1fr_12rem_9rem_9rem_10rem_auto]"
         aria-label="Search vehicles"
       >
         <label className="flex flex-col gap-1.5">
@@ -65,7 +77,7 @@ export function FilterBar({
           />
         </label>
 
-        <label className="flex flex-col gap-1.5 sm:col-span-2 lg:col-span-1">
+        <label className="flex flex-col gap-1.5">
           <span className="mp-label">Condition</span>
           <select
             value={condition ?? ''}
@@ -77,6 +89,45 @@ export function FilterBar({
             <option value="USED">Used</option>
             <option value="CPO">Certified pre-owned</option>
           </select>
+        </label>
+
+        <label className="flex flex-col gap-1.5">
+          <span className="mp-label">Min price</span>
+          <input
+            type="number"
+            min="0"
+            inputMode="numeric"
+            value={minPrice}
+            onChange={e => onMinPriceChange(e.target.value)}
+            placeholder="$"
+            className="mp-input"
+          />
+        </label>
+
+        <label className="flex flex-col gap-1.5">
+          <span className="mp-label">Max price</span>
+          <input
+            type="number"
+            min="0"
+            inputMode="numeric"
+            value={maxPrice}
+            onChange={e => onMaxPriceChange(e.target.value)}
+            placeholder="$"
+            className="mp-input"
+          />
+        </label>
+
+        <label className="flex flex-col gap-1.5">
+          <span className="mp-label">Max miles</span>
+          <input
+            type="number"
+            min="0"
+            inputMode="numeric"
+            value={maxMileage}
+            onChange={e => onMaxMileageChange(e.target.value)}
+            placeholder="Any"
+            className="mp-input"
+          />
         </label>
 
         <div className="flex flex-col gap-2 sm:col-span-2 sm:flex-row sm:items-end lg:col-span-1">

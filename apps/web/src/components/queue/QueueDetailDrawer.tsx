@@ -14,7 +14,7 @@ export function QueueDetailDrawer({ item, open, onClose }: Props) {
   const status = queueStatusVisual(item.status);
 
   return (
-    <RowDetailDrawer open={open} title={formatAssetLead(item.vehicleTitle, item.stockNumber)} onClose={onClose}>
+    <RowDetailDrawer open={open} title={formatAssetLead(item.assetTitle, item.assetRef)} onClose={onClose}>
       <dl className="space-y-3 text-sm">
         <Row label={operatorCopy.drawer.action} value={taskActionLabel(item.triggerKind)} />
         <Row label={operatorCopy.drawer.channel} value={item.platformName} />

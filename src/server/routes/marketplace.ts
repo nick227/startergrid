@@ -2,6 +2,7 @@ import type { FastifyInstance } from 'fastify';
 import type { PrismaClient } from '@prisma/client';
 import {
   listMarketplaceVehicles,
+  getMarketplaceFeed,
   getMarketplaceVehicle,
   getMarketplaceDealerIndex,
   type MarketplaceListFilters,
@@ -29,6 +30,8 @@ type ListQuery = {
   maxPrice?:   string;
   maxMileage?: string;
   dealer?:     string;
+  cursor?:     string;
+  limit?:      string;
   page?:       string;
   pageSize?:   string;
 };
@@ -47,6 +50,27 @@ function parseNonNegIntParam(value: string | undefined): number | undefined {
 }
 
 export function registerMarketplaceRoutes(app: FastifyInstance, prisma: PrismaClient): void {
+
+  // GET /api/marketplace/feed
+  // Cursor-based mixed feed. Supports the same public vehicle filters as browse.
+  app.get<{ Querystring: ListQuery }>(
+    '/api/marketplace/feed',
+    async (request, reply) => {
+      const q = request.query;
+      const filters: MarketplaceListFilters = {
+        make:       q.make      || undefined,
+        model:      q.model     || undefined,
+        condition:  q.condition || undefined,
+        dealer:     q.dealer    || undefined,
+        minPrice:   parseNonNegIntParam(q.minPrice),
+        maxPrice:   parseNonNegIntParam(q.maxPrice),
+        maxMileage: parseNonNegIntParam(q.maxMileage),
+        cursor:     q.cursor    || undefined,
+        limit:      parsePosIntParam(q.limit, 24),
+      };
+      return reply.send(await getMarketplaceFeed(prisma, filters));
+    }
+  );
 
   // GET /api/marketplace/vehicles
   // Paginated cross-dealer browse. Supports make/model/condition/price/mileage/dealer filters.

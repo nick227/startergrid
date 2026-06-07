@@ -2,6 +2,7 @@
 import type { PrismaClient, Prisma } from '@prisma/client';
 import { recordSyncEvent } from './syncEventService.js';
 import { isInCooldown } from './syncPolicyService.js';
+import { getDispatchEnvironment, dispatchAdapter, type DispatchEnvironment } from './dispatchAdapter.js';
 
 // ── Constants ────────────────────────────────────────────────────────────────
 
@@ -68,6 +69,7 @@ export type SchedulerItemPreview = {
 export type SchedulerResult = {
   dryRun: boolean;
   schedulerId: string;
+  dispatchEnvironment: DispatchEnvironment;
   eligibleCount: number;
   claimedCount: number;
   sentCount: number;
@@ -91,6 +93,11 @@ export async function runScheduler(
   const { dealershipId, dryRun = false } = opts;
   const schedulerId = opts.schedulerId ?? `scheduler-${Date.now()}-${nanoid(6)}`;
   const now = new Date();
+
+  // Resolve and validate dispatch environment once up-front.
+  // Throws DispatchSafetyError immediately if DISPATCH_ENVIRONMENT is invalid,
+  // before any queue items are claimed.
+  const dispatchEnv = getDispatchEnvironment();
 
   // Find all potentially eligible items
   const candidates = await prisma.publishQueueItem.findMany({
@@ -160,6 +167,7 @@ export async function runScheduler(
     return {
       dryRun: true,
       schedulerId,
+      dispatchEnvironment: dispatchEnv,
       eligibleCount: eligible.length,
       claimedCount: 0,
       sentCount: 0,
@@ -199,7 +207,7 @@ export async function runScheduler(
   }
 
   if (claimedIds.length === 0) {
-    return { dryRun: false, schedulerId, eligibleCount: eligible.length, claimedCount: 0, sentCount: 0, failedCount: 0, skippedCount: eligible.length, cooldownCount: inCooldownItems.length, syncRunIds: [], previews };
+    return { dryRun: false, schedulerId, dispatchEnvironment: dispatchEnv, eligibleCount: eligible.length, claimedCount: 0, sentCount: 0, failedCount: 0, skippedCount: eligible.length, cooldownCount: inCooldownItems.length, syncRunIds: [], previews };
   }
 
   // Group claimed items by dealershipId
@@ -233,8 +241,15 @@ export async function runScheduler(
     let runFailed = 0;
 
     for (const item of items) {
-      // MOCK dispatch: always succeeds (real failures happen in SANDBOX/PRODUCTION)
-      const success = true;
+      const dispatchResult = await dispatchAdapter({
+        platformSlug: item.platformSlug,
+        environment: dispatchEnv,
+        dealershipId: dId,
+        vehicleId: item.vehicleId,
+        triggerKind: item.triggerKind,
+        idempotencyKey: item.idempotencyKey,
+      });
+      const success = dispatchResult.success;
 
       if (success) {
         await prisma.publishQueueItem.update({
@@ -256,7 +271,7 @@ export async function runScheduler(
             schedulerId,
             idempotencyKey: item.idempotencyKey,
             triggerKind: item.triggerKind,
-            environment: 'MOCK'
+            environment: dispatchResult.environment,
           },
           syncRunId: syncRun.id
         });
@@ -330,6 +345,7 @@ export async function runScheduler(
   return {
     dryRun: false,
     schedulerId,
+    dispatchEnvironment: dispatchEnv,
     eligibleCount: eligible.length,
     claimedCount: claimedIds.length,
     sentCount: totalSent,

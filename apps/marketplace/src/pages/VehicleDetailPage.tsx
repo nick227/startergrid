@@ -6,6 +6,7 @@ import { getListReturn } from '../lib/listReturn.ts';
 import { MarketplaceEventType } from '../lib/events.ts';
 import { useTrackMarketplaceEvent } from '../hooks/useTrackMarketplaceEvent.ts';
 import { PageShell } from '../components/layout/PageShell.tsx';
+import { FavoriteButton } from '../components/ui/FavoriteButton.tsx';
 import { DetailPageSkeleton } from '../components/ui/SkeletonGrid.tsx';
 import { ErrorState } from '../components/ui/ErrorState.tsx';
 import { NotFoundState } from '../components/ui/NotFoundState.tsx';
@@ -77,6 +78,10 @@ export default function VehicleDetailPage({ listingId }: Props) {
 
         <div className="space-y-6">
           <CoreHeaderSection core={vehicle.core} commerce={vehicle.commerce} />
+          <div className="flex items-center gap-2">
+            <FavoriteButton listingId={vehicle.core.listingId} />
+            <span className="text-sm text-ink-muted">Save this vehicle</span>
+          </div>
           <CommerceSection commerce={vehicle.commerce} />
           <LocationSection location={vehicle.location} />
           <div id="inquiry">

@@ -27,6 +27,7 @@ export const platformProfiles: PlatformProfileSeed[] = [
       'legalName', 'rooftopAddress.street', 'rooftopAddress.city', 'rooftopAddress.state',
       'rooftopAddress.postalCode', 'websiteUrl', 'primaryContact.email', 'primaryContact.phone'
     ],
+    supportedCategories: ['AUTOMOTIVE'],
     requiredVehicleFields: [
       'vin', 'stockNumber', 'year', 'make', 'model', 'priceCents', 'condition', 'exteriorColor', 'media[0].url'
     ],
@@ -59,6 +60,7 @@ export const platformProfiles: PlatformProfileSeed[] = [
     ],
     // VIN is intentionally excluded — marketplace APIs never expose VIN.
     // Eligibility check (priceCents > 0) is enforced at query time, not in the feed artifact.
+    supportedCategories: ['AUTOMOTIVE'],
     requiredVehicleFields: [
       'stockNumber', 'year', 'make', 'model', 'priceCents', 'condition', 'media[0].url'
     ],
@@ -101,6 +103,7 @@ export const platformProfiles: PlatformProfileSeed[] = [
       'legalName', 'rooftopAddress.street', 'rooftopAddress.city', 'rooftopAddress.state',
       'rooftopAddress.postalCode', 'primaryContact.email', 'primaryContact.phone', 'websiteUrl'
     ],
+    supportedCategories: ['AUTOMOTIVE'],
     requiredVehicleFields: [
       'vin', 'stockNumber', 'year', 'make', 'model', 'mileage', 'priceCents', 'condition',
       'exteriorColor', 'media[0].url'
@@ -139,6 +142,7 @@ export const platformProfiles: PlatformProfileSeed[] = [
       'https://www.facebook.com/business/help/1930396467200635'
     ],
     requiredDealershipFields: ['legalName', 'websiteUrl', 'primaryContact.email'],
+    supportedCategories: ['AUTOMOTIVE'],
     requiredVehicleFields: [
       'vin', 'stockNumber', 'year', 'make', 'model', 'mileage', 'priceCents', 'condition',
       'exteriorColor', 'media[0].url'
@@ -174,6 +178,7 @@ export const platformProfiles: PlatformProfileSeed[] = [
       'https://ads.us.tiktok.com/help/article/catalogs?lang=en'
     ],
     requiredDealershipFields: ['legalName', 'websiteUrl', 'primaryContact.email'],
+    supportedCategories: ['AUTOMOTIVE'],
     requiredVehicleFields: [
       'vin', 'stockNumber', 'year', 'make', 'model', 'mileage', 'priceCents', 'condition',
       'exteriorColor', 'media[0].url'
@@ -207,6 +212,7 @@ export const platformProfiles: PlatformProfileSeed[] = [
       'https://learn.microsoft.com/en-us/advertising/bulk-service/bulk-service?view=bingads-13'
     ],
     requiredDealershipFields: ['legalName', 'websiteUrl', 'primaryContact.email'],
+    supportedCategories: ['AUTOMOTIVE'],
     requiredVehicleFields: [
       'vin', 'stockNumber', 'year', 'make', 'model', 'trim', 'mileage', 'priceCents', 'condition',
       'exteriorColor', 'media[0].url'
@@ -241,6 +247,7 @@ export const platformProfiles: PlatformProfileSeed[] = [
       'https://help.pinterest.com/en/business/article/shopping-ads'
     ],
     requiredDealershipFields: ['legalName', 'websiteUrl', 'primaryContact.email'],
+    supportedCategories: ['AUTOMOTIVE'],
     requiredVehicleFields: [
       'vin', 'stockNumber', 'year', 'make', 'model', 'mileage', 'priceCents', 'condition',
       'exteriorColor', 'media[0].url'
@@ -275,6 +282,7 @@ export const platformProfiles: PlatformProfileSeed[] = [
       'https://business.reddithelp.com/articles/Knowledge/dynamic-product-ads'
     ],
     requiredDealershipFields: ['legalName', 'websiteUrl', 'primaryContact.email'],
+    supportedCategories: ['AUTOMOTIVE'],
     requiredVehicleFields: [
       'vin', 'stockNumber', 'year', 'make', 'model', 'mileage', 'priceCents', 'condition',
       'exteriorColor', 'media[0].url'
@@ -312,6 +320,7 @@ export const platformProfiles: PlatformProfileSeed[] = [
       'legalName', 'dealerLicense', 'rooftopAddress.street', 'rooftopAddress.city',
       'rooftopAddress.state', 'rooftopAddress.postalCode', 'primaryContact.email', 'primaryContact.phone', 'inventorySize'
     ],
+    supportedCategories: ['AUTOMOTIVE'],
     requiredVehicleFields: ['vin', 'stockNumber', 'year', 'make', 'model', 'mileage', 'priceCents', 'condition', 'media[0].url'],
     requiredMediaRules: { minImages: 3, notes: 'Assisted marketplace packet should include feed sample with image URLs.' },
     testFixtures: { validatesFeed: true, supportsReferralCredit: 'partner-dependent', requiresDealerAccount: false }
@@ -346,6 +355,7 @@ export const platformProfiles: PlatformProfileSeed[] = [
       'legalName', 'dealerLicense', 'rooftopAddress.street', 'rooftopAddress.city',
       'rooftopAddress.state', 'rooftopAddress.postalCode', 'primaryContact.email', 'primaryContact.phone', 'inventorySize'
     ],
+    supportedCategories: ['AUTOMOTIVE'],
     requiredVehicleFields: ['vin', 'stockNumber', 'year', 'make', 'model', 'mileage', 'priceCents', 'condition', 'media[0].url'],
     requiredMediaRules: { minImages: 3 },
     testFixtures: { validatesFeed: true, supportsReferralCredit: 'consultant-or-partner-dependent', requiresDealerAccount: false }
@@ -382,6 +392,7 @@ export const platformProfiles: PlatformProfileSeed[] = [
       'legalName', 'dealerLicense', 'rooftopAddress.street', 'rooftopAddress.city',
       'rooftopAddress.state', 'rooftopAddress.postalCode', 'primaryContact.email', 'primaryContact.phone'
     ],
+    supportedCategories: ['AUTOMOTIVE'],
     requiredVehicleFields: [
       'vin', 'stockNumber', 'year', 'make', 'model', 'trim', 'mileage', 'priceCents', 'condition',
       'exteriorColor', 'bodyStyle', 'media[0].url'
@@ -416,6 +427,7 @@ export const platformProfiles: PlatformProfileSeed[] = [
       'https://business.x.com/en/help/campaign-setup/advertiser-card-specifications.html'
     ],
     requiredDealershipFields: ['legalName', 'websiteUrl', 'primaryContact.email'],
+    supportedCategories: ['AUTOMOTIVE'],
     requiredVehicleFields: [
       'vin', 'stockNumber', 'year', 'make', 'model', 'mileage', 'priceCents', 'condition',
       'exteriorColor', 'media[0].url'
@@ -453,6 +465,7 @@ export const platformProfiles: PlatformProfileSeed[] = [
       'legalName', 'dealerLicense', 'rooftopAddress.street', 'rooftopAddress.city',
       'rooftopAddress.state', 'rooftopAddress.postalCode', 'primaryContact.email', 'primaryContact.phone', 'inventorySize'
     ],
+    supportedCategories: ['AUTOMOTIVE'],
     requiredVehicleFields: ['vin', 'stockNumber', 'year', 'make', 'model', 'mileage', 'priceCents', 'condition', 'media[0].url'],
     requiredMediaRules: { minImages: 3 },
     testFixtures: { validatesFeed: true, supportsReferralCredit: 'partner-dependent', requiresDealerAccount: false }
@@ -484,6 +497,7 @@ export const platformProfiles: PlatformProfileSeed[] = [
       'https://developers.snap.com/api/marketing-api/Ads-API/dynamic-product-ads'
     ],
     requiredDealershipFields: ['legalName', 'websiteUrl', 'primaryContact.email'],
+    supportedCategories: ['AUTOMOTIVE'],
     requiredVehicleFields: [
       'vin', 'stockNumber', 'year', 'make', 'model', 'mileage', 'priceCents', 'condition',
       'exteriorColor', 'media[0].url'
@@ -518,6 +532,7 @@ export const platformProfiles: PlatformProfileSeed[] = [
       'https://business.linkedin.com/content/dam/me/business/en-us/marketing-solutions/cx/2022/pdf/linkedin-lead-sync-api-access-guide.pdf'
     ],
     requiredDealershipFields: ['legalName', 'websiteUrl', 'primaryContact.email', 'primaryContact.phone'],
+    supportedCategories: ['AUTOMOTIVE'],
     requiredVehicleFields: ['vin', 'stockNumber', 'year', 'make', 'model', 'priceCents'],
     requiredMediaRules: { minImages: 0, notes: 'Lead Gen Forms do not require inventory images, but vehicle context can be used in hidden fields or creative payloads.' },
     testFixtures: { validatesLeadShape: true, supportsReferralCredit: false, requiresDealerAccount: true, privateApiApproval: true }
@@ -552,6 +567,7 @@ export const platformProfiles: PlatformProfileSeed[] = [
       'legalName', 'dealerLicense', 'rooftopAddress.street', 'rooftopAddress.city',
       'rooftopAddress.state', 'rooftopAddress.postalCode', 'primaryContact.email', 'primaryContact.phone', 'inventorySize'
     ],
+    supportedCategories: ['AUTOMOTIVE'],
     requiredVehicleFields: ['vin', 'stockNumber', 'year', 'make', 'model', 'mileage', 'priceCents', 'condition', 'media[0].url'],
     requiredMediaRules: { minImages: 3 },
     testFixtures: { validatesFeed: true, supportsReferralCredit: 'partner-dependent', requiresDealerAccount: false }
@@ -577,6 +593,7 @@ export const platformProfiles: PlatformProfileSeed[] = [
     submissionMethods: ['MOCK_EMAIL'],
     sourceUrls: ['https://adfxml.info/adf_spec.pdf'],
     requiredDealershipFields: ['legalName', 'primaryContact.email', 'primaryContact.phone'],
+    supportedCategories: ['AUTOMOTIVE'],
     requiredVehicleFields: ['vin', 'stockNumber', 'year', 'make', 'model', 'priceCents'],
     requiredMediaRules: { minImages: 0 },
     testFixtures: { validatesLeadShape: true, supportsReferralCredit: false, requiresDealerAccount: false }
@@ -610,6 +627,7 @@ export const platformProfiles: PlatformProfileSeed[] = [
       'legalName', 'rooftopAddress.street', 'rooftopAddress.city', 'rooftopAddress.state',
       'rooftopAddress.postalCode', 'websiteUrl', 'primaryContact.email'
     ],
+    supportedCategories: ['AUTOMOTIVE'],
     requiredVehicleFields: ['vin', 'stockNumber', 'year', 'make', 'model', 'priceCents', 'media[0].url'],
     requiredMediaRules: { minImages: 1, notes: 'Nextdoor local ads need localized copy and creative; use vehicle images for inventory/trade-in campaigns.' },
     testFixtures: { validatesLocalAdPacket: true, supportsReferralCredit: false, requiresDealerAccount: true, publicApi: 'program-access' }
@@ -644,6 +662,7 @@ export const platformProfiles: PlatformProfileSeed[] = [
       'legalName', 'rooftopAddress.street', 'rooftopAddress.city', 'rooftopAddress.state',
       'rooftopAddress.postalCode', 'primaryContact.email', 'primaryContact.phone', 'websiteUrl'
     ],
+    supportedCategories: ['AUTOMOTIVE'],
     requiredVehicleFields: [],
     requiredMediaRules: { minImages: 0, notes: 'Location publishing validates rooftop/business identity rather than vehicle inventory payloads.' },
     testFixtures: { validatesLocationProfile: true, supportsReferralCredit: false, requiresDealerAccount: true, localDiscovery: true }

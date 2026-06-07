@@ -13,9 +13,9 @@ import { recordSyncEvent } from './syncEventService.js';
 
 export type QueueItemView = {
   id: string;
-  stockNumber: string | null;
-  vehicleTitle: string | null;
-  vehicleId: string | null;
+  assetRef: string | null;
+  assetTitle: string | null;
+  assetId: string | null;
   platformSlug: string;
   platformName: string;
   integrationClass: IntegrationClass;
@@ -182,9 +182,9 @@ export async function getQueueView(
     const v = item.vehicle;
     return {
       id: item.id,
-      stockNumber: v?.stockNumber ?? null,
-      vehicleTitle: v ? `${v.year} ${v.make} ${v.model}` : null,
-      vehicleId: item.vehicleId,
+      assetRef: v?.stockNumber ?? null,
+      assetTitle: v ? `${v.year} ${v.make} ${v.model}` : null,
+      assetId: item.vehicleId,
       platformSlug: item.platformSlug,
       platformName: profile?.name ?? item.platformSlug,
       integrationClass: (profile?.integrationClass ?? 'FEEDABLE') as IntegrationClass,

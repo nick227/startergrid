@@ -176,8 +176,8 @@ export type ApprovalListItem = {
   status: string;
   platformSlug: string;
   platformName: string;
-  stockNumber: string | null;
-  vehicleTitle: string | null;
+  assetRef: string | null;
+  assetTitle: string | null;
   triggerKind: string;
   policyMode: string;
   approvalRequiredReason: string | null;
@@ -209,8 +209,8 @@ export async function listApprovalQueue(
     status: item.status,
     platformSlug: item.platformSlug,
     platformName: profileBySlug.get(item.platformSlug)?.name ?? item.platformSlug,
-    stockNumber: item.vehicle?.stockNumber ?? null,
-    vehicleTitle: item.vehicle ? `${item.vehicle.year} ${item.vehicle.make} ${item.vehicle.model}` : null,
+    assetRef: item.vehicle?.stockNumber ?? null,
+    assetTitle: item.vehicle ? `${item.vehicle.year} ${item.vehicle.make} ${item.vehicle.model}` : null,
     triggerKind: item.triggerKind,
     policyMode: item.policyMode,
     approvalRequiredReason: item.approvalRequiredReason,

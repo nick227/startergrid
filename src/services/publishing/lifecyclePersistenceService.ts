@@ -2,6 +2,7 @@
 import type { FeedArtifact, PortalInteractionResult } from '../../lib/types.js';
 import fs from 'node:fs/promises';
 import path from 'node:path';
+import { getDispatchEnvironment } from './dispatchAdapter.js';
 
 const EXPORTS_DIR = process.env['FEED_EXPORTS_DIR'] ?? './exports';
 
@@ -30,7 +31,8 @@ export async function persistPortalInteraction(
         response: result.response.body as unknown as Prisma.InputJsonValue,
         mockAccepted: result.toStatus !== 'REJECTED' && result.toStatus !== 'SUBMITTED',
         rejectionReasonsJson: result.dealerAction ? { reason: result.dealerAction } : undefined,
-        artifactPath: artifactPath ?? null
+        artifactPath: artifactPath ?? null,
+        environment: getDispatchEnvironment()
       }
     }),
     prisma.platformApplication.update({

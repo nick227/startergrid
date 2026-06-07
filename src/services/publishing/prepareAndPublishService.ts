@@ -170,6 +170,7 @@ export type PlatformPublishResult = {
   platformSlug: string;
   platformName: string;
   integrationClass: IntegrationClass;
+  supportedCategories: string[];
   readiness: ReadinessColor;
   state: PublishState;
   detail: string;
@@ -360,6 +361,7 @@ export async function runPrepareAndPublish(
       platformSlug: platform.slug,
       platformName: platform.name,
       integrationClass: platform.integrationClass,
+      supportedCategories: platform.supportedCategories,
       readiness: report.readiness,
       state,
       detail,

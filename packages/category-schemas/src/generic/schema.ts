@@ -32,7 +32,7 @@ export function createPlaceholderSchema(
 /** Fallback when category is not registered — never throws. */
 export function createUnknownFallbackSchema(category: string): CategorySchema {
   return {
-    id: 'AUTOMOTIVE',
+    id: category as BusinessCategoryId,
     status: 'placeholder',
     label: category || 'Unknown',
     copy: { ...genericCopy },

@@ -28,7 +28,7 @@ export function registerPerformanceRoutes(app: FastifyInstance, prisma: PrismaCl
     '/api/dealers/:dealershipId/performance/vehicles',
     async (request, reply) => {
       const { dealershipId } = request.params;
-      if (!requireDealerAccess(request, reply, dealershipId)) return;
+      if (!await requireDealerAccess(prisma, request, reply, dealershipId)) return;
       if (!await requireDealer(prisma, dealershipId))
         return reply.status(404).send({ error: 'Dealer not found' });
 
@@ -42,7 +42,7 @@ export function registerPerformanceRoutes(app: FastifyInstance, prisma: PrismaCl
     '/api/dealers/:dealershipId/performance/vehicles/:stockNumber',
     async (request, reply) => {
       const { dealershipId, stockNumber } = request.params;
-      if (!requireDealerAccess(request, reply, dealershipId)) return;
+      if (!await requireDealerAccess(prisma, request, reply, dealershipId)) return;
       if (!await requireDealer(prisma, dealershipId))
         return reply.status(404).send({ error: 'Dealer not found' });
 
@@ -59,7 +59,7 @@ export function registerPerformanceRoutes(app: FastifyInstance, prisma: PrismaCl
     '/api/dealers/:dealershipId/performance/platforms',
     async (request, reply) => {
       const { dealershipId } = request.params;
-      if (!requireDealerAccess(request, reply, dealershipId)) return;
+      if (!await requireDealerAccess(prisma, request, reply, dealershipId)) return;
       if (!await requireDealer(prisma, dealershipId))
         return reply.status(404).send({ error: 'Dealer not found' });
 
@@ -73,7 +73,7 @@ export function registerPerformanceRoutes(app: FastifyInstance, prisma: PrismaCl
     '/api/dealers/:dealershipId/performance/summary',
     async (request, reply) => {
       const { dealershipId } = request.params;
-      if (!requireDealerAccess(request, reply, dealershipId)) return;
+      if (!await requireDealerAccess(prisma, request, reply, dealershipId)) return;
       if (!await requireDealer(prisma, dealershipId))
         return reply.status(404).send({ error: 'Dealer not found' });
 
@@ -88,7 +88,7 @@ export function registerPerformanceRoutes(app: FastifyInstance, prisma: PrismaCl
     '/api/dealers/:dealershipId/performance/compute',
     async (request, reply) => {
       const { dealershipId } = request.params;
-      if (!requireDealerAccess(request, reply, dealershipId)) return;
+      if (!await requireDealerAccess(prisma, request, reply, dealershipId)) return;
       if (!await requireDealer(prisma, dealershipId))
         return reply.status(404).send({ error: 'Dealer not found' });
 

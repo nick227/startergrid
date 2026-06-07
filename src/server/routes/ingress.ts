@@ -23,7 +23,7 @@ export function registerIngressRoutes(app: FastifyInstance, prisma: PrismaClient
     '/api/dealers/:dealershipId/ingress/sources',
     async (request, reply) => {
       const { dealershipId } = request.params;
-      if (!requireDealerAccess(request, reply, dealershipId)) return;
+      if (!await requireDealerAccess(prisma, request, reply, dealershipId)) return;
       if (!await requireDealer(prisma, dealershipId))
         return reply.status(404).send({ error: 'Dealer not found' });
 
@@ -37,7 +37,7 @@ export function registerIngressRoutes(app: FastifyInstance, prisma: PrismaClient
     '/api/dealers/:dealershipId/ingress/sources',
     async (request, reply) => {
       const { dealershipId } = request.params;
-      if (!requireDealerAccess(request, reply, dealershipId)) return;
+      if (!await requireDealerAccess(prisma, request, reply, dealershipId)) return;
       if (!await requireDealer(prisma, dealershipId))
         return reply.status(404).send({ error: 'Dealer not found' });
 
@@ -54,7 +54,7 @@ export function registerIngressRoutes(app: FastifyInstance, prisma: PrismaClient
     '/api/dealers/:dealershipId/ingress/sources/:sourceId',
     async (request, reply) => {
       const { dealershipId, sourceId } = request.params;
-      if (!requireDealerAccess(request, reply, dealershipId)) return;
+      if (!await requireDealerAccess(prisma, request, reply, dealershipId)) return;
       if (!await requireDealer(prisma, dealershipId))
         return reply.status(404).send({ error: 'Dealer not found' });
 
@@ -72,7 +72,7 @@ export function registerIngressRoutes(app: FastifyInstance, prisma: PrismaClient
     '/api/dealers/:dealershipId/ingress/sources/:sourceId/check',
     async (request, reply) => {
       const { dealershipId, sourceId } = request.params;
-      if (!requireDealerAccess(request, reply, dealershipId)) return;
+      if (!await requireDealerAccess(prisma, request, reply, dealershipId)) return;
       if (!await requireDealer(prisma, dealershipId))
         return reply.status(404).send({ error: 'Dealer not found' });
 
@@ -93,7 +93,7 @@ export function registerIngressRoutes(app: FastifyInstance, prisma: PrismaClient
     async (request, reply) => {
       const { dealershipId } = request.params;
       const { limit: limitStr, before } = request.query;
-      if (!requireDealerAccess(request, reply, dealershipId)) return;
+      if (!await requireDealerAccess(prisma, request, reply, dealershipId)) return;
       if (!await requireDealer(prisma, dealershipId))
         return reply.status(404).send({ error: 'Dealer not found' });
 

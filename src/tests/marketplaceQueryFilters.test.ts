@@ -16,6 +16,7 @@ import { describe, it } from 'node:test';
 import type { PrismaClient } from '@prisma/client';
 import {
   listMarketplaceVehicles,
+  getMarketplaceFeed,
   getMarketplaceVehicle,
   type MarketplaceListFilters,
 } from '../services/marketplace/marketplaceQueryService.js';
@@ -306,12 +307,14 @@ describe('VIN field exclusion', () => {
     assert.ok(!('vin' in sel), 'vin must not be in the vehicle select clause');
   });
 
-  it('VIN is not in the Prisma SELECT for vehicle detail', async () => {
+  it('VIN IS in the Prisma SELECT for vehicle detail (approved: VDP policy includes full VIN)', async () => {
+    // VIN is intentionally exposed on the detail page per VDP design (docs/plans/2026-06-06-marketplace-vdp-design.md).
+    // It is NOT in the list or feed SELECT — detail only.
     const { prisma, captured } = makeCaptureMock([fakeVehicle()]);
     await getMarketplaceVehicle(prisma, 'vehicle-1');
     const sel = captured.select as Record<string, unknown> | undefined;
     assert.ok(sel !== undefined, 'findFirst must use an explicit select');
-    assert.ok(!('vin' in sel), 'vin must not be in the vehicle detail select clause');
+    assert.ok('vin' in sel, 'vin must be in the vehicle detail select (VDP shows full VIN by policy)');
   });
 
   it('operator relation fields are not in SELECT (no syncEvents, performanceCache, etc.)', async () => {
@@ -332,6 +335,28 @@ describe('VIN field exclusion', () => {
     for (const f of INTERNAL_FIELDS) {
       assert.ok(!(f in sel), `Internal field "${f}" must not be in vehicle SELECT`);
     }
+  });
+
+  it('VIN is not in the Prisma SELECT for mixed feed', async () => {
+    const { prisma, captured } = makeCaptureMock([fakeVehicle()]);
+    await getMarketplaceFeed(prisma, {});
+    const sel = captured.select as Record<string, unknown> | undefined;
+    assert.ok(sel !== undefined, 'feed findMany must use an explicit select');
+    assert.ok(!('vin' in sel), 'vin must not be in the feed vehicle select clause');
+  });
+
+  it('feed media select includes public media metadata only', async () => {
+    const { prisma, captured } = makeCaptureMock([fakeVehicle()]);
+    await getMarketplaceFeed(prisma, {});
+    const sel = captured.select as Record<string, any>;
+    const mediaSelect = sel['media']?.select as Record<string, unknown>;
+    assert.ok(mediaSelect['url']);
+    assert.ok(mediaSelect['kind']);
+    assert.ok(mediaSelect['sortOrder']);
+    assert.ok(mediaSelect['width']);
+    assert.ok(mediaSelect['height']);
+    assert.ok(mediaSelect['mimeType']);
+    assert.ok(!('vehicle' in mediaSelect), 'media select must not include vehicle relation');
   });
 });
 
@@ -359,6 +384,46 @@ describe('stable sort order', () => {
     const ob = captured.orderBy as Array<Record<string, string>>;
     const hasIdSort = ob.some(o => 'id' in o);
     assert.ok(hasIdSort, 'orderBy must include id as a tie-breaking key');
+  });
+});
+
+describe('mixed feed cursor query', () => {
+  it('feed uses createdAt desc and id desc ordering', async () => {
+    const { prisma, captured } = makeCaptureMock([fakeVehicle()]);
+    await getMarketplaceFeed(prisma, {});
+    const ob = captured.orderBy as Array<Record<string, string>>;
+    assert.equal(ob[0]?.['createdAt'], 'desc');
+    assert.equal(ob[1]?.['id'], 'desc');
+  });
+
+  it('feed take is limit + 1 to detect additional cursor page', async () => {
+    const { prisma, captured } = makeCaptureMock([fakeVehicle()]);
+    await getMarketplaceFeed(prisma, { limit: 24 });
+    assert.equal(captured.take, 25);
+  });
+
+  it('feed limit is capped at 60', async () => {
+    const { prisma, captured } = makeCaptureMock([fakeVehicle()]);
+    await getMarketplaceFeed(prisma, { limit: 999 });
+    assert.equal(captured.take, 61);
+  });
+
+  it('feed applies eligibility invariants before cursor constraints', async () => {
+    const { prisma, captured } = makeCaptureMock([
+      fakeVehicle({ id: 'vehicle-2', createdAt: new Date('2026-05-02T00:00:00.000Z') }),
+      fakeVehicle({ id: 'vehicle-1', createdAt: new Date('2026-05-01T00:00:00.000Z') }),
+    ]);
+    const first = await getMarketplaceFeed(prisma, { limit: 1 });
+    assert.ok(first.nextCursor, 'test setup needs cursor');
+    await getMarketplaceFeed(prisma, { cursor: first.nextCursor!, limit: 1 });
+    const w = where(captured);
+    const and = w['AND'] as unknown[];
+    assert.ok(Array.isArray(and), 'cursor query should compose AND clauses');
+    const base = and[0] as Record<string, unknown>;
+    assert.equal(base['soldAt'], null);
+    assert.equal(base['removedAt'], null);
+    const price = base['priceCents'] as Record<string, unknown>;
+    assert.equal(price['gt'], 0);
   });
 });
 

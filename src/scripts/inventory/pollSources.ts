@@ -8,6 +8,7 @@ import {
   summarizeSourcePolling,
   type PollingSourceMeta,
 } from '../../services/inventory/sourcePollingService.js';
+import { jobStarted } from '../../lib/jobLog.js';
 
 // ── Args ──────────────────────────────────────────────────────────────────────
 
@@ -42,6 +43,7 @@ function relTime(iso: string, from: Date): string {
 
 async function main() {
   const now = new Date();
+  jobStarted('IngressPoll', now);
 
   if (dryRun) console.log('DRY RUN — sources will be evaluated but not checked\n');
 

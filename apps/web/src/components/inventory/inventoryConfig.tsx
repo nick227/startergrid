@@ -230,7 +230,7 @@ export const IMPORT_WIZARD_STEPS = [
 
 export type CleanupFilter =
   | 'ALL' | 'READY' | 'WARNING' | 'BLOCKED'
-  | 'MISSING_PHOTOS' | 'INVALID_VIN' | 'SUSPICIOUS_PRICE';
+  | 'MISSING_PHOTOS' | 'INVALID_IDENTIFIER' | 'SUSPICIOUS_PRICE';
 
 export type FilterChipDef = {
   key: CleanupFilter;
@@ -241,7 +241,7 @@ export type FilterChipDef = {
 // Extended filters that supplement the SummaryStrip (issue-specific)
 export const CLEANUP_FILTER_DEFS: FilterChipDef[] = [
   { key: 'MISSING_PHOTOS',   label: 'Missing photos',    color: 'amber' },
-  { key: 'INVALID_VIN',      label: inventoryLabels().invalidIdentifierLabel, color: 'red'   },
+  { key: 'INVALID_IDENTIFIER',      label: inventoryLabels().invalidIdentifierLabel, color: 'red'   },
   { key: 'SUSPICIOUS_PRICE', label: 'Suspicious price',  color: 'amber' },
 ];
 
@@ -252,7 +252,7 @@ export function applyCleanupFilter(vehicle: VehicleListItem, filter: CleanupFilt
     case 'WARNING':         return vehicle.readiness === 'WARNING';
     case 'BLOCKED':         return vehicle.readiness === 'BLOCKED';
     case 'MISSING_PHOTOS':  return vehicle.issues.some(i => i.path === 'media');
-    case 'INVALID_VIN':     return vehicle.issues.some(i => i.path === 'vin' && i.severity === 'FAIL');
+    case 'INVALID_IDENTIFIER':     return vehicle.issues.some(i => i.path === 'vin' && i.severity === 'FAIL');
     case 'SUSPICIOUS_PRICE':return vehicle.issues.some(i => i.path === 'priceCents');
     default:                return true;
   }

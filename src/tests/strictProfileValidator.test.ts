@@ -25,6 +25,7 @@ const baseProfile: PlatformProfileSeed = {
   submissionMethods: ['FEED_URL'],
   sourceUrls: ['https://docs.test-platform.example.com'],
   requiredDealershipFields: [],
+  supportedCategories: ['AUTOMOTIVE'],
   requiredVehicleFields: [],
   requiredMediaRules: {},
   testFixtures: {}

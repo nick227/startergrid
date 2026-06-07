@@ -6,16 +6,16 @@ import { inventoryLabels } from './copy/index.ts';
 import { operatorCopy } from './copy/operator.ts';
 
 export function queueTaskTitle(item: QueueItemView): string {
-  if (item.vehicleTitle) return item.vehicleTitle;
-  if (item.stockNumber) return `${inventoryLabels().refColumn} ${item.stockNumber}`;
+  if (item.assetTitle) return item.assetTitle;
+  if (item.assetRef) return `${inventoryLabels().refColumn} ${item.assetRef}`;
   return operatorCopy.asset.unknown;
 }
 
 export function queueTaskSecondaryMeta(item: QueueItemView): string {
   const labels = inventoryLabels();
   const parts: string[] = [];
-  if (item.stockNumber && item.vehicleTitle) {
-    parts.push(`${labels.refColumn} ${item.stockNumber}`);
+  if (item.assetRef && item.assetTitle) {
+    parts.push(`${labels.refColumn} ${item.assetRef}`);
   }
   parts.push(item.platformName, taskActionLabel(item.triggerKind));
   if (item.blockReason) parts.push(item.blockReason);

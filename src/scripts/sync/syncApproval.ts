@@ -35,7 +35,7 @@ async function cmdList(dealerId: string) {
   if (needsApproval.length > 0) {
     console.log(`\n── NEEDS APPROVAL (${needsApproval.length}) ──`);
     for (const item of needsApproval) {
-      const vehicle = item.vehicleTitle ? `${item.stockNumber} ${item.vehicleTitle}` : '—';
+      const vehicle = item.assetTitle ? `${item.assetRef} ${item.assetTitle}` : '—';
       console.log(`\n  ID:       ${item.id}`);
       console.log(`  Platform: ${item.platformName}`);
       console.log(`  Vehicle:  ${vehicle}`);
@@ -51,7 +51,7 @@ async function cmdList(dealerId: string) {
   if (held.length > 0) {
     console.log(`\n── HELD (${held.length}) ──`);
     for (const item of held) {
-      const vehicle = item.vehicleTitle ? `${item.stockNumber} ${item.vehicleTitle}` : '—';
+      const vehicle = item.assetTitle ? `${item.assetRef} ${item.assetTitle}` : '—';
       console.log(`\n  ID:         ${item.id}`);
       console.log(`  Platform:   ${item.platformName}`);
       console.log(`  Vehicle:    ${vehicle}`);

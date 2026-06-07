@@ -88,9 +88,9 @@ async function main() {
           : item.status === 'HELD'           ? `→ held: ${item.holdReason ?? '—'}`
           : item.blockReason                 ? `→ ${item.blockReason}`
           : '';
-        const vehicle = item.vehicleTitle
-          ? `${item.stockNumber} ${item.vehicleTitle}`
-          : '(no vehicle)';
+        const vehicle = item.assetTitle
+          ? `${item.assetRef} ${item.assetTitle}`
+          : '(no asset)';
         const age = ageLabel(new Date(item.createdAt));
         const approvalNote = item.status === 'NEEDS_APPROVAL' && item.approvalRequiredReason
           ? `\n      Reason: ${item.approvalRequiredReason}  Age: ${age}  ID: ${item.id}`
@@ -107,7 +107,7 @@ async function main() {
   if (view.claimed.length > 0) {
     console.log('── ⏳ In Progress (claimed by scheduler) ──');
     for (const item of view.claimed) {
-      const vehicle = item.vehicleTitle ? `${item.stockNumber} ${item.vehicleTitle}` : '—';
+      const vehicle = item.assetTitle ? `${item.assetRef} ${item.assetTitle}` : '—';
       console.log(`  ⏳ IN PROGRESS   ${item.platformName.padEnd(36)} ${vehicle.padEnd(28)} claimed by: ${item.claimedBy ?? '?'}`);
     }
     console.log('');
@@ -117,7 +117,7 @@ async function main() {
   if (view.overdue.length > 0) {
     console.log('── ⚠️  Overdue (scheduled window missed) ──');
     for (const item of view.overdue) {
-      const vehicle = item.vehicleTitle ? `${item.stockNumber} ${item.vehicleTitle}` : '—';
+      const vehicle = item.assetTitle ? `${item.assetRef} ${item.assetTitle}` : '—';
       const due = item.scheduledFor ? new Date(item.scheduledFor).toISOString().slice(0, 16) : '?';
       console.log(`  ⚠️  OVERDUE      ${item.platformName.padEnd(36)} ${vehicle.padEnd(28)} was due: ${due} UTC`);
     }
@@ -129,7 +129,7 @@ async function main() {
   if (view.retryPending.length > 0) {
     console.log('── 🔄 Retry Pending ──');
     for (const item of view.retryPending) {
-      const vehicle = item.vehicleTitle ? `${item.stockNumber} ${item.vehicleTitle}` : '—';
+      const vehicle = item.assetTitle ? `${item.assetRef} ${item.assetTitle}` : '—';
       const next = item.nextAttemptAt ? new Date(item.nextAttemptAt).toISOString().slice(0, 16) : 'now';
       console.log(`  🔄 RETRY         ${item.platformName.padEnd(36)} ${vehicle.padEnd(28)} attempt ${item.attemptCount + 1}/${3}  next: ${next}`);
     }
@@ -153,7 +153,7 @@ async function main() {
     for (const item of recent) {
       const badge = STATUS_BADGE[item.status] ?? item.status;
       const when = item.sentAt ? new Date(item.sentAt).toISOString().slice(0, 16) : item.createdAt.slice(0, 16);
-      const vehicle = item.vehicleTitle ? `${item.stockNumber} ${item.vehicleTitle}` : '—';
+      const vehicle = item.assetTitle ? `${item.assetRef} ${item.assetTitle}` : '—';
       const retryNote = item.attemptCount > 1 ? ` [${item.attemptCount} attempts]` : '';
       console.log(`  ${badge}  ${item.platformName.padEnd(36)} ${vehicle.padEnd(28)} ${when}${retryNote}`);
     }

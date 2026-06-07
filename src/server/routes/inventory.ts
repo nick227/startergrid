@@ -38,7 +38,7 @@ export function registerInventoryRoutes(app: FastifyInstance, prisma: PrismaClie
     '/api/dealers/:dealershipId/inventory',
     async (request, reply) => {
       const { dealershipId } = request.params;
-      if (!requireDealerAccess(request, reply, dealershipId)) return;
+      if (!await requireDealerAccess(prisma, request, reply, dealershipId)) return;
       if (!await findDealer(prisma, dealershipId))
         return reply.status(404).send({ error: 'Dealer not found' });
 
@@ -59,7 +59,7 @@ export function registerInventoryRoutes(app: FastifyInstance, prisma: PrismaClie
     '/api/dealers/:dealershipId/inventory/import/preview',
     async (request, reply) => {
       const { dealershipId } = request.params;
-      if (!requireDealerAccess(request, reply, dealershipId)) return;
+      if (!await requireDealerAccess(prisma, request, reply, dealershipId)) return;
       if (!await findDealer(prisma, dealershipId))
         return reply.status(404).send({ error: 'Dealer not found' });
 
@@ -77,7 +77,7 @@ export function registerInventoryRoutes(app: FastifyInstance, prisma: PrismaClie
     '/api/dealers/:dealershipId/inventory/import/commit',
     async (request, reply) => {
       const { dealershipId } = request.params;
-      if (!requireDealerAccess(request, reply, dealershipId)) return;
+      if (!await requireDealerAccess(prisma, request, reply, dealershipId)) return;
       if (!await findDealer(prisma, dealershipId))
         return reply.status(404).send({ error: 'Dealer not found' });
 
@@ -95,7 +95,7 @@ export function registerInventoryRoutes(app: FastifyInstance, prisma: PrismaClie
     '/api/dealers/:dealershipId/inventory/ingest/json',
     async (request, reply) => {
       const { dealershipId } = request.params;
-      if (!requireDealerAccess(request, reply, dealershipId)) return;
+      if (!await requireDealerAccess(prisma, request, reply, dealershipId)) return;
       if (!await findDealer(prisma, dealershipId))
         return reply.status(404).send({ error: 'Dealer not found' });
 
@@ -119,7 +119,7 @@ export function registerInventoryRoutes(app: FastifyInstance, prisma: PrismaClie
     '/api/dealers/:dealershipId/inventory/ingest/snapshot/commit',
     async (request, reply) => {
       const { dealershipId } = request.params;
-      if (!requireDealerAccess(request, reply, dealershipId)) return;
+      if (!await requireDealerAccess(prisma, request, reply, dealershipId)) return;
       if (!await findDealer(prisma, dealershipId))
         return reply.status(404).send({ error: 'Dealer not found' });
 
@@ -156,7 +156,7 @@ export function registerInventoryRoutes(app: FastifyInstance, prisma: PrismaClie
     '/api/dealers/:dealershipId/inventory/lifecycle-events',
     async (request, reply) => {
       const { dealershipId } = request.params;
-      if (!requireDealerAccess(request, reply, dealershipId)) return;
+      if (!await requireDealerAccess(prisma, request, reply, dealershipId)) return;
       if (!await findDealer(prisma, dealershipId))
         return reply.status(404).send({ error: 'Dealer not found' });
 
@@ -177,7 +177,7 @@ export function registerInventoryRoutes(app: FastifyInstance, prisma: PrismaClie
     '/api/dealers/:dealershipId/inventory/bulk',
     async (request, reply) => {
       const { dealershipId } = request.params;
-      if (!requireDealerAccess(request, reply, dealershipId)) return;
+      if (!await requireDealerAccess(prisma, request, reply, dealershipId)) return;
       if (!await findDealer(prisma, dealershipId))
         return reply.status(404).send({ error: 'Dealer not found' });
 
@@ -204,7 +204,7 @@ export function registerInventoryRoutes(app: FastifyInstance, prisma: PrismaClie
     '/api/dealers/:dealershipId/inventory/import/batches',
     async (request, reply) => {
       const { dealershipId } = request.params;
-      if (!requireDealerAccess(request, reply, dealershipId)) return;
+      if (!await requireDealerAccess(prisma, request, reply, dealershipId)) return;
       if (!await findDealer(prisma, dealershipId))
         return reply.status(404).send({ error: 'Dealer not found' });
 
@@ -227,7 +227,7 @@ export function registerInventoryRoutes(app: FastifyInstance, prisma: PrismaClie
   app.patch<{ Params: VehicleParams }>(
     '/api/dealers/:dealershipId/vehicles/:stockNumber/price',
     async (request, reply) => {
-      if (!requireDealerAccess(request, reply, request.params.dealershipId)) return;
+      if (!await requireDealerAccess(prisma, request, reply, request.params.dealershipId)) return;
       const body = validateBody(priceUpdateSchema, request.body);
       if (!body.ok) return reply.status(400).send({ error: body.error });
 
@@ -250,7 +250,7 @@ export function registerInventoryRoutes(app: FastifyInstance, prisma: PrismaClie
   app.post<{ Params: VehicleParams }>(
     '/api/dealers/:dealershipId/vehicles/:stockNumber/sold',
     async (request, reply) => {
-      if (!requireDealerAccess(request, reply, request.params.dealershipId)) return;
+      if (!await requireDealerAccess(prisma, request, reply, request.params.dealershipId)) return;
       const body = validateBody(emptyBodySchema, request.body ?? {});
       if (!body.ok) return reply.status(400).send({ error: body.error });
 
@@ -270,7 +270,7 @@ export function registerInventoryRoutes(app: FastifyInstance, prisma: PrismaClie
   app.post<{ Params: VehicleParams }>(
     '/api/dealers/:dealershipId/vehicles/:stockNumber/removed',
     async (request, reply) => {
-      if (!requireDealerAccess(request, reply, request.params.dealershipId)) return;
+      if (!await requireDealerAccess(prisma, request, reply, request.params.dealershipId)) return;
       const body = validateBody(emptyBodySchema, request.body ?? {});
       if (!body.ok) return reply.status(400).send({ error: body.error });
 
@@ -290,7 +290,7 @@ export function registerInventoryRoutes(app: FastifyInstance, prisma: PrismaClie
   app.patch<{ Params: VehicleParams }>(
     '/api/dealers/:dealershipId/vehicles/:stockNumber/photos',
     async (request, reply) => {
-      if (!requireDealerAccess(request, reply, request.params.dealershipId)) return;
+      if (!await requireDealerAccess(prisma, request, reply, request.params.dealershipId)) return;
       const body = validateBody(photoUpdateSchema, request.body);
       if (!body.ok) return reply.status(400).send({ error: body.error });
 

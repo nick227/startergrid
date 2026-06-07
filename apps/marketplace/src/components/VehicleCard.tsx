@@ -5,6 +5,7 @@ import { listingHref, dealerHref } from '../lib/routes.ts';
 import { trackMarketplaceEvent, MarketplaceEventType } from '../lib/events.ts';
 import { VehicleImage } from './ui/VehicleImage.tsx';
 import { ConditionBadge } from './ui/ConditionBadge.tsx';
+import { FavoriteButton } from './ui/FavoriteButton.tsx';
 
 type Props = { card: MarketplaceVehicleCard };
 
@@ -21,13 +22,20 @@ export function VehicleCard({ card }: Props) {
 
   return (
     <article className="group mp-card flex h-full flex-col overflow-hidden transition hover:border-navy-500/40 hover:shadow-elevation-3">
-      <a href={listingHref(card.listingId)} className="mp-focus block flex-1 rounded-t-2xl">
-        <VehicleImage
-          src={card.mediaUrls[0]}
-          alt={title}
-          imgClassName="transition-transform duration-200 group-hover:scale-105"
-        />
+      <div className="relative">
+        <a href={listingHref(card.listingId)} className="mp-focus block rounded-t-2xl overflow-hidden">
+          <VehicleImage
+            src={card.mediaUrls[0]}
+            alt={title}
+            imgClassName="transition-transform duration-200 group-hover:scale-105"
+          />
+        </a>
+        <div className="absolute right-2 top-2 z-10">
+          <FavoriteButton listingId={card.listingId} />
+        </div>
+      </div>
 
+      <a href={listingHref(card.listingId)} className="mp-focus block flex-1">
         <div className="space-y-3 p-4">
           <div className="space-y-1">
             <h3 className="text-base font-semibold leading-snug text-ink-heading">{title}</h3>

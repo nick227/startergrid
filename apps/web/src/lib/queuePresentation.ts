@@ -66,8 +66,8 @@ export function filterQueueItems(
     const q = search.toLowerCase();
     items = items.filter(
       i =>
-        (i.vehicleTitle?.toLowerCase().includes(q) ?? false) ||
-        (i.stockNumber?.toLowerCase().includes(q) ?? false) ||
+        (i.assetTitle?.toLowerCase().includes(q) ?? false) ||
+        (i.assetRef?.toLowerCase().includes(q) ?? false) ||
         i.platformName.toLowerCase().includes(q) ||
         i.platformSlug.toLowerCase().includes(q)
     );

@@ -1462,9 +1462,9 @@ components:
       type: object
       required:
         - id
-        - stockNumber
-        - vehicleTitle
-        - vehicleId
+        - assetRef
+        - assetTitle
+        - assetId
         - platformSlug
         - platformName
         - integrationClass
@@ -1485,13 +1485,13 @@ components:
       properties:
         id:
           type: string
-        stockNumber:
+        assetRef:
           type: string
           nullable: true
-        vehicleTitle:
+        assetTitle:
           type: string
           nullable: true
-        vehicleId:
+        assetId:
           type: string
           nullable: true
         platformSlug:
