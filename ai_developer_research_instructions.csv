@@ -1,0 +1,91 @@
+id,area,priority,instruction,expected_output,constraints
+ADR-001,Architecture Boundary,P0,"Map every app, package, and server route to one product surface: operator web, marketplace, splash, shared sync engine, or shared package.",Boundary map plus violations list.,Do not move files; report only.
+ADR-002,Architecture Boundary,P0,Find imports that cross product boundaries and classify each as allowed shared infrastructure or forbidden coupling.,Import audit with proposed fixes.,Do not allow apps/marketplace to import operator SDK or src internals.
+ADR-003,Architecture Boundary,P0,Verify apps/web uses only the operator SDK for operator HTTP calls and does not call marketplace-only APIs.,Operator API usage report.,No raw fetch additions; prefer generated SDK wrappers.
+ADR-004,Architecture Boundary,P0,Verify apps/marketplace uses only the marketplace SDK and local files.,Marketplace boundary report.,"No @auto-dealer/api-client, apps/web, src/server, src/services, or Prisma imports."
+ADR-005,Architecture Boundary,P0,"Verify apps/splash has no backend, auth, Prisma, OpenAPI, or product-app imports.",Splash isolation report.,Splash should be static marketing UI only.
+ADR-006,Architecture Boundary,P1,Identify files whose names or exports still imply auto-only ownership but actually serve generic channel operations.,Rename/refactor candidate list.,Do not rename without separate approval.
+ADR-007,Architecture Boundary,P1,Check whether shared packages have clean public exports and no hidden app-specific imports.,Package export audit.,Shared packages must not import apps/*.
+ADR-008,Architecture Boundary,P1,"Create a route ownership table for operator, marketplace, public-write, auth, and dev-only routes.",Route table with classification mismatches.,Compare with OpenAPI classification.
+ADR-009,Architecture Boundary,P1,Find duplicated boundary check logic and propose a single root verify command structure.,Verify command cleanup proposal.,Preserve existing scripts until replacement is tested.
+ADR-010,Business Categories,P0,"Audit every visible string in reusable operator shell components for hardcoded vehicle, dealer, VIN, stock number, listing site, or car language.",Copy boundary violation list.,Do not flag vehicle-specific detail panels.
+ADR-011,Business Categories,P0,Validate that each registered business category resolves through the category schema registry without crashing.,Resolution test plan and missing categories.,Vehicles remain the first polished active mode.
+ADR-012,Business Categories,P0,Verify businessCategory is loaded from the active organization/dealership and not from the user account.,Data-flow report.,One category per organization for v1.
+ADR-013,Business Categories,P0,"Check that category schema IDs, slugs, copy files, and route slugs use one consistent naming convention.",Naming mismatch report.,Do not silently alias ambiguous slugs.
+ADR-014,Business Categories,P1,Identify reusable components that should receive category labels as props or context instead of importing automotive copy directly.,Component refactor list.,Prefer CategoryProvider over prop drilling when page-wide.
+ADR-015,Business Categories,P1,Verify placeholder categories render generic Asset/Channel language and never show broken TODOs on production-facing pages.,Placeholder safety report.,TODOs can appear only in internal index/dev views.
+ADR-016,Business Categories,P1,"Check whether category fields, readiness rules, lifecycle labels, and performance metrics are bundled into a coherent schema object.",Schema completeness report.,Start simple; avoid generic Asset DB rewrite.
+ADR-017,Business Categories,P1,Map every operator page to the category schema fields it should consume.,Page-to-schema dependency table.,Do not implement pages; research only.
+ADR-018,Business Categories,P2,Propose a fallback behavior for unknown or disabled business categories.,Fallback policy.,"Fallback must be safe and obvious, not silently wrong."
+ADR-019,Business Categories,P2,Evaluate whether category-specific API shapes are truly needed or if generic reuse plus category field payloads is enough.,Decision matrix by category.,First choice is clean generic reuse.
+ADR-020,OpenAPI and SDK,P0,"Audit all Fastify routes against operator and marketplace OpenAPI specs for missing paths, schemas, security, and operationIds.",Route/spec diff report.,Do not merge marketplace spec into operator spec.
+ADR-021,OpenAPI and SDK,P0,Find frontend API calls that bypass generated SDK wrappers.,Raw fetch inventory and migration plan.,Import/upload exceptions allowed if documented.
+ADR-022,OpenAPI and SDK,P0,Verify operator auth uses op_session only in operator spec and marketplace auth uses mp_session only in marketplace spec.,Auth spec boundary report.,No cross-cookie security schemes.
+ADR-023,OpenAPI and SDK,P1,Compare generated SDK response types with UI local types and identify redundant hand-written types.,Type duplication report.,Do not delete types used for UI shaping without replacement.
+ADR-024,OpenAPI and SDK,P1,Check all public-write endpoints for documented validation errors and rate-limit responses.,Public-write contract gaps.,Include 429 and validation response shapes.
+ADR-025,OpenAPI and SDK,P1,Verify every route has x-route-classification and the route contract test covers it.,Classification coverage report.,Auth routes must have their own class.
+ADR-026,OpenAPI and SDK,P1,Find stale schemas in OpenAPI that are no longer referenced by any operation.,Dead schema list.,Do not remove without validating client impact.
+ADR-027,OpenAPI and SDK,P2,Evaluate whether shared schema fragments should be duplicated or intentionally separated across operator and marketplace specs.,Schema reuse policy note.,Favor explicit separation when privacy boundary matters.
+ADR-028,Prisma and Data Model,P0,"Find database fields that are marketplace-safe on detail pages but not list pages, and verify select projections enforce that distinction.",Projection policy report.,VIN allowed only where intentionally documented.
+ADR-029,Prisma and Data Model,P0,Audit Prisma queries exposed to marketplace routes for explicit select usage.,Marketplace query safety report.,No include of raw operator relations.
+ADR-030,Prisma and Data Model,P0,Audit operator queries for tenant scoping through requireDealerAccess or equivalent.,Tenant-scope report.,Production routes must not rely on DEV_OPERATOR_DEALER_IDS.
+ADR-031,Prisma and Data Model,P1,Identify Vehicle-specific fields leaking into generic service names or shared component types.,Leakage report.,Keep Vehicle table for v1; do not create generic Asset yet.
+ADR-032,Prisma and Data Model,P1,"Review additive migrations for default values, nullability, and existing data safety.",Migration risk report.,No destructive migrations for pilot.
+ADR-033,Prisma and Data Model,P1,"Check auth session tables for raw token storage, expiration behavior, and revocation coverage.",Session safety report.,Only tokenHash should be stored.
+ADR-034,Prisma and Data Model,P1,Check favorites data model for listingId-only storage and no VIN/operator field persistence.,Favorites privacy report.,Favorites may preserve rows for delisted items.
+ADR-035,Prisma and Data Model,P2,Identify heavy aggregate jobs that could be moved from request path to scheduled job.,Request-path risk report.,GET routes should read cache only.
+ADR-036,Auth and Security,P0,Verify operator routes require op_session in production and dev header only works in development/test.,Auth mode test report.,No production x-operator-id fallback.
+ADR-037,Auth and Security,P0,Verify marketplace routes ignore op_session and marketplace auth routes require mp_session where appropriate.,Cross-domain auth report.,Operator and marketplace sessions are not interchangeable.
+ADR-038,Auth and Security,P0,Audit cookie attributes for op_session and mp_session.,Cookie security report.,"HttpOnly, SameSite=Strict, proper Path, Secure in production."
+ADR-039,Auth and Security,P1,Check login endpoints for email/password oracle leaks and consistent 401 messages.,Login rejection report.,Unknown email and wrong password should look identical.
+ADR-040,Auth and Security,P1,"Audit public-write rate limits for endpoint coverage, bucket keys, retry headers, and single-instance limitation docs.",Rate-limit report.,Do not add Redis unless separately scoped.
+ADR-041,Auth and Security,P1,Check all dev-only routes and demo feed endpoints are gated out in production.,Dev route gate report.,No /dev route in production.
+ADR-042,Auth and Security,P1,"Verify proof/export artifacts avoid PII, credentials, raw contact messages, and marketplace-private leaks.",Export privacy report.,Aggregates are acceptable; raw PII is not.
+ADR-043,Auth and Security,P2,Review error responses for sensitive stack traces or database details.,Error leakage report.,Production errors should be concise.
+ADR-044,Ingress and Publishing,P0,Trace the full path from inventory source ingest to platform impact and identify duplicate or legacy branches.,Control-flow map.,"Preserve CSV, JSON ingest, and API source paths."
+ADR-045,Ingress and Publishing,P0,Verify every dispatch goes through dispatchAdapter and no direct mock/live dispatch remains.,Dispatch path audit.,Non-MOCK paths must be gated.
+ADR-046,Ingress and Publishing,P0,"Check scheduler claim, retry, cooldown, and lastDispatchedAt behavior for race-safety and idempotency.",Scheduler risk report.,Do not change semantics without tests.
+ADR-047,Ingress and Publishing,P1,Audit queue status labels for generic shell language vs category labels.,Queue copy report.,Visible text should come from category schema.
+ADR-048,Ingress and Publishing,P1,Find old prepare/publish paths that duplicate newer ingress auto-reconcile behavior.,Redundant flow report.,Do not remove operator escape hatches without approval.
+ADR-049,Ingress and Publishing,P1,Verify API source polling respects pollIntervalMinutes and never fetches paused/disconnected sources.,Polling behavior report.,Manual Check Now may override schedule only by design.
+ADR-050,Ingress and Publishing,P1,"Check ingest failure modes for partial commits, audit event consistency, and reconcile scheduling behavior.",Ingress failure report.,Partial imports must not look fully successful.
+ADR-051,Ingress and Publishing,P2,Evaluate which publish actions are generic channel operations and which belong to vehicle readiness rules.,Pipe-vs-mode classification.,Vehicle-specific logic should live in automotive mode.
+ADR-052,Performance and Channel Metrics,P0,"Audit performance UI/API language for attribution creep: sold by, caused by, ROI, conversion claims.",Forbidden language report.,"Use observed assist, movement signal, confidence."
+ADR-053,Performance and Channel Metrics,P0,Verify GET performance routes read cache only and POST compute is explicit.,Performance route report.,No hidden heavy compute on GET.
+ADR-054,Performance and Channel Metrics,P1,Check comparable benchmark rules are centralized and not duplicated in UI.,Benchmark logic report.,"Same make/model, year ±3, price ±5%."
+ADR-055,Performance and Channel Metrics,P1,"Verify channel events are measurement records, not workflow records.",Channel boundary report.,No CRM pipeline or salesperson task behavior.
+ADR-056,Performance and Channel Metrics,P1,Audit platform comparison views for confidence labels and low-data visibility.,Confidence display report.,Do not hide insufficient data.
+ADR-057,Performance and Channel Metrics,P1,Check marketplace stats endpoints expose only marketplace-safe aggregate counts.,Stats privacy report.,No raw buyer PII or operator internals.
+ADR-058,Performance and Channel Metrics,P2,Identify performance metrics that should become category-specific config values.,Metric schema proposal.,Avoid changing compute jobs until a second category is active.
+ADR-059,React UI Architecture,P0,Audit apps/web reusable shell components for category-hardcoded nouns and recommend category schema replacements.,UI copy migration list.,Leave vehicle-specific panels alone.
+ADR-060,React UI Architecture,P0,"Audit apps/marketplace for operator SDK imports, token storage, and unsafe vehicle fields in list/favorites.",Marketplace UI boundary report.,No localStorage tokens; mp_session is HttpOnly.
+ADR-061,React UI Architecture,P1,"Identify duplicate loading, empty, and error state components across apps/web and apps/marketplace.",UI primitive consolidation report.,Do not merge product-specific shells.
+ADR-062,React UI Architecture,P1,"Review auth bootstrap flows for redirect loops, stale user state, and 401 handling.",Auth UI flow report.,Operator and marketplace auth flows remain separate.
+ADR-063,React UI Architecture,P1,Check favorites optimistic updates for rollback behavior and stale backend omissions.,Favorites UI risk report.,Unavailable favorites are omitted by API.
+ADR-064,React UI Architecture,P1,"Review platform-first pages plan for shared list controls, row cards, filters, and category copy inputs.",Page factory readiness report.,No implementation unless separately scoped.
+ADR-065,React UI Architecture,P2,"Audit splash app for shared shell quality, category-driven content, and no backend coupling.",Splash boundary report.,CTA form remains local-only until endpoint is scoped.
+ADR-066,Legacy Cleanup,P0,"Find dead scripts, stale route files, unused generated type wrappers, and old proof-of-concept files.",Dead code candidate list.,Classify risk before deletion.
+ADR-067,Legacy Cleanup,P1,"Find duplicate helper functions for dates, relative times, price formatting, mileage formatting, and status labels.",Utility consolidation report.,Prefer package-level helpers when truly shared.
+ADR-068,Legacy Cleanup,P1,"Audit docs for stale platform counts, outdated auth limitations, and incorrect route descriptions.",Docs drift report.,Update docs only after code is verified.
+ADR-069,Legacy Cleanup,P1,"Find any TODO or placeholder comments in production paths and classify as acceptable, misleading, or blocker.",TODO triage report.,Do not remove context without replacement.
+ADR-070,Legacy Cleanup,P1,Review package.json scripts for overlapping verify/build/test commands and propose a minimal command matrix.,Script cleanup proposal.,Keep current commands until replacements are validated.
+ADR-071,Legacy Cleanup,P2,Find tests that assert implementation details rather than public contracts and propose safer contract tests.,Test quality report.,Do not weaken boundary tests.
+ADR-072,Legacy Cleanup,P2,Search for any auto-dealer-specific package names in generic packages or splash surfaces.,Naming cleanup report.,Rename only with migration plan.
+ADR-073,Control Flow Optimization,P0,"Build a sequence diagram for operator login, dealer selection, category schema loading, and first data fetch.",Auth-to-category flow diagram.,Do not change runtime behavior.
+ADR-074,Control Flow Optimization,P0,"Build a sequence diagram for marketplace login, favorites load, favorite toggle, and stale favorite omission.",Marketplace favorites flow diagram.,mp_session only; no operator auth.
+ADR-075,Control Flow Optimization,P1,Find places where Promise.all could isolate independent panel errors instead of failing a whole page.,Panel loading resilience report.,Do not hide critical status failures.
+ADR-076,Control Flow Optimization,P1,Find request paths that perform writes and side effects after response success without audit coverage.,Side-effect audit report.,Recommend event logging where missing.
+ADR-077,Control Flow Optimization,P1,Review debounce/timer based flows for reconcile or impact write-back and identify race risks.,Async timing risk report.,Preserve current behavior; report first.
+ADR-078,Control Flow Optimization,P2,Find repeated try/catch patterns that can become shared result helpers.,Error handling cleanup proposal.,Avoid generic wrappers that obscure business errors.
+ADR-079,Testing Strategy,P0,Inventory all boundary tests and identify untested product-boundary paths.,Boundary test gap report.,Do not weaken existing tests.
+ADR-080,Testing Strategy,P0,Find tests that should be added when businessCategory changes from automotive to a placeholder.,Category fallback test plan.,Placeholder categories must not crash.
+ADR-081,Testing Strategy,P1,Audit smoke test coverage against production-readiness exit criteria.,Smoke coverage matrix.,Keep smoke fast and deterministic.
+ADR-082,Testing Strategy,P1,Identify tests that require DB state and propose fixture isolation improvements.,Fixture stability report.,Do not add slow global setup unless needed.
+ADR-083,Testing Strategy,P2,Review generated SDK usage in tests and suggest contract-focused assertions.,SDK test usage report.,Avoid testing generated code internals.
+ADR-084,Developer Experience,P0,"Create a one-page command map for install, dev, build, verify, seed, and smoke across all three apps.",Command map draft.,No script changes unless separately approved.
+ADR-085,Developer Experience,P1,Audit README and handoff docs for onboarding gaps after adding apps/splash and category schemas.,Onboarding doc gap list.,Keep docs concise.
+ADR-086,Developer Experience,P1,Find scripts whose names still imply auto-only scope but now run cross-product checks.,Script naming report.,Avoid churn unless names mislead.
+ADR-087,Developer Experience,P2,"Propose a minimal local demo path that exercises operator, marketplace, and splash without extra services.",Demo flow proposal.,No backend changes.
+ADR-088,Splash Product Surface,P0,Validate apps/splash content loader falls back safely for every registered category slug.,Splash loader report.,No backend requests.
+ADR-089,Splash Product Surface,P1,"Audit splash copy files for category-driven brand, audience, asset, channel, and CTA fields.",Splash content schema report.,Vehicles copy can be richer than placeholders.
+ADR-090,Splash Product Surface,P1,"Check splash build output for large assets, unnecessary dependencies, and slow marketing-page load risks.",Splash performance report.,No stock-photo dependency unless intentional.
