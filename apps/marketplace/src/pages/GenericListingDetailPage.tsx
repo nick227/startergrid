@@ -72,16 +72,16 @@ export default function GenericListingDetailPage({ listingId }: Props) {
 
   const { vehicle } = data;
   const condition = vehicle.core.condition as MarketplaceVehicleCard['condition'];
-  const classification = vehicle.classification;
+  const detailClassification = vehicle.classification;
   const colors = vehicle.colors;
   const location = vehicle.location;
-  const usageUnit = classification.usageUnit === 'hours'
+  const detailUsageUnit = detailClassification.usageUnit === 'hours'
     ? 'hours'
-    : classification.usageUnit === 'miles'
+    : detailClassification.usageUnit === 'miles'
       ? 'miles'
       : undefined;
   const dealerLocation = formatLocation(location.dealerCity, location.dealerState);
-  const usageValue = formatUsage(classification.mileage ?? 0, usageUnit);
+  const usageValue = formatUsage(detailClassification.mileage ?? 0, detailUsageUnit);
 
   return (
     <PageShell backHref={backHref} backLabel="Back to results">
@@ -116,17 +116,17 @@ export default function GenericListingDetailPage({ listingId }: Props) {
             <Spec label="Make" value={vehicle.core.make} />
             <Spec label="Model" value={vehicle.core.model} />
             <Spec label={usageFieldLabel} value={usageValue} />
-            {classification.unitType && (
-              <Spec label="Type" value={classification.unitType} className="col-span-2" />
+            {detailClassification.unitType && (
+              <Spec label="Type" value={detailClassification.unitType} className="col-span-2" />
             )}
-            {classification.lengthFt != null && (
-              <Spec label="Length" value={`${classification.lengthFt} ft`} className="col-span-2" />
+            {detailClassification.lengthFt != null && (
+              <Spec label="Length" value={`${detailClassification.lengthFt} ft`} className="col-span-2" />
             )}
-            {classification.engineHours != null && (
-              <Spec label="Engine hours" value={formatUsage(classification.engineHours, 'hours')} className="col-span-2" />
+            {detailClassification.engineHours != null && (
+              <Spec label="Engine hours" value={formatUsage(detailClassification.engineHours, 'hours')} className="col-span-2" />
             )}
-            {classification.bodyStyle && (
-              <Spec label="Body style" value={classification.bodyStyle} className="col-span-2" />
+            {detailClassification.bodyStyle && (
+              <Spec label="Body style" value={detailClassification.bodyStyle} className="col-span-2" />
             )}
             {colors.exteriorColor && (
               <Spec label="Color" value={colors.exteriorColor} className="col-span-2" />

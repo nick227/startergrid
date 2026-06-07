@@ -89,7 +89,7 @@ export function QueueListPanel({
     >
       {showBackLink && (
         <p className="text-sm text-ink-muted mb-3">
-          <button type="button" onClick={nav.goToPlatforms} className="text-navy-600 hover:underline">
+          <button type="button" onClick={() => nav.goToPlatforms()} className="text-navy-600 hover:underline">
             ← {operatorCopy.channels.all}
           </button>
         </p>

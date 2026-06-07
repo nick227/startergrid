@@ -14,6 +14,8 @@ export type VerticalCopyAdapter = {
     canonicalId: string;
     /** Backend field path for identifier-failure issues. Empty string = no check. */
     idFieldKey: string;
+    /** Usage column label from category schema (Mileage, Hours, etc.). */
+    mileageLabel?: string;
   };
 };
 

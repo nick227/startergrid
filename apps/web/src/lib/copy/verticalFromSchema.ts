@@ -16,6 +16,7 @@ export function verticalAdapterFromCategorySchema(schema: CategorySchema): Verti
       canonicalRef: schema.asset.refLabel,
       canonicalId: schema.asset.idLabel,
       idFieldKey: schema.asset.idFieldKey,
+      mileageLabel: schema.fields.find(field => field.key === 'mileage')?.label,
     },
   };
 }

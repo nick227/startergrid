@@ -229,7 +229,7 @@ export default function InventoryPage({ dealerId, nav, activeTab }: Props) {
             isActiveScope && summary && summary.ready > 0 ? (
               <button
                 type="button"
-                onClick={nav.goToQueue}
+                onClick={() => nav.goToQueue()}
                 className="btn-primary-operator !px-5 !py-2.5 !text-sm shadow-elevation-1"
               >
                 {operatorCopy.inventory.readyCta(summary.ready)}
@@ -278,7 +278,7 @@ export default function InventoryPage({ dealerId, nav, activeTab }: Props) {
                   </button>
                   <button
                     type="button"
-                    onClick={nav.goToQueue}
+                    onClick={() => nav.goToQueue()}
                     className="px-6 py-3 bg-white border border-silver-200 text-ink-body text-sm font-semibold rounded-xl"
                   >
                     {operatorCopy.inventory.skipToQueue}
@@ -455,7 +455,7 @@ export default function InventoryPage({ dealerId, nav, activeTab }: Props) {
                 action={
                   <button
                     type="button"
-                    onClick={nav.goToQueue}
+                    onClick={() => nav.goToQueue()}
                     className="btn-primary-operator"
                   >
                     {operatorCopy.inventory.goToQueue}

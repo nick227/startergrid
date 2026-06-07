@@ -1,7 +1,7 @@
 # Handoff Document — Auto Dealer Sales Portal
 
-**Updated:** 2026-06-06  
-**State:** v4.7.0 + Phase B operator auth + Phase C2/C3 marketplace auth & favorites  
+**Updated:** 2026-06-07  
+**State:** v4.7.0 + Phase B operator auth + Phase C2/C3 marketplace auth & favorites + **Phase 3B BOATS pilot**  
 **Branch:** `main`
 
 ---
@@ -12,8 +12,8 @@ A sync engine that owns dealer inventory truth, ingress, platform readiness, pub
 
 Two frontends consume different API surfaces:
 
-- **Operator portal** (`apps/web/`) — inventory, ingress, accounts, publish/sync, **movement benchmarks in workflow** (Inventory primary; Sync context; Insights reference). Uses the generated operator OpenAPI SDK (`@auto-dealer/api-client`).
-- **Consumer marketplace** (`apps/marketplace/`) — multi-dealer browse/search. Reads curated marketplace index APIs only; imports `@dealer-marketplace/client` exclusively. Must not couple to sync-engine internals (queues, account states, operator workflow).
+- **Operator portal** (`apps/web/`) — inventory, ingress, accounts, publish/sync, **movement benchmarks in workflow** (Inventory primary; Sync context; Insights reference). Uses the generated operator OpenAPI SDK (`@auto-dealer/api-client`). Category-aware labels via `@auto-dealer/category-schemas` (AUTOMOTIVE default; active pilots: TRAILERS_POWERSPORTS_RV, BOATS).
+- **Consumer marketplace** (`apps/marketplace/`) — multi-dealer browse/search across **consumer-enabled category sites** (`#/automotive/`, `#/trailers-powersports-rv/`, `#/boats/`). Reads curated marketplace index APIs only; imports `@dealer-marketplace/client` exclusively. Must not couple to sync-engine internals (queues, account states, operator workflow).
 
 CLI scripts remain available for all sync-engine operations.
 
@@ -34,6 +34,26 @@ src/                  Sync engine + core DB truth
 **Marketplace consumes curated output only:** marketplace index, public vehicle cards, dealer storefront-ready inventory, search/filter payloads. It does **not** read raw publishing queues, account states, or operator workflow data.
 
 `dealer-storefront` is a white-label **feed channel** (artifact output), not a hosted per-dealer browse product. Discovery lives in the internal marketplace, synced as platform slug **`marketplace`** (FEEDABLE, treated like any third-party destination).
+
+---
+
+## Business category pilots (Phase 3)
+
+**Rule:** one org = one `DealershipProfile.businessCategory`. Category-specific fields live in `Vehicle.categoryPayload` JSON; HIN/serial stored in `vin`.
+
+| Category | Status | Marketplace | Seed org | Channel stubs |
+|----------|--------|-------------|----------|---------------|
+| `AUTOMOTIVE` | active (v1) | `#/automotive/` — custom VDP | Prairie Ridge Motors (default) | All 19 legacy platforms |
+| `TRAILERS_POWERSPORTS_RV` | active pilot (3A) | `#/trailers-powersports-rv/` — generic VDP | Summit Trail & RV LLC (4 units) | RV Trader, Cycle Trader, etc. + Facebook Marketplace (general) |
+| `BOATS` | **active pilot (3B PR 1)** | `#/boats/` — generic VDP | Harborline Marine LLC (5 boats) | Boat Trader, YachtWorld, boats.com + Facebook Marketplace (general) |
+
+**VDP split:** `VehicleDetailPage.tsx` keeps the automotive custom VDP; active non-automotive categories render `GenericListingDetailPage.tsx`. Automotive output is unchanged except shared generic routing for other categories.
+
+**BOATS payload:** `categoryPayload` supports `usageUnit: hours`, `vesselType`, `lengthFt`, `engineHours`. Detail API exposes `unitType` (from `vesselType`), `lengthFt`, `engineHours` on `VehicleClassification`.
+
+**Platform registry:** 27 profiles after Phase 3B (was 24 after 3A). Owned channels (`dealer-storefront`, `consumer-marketplace`) support AUTOMOTIVE + TRAILERS + BOATS.
+
+**Tests:** `marketplaceCategoryBoundary.test.ts` — three-way AUTOMOTIVE / TRAILERS / BOATS isolation; `boatsSeedService.test.ts` — idempotent seed.
 
 ---
 
@@ -1008,6 +1028,8 @@ These rules are enforced in tests. Any label change must pass the language contr
 | Performance Insights UI (Insights tab) | `npm run ui:dev`, pick dealer, click Insights |
 | Performance API (vehicle list, vehicle detail, platform list, summary, compute) | See HTTP API section above |
 | Marketplace consumer browse + vehicle inquiry | `npm run marketplace:dev` + open localhost:5174 |
+| Marketplace multi-category feeds (`#/automotive/`, `#/trailers-powersports-rv/`, `#/boats/`) | `npm run marketplace:dev`; category boundary tests in `marketplaceCategoryBoundary.test.ts` |
+| BOATS pilot — schema, seed org, generic VDP, channel stubs | `npm run db:seed` (Harborline Marine); browse `#/boats/` |
 | Marketplace channel event capture (`POST /api/marketplace/events`) | OpenAPI: `openapi/openapi-marketplace.yaml` |
 | Marketplace dealer stats (`GET .../dealers/:id/stats`) | Returns vehicleDetailViews, dealerPageViews, inquirySubmissions |
 | Channel performance in operator portal | Platform rows show `channelMetricsJson` (views, inquiries per slug) |

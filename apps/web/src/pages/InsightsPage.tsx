@@ -120,11 +120,11 @@ export default function InsightsPage({ dealerId, nav, activeTab }: Props) {
 
       <p className="text-xs text-ink-muted mb-4 -mt-2">
         {operatorCopy.reports.dayToDayNote}{' '}
-        <button type="button" onClick={nav.goToInventory} className="font-semibold text-orange-600 hover:underline">
+        <button type="button" onClick={() => nav.goToInventory()} className="font-semibold text-orange-600 hover:underline">
           Inventory
         </button>
         {' '}and{' '}
-        <button type="button" onClick={nav.goToPlatforms} className="font-semibold text-orange-600 hover:underline">
+        <button type="button" onClick={() => nav.goToPlatforms()} className="font-semibold text-orange-600 hover:underline">
           Platforms
         </button>
         . {operatorCopy.reports.assistsDisclaimer}

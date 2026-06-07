@@ -94,7 +94,7 @@ export function HistoryListPanel({
     >
       {showBackLink && (
         <p className="text-sm text-ink-muted mb-3">
-          <button type="button" onClick={nav.goToPlatforms} className="text-navy-600 hover:underline">
+          <button type="button" onClick={() => nav.goToPlatforms()} className="text-navy-600 hover:underline">
             ← {operatorCopy.channels.all}
           </button>
         </p>
@@ -169,7 +169,7 @@ export function HistoryListPanel({
 
       <p className="text-xs text-ink-faint mt-6">
         {operatorCopy.history.readOnlyNote}{' '}
-        <button type="button" onClick={nav.goToQueue} className="text-orange-600 font-semibold hover:underline">
+        <button type="button" onClick={() => nav.goToQueue()} className="text-orange-600 font-semibold hover:underline">
           {operatorCopy.queue.title}
         </button>
       </p>
