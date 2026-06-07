@@ -1,23 +1,23 @@
 # Operator Web — Design Plan
 
 **Created:** 2026-06-06  
-**Updated:** 2026-06-06 — retrench on platform sync IA  
-**Status:** Approved direction — nav restructure and row-card layout not yet implemented  
-**App:** `apps/web/` (Operator Console)  
-**Related:** [2026-06-06-ui-design-system-design.md](./2026-06-06-ui-design-system-design.md) · [2026-06-06-operator-web-experience-design.md](./2026-06-06-operator-web-experience-design.md) · [docs/ui-status.md](../ui-status.md) · [production-readiness.md](./production-readiness.md)
+**Updated:** 2026-06-06 — channel operations console (multi-vertical shell, cars-first)  
+**Status:** Approved direction — Sprint 1 shipped; vertical adapter extraction deferred  
+**Related:** [channel console architecture](./2026-06-06-operator-channel-console-architecture.md) · [2026-06-06-ui-design-system-design.md](./2026-06-06-ui-design-system-design.md) · [2026-06-06-operator-web-experience-design.md](./2026-06-06-operator-web-experience-design.md) · [UI roadmap](./2026-06-06-operator-web-ui-roadmap.md)
 
 ---
 
 ## Decision summary
 
-The Operator Console is a **desktop office program** for keeping dealer inventory in sync with **18+ listing providers** — not a consumer app and not a CRM. The core product is **platform connectivity, queue, history, and reporting**. Inventory is supporting input; syndication is the wedge.
+The Operator Console is a **channel operations console** — manage **assets** across **channels**, track what was sent, failed, sold, and which channels performed. **Cars are the first vertical**, not the product definition. Same reusable shell (Platforms · Queue · History · Reports · Inventory) applies to furniture, boats, property, equipment, music, etc.
 
 | Principle | Operator stance |
 |-----------|-----------------|
-| **Core value** | Facilitate sync with 18+ listing providers — connection, queue, proof, performance |
-| **Personality** | Mobile-first operational rows; uses desktop width for density, not table sprawl |
-| **Primary user** | Dealership staff and syndication operators |
-| **Primary question** | “Are my listing sites connected, updating, and performing?” |
+| **Product** | Channel ops console — connectivity, queue, history, reporting (see [architecture](./2026-06-06-operator-channel-console-architecture.md)) |
+| **Core value** | Sync assets to many destinations; prove transactions; measure channel performance |
+| **Personality** | Mobile-first operational rows; desktop = list + detail |
+| **Primary user** | Operators who manage multi-channel inventory (dealers first) |
+| **Primary question** | “Are my channels connected, updating, and performing?” |
 | **Accent** | Orange primary actions · navy chrome · green/red/amber for status only |
 | **Clarity** | Situation → needed action → details (progressive disclosure) |
 | **Scope boundary** | Platform ops + inventory input + sold attribution — not CRM, F&I, accounting, or service |
@@ -28,21 +28,21 @@ Marketplace is photo-forward browse; Operator is **platform-forward operations**
 
 The product retrenches on **platform connectivity + queue + history + reporting**. Everything else supports these five surfaces.
 
-| # | Page | One-line value |
-|---|------|----------------|
-| 1 | **Platform Status List** (`Platforms`) | See which listing sites are inactive, connected, blocked, or updating |
-| 2 | **Site Queue** (`Queue`) | Edit all pending posting / update / removal tasks across platforms |
-| 3 | **Site History** (`History`) | Review every asset transaction and performance signal across platforms |
-| 4 | **Platform Queue** (`Platform Queue`) | Manage posting strategy and pending work for **one** platform |
-| 5 | **Platform History** (`Platform History`) | See what happened and how inventory performed on **one** platform |
+| # | Page | Generic purpose |
+|---|------|-----------------|
+| 1 | **Platforms** | Which channels are connected, inactive, blocked, or live |
+| 2 | **Queue** | What asset actions are waiting — editable, scheduled, or failed |
+| 3 | **History** | What happened to every asset across every channel |
+| 4 | **Platform Queue** | Queue for one marketplace |
+| 5 | **Platform History** | History and performance for one marketplace |
 
 **Supporting surfaces (not the core five):**
 
 | Page | Role |
 |------|------|
-| **Inventory** | Source data — import, fix blockers, prepare cars for sync |
-| **Reports** | Roll-up analytics (replaces scattered Insights) |
-| **Help** | Knowledge base and contextual education |
+| **Inventory** | Source records for assets (vehicles in v1) |
+| **Reports** | Compare channels — sell-through, aging, performance |
+| **Help** | Vertical-aware education (KB today = automotive) |
 
 ### Navigation
 

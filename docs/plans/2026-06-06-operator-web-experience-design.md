@@ -15,7 +15,7 @@ The Operator Console works, but the UI has drifted toward **engineer language**:
 
 This document is the **human layer** — how we speak, what we show first, and how pages are laid out. The sibling [operator web design plan](./2026-06-06-operator-web-design.md) covers IA, nav, and features; this one covers **clarity and presentation**.
 
-**Core value:** Facilitating sync with 18+ listing providers — connectivity, queue, history, reporting.
+**Core value:** Facilitating sync with many **channels** — connectivity, queue, history, reporting. The shell is **vertical-neutral**; cars are v1.
 
 **Design goal:** Every screen answers three questions in order:
 
@@ -104,12 +104,14 @@ Same five layers on **Platforms**, **Queue**, **History**, **Platform Queue**, *
 
 | Page | Each row is… |
 |------|----------------|
-| Platforms | One listing site — connection state |
-| Queue | One pending task — editable |
-| History | One transaction or event — read-only |
-| Platform Queue | One task for a single site |
-| Platform History | One event for a single site |
-| Inventory | One vehicle |
+| Platforms | One **channel** |
+| Queue | One **task** (post / update / remove / sold) |
+| History | One **transaction** — read-only |
+| Platform Queue | One task on one channel |
+| Platform History | One event on one channel |
+| Inventory | One **asset** (vehicle in automotive v1) |
+
+Row **lead** and **meta** lines come from the vertical adapter — not hard-coded in shell components. Automotive v1: year/make/model, VIN, price, mileage.
 
 ### Layout rules
 

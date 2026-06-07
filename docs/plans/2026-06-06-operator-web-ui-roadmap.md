@@ -1,8 +1,8 @@
 # Operator Web UI — Roadmap
 
 **Created:** 2026-06-06  
-**Goal:** Platform-first operator UI — connectivity, queue, history, reporting. Row cards, plain language.  
-**Plans:** [design](./2026-06-06-operator-web-design.md) · [experience](./2026-06-06-operator-web-experience-design.md)
+**Goal:** Channel ops console shell — connectivity, queue, history, reporting. Cars-first; vertical-agnostic structure.  
+**Plans:** [design](./2026-06-06-operator-web-design.md) · [architecture](./2026-06-06-operator-channel-console-architecture.md) · [experience](./2026-06-06-operator-web-experience-design.md)
 
 ---
 
@@ -47,14 +47,15 @@ Deprecate tabs: Sync, Accounts, Insights (redirect or remove).
 
 ---
 
-## 4. Copy and visual cleanup
+## 4. Copy and vertical adapters
 
 Parallel with steps 2–3.
 
-- Centralize strings: `apps/web/src/lib/copy/operator.ts`
-- Plain status words on every row (no codes alone)
-- Purge emerald/slate from feature components; navy + orange tokens only
-- Update `docs/ui-status.md`
+- Shell copy: `apps/web/src/lib/copy/operator.ts` (channel, queue, connection — generic)
+- Automotive copy: `apps/web/src/lib/copy/automotive.ts` (vehicle, VIN, dealer — v1 vertical)
+- Plain status words on every row
+- Purge emerald/slate; navy + orange tokens
+- **Later:** `VerticalAdapter` interface — schema, readiness, copy, reporting formatters
 
 ---
 
