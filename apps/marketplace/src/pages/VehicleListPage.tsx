@@ -15,6 +15,7 @@ import { EmptyState } from '../components/ui/EmptyState.tsx';
 import { FeedItemCard } from '../components/feed/FeedCards.tsx';
 import { ActiveFilterChips, hasFeedFilters } from '../components/feed/ActiveFilterChips.tsx';
 import { EndOfFeedState, FeedCardSkeleton, LoadingMoreState } from '../components/feed/FeedStates.tsx';
+import { RecentlyViewedRail } from '../components/listings/RecentlyViewedRail.tsx';
 
 type Props = { initialQuery?: ListQuery };
 
@@ -186,6 +187,8 @@ export default function VehicleListPage({ initialQuery = {} }: Props) {
               onTop={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
             />
           )}
+
+          <RecentlyViewedRail categorySlug={slug} />
         </>
       )}
     </PageShell>

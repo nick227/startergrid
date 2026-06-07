@@ -1,6 +1,6 @@
 import { useQuery, queryErrorMessage } from '../hooks/useQuery.ts';
 import { usePageMeta } from '../hooks/usePageMeta.ts';
-import { fetchVehicle, isNotFoundError, type MarketplaceVehicleCard } from '../lib/api.ts';
+import { fetchVehicle, isNotFoundError, type MarketplaceVehicleCard, type MarketplaceVehicleDetailResponse } from '../lib/api.ts';
 import { formatPrice, formatUsage, formatLocation, conditionLabel } from '../lib/display.ts';
 import { getListReturn } from '../lib/listReturn.ts';
 import { MarketplaceEventType } from '../lib/events.ts';
@@ -14,6 +14,11 @@ import { NotFoundState } from '../components/ui/NotFoundState.tsx';
 import { LeadInquiryForm } from '../components/ui/LeadInquiryForm.tsx';
 import { MediaSection } from '../components/vdp/MediaSection.tsx';
 import { ConditionBadge } from '../components/ui/ConditionBadge.tsx';
+import {
+  ListingDetailEngagementPanels,
+  ListingDetailShareAction,
+  useListingDetailEngagement,
+} from '../components/listings/ListingDetailEngagement.tsx';
 
 type Props = { listingId: string };
 
@@ -70,7 +75,39 @@ export default function GenericListingDetailPage({ listingId }: Props) {
 
   if (!data) return null;
 
-  const { vehicle } = data;
+  return (
+    <GenericListingDetailContent
+      listingId={listingId}
+      slug={slug}
+      backHref={backHref}
+      vehicle={data.vehicle}
+      usageFieldLabel={usageFieldLabel}
+      refLabel={schema.asset.refLabel}
+    />
+  );
+}
+
+function GenericListingDetailContent({
+  listingId,
+  slug,
+  backHref,
+  vehicle,
+  usageFieldLabel,
+  refLabel,
+}: {
+  listingId: string;
+  slug: string;
+  backHref: string;
+  vehicle: MarketplaceVehicleDetailResponse['vehicle'];
+  usageFieldLabel: string;
+  refLabel: string;
+}) {
+  const engagement = useListingDetailEngagement({
+    categorySlug: slug,
+    listingId,
+    vehicle,
+  });
+
   const condition = vehicle.core.condition as MarketplaceVehicleCard['condition'];
   const detailClassification = vehicle.classification;
   const colors = vehicle.colors;
@@ -80,15 +117,16 @@ export default function GenericListingDetailPage({ listingId }: Props) {
     : detailClassification.usageUnit === 'miles'
       ? 'miles'
       : undefined;
-  const dealerLocation = formatLocation(location.dealerCity, location.dealerState);
+  const sellerLocation = formatLocation(location.dealerCity, location.dealerState);
   const usageValue = formatUsage(detailClassification.mileage ?? 0, detailUsageUnit);
 
   return (
     <PageShell backHref={backHref} backLabel="Back to results">
+      <div className="pb-24 lg:pb-0">
       <div className="grid grid-cols-1 gap-8 lg:grid-cols-2 lg:gap-10">
         <MediaSection media={vehicle.media} alt={vehicle.core.title} />
 
-        <div className="space-y-6">
+        <div className="space-y-6 lg:sticky lg:top-20 lg:self-start">
           <header className="space-y-3">
             <div className="flex flex-wrap items-start justify-between gap-3">
               <h1 className="text-2xl font-bold leading-tight text-ink-heading sm:text-3xl">
@@ -100,7 +138,7 @@ export default function GenericListingDetailPage({ listingId }: Props) {
               <p className="text-base text-ink-muted">{vehicle.core.trim}</p>
             )}
             <p className="text-sm text-ink-faint">
-              {schema.asset.refLabel} {vehicle.core.stockNumber}
+              {refLabel} {vehicle.core.stockNumber}
             </p>
           </header>
 
@@ -132,20 +170,25 @@ export default function GenericListingDetailPage({ listingId }: Props) {
               <Spec label="Color" value={colors.exteriorColor} className="col-span-2" />
             )}
             <Spec label="Condition" value={conditionLabel(condition)} />
-            {dealerLocation && (
-              <Spec label="Location" value={dealerLocation} className="col-span-2" />
+            {sellerLocation && (
+              <Spec label="Location" value={sellerLocation} className="col-span-2" />
             )}
           </dl>
 
-          <div className="flex items-center gap-2">
+          <div className="flex flex-wrap items-center gap-2">
             <FavoriteButton listingId={vehicle.core.listingId} />
-            <span className="text-sm text-ink-muted">Save this {schema.asset.singular}</span>
+            <span className="text-sm text-ink-muted">Save this listing</span>
+            <ListingDetailShareAction
+              shareTitle={engagement.shareTitle}
+              shareUrl={engagement.shareUrl}
+              className="ml-auto"
+            />
           </div>
 
           <div className="rounded-xl border border-silver-200 bg-white p-5">
             <p className="mp-label text-ink-faint">Seller</p>
             <p className="mt-1 text-lg font-semibold text-ink-heading">{location.dealerName}</p>
-            {dealerLocation && <p className="mt-1 text-sm text-ink-muted">{dealerLocation}</p>}
+            {sellerLocation && <p className="mt-1 text-sm text-ink-muted">{sellerLocation}</p>}
           </div>
 
           <div id="inquiry">
@@ -156,6 +199,16 @@ export default function GenericListingDetailPage({ listingId }: Props) {
             />
           </div>
         </div>
+      </div>
+
+      <ListingDetailEngagementPanels
+        categorySlug={slug}
+        listingId={listingId}
+        shareTitle={engagement.shareTitle}
+        shareUrl={engagement.shareUrl}
+        priceSummary={engagement.priceSummary}
+        sellerSummary={engagement.sellerSummary}
+      />
       </div>
     </PageShell>
   );

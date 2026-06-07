@@ -19,6 +19,17 @@ export const DEFAULT_RECENT_LISTINGS_MAX = 16;
 
 type StorageLike = Pick<Storage, 'getItem' | 'setItem'>;
 
+const listeners = new Set<() => void>();
+
+export function subscribeRecentListings(onChange: () => void): () => void {
+  listeners.add(onChange);
+  return () => listeners.delete(onChange);
+}
+
+function notifyRecentListings(): void {
+  listeners.forEach(listener => listener());
+}
+
 function readStorage(storage: StorageLike | null | undefined): RecentListing[] {
   if (!storage) return [];
   try {
@@ -76,6 +87,7 @@ export function trackRecentListing(
   const withoutDuplicate = readStorage(storage).filter(item => item.listingId !== snapshot.listingId);
   const next = [entry, ...withoutDuplicate].slice(0, maxItems);
   writeStorage(storage, next);
+  notifyRecentListings();
   return next;
 }
 

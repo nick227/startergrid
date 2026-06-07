@@ -7,6 +7,7 @@ import { trackMarketplaceEvent, MarketplaceEventType } from '../lib/events.ts';
 import { VehicleImage } from './ui/VehicleImage.tsx';
 import { ConditionBadge } from './ui/ConditionBadge.tsx';
 import { FavoriteButton } from './ui/FavoriteButton.tsx';
+import { NewArrivalBadge } from './listings/NewArrivalBadge.tsx';
 
 type Props = { card: MarketplaceVehicleCard };
 
@@ -38,7 +39,8 @@ export function VehicleCard({ card }: Props) {
             imgClassName="transition-transform duration-200 group-hover:scale-105"
           />
         </a>
-        <div className="absolute right-2 top-2 z-10">
+        <div className="absolute right-2 top-2 z-10 flex flex-col items-end gap-2">
+          <NewArrivalBadge listedAt={card.listedAt} />
           <FavoriteButton listingId={card.listingId} />
         </div>
       </div>

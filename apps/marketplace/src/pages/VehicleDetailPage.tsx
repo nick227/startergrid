@@ -1,6 +1,6 @@
 import { useQuery, queryErrorMessage } from '../hooks/useQuery.ts';
 import { usePageMeta } from '../hooks/usePageMeta.ts';
-import { fetchVehicle, isNotFoundError } from '../lib/api.ts';
+import { fetchVehicle, isNotFoundError, type MarketplaceVehicleDetailResponse } from '../lib/api.ts';
 import { formatPrice, formatMileage } from '../lib/display.ts';
 import { getListReturn } from '../lib/listReturn.ts';
 import { isAutomotiveSlug } from '../lib/routes.ts';
@@ -26,6 +26,11 @@ import { FeaturesSection } from '../components/vdp/FeaturesSection.tsx';
 import { WarrantySection } from '../components/vdp/WarrantySection.tsx';
 import { MediaSection } from '../components/vdp/MediaSection.tsx';
 import { ContentSection } from '../components/vdp/ContentSection.tsx';
+import {
+  ListingDetailEngagementPanels,
+  ListingDetailShareAction,
+  useListingDetailEngagement,
+} from '../components/listings/ListingDetailEngagement.tsx';
 
 type Props = { listingId: string };
 
@@ -104,18 +109,49 @@ function AutomotiveVehicleDetailPage({ listingId }: Props) {
 
   if (!data) return null;
 
-  const { vehicle } = data;
+  return (
+    <AutomotiveListingDetailContent
+      listingId={listingId}
+      slug={slug}
+      backHref={backHref}
+      vehicle={data.vehicle}
+    />
+  );
+}
+
+function AutomotiveListingDetailContent({
+  listingId,
+  slug,
+  backHref,
+  vehicle,
+}: {
+  listingId: string;
+  slug: string;
+  backHref: string;
+  vehicle: MarketplaceVehicleDetailResponse['vehicle'];
+}) {
+  const engagement = useListingDetailEngagement({
+    categorySlug: slug,
+    listingId,
+    vehicle,
+  });
 
   return (
     <PageShell backHref={backHref} backLabel="Back to results">
+      <div className="pb-24 lg:pb-0">
       <div className="grid grid-cols-1 gap-8 lg:grid-cols-2 lg:gap-10">
         <MediaSection media={vehicle.media} alt={vehicle.core.title} />
 
-        <div className="space-y-6">
+        <div className="space-y-6 lg:sticky lg:top-20 lg:self-start">
           <CoreHeaderSection core={vehicle.core} commerce={vehicle.commerce} />
-          <div className="flex items-center gap-2">
+          <div className="flex flex-wrap items-center gap-2">
             <FavoriteButton listingId={vehicle.core.listingId} />
-            <span className="text-sm text-ink-muted">Save this vehicle</span>
+            <span className="text-sm text-ink-muted">Save this listing</span>
+            <ListingDetailShareAction
+              shareTitle={engagement.shareTitle}
+              shareUrl={engagement.shareUrl}
+              className="ml-auto"
+            />
           </div>
           <CommerceSection commerce={vehicle.commerce} />
           <LocationSection location={vehicle.location} />
@@ -138,6 +174,16 @@ function AutomotiveVehicleDetailPage({ listingId }: Props) {
         <FeaturesSection features={vehicle.features} />
         <WarrantySection warranty={vehicle.warranty} />
         <ContentSection content={vehicle.content} />
+      </div>
+
+      <ListingDetailEngagementPanels
+        categorySlug={slug}
+        listingId={listingId}
+        shareTitle={engagement.shareTitle}
+        shareUrl={engagement.shareUrl}
+        priceSummary={engagement.priceSummary}
+        sellerSummary={engagement.sellerSummary}
+      />
       </div>
     </PageShell>
   );
