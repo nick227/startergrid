@@ -4,7 +4,8 @@ import { useInfiniteMarketplaceFeed } from '../hooks/useInfiniteMarketplaceFeed.
 import { usePageMeta } from '../hooks/usePageMeta.ts';
 import { formatResultCount } from '../lib/display.ts';
 import { saveListReturn } from '../lib/listReturn.ts';
-import { listHref, parseRoute, type ListQuery } from '../lib/routes.ts';
+import { isAutomotiveSlug, listHref, parseRoute, type ListQuery } from '../lib/routes.ts';
+import { useCategorySchema, useCategorySlug } from '../contexts/CategoryContext.tsx';
 import { PageShell } from '../components/layout/PageShell.tsx';
 import { PageHeader } from '../components/ui/PageHeader.tsx';
 import { FilterBar } from '../components/ui/FilterBar.tsx';
@@ -18,6 +19,9 @@ import { EndOfFeedState, FeedCardSkeleton, LoadingMoreState } from '../component
 type Props = { initialQuery?: ListQuery };
 
 export default function VehicleListPage({ initialQuery = {} }: Props) {
+  const slug = useCategorySlug();
+  const schema = useCategorySchema();
+  const automotive = isAutomotiveSlug(slug);
   const [make,      setMake]      = useState(initialQuery.make ?? '');
   const [model,     setModel]     = useState(initialQuery.model ?? '');
   const [condition, setCondition] = useState<ListQuery['condition']>(initialQuery.condition);
@@ -28,8 +32,8 @@ export default function VehicleListPage({ initialQuery = {} }: Props) {
   const sentinelRef = useRef<HTMLDivElement | null>(null);
 
   usePageMeta(
-    'Browse vehicles',
-    'Compare price, mileage, and condition from participating dealers.',
+    `Browse ${schema.asset.plural}`,
+    schema.marketplace.tagline,
   );
 
   const listQuery = useMemo<ListQuery>(() => ({
@@ -44,12 +48,12 @@ export default function VehicleListPage({ initialQuery = {} }: Props) {
   const feed = useInfiniteMarketplaceFeed(listQuery);
 
   useEffect(() => {
-    saveListReturn(listQuery);
-    const target = listHref(listQuery);
+    saveListReturn(slug, listQuery);
+    const target = listHref(slug, listQuery);
     if (window.location.hash !== target) {
       window.location.hash = target.slice(1);
     }
-  }, [listQuery]);
+  }, [listQuery, slug]);
 
   useEffect(() => {
     function syncFromHash() {
@@ -104,10 +108,11 @@ export default function VehicleListPage({ initialQuery = {} }: Props) {
   return (
     <PageShell>
       <PageHeader
-        title="Browse vehicles"
-        subtitle="Compare price, mileage, and condition from participating dealers. Read-only listings — no account required."
+        title={`Browse ${schema.asset.plural}`}
+        subtitle={schema.marketplace.tagline}
       />
 
+      {automotive && (
       <div className="mb-6 sm:mb-8">
         <FilterBar
           make={make}
@@ -128,8 +133,11 @@ export default function VehicleListPage({ initialQuery = {} }: Props) {
           focusToken={focusToken}
         />
       </div>
+      )}
 
+      {automotive && (
       <ActiveFilterChips query={listQuery} onChange={applyChipQuery} onClearAll={resetFilters} />
+      )}
 
       {feed.loadingInitial ? (
         <FeedCardSkeleton />
@@ -137,8 +145,10 @@ export default function VehicleListPage({ initialQuery = {} }: Props) {
         <ErrorState message={queryErrorMessage(feed.error)} onRetry={feed.retry} />
       ) : !hasItems ? (
         <EmptyState
-          title="No vehicles match your search"
-          description="Try different make or model keywords, or reset filters to browse everything available."
+          title={automotive ? 'No vehicles match your search' : `${schema.label} marketplace coming soon`}
+          description={automotive
+            ? 'Try different make or model keywords, or reset filters to browse everything available.'
+            : `Listings for ${schema.label.toLowerCase()} will appear here when sellers join this marketplace.`}
           actionLabel={hasActiveFilters ? 'Reset filters' : undefined}
           onAction={hasActiveFilters ? resetFilters : undefined}
         />

@@ -2,6 +2,7 @@
 /* istanbul ignore file */
 /* tslint:disable */
 /* eslint-disable */
+import type { MarketplaceBusinessCategory } from '../models/MarketplaceBusinessCategory';
 import type { MarketplaceChannelEventRequest } from '../models/MarketplaceChannelEventRequest';
 import type { MarketplaceChannelEventResponse } from '../models/MarketplaceChannelEventResponse';
 import type { MarketplaceDealerIndexResponse } from '../models/MarketplaceDealerIndexResponse';
@@ -9,12 +10,27 @@ import type { MarketplaceDealerStatsResponse } from '../models/MarketplaceDealer
 import type { MarketplaceFeedResponse } from '../models/MarketplaceFeedResponse';
 import type { MarketplaceLeadCaptureRequest } from '../models/MarketplaceLeadCaptureRequest';
 import type { MarketplaceLeadCaptureResponse } from '../models/MarketplaceLeadCaptureResponse';
+import type { MarketplaceSitesResponse } from '../models/MarketplaceSitesResponse';
 import type { MarketplaceVehicleDetailResponse } from '../models/MarketplaceVehicleDetailResponse';
 import type { MarketplaceVehicleListResponse } from '../models/MarketplaceVehicleListResponse';
 import type { CancelablePromise } from '../core/CancelablePromise';
 import { OpenAPI } from '../core/OpenAPI';
 import { request as __request } from '../core/request';
 export class MarketplaceService {
+    /**
+     * List consumer marketplace sites
+     * Returns every business-category marketplace surface exposed to shoppers,
+     * with listing counts and site status (active, coming_soon, disabled).
+     *
+     * @returns MarketplaceSitesResponse Marketplace site index
+     * @throws ApiError
+     */
+    public static listMarketplaceSites(): CancelablePromise<MarketplaceSitesResponse> {
+        return __request(OpenAPI, {
+            method: 'GET',
+            url: '/api/marketplace/sites',
+        });
+    }
     /**
      * Browse the mixed marketplace feed
      * Returns a cursor-based mixed feed for the consumer marketplace.
@@ -25,6 +41,7 @@ export class MarketplaceService {
      * @throws ApiError
      */
     public static getMarketplaceFeed({
+        category,
         cursor,
         limit = 24,
         make,
@@ -35,6 +52,10 @@ export class MarketplaceService {
         maxMileage,
         dealer,
     }: {
+        /**
+         * Business category slug or enum. Defaults to AUTOMOTIVE.
+         */
+        category?: MarketplaceBusinessCategory,
         cursor?: string,
         limit?: number,
         make?: string,
@@ -61,6 +82,7 @@ export class MarketplaceService {
             method: 'GET',
             url: '/api/marketplace/feed',
             query: {
+                'category': category,
                 'cursor': cursor,
                 'limit': limit,
                 'make': make,
@@ -86,6 +108,7 @@ export class MarketplaceService {
      * @throws ApiError
      */
     public static listMarketplaceVehicles({
+        category,
         make,
         model,
         condition,
@@ -96,6 +119,10 @@ export class MarketplaceService {
         page = 1,
         pageSize = 24,
     }: {
+        /**
+         * Business category slug or enum. Defaults to AUTOMOTIVE.
+         */
+        category?: MarketplaceBusinessCategory,
         make?: string,
         model?: string,
         condition?: 'NEW' | 'USED' | 'CPO',
@@ -122,6 +149,7 @@ export class MarketplaceService {
             method: 'GET',
             url: '/api/marketplace/vehicles',
             query: {
+                'category': category,
                 'make': make,
                 'model': model,
                 'condition': condition,
@@ -140,24 +168,32 @@ export class MarketplaceService {
     /**
      * Single vehicle detail
      * Returns detail for one marketplace-eligible vehicle by opaque listing ID.
-     * Returns 404 for sold, removed, or non-existent vehicles.
+     * Returns 404 for sold, removed, non-existent, or wrong-category vehicles.
      *
      * @returns MarketplaceVehicleDetailResponse Vehicle detail
      * @throws ApiError
      */
     public static getMarketplaceVehicle({
         listingId,
+        category,
     }: {
         /**
          * Opaque vehicle identifier from MarketplaceVehicleCard.listingId
          */
         listingId: string,
+        /**
+         * Business category slug or enum. Defaults to AUTOMOTIVE.
+         */
+        category?: MarketplaceBusinessCategory,
     }): CancelablePromise<MarketplaceVehicleDetailResponse> {
         return __request(OpenAPI, {
             method: 'GET',
             url: '/api/marketplace/vehicles/{listingId}',
             path: {
                 'listingId': listingId,
+            },
+            query: {
+                'category': category,
             },
             errors: {
                 404: `Not found`,
@@ -226,23 +262,66 @@ export class MarketplaceService {
         });
     }
     /**
-     * Dealer storefront index
+     * Seller storefront index
+     * Returns seller info and all marketplace-eligible listings for that seller
+     * within the requested business category.
+     * Returns 404 when the seller does not exist or belongs to another category.
+     *
+     * @returns MarketplaceDealerIndexResponse Seller storefront
+     * @throws ApiError
+     */
+    public static getMarketplaceSellerIndex({
+        sellerId,
+        category,
+    }: {
+        sellerId: string,
+        /**
+         * Business category slug or enum. Defaults to AUTOMOTIVE.
+         */
+        category?: MarketplaceBusinessCategory,
+    }): CancelablePromise<MarketplaceDealerIndexResponse> {
+        return __request(OpenAPI, {
+            method: 'GET',
+            url: '/api/marketplace/sellers/{sellerId}',
+            path: {
+                'sellerId': sellerId,
+            },
+            query: {
+                'category': category,
+            },
+            errors: {
+                400: `Bad request — invalid query parameter value`,
+                404: `Not found`,
+            },
+        });
+    }
+    /**
+     * Dealer storefront index (legacy alias)
+     * Legacy alias for GET /api/marketplace/sellers/{sellerId}.
      * Returns dealer info and all marketplace-eligible vehicles for that dealer.
-     * Returns 404 when the dealer does not exist.
+     * Returns 404 when the dealer does not exist or belongs to another category.
      *
      * @returns MarketplaceDealerIndexResponse Dealer index
      * @throws ApiError
      */
     public static getMarketplaceDealerIndex({
         dealerId,
+        category,
     }: {
         dealerId: string,
+        /**
+         * Business category slug or enum. Defaults to AUTOMOTIVE.
+         */
+        category?: MarketplaceBusinessCategory,
     }): CancelablePromise<MarketplaceDealerIndexResponse> {
         return __request(OpenAPI, {
             method: 'GET',
             url: '/api/marketplace/dealers/{dealerId}',
             path: {
                 'dealerId': dealerId,
+            },
+            query: {
+                'category': category,
             },
             errors: {
                 404: `Not found`,

@@ -83,6 +83,7 @@ function makeVehicleRow(overrides: Partial<{
       dbaName:        null,
       rooftopAddress: { city: 'Austin', state: 'TX' },
       websiteUrl:     null,
+      businessCategory: 'AUTOMOTIVE',
     },
   };
 }

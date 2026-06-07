@@ -11,8 +11,9 @@ export type SavedFeedState = {
   scrollY: number;
 };
 
-export function feedFilterKey(query: ListQuery): string {
+export function feedFilterKey(slug: string, query: ListQuery): string {
   return JSON.stringify({
+    slug,
     make:       query.make ?? null,
     model:      query.model ?? null,
     condition:  query.condition ?? null,

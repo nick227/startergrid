@@ -123,9 +123,16 @@ paths:
       operationId: getMarketplaceFavorites
       summary: List saved favorites
       description: |
-        Returns marketplace-safe vehicle cards for all currently-eligible favorited listings.
+        Returns marketplace-safe vehicle cards for all currently-eligible favorited listings
+        in the requested business category.
         Sold, removed, or unpriced vehicles are silently omitted from this response.
         The underlying favorite record is preserved — cards reappear if the vehicle is re-listed.
+      parameters:
+        - name: category
+          in: query
+          description: Business category slug or enum. Defaults to AUTOMOTIVE.
+          schema:
+            $ref: '#/components/schemas/MarketplaceBusinessCategory'
       responses:
         '200':
           description: Favorites list
@@ -154,6 +161,11 @@ paths:
           required: true
           schema:
             type: string
+        - name: category
+          in: query
+          description: Business category slug or enum. Defaults to AUTOMOTIVE.
+          schema:
+            $ref: '#/components/schemas/MarketplaceBusinessCategory'
       responses:
         '200':
           description: Favorite saved (or already saved)
@@ -191,6 +203,24 @@ paths:
         '401':
           $ref: '#/components/responses/Unauthorized'
 
+  /api/marketplace/sites:
+    get:
+      tags: [Marketplace]
+      security: []
+      x-route-classification: public
+      operationId: listMarketplaceSites
+      summary: List consumer marketplace sites
+      description: |
+        Returns every business-category marketplace surface exposed to shoppers,
+        with listing counts and site status (active, coming_soon, disabled).
+      responses:
+        '200':
+          description: Marketplace site index
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MarketplaceSitesResponse'
+
   /api/marketplace/feed:
     get:
       tags: [Marketplace]
@@ -203,6 +233,11 @@ paths:
         Vehicle items use marketplace eligibility rules. Promo and notice items
         are inserted server-side and do not affect cursor semantics.
       parameters:
+        - name: category
+          in: query
+          description: Business category slug or enum. Defaults to AUTOMOTIVE.
+          schema:
+            $ref: '#/components/schemas/MarketplaceBusinessCategory'
         - name: cursor
           in: query
           schema:
@@ -274,6 +309,11 @@ paths:
         Eligible = active (not sold/removed) + price set.
         Supports make/model/condition/price/dealer filters.
       parameters:
+        - name: category
+          in: query
+          description: Business category slug or enum. Defaults to AUTOMOTIVE.
+          schema:
+            $ref: '#/components/schemas/MarketplaceBusinessCategory'
         - name: make
           in: query
           schema:
@@ -344,7 +384,7 @@ paths:
       summary: Single vehicle detail
       description: |
         Returns detail for one marketplace-eligible vehicle by opaque listing ID.
-        Returns 404 for sold, removed, or non-existent vehicles.
+        Returns 404 for sold, removed, non-existent, or wrong-category vehicles.
       parameters:
         - name: listingId
           in: path
@@ -352,6 +392,11 @@ paths:
           description: Opaque vehicle identifier from MarketplaceVehicleCard.listingId
           schema:
             type: string
+        - name: category
+          in: query
+          description: Business category slug or enum. Defaults to AUTOMOTIVE.
+          schema:
+            $ref: '#/components/schemas/MarketplaceBusinessCategory'
       responses:
         '200':
           description: Vehicle detail
@@ -440,22 +485,62 @@ paths:
               schema:
                 $ref: '#/components/schemas/MarketplaceErrorResponse'
 
+  /api/marketplace/sellers/{sellerId}:
+    get:
+      tags: [Marketplace]
+      security: []
+      x-route-classification: public
+      operationId: getMarketplaceSellerIndex
+      summary: Seller storefront index
+      description: |
+        Returns seller info and all marketplace-eligible listings for that seller
+        within the requested business category.
+        Returns 404 when the seller does not exist or belongs to another category.
+      parameters:
+        - name: sellerId
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: category
+          in: query
+          description: Business category slug or enum. Defaults to AUTOMOTIVE.
+          schema:
+            $ref: '#/components/schemas/MarketplaceBusinessCategory'
+      responses:
+        '200':
+          description: Seller storefront
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MarketplaceDealerIndexResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
   /api/marketplace/dealers/{dealerId}:
     get:
       tags: [Marketplace]
       security: []
       x-route-classification: public
       operationId: getMarketplaceDealerIndex
-      summary: Dealer storefront index
+      summary: Dealer storefront index (legacy alias)
       description: |
+        Legacy alias for GET /api/marketplace/sellers/{sellerId}.
         Returns dealer info and all marketplace-eligible vehicles for that dealer.
-        Returns 404 when the dealer does not exist.
+        Returns 404 when the dealer does not exist or belongs to another category.
       parameters:
         - name: dealerId
           in: path
           required: true
           schema:
             type: string
+        - name: category
+          in: query
+          description: Business category slug or enum. Defaults to AUTOMOTIVE.
+          schema:
+            $ref: '#/components/schemas/MarketplaceBusinessCategory'
       responses:
         '200':
           description: Dealer index
@@ -522,6 +607,73 @@ components:
             $ref: '#/components/schemas/MarketplaceErrorResponse'
 
   schemas:
+    MarketplaceBusinessCategory:
+      type: string
+      description: Business category enum value or kebab-case slug (e.g. vacation-rentals).
+      enum:
+        - AUTOMOTIVE
+        - SONGS
+        - EBOOKS
+        - WATCHES
+        - SNEAKERS
+        - COLLECTIBLES
+        - APPAREL
+        - VACATION_RENTALS
+        - APARTMENTS
+        - HOMES
+        - COMMERCIAL_PROPERTY
+        - BOATS
+        - TRAILERS_POWERSPORTS_RV
+        - HEAVY_EQUIPMENT
+        - FURNITURE
+        - VIDEO_DISTRIBUTION
+        - automotive
+        - songs
+        - ebooks
+        - watches
+        - sneakers
+        - collectibles
+        - apparel
+        - vacation-rentals
+        - apartments
+        - homes
+        - commercial-property
+        - boats
+        - trailers-powersports-rv
+        - heavy-equipment
+        - furniture
+        - video-distribution
+
+    MarketplaceSiteSummary:
+      type: object
+      required: [category, slug, label, status, listingCount, href, tagline]
+      properties:
+        category:
+          type: string
+        slug:
+          type: string
+        label:
+          type: string
+        status:
+          type: string
+          enum: [active, coming_soon, disabled]
+        listingCount:
+          type: integer
+          minimum: 0
+        href:
+          type: string
+        tagline:
+          type: string
+
+    MarketplaceSitesResponse:
+      type: object
+      required: [sites]
+      properties:
+        sites:
+          type: array
+          items:
+            $ref: '#/components/schemas/MarketplaceSiteSummary'
+
     MarketplaceLoginRequest:
       type: object
       required: [email, password]
@@ -1408,6 +1560,10 @@ components:
           type: string
           maxLength: 80
           description: Required for dealer_page_view.
+        category:
+          type: string
+          maxLength: 80
+          description: Optional business category boundary for the event.
 
     MarketplaceChannelEventResponse:
       type: object

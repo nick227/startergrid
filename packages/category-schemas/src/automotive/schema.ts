@@ -1,4 +1,5 @@
 import type { CategorySchema } from '../types.js';
+import { buildMarketplaceMeta } from '../marketplace/helpers.js';
 import { genericChannel, genericReadiness } from '../generic/copy.en.js';
 import { automotiveCopy } from './copy.en.js';
 import { automotiveFormatters } from './formatters.js';
@@ -36,4 +37,5 @@ export const automotiveSchema: CategorySchema = {
     benchmarksLabel: 'Sales pace comparison',
   },
   formatters: automotiveFormatters,
+  marketplace: buildMarketplaceMeta('AUTOMOTIVE', 'Automotive'),
 };

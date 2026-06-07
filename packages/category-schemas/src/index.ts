@@ -6,6 +6,7 @@ export type {
   CategoryFieldDef,
   CategoryFormatters,
   CategoryLifecycleLabels,
+  CategoryMarketplaceMeta,
   CategoryPerformanceLabels,
   CategoryReadinessLabels,
   CategorySchema,
@@ -18,5 +19,11 @@ export {
   resolveCategorySchema,
   resolveCategorySchemaStrict,
 } from './resolveCategorySchema.js';
+export {
+  buildMarketplaceMeta,
+  categoryIdToSlug,
+  categorySlugToId,
+  listMarketplaceCategories,
+} from './marketplace/helpers.js';
 export { automotiveSchema } from './automotive/schema.js';
 export { createPlaceholderSchema, createUnknownFallbackSchema } from './generic/schema.js';

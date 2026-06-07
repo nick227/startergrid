@@ -12,6 +12,10 @@ export type MarketplaceChannelEventRequest = {
      * Required for dealer_page_view.
      */
     dealerId?: string;
+    /**
+     * Optional business category boundary for the event.
+     */
+    category?: string;
 };
 export namespace MarketplaceChannelEventRequest {
     export enum eventType {

@@ -7,7 +7,7 @@
 //   • The favorite row is preserved when a vehicle becomes ineligible; it reappears
 //     in the list if the vehicle is re-listed.
 
-import type { PrismaClient } from '@prisma/client';
+import type { PrismaClient, BusinessCategory } from '@prisma/client';
 
 const ELIGIBLE_WHERE = {
   soldAt:    null,
@@ -15,16 +15,30 @@ const ELIGIBLE_WHERE = {
   priceCents: { gt: 0 as number },
 } as const;
 
+async function findEligibleVehicle(
+  prisma: PrismaClient,
+  vehicleId: string,
+  category?: BusinessCategory,
+) {
+  return prisma.vehicle.findFirst({
+    where:  { id: vehicleId, ...ELIGIBLE_WHERE },
+    select: {
+      id: true,
+      dealership: { select: { businessCategory: true } },
+    },
+  });
+}
+
 // Returns true when the vehicle exists and is marketplace-eligible.
 export async function isVehicleEligible(
   prisma: PrismaClient,
   vehicleId: string,
+  category?: BusinessCategory,
 ): Promise<boolean> {
-  const hit = await prisma.vehicle.findFirst({
-    where:  { id: vehicleId, ...ELIGIBLE_WHERE },
-    select: { id: true },
-  });
-  return hit !== null;
+  const hit = await findEligibleVehicle(prisma, vehicleId, category);
+  if (!hit) return false;
+  if (category && hit.dealership.businessCategory !== category) return false;
+  return true;
 }
 
 // Idempotent add. Returns false (→ 404 upstream) when the vehicle is not eligible.
@@ -32,13 +46,16 @@ export async function addFavorite(
   prisma: PrismaClient,
   userId: string,
   vehicleId: string,
+  category?: BusinessCategory,
 ): Promise<boolean> {
-  if (!(await isVehicleEligible(prisma, vehicleId))) return false;
+  const vehicle = await findEligibleVehicle(prisma, vehicleId, category);
+  if (!vehicle) return false;
+  if (category && vehicle.dealership.businessCategory !== category) return false;
 
   await prisma.marketplaceFavorite.upsert({
     where:  { marketplaceUserId_vehicleId: { marketplaceUserId: userId, vehicleId } },
     create: { marketplaceUserId: userId, vehicleId },
-    update: {}, // no-op when already favorited
+    update: {},
   });
 
   return true;

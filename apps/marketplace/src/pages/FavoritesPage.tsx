@@ -3,6 +3,8 @@ import { useAuth } from '../contexts/AuthContext.tsx';
 import { useQuery, queryErrorMessage } from '../hooks/useQuery.ts';
 import { usePageMeta } from '../hooks/usePageMeta.ts';
 import { fetchFavorites } from '../lib/api.ts';
+import { listHref } from '../lib/routes.ts';
+import { useCategoryId, useCategorySchema, useCategorySlug } from '../contexts/CategoryContext.tsx';
 import { PageShell } from '../components/layout/PageShell.tsx';
 import { PageHeader } from '../components/ui/PageHeader.tsx';
 import { VehicleCard } from '../components/VehicleCard.tsx';
@@ -13,21 +15,24 @@ import { SkeletonGrid } from '../components/ui/SkeletonGrid.tsx';
 
 export default function FavoritesPage() {
   const { user, authReady, favoriteIds } = useAuth();
+  const categoryId = useCategoryId();
+  const slug = useCategorySlug();
+  const schema = useCategorySchema();
 
-  usePageMeta('Saved vehicles', 'Your saved vehicle listings.');
+  usePageMeta(`Saved ${schema.asset.plural}`, `Your saved ${schema.asset.plural} on the ${schema.label.toLowerCase()} marketplace.`);
 
   useEffect(() => {
     if (authReady && !user) {
-      window.location.hash = '#/';
+      window.location.hash = listHref(slug).slice(1);
     }
-  }, [authReady, user]);
+  }, [authReady, user, slug]);
 
   const { data, loading, error, reload } = useQuery(
-    () => fetchFavorites(),
-    [user?.id],
+    () => fetchFavorites(categoryId),
+    [user?.id, categoryId],
+    { enabled: Boolean(user) },
   );
 
-  // Filter out any cards the user unfavorited since the page loaded
   const visibleCards = data?.favorites.filter(v => favoriteIds.has(v.listingId)) ?? [];
 
   if (!authReady || !user) return null;
@@ -35,8 +40,8 @@ export default function FavoritesPage() {
   return (
     <PageShell>
       <PageHeader
-        title="Saved vehicles"
-        subtitle="Vehicles you've saved. Sold or unavailable listings are automatically removed."
+        title={`Saved ${schema.asset.plural}`}
+        subtitle={`${schema.asset.plural} you've saved on the ${schema.label.toLowerCase()} marketplace.`}
       />
 
       {loading && !data ? (
@@ -45,10 +50,10 @@ export default function FavoritesPage() {
         <ErrorState message={queryErrorMessage(error)} onRetry={reload} />
       ) : visibleCards.length === 0 ? (
         <EmptyState
-          title="No saved vehicles"
+          title={`No saved ${schema.asset.plural}`}
           description="Tap the heart icon on any listing to save it here."
-          actionLabel="Browse vehicles"
-          onAction={() => { window.location.hash = '#/'; }}
+          actionLabel={`Browse ${schema.asset.plural}`}
+          onAction={() => { window.location.hash = listHref(slug).slice(1); }}
         />
       ) : (
         <VehicleGrid>

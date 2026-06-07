@@ -2,6 +2,7 @@
 /* istanbul ignore file */
 /* tslint:disable */
 /* eslint-disable */
+import type { MarketplaceBusinessCategory } from '../models/MarketplaceBusinessCategory';
 import type { MarketplaceFavoriteAddResponse } from '../models/MarketplaceFavoriteAddResponse';
 import type { MarketplaceFavoriteRemoveResponse } from '../models/MarketplaceFavoriteRemoveResponse';
 import type { MarketplaceFavoritesResponse } from '../models/MarketplaceFavoritesResponse';
@@ -71,17 +72,28 @@ export class MarketplaceAuthService {
     }
     /**
      * List saved favorites
-     * Returns marketplace-safe vehicle cards for all currently-eligible favorited listings.
+     * Returns marketplace-safe vehicle cards for all currently-eligible favorited listings
+     * in the requested business category.
      * Sold, removed, or unpriced vehicles are silently omitted from this response.
      * The underlying favorite record is preserved — cards reappear if the vehicle is re-listed.
      *
      * @returns MarketplaceFavoritesResponse Favorites list
      * @throws ApiError
      */
-    public static getMarketplaceFavorites(): CancelablePromise<MarketplaceFavoritesResponse> {
+    public static getMarketplaceFavorites({
+        category,
+    }: {
+        /**
+         * Business category slug or enum. Defaults to AUTOMOTIVE.
+         */
+        category?: MarketplaceBusinessCategory,
+    }): CancelablePromise<MarketplaceFavoritesResponse> {
         return __request(OpenAPI, {
             method: 'GET',
             url: '/api/marketplace/me/favorites',
+            query: {
+                'category': category,
+            },
             errors: {
                 401: `Authentication required or session invalid`,
             },
@@ -98,14 +110,22 @@ export class MarketplaceAuthService {
      */
     public static addMarketplaceFavorite({
         listingId,
+        category,
     }: {
         listingId: string,
+        /**
+         * Business category slug or enum. Defaults to AUTOMOTIVE.
+         */
+        category?: MarketplaceBusinessCategory,
     }): CancelablePromise<MarketplaceFavoriteAddResponse> {
         return __request(OpenAPI, {
             method: 'POST',
             url: '/api/marketplace/me/favorites/{listingId}',
             path: {
                 'listingId': listingId,
+            },
+            query: {
+                'category': category,
             },
             errors: {
                 401: `Authentication required or session invalid`,

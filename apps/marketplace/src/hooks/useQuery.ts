@@ -15,15 +15,23 @@ export function queryErrorMessage(error: unknown): string {
 export function useQuery<T>(
   loader: () => Promise<T>,
   deps: readonly unknown[],
+  options: { enabled?: boolean } = {},
 ): QueryState<T> {
+  const enabled = options.enabled ?? true;
   const [data,    setData]    = useState<T | null>(null);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(enabled);
   const [error,   setError]   = useState<unknown>(null);
   const [tick,    setTick]    = useState(0);
 
   const reload = useCallback(() => setTick(t => t + 1), []);
 
   useEffect(() => {
+    if (!enabled) {
+      setLoading(false);
+      setError(null);
+      setData(null);
+      return;
+    }
     let active = true;
     setLoading(true);
     setError(null);
@@ -32,7 +40,7 @@ export function useQuery<T>(
       .catch(e => { if (active) { setError(e); setLoading(false); } });
     return () => { active = false; };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [...deps, tick]);
+  }, [...deps, tick, enabled]);
 
   return { data, loading, error, reload };
 }

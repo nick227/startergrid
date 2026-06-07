@@ -5,6 +5,7 @@ import {
   ApiError,
   MarketplaceService,
   MarketplaceAuthService,
+  MarketplaceBusinessCategory,
   type MarketplaceFeedResponse,
   type MarketplaceVehicleListResponse,
   type MarketplaceVehicleDetailResponse,
@@ -12,7 +13,9 @@ import {
   type MarketplaceLeadCaptureResponse,
   type MarketplaceUserIdentity,
   type MarketplaceFavoritesResponse,
+  type MarketplaceSitesResponse,
 } from '@dealer-marketplace/client';
+import type { BusinessCategoryId } from '@auto-dealer/category-schemas';
 
 export type {
   MarketplaceVehicleCard,
@@ -25,6 +28,9 @@ export type {
   MarketplaceLeadCaptureResponse,
   MarketplaceUserIdentity,
   MarketplaceFavoritesResponse,
+  MarketplaceSitesResponse,
+  MarketplaceSiteSummary,
+  MarketplaceBusinessCategory,
   VehicleCore,
   VehicleCommerce,
   VehicleLocation,
@@ -48,7 +54,15 @@ export type LeadCaptureInput = {
   message?:      string;
 };
 
-export type ListFilters = {
+export type CategoryScope = {
+  category?: BusinessCategoryId;
+};
+
+function toApiCategory(category?: BusinessCategoryId): MarketplaceBusinessCategory | undefined {
+  return category as MarketplaceBusinessCategory | undefined;
+}
+
+export type ListFilters = CategoryScope & {
   make?:      string;
   model?:     string;
   condition?: 'NEW' | 'USED' | 'CPO';
@@ -96,8 +110,13 @@ async function call<T>(fn: () => Promise<T>): Promise<T> {
   }
 }
 
+export function fetchSites(): Promise<MarketplaceSitesResponse> {
+  return call(() => MarketplaceService.listMarketplaceSites());
+}
+
 export function fetchFeed(filters: FeedFilters = {}): Promise<MarketplaceFeedResponse> {
   return call(() => MarketplaceService.getMarketplaceFeed({
+    category:   toApiCategory(filters.category),
     cursor:     filters.cursor,
     limit:      filters.limit,
     make:       filters.make,
@@ -112,6 +131,7 @@ export function fetchFeed(filters: FeedFilters = {}): Promise<MarketplaceFeedRes
 
 export function fetchVehicles(filters: ListFilters = {}): Promise<MarketplaceVehicleListResponse> {
   return call(() => MarketplaceService.listMarketplaceVehicles({
+    category:   toApiCategory(filters.category),
     make:      filters.make,
     model:     filters.model,
     condition: filters.condition,
@@ -124,12 +144,26 @@ export function fetchVehicles(filters: ListFilters = {}): Promise<MarketplaceVeh
   }));
 }
 
-export function fetchVehicle(listingId: string): Promise<MarketplaceVehicleDetailResponse> {
-  return call(() => MarketplaceService.getMarketplaceVehicle({ listingId }));
+export function fetchVehicle(
+  listingId: string,
+  category?: BusinessCategoryId,
+): Promise<MarketplaceVehicleDetailResponse> {
+  return call(() => MarketplaceService.getMarketplaceVehicle({ listingId, category: toApiCategory(category) }));
 }
 
-export function fetchDealer(dealerId: string): Promise<MarketplaceDealerIndexResponse> {
-  return call(() => MarketplaceService.getMarketplaceDealerIndex({ dealerId }));
+export function fetchSeller(
+  sellerId: string,
+  category?: BusinessCategoryId,
+): Promise<MarketplaceDealerIndexResponse> {
+  return call(() => MarketplaceService.getMarketplaceSellerIndex({ sellerId, category: toApiCategory(category) }));
+}
+
+/** @deprecated Use fetchSeller */
+export function fetchDealer(
+  dealerId: string,
+  category?: BusinessCategoryId,
+): Promise<MarketplaceDealerIndexResponse> {
+  return fetchSeller(dealerId, category);
 }
 
 export function submitVehicleLead(
@@ -154,12 +188,17 @@ export function logout(): Promise<void> {
   return call(() => MarketplaceAuthService.marketplaceLogout().then(() => undefined));
 }
 
-export function fetchFavorites(): Promise<MarketplaceFavoritesResponse> {
-  return call(() => MarketplaceAuthService.getMarketplaceFavorites());
+export function fetchFavorites(
+  category?: BusinessCategoryId,
+): Promise<MarketplaceFavoritesResponse> {
+  return call(() => MarketplaceAuthService.getMarketplaceFavorites({ category: toApiCategory(category) }));
 }
 
-export function addFavorite(listingId: string): Promise<void> {
-  return call(() => MarketplaceAuthService.addMarketplaceFavorite({ listingId }).then(() => undefined));
+export function addFavorite(
+  listingId: string,
+  category?: BusinessCategoryId,
+): Promise<void> {
+  return call(() => MarketplaceAuthService.addMarketplaceFavorite({ listingId, category: toApiCategory(category) }).then(() => undefined));
 }
 
 export function removeFavorite(listingId: string): Promise<void> {

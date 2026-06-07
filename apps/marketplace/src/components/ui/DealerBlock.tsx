@@ -1,6 +1,7 @@
 import { formatWebsiteHostname, sanitizeExternalUrl } from '../../lib/links.ts';
 import { formatLocation } from '../../lib/display.ts';
-import { dealerHref } from '../../lib/routes.ts';
+import { sellerHref } from '../../lib/routes.ts';
+import { useCategorySlug } from '../../contexts/CategoryContext.tsx';
 import { ExternalLink } from './ExternalLink.tsx';
 import { SectionCard } from './SectionCard.tsx';
 
@@ -21,13 +22,14 @@ export function DealerBlock({
   websiteUrl,
   showInventoryLink = true,
 }: Props) {
+  const slug = useCategorySlug();
   const location = formatLocation(city, state);
   const safeWebsite = sanitizeExternalUrl(websiteUrl);
 
   return (
     <SectionCard>
       <p className="mp-label text-slate-400">Sold by</p>
-      <a href={dealerHref(dealerId)} className="mp-focus mt-1 block text-lg font-semibold text-slate-900 hover:text-blue-600">
+      <a href={sellerHref(slug, dealerId)} className="mp-focus mt-1 block text-lg font-semibold text-slate-900 hover:text-blue-600">
         {dealerName}
       </a>
       {location && <p className="mt-1 text-sm text-slate-600">{location}</p>}
@@ -42,7 +44,7 @@ export function DealerBlock({
 
       {showInventoryLink && (
         <a
-          href={dealerHref(dealerId)}
+          href={sellerHref(slug, dealerId)}
           className="mp-focus mt-4 inline-flex text-sm font-semibold text-blue-600 hover:text-blue-700"
         >
           View all vehicles from this dealer →

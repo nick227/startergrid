@@ -7,6 +7,7 @@ export { CancelablePromise, CancelError } from './core/CancelablePromise';
 export { OpenAPI } from './core/OpenAPI';
 export type { OpenAPIConfig } from './core/OpenAPI';
 
+export { MarketplaceBusinessCategory } from './models/MarketplaceBusinessCategory';
 export { MarketplaceCardMediaItem } from './models/MarketplaceCardMediaItem';
 export { MarketplaceChannelEventRequest } from './models/MarketplaceChannelEventRequest';
 export type { MarketplaceChannelEventResponse } from './models/MarketplaceChannelEventResponse';
@@ -29,6 +30,8 @@ export type { MarketplaceLogoutResponse } from './models/MarketplaceLogoutRespon
 export { MarketplaceMediaItem } from './models/MarketplaceMediaItem';
 export { MarketplaceNotice } from './models/MarketplaceNotice';
 export type { MarketplaceNoticeFeedItem } from './models/MarketplaceNoticeFeedItem';
+export type { MarketplaceSitesResponse } from './models/MarketplaceSitesResponse';
+export { MarketplaceSiteSummary } from './models/MarketplaceSiteSummary';
 export type { MarketplaceUserIdentity } from './models/MarketplaceUserIdentity';
 export { MarketplaceVehicleCard } from './models/MarketplaceVehicleCard';
 export { MarketplaceVehicleCtaPrimary } from './models/MarketplaceVehicleCtaPrimary';

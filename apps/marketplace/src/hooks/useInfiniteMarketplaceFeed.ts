@@ -5,6 +5,7 @@ import {
   type MarketplaceFeedItem,
   type MarketplaceFeedResponse,
 } from '../lib/api.ts';
+import { useCategoryId, useCategorySlug } from '../contexts/CategoryContext.tsx';
 import { feedFilterKey, getSavedFeedState, saveFeedState } from '../lib/feedState.ts';
 import type { ListQuery } from '../lib/routes.ts';
 
@@ -21,7 +22,11 @@ type FeedStatus = {
 };
 
 export function useInfiniteMarketplaceFeed(query: ListQuery) {
+  const categoryId = useCategoryId();
+  const slug = useCategorySlug();
+
   const filters = useMemo<FeedFilters>(() => ({
+    category:   categoryId,
     make:       query.make,
     model:      query.model,
     condition:  query.condition,
@@ -30,9 +35,9 @@ export function useInfiniteMarketplaceFeed(query: ListQuery) {
     maxMileage: query.maxMileage,
     dealer:     query.dealer,
     limit:      FEED_LIMIT,
-  }), [query.make, query.model, query.condition, query.minPrice, query.maxPrice, query.maxMileage, query.dealer]);
+  }), [categoryId, query.make, query.model, query.condition, query.minPrice, query.maxPrice, query.maxMileage, query.dealer]);
 
-  const filterKey = useMemo(() => feedFilterKey(query), [query]);
+  const filterKey = useMemo(() => feedFilterKey(slug, query), [slug, query]);
   const requestId = useRef(0);
   const loadingRef = useRef(false);
   const [state, setState] = useState<FeedStatus>(() => {

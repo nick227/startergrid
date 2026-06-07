@@ -18,12 +18,14 @@ const yaml = _require('js-yaml') as { load(src: string): unknown };
 // Keep in sync with src/server/routes/marketplace.ts and src/server/app.ts.
 
 const REGISTERED_MARKETPLACE_ROUTES = new Set([
-  // Public browse routes (Phase A/B)
+  // Public browse routes (Phase A/B + multi-site Phase 2)
+  'GET    /api/marketplace/sites',
   'GET    /api/marketplace/feed',
   'GET    /api/marketplace/vehicles',
   'GET    /api/marketplace/vehicles/{listingId}',
   'POST   /api/marketplace/vehicles/{listingId}/leads',
   'POST   /api/marketplace/events',
+  'GET    /api/marketplace/sellers/{sellerId}',
   'GET    /api/marketplace/dealers/{dealerId}',
   'GET    /api/marketplace/dealers/{dealerId}/stats',
   // Consumer auth routes (Phase C2)

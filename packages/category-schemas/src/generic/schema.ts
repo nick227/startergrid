@@ -1,4 +1,5 @@
 import type { BusinessCategoryId, CategoryCopyBundle, CategorySchema } from '../types.js';
+import { buildMarketplaceMeta } from '../marketplace/helpers.js';
 import {
   genericAsset,
   genericChannel,
@@ -26,15 +27,17 @@ export function createPlaceholderSchema(
     readiness: { ...genericReadiness },
     performance: { ...genericPerformance },
     formatters: genericFormatters,
+    marketplace: buildMarketplaceMeta(id, label),
   };
 }
 
 /** Fallback when category is not registered — never throws. */
 export function createUnknownFallbackSchema(category: string): CategorySchema {
+  const label = category || 'Unknown';
   return {
     id: category as BusinessCategoryId,
     status: 'placeholder',
-    label: category || 'Unknown',
+    label,
     copy: { ...genericCopy },
     asset: { ...genericAsset },
     channel: { ...genericChannel },
@@ -43,5 +46,10 @@ export function createUnknownFallbackSchema(category: string): CategorySchema {
     readiness: { ...genericReadiness },
     performance: { ...genericPerformance },
     formatters: genericFormatters,
+    marketplace: {
+      slug: category.trim().toLowerCase().replace(/_/g, '-'),
+      consumerEnabled: false,
+      tagline: `Browse ${label.toLowerCase()} listings`,
+    },
   };
 }

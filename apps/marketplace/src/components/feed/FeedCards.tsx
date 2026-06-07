@@ -3,7 +3,8 @@ import type {
   MarketplaceVehicleCard,
 } from '../../lib/api.ts';
 import { formatLocation, formatMileage, formatPrice, vehicleHeading } from '../../lib/display.ts';
-import { dealerHref, listingHref } from '../../lib/routes.ts';
+import { listingHref, sellerHref } from '../../lib/routes.ts';
+import { useCategoryId, useCategorySlug } from '../../contexts/CategoryContext.tsx';
 import { useTrackVisibleMarketplaceItem } from '../../hooks/useTrackVisibleMarketplaceItem.ts';
 import { ConditionBadge } from '../ui/ConditionBadge.tsx';
 import { FeedMediaCarousel } from '../ui/FeedMediaCarousel.tsx';
@@ -28,10 +29,13 @@ function VehicleFeedCard({
   index: number;
 }) {
   const card = item.vehicle;
+  const slug = useCategorySlug();
+  const categoryId = useCategoryId();
   const ref = useTrackVisibleMarketplaceItem<HTMLElement>({
     type: item.type,
     impressionKey: item.impressionKey,
     listingId: card.listingId,
+    category: categoryId,
   });
   const title = vehicleHeading(card);
   const location = formatLocation(card.dealerCity, card.dealerState);
@@ -39,7 +43,7 @@ function VehicleFeedCard({
   return (
     <article ref={ref} className="group mp-card flex h-full flex-col transition hover:border-navy-500/40 hover:shadow-elevation-3">
       <div className="relative">
-        <a href={listingHref(card.listingId)} className="mp-focus block rounded-t-xl">
+        <a href={listingHref(slug, card.listingId)} className="mp-focus block rounded-t-xl">
           <FeedMediaCarousel
             mediaItems={card.mediaItems}
             fallbackImageUrls={card.mediaUrls}
@@ -55,7 +59,7 @@ function VehicleFeedCard({
       <div className="flex flex-1 flex-col gap-4 p-5">
         <div className="space-y-2">
           <div className="flex items-start justify-between gap-3">
-            <a href={listingHref(card.listingId)} className="mp-focus min-w-0 text-lg font-semibold leading-snug text-ink-heading hover:text-cta">
+            <a href={listingHref(slug, card.listingId)} className="mp-focus min-w-0 text-lg font-semibold leading-snug text-ink-heading hover:text-cta">
               {title}
             </a>
             <ConditionBadge condition={card.condition} className="shrink-0" />
@@ -67,7 +71,7 @@ function VehicleFeedCard({
 
         <div className="mt-auto border-t border-silver-200 pt-4">
           <p className="mp-label text-ink-faint">Dealer</p>
-          <a href={dealerHref(card.dealerId)} className="mp-focus mt-1 block text-sm font-semibold text-ink-body hover:text-cta">
+          <a href={sellerHref(slug, card.dealerId)} className="mp-focus mt-1 block text-sm font-semibold text-ink-body hover:text-cta">
             {card.dealerName}
           </a>
           {location && <p className="mt-1 text-xs text-ink-muted">{location}</p>}

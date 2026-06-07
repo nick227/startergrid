@@ -46,6 +46,7 @@ export async function recordMarketplaceChannelEvent(
     listingId?:  string | null;
     dealerId?:   string | null;
     quantity?:   number;
+    category?:   string | null;
   },
 ): Promise<{ eventId: string } | null> {
   let vehicleId: string | null = null;
@@ -55,17 +56,19 @@ export async function recordMarketplaceChannelEvent(
   if (listingId) {
     const vehicle = await prisma.vehicle.findFirst({
       where:  { id: listingId, soldAt: null, removedAt: null, priceCents: { gt: 0 } },
-      select: { id: true, dealershipId: true },
+      select: { id: true, dealershipId: true, dealership: { select: { businessCategory: true } } },
     });
     if (!vehicle) return null;
+    if (input.category && vehicle.dealership.businessCategory !== input.category) return null;
     vehicleId = vehicle.id;
     dealershipId = vehicle.dealershipId;
   } else if (dealershipId) {
     const dealer = await prisma.dealershipProfile.findUnique({
       where:  { id: dealershipId },
-      select: { id: true },
+      select: { id: true, businessCategory: true },
     });
     if (!dealer) return null;
+    if (input.category && dealer.businessCategory !== input.category) return null;
   }
 
   if (!dealershipId) return null;
@@ -78,6 +81,7 @@ export async function recordMarketplaceChannelEvent(
     vehicleId,
     listingId,
     quantity: input.quantity,
+    metadataJson: input.category ? { businessCategory: input.category } : null,
   });
 
   return { eventId };

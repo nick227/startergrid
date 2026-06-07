@@ -1,12 +1,19 @@
-import { useState, useEffect } from 'react';
+import { useEffect, useState } from 'react';
+import { categorySlugToId } from '@auto-dealer/category-schemas';
 import { parseRoute } from './lib/routes.ts';
 import { resetPageMeta } from './lib/pageMeta.ts';
 import { AuthProvider } from './contexts/AuthContext.tsx';
+import { CategoryProvider } from './contexts/CategoryContext.tsx';
+import { CategoryFavoritesSync } from './contexts/CategoryFavoritesSync.tsx';
 import { LoginModal } from './components/ui/LoginModal.tsx';
-import VehicleListPage   from './pages/VehicleListPage.tsx';
+import SitesIndexPage from './pages/SitesIndexPage.tsx';
+import VehicleListPage from './pages/VehicleListPage.tsx';
 import VehicleDetailPage from './pages/VehicleDetailPage.tsx';
-import DealerDetailPage  from './pages/DealerDetailPage.tsx';
-import FavoritesPage     from './pages/FavoritesPage.tsx';
+import SellerDetailPage from './pages/SellerDetailPage.tsx';
+import FavoritesPage from './pages/FavoritesPage.tsx';
+import { PageShell } from './components/layout/PageShell.tsx';
+import { NotFoundState } from './components/ui/NotFoundState.tsx';
+import { sitesHref } from './lib/routes.ts';
 
 export default function App() {
   const [route, setRoute] = useState(parseRoute);
@@ -18,13 +25,55 @@ export default function App() {
     return () => window.removeEventListener('hashchange', handler);
   }, []);
 
+  useEffect(() => {
+    if (route.page !== 'redirect') return;
+    window.location.replace(route.href);
+  }, [route]);
+
+  if (route.page === 'redirect') return null;
+
+  const shell = (
+    <>
+      <LoginModal />
+    </>
+  );
+
+  if (route.page === 'sites') {
+    return (
+      <AuthProvider>
+        <SitesIndexPage />
+        {shell}
+      </AuthProvider>
+    );
+  }
+
+  const categoryId = categorySlugToId(route.slug);
+  if (!categoryId) {
+    return (
+      <AuthProvider>
+        <PageShell showCategoryNav={false}>
+          <NotFoundState
+            title="Marketplace not found"
+            description="That category site does not exist."
+            backHref={sitesHref()}
+            backLabel="All marketplaces"
+          />
+        </PageShell>
+        {shell}
+      </AuthProvider>
+    );
+  }
+
   return (
     <AuthProvider>
-      {route.page === 'listing'  && <VehicleDetailPage listingId={route.listingId} />}
-      {route.page === 'dealer'   && <DealerDetailPage  dealerId={route.dealerId} />}
-      {route.page === 'favorites' && <FavoritesPage />}
-      {route.page === 'list'     && <VehicleListPage initialQuery={route.query} />}
-      <LoginModal />
+      <CategoryProvider categoryId={categoryId} slug={route.slug}>
+        <CategoryFavoritesSync />
+        {route.page === 'listing' && <VehicleDetailPage listingId={route.listingId} />}
+        {route.page === 'seller' && <SellerDetailPage sellerId={route.sellerId} />}
+        {route.page === 'favorites' && <FavoritesPage />}
+        {route.page === 'list' && <VehicleListPage initialQuery={route.query} />}
+      </CategoryProvider>
+      {shell}
     </AuthProvider>
   );
 }

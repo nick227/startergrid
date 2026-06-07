@@ -72,6 +72,12 @@ export type CategoryFormatters = {
   assetMeta: (record: Record<string, unknown>) => string;
 };
 
+export type CategoryMarketplaceMeta = {
+  slug: string;
+  consumerEnabled: boolean;
+  tagline: string;
+};
+
 export type CategorySchema = {
   id: BusinessCategoryId;
   status: CategoryStatus;
@@ -84,4 +90,5 @@ export type CategorySchema = {
   readiness: CategoryReadinessLabels;
   performance: CategoryPerformanceLabels;
   formatters: CategoryFormatters;
+  marketplace: CategoryMarketplaceMeta;
 };

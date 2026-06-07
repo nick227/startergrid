@@ -1,5 +1,5 @@
-import type { FastifyInstance } from 'fastify';
-import type { PrismaClient } from '@prisma/client';
+import type { FastifyInstance, FastifyReply } from 'fastify';
+import type { PrismaClient, BusinessCategory } from '@prisma/client';
 import {
   listMarketplaceVehicles,
   getMarketplaceFeed,
@@ -7,6 +7,8 @@ import {
   getMarketplaceDealerIndex,
   type MarketplaceListFilters,
 } from '../../services/marketplace/marketplaceQueryService.js';
+import { listMarketplaceSites } from '../../services/marketplace/marketplaceSitesService.js';
+import { parseMarketplaceCategoryParam } from '../../services/marketplace/marketplaceCategory.js';
 import { captureMarketplaceLead } from '../../services/marketplace/marketplaceLeadService.js';
 import {
   recordMarketplaceChannelEvent,
@@ -20,9 +22,10 @@ import { marketplaceLeadCaptureSchema, marketplaceChannelEventSchema, validateBo
 // Lead capture is public-write with abuse limiting.
 
 type ListingParams = { listingId: string };
-type DealerParams  = { dealerId: string };
+type SellerParams  = { sellerId: string };
 
 type ListQuery = {
+  category?:   string;
   make?:       string;
   model?:      string;
   condition?:  string;
@@ -36,76 +39,99 @@ type ListQuery = {
   pageSize?:   string;
 };
 
-// Parses a positive integer (> 0). Returns fallback for zero, negative, or non-numeric.
 function parsePosIntParam(value: string | undefined, fallback: number): number {
   const n = parseInt(value ?? '', 10);
   return Number.isFinite(n) && n > 0 ? n : fallback;
 }
 
-// Parses a non-negative integer (>= 0). Returns undefined for negative or non-numeric.
 function parseNonNegIntParam(value: string | undefined): number | undefined {
   if (!value) return undefined;
   const n = parseInt(value, 10);
   return Number.isFinite(n) && n >= 0 ? n : undefined;
 }
 
+function resolveCategory(
+  categoryParam: string | undefined,
+  reply: FastifyReply,
+): BusinessCategory | null {
+  const parsed = parseMarketplaceCategoryParam(categoryParam);
+  if (!parsed.ok) {
+    reply.status(400).send({ error: parsed.error });
+    return null;
+  }
+  return parsed.category;
+}
+
+function listFiltersFromQuery(q: ListQuery, category: BusinessCategory): MarketplaceListFilters {
+  return {
+    category,
+    make:       q.make      || undefined,
+    model:      q.model     || undefined,
+    condition:  q.condition || undefined,
+    dealer:     q.dealer    || undefined,
+    minPrice:   parseNonNegIntParam(q.minPrice),
+    maxPrice:   parseNonNegIntParam(q.maxPrice),
+    maxMileage: parseNonNegIntParam(q.maxMileage),
+    cursor:     q.cursor    || undefined,
+    limit:      parsePosIntParam(q.limit, 24),
+    page:       parsePosIntParam(q.page, 1),
+    pageSize:   parsePosIntParam(q.pageSize, 24),
+  };
+}
+
+async function sendSellerIndex(
+  prisma: PrismaClient,
+  sellerId: string,
+  category: BusinessCategory,
+  reply: FastifyReply,
+) {
+  const index = await getMarketplaceDealerIndex(prisma, sellerId, category);
+  if (!index) return reply.status(404).send({ error: 'Seller not found' });
+  return reply.send(index);
+}
+
 export function registerMarketplaceRoutes(app: FastifyInstance, prisma: PrismaClient): void {
 
+  // GET /api/marketplace/sites
+  app.get('/api/marketplace/sites', async (_request, reply) => {
+    return reply.send(await listMarketplaceSites(prisma));
+  });
+
   // GET /api/marketplace/feed
-  // Cursor-based mixed feed. Supports the same public vehicle filters as browse.
   app.get<{ Querystring: ListQuery }>(
     '/api/marketplace/feed',
     async (request, reply) => {
-      const q = request.query;
-      const filters: MarketplaceListFilters = {
-        make:       q.make      || undefined,
-        model:      q.model     || undefined,
-        condition:  q.condition || undefined,
-        dealer:     q.dealer    || undefined,
-        minPrice:   parseNonNegIntParam(q.minPrice),
-        maxPrice:   parseNonNegIntParam(q.maxPrice),
-        maxMileage: parseNonNegIntParam(q.maxMileage),
-        cursor:     q.cursor    || undefined,
-        limit:      parsePosIntParam(q.limit, 24),
-      };
+      const category = resolveCategory(request.query.category, reply);
+      if (!category) return;
+      const filters = listFiltersFromQuery(request.query, category);
       return reply.send(await getMarketplaceFeed(prisma, filters));
     }
   );
 
   // GET /api/marketplace/vehicles
-  // Paginated cross-dealer browse. Supports make/model/condition/price/mileage/dealer filters.
   app.get<{ Querystring: ListQuery }>(
     '/api/marketplace/vehicles',
     async (request, reply) => {
-      const q = request.query;
-      const filters: MarketplaceListFilters = {
-        make:       q.make      || undefined,
-        model:      q.model     || undefined,
-        condition:  q.condition || undefined,
-        dealer:     q.dealer    || undefined,
-        minPrice:   parseNonNegIntParam(q.minPrice),
-        maxPrice:   parseNonNegIntParam(q.maxPrice),
-        maxMileage: parseNonNegIntParam(q.maxMileage),
-        page:       parsePosIntParam(q.page,     1),
-        pageSize:   parsePosIntParam(q.pageSize, 24),
-      };
+      const category = resolveCategory(request.query.category, reply);
+      if (!category) return;
+      const filters = listFiltersFromQuery(request.query, category);
       return reply.send(await listMarketplaceVehicles(prisma, filters));
     }
   );
 
   // GET /api/marketplace/vehicles/:listingId
-  // Single vehicle detail. 404 when sold, removed, or not found.
-  app.get<{ Params: ListingParams }>(
+  app.get<{ Params: ListingParams; Querystring: { category?: string } }>(
     '/api/marketplace/vehicles/:listingId',
     async (request, reply) => {
-      const detail = await getMarketplaceVehicle(prisma, request.params.listingId);
+      const category = resolveCategory(request.query.category, reply);
+      if (!category) return;
+      const detail = await getMarketplaceVehicle(prisma, request.params.listingId, category);
       if (!detail) return reply.status(404).send({ error: 'Vehicle not found' });
       return reply.send(detail);
     }
   );
 
   // POST /api/marketplace/events
-  // First-party marketplace engagement capture (no analytics in GET responses).
   app.post(
     '/api/marketplace/events',
     async (request, reply) => {
@@ -121,15 +147,15 @@ export function registerMarketplaceRoutes(app: FastifyInstance, prisma: PrismaCl
         eventType:  dbEventType as 'VEHICLE_IMPRESSION' | 'VEHICLE_DETAIL_VIEW' | 'DEALER_PAGE_VIEW',
         listingId:  body.data.listingId?.trim() || null,
         dealerId:   body.data.dealerId?.trim() || null,
+        category:   body.data.category?.trim() || null,
       });
-      if (!result) return reply.status(404).send({ error: 'Listing or dealer not found' });
+      if (!result) return reply.status(404).send({ error: 'Listing or seller not found' });
 
       return reply.status(202).send({ accepted: true });
     }
   );
 
   // POST /api/marketplace/vehicles/:listingId/leads
-  // Public inquiry capture for one eligible listing.
   app.post<{ Params: ListingParams }>(
     '/api/marketplace/vehicles/:listingId/leads',
     async (request, reply) => {
@@ -147,20 +173,28 @@ export function registerMarketplaceRoutes(app: FastifyInstance, prisma: PrismaCl
     }
   );
 
-  // GET /api/marketplace/dealers/:dealerId
-  // Dealer index with all marketplace-eligible vehicles for that dealer.
-  app.get<{ Params: DealerParams }>(
+  // GET /api/marketplace/sellers/:sellerId
+  app.get<{ Params: SellerParams; Querystring: { category?: string } }>(
+    '/api/marketplace/sellers/:sellerId',
+    async (request, reply) => {
+      const category = resolveCategory(request.query.category, reply);
+      if (!category) return;
+      return sendSellerIndex(prisma, request.params.sellerId, category, reply);
+    }
+  );
+
+  // GET /api/marketplace/dealers/:dealerId — legacy alias
+  app.get<{ Params: { dealerId: string }; Querystring: { category?: string } }>(
     '/api/marketplace/dealers/:dealerId',
     async (request, reply) => {
-      const index = await getMarketplaceDealerIndex(prisma, request.params.dealerId);
-      if (!index) return reply.status(404).send({ error: 'Dealer not found' });
-      return reply.send(index);
+      const category = resolveCategory(request.query.category, reply);
+      if (!category) return;
+      return sendSellerIndex(prisma, request.params.dealerId, category, reply);
     }
   );
 
   // GET /api/marketplace/dealers/:dealerId/stats
-  // First-party channel engagement stats (aggregate counts only).
-  app.get<{ Params: DealerParams }>(
+  app.get<{ Params: { dealerId: string } }>(
     '/api/marketplace/dealers/:dealerId/stats',
     async (request, reply) => {
       const stats = await getDealerMarketplaceStats(prisma, request.params.dealerId);

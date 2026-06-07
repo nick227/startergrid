@@ -1,4 +1,4 @@
-import { listHref } from '../../lib/routes.ts';
+import { DEFAULT_CATEGORY_SLUG, listHref } from '../../lib/routes.ts';
 
 type Props = {
   title: string;
@@ -10,8 +10,8 @@ type Props = {
 export function NotFoundState({
   title,
   description = 'The page you requested is not available or may have been removed.',
-  backHref = listHref(),
-  backLabel = 'Browse all vehicles',
+  backHref = listHref(DEFAULT_CATEGORY_SLUG),
+  backLabel = 'Browse listings',
 }: Props) {
   return (
     <div className="mp-card px-5 py-12 text-center sm:px-8 sm:py-16" role="status">

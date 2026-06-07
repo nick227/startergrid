@@ -227,6 +227,7 @@ export const marketplaceChannelEventSchema = z.object({
   eventType: z.enum(['vehicle_impression', 'vehicle_detail_view', 'dealer_page_view']),
   listingId: optionalText(80),
   dealerId:  optionalText(80),
+  category:  optionalText(80),
 }).strict().refine(
   body => {
     if (body.eventType === 'dealer_page_view') return Boolean(body.dealerId?.trim());

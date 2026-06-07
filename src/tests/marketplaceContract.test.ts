@@ -40,6 +40,7 @@ type FakeDealership = {
   dbaName:        string | null;
   rooftopAddress: unknown;
   websiteUrl:     string | null;
+  businessCategory?: string;
 };
 
 // FakeVehicle deliberately includes VIN and other operator fields to prove
@@ -72,6 +73,7 @@ const DEALER: FakeDealership = {
   dbaName:        'Prairie Ridge Motors',
   rooftopAddress: { street: '123 Main St', city: 'Springfield', state: 'IL', zip: '62701' },
   websiteUrl:     'https://prairieridge.example.com',
+  businessCategory: 'AUTOMOTIVE',
 };
 
 function fakeVehicle(overrides: Partial<FakeVehicle> = {}): FakeVehicle {
@@ -106,13 +108,46 @@ function makeMockPrisma(
   vehicles: FakeVehicle[],
   dealer: FakeDealership | null = DEALER,
 ): PrismaClient {
+  const eligible = vehicles.filter(v => !v.soldAt && !v.removedAt && v.priceCents > 0);
+
+  function matchesWhere(v: FakeVehicle, where?: Record<string, unknown>): boolean {
+    if (!where) return true;
+    if (where.id && where.id !== v.id) return false;
+    if (where.dealershipId && where.dealershipId !== v.dealershipId) return false;
+    const dealershipFilter = where.dealership as { businessCategory?: string } | undefined;
+    if (dealershipFilter?.businessCategory) {
+      const category = v.dealership.businessCategory ?? dealer?.businessCategory ?? 'AUTOMOTIVE';
+      if (category !== dealershipFilter.businessCategory) return false;
+    }
+    return true;
+  }
+
   return {
     vehicle: {
-      count:     async () => vehicles.length,
-      findMany:  async () => vehicles,
-      findFirst: async ({ where }: { where?: { id?: string } } = {}) => {
-        if (where?.id) return vehicles.find(v => v.id === where.id) ?? null;
-        return vehicles[0] ?? null;
+      count: async ({ where }: { where?: Record<string, unknown> } = {}) =>
+        eligible.filter(v => matchesWhere(v, where)).length,
+      findMany: async ({ where }: { where?: Record<string, unknown> } = {}) =>
+        eligible.filter(v => matchesWhere(v, where)),
+      findFirst: async ({ where }: { where?: Record<string, unknown> } = {}) => {
+        const hit = eligible.find(v => matchesWhere(v, where)) ?? null;
+        if (!hit) return null;
+        return {
+          ...hit,
+          dealership: {
+            ...hit.dealership,
+            businessCategory: hit.dealership.businessCategory ?? dealer?.businessCategory ?? 'AUTOMOTIVE',
+          },
+        };
+      },
+      groupBy: async () => {
+        const counts = new Map<string, number>();
+        for (const v of eligible) {
+          counts.set(v.dealershipId, (counts.get(v.dealershipId) ?? 0) + 1);
+        }
+        return [...counts.entries()].map(([dealershipId, count]) => ({
+          dealershipId,
+          _count: { _all: count },
+        }));
       },
     },
     dealershipProfile: {
@@ -594,5 +629,30 @@ describe('listingId contract', () => {
     const url = result.vehicles[0]!.listingUrl;
     assert.ok(url.includes('dealer-1'), 'listingUrl should reference the dealer');
     assert.ok(url.includes('PR-001'),   'listingUrl should reference the stock number');
+  });
+});
+
+describe('Marketplace category scoping', () => {
+  it('list filters vehicles by business category', async () => {
+    const v = fakeVehicle();
+    const prisma = makeMockPrisma([v]);
+    const automotive = await listMarketplaceVehicles(prisma, { category: 'AUTOMOTIVE' });
+    const watches = await listMarketplaceVehicles(prisma, { category: 'WATCHES' });
+    assert.equal(automotive.vehicles.length, 1);
+    assert.equal(watches.vehicles.length, 0);
+  });
+
+  it('detail returns null when category does not match listing org', async () => {
+    const v = fakeVehicle();
+    const prisma = makeMockPrisma([v]);
+    const detail = await getMarketplaceVehicle(prisma, v.id, 'WATCHES');
+    assert.equal(detail, null);
+  });
+
+  it('dealer index returns null for wrong category', async () => {
+    const v = fakeVehicle();
+    const prisma = makeMockPrisma([v]);
+    const index = await getMarketplaceDealerIndex(prisma, 'dealer-1', 'WATCHES');
+    assert.equal(index, null);
   });
 });

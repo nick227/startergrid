@@ -5,6 +5,7 @@ type TrackableItem = {
   type: string;
   impressionKey: string;
   listingId?: string;
+  category?: string;
 };
 
 const sent = new Set<string>();
@@ -27,6 +28,7 @@ export function useTrackVisibleMarketplaceItem<T extends HTMLElement>(item: Trac
       trackMarketplaceEvent({
         eventType: MarketplaceEventType.VEHICLE_IMPRESSION,
         listingId: item.listingId,
+        category: item.category,
       });
     }
 
@@ -44,7 +46,7 @@ export function useTrackVisibleMarketplaceItem<T extends HTMLElement>(item: Trac
 
     observer.observe(node);
     return () => observer.disconnect();
-  }, [item.impressionKey, item.listingId, item.type]);
+  }, [item.category, item.impressionKey, item.listingId, item.type]);
 
   return ref;
 }

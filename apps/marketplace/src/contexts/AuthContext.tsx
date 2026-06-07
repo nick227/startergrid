@@ -7,6 +7,7 @@ import {
   type ReactNode,
 } from 'react';
 import type { MarketplaceUserIdentity } from '../lib/api.ts';
+import type { BusinessCategoryId } from '@auto-dealer/category-schemas';
 import {
   addFavorite,
   fetchFavorites,
@@ -25,8 +26,9 @@ type AuthState = {
   closeLoginModal: () => void;
   login: (email: string, password: string) => Promise<void>;
   logout: () => Promise<void>;
-  toggleFavorite: (listingId: string) => Promise<void>;
+  toggleFavorite: (listingId: string, category: BusinessCategoryId) => Promise<void>;
   isFavorited: (listingId: string) => boolean;
+  syncFavorites: (category: BusinessCategoryId) => Promise<void>;
 };
 
 const AuthContext = createContext<AuthState | null>(null);
@@ -37,14 +39,16 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [favoriteIds, setFavoriteIds] = useState<Set<string>>(new Set());
   const [loginModalOpen, setLoginModalOpen] = useState(false);
 
+  const syncFavorites = useCallback(async (category: BusinessCategoryId) => {
+    if (!user) return;
+    const resp = await fetchFavorites(category);
+    setFavoriteIds(new Set(resp.favorites.map(v => v.listingId)));
+  }, [user]);
+
   useEffect(() => {
     fetchMe()
       .then(identity => {
         setUser(identity);
-        return fetchFavorites();
-      })
-      .then(resp => {
-        setFavoriteIds(new Set(resp.favorites.map(v => v.listingId)));
       })
       .catch(() => {
         // 401 = unauthenticated — expected on first load
@@ -58,12 +62,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     const identity = await apiLogin(email, password);
     setUser(identity);
     setLoginModalOpen(false);
-    try {
-      const resp = await fetchFavorites();
-      setFavoriteIds(new Set(resp.favorites.map(v => v.listingId)));
-    } catch {
-      // Non-critical; favorites will load on next visit
-    }
   }, []);
 
   const logout = useCallback(async () => {
@@ -72,7 +70,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setFavoriteIds(new Set());
   }, []);
 
-  const toggleFavorite = useCallback(async (listingId: string) => {
+  const toggleFavorite = useCallback(async (
+    listingId: string,
+    category: BusinessCategoryId,
+  ) => {
     if (!user) {
       setLoginModalOpen(true);
       return;
@@ -86,9 +87,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     });
     try {
       if (wasFavorited) await removeFavorite(listingId);
-      else await addFavorite(listingId);
+      else await addFavorite(listingId, category);
     } catch {
-      // Revert optimistic update on failure
       setFavoriteIds(prev => {
         const next = new Set(prev);
         if (wasFavorited) next.add(listingId);
@@ -109,7 +109,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       loginModalOpen,
       openLoginModal: () => setLoginModalOpen(true),
       closeLoginModal: () => setLoginModalOpen(false),
-      login, logout, toggleFavorite, isFavorited,
+      login, logout, toggleFavorite, isFavorited, syncFavorites,
     }}>
       {children}
     </AuthContext.Provider>

@@ -14,7 +14,13 @@
 // selected. Tests in src/tests/marketplaceContract.test.ts and
 // src/tests/marketplaceQueryFilters.test.ts enforce shape and WHERE correctness.
 
-import type { PrismaClient, Prisma } from '@prisma/client';
+import type { PrismaClient, Prisma, BusinessCategory } from '@prisma/client';
+import { categoryIdToSlug } from '../../../packages/category-schemas/src/index.js';
+import {
+  shapeDetailResponse,
+  type DbVehicleDetailRow,
+  type MarketplaceVehicleDetailResponse,
+} from './marketplaceDetailMapper.js';
 
 // ── Eligibility rule ──────────────────────────────────────────────────────────
 // A vehicle is marketplace-eligible when:
@@ -60,7 +66,6 @@ export type MarketplaceMediaItem = {
 };
 
 export type { MarketplaceVehicleDetailResponse } from './marketplaceDetailMapper.js';
-import { shapeDetailResponse, type DbVehicleDetailRow, type MarketplaceVehicleDetailResponse } from './marketplaceDetailMapper.js';
 
 export type MarketplaceDealerIndex = {
   dealerId:   string;
@@ -139,6 +144,7 @@ export type MarketplaceFeedResponse = {
 };
 
 export type MarketplaceListFilters = {
+  category?:   BusinessCategory;
   make?:       string;
   model?:      string;
   condition?:  string;
@@ -261,11 +267,12 @@ function shapeDetail(row: DbVehicleDetailRow): MarketplaceVehicleDetailResponse 
 //            leads, updates, queueItems, syncEvents, performanceCache.
 
 const DEALER_SELECT: Prisma.DealershipProfileSelect = {
-  id:             true,
-  legalName:      true,
-  dbaName:        true,
-  rooftopAddress: true,
-  websiteUrl:     true,
+  id:               true,
+  legalName:        true,
+  dbaName:          true,
+  rooftopAddress:   true,
+  websiteUrl:       true,
+  businessCategory: true,
   // EXCLUDED: subscription, applications, platformAccounts, syncPolicies,
   //           publishQueue, syncRuns, syncEvents, notifications, credentialRefs
 };
@@ -350,6 +357,9 @@ function buildMarketplaceWhere(filters: MarketplaceListFilters): Prisma.VehicleW
     priceCents: priceFilter,
   };
 
+  if (filters.category) {
+    where.dealership = { businessCategory: filters.category };
+  }
   if (filters.make)      where.make  = filters.make;
   if (filters.model)     where.model = filters.model;
   if (filters.condition) where.condition    = filters.condition;
@@ -380,7 +390,7 @@ function vehicleFeedItem(card: MarketplaceVehicleCard): MarketplaceFeedVehicleIt
   };
 }
 
-function dealerPromoItem(card: MarketplaceVehicleCard, slot: number): MarketplaceDealerPromoItem {
+function dealerPromoItem(card: MarketplaceVehicleCard, slot: number, categorySlug = 'automotive'): MarketplaceDealerPromoItem {
   return {
     type:          'dealerPromo',
     id:            `dealer-promo:${card.dealerId}:${slot}`,
@@ -390,8 +400,8 @@ function dealerPromoItem(card: MarketplaceVehicleCard, slot: number): Marketplac
       body:       `See more marketplace-ready vehicles in ${card.dealerCity && card.dealerState ? `${card.dealerCity}, ${card.dealerState}` : 'this dealer showroom'}.`,
       dealerName: card.dealerName,
       dealerId:   card.dealerId,
-      ctaLabel:   'View dealer inventory',
-      ctaHref:    `#/dealer/${encodeURIComponent(card.dealerId)}`,
+      ctaLabel:   'View seller inventory',
+      ctaHref:    `#/${categorySlug}/seller/${encodeURIComponent(card.dealerId)}`,
       mediaUrl:   card.mediaUrls[0] ?? null,
     },
   };
@@ -410,7 +420,7 @@ function marketplaceNoticeItem(): MarketplaceNoticeItem {
   };
 }
 
-function shapeFeedItems(cards: MarketplaceVehicleCard[]): MarketplaceFeedItem[] {
+function shapeFeedItems(cards: MarketplaceVehicleCard[], categorySlug = 'automotive'): MarketplaceFeedItem[] {
   const items: MarketplaceFeedItem[] = [];
   let noticeInserted = false;
   let promoSlot = 0;
@@ -426,7 +436,7 @@ function shapeFeedItems(cards: MarketplaceVehicleCard[]): MarketplaceFeedItem[] 
 
     if (vehicleCount % 12 === 0) {
       promoSlot += 1;
-      items.push(dealerPromoItem(card, promoSlot));
+      items.push(dealerPromoItem(card, promoSlot, categorySlug));
     }
   });
 
@@ -513,7 +523,10 @@ export async function getMarketplaceFeed(
     : null;
 
   return {
-    items: shapeFeedItems(pageRows.map(shapeCard)),
+    items: shapeFeedItems(
+      pageRows.map(shapeCard),
+      filters.category ? categoryIdToSlug(filters.category) : 'automotive',
+    ),
     nextCursor,
     totalEstimate,
     appliedFilters: appliedFilters(filters),
@@ -523,12 +536,20 @@ export async function getMarketplaceFeed(
 export async function getMarketplaceVehicle(
   prisma: PrismaClient,
   listingId: string,
+  category?: BusinessCategory,
 ): Promise<MarketplaceVehicleDetailResponse | null> {
   const row = await prisma.vehicle.findFirst({
     where:  { id: listingId, soldAt: null, removedAt: null, priceCents: { gt: 0 } },
     select: VEHICLE_DETAIL_SELECT,
   });
-  return row ? shapeDetail(row as unknown as DbVehicleDetailRow) : null;
+  if (!row) return null;
+
+  if (category) {
+    const dealerCategory = (row as { dealership?: { businessCategory?: BusinessCategory } }).dealership?.businessCategory;
+    if (dealerCategory !== category) return null;
+  }
+
+  return shapeDetail(row as unknown as DbVehicleDetailRow);
 }
 
 // Returns marketplace-safe vehicle cards for all currently-eligible vehicles that
@@ -537,14 +558,20 @@ export async function getMarketplaceVehicle(
 export async function getMarketplaceFavoriteCards(
   prisma: PrismaClient,
   userId: string,
+  category?: BusinessCategory,
 ): Promise<MarketplaceVehicleCard[]> {
+  const where: Prisma.VehicleWhereInput = {
+    soldAt:    null,
+    removedAt: null,
+    priceCents: { gt: 0 },
+    favorites: { some: { marketplaceUserId: userId } },
+  };
+  if (category) {
+    where.dealership = { businessCategory: category };
+  }
+
   const rows = await prisma.vehicle.findMany({
-    where: {
-      soldAt:    null,
-      removedAt: null,
-      priceCents: { gt: 0 },
-      favorites: { some: { marketplaceUserId: userId } },
-    },
+    where,
     select:  VEHICLE_CARD_SELECT,
     orderBy: [{ createdAt: 'desc' }, { id: 'asc' }],
   });
@@ -554,12 +581,14 @@ export async function getMarketplaceFavoriteCards(
 export async function getMarketplaceDealerIndex(
   prisma: PrismaClient,
   dealerId: string,
+  category?: BusinessCategory,
 ): Promise<MarketplaceDealerIndex | null> {
   const dealer = await prisma.dealershipProfile.findUnique({
     where:  { id: dealerId },
     select: DEALER_SELECT,
   });
   if (!dealer) return null;
+  if (category && dealer.businessCategory !== category) return null;
 
   const rows = await prisma.vehicle.findMany({
     where: { dealershipId: dealerId, soldAt: null, removedAt: null, priceCents: { gt: 0 } },

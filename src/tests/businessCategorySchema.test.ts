@@ -5,6 +5,8 @@ import type { DealershipProfile } from '@prisma/client';
 import {
   BUSINESS_CATEGORY_IDS,
   CATEGORY_REGISTRY,
+  categoryIdToSlug,
+  categorySlugToId,
   resolveCategorySchema,
   resolveCategorySchemaStrict,
 } from '../../packages/category-schemas/src/index.js';
@@ -93,6 +95,24 @@ describe('resolveCategorySchema — unknown fallback', () => {
 
   it('resolveCategorySchemaStrict returns registered schema', () => {
     assert.equal(resolveCategorySchemaStrict('FURNITURE').id, 'FURNITURE');
+  });
+});
+
+describe('marketplace slug helpers', () => {
+  it('categoryIdToSlug and categorySlugToId round-trip registered categories', () => {
+    for (const id of BUSINESS_CATEGORY_IDS) {
+      const slug = categoryIdToSlug(id);
+      assert.equal(categorySlugToId(slug), id);
+    }
+  });
+
+  it('every registered schema includes marketplace metadata', () => {
+    for (const id of BUSINESS_CATEGORY_IDS) {
+      const schema = resolveCategorySchema(id);
+      assert.ok(schema.marketplace.slug.length > 0);
+      assert.equal(schema.marketplace.slug, categoryIdToSlug(id));
+      assert.ok(schema.marketplace.tagline.length > 0);
+    }
   });
 });
 

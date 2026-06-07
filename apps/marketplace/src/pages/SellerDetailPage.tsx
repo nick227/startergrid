@@ -1,11 +1,12 @@
 import { useQuery, queryErrorMessage } from '../hooks/useQuery.ts';
 import { usePageMeta } from '../hooks/usePageMeta.ts';
-import { fetchDealer, isNotFoundError } from '../lib/api.ts';
+import { fetchSeller, isNotFoundError } from '../lib/api.ts';
 import { formatResultCount } from '../lib/display.ts';
 import { getListReturn, saveListReturn } from '../lib/listReturn.ts';
 import { MarketplaceEventType } from '../lib/events.ts';
 import { useTrackMarketplaceEvent } from '../hooks/useTrackMarketplaceEvent.ts';
 import { listHref } from '../lib/routes.ts';
+import { useCategoryId, useCategorySchema, useCategorySlug } from '../contexts/CategoryContext.tsx';
 import { PageShell } from '../components/layout/PageShell.tsx';
 import { VehicleCard } from '../components/VehicleCard.tsx';
 import { DealerHero } from '../components/ui/DealerBlock.tsx';
@@ -15,20 +16,27 @@ import { ErrorState } from '../components/ui/ErrorState.tsx';
 import { EmptyState } from '../components/ui/EmptyState.tsx';
 import { NotFoundState } from '../components/ui/NotFoundState.tsx';
 
-type Props = { dealerId: string };
+type Props = { sellerId: string };
 
-export default function DealerDetailPage({ dealerId }: Props) {
+export default function SellerDetailPage({ sellerId }: Props) {
+  const categoryId = useCategoryId();
+  const slug = useCategorySlug();
+  const schema = useCategorySchema();
   const { data, loading, error, reload } = useQuery(
-    () => fetchDealer(dealerId),
-    [dealerId]
+    () => fetchSeller(sellerId, categoryId),
+    [sellerId, categoryId],
   );
-  const backHref = getListReturn();
+  const backHref = getListReturn(slug);
 
   usePageMeta(
-    data?.dealerName ?? 'Dealer',
+    data?.dealerName ?? 'Seller',
     data ? `${formatResultCount(data.vehicles.length)} on the marketplace` : undefined,
   );
-  useTrackMarketplaceEvent(data ? { eventType: MarketplaceEventType.DEALER_PAGE_VIEW, dealerId } : null);
+  useTrackMarketplaceEvent(data ? {
+    eventType: MarketplaceEventType.DEALER_PAGE_VIEW,
+    dealerId: sellerId,
+    category: categoryId,
+  } : null);
 
   if (loading && !data) {
     return (
@@ -46,8 +54,8 @@ export default function DealerDetailPage({ dealerId }: Props) {
       <PageShell backHref={backHref} backLabel="Back to results">
         {isNotFoundError(error) ? (
           <NotFoundState
-            title="Dealer not found"
-            description="This dealer page is not available on the marketplace."
+            title="Seller not found"
+            description="This seller page is not available on this marketplace."
             backHref={backHref}
             backLabel="Back to results"
           />
@@ -74,18 +82,18 @@ export default function DealerDetailPage({ dealerId }: Props) {
       <section>
         <h2 className="mp-section-title mb-4 sm:mb-5">
           {count > 0
-            ? `${formatResultCount(count)} on the marketplace`
+            ? `${formatResultCount(count)} on the ${schema.label.toLowerCase()} marketplace`
             : 'Marketplace inventory'}
         </h2>
 
         {count === 0 ? (
           <EmptyState
-            title="No vehicles listed right now"
-            description="This dealer has no marketplace-eligible inventory at the moment."
-            actionLabel="Browse all vehicles"
+            title={`No ${schema.asset.plural} listed right now`}
+            description="This seller has no marketplace-eligible inventory at the moment."
+            actionLabel={`Browse all ${schema.asset.plural}`}
             onAction={() => {
-              saveListReturn({});
-              window.location.hash = listHref().slice(1);
+              saveListReturn(slug, {});
+              window.location.hash = listHref(slug).slice(1);
             }}
           />
         ) : (

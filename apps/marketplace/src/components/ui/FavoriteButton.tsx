@@ -1,4 +1,5 @@
 import { useAuth } from '../../contexts/AuthContext.tsx';
+import { useCategoryId } from '../../contexts/CategoryContext.tsx';
 
 type Props = {
   listingId: string;
@@ -7,12 +8,13 @@ type Props = {
 
 export function FavoriteButton({ listingId, className = '' }: Props) {
   const { isFavorited, toggleFavorite } = useAuth();
+  const categoryId = useCategoryId();
   const saved = isFavorited(listingId);
 
   function handleClick(e: React.MouseEvent) {
     e.preventDefault();
     e.stopPropagation();
-    void toggleFavorite(listingId);
+    void toggleFavorite(listingId, categoryId);
   }
 
   return (
