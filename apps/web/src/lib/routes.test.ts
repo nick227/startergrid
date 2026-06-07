@@ -39,6 +39,27 @@ describe('parseOperatorRoute', () => {
       assetRef: 'STK3',
     });
   });
+
+  it('parses reports hub', () => {
+    const route = parseOperatorRoute('#/dealer-a/reports');
+    expect(route).toMatchObject({
+      dealerId: 'dealer-a',
+      page: 'reports',
+      reportSlug: null,
+      reportFamily: null,
+    });
+  });
+
+  it('parses report detail route', () => {
+    const route = parseOperatorRoute('#/dealer-a/reports/inventory/movement?range=now');
+    expect(route).toMatchObject({
+      dealerId: 'dealer-a',
+      page: 'reports',
+      reportFamily: 'inventory',
+      reportSlug: 'movement',
+      reportRange: 'now',
+    });
+  });
 });
 
 describe('hash builders', () => {

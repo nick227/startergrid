@@ -1,5 +1,7 @@
 import type { OperatorNavHandlers, OperatorPageSegment } from './operatorNav.ts';
 import { appendRowNavScope, parseRowNavScope, splitOperatorHash, type RowNavScope } from './rowNavScope.ts';
+import type { ReportRangePreset } from './reportsCatalog.ts';
+import { parseReportRoute } from './reportRoutes.ts';
 
 export type { RowNavScope };
 
@@ -10,6 +12,9 @@ export type OperatorRoute = {
   platformView: 'queue' | 'history' | null;
   assetRef: string | null;
   assetId: string | null;
+  reportFamily: 'inventory' | 'platform' | null;
+  reportSlug: string | null;
+  reportRange: import('./reportsCatalog.ts').ReportRangePreset;
 };
 
 const LEGACY_SEGMENT_MAP: Record<string, OperatorPageSegment> = {
@@ -44,6 +49,25 @@ function emptyRoute(): OperatorRoute {
     platformView: null,
     assetRef: null,
     assetId: null,
+    reportFamily: null,
+    reportSlug: null,
+    reportRange: 'now',
+  };
+}
+
+function routeWithReports(
+  base: Omit<OperatorRoute, 'reportFamily' | 'reportSlug' | 'reportRange'>,
+  hash: string,
+): OperatorRoute {
+  if (base.page !== 'reports') {
+    return { ...base, reportFamily: null, reportSlug: null, reportRange: 'now' };
+  }
+  const report = parseReportRoute(hash);
+  return {
+    ...base,
+    reportFamily: report.family,
+    reportSlug: report.slug,
+    reportRange: report.range,
   };
 }
 
@@ -54,7 +78,10 @@ export function parseOperatorRoute(hash = window.location.hash): OperatorRoute {
   const assetId = scope.assetId ?? null;
 
   if (path === '/help' || path === 'help' || path === '/knowledge' || path === 'knowledge') {
-    return { dealerId: null, page: 'help', platformSlug: null, platformView: null, assetRef, assetId };
+    return routeWithReports(
+      { dealerId: null, page: 'help', platformSlug: null, platformView: null, assetRef, assetId },
+      hash,
+    );
   }
 
   const match = path.match(/^\/([^/]+)(?:\/(.+))?$/);
@@ -65,18 +92,31 @@ export function parseOperatorRoute(hash = window.location.hash): OperatorRoute {
 
   const platformMatch = rest.match(/^platforms\/([^/]+)(?:\/(queue|history))?$/);
   if (platformMatch) {
-    return {
-      dealerId,
-      page: 'platforms',
-      platformSlug: platformMatch[1] ?? null,
-      platformView: (platformMatch[2] as 'queue' | 'history') ?? null,
-      assetRef,
-      assetId,
-    };
+    return routeWithReports(
+      {
+        dealerId,
+        page: 'platforms',
+        platformSlug: platformMatch[1] ?? null,
+        platformView: (platformMatch[2] as 'queue' | 'history') ?? null,
+        assetRef,
+        assetId,
+      },
+      hash,
+    );
+  }
+
+  if (rest.startsWith('reports')) {
+    return routeWithReports(
+      { dealerId, page: 'reports', platformSlug: null, platformView: null, assetRef, assetId },
+      hash,
+    );
   }
 
   const page = parsePageSegment(rest || undefined);
-  return { dealerId, page, platformSlug: null, platformView: null, assetRef, assetId };
+  return routeWithReports(
+    { dealerId, page, platformSlug: null, platformView: null, assetRef, assetId },
+    hash,
+  );
 }
 
 export function knowledgeHash(dealerId?: string | null): string {
