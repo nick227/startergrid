@@ -47,21 +47,21 @@ export function DataTable<T extends { id: string }>({
   return (
     <Table>
       <thead>
-        <tr className="border-b border-slate-100 bg-slate-50">
+        <tr className="border-b border-silver-100 bg-silver-100">
           {selectable && (
             <th className="pl-4 pr-2 py-2.5">
               <input
                 type="checkbox"
                 checked={allSelected ?? false}
                 onChange={onToggleAll}
-                className="w-3.5 h-3.5 accent-blue-600"
+                className="w-3.5 h-3.5 accent-navy-600"
               />
             </th>
           )}
           {columns.map(col => (
             <th
               key={col.key}
-              className={`px-3 py-2.5 text-left text-xs font-semibold text-slate-500 uppercase tracking-wider ${col.headerClass ?? ''}`}
+              className={`px-3 py-2.5 text-left text-xs font-semibold text-ink-muted uppercase tracking-wider ${col.headerClass ?? ''}`}
             >
               {col.label}
             </th>
@@ -77,14 +77,14 @@ export function DataTable<T extends { id: string }>({
 
           return (
             <Fragment key={row.id}>
-              <tr className={`border-b border-slate-50 hover:bg-slate-50 transition-colors ${rowBg}`}>
+              <tr className={`border-b border-silver-100 hover:bg-surface-inset transition-colors ${rowBg}`}>
                 {selectable && (
                   <td className="pl-4 pr-2 py-2.5">
                     <input
                       type="checkbox"
                       checked={selected?.has(row.id) ?? false}
                       onChange={() => onToggle?.(row.id)}
-                      className="w-3.5 h-3.5 accent-blue-600"
+                      className="w-3.5 h-3.5 accent-navy-600"
                     />
                   </td>
                 )}
@@ -98,7 +98,7 @@ export function DataTable<T extends { id: string }>({
                     <button
                       type="button"
                       onClick={() => toggleExpand(row.id)}
-                      className="text-xs text-slate-400 hover:text-slate-600 transition-colors"
+                      className="text-xs text-ink-faint hover:text-ink-body transition-colors"
                       aria-expanded={isExpanded}
                       aria-label={isExpanded ? 'Collapse vehicle detail' : 'Expand vehicle detail'}
                     >
@@ -108,7 +108,7 @@ export function DataTable<T extends { id: string }>({
                 )}
               </tr>
               {isExpanded && expandNode && (
-                <tr className="bg-slate-50/80 border-b border-slate-100">
+                <tr className="bg-silver-100/80 border-b border-silver-100">
                   <td colSpan={colSpan} className="px-3 py-3">
                     {expandNode}
                   </td>

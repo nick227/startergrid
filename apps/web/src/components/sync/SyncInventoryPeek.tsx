@@ -18,7 +18,7 @@ export function SyncInventoryPeek({ blocked, warningCount, onOpenInventory }: Pr
         <button
           type="button"
           onClick={onOpenInventory}
-          className="text-xs font-bold text-emerald-700 hover:underline shrink-0"
+          className="text-xs font-bold text-status-success-text hover:underline shrink-0"
         >
           Open inventory →
         </button>
@@ -38,7 +38,7 @@ export function SyncInventoryPeek({ blocked, warningCount, onOpenInventory }: Pr
             </li>
           ))}
           {blocked.length > 3 && (
-            <p className="text-xs text-slate-500">+{blocked.length - 3} more blocked vehicles</p>
+            <p className="text-xs text-ink-muted">+{blocked.length - 3} more blocked vehicles</p>
           )}
         </ul>
       )}

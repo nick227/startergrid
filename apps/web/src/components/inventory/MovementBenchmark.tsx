@@ -18,14 +18,14 @@ export function MovementBenchmarkCell({ perf }: CellProps) {
 
   if (!hasSimilarBenchmark(perf)) {
     return (
-      <span className="text-xs text-slate-500 tabular-nums leading-snug">
+      <span className="text-xs text-ink-muted tabular-nums leading-snug">
         {p.daysOnline} days · Not enough comparable data
       </span>
     );
   }
 
   return (
-    <span className="text-xs text-slate-600 tabular-nums leading-snug">
+    <span className="text-xs text-ink-body tabular-nums leading-snug">
       {p.daysOnline} days · Similar avg {p.similarAvg} ·{' '}
       <span className="inline-flex align-middle">
         <MovementSignalBadge signal={perf.movementSignal} />
@@ -46,31 +46,31 @@ export function MovementBenchmarkExpand({ perf, platformPerfBySlug }: ExpandProp
   const assistEntries = Object.entries(perf.platformAssists);
 
   return (
-    <div className="text-xs text-slate-600 space-y-1.5">
+    <div className="text-xs text-ink-body space-y-1.5">
       <p>
-        <span className="font-medium text-slate-700">Movement signal · </span>
+        <span className="font-medium text-ink-body">Movement signal · </span>
         {formatMovementBenchmarkLine(perf)}
       </p>
 
-      <p className="text-slate-400">{COMPARABLE_GROUP_RULE}</p>
+      <p className="text-ink-faint">{COMPARABLE_GROUP_RULE}</p>
 
       {p.hasBenchmark ? (
-        <p className="text-slate-500">
+        <p className="text-ink-muted">
           {p.sampleSize} similar sold vehicle{p.sampleSize !== 1 ? 's' : ''}
           {p.similarAvg != null && <> · similar average {p.similarAvg} days</>}
           {p.similarMedian != null && <> · median {p.similarMedian} days</>}
         </p>
       ) : (
-        <p className="text-slate-500">Not enough comparable data for a benchmark yet.</p>
+        <p className="text-ink-muted">Not enough comparable data for a benchmark yet.</p>
       )}
 
-      {hint && <p className="text-slate-500">{hint}</p>}
+      {hint && <p className="text-ink-muted">{hint}</p>}
 
       {assistEntries.length > 0 && (
-        <div className="text-slate-500 space-y-0.5 pt-0.5">
-          <p className="font-medium text-slate-600">Observed assist (not attribution)</p>
+        <div className="text-ink-muted space-y-0.5 pt-0.5">
+          <p className="font-medium text-ink-body">Observed assist (not attribution)</p>
           {assistEntries.map(([slug, d]) => (
-            <p key={slug} className="text-slate-400 pl-2">
+            <p key={slug} className="text-ink-faint pl-2">
               {formatPlatformExpandLine(slug, d.leads, platformPerfBySlug?.get(slug))}
             </p>
           ))}

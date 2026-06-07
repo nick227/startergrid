@@ -25,17 +25,17 @@ function PreviewShell({
   tone?: 'neutral' | 'loading' | 'error' | 'ineligible';
 }) {
   const toneBorder = {
-    neutral: 'border-slate-200 bg-white',
-    loading: 'border-sky-200 bg-sky-50/40',
+    neutral: 'border-silver-200 bg-white',
+    loading: 'border-status-info-border bg-status-info-bg/40',
     error: 'border-amber-200 bg-amber-50/50',
     ineligible: 'border-dashed border-amber-300 bg-amber-50/60',
   }[tone];
 
   return (
     <div className={`rounded-xl border overflow-hidden shadow-sm ${toneBorder}`}>
-      <div className="px-3 py-2 border-b border-slate-100/80 bg-slate-50/90 flex items-center justify-between gap-2">
-        <p className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">{title}</p>
-        <span className="text-[10px] font-semibold text-slate-400">{badge}</span>
+      <div className="px-3 py-2 border-b border-silver-100/80 bg-silver-100/90 flex items-center justify-between gap-2">
+        <p className="text-[10px] font-bold text-ink-muted uppercase tracking-widest">{title}</p>
+        <span className="text-[10px] font-semibold text-ink-faint">{badge}</span>
       </div>
       <div className="p-4">{children}</div>
     </div>
@@ -48,19 +48,19 @@ function ConsumerCard({ display }: { display: MarketplacePreviewDisplay }) {
   return (
     <>
       {hero ? (
-        <div className="aspect-[16/10] -mx-4 -mt-4 mb-3 bg-slate-100">
+        <div className="aspect-[16/10] -mx-4 -mt-4 mb-3 bg-silver-100">
           <img src={hero} alt="" className="w-full h-full object-cover" />
         </div>
       ) : (
-        <div className="aspect-[16/10] -mx-4 -mt-4 mb-3 bg-slate-100 flex items-center justify-center text-xs text-slate-400">
+        <div className="aspect-[16/10] -mx-4 -mt-4 mb-3 bg-silver-100 flex items-center justify-center text-xs text-ink-faint">
           No photos in consumer card
         </div>
       )}
       <div className="space-y-1">
-        <p className="text-sm font-bold text-slate-900 tabular-nums">{display.priceLabel}</p>
-        <p className="text-xs text-slate-800">{display.titleLine}</p>
-        <p className="text-[10px] text-slate-500">{display.specLine}</p>
-        <p className="text-[10px] text-slate-400 pt-1">{display.dealerLine}</p>
+        <p className="text-sm font-bold text-ink-heading tabular-nums">{display.priceLabel}</p>
+        <p className="text-xs text-ink-heading">{display.titleLine}</p>
+        <p className="text-[10px] text-ink-muted">{display.specLine}</p>
+        <p className="text-[10px] text-ink-faint pt-1">{display.dealerLine}</p>
       </div>
     </>
   );
@@ -126,12 +126,12 @@ export function MarketplacePreviewCard({ vehicle }: Props) {
     return (
       <PreviewShell badge="Loading" title="Consumer preview" tone="loading">
         <div className="space-y-3 animate-pulse">
-          <div className="aspect-[16/10] bg-slate-200 rounded-lg" />
-          <div className="h-4 bg-slate-200 rounded w-1/3" />
-          <div className="h-3 bg-slate-200 rounded w-2/3" />
-          <div className="h-3 bg-slate-200 rounded w-1/2" />
+          <div className="aspect-[16/10] bg-silver-200 rounded-lg" />
+          <div className="h-4 bg-silver-200 rounded w-1/3" />
+          <div className="h-3 bg-silver-200 rounded w-2/3" />
+          <div className="h-3 bg-silver-200 rounded w-1/2" />
         </div>
-        <p className="text-[10px] text-sky-700 mt-3">Loading consumer preview from marketplace index…</p>
+        <p className="text-[10px] text-navy-700 mt-3">Loading consumer preview from marketplace index…</p>
       </PreviewShell>
     );
   }
@@ -141,7 +141,7 @@ export function MarketplacePreviewCard({ vehicle }: Props) {
       <PreviewShell badge="Error" title="Consumer preview" tone="error">
         <p className="text-xs font-semibold text-amber-900">Could not load marketplace preview</p>
         <p className="text-[11px] text-amber-800 mt-1 leading-snug">{error}</p>
-        <p className="text-[10px] text-slate-500 mt-2">
+        <p className="text-[10px] text-ink-muted mt-2">
           The vehicle may not be indexed yet. Run Sync after price and photos are set, then retry.
         </p>
         <button
@@ -158,12 +158,12 @@ export function MarketplacePreviewCard({ vehicle }: Props) {
   if (!display) {
     return (
       <PreviewShell badge="Empty" title="Consumer preview" tone="neutral">
-        <p className="text-xs font-semibold text-slate-700">{EMPTY_STATE_COPY.marketplacePreviewEmpty.title}</p>
-        <p className="text-[10px] text-slate-500 mt-1">{EMPTY_STATE_COPY.marketplacePreviewEmpty.subtitle}</p>
+        <p className="text-xs font-semibold text-ink-body">{EMPTY_STATE_COPY.marketplacePreviewEmpty.title}</p>
+        <p className="text-[10px] text-ink-muted mt-1">{EMPTY_STATE_COPY.marketplacePreviewEmpty.subtitle}</p>
         <button
           type="button"
           onClick={reload}
-          className="mt-3 px-3 py-1.5 text-xs font-semibold rounded-lg border border-slate-200 bg-white text-slate-700 hover:bg-slate-50"
+          className="mt-3 px-3 py-1.5 text-xs font-semibold rounded-lg border border-silver-200 bg-white text-ink-body hover:bg-surface-inset"
         >
           Retry preview
         </button>

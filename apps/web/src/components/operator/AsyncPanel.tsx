@@ -6,7 +6,7 @@ export function PanelSkeleton({ rows = 4, height = 'h-3' }: { rows?: number; hei
       {Array.from({ length: rows }).map((_, i) => (
         <div
           key={i}
-          className={`${height} bg-slate-100 rounded animate-pulse ${i % 2 === 0 ? 'w-full' : 'w-4/5'}`}
+          className={`${height} bg-silver-100 rounded animate-pulse ${i % 2 === 0 ? 'w-full' : 'w-4/5'}`}
         />
       ))}
     </div>

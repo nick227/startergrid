@@ -193,7 +193,7 @@ export default function InventoryPage({ dealerId, nav, activeTab }: Props) {
       footerPad={selected.size > 0}
       headerAction={
         <span className="inline-flex items-center gap-2">
-          <span className="inline-flex items-center gap-1 text-xs font-semibold text-slate-600">
+          <span className="inline-flex items-center gap-1 text-xs font-semibold text-ink-body">
             CSV import
             <InfoButton docId="inventory/csv-import" />
           </span>
@@ -259,14 +259,14 @@ export default function InventoryPage({ dealerId, nav, activeTab }: Props) {
                   <button
                     type="button"
                     onClick={() => setShowImport(true)}
-                    className="px-6 py-3 bg-slate-900 text-white text-sm font-semibold rounded-xl"
+                    className="px-6 py-3 bg-navy-900 text-white text-sm font-semibold rounded-xl"
                   >
                     {operatorCopy.inventory.importInventory}
                   </button>
                   <button
                     type="button"
                     onClick={nav.goToQueue}
-                    className="px-6 py-3 bg-white border border-slate-200 text-slate-700 text-sm font-semibold rounded-xl"
+                    className="px-6 py-3 bg-white border border-silver-200 text-ink-body text-sm font-semibold rounded-xl"
                   >
                     {operatorCopy.inventory.skipToQueue}
                   </button>
@@ -344,7 +344,7 @@ export default function InventoryPage({ dealerId, nav, activeTab }: Props) {
               />
               {isActiveScope && (
                 <>
-                  <div className="mt-4 pt-4 border-t border-slate-100">
+                  <div className="mt-4 pt-4 border-t border-silver-100">
                     <CleanupFilterBar
                       active={filter}
                       counts={chipCounts}
@@ -357,7 +357,7 @@ export default function InventoryPage({ dealerId, nav, activeTab }: Props) {
                       onSelect={setFilter}
                     />
                   </div>
-                  <div className="mt-4 pt-4 border-t border-slate-100">
+                  <div className="mt-4 pt-4 border-t border-silver-100">
                     <MovementFilterBar
                       active={movementFilter}
                       counts={movementCounts}
@@ -401,7 +401,7 @@ export default function InventoryPage({ dealerId, nav, activeTab }: Props) {
                 </button>
               )}
               {selected.size > 0 && (
-                <span className="ml-auto text-xs font-medium text-slate-500">{selected.size} selected</span>
+                <span className="ml-auto text-xs font-medium text-ink-muted">{selected.size} selected</span>
               )}
             </div>
 

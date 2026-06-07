@@ -22,22 +22,22 @@ function relativeTime(iso: string): string {
 
 function BatchRow({ batch, isLatest }: { batch: ImportBatch; isLatest: boolean }) {
   return (
-    <div className={`px-5 py-2.5 flex items-start justify-between border-b border-slate-50 last:border-0
-      ${isLatest ? 'bg-green-50/60' : 'hover:bg-slate-50'} transition-colors`}>
+    <div className={`px-5 py-2.5 flex items-start justify-between border-b border-silver-100 last:border-0
+      ${isLatest ? 'bg-status-success-bg/60' : 'hover:bg-surface-inset'} transition-colors`}>
       <div>
-        <div className="text-xs text-slate-700 font-medium flex items-center gap-2">
-          {isLatest && <span className="w-1.5 h-1.5 rounded-full bg-green-500 inline-block" />}
-          <span className="text-green-700">{batch.created} created</span>
-          <span className="text-blue-600">{batch.updated} updated</span>
-          {batch.skipped > 0 && <span className="text-slate-400">{batch.skipped} skipped</span>}
+        <div className="text-xs text-ink-body font-medium flex items-center gap-2">
+          {isLatest && <span className="w-1.5 h-1.5 rounded-full bg-status-success-dot inline-block" />}
+          <span className="text-status-success-text">{batch.created} created</span>
+          <span className="text-navy-700">{batch.updated} updated</span>
+          {batch.skipped > 0 && <span className="text-ink-faint">{batch.skipped} skipped</span>}
           {batch.errors > 0 && <span className="text-red-600">{batch.errors} errors</span>}
         </div>
-        <div className="text-xs text-slate-400 mt-0.5">
+        <div className="text-xs text-ink-faint mt-0.5">
           {batch.rowCount} rows · {batch.mappedFields.slice(0, 5).join(', ')}
           {batch.mappedFields.length > 5 && ` +${batch.mappedFields.length - 5} more`}
         </div>
       </div>
-      <time className="text-xs text-slate-300 font-mono shrink-0 ml-4 mt-0.5">
+      <time className="text-xs text-silver-300 font-mono shrink-0 ml-4 mt-0.5">
         {relativeTime(batch.createdAt)}
       </time>
     </div>
@@ -75,21 +75,21 @@ export function ImportBatchHistory({ dealerId, latestBatchId, initialOpen = fals
       <button
         type="button"
         onClick={handleToggle}
-        className="w-full px-5 py-3 flex items-center justify-between hover:bg-slate-50 transition-colors border-b border-slate-100"
+        className="w-full px-5 py-3 flex items-center justify-between hover:bg-surface-inset transition-colors border-b border-silver-100"
       >
         <div className="flex items-center gap-2">
-          <span className="text-xs font-semibold text-slate-500">Show past imports</span>
+          <span className="text-xs font-semibold text-ink-muted">Show past imports</span>
           {batches !== null && (
-            <span className="text-xs text-slate-300">({batches.length})</span>
+            <span className="text-xs text-silver-300">({batches.length})</span>
           )}
         </div>
-        <span className="text-slate-400 text-xs">{open ? '▲' : '▼'}</span>
+        <span className="text-ink-faint text-xs">{open ? '▲' : '▼'}</span>
       </button>
 
       {open && (
         <div>
           {loading && !hasBatches && (
-            <div className="px-5 py-3 text-xs text-slate-400 animate-pulse">Loading…</div>
+            <div className="px-5 py-3 text-xs text-ink-faint animate-pulse">Loading…</div>
           )}
           {!loading && !hasBatches && (
             <EmptyState

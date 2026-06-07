@@ -1,4 +1,5 @@
 import type { VehicleLifecycleState } from '@/lib/types.ts';
+import { statusPill } from '../../../../packages/design-tokens/colors.ts';
 
 export type LifecycleScope = 'active' | 'sold' | 'removed' | 'all';
 
@@ -19,10 +20,10 @@ export const LIFECYCLE_STATE_LABELS: Record<VehicleLifecycleState, string> = {
 };
 
 export const LIFECYCLE_STATE_PILL: Record<VehicleLifecycleState, string> = {
-  AVAILABLE: 'bg-emerald-50 text-emerald-800 border-emerald-100',
-  SOLD: 'bg-slate-100 text-slate-700 border-slate-200',
-  REMOVED: 'bg-amber-50 text-amber-800 border-amber-100',
-  REACTIVATED: 'bg-sky-50 text-sky-800 border-sky-100',
+  AVAILABLE: statusPill.success,
+  SOLD: statusPill.muted,
+  REMOVED: statusPill.warning,
+  REACTIVATED: statusPill.info,
 };
 
 export const LIFECYCLE_SOURCE_LABELS: Record<LifecycleEventSource, string> = {

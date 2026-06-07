@@ -39,10 +39,10 @@ export const companyColors = {
   },
   status: {
     success: {
-      bg: '#ECFDF5',
-      text: '#047857',
-      border: '#A7F3D0',
-      dot: '#10B981',
+      bg: '#EEF4FA',
+      text: '#1A3A5C',
+      border: '#CBD5E1',
+      dot: '#2E6294',
     },
     warning: {
       bg: '#FFEDD5',

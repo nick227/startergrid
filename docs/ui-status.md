@@ -108,7 +108,7 @@ Search, filter, and sort logic unchanged from table era; only presentation is ro
 | Legacy Sync / Accounts redirect | Shipped |
 | Queue approve/retry actions | Not exposed (read-only queue) |
 | Asset-scoped Queue/History from row actions | **Not started** (see above) |
-| Token / emerald purge | **Next** |
+| Token / emerald purge | **Shipped** — navy + orange semantic tokens; slate/emerald removed from operator UI |
 | Auth UI + route guards | Planned |
 | Org-scoped category loading | Planned |
 | Reports row-card polish | Planned |
@@ -117,7 +117,7 @@ Search, filter, and sort logic unchanged from table era; only presentation is ro
 
 ## Next priorities
 
-1. **Token / emerald purge** — navy + orange everywhere; remove Sync-era emerald/slate
+1. ~~**Token / emerald purge**~~ — navy + orange everywhere; slate/emerald replaced with `ink`/`silver`/`navy`/`status-*` tokens
 2. **`docs/ui-status.md`** — keep aligned with shipped IA (this file)
 3. **Auth UI + route guards** — login, session, 401 handling, scoped org picker
 4. **Dealer/org-scoped category loading** — vertical adapter per tenant

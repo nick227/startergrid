@@ -12,7 +12,7 @@ export function PlatformMovementCompare({ perf, platformPerfBySlug }: Props) {
 
   if (rows.length === 0) {
     return (
-      <p className="text-[10px] text-slate-500">
+      <p className="text-[10px] text-ink-muted">
         {EMPTY_STATE_COPY.noPerformancePlatforms.subtitle}
       </p>
     );
@@ -22,24 +22,24 @@ export function PlatformMovementCompare({ perf, platformPerfBySlug }: Props) {
     <div className="overflow-x-auto">
       <table className="w-full text-left text-[10px]">
         <thead>
-          <tr className="text-slate-400 uppercase tracking-wide">
+          <tr className="text-ink-faint uppercase tracking-wide">
             <th className="pb-1.5 pr-3 font-semibold">Platform</th>
             <th className="pb-1.5 pr-3 font-semibold">This vehicle</th>
             <th className="pb-1.5 font-semibold">Dealer observed</th>
           </tr>
         </thead>
-        <tbody className="text-slate-600">
+        <tbody className="text-ink-body">
           {rows.map(row => {
             const platform = platformPerfBySlug?.get(row.slug);
             return (
-              <tr key={row.slug} className="border-t border-slate-100">
-                <td className="py-1.5 pr-3 font-medium text-slate-700">{row.slug}</td>
+              <tr key={row.slug} className="border-t border-silver-100">
+                <td className="py-1.5 pr-3 font-medium text-ink-body">{row.slug}</td>
                 <td className="py-1.5 pr-3 tabular-nums">
                   {row.vehicleLeads > 0
                     ? `${row.vehicleLeads} observed assist${row.vehicleLeads !== 1 ? 's' : ''}`
                     : '—'}
                 </td>
-                <td className="py-1.5 text-slate-500">
+                <td className="py-1.5 text-ink-muted">
                   {(() => {
                     const channelHint = platform ? formatPlatformChannelHint(platform) : null;
                     if (channelHint) return channelHint;
@@ -63,7 +63,7 @@ export function PlatformMovementCompare({ perf, platformPerfBySlug }: Props) {
           })}
         </tbody>
       </table>
-      <p className="text-[10px] text-slate-400 mt-2">Observed assist only — not causal attribution.</p>
+      <p className="text-[10px] text-ink-faint mt-2">Observed assist only — not causal attribution.</p>
     </div>
   );
 }

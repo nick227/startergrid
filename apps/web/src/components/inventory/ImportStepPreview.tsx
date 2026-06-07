@@ -20,9 +20,9 @@ function ChangeSummary({ existing, mapped }: { existing: ExistingSnapshot; mappe
     changes.push(`mileage ${fmtMi(existing.mileage)} → ${fmtMi(mapped.mileage)}`);
   if (mapped.condition && mapped.condition.toUpperCase() !== existing.condition)
     changes.push(`condition ${existing.condition} → ${mapped.condition.toUpperCase()}`);
-  if (!changes.length) return <span className="text-xs text-slate-400">no detected changes</span>;
+  if (!changes.length) return <span className="text-xs text-ink-faint">no detected changes</span>;
   return (
-    <span className="text-xs text-blue-600">
+    <span className="text-xs text-navy-700">
       {changes.join(' · ')}
     </span>
   );
@@ -42,14 +42,14 @@ export function ImportStepPreview({ preview, error, userSkips, onSkipToggle }: P
       {/* Summary */}
       <div className="grid grid-cols-4 gap-3">
         {[
-          { label: 'Total',   value: preview.summary.total,      color: 'text-slate-700' },
-          { label: 'Create',  value: preview.summary.willCreate, color: 'text-green-700' },
-          { label: 'Update',  value: preview.summary.willUpdate, color: 'text-blue-700'  },
+          { label: 'Total',   value: preview.summary.total,      color: 'text-ink-body' },
+          { label: 'Create',  value: preview.summary.willCreate, color: 'text-status-success-text' },
+          { label: 'Update',  value: preview.summary.willUpdate, color: 'text-navy-700'  },
           { label: 'Blocked', value: preview.summary.blocked,    color: 'text-red-600'   },
         ].map(s => (
-          <div key={s.label} className="bg-slate-50 rounded-lg px-3 py-2 text-center">
+          <div key={s.label} className="bg-silver-100 rounded-lg px-3 py-2 text-center">
             <div className={`text-lg font-bold ${s.color}`}>{s.value}</div>
-            <div className="text-xs text-slate-400">{s.label}</div>
+            <div className="text-xs text-ink-faint">{s.label}</div>
           </div>
         ))}
       </div>
@@ -61,7 +61,7 @@ export function ImportStepPreview({ preview, error, userSkips, onSkipToggle }: P
         </div>
       )}
       {userSkipCount > 0 && (
-        <div className="px-3 py-2 bg-blue-50 border border-blue-200 rounded-lg text-xs text-blue-700">
+        <div className="px-3 py-2 bg-status-info-bg border border-status-info-border rounded-lg text-xs text-status-info-text">
           You marked {userSkipCount} row{userSkipCount !== 1 ? 's' : ''} to skip. {effectiveCommit} will be imported.
         </div>
       )}
@@ -70,10 +70,10 @@ export function ImportStepPreview({ preview, error, userSkips, onSkipToggle }: P
       )}
 
       {/* Row table */}
-      <div className="border border-slate-200 rounded-lg overflow-hidden">
-        <div className="grid grid-cols-[2rem_6rem_7rem_1fr_5rem_4rem_4rem] px-3 py-2 bg-slate-50 border-b border-slate-200 gap-2 text-xs">
+      <div className="border border-silver-200 rounded-lg overflow-hidden">
+        <div className="grid grid-cols-[2rem_6rem_7rem_1fr_5rem_4rem_4rem] px-3 py-2 bg-silver-100 border-b border-silver-200 gap-2 text-xs">
           {['#', 'Stock', 'VIN', 'Vehicle', 'Status', 'Action', ''].map(h => (
-            <span key={h} className="font-semibold text-slate-500 uppercase tracking-wide">{h}</span>
+            <span key={h} className="font-semibold text-ink-muted uppercase tracking-wide">{h}</span>
           ))}
         </div>
         {preview.rows.map(row => (
@@ -87,7 +87,7 @@ export function ImportStepPreview({ preview, error, userSkips, onSkipToggle }: P
       </div>
 
       {preview.summary.blocked > 0 && (
-        <p className="text-xs text-slate-500">
+        <p className="text-xs text-ink-muted">
           {preview.summary.blocked} blocked row{preview.summary.blocked !== 1 ? 's' : ''} will be skipped automatically.
           Go back to fix column mappings or correct the source data.
         </p>
@@ -112,15 +112,15 @@ function PreviewRowItem({
   return (
     <>
       <div
-        className={`grid grid-cols-[2rem_6rem_7rem_1fr_5rem_4rem_4rem] px-3 gap-2 border-b border-slate-50 last:border-0 text-xs items-center
-          ${skipped ? 'opacity-40 bg-slate-50/50' : row.readiness === 'BLOCKED' ? 'bg-red-50/50' : row.readiness === 'WARNING' ? 'bg-amber-50/30' : ''}
-          ${canExpand ? 'cursor-pointer hover:bg-slate-50' : ''} transition-colors py-2.5`}
+        className={`grid grid-cols-[2rem_6rem_7rem_1fr_5rem_4rem_4rem] px-3 gap-2 border-b border-silver-100 last:border-0 text-xs items-center
+          ${skipped ? 'opacity-40 bg-silver-100/50' : row.readiness === 'BLOCKED' ? 'bg-red-50/50' : row.readiness === 'WARNING' ? 'bg-amber-50/30' : ''}
+          ${canExpand ? 'cursor-pointer hover:bg-surface-inset' : ''} transition-colors py-2.5`}
         onClick={() => canExpand && setExpanded(v => !v)}
       >
-        <span className="text-slate-400 font-mono">{row.rowIndex}</span>
-        <span className="font-mono text-slate-700 truncate">{m.stockNumber ?? '—'}</span>
-        <span className="font-mono text-slate-400 truncate">{m.vin ? `${m.vin.slice(0, 8)}…` : '—'}</span>
-        <span className="text-slate-600 truncate">{vehicle || '—'}</span>
+        <span className="text-ink-faint font-mono">{row.rowIndex}</span>
+        <span className="font-mono text-ink-body truncate">{m.stockNumber ?? '—'}</span>
+        <span className="font-mono text-ink-faint truncate">{m.vin ? `${m.vin.slice(0, 8)}…` : '—'}</span>
+        <span className="text-ink-body truncate">{vehicle || '—'}</span>
         <ReadinessBadge readiness={row.readiness} style="pill" />
         <ActionBadge action={skipped ? 'SKIP' : row.action} />
         {/* Skip toggle */}
@@ -130,8 +130,8 @@ function PreviewRowItem({
               onClick={onSkipToggle}
               className={`text-xs px-1.5 py-0.5 rounded border transition-colors
                 ${skipped
-                  ? 'bg-slate-100 text-slate-500 border-slate-200 hover:bg-white'
-                  : 'bg-white text-slate-400 border-slate-200 hover:text-red-600 hover:border-red-200'}`}
+                  ? 'bg-silver-100 text-ink-muted border-silver-200 hover:bg-white'
+                  : 'bg-white text-ink-faint border-silver-200 hover:text-red-600 hover:border-red-200'}`}
             >
               {skipped ? 'Undo' : 'Skip'}
             </button>
@@ -141,7 +141,7 @@ function PreviewRowItem({
 
       {/* Expanded detail */}
       {expanded && (
-        <div className="px-6 pb-2 bg-slate-50 border-b border-slate-100 space-y-0.5">
+        <div className="px-6 pb-2 bg-silver-100 border-b border-silver-100 space-y-0.5">
           {/* UPDATE diff */}
           {row.action === 'UPDATE' && row.existing && (
             <div className="py-1">

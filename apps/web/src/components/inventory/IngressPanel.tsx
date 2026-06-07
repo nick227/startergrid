@@ -92,11 +92,11 @@ function PollIntervalPicker({ preset, custom, onPreset, onCustom }: {
   return (
     <div className="space-y-1.5">
       <div className="flex items-center gap-2 flex-wrap">
-        <span className="text-xs text-slate-500 shrink-0">Schedule</span>
+        <span className="text-xs text-ink-muted shrink-0">Schedule</span>
         <select
           value={preset}
           onChange={e => onPreset(e.target.value as PresetKey)}
-          className="text-xs px-3 py-2 border border-slate-200 rounded-lg bg-white focus:outline-none focus:ring-1 focus:ring-slate-400"
+          className="text-xs px-3 py-2 border border-silver-200 rounded-lg bg-white focus:outline-none focus:ring-1 focus:ring-navy-500/30"
         >
           {PRESET_OPTIONS.map(p => (
             <option key={p.key} value={p.key}>{p.label}</option>
@@ -110,12 +110,12 @@ function PollIntervalPicker({ preset, custom, onPreset, onCustom }: {
             value={custom}
             onChange={e => onCustom(e.target.value)}
             placeholder="min (5–10080)"
-            className="w-28 text-xs px-3 py-2 border border-slate-200 rounded-lg bg-white focus:outline-none focus:ring-1 focus:ring-slate-400"
+            className="w-28 text-xs px-3 py-2 border border-silver-200 rounded-lg bg-white focus:outline-none focus:ring-1 focus:ring-navy-500/30"
           />
         )}
       </div>
       {preset !== 'none' && (
-        <p className="text-xs text-slate-400">
+        <p className="text-xs text-ink-faint">
           Automatic checks run on your server schedule — ask your ops team to enable polling.
         </p>
       )}
@@ -135,9 +135,9 @@ const SOURCE_KIND_LABEL: Record<string, string> = {
 };
 
 const SOURCE_STATUS_STYLE: Record<string, string> = {
-  ACTIVE:       'bg-emerald-100 text-emerald-800',
+  ACTIVE:       'bg-status-success-bg text-status-success-text',
   PAUSED:       'bg-amber-100 text-amber-800',
-  DISCONNECTED: 'bg-slate-100 text-slate-500',
+  DISCONNECTED: 'bg-silver-100 text-ink-muted',
   ERROR:        'bg-red-100 text-red-700',
 };
 
@@ -149,10 +149,10 @@ function buildImpactChips(impact: IngressRunPlatformImpact): ImpactChip[] {
   const chips: ImpactChip[] = [];
   const s = impact.publishSummary;
   if (impact.dispatched > 0)
-    chips.push({ label: `${impact.dispatched} submitted`, cls: 'text-emerald-700' });
+    chips.push({ label: `${impact.dispatched} submitted`, cls: 'text-status-success-text' });
   const scheduled = (s['Scheduled'] ?? 0) + (s['Ready'] ?? 0);
   if (scheduled > 0)
-    chips.push({ label: `${scheduled} scheduled`, cls: 'text-sky-700' });
+    chips.push({ label: `${scheduled} scheduled`, cls: 'text-navy-700' });
   if ((s['Needs Approval'] ?? 0) > 0)
     chips.push({ label: `${s['Needs Approval']} pending`, cls: 'text-amber-700' });
   if ((s['Failed'] ?? 0) > 0)
@@ -208,7 +208,7 @@ export function IngressPanel({ dealerId, latestRunId, onShowBlockedVehicles, onS
 
         {/* ── Source rows ──────────────────────────────────────────────────── */}
         {sources.length > 0 && (
-          <div className="divide-y divide-slate-50 border-b border-slate-100">
+          <div className="divide-y divide-silver-100 border-b border-silver-100">
             {sources.map(s => (
               <SourceRow
                 key={s.id}
@@ -228,11 +228,11 @@ export function IngressPanel({ dealerId, latestRunId, onShowBlockedVehicles, onS
             onCancel={() => setAddingSource(false)}
           />
         ) : (
-          <div className={`px-5 py-2 ${sources.length > 0 ? 'border-b border-slate-100' : ''}`}>
+          <div className={`px-5 py-2 ${sources.length > 0 ? 'border-b border-silver-100' : ''}`}>
             <button
               type="button"
               onClick={() => setAddingSource(true)}
-              className="text-xs font-semibold text-slate-500 hover:text-slate-800 py-1"
+              className="text-xs font-semibold text-ink-muted hover:text-ink-heading py-1"
             >
               + Add API source
             </button>
@@ -241,7 +241,7 @@ export function IngressPanel({ dealerId, latestRunId, onShowBlockedVehicles, onS
 
         {/* ── Run rows ─────────────────────────────────────────────────────── */}
         {runs.length > 0 ? (
-          <div className="divide-y divide-slate-50">
+          <div className="divide-y divide-silver-100">
             {runs.map((run, i) => (
               <RunRow
                 key={run.id}
@@ -291,9 +291,9 @@ function SnapshotModeField({
         data-testid="ingress-source-snapshot"
         checked={checked}
         onChange={e => onChange(e.target.checked)}
-        className="mt-0.5 rounded border-slate-300 shrink-0"
+        className="mt-0.5 rounded border-silver-300 shrink-0"
       />
-      <span className="text-xs text-slate-700 min-w-0">
+      <span className="text-xs text-ink-body min-w-0">
         <span className="font-semibold">Full inventory snapshot on check/poll</span>
         <span className="block text-[11px] text-amber-800 mt-0.5">
           {operatorCopy.inventory.dryRunRemovalNote}
@@ -349,31 +349,31 @@ function AddSourceForm({
   return (
     <form
       onSubmit={handleSubmit}
-      className="px-5 py-4 border-b border-slate-100 space-y-3 bg-slate-50/50"
+      className="px-5 py-4 border-b border-silver-100 space-y-3 bg-silver-100/50"
     >
-      <p className="text-xs font-semibold text-slate-700">Register API source</p>
+      <p className="text-xs font-semibold text-ink-body">Register API source</p>
       {error && <p className="text-xs text-red-600">{error}</p>}
       <div className="space-y-2">
         <input
           type="text" value={label} onChange={e => setLabel(e.target.value)}
           placeholder="Label (e.g. DMS Feed, Partner API)"
           required maxLength={160}
-          className="w-full text-xs px-3 py-2 border border-slate-200 rounded-lg bg-white focus:outline-none focus:ring-1 focus:ring-slate-400"
+          className="w-full text-xs px-3 py-2 border border-silver-200 rounded-lg bg-white focus:outline-none focus:ring-1 focus:ring-navy-500/30"
         />
         <input
           type="url" value={feedUrl} onChange={e => setFeedUrl(e.target.value)}
           placeholder="https://api.example.com/inventory"
           required
-          className="w-full text-xs px-3 py-2 border border-slate-200 rounded-lg bg-white focus:outline-none focus:ring-1 focus:ring-slate-400"
+          className="w-full text-xs px-3 py-2 border border-silver-200 rounded-lg bg-white focus:outline-none focus:ring-1 focus:ring-navy-500/30"
         />
         {feedUrl && !feedUrl.startsWith('https://') && (
           <p className="text-xs text-amber-700">Feed URL must use HTTPS</p>
         )}
         <div className="flex items-center gap-3">
-          <span className="text-xs text-slate-500 shrink-0">Status</span>
+          <span className="text-xs text-ink-muted shrink-0">Status</span>
           <select
             value={status} onChange={e => setStatus(e.target.value as 'ACTIVE' | 'PAUSED')}
-            className="text-xs px-3 py-2 border border-slate-200 rounded-lg bg-white focus:outline-none focus:ring-1 focus:ring-slate-400"
+            className="text-xs px-3 py-2 border border-silver-200 rounded-lg bg-white focus:outline-none focus:ring-1 focus:ring-navy-500/30"
           >
             <option value="ACTIVE">Active</option>
             <option value="PAUSED">Paused</option>
@@ -388,12 +388,12 @@ function AddSourceForm({
       <div className="flex items-center gap-3">
         <button
           type="submit" disabled={saving || !canSubmit}
-          className="px-3 py-1.5 text-xs font-semibold bg-slate-900 text-white rounded-lg disabled:opacity-40"
+          className="px-3 py-1.5 text-xs font-semibold bg-navy-900 text-white rounded-lg disabled:opacity-40"
         >
           {saving ? 'Saving…' : 'Save source'}
         </button>
         <button type="button" onClick={onCancel}
-          className="text-xs font-semibold text-slate-400 hover:text-slate-600"
+          className="text-xs font-semibold text-ink-faint hover:text-ink-body"
         >
           Cancel
         </button>
@@ -457,29 +457,29 @@ function EditSourceForm({
   return (
     <form
       onSubmit={handleSubmit}
-      className="px-5 py-4 bg-slate-50/50 border-t border-slate-100 space-y-3"
+      className="px-5 py-4 bg-silver-100/50 border-t border-silver-100 space-y-3"
     >
-      <p className="text-xs font-semibold text-slate-700">Edit API source</p>
+      <p className="text-xs font-semibold text-ink-body">Edit API source</p>
       {error && <p className="text-xs text-red-600">{error}</p>}
       <div className="space-y-2">
         <input
           type="text" value={label} onChange={e => setLabel(e.target.value)}
           placeholder="Label" required maxLength={160}
-          className="w-full text-xs px-3 py-2 border border-slate-200 rounded-lg bg-white focus:outline-none focus:ring-1 focus:ring-slate-400"
+          className="w-full text-xs px-3 py-2 border border-silver-200 rounded-lg bg-white focus:outline-none focus:ring-1 focus:ring-navy-500/30"
         />
         <input
           type="url" value={feedUrl} onChange={e => setFeedUrl(e.target.value)}
           placeholder="https://api.example.com/inventory" required
-          className="w-full text-xs px-3 py-2 border border-slate-200 rounded-lg bg-white focus:outline-none focus:ring-1 focus:ring-slate-400"
+          className="w-full text-xs px-3 py-2 border border-silver-200 rounded-lg bg-white focus:outline-none focus:ring-1 focus:ring-navy-500/30"
         />
         {feedUrl && !feedUrl.startsWith('https://') && (
           <p className="text-xs text-amber-700">Feed URL must use HTTPS</p>
         )}
         <div className="flex items-center gap-3">
-          <span className="text-xs text-slate-500 shrink-0">Status</span>
+          <span className="text-xs text-ink-muted shrink-0">Status</span>
           <select
             value={status} onChange={e => setStatus(e.target.value as 'ACTIVE' | 'PAUSED')}
-            className="text-xs px-3 py-2 border border-slate-200 rounded-lg bg-white focus:outline-none focus:ring-1 focus:ring-slate-400"
+            className="text-xs px-3 py-2 border border-silver-200 rounded-lg bg-white focus:outline-none focus:ring-1 focus:ring-navy-500/30"
           >
             <option value="ACTIVE">Active</option>
             <option value="PAUSED">Paused</option>
@@ -494,12 +494,12 @@ function EditSourceForm({
       <div className="flex items-center gap-3">
         <button
           type="submit" disabled={saving || !canSubmit}
-          className="px-3 py-1.5 text-xs font-semibold bg-slate-900 text-white rounded-lg disabled:opacity-40"
+          className="px-3 py-1.5 text-xs font-semibold bg-navy-900 text-white rounded-lg disabled:opacity-40"
         >
           {saving ? 'Saving…' : 'Save'}
         </button>
         <button type="button" onClick={onCancel}
-          className="text-xs font-semibold text-slate-400 hover:text-slate-600"
+          className="text-xs font-semibold text-ink-faint hover:text-ink-body"
         >
           Cancel
         </button>
@@ -519,7 +519,7 @@ function SourceRow({
   dealerId: string;
   onUpdated?: () => void;
 }) {
-  const statusCls  = SOURCE_STATUS_STYLE[source.status] ?? 'bg-slate-100 text-slate-500';
+  const statusCls  = SOURCE_STATUS_STYLE[source.status] ?? 'bg-silver-100 text-ink-muted';
   const kindLabel  = SOURCE_KIND_LABEL[source.kind] ?? source.kind;
   const isApi      = source.kind === 'API';
   const isError    = source.status === 'ERROR';
@@ -579,7 +579,7 @@ function SourceRow({
     ? 'text-red-500'
     : isOverdue
       ? 'text-amber-500 font-medium'
-      : 'text-slate-400';
+      : 'text-ink-faint';
 
   return (
     <div>
@@ -587,8 +587,8 @@ function SourceRow({
         {/* Row 1: label / kind / status badge / actions / received */}
         <div className="flex items-center gap-2 flex-wrap">
           <div className="flex-1 min-w-0 flex items-center gap-2">
-            <span className="text-sm font-semibold text-slate-900">{source.label}</span>
-            <span className="text-slate-400">{kindLabel}</span>
+            <span className="text-sm font-semibold text-ink-heading">{source.label}</span>
+            <span className="text-ink-faint">{kindLabel}</span>
           </div>
           {isApi ? (
             <button
@@ -610,7 +610,7 @@ function SourceRow({
               type="button"
               onClick={handleCheck}
               disabled={checking}
-              className={`text-xs font-semibold shrink-0 disabled:opacity-50 ${isError ? 'text-red-600 hover:text-red-800' : 'text-sky-700 hover:text-sky-900'}`}
+              className={`text-xs font-semibold shrink-0 disabled:opacity-50 ${isError ? 'text-red-600 hover:text-red-800' : 'text-navy-700 hover:text-navy-800'}`}
             >
               {checking ? 'Checking…' : isError ? 'Retry' : source.snapshotMode ? 'Check now (snapshot dry-run)' : 'Check now'}
             </button>
@@ -619,12 +619,12 @@ function SourceRow({
             <button
               type="button"
               onClick={() => setEditing(v => !v)}
-              className="text-xs font-semibold text-slate-400 hover:text-slate-700 shrink-0"
+              className="text-xs font-semibold text-ink-faint hover:text-ink-body shrink-0"
             >
               {editing ? 'Cancel' : 'Edit'}
             </button>
           )}
-          <div className="text-slate-400 shrink-0 text-right text-xs ml-auto">
+          <div className="text-ink-faint shrink-0 text-right text-xs ml-auto">
             {source.lastReceivedAt
               ? <span title={source.lastReceivedAt}>received {relativeTime(source.lastReceivedAt)}</span>
               : <span className="italic">never received</span>}
@@ -633,7 +633,7 @@ function SourceRow({
 
         {/* Row 2 (API only): feedUrl · last checked · schedule status */}
         {isApi && (
-          <div className="mt-1 flex items-center gap-3 text-slate-400 flex-wrap">
+          <div className="mt-1 flex items-center gap-3 text-ink-faint flex-wrap">
             {source.feedUrl ? (
               <span className="truncate max-w-[220px]" title={source.feedUrl}>
                 {source.feedUrl}
@@ -690,7 +690,7 @@ function RunRow({ dealerId, run, isLatest, onShowBlockedVehicles, onSnapshotComm
 
   return (
     <div className={`px-5 py-2.5 flex items-center gap-3 text-xs transition-colors
-      ${isLatest ? 'bg-emerald-50/60' : hasIssues ? 'bg-amber-50/30' : 'hover:bg-slate-50/80'}`}>
+      ${isLatest ? 'bg-status-success-bg/60' : hasIssues ? 'bg-amber-50/30' : 'hover:bg-silver-100/80'}`}>
 
       <span className={`w-1.5 h-1.5 rounded-full shrink-0 ${s.dot}`} />
 
@@ -698,28 +698,28 @@ function RunRow({ dealerId, run, isLatest, onShowBlockedVehicles, onSnapshotComm
         <div className="flex items-center gap-2 flex-wrap">
           <span className={`px-1.5 py-0.5 rounded font-medium shrink-0 ${s.pill}`}>{s.label}</span>
           {run.sourceLabel && (
-            <span className="text-slate-500 truncate">{run.sourceLabel}</span>
+            <span className="text-ink-muted truncate">{run.sourceLabel}</span>
           )}
-          <span className="text-slate-400">{relativeTime(run.receivedAt)}</span>
+          <span className="text-ink-faint">{relativeTime(run.receivedAt)}</span>
         </div>
 
-        <div className="flex items-center gap-3 mt-1 text-slate-500 flex-wrap">
+        <div className="flex items-center gap-3 mt-1 text-ink-muted flex-wrap">
           <span>{operatorCopy.inventory.intakeAssetCount(run.vehicleCount)}</span>
-          {run.createdCount > 0 && <span className="text-emerald-700">+{run.createdCount} created</span>}
-          {run.updatedCount > 0 && <span className="text-sky-700">↻{run.updatedCount} updated</span>}
-          {run.skippedCount > 0 && <span className="text-slate-400">{run.skippedCount} skipped</span>}
+          {run.createdCount > 0 && <span className="text-status-success-text">+{run.createdCount} created</span>}
+          {run.updatedCount > 0 && <span className="text-navy-700">↻{run.updatedCount} updated</span>}
+          {run.skippedCount > 0 && <span className="text-ink-faint">{run.skippedCount} skipped</span>}
           {run.errorCount   > 0 && <span className="text-red-600 font-semibold">{run.errorCount} errors</span>}
         </div>
 
         {run.platformImpactJson ? (
           <div className="flex items-center gap-2 mt-1 flex-wrap">
-            <span className="text-slate-300 select-none">→</span>
+            <span className="text-silver-300 select-none">→</span>
             {buildImpactChips(run.platformImpactJson).map(c => (
               <span key={c.label} className={`${c.cls}`}>{c.label}</span>
             ))}
           </div>
         ) : run.status === 'COMMITTED' || run.status === 'PARTIAL' ? (
-          <div className="mt-1 text-slate-400 text-xs">{EMPTY_STATE_COPY.noPerformancePlatforms.title}</div>
+          <div className="mt-1 text-ink-faint text-xs">{EMPTY_STATE_COPY.noPerformancePlatforms.title}</div>
         ) : null}
 
         {run.snapshotReview && run.snapshotReview.pendingCount > 0 && (

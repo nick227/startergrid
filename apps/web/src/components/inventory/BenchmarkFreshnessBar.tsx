@@ -39,12 +39,12 @@ export function BenchmarkFreshnessBar({
     return (
       <div className="flex flex-wrap items-center gap-2 text-xs">
         <span className={`px-2 py-0.5 rounded border font-semibold ${meta.pill}`}>{meta.label}</span>
-        <span className={meta.tone === 'amber' ? 'text-amber-700' : 'text-slate-500'}>{meta.line}</span>
+        <span className={meta.tone === 'amber' ? 'text-amber-700' : 'text-ink-muted'}>{meta.line}</span>
         <button
           type="button"
           onClick={() => void handleRefresh()}
           disabled={refreshing || meta.state === 'updating'}
-          className="font-semibold text-emerald-700 hover:underline disabled:opacity-50"
+          className="font-semibold text-status-success-text hover:underline disabled:opacity-50"
         >
           {refreshing ? 'Refreshing…' : 'Refresh benchmarks'}
         </button>
@@ -55,14 +55,14 @@ export function BenchmarkFreshnessBar({
 
   return (
     <div className={`rounded-xl border px-4 py-3 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 ${
-      meta.tone === 'amber' ? 'border-amber-200 bg-amber-50/50' : 'border-slate-200 bg-white'
+      meta.tone === 'amber' ? 'border-amber-200 bg-amber-50/50' : 'border-silver-200 bg-white'
     }`}>
       <div className="min-w-0">
         <div className="flex items-center gap-2 flex-wrap">
-          <span className="text-xs font-semibold text-slate-700">Movement benchmarks</span>
+          <span className="text-xs font-semibold text-ink-body">Movement benchmarks</span>
           <span className={`px-2 py-0.5 rounded border text-[10px] font-bold ${meta.pill}`}>{meta.label}</span>
         </div>
-        <p className={`text-[11px] mt-1 ${meta.tone === 'amber' ? 'text-amber-800' : 'text-slate-500'}`}>
+        <p className={`text-[11px] mt-1 ${meta.tone === 'amber' ? 'text-amber-800' : 'text-ink-muted'}`}>
           {meta.line}
         </p>
         {refreshError && <p className="text-[11px] text-red-600 mt-1">{refreshError}</p>}
@@ -71,7 +71,7 @@ export function BenchmarkFreshnessBar({
         type="button"
         onClick={() => void handleRefresh()}
         disabled={refreshing || meta.state === 'updating'}
-        className="shrink-0 px-3 py-1.5 text-xs font-semibold bg-slate-900 text-white rounded-lg disabled:opacity-50"
+        className="shrink-0 px-3 py-1.5 text-xs font-semibold bg-navy-900 text-white rounded-lg disabled:opacity-50"
       >
         {refreshing ? 'Refreshing…' : 'Refresh now'}
       </button>

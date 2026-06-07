@@ -18,25 +18,25 @@ export function ImportStepUpload({ rawText, onChange, parsed }: Props) {
 
   return (
     <div className="space-y-4">
-      <p className="text-sm text-slate-500">
+      <p className="text-sm text-ink-muted">
         Paste spreadsheet data (Excel/Google Sheets copy) or upload a CSV file.
       </p>
       <textarea
         value={rawText}
         onChange={e => onChange(e.target.value)}
         placeholder="Paste CSV or tab-separated rows here (first row = column headers)…"
-        className="w-full h-48 px-3 py-2.5 text-xs font-mono border border-slate-200 rounded-lg resize-none focus:outline-none focus:ring-2 focus:ring-blue-500"
+        className="w-full h-48 px-3 py-2.5 text-xs font-mono border border-silver-200 rounded-lg resize-none focus:outline-none focus:ring-2 focus:ring-navy-500/30"
       />
       <div className="flex items-center gap-3">
         <input ref={fileRef} type="file" accept=".csv,.tsv,.txt" className="hidden" onChange={handleFile} />
         <button
           onClick={() => fileRef.current?.click()}
-          className="px-3 py-1.5 text-xs border border-slate-300 rounded-lg hover:bg-slate-50 transition-colors"
+          className="px-3 py-1.5 text-xs border border-silver-300 rounded-lg hover:bg-surface-inset transition-colors"
         >
           Choose file (.csv / .tsv)
         </button>
         {parsed && (
-          <span className="text-xs text-slate-500">
+          <span className="text-xs text-ink-muted">
             Detected: <strong>{parsed.rows.length}</strong> rows, <strong>{parsed.headers.length}</strong> columns
           </span>
         )}

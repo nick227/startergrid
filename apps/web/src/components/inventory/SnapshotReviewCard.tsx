@@ -71,14 +71,14 @@ export function SnapshotReviewCard({ dealerId, ingressRunId, review, onCommitted
               onChange={() => toggle(c.stockNumber)}
               className="rounded border-amber-300"
             />
-            <span className="font-mono font-semibold text-slate-800">{c.stockNumber}</span>
+            <span className="font-mono font-semibold text-ink-heading">{c.stockNumber}</span>
             <span className="text-amber-700 truncate">{c.label}</span>
           </li>
         ))}
       </ul>
 
       {error && <p className="text-[11px] text-red-700">{error}</p>}
-      {result && <p className="text-[11px] text-emerald-800 font-medium">{result}</p>}
+      {result && <p className="text-[11px] text-status-success-text font-medium">{result}</p>}
 
       <button
         type="button"

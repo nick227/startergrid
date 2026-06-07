@@ -35,13 +35,13 @@ export function CleanupFilterBar({ active, counts, readinessCounts, onSelect }: 
               onClick={() => onSelect(key)}
               className={`inline-flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-semibold border transition-all ${
                 isActive
-                  ? 'bg-slate-900 text-white border-slate-900 shadow-sm'
-                  : 'bg-white text-slate-600 border-slate-200 hover:border-slate-300'
+                  ? 'bg-navy-900 text-white border-navy-950 shadow-sm'
+                  : 'bg-white text-ink-body border-silver-200 hover:border-silver-300'
               }`}
             >
               {meta && <span className={`w-2 h-2 rounded-full ${meta.dot}`} />}
               {key === 'ALL' ? 'All' : meta?.label}
-              <span className={`px-1.5 py-0.5 rounded-md text-[10px] ${isActive ? 'bg-white/20' : 'bg-slate-100'}`}>
+              <span className={`px-1.5 py-0.5 rounded-md text-[10px] ${isActive ? 'bg-white/20' : 'bg-silver-100'}`}>
                 {count}
               </span>
             </button>
@@ -50,8 +50,8 @@ export function CleanupFilterBar({ active, counts, readinessCounts, onSelect }: 
       </div>
 
       {CLEANUP_FILTER_DEFS.some(d => (counts[d.key] ?? 0) > 0) && (
-        <div className="flex flex-wrap gap-2 pt-1 border-t border-slate-100">
-          <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest w-full mb-1">
+        <div className="flex flex-wrap gap-2 pt-1 border-t border-silver-100">
+          <span className="text-[10px] font-bold text-ink-faint uppercase tracking-widest w-full mb-1">
             Issue filters
           </span>
           {CLEANUP_FILTER_DEFS.map(def => {
@@ -66,7 +66,7 @@ export function CleanupFilterBar({ active, counts, readinessCounts, onSelect }: 
                 className={`px-3 py-1.5 rounded-lg text-xs font-medium border ${
                   isActive
                     ? 'bg-amber-100 border-amber-300 text-amber-900'
-                    : 'bg-white border-slate-200 text-slate-600 hover:bg-amber-50'
+                    : 'bg-white border-silver-200 text-ink-body hover:bg-amber-50'
                 }`}
               >
                 {def.label} ({count})

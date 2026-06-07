@@ -8,7 +8,7 @@ const VARIANT_CLASSES: Record<Variant, string> = {
   secondary: 'bg-navy-800 hover:bg-navy-700 text-silver-100 border border-navy-700',
   ghost:     'text-ink-muted hover:text-ink-heading',
   danger:    'bg-status-error-dot hover:bg-red-700 text-white',
-  success:   'bg-status-success-text hover:bg-green-800 text-white',
+  success:   'bg-status-success-text hover:bg-navy-800 text-white',
 };
 
 const SIZE_CLASSES: Record<Size, string> = {

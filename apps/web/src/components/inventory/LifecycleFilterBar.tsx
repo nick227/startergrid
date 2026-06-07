@@ -17,7 +17,7 @@ export function LifecycleFilterBar({ active, counts, onSelect }: Props) {
 
   return (
     <div className="space-y-2">
-      <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Lifecycle</p>
+      <p className="text-[10px] font-bold text-ink-faint uppercase tracking-widest">Lifecycle</p>
       <div className="flex flex-wrap gap-2">
         {SCOPES.map(scope => {
           const selected = active === scope;
@@ -29,12 +29,12 @@ export function LifecycleFilterBar({ active, counts, onSelect }: Props) {
               onClick={() => onSelect(scope)}
               className={`px-3 py-1.5 rounded-lg text-xs font-semibold border transition-colors ${
                 selected
-                  ? 'bg-slate-900 text-white border-slate-900'
-                  : 'bg-white text-slate-600 border-slate-200 hover:border-slate-300'
+                  ? 'bg-navy-900 text-white border-navy-950'
+                  : 'bg-white text-ink-body border-silver-200 hover:border-silver-300'
               }`}
             >
               {LIFECYCLE_SCOPE_LABELS[scope]}
-              <span className={`ml-1.5 tabular-nums ${selected ? 'text-slate-300' : 'text-slate-400'}`}>
+              <span className={`ml-1.5 tabular-nums ${selected ? 'text-silver-300' : 'text-ink-faint'}`}>
                 {n}
               </span>
             </button>

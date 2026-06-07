@@ -31,7 +31,7 @@ export function DocReaderSheet() {
       <button
         type="button"
         aria-label="Close reader"
-        className="absolute inset-0 bg-slate-900/40 backdrop-blur-[1px]"
+        className="absolute inset-0 bg-navy-950/40 backdrop-blur-[1px]"
         onClick={closeDoc}
       />
 
@@ -46,7 +46,7 @@ export function DocReaderSheet() {
           <div className="flex items-start justify-between gap-4 max-w-2xl mx-auto w-full">
             <div className="min-w-0">
               <p className="text-[10px] font-bold uppercase tracking-widest text-stone-500 mb-1">{category}</p>
-              <h2 id="doc-reader-title" className="text-xl font-bold text-slate-900 tracking-tight leading-snug">
+              <h2 id="doc-reader-title" className="text-xl font-bold text-ink-heading tracking-tight leading-snug">
                 {title}
               </h2>
               {doc?.frontmatter.updated && (

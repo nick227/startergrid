@@ -45,11 +45,11 @@ export function ImportStepMapping({ headers, rows, mapping, suggestedMapping, on
     <div className="space-y-3">
       {/* Auto-map summary */}
       <div className="flex items-center justify-between">
-        <p className="text-sm text-slate-500">
+        <p className="text-sm text-ink-muted">
           Map your column headers to inventory fields.
         </p>
         {autoMappedCount > 0 && (
-          <span className="text-xs text-green-700 bg-green-50 border border-green-200 rounded px-2 py-0.5">
+          <span className="text-xs text-status-success-text bg-status-success-bg border border-status-success-border rounded px-2 py-0.5">
             ✓ {autoMappedCount} auto-detected
           </span>
         )}
@@ -73,12 +73,12 @@ export function ImportStepMapping({ headers, rows, mapping, suggestedMapping, on
         <div className="px-3 py-2 bg-red-50 border border-red-200 rounded-lg text-xs text-red-600">{error}</div>
       )}
 
-      <div className="border border-slate-200 rounded-lg overflow-hidden">
+      <div className="border border-silver-200 rounded-lg overflow-hidden">
         {/* Header row */}
-        <div className="grid grid-cols-[1fr_11rem_minmax(0,1fr)] px-4 py-2 bg-slate-50 border-b border-slate-200 gap-3">
-          <span className="text-xs font-semibold text-slate-500 uppercase tracking-wider">Your column</span>
-          <span className="text-xs font-semibold text-slate-500 uppercase tracking-wider">Maps to</span>
-          <span className="text-xs font-semibold text-slate-500 uppercase tracking-wider">Sample values</span>
+        <div className="grid grid-cols-[1fr_11rem_minmax(0,1fr)] px-4 py-2 bg-silver-100 border-b border-silver-200 gap-3">
+          <span className="text-xs font-semibold text-ink-muted uppercase tracking-wider">Your column</span>
+          <span className="text-xs font-semibold text-ink-muted uppercase tracking-wider">Maps to</span>
+          <span className="text-xs font-semibold text-ink-muted uppercase tracking-wider">Sample values</span>
         </div>
 
         {headers.map(h => {
@@ -90,14 +90,14 @@ export function ImportStepMapping({ headers, rows, mapping, suggestedMapping, on
           return (
             <div
               key={h}
-              className={`grid grid-cols-[1fr_11rem_minmax(0,1fr)] px-4 py-2.5 border-b border-slate-50 last:border-0 gap-3 items-center
-                ${isRequired ? 'hover:bg-green-50/20' : 'hover:bg-slate-50'} transition-colors`}
+              className={`grid grid-cols-[1fr_11rem_minmax(0,1fr)] px-4 py-2.5 border-b border-silver-100 last:border-0 gap-3 items-center
+                ${isRequired ? 'hover:bg-status-success-bg/20' : 'hover:bg-surface-inset'} transition-colors`}
             >
               {/* Column name */}
               <div className="flex items-center gap-1.5 min-w-0">
-                <span className="text-xs font-mono text-slate-700 truncate">{h}</span>
+                <span className="text-xs font-mono text-ink-body truncate">{h}</span>
                 {isAutoMapped && (
-                  <span className="text-xs text-green-600 shrink-0" title="Auto-detected">✓</span>
+                  <span className="text-xs text-status-success-text shrink-0" title="Auto-detected">✓</span>
                 )}
               </div>
 
@@ -116,14 +116,14 @@ export function ImportStepMapping({ headers, rows, mapping, suggestedMapping, on
                   preview.map((val, i) => (
                     <span
                       key={i}
-                      className="text-xs text-slate-400 bg-slate-50 border border-slate-100 rounded px-1.5 py-0.5 truncate max-w-[7rem]"
+                      className="text-xs text-ink-faint bg-silver-100 border border-silver-100 rounded px-1.5 py-0.5 truncate max-w-[7rem]"
                       title={val}
                     >
                       {val}
                     </span>
                   ))
                 ) : (
-                  <span className="text-xs text-slate-300 italic">empty</span>
+                  <span className="text-xs text-silver-300 italic">empty</span>
                 )}
               </div>
             </div>
@@ -131,7 +131,7 @@ export function ImportStepMapping({ headers, rows, mapping, suggestedMapping, on
         })}
       </div>
 
-      <p className="text-xs text-slate-400">
+      <p className="text-xs text-ink-faint">
         Unmapped columns are ignored. Map all required fields above to avoid blocked rows.
       </p>
     </div>

@@ -1,6 +1,7 @@
 /** Operator-facing freshness line — never use "cache" wording. */
 
 import type { AutoSyncStatus } from '@/lib/types.ts';
+import { statusPill } from '../../../../packages/design-tokens/colors.ts';
 
 export type BenchmarkFreshnessState = 'empty' | 'updating' | 'stale' | 'fresh';
 
@@ -16,31 +17,31 @@ export function resolveBenchmarkFreshnessState(
 
 export const BENCHMARK_FRESHNESS_VISUAL: Record<
   BenchmarkFreshnessState,
-  { label: string; line: string; pill: string; tone: 'neutral' | 'amber' | 'emerald' | 'slate' }
+  { label: string; line: string; pill: string; tone: 'neutral' | 'amber' | 'success' }
 > = {
   empty: {
     label: 'No benchmarks yet',
     line: 'No movement benchmarks yet. Refresh after import or sync.',
-    pill: 'bg-slate-100 text-slate-600 border-slate-200',
+    pill: statusPill.muted,
     tone: 'neutral',
   },
   updating: {
     label: 'Updating',
     line: 'Benchmarks updating after inventory sync…',
-    pill: 'bg-amber-50 text-amber-800 border-amber-200',
+    pill: 'bg-status-warning-bg text-status-warning-text border border-status-warning-border',
     tone: 'amber',
   },
   stale: {
     label: 'May be stale',
     line: 'Sync finished — movement benchmarks may still be catching up.',
-    pill: 'bg-amber-50 text-amber-800 border-amber-200',
+    pill: 'bg-status-warning-bg text-status-warning-text border border-status-warning-border',
     tone: 'amber',
   },
   fresh: {
     label: 'Up to date',
     line: '',
-    pill: 'bg-emerald-50 text-emerald-800 border-emerald-100',
-    tone: 'emerald',
+    pill: statusPill.success,
+    tone: 'success',
   },
 };
 

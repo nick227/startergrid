@@ -23,11 +23,11 @@ type Props = {
 export function InventorySortBar({ sortKey, direction, onSortKey, onDirection }: Props) {
   return (
     <div className="flex flex-wrap items-center gap-2 text-xs">
-      <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Sort</span>
+      <span className="text-[10px] font-bold text-ink-faint uppercase tracking-widest">Sort</span>
       <select
         value={sortKey}
         onChange={e => onSortKey(e.target.value as InventorySortKey)}
-        className="rounded-lg border border-slate-200 bg-white px-2.5 py-1.5 text-xs text-slate-700"
+        className="rounded-lg border border-silver-200 bg-white px-2.5 py-1.5 text-xs text-ink-body"
       >
         {sortOptions().map(o => (
           <option key={o.key} value={o.key}>{o.label}</option>
@@ -36,7 +36,7 @@ export function InventorySortBar({ sortKey, direction, onSortKey, onDirection }:
       <button
         type="button"
         onClick={() => onDirection(direction === 'asc' ? 'desc' : 'asc')}
-        className="px-2.5 py-1.5 rounded-lg border border-slate-200 bg-white text-slate-600 hover:border-slate-300"
+        className="px-2.5 py-1.5 rounded-lg border border-silver-200 bg-white text-ink-body hover:border-silver-300"
         aria-label={direction === 'asc' ? 'Sort ascending' : 'Sort descending'}
       >
         {direction === 'asc' ? '↑ Asc' : '↓ Desc'}

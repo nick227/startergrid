@@ -34,14 +34,14 @@ function KnowledgeContent({ onBack }: { onBack?: () => void }) {
           <button
             type="button"
             onClick={onBack}
-            className="text-xs text-slate-500 hover:text-slate-800 mb-4 block"
+            className="text-xs text-ink-muted hover:text-ink-heading mb-4 block"
           >
             ← Back
           </button>
         )}
-        <p className="text-[10px] font-bold uppercase tracking-[0.25em] text-slate-400 mb-2">Reference library</p>
-        <h1 className="text-2xl font-bold text-slate-900 tracking-tight">Knowledge base</h1>
-        <p className="text-sm text-slate-600 mt-2 max-w-2xl leading-relaxed font-serif">
+        <p className="text-[10px] font-bold uppercase tracking-[0.25em] text-ink-faint mb-2">Reference library</p>
+        <h1 className="text-2xl font-bold text-ink-heading tracking-tight">Knowledge base</h1>
+        <p className="text-sm text-ink-body mt-2 max-w-2xl leading-relaxed font-serif">
           Operator and industry reference for syndication, inventory, accounts, and compliance.
           Articles are grouped by subject; select a title to read the full document.
         </p>
@@ -54,7 +54,7 @@ function KnowledgeContent({ onBack }: { onBack?: () => void }) {
           placeholder="Search titles, subjects, keywords…"
           className="max-w-lg"
         />
-        <p className="text-xs text-slate-400 mt-2">
+        <p className="text-xs text-ink-faint mt-2">
           {filtered.length} of {all.length} articles
           {query.trim() ? ` matching “${query.trim()}”` : ''}
         </p>

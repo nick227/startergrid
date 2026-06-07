@@ -23,7 +23,7 @@ const READINESS_BADGE_COLOR: Record<Readiness, BadgeColor> = {
 };
 
 const READINESS_TEXT_COLOR: Record<Readiness, string> = {
-  READY: 'text-green-700',
+  READY: 'text-status-success-text',
   WARNING: 'text-amber-700',
   BLOCKED: 'text-red-700',
 };
@@ -55,9 +55,9 @@ export function MovementSignalBadge({ signal }: { signal: MovementSignal | strin
 // ── Action badge (import preview) ─────────────────────────────────────────────
 
 export function ActionBadge({ action }: { action: 'CREATE' | 'UPDATE' | 'SKIP' }) {
-  if (action === 'CREATE') return <span className="text-xs text-green-700 font-medium">+ Create</span>;
-  if (action === 'UPDATE') return <span className="text-xs text-blue-700 font-medium">↺ Update</span>;
-  return <span className="text-xs text-slate-400">Skip</span>;
+  if (action === 'CREATE') return <span className="text-xs text-status-success-text font-medium">+ Create</span>;
+  if (action === 'UPDATE') return <span className="text-xs text-navy-700 font-medium">↺ Update</span>;
+  return <span className="text-xs text-ink-faint">Skip</span>;
 }
 
 // ── Display helpers ───────────────────────────────────────────────────────────
@@ -78,46 +78,46 @@ function baseAssetColumns(): Column<VehicleListItem>[] {
   {
     key: 'stockNumber',
     label: labels.refColumn,
-    render: v => <span className="text-xs font-mono text-slate-700">{v.stockNumber}</span>,
+    render: v => <span className="text-xs font-mono text-ink-body">{v.stockNumber}</span>,
   },
   {
     key: 'vehicle',
     label: labels.titleColumn,
     render: v => (
       <div>
-        <div className="text-xs text-slate-800">
+        <div className="text-xs text-ink-heading">
           {v.year} {v.make} {v.model}
-          {v.trim && <span className="text-slate-400"> · {v.trim}</span>}
+          {v.trim && <span className="text-ink-faint"> · {v.trim}</span>}
         </div>
-        <div className="text-xs font-mono text-slate-300 truncate max-w-[12rem]">{v.vin}</div>
+        <div className="text-xs font-mono text-silver-300 truncate max-w-[12rem]">{v.vin}</div>
       </div>
     ),
   },
   {
     key: 'mileage',
     label: 'Mileage',
-    render: v => <span className="text-xs text-slate-600">{v.mileage > 0 ? formatMileage(v.mileage) : '—'}</span>,
+    render: v => <span className="text-xs text-ink-body">{v.mileage > 0 ? formatMileage(v.mileage) : '—'}</span>,
   },
   {
     key: 'price',
     label: 'Price',
-    render: v => <span className="text-xs text-slate-700 font-medium">{v.priceCents > 0 ? formatPrice(v.priceCents) : '—'}</span>,
+    render: v => <span className="text-xs text-ink-body font-medium">{v.priceCents > 0 ? formatPrice(v.priceCents) : '—'}</span>,
   },
   {
     key: 'condition',
     label: 'Condition',
-    render: v => <span className="text-xs text-slate-500">{v.condition}</span>,
+    render: v => <span className="text-xs text-ink-muted">{v.condition}</span>,
   },
   {
     key: 'color',
     label: 'Color',
-    render: v => <span className="text-xs text-slate-500 truncate block max-w-[8rem]">{v.exteriorColor}</span>,
+    render: v => <span className="text-xs text-ink-muted truncate block max-w-[8rem]">{v.exteriorColor}</span>,
   },
   {
     key: 'media',
     label: 'Media',
     render: v => (
-      <span className={`text-xs ${v.mediaCount > 0 ? 'text-slate-500' : 'text-slate-300'}`}>
+      <span className={`text-xs ${v.mediaCount > 0 ? 'text-ink-muted' : 'text-silver-300'}`}>
         {v.mediaCount} photo{v.mediaCount !== 1 ? 's' : ''}
       </span>
     ),
@@ -164,7 +164,7 @@ export function buildVehicleColumns(
       label: 'Days / Signal',
       render: v => {
         const perf = perfMap.get(v.stockNumber);
-        if (!perf) return <span className="text-slate-300 text-xs">—</span>;
+        if (!perf) return <span className="text-silver-300 text-xs">—</span>;
         return <MovementBenchmarkCell perf={perf} />;
       },
     });

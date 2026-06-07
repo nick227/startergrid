@@ -13,9 +13,9 @@ export function Select({ value, options, onChange, highlighted = false, classNam
     <select
       value={value}
       onChange={e => onChange(e.target.value)}
-      className={`text-xs border rounded px-2 py-1 focus:outline-none focus:ring-2 focus:ring-blue-500
-        ${highlighted && value ? 'border-green-300 bg-green-50' : 'border-slate-200 bg-white'}
-        ${!value ? 'text-slate-400' : ''}
+      className={`text-xs border rounded px-2 py-1 focus:outline-none focus:ring-2 focus:ring-navy-500/30
+        ${highlighted && value ? 'border-status-success-border bg-status-success-bg' : 'border-silver-200 bg-white'}
+        ${!value ? 'text-ink-faint' : ''}
         ${className}`}
     >
       {options.map(o => (
