@@ -27,10 +27,12 @@ describe('category slug helpers', () => {
 
   it('lists consumer-enabled marketplace categories', () => {
     const categories = listMarketplaceCategories();
-    expect(categories).toHaveLength(2);
+    expect(categories).toHaveLength(3);
     expect(categories.every(c => c.marketplace.consumerEnabled)).toBe(true);
     expect(categories.some(c => c.id === 'AUTOMOTIVE')).toBe(true);
     expect(categories.some(c => c.id === 'TRAILERS_POWERSPORTS_RV')).toBe(true);
+    expect(categories.some(c => c.id === 'BOATS')).toBe(true);
+    expect(categoryIdToSlug('BOATS')).toBe('boats');
   });
 });
 
@@ -49,6 +51,11 @@ describe('parseRoute', () => {
       page: 'list',
       slug: 'automotive',
       query: {},
+    });
+    expect(withHash('#/boats/?make=Boston+Whaler')).toEqual({
+      page: 'list',
+      slug: 'boats',
+      query: { make: 'Boston Whaler' },
     });
     expect(withHash('#/watches/?make=Rolex')).toEqual({
       page: 'list',

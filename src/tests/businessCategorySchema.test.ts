@@ -87,11 +87,35 @@ describe('resolveCategorySchema — known categories', () => {
     });
     assert.match(meta, /125 hrs/);
   });
+
+  it('BOATS is active with boat labels and consumer marketplace', () => {
+    const schema = resolveCategorySchema('BOATS');
+    assert.equal(schema.status, 'active');
+    assert.equal(schema.label, 'Boats');
+    assert.equal(schema.asset.singular, 'boat');
+    assert.equal(schema.asset.idLabel, 'HIN');
+    assert.equal(schema.fields.find(f => f.key === 'mileage')?.label, 'Hours');
+    assert.equal(schema.marketplace.consumerEnabled, true);
+    assert.equal(schema.marketplace.slug, 'boats');
+    assert.notEqual(schema.asset.idLabel, resolveCategorySchema('AUTOMOTIVE').asset.idLabel);
+    assert.notEqual(schema.copy.titleColumn, resolveCategorySchema('TRAILERS_POWERSPORTS_RV').copy.titleColumn);
+  });
+
+  it('boats assetMeta formatter shows hours and length from categoryPayload', () => {
+    const schema = resolveCategorySchema('BOATS');
+    const meta = schema.formatters.assetMeta({
+      mileage: 450,
+      priceCents: 289_990_00,
+      categoryPayload: { usageUnit: 'hours', lengthFt: 28 },
+    });
+    assert.match(meta, /450 hrs/);
+    assert.match(meta, /28 ft/);
+  });
 });
 
 describe('resolveCategorySchema — placeholders', () => {
   const placeholderIds = BUSINESS_CATEGORY_IDS.filter(
-    id => id !== 'AUTOMOTIVE' && id !== 'TRAILERS_POWERSPORTS_RV',
+    id => id !== 'AUTOMOTIVE' && id !== 'TRAILERS_POWERSPORTS_RV' && id !== 'BOATS',
   );
 
   for (const id of placeholderIds) {

@@ -4,10 +4,22 @@ import { parseCategoryPayload, usageUnitFromPayload } from '../lib/categoryPaylo
 
 describe('categoryPayload helpers', () => {
   it('parseCategoryPayload returns usageUnit and unitType', () => {
-    assert.deepEqual(parseCategoryPayload({ usageUnit: 'hours', unitType: 'ATV' }), {
+    const parsed = parseCategoryPayload({ usageUnit: 'hours', unitType: 'ATV' });
+    assert.equal(parsed.usageUnit, 'hours');
+    assert.equal(parsed.unitType, 'ATV');
+  });
+
+  it('parseCategoryPayload returns marine fields', () => {
+    const parsed = parseCategoryPayload({
       usageUnit: 'hours',
-      unitType: 'ATV',
+      vesselType: 'Center Console',
+      lengthFt: 28,
+      engineHours: 450,
     });
+    assert.equal(parsed.usageUnit, 'hours');
+    assert.equal(parsed.vesselType, 'Center Console');
+    assert.equal(parsed.lengthFt, 28);
+    assert.equal(parsed.engineHours, 450);
   });
 
   it('parseCategoryPayload ignores invalid shapes', () => {

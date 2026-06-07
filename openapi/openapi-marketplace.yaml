@@ -1044,7 +1044,16 @@ components:
         unitType:
           type: string
           nullable: true
-          description: Optional unit subtype label (RV, ATV, Trailer, etc.).
+          description: Optional unit subtype label (RV, ATV, vessel type, etc.).
+        lengthFt:
+          type: number
+          nullable: true
+          description: Vessel length in feet when provided in categoryPayload.
+        engineHours:
+          type: integer
+          nullable: true
+          minimum: 0
+          description: Engine hours when distinct from listing usage hours.
         bodyStyle:
           type: string
           nullable: true

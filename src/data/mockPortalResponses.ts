@@ -760,6 +760,10 @@ const atvTrader = assistedMarketplaceStub('atv-trader', 'ATV Trader');
 const trailerTrader = assistedMarketplaceStub('trailer-trader', 'Trailer Trader');
 const facebookMarketplaceGeneral = assistedMarketplaceStub('facebook-marketplace-general', 'Facebook Marketplace');
 
+const boatTrader = assistedMarketplaceStub('boat-trader', 'Boat Trader');
+const yachtWorld = assistedMarketplaceStub('yachtworld', 'YachtWorld');
+const boatsCom = assistedMarketplaceStub('boats-com', 'Boats.com');
+
 export const mockPortalResponses: Record<string, PlatformResponses> = {
   'dealer-storefront': dealerStorefront,
   'consumer-marketplace': consumerMarketplace,
@@ -785,6 +789,9 @@ export const mockPortalResponses: Record<string, PlatformResponses> = {
   'atv-trader': atvTrader,
   'trailer-trader': trailerTrader,
   'facebook-marketplace-general': facebookMarketplaceGeneral,
+  'boat-trader': boatTrader,
+  'yachtworld': yachtWorld,
+  'boats-com': boatsCom,
 };
 
 export function getMockPortalResponse(platformSlug: string, condition: MockPortalCondition): MockPortalResponse | undefined {

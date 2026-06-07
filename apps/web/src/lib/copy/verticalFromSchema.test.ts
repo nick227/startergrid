@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { genericVertical } from '@/lib/copy/vertical.ts';
 import { inventoryLabels, setActiveCategorySchema, taskActionLabel } from '@/lib/copy/activeCategoryCopy.ts';
 import { verticalAdapterFromCategorySchema } from '@/lib/copy/verticalFromSchema.ts';
+import { resolveCategorySchema } from '@auto-dealer/category-schemas';
 import type { CategorySchema } from '@auto-dealer/category-schemas';
 
 const automotiveSchema: CategorySchema = {
@@ -79,6 +80,21 @@ describe('verticalAdapterFromCategorySchema', () => {
     const adapter = verticalAdapterFromCategorySchema(songsSchema);
     expect(adapter.inventory.refColumn).toBe(genericVertical.inventory.refColumn);
   });
+
+  it('derives mileage label from boats schema fields (Hours)', () => {
+    const adapter = verticalAdapterFromCategorySchema(resolveCategorySchema('BOATS'));
+    expect(adapter.inventory.mileageLabel).toBe('Hours');
+  });
+
+  it('derives mileage label from trailers schema fields (Miles / Hours)', () => {
+    const adapter = verticalAdapterFromCategorySchema(resolveCategorySchema('TRAILERS_POWERSPORTS_RV'));
+    expect(adapter.inventory.mileageLabel).toBe('Miles / Hours');
+  });
+
+  it('derives mileage label from automotive schema fields (Mileage)', () => {
+    const adapter = verticalAdapterFromCategorySchema(resolveCategorySchema('AUTOMOTIVE'));
+    expect(adapter.inventory.mileageLabel).toBe('Mileage');
+  });
 });
 
 const trailersSchema: CategorySchema = {
@@ -104,6 +120,29 @@ const trailersSchema: CategorySchema = {
   marketplace: { slug: 'trailers-powersports-rv', consumerEnabled: true, tagline: '' },
 };
 
+const boatsSchema: CategorySchema = {
+  ...automotiveSchema,
+  id: 'BOATS',
+  status: 'active',
+  label: 'Boats',
+  copy: {
+    ...automotiveSchema.copy,
+    refColumn: 'Stock #',
+    titleColumn: 'Boat',
+    searchPlaceholder: 'Search stock #, HIN, make, model…',
+    invalidIdentifierLabel: 'Invalid HIN',
+  },
+  asset: {
+    singular: 'boat',
+    plural: 'boats',
+    refLabel: 'Stock #',
+    idLabel: 'HIN',
+    titleLabel: 'Boat',
+    idFieldKey: 'vin',
+  },
+  marketplace: { slug: 'boats', consumerEnabled: true, tagline: '' },
+};
+
 describe('setActiveCategorySchema', () => {
   it('updates inventoryLabels and taskActionLabel for active org', () => {
     setActiveCategorySchema(automotiveSchema);
@@ -122,5 +161,24 @@ describe('setActiveCategorySchema', () => {
     expect(inventoryLabels().searchPlaceholder.toLowerCase()).toContain('serial #');
     expect(inventoryLabels().searchPlaceholder).not.toContain('VIN');
     expect(inventoryLabels().invalidIdentifierLabel).toBe('Invalid serial #');
+  });
+
+  it('maps boats org to HIN / Boat operator labels', () => {
+    setActiveCategorySchema(boatsSchema);
+    expect(inventoryLabels().titleColumn).toBe('Boat');
+    expect(inventoryLabels().searchPlaceholder.toLowerCase()).toContain('hin');
+    expect(inventoryLabels().searchPlaceholder).not.toContain('VIN');
+    expect(inventoryLabels().invalidIdentifierLabel).toBe('Invalid HIN');
+  });
+
+  it('exposes schema-derived mileage label via inventoryLabels', () => {
+    setActiveCategorySchema(resolveCategorySchema('BOATS'));
+    expect(inventoryLabels().mileageLabel).toBe('Hours');
+
+    setActiveCategorySchema(resolveCategorySchema('TRAILERS_POWERSPORTS_RV'));
+    expect(inventoryLabels().mileageLabel).toBe('Miles / Hours');
+
+    setActiveCategorySchema(resolveCategorySchema('AUTOMOTIVE'));
+    expect(inventoryLabels().mileageLabel).toBe('Mileage');
   });
 });

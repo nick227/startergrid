@@ -6,9 +6,17 @@ export type VehicleClassification = {
     mileage: number;
     usageUnit?: VehicleClassification.usageUnit | null;
     /**
-     * Optional unit subtype label (RV, ATV, Trailer, etc.).
+     * Optional unit subtype label (RV, ATV, vessel type, etc.).
      */
     unitType?: string | null;
+    /**
+     * Vessel length in feet when provided in categoryPayload.
+     */
+    lengthFt?: number | null;
+    /**
+     * Engine hours when distinct from listing usage hours.
+     */
+    engineHours?: number | null;
     bodyStyle: string | null;
     vehicleType: string | null;
     vehicleSize: string | null;
