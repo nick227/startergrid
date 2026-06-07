@@ -52,15 +52,17 @@ import type {
   PlatformPerformanceItem,
 } from '../types.ts';
 import { toErrorMessage } from '../errors.ts';
-import { configureSdkDevAuth } from '../devAuth.ts';
+import { configureOpenApiClient } from './configureOpenApi.ts';
+import { notifyUnauthorized } from './auth.ts';
 
-configureSdkDevAuth();
+configureOpenApiClient();
 
 async function fromSdk<T>(promise: Promise<T>): Promise<T> {
   try {
     return await promise;
   } catch (e) {
     if (e instanceof ApiError) {
+      if (e.status === 401) notifyUnauthorized();
       const body = e.body as { error?: string } | undefined;
       const err = new Error(toErrorMessage({ status: e.status, message: body?.error ?? e.message }, e.message));
       (err as Error & { cause?: unknown }).cause = e;

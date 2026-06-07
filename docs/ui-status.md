@@ -109,7 +109,7 @@ Search, filter, and sort logic unchanged from table era; only presentation is ro
 | Queue approve/retry actions | Not exposed (read-only queue) |
 | Asset-scoped Queue/History from row actions | **Not started** (see above) |
 | Token / emerald purge | **Shipped** — navy + orange semantic tokens; slate/emerald removed from operator UI |
-| Auth UI + route guards | Planned |
+| Auth UI + route guards | **Shipped** — login page, session cookie, 401 → sign-in, scoped org picker |
 | Org-scoped category loading | Planned |
 | Reports row-card polish | Planned |
 
@@ -117,12 +117,10 @@ Search, filter, and sort logic unchanged from table era; only presentation is ro
 
 ## Next priorities
 
-1. ~~**Token / emerald purge**~~ — navy + orange everywhere; slate/emerald replaced with `ink`/`silver`/`navy`/`status-*` tokens
-2. **`docs/ui-status.md`** — keep aligned with shipped IA (this file)
-3. **Auth UI + route guards** — login, session, 401 handling, scoped org picker
-4. **Dealer/org-scoped category loading** — vertical adapter per tenant
-5. **Reports row-card / reporting polish**
-6. **Asset-scoped Queue/History filters** — row actions pass `assetId`/ref into queue/history search
+1. **`docs/ui-status.md`** — keep aligned with shipped IA (this file)
+2. **Dealer/org-scoped category loading** — vertical adapter per tenant
+3. **Reports row-card / reporting polish**
+4. **Asset-scoped Queue/History filters** — row actions pass `assetId`/ref into queue/history search
 
 ---
 

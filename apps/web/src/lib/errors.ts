@@ -9,7 +9,7 @@ export function toErrorMessage(e: unknown, fallback = 'Failed'): string {
       : fallback;
 
   if (status === 401 || message === 'Operator authentication required') {
-    return 'Operator auth is not configured. Set VITE_DEV_OPERATOR_ID in apps/web/.env.local and DEV_OPERATOR_ID in the API environment for local development.';
+    return 'Sign in required. Your session may have expired.';
   }
 
   if (status === 403 || message === 'Operator does not have access to this dealership') {

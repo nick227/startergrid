@@ -6,24 +6,45 @@ import { Skeleton } from '@/components/ui/Skeleton.tsx';
 import { SearchField } from '@/components/ui/SearchField.tsx';
 import { ErrorState } from '@/components/operator/ErrorState.tsx';
 import { operatorCopy } from '@/lib/copy/operator.ts';
+import { useAuth } from '@/contexts/AuthContext.tsx';
+import { canAccessDealer, filterDealersForOperator } from '@/lib/operatorAccess.ts';
 
-type Props = { onSelect: (id: string) => void };
+type Props = {
+  onSelect: (id: string) => void;
+  forbiddenDealerId?: string;
+};
 
-export default function DealerPicker({ onSelect }: Props) {
+export default function DealerPicker({ onSelect, forbiddenDealerId }: Props) {
+  const { user, logout } = useAuth();
   const { data, loading, error } = useAsyncQuery(() => fetchDealers(), []);
   const dealerRows = data?.dealers;
   const dealers = useMemo(() => dealerRows ?? [], [dealerRows]);
   const [query, setQuery] = useState('');
   const [manualId, setManualId] = useState('');
+  const [manualError, setManualError] = useState<string | null>(null);
+
+  const scopedDealers = useMemo(
+    () => (user ? filterDealersForOperator(dealers, user) : []),
+    [dealers, user],
+  );
 
   const filtered = useMemo(
     () =>
-      dealers.filter(
+      scopedDealers.filter(
         d =>
           d.legalName.toLowerCase().includes(query.toLowerCase()) || d.id.includes(query)
       ),
-    [dealers, query]
+    [scopedDealers, query]
   );
+
+  const trySelect = (id: string) => {
+    if (!user || !canAccessDealer(user, id)) {
+      setManualError(operatorCopy.auth.orgForbidden);
+      return;
+    }
+    setManualError(null);
+    onSelect(id);
+  };
 
   return (
     <div className="min-h-screen bg-navy-950 flex items-center justify-center p-6">
@@ -36,9 +57,28 @@ export default function DealerPicker({ onSelect }: Props) {
           <p className="text-ink-faint mt-2 text-sm max-w-sm mx-auto leading-relaxed">
             {operatorCopy.scope.pickerTitle} — {operatorCopy.app.tagline}
           </p>
+          {user && (
+            <div className="mt-4 flex items-center justify-center gap-3 text-xs">
+              <span className="text-silver-300">{user.email}</span>
+              <button
+                type="button"
+                onClick={() => void logout()}
+                className="font-semibold text-orange-500 hover:text-orange-400 transition-colors"
+              >
+                {operatorCopy.auth.signOut}
+              </button>
+            </div>
+          )}
         </div>
 
         <div className="bg-surface-card rounded-xl shadow-elevation-3 overflow-hidden border border-silver-200">
+          {(forbiddenDealerId || manualError) && (
+            <div className="px-4 py-3 bg-status-error-bg border-b border-status-error-border text-xs text-status-error-text">
+              {operatorCopy.auth.orgForbidden}
+              {forbiddenDealerId ? ` (${forbiddenDealerId})` : ''}
+            </div>
+          )}
+
           <div className="p-4 border-b border-silver-200 bg-surface-inset">
             <SearchField
               value={query}
@@ -57,13 +97,17 @@ export default function DealerPicker({ onSelect }: Props) {
               </div>
             )}
             {!loading && !error && filtered.length === 0 && (
-              <div className="p-8 text-center text-ink-faint text-sm">{operatorCopy.scope.noResults}</div>
+              <div className="p-8 text-center text-ink-faint text-sm">
+                {scopedDealers.length === 0
+                  ? operatorCopy.scope.noAssignedOrgs
+                  : operatorCopy.scope.noResults}
+              </div>
             )}
             {filtered.map((d: DealerSummary) => (
               <button
                 key={d.id}
                 type="button"
-                onClick={() => onSelect(d.id)}
+                onClick={() => trySelect(d.id)}
                 className="w-full text-left px-5 py-4 hover:bg-orange-100/60 border-b border-silver-100 last:border-0 transition-colors"
               >
                 <div className="font-semibold text-ink-heading text-sm">{d.legalName}</div>
@@ -91,13 +135,13 @@ export default function DealerPicker({ onSelect }: Props) {
                 type="text"
                 placeholder={operatorCopy.scope.pasteIdPlaceholder}
                 value={manualId}
-                onChange={e => setManualId(e.target.value)}
-                onKeyDown={e => e.key === 'Enter' && manualId.trim() && onSelect(manualId.trim())}
+                onChange={e => { setManualId(e.target.value); setManualError(null); }}
+                onKeyDown={e => e.key === 'Enter' && manualId.trim() && trySelect(manualId.trim())}
                 className="field-input flex-1 !rounded-md font-mono"
               />
               <button
                 type="button"
-                onClick={() => manualId.trim() && onSelect(manualId.trim())}
+                onClick={() => manualId.trim() && trySelect(manualId.trim())}
                 disabled={!manualId.trim()}
                 className="btn-primary-operator !px-5 !py-2.5 disabled:opacity-40"
               >

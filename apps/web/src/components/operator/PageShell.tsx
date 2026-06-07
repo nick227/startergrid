@@ -1,6 +1,7 @@
 import { OperatorNav } from './OperatorNav.tsx';
 import type { OperatorTab, OperatorNavHandlers } from '../../lib/operatorNav.ts';
 import { operatorCopy } from '../../lib/copy/operator.ts';
+import { useAuth } from '@/contexts/AuthContext.tsx';
 
 type Props = {
   dealerId: string;
@@ -40,6 +41,8 @@ export function PageShell({
   hideDealerId,
   sectionLabel,
 }: Props) {
+  const { user, logout } = useAuth();
+
   return (
     <div className={`min-h-screen bg-surface-page ${footerPad ? 'pb-20' : ''}`}>
       <header className="bg-navy-950 text-white sticky top-0 z-30 shadow-chrome">
@@ -77,6 +80,9 @@ export function PageShell({
               ← {operatorCopy.scope.changeAction}
             </button>
             <div className="flex items-center gap-2">
+              {user && (
+                <span className="text-ink-faint text-xs hidden sm:inline truncate max-w-[12rem]">{user.email}</span>
+              )}
               {lastRefresh && !refreshing && (
                 <span className="text-navy-500 text-xs">Updated {lastRefresh.toLocaleTimeString()}</span>
               )}
@@ -92,6 +98,15 @@ export function PageShell({
                 </button>
               )}
               {headerAction}
+              {user && (
+                <button
+                  type="button"
+                  onClick={() => void logout()}
+                  className="px-3 py-1.5 text-xs font-medium text-ink-faint hover:text-white transition-colors"
+                >
+                  {operatorCopy.auth.signOut}
+                </button>
+              )}
             </div>
           </div>
         </div>
