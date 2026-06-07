@@ -114,12 +114,15 @@ Search, filter, and sort logic unchanged from table era; only presentation is ro
 | Auth UI + route guards | **Shipped** — login page, session cookie, 401 → sign-in, scoped org picker |
 | Org-scoped category loading | **Shipped** — `CategoryProvider` + schema-driven vertical copy per org |
 | Reports row-card polish | **Shipped** — OpsRowCard lists, situation/control block, signal + section filters |
+| Reports catalog (10 reports) | **Designed** — [reports catalog design](./plans/2026-06-06-operator-reports-catalog-design.md); not built |
 
 ---
 
 ## Next priorities
 
-_(None on the current stack — pick from backlog: queue approve/retry API, legacy Sync tree cleanup, server-side dealer list filtering.)_
+1. **Reports catalog Phase 1** — hub + cache-backed reports (Movement, Readiness, Exposure, Observed Assist)
+2. Queue approve/retry API wiring
+3. Legacy Sync component tree cleanup
 
 ---
 
