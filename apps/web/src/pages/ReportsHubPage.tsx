@@ -2,7 +2,7 @@ import { useState } from 'react';
 import type { OperatorPageBaseProps } from '@/lib/operatorPage.ts';
 import { useReportsData } from '@/hooks/useReportsData.ts';
 import { triggerPerformanceCompute } from '@/lib/api/sdk.ts';
-import { OperatorPage, ErrorState } from '@/components/operator';
+import { OperatorPage, ErrorState, InlineCallout } from '@/components/operator';
 import { PageSituation } from '@/components/layout';
 import { EmptyState } from '@/components/ui';
 import { operatorCopy } from '@/lib/copy/operator.ts';
@@ -17,6 +17,7 @@ import {
 import { reportCatalogCopy } from '@/lib/reportCopy.ts';
 import { reportDetailHash } from '@/lib/reportRoutes.ts';
 import { ReportTeaserCard } from '@/components/reports/ReportTeaserCard.tsx';
+import { ReportHubSection } from '@/components/reports/ReportHubSection.tsx';
 import { usePhase2HubTeasers } from '@/hooks/usePhase2Report.ts';
 import { usePhase3HubTeasers } from '@/hooks/usePhase3Report.ts';
 import {
@@ -146,27 +147,25 @@ export default function ReportsHubPage({ dealerId, nav, activeTab }: Props) {
 
   const hasPerf = perf.data?.computedAt != null;
 
-  const renderSection = (heading: string, defs: ReportDefinition[]) => (
-    <section className="mb-8">
-      <h3 className="text-xs font-bold uppercase tracking-wide text-ink-faint mb-3">{heading}</h3>
-      <div className="grid gap-3 sm:grid-cols-2">
-        {defs.map(def => {
-          const copy = reportCatalogCopy(def);
-          return (
-            <ReportTeaserCard
-              key={def.slug}
-              title={copy.title}
-              decision={copy.decision}
-              metricLabel={copy.primaryMetric}
-              metricValue={teaserMetric(def, perf.data, publish.data, phase2, phase3)}
-              href={reportDetailHash(dealerId, def.family, def.slug, def.defaultRange)}
-              phaseAvailable={isReportShipped(def)}
-              preview={teaserPreview(def, perf.data, publish.data, phase2, phase3)}
-            />
-          );
-        })}
-      </div>
-    </section>
+  const renderSection = (heading: string, subtitle: string, defs: ReportDefinition[]) => (
+    <ReportHubSection title={heading} subtitle={subtitle}>
+      {defs.map(def => {
+        const copy = reportCatalogCopy(def);
+        return (
+          <ReportTeaserCard
+            key={def.slug}
+            title={copy.title}
+            decision={copy.decision}
+            family={def.family}
+            metricLabel={copy.primaryMetric}
+            metricValue={teaserMetric(def, perf.data, publish.data, phase2, phase3)}
+            href={reportDetailHash(dealerId, def.family, def.slug, def.defaultRange)}
+            phaseAvailable={isReportShipped(def)}
+            preview={teaserPreview(def, perf.data, publish.data, phase2, phase3)}
+          />
+        );
+      })}
+    </ReportHubSection>
   );
 
   if (error && !perf.data && !publish.data) {
@@ -189,23 +188,25 @@ export default function ReportsHubPage({ dealerId, nav, activeTab }: Props) {
     >
       <PageSituation title={operatorCopy.reports.title} line={operatorCopy.reports.subtitle} />
 
-      <p className="text-xs text-ink-muted mb-4 -mt-2">
-        {operatorCopy.reports.dayToDayNote}{' '}
-        <button type="button" onClick={() => nav.goToInventory()} className="font-semibold text-orange-600 hover:underline">
-          Inventory
-        </button>
-        {' '}and{' '}
-        <button type="button" onClick={nav.goToPlatforms} className="font-semibold text-orange-600 hover:underline">
-          Platforms
-        </button>
-        . {operatorCopy.reports.assistsDisclaimer}
-      </p>
+      <div className="mb-6 space-y-4">
+        <InlineCallout tone="neutral" icon="ℹ">
+          {operatorCopy.reports.dayToDayNote}{' '}
+          <button type="button" onClick={() => nav.goToInventory()} className="font-semibold text-orange-600 hover:underline">
+            Inventory
+          </button>
+          {' '}and{' '}
+          <button type="button" onClick={() => nav.goToPlatforms()} className="font-semibold text-orange-600 hover:underline">
+            Platforms
+          </button>
+          . {operatorCopy.reports.assistsDisclaimer}
+        </InlineCallout>
+
+        {perf.data && hasPerf && (
+          <p className="text-xs text-ink-muted">{formatPerformanceUpdated(perf.data.computedAt!)}</p>
+        )}
+      </div>
 
       {refreshError && <p className="text-xs text-status-error-text mb-3">{refreshError}</p>}
-
-      {perf.data && hasPerf && (
-        <p className="text-xs text-ink-muted mb-4">{formatPerformanceUpdated(perf.data.computedAt!)}</p>
-      )}
 
       {!hasPerf && perf.data && !loading && (
         <EmptyState
@@ -226,8 +227,8 @@ export default function ReportsHubPage({ dealerId, nav, activeTab }: Props) {
 
       {(loading && !perf.data) || perf.data || publish.data ? (
         <>
-          {renderSection(operatorCopy.reports.hubActionHeading, ACTION_REPORTS)}
-          {renderSection(operatorCopy.reports.hubManagementHeading, MANAGEMENT_REPORTS)}
+          {renderSection(operatorCopy.reports.hubActionHeading, operatorCopy.reports.hubActionSubtitle, ACTION_REPORTS)}
+          {renderSection(operatorCopy.reports.hubManagementHeading, operatorCopy.reports.hubManagementSubtitle, MANAGEMENT_REPORTS)}
         </>
       ) : null}
     </OperatorPage>

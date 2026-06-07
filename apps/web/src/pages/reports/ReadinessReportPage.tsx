@@ -5,14 +5,16 @@ import { ControlBlock } from '@/components/layout';
 import { FilterChips } from '@/components/generic';
 import { EmptyState } from '@/components/ui';
 import { ReadinessAssetList } from '@/components/reports/ReadinessAssetList.tsx';
+import { ReportContentSection } from '@/components/reports/ReportContentSection.tsx';
 import { ReportPageShell } from '@/components/reports/ReportPageShell.tsx';
 import { ReportTimeRangeBar } from '@/components/reports/ReportTimeRangeBar.tsx';
+import { ReportToolbar } from '@/components/reports/ReportToolbar.tsx';
 import { reportCatalogCopy } from '@/lib/reportCopy.ts';
 import { findReport } from '@/lib/reportsCatalog.ts';
+import type { ReportMetric } from '@/lib/reportMetrics.ts';
 import {
   filterReadinessRows,
   readinessCounts,
-  topIssueSummary,
   type ReadinessFilter,
 } from '@/lib/reportPresentation.ts';
 import { operatorCopy } from '@/lib/copy/operator.ts';
@@ -39,9 +41,13 @@ export default function ReadinessReportPage({ dealerId, nav, activeTab }: Props)
     [details, filter, search],
   );
 
-  const situation = counts
-    ? `${copy.decision} · ${counts.blocked} blocked · ${counts.warning} warning · top: ${topIssueSummary(details)}`
-    : copy.decision;
+  const metrics: ReportMetric[] | undefined = counts
+    ? [
+        { label: 'Blocked', value: counts.blocked, tone: 'danger' },
+        { label: 'Warning', value: counts.warning, tone: 'warning' },
+        { label: 'Ready', value: counts.ready, tone: 'success' },
+      ]
+    : undefined;
 
   return (
     <ReportPageShell
@@ -49,39 +55,50 @@ export default function ReadinessReportPage({ dealerId, nav, activeTab }: Props)
       activeTab={activeTab}
       nav={nav}
       title={copy.title}
-      line={situation}
+      decision={copy.decision}
+      metrics={metrics}
+      metricsLoading={publish.loading}
       onRefresh={reload}
       refreshing={publish.loading}
       lastRefresh={publish.lastRefresh ?? undefined}
-      toolbar={<ReportTimeRangeBar value="now" snapshotOnly onChange={() => {}} />}
+      toolbar={
+        <ReportToolbar>
+          <ReportTimeRangeBar value="now" snapshotOnly onChange={() => {}} />
+        </ReportToolbar>
+      }
     >
-      <ControlBlock
-        search={search}
-        onSearchChange={setSearch}
-        searchPlaceholder={operatorCopy.reports.searchReadiness}
-        onRefresh={reload}
-        refreshing={publish.loading}
-        filters={
-          <FilterChips
-            chips={READINESS_FILTERS}
-            activeKey={filter}
-            onSelect={key => setFilter(key as ReadinessFilter)}
-          />
-        }
-      />
+      <ReportContentSection
+        title={operatorCopy.reports.assetsSection}
+        subtitle={operatorCopy.reports.assetsSectionSubtitle}
+      >
+        <ControlBlock
+          search={search}
+          onSearchChange={setSearch}
+          searchPlaceholder={operatorCopy.reports.searchReadiness}
+          onRefresh={reload}
+          refreshing={publish.loading}
+          filters={
+            <FilterChips
+              chips={READINESS_FILTERS}
+              activeKey={filter}
+              onSelect={key => setFilter(key as ReadinessFilter)}
+            />
+          }
+        />
 
-      <ReadinessAssetList
-        rows={visible}
-        nav={nav}
-        loading={publish.loading && !publish.data}
-        emptyState={
-          <EmptyState
-            icon="✓"
-            title="No assets match"
-            subtitle="Try clearing filters or check Inventory for the full catalog."
-          />
-        }
-      />
+        <ReadinessAssetList
+          rows={visible}
+          nav={nav}
+          loading={publish.loading && !publish.data}
+          emptyState={
+            <EmptyState
+              icon="✓"
+              title="No assets match"
+              subtitle="Try clearing filters or check Inventory for the full catalog."
+            />
+          }
+        />
+      </ReportContentSection>
     </ReportPageShell>
   );
 }

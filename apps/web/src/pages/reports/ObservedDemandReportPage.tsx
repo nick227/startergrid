@@ -6,11 +6,15 @@ import { EmptyState } from '@/components/ui';
 import { ErrorState } from '@/components/operator';
 import { EMPTY_STATE_COPY } from '@/lib/statusRegistry.ts';
 import { ReportObservedDemandList } from '@/components/reports/ReportObservedDemandList.tsx';
+import { ReportContentSection } from '@/components/reports/ReportContentSection.tsx';
+import { ReportNotice } from '@/components/reports/ReportNotice.tsx';
 import { ReportPageShell } from '@/components/reports/ReportPageShell.tsx';
 import { ReportTimeRangeBar } from '@/components/reports/ReportTimeRangeBar.tsx';
+import { ReportToolbar } from '@/components/reports/ReportToolbar.tsx';
 import { reportCatalogCopy } from '@/lib/reportCopy.ts';
 import { apiReportRange, findReport, type ReportRangePreset } from '@/lib/reportsCatalog.ts';
 import { reportDetailHash } from '@/lib/reportRoutes.ts';
+import type { ReportMetric } from '@/lib/reportMetrics.ts';
 import {
   observedDemandMatchesSearch,
   observedDemandRowsSorted,
@@ -32,9 +36,16 @@ export default function ObservedDemandReportPage({ dealerId, nav, activeTab, rep
   }, [query.data?.assets, search]);
 
   const summary = query.data?.summary;
-  const situation = summary
-    ? `${copy.decision} · ${operatorCopy.reports.demandSummaryLine(summary.assetsWithObservedDemand, summary.highAgeZeroDemandCount)}`
-    : copy.decision;
+  const metrics: ReportMetric[] | undefined = summary
+    ? [
+        { label: 'With demand', value: summary.assetsWithObservedDemand, tone: 'info' },
+        {
+          label: 'High-age, no demand',
+          value: summary.highAgeZeroDemandCount,
+          tone: summary.highAgeZeroDemandCount > 0 ? 'warning' : 'default',
+        },
+      ]
+    : undefined;
 
   const setRange = (next: ReportRangePreset) => {
     window.location.hash = reportDetailHash(dealerId, def.family, def.slug, next);
@@ -42,7 +53,7 @@ export default function ObservedDemandReportPage({ dealerId, nav, activeTab, rep
 
   if (query.error && !query.data) {
     return (
-      <ReportPageShell dealerId={dealerId} activeTab={activeTab} nav={nav} title={copy.title} line={copy.decision}>
+      <ReportPageShell dealerId={dealerId} activeTab={activeTab} nav={nav} title={copy.title} decision={copy.decision}>
         <ErrorState message={query.error} onRetry={query.reload} />
       </ReportPageShell>
     );
@@ -54,34 +65,44 @@ export default function ObservedDemandReportPage({ dealerId, nav, activeTab, rep
       activeTab={activeTab}
       nav={nav}
       title={copy.title}
-      line={situation}
+      decision={copy.decision}
+      metrics={metrics}
+      metricsLoading={query.loading}
+      notice={<ReportNotice>{operatorCopy.reports.observedDemandDisclaimer}</ReportNotice>}
       onRefresh={query.reload}
       refreshing={query.loading}
       lastRefresh={query.lastRefresh ?? undefined}
-      toolbar={<ReportTimeRangeBar value={range} onChange={setRange} />}
+      toolbar={
+        <ReportToolbar>
+          <ReportTimeRangeBar value={range} onChange={setRange} />
+        </ReportToolbar>
+      }
     >
-      <p className="text-xs text-ink-faint mb-3 -mt-2">{operatorCopy.reports.observedDemandDisclaimer}</p>
+      <ReportContentSection
+        title={operatorCopy.reports.assetsSection}
+        subtitle={operatorCopy.reports.assetsSectionSubtitle}
+      >
+        <ControlBlock
+          search={search}
+          onSearchChange={setSearch}
+          searchPlaceholder={operatorCopy.reports.searchAssets}
+          onRefresh={query.reload}
+          refreshing={query.loading}
+        />
 
-      <ControlBlock
-        search={search}
-        onSearchChange={setSearch}
-        searchPlaceholder={operatorCopy.reports.searchAssets}
-        onRefresh={query.reload}
-        refreshing={query.loading}
-      />
-
-      <ReportObservedDemandList
-        rows={rows}
-        nav={nav}
-        loading={query.loading && !query.data}
-        emptyState={
-          <EmptyState
-            icon="📬"
-            title={EMPTY_STATE_COPY.noObservedDemand.title}
-            subtitle={EMPTY_STATE_COPY.noObservedDemand.subtitle}
-          />
-        }
-      />
+        <ReportObservedDemandList
+          rows={rows}
+          nav={nav}
+          loading={query.loading && !query.data}
+          emptyState={
+            <EmptyState
+              icon="📬"
+              title={EMPTY_STATE_COPY.noObservedDemand.title}
+              subtitle={EMPTY_STATE_COPY.noObservedDemand.subtitle}
+            />
+          }
+        />
+      </ReportContentSection>
     </ReportPageShell>
   );
 }

@@ -8,14 +8,16 @@ import { FilterChips } from '@/components/generic';
 import { EmptyState } from '@/components/ui';
 import { EMPTY_STATE_COPY } from '@/lib/statusRegistry.ts';
 import { ReportAssetList } from '@/components/reports/ReportAssetList.tsx';
+import { ReportContentSection } from '@/components/reports/ReportContentSection.tsx';
 import { ReportPageShell } from '@/components/reports/ReportPageShell.tsx';
 import { ReportTimeRangeBar } from '@/components/reports/ReportTimeRangeBar.tsx';
+import { ReportToolbar } from '@/components/reports/ReportToolbar.tsx';
 import { reportCatalogCopy } from '@/lib/reportCopy.ts';
 import { findReport } from '@/lib/reportsCatalog.ts';
+import type { ReportMetric } from '@/lib/reportMetrics.ts';
 import {
   reportAssetMatchesSearch,
   reportAssetMatchesSignal,
-  reportSituationLine,
   type ReportSignalFilter,
 } from '@/lib/reportRowPresentation.ts';
 import type { PlatformPerformanceItem } from '@/lib/types.ts';
@@ -32,8 +34,7 @@ const SIGNAL_FILTERS: Array<{ key: ReportSignalFilter; label: string }> = [
 ];
 
 export default function MovementReportPage({ dealerId, nav, activeTab }: Props) {
-  const def = findReport('movement')!;
-  const copy = reportCatalogCopy(def);
+  const copy = reportCatalogCopy(findReport('movement')!);
   const { perf, reload } = useReportsData(dealerId);
   const [refreshing, setRefreshing] = useState(false);
   const [search, setSearch] = useState('');
@@ -63,9 +64,15 @@ export default function MovementReportPage({ dealerId, nav, activeTab }: Props) 
     [perf.data?.vehicles, signalFilter, search],
   );
 
-  const situation = perf.data?.summary
-    ? `${copy.decision} · ${reportSituationLine(perf.data.summary)} · ${movementActionCount(perf.data.vehicles)} need action`
-    : copy.decision;
+  const summary = perf.data?.summary;
+  const metrics: ReportMetric[] | undefined = summary
+    ? [
+        { label: 'Active', value: summary.activeCount },
+        { label: 'Fast', value: summary.fastCount, tone: 'success' },
+        { label: 'Stale', value: summary.staleCount, tone: 'danger' },
+        { label: 'Need action', value: movementActionCount(perf.data!.vehicles), tone: 'warning' },
+      ]
+    : undefined;
 
   return (
     <ReportPageShell
@@ -73,40 +80,51 @@ export default function MovementReportPage({ dealerId, nav, activeTab }: Props) 
       activeTab={activeTab}
       nav={nav}
       title={copy.title}
-      line={situation}
+      decision={copy.decision}
+      metrics={metrics}
+      metricsLoading={perf.loading}
       onRefresh={() => void handleRefresh()}
       refreshing={refreshing || perf.loading}
       lastRefresh={perf.lastRefresh ?? undefined}
-      toolbar={<ReportTimeRangeBar value="now" snapshotOnly onChange={() => {}} />}
+      toolbar={
+        <ReportToolbar>
+          <ReportTimeRangeBar value="now" snapshotOnly onChange={() => {}} />
+        </ReportToolbar>
+      }
     >
-      <ControlBlock
-        search={search}
-        onSearchChange={setSearch}
-        searchPlaceholder={operatorCopy.reports.searchAssets}
-        onRefresh={() => void handleRefresh()}
-        refreshing={refreshing || perf.loading}
-        filters={
-          <FilterChips
-            chips={SIGNAL_FILTERS}
-            activeKey={signalFilter}
-            onSelect={key => setSignalFilter(key as ReportSignalFilter)}
-          />
-        }
-      />
+      <ReportContentSection
+        title={operatorCopy.reports.assetsSection}
+        subtitle={operatorCopy.reports.assetsSectionSubtitle}
+      >
+        <ControlBlock
+          search={search}
+          onSearchChange={setSearch}
+          searchPlaceholder={operatorCopy.reports.searchAssets}
+          onRefresh={() => void handleRefresh()}
+          refreshing={refreshing || perf.loading}
+          filters={
+            <FilterChips
+              chips={SIGNAL_FILTERS}
+              activeKey={signalFilter}
+              onSelect={key => setSignalFilter(key as ReportSignalFilter)}
+            />
+          }
+        />
 
-      <ReportAssetList
-        rows={visible}
-        platformPerfBySlug={platformPerfBySlug}
-        nav={nav}
-        loading={perf.loading && !perf.data}
-        emptyState={
-          <EmptyState
-            icon="📦"
-            title={EMPTY_STATE_COPY.noPerformanceVehicles.title}
-            subtitle={EMPTY_STATE_COPY.noPerformanceVehicles.subtitle}
-          />
-        }
-      />
+        <ReportAssetList
+          rows={visible}
+          platformPerfBySlug={platformPerfBySlug}
+          nav={nav}
+          loading={perf.loading && !perf.data}
+          emptyState={
+            <EmptyState
+              icon="📦"
+              title={EMPTY_STATE_COPY.noPerformanceVehicles.title}
+              subtitle={EMPTY_STATE_COPY.noPerformanceVehicles.subtitle}
+            />
+          }
+        />
+      </ReportContentSection>
     </ReportPageShell>
   );
 }

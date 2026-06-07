@@ -13,32 +13,42 @@ type Props = {
 export function ReportTimeRangeBar({ value, snapshotOnly, onChange }: Props) {
   if (snapshotOnly) {
     return (
-      <p className="text-xs text-ink-muted mb-4">
-        {reportRangeLabel('now')} · {operatorCopy.reports.snapshotOnlyHint}
-      </p>
+      <div className="flex flex-wrap items-center gap-2">
+        <span className="text-xs font-semibold text-ink-muted">Time range</span>
+        <span className="inline-flex items-center px-3 py-1.5 rounded-md text-xs font-semibold bg-navy-950 text-white">
+          {reportRangeLabel('now')}
+        </span>
+        <span className="text-xs text-ink-faint">{operatorCopy.reports.snapshotOnlyHint}</span>
+      </div>
     );
   }
 
-  const presets = LIVE_PRESETS;
-
   return (
-    <div className="flex flex-wrap items-center gap-2 mb-4">
-      <span className="text-xs font-semibold text-ink-muted uppercase tracking-wide">Range</span>
-      {presets.map(preset => (
-        <button
-          key={preset}
-          type="button"
-          disabled={snapshotOnly}
-          onClick={() => onChange(preset)}
-          className={`px-2.5 py-1 rounded-full text-xs font-semibold border transition-colors ${
-            value === preset
-              ? 'bg-navy-950 text-white border-navy-950'
-              : 'bg-surface-card-operator text-ink-muted border-silver-200 hover:border-silver-300'
-          }`}
-        >
-          {reportRangeLabel(preset)}
-        </button>
-      ))}
+    <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+      <span className="text-xs font-semibold text-ink-muted">Time range</span>
+      <div
+        className="inline-flex flex-wrap gap-1 rounded-lg border border-silver-200 bg-surface-inset/50 p-1"
+        role="group"
+        aria-label="Report time range"
+      >
+        {LIVE_PRESETS.map(preset => {
+          const active = value === preset;
+          return (
+            <button
+              key={preset}
+              type="button"
+              onClick={() => onChange(preset)}
+              className={`px-3 py-1.5 rounded-md text-xs font-semibold transition-colors focus-ring ${
+                active
+                  ? 'bg-navy-950 text-white shadow-sm'
+                  : 'text-ink-muted hover:text-ink-heading hover:bg-surface-card'
+              }`}
+            >
+              {reportRangeLabel(preset)}
+            </button>
+          );
+        })}
+      </div>
     </div>
   );
 }

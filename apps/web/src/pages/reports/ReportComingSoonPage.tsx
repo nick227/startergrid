@@ -16,7 +16,7 @@ export default function ReportComingSoonPage({ dealerId, nav, activeTab, slug }:
       activeTab={activeTab}
       nav={nav}
       title={copy?.title ?? 'Report'}
-      line={copy?.decision ?? operatorCopy.reports.subtitle}
+      decision={copy?.decision ?? operatorCopy.reports.subtitle}
     >
       <p className="text-sm text-ink-muted py-8 text-center">{operatorCopy.reports.comingSoon}</p>
     </ReportPageShell>

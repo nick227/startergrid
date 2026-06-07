@@ -6,10 +6,14 @@ import { ControlBlock } from '@/components/layout';
 import { EmptyState } from '@/components/ui';
 import { EMPTY_STATE_COPY } from '@/lib/statusRegistry.ts';
 import { ReportEngagementList } from '@/components/reports/ReportEngagementList.tsx';
+import { ReportContentSection } from '@/components/reports/ReportContentSection.tsx';
+import { ReportNotice } from '@/components/reports/ReportNotice.tsx';
 import { ReportPageShell } from '@/components/reports/ReportPageShell.tsx';
 import { ReportTimeRangeBar } from '@/components/reports/ReportTimeRangeBar.tsx';
+import { ReportToolbar } from '@/components/reports/ReportToolbar.tsx';
 import { reportCatalogCopy } from '@/lib/reportCopy.ts';
 import { findReport } from '@/lib/reportsCatalog.ts';
+import type { ReportMetric } from '@/lib/reportMetrics.ts';
 import { engagementSortedPlatforms, topEngagementTotal } from '@/lib/reportPresentation.ts';
 import { reportPlatformMatchesSearch } from '@/lib/reportRowPresentation.ts';
 import { operatorCopy } from '@/lib/copy/operator.ts';
@@ -32,13 +36,18 @@ export default function EngagementReportPage({ dealerId, nav, activeTab }: Props
     }
   };
 
+  const platforms = perf.data?.platforms ?? [];
   const rows = useMemo(() => {
-    const sorted = engagementSortedPlatforms(perf.data?.platforms ?? []);
+    const sorted = engagementSortedPlatforms(platforms);
     return sorted.filter(p => reportPlatformMatchesSearch(p, search));
-  }, [perf.data?.platforms, search]);
+  }, [platforms, search]);
 
-  const top = topEngagementTotal(perf.data?.platforms ?? []);
-  const situation = `${copy.decision} · peak observed assists ${top}`;
+  const metrics: ReportMetric[] | undefined = perf.data
+    ? [
+        { label: 'Peak assists', value: topEngagementTotal(platforms) },
+        { label: 'Platforms', value: platforms.length },
+      ]
+    : undefined;
 
   return (
     <ReportPageShell
@@ -46,40 +55,44 @@ export default function EngagementReportPage({ dealerId, nav, activeTab }: Props
       activeTab={activeTab}
       nav={nav}
       title={copy.title}
-      line={situation}
+      decision={copy.decision}
+      metrics={metrics}
+      metricsLoading={perf.loading}
       onRefresh={() => void handleRefresh()}
       refreshing={refreshing || perf.loading}
       lastRefresh={perf.lastRefresh ?? undefined}
+      notice={<ReportNotice>{operatorCopy.reports.assistsDisclaimer}</ReportNotice>}
       toolbar={
-        <ReportTimeRangeBar
-          value="30d"
-          snapshotOnly
-          onChange={() => {}}
-        />
+        <ReportToolbar>
+          <ReportTimeRangeBar value="30d" snapshotOnly onChange={() => {}} />
+        </ReportToolbar>
       }
     >
-      <p className="text-xs text-ink-faint mb-3 -mt-2">{operatorCopy.reports.assistsDisclaimer}</p>
+      <ReportContentSection
+        title={operatorCopy.reports.platformsSection}
+        subtitle={operatorCopy.reports.platformsSectionSubtitle}
+      >
+        <ControlBlock
+          search={search}
+          onSearchChange={setSearch}
+          searchPlaceholder={operatorCopy.reports.searchPlatforms}
+          onRefresh={() => void handleRefresh()}
+          refreshing={refreshing || perf.loading}
+        />
 
-      <ControlBlock
-        search={search}
-        onSearchChange={setSearch}
-        searchPlaceholder={operatorCopy.reports.searchPlatforms}
-        onRefresh={() => void handleRefresh()}
-        refreshing={refreshing || perf.loading}
-      />
-
-      <ReportEngagementList
-        rows={rows}
-        nav={nav}
-        loading={perf.loading && !perf.data}
-        emptyState={
-          <EmptyState
-            icon="📊"
-            title={EMPTY_STATE_COPY.noPerformancePlatforms.title}
-            subtitle={EMPTY_STATE_COPY.noPerformancePlatforms.subtitle}
-          />
-        }
-      />
+        <ReportEngagementList
+          rows={rows}
+          nav={nav}
+          loading={perf.loading && !perf.data}
+          emptyState={
+            <EmptyState
+              icon="📊"
+              title={EMPTY_STATE_COPY.noPerformancePlatforms.title}
+              subtitle={EMPTY_STATE_COPY.noPerformancePlatforms.subtitle}
+            />
+          }
+        />
+      </ReportContentSection>
     </ReportPageShell>
   );
 }
