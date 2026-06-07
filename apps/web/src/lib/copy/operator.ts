@@ -163,6 +163,8 @@ export const operatorCopy = {
     assetColumn: 'Asset',
     daysSignal: 'Days / Signal',
     noChannelActivity: 'No channel activity recorded for this platform.',
+    searchAssets: 'Search ref, make, model…',
+    searchPlatforms: 'Search platform slug…',
   },
   emptyStates: {
     noInventory: {

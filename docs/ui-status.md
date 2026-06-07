@@ -82,7 +82,7 @@ All core pages: **PageSituation** + **ControlBlock** (search, filters, sort, ref
 | Queue | `QueueListPanel` | `QueueDetailDrawer` |
 | History | `HistoryListPanel` | `HistoryEventDrawer` |
 | Inventory | `InventoryAssetList` | `VehicleDetailPanel` |
-| Reports | Table layout (row-card polish pending) | — |
+| Reports | `ReportAssetList` / `ReportPlatformList` | `RowDetailDrawer` (movement / platform metrics) |
 
 Search, filter, and sort logic unchanged from table era; only presentation is row-card.
 
@@ -113,14 +113,13 @@ Search, filter, and sort logic unchanged from table era; only presentation is ro
 | Token / emerald purge | **Shipped** — navy + orange semantic tokens; slate/emerald removed from operator UI |
 | Auth UI + route guards | **Shipped** — login page, session cookie, 401 → sign-in, scoped org picker |
 | Org-scoped category loading | **Shipped** — `CategoryProvider` + schema-driven vertical copy per org |
-| Reports row-card polish | Planned |
+| Reports row-card polish | **Shipped** — OpsRowCard lists, situation/control block, signal + section filters |
 
 ---
 
 ## Next priorities
 
-1. **Reports row-card / reporting polish**
-2. **Asset-scoped Queue/History filters** — row actions pass `assetId`/ref into queue/history search
+1. **Asset-scoped Queue/History filters** — row actions pass `assetId`/ref into queue/history search
 
 ---
 
