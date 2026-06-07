@@ -10,6 +10,7 @@ import {
 import { MovementBenchmarkCell } from './MovementBenchmark.tsx';
 import { Badge } from '../ui/Badge.tsx';
 import type { BadgeColor } from '../ui/Badge.tsx';
+import { inventoryLabels } from '../../lib/copy/index.ts';
 
 // ── Readiness badge — dot style (table rows) or pill style (import preview) ──
 
@@ -69,17 +70,19 @@ function formatMileage(mi: number) {
   return mi.toLocaleString() + ' mi';
 }
 
-// ── Vehicle table column definitions ─────────────────────────────────────────
+// ── Asset table column definitions ─────────────────────────────────────────────
 
-export const VEHICLE_COLUMNS: Column<VehicleListItem>[] = [
+function baseAssetColumns(): Column<VehicleListItem>[] {
+  const labels = inventoryLabels();
+  return [
   {
     key: 'stockNumber',
-    label: 'Stock #',
+    label: labels.refColumn,
     render: v => <span className="text-xs font-mono text-slate-700">{v.stockNumber}</span>,
   },
   {
     key: 'vehicle',
-    label: 'Vehicle',
+    label: labels.titleColumn,
     render: v => (
       <div>
         <div className="text-xs text-slate-800">
@@ -125,6 +128,12 @@ export const VEHICLE_COLUMNS: Column<VehicleListItem>[] = [
     render: v => <ReadinessBadge readiness={v.readiness} />,
   },
 ];
+}
+
+/** @deprecated Use buildVehicleColumns — labels come from active vertical adapter. */
+export function getAssetColumns(): Column<VehicleListItem>[] {
+  return baseAssetColumns();
+}
 
 // ── Vehicle columns with optional performance data ────────────────────────────
 export function LifecycleStateBadge({ state }: { state: VehicleListItem['lifecycleState'] }) {
@@ -142,7 +151,7 @@ export function buildVehicleColumns(
   perfMap: Map<string, VehiclePerformanceItem>,
   opts?: { showLifecycle?: boolean },
 ): Column<VehicleListItem>[] {
-  const cols: Column<VehicleListItem>[] = [...VEHICLE_COLUMNS];
+  const cols: Column<VehicleListItem>[] = [...baseAssetColumns()];
   if (opts?.showLifecycle) {
     cols.push({
       key: 'lifecycle',
@@ -191,8 +200,8 @@ export const BULK_EDIT_FIELD_DEFS: FieldDef[] = [
 
 export const CANONICAL_OPTIONS: { value: string; label: string }[] = [
   { value: '',              label: '(skip)'                        },
-  { value: 'stockNumber',   label: 'Stock Number'                  },
-  { value: 'vin',           label: 'VIN'                           },
+  { value: 'stockNumber',   label: inventoryLabels().canonicalRef  },
+  { value: 'vin',           label: inventoryLabels().canonicalId   },
   { value: 'year',          label: 'Year'                          },
   { value: 'make',          label: 'Make'                          },
   { value: 'model',         label: 'Model'                         },
@@ -232,7 +241,7 @@ export type FilterChipDef = {
 // Extended filters that supplement the SummaryStrip (issue-specific)
 export const CLEANUP_FILTER_DEFS: FilterChipDef[] = [
   { key: 'MISSING_PHOTOS',   label: 'Missing photos',    color: 'amber' },
-  { key: 'INVALID_VIN',      label: 'Invalid VIN',       color: 'red'   },
+  { key: 'INVALID_VIN',      label: inventoryLabels().invalidIdentifierLabel, color: 'red'   },
   { key: 'SUSPICIOUS_PRICE', label: 'Suspicious price',  color: 'amber' },
 ];
 
@@ -251,8 +260,8 @@ export function applyCleanupFilter(vehicle: VehicleListItem, filter: CleanupFilt
 
 // Required canonical field display labels (used in mapping UX)
 export const REQUIRED_FIELD_LABELS: Record<string, string> = {
-  stockNumber: 'Stock Number',
-  vin:         'VIN',
+  stockNumber: inventoryLabels().canonicalRef,
+  vin:         inventoryLabels().canonicalId,
   year:        'Year',
   make:        'Make',
   model:       'Model',

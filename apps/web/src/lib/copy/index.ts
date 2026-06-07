@@ -18,3 +18,7 @@ export function taskActionLabel(triggerKind: string): string {
   if (k === 'INITIAL_PUBLISH' || k === 'NEW') return operatorCopy.taskActions.publish;
   return operatorCopy.taskActions.update;
 }
+
+export function inventoryLabels() {
+  return activeVertical.inventory;
+}

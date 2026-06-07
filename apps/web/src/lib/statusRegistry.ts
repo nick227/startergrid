@@ -4,6 +4,7 @@ import type {
   PublishStateSummary,
 } from './types.ts';
 import { statusDot, statusPill, statusRing } from '../../../../packages/design-tokens/colors.ts';
+import { operatorCopy } from './copy/operator.ts';
 
 const P = statusPill;
 const D = statusDot;
@@ -185,12 +186,13 @@ export const NEXT_ACTION_REGISTRY: Record<NextRecommendedAction, NextActionMeta>
     hint: 'Review pending platforms on the Accounts tab.',
   },
   fix_blocked_vehicles: {
-    title: 'Blocked vehicles need attention',
+    title: 'Blocked assets need attention',
     icon: '✕',
     tone: 'danger',
     urgency: 'high',
-    description: (_s, v) => `${v.blocked} vehicle${v.blocked !== 1 ? 's' : ''} blocked by validation errors.`,
-    hint: 'Clean up inventory issues, then return here to prepare.',
+    description: (_s, v) =>
+      `${v.blocked} ${v.blocked === 1 ? operatorCopy.asset.singular : operatorCopy.asset.plural} blocked by validation errors.`,
+    hint: 'Clean up inventory issues, then return to Queue to publish.',
     inventoryLink: true,
   },
   resolve_partner_requirement: {
@@ -263,72 +265,7 @@ export function ingressRunStatusVisual(status: string): StatusVisual {
 
 // ── Empty-state copy ───────────────────────────────────────────────────────────
 
-export const EMPTY_STATE_COPY = {
-  noInventory: {
-    title: 'No inventory yet',
-    subtitle: 'Import a CSV to add vehicles. Once they pass checks, platforms can receive updates.',
-  },
-  noInventoryFilter: {
-    title: 'No vehicles match this filter',
-    subtitle: 'Clear filters or import more stock.',
-  },
-  noIntakeSources: {
-    title: 'No intake sources yet',
-    subtitle: 'Import a CSV above, or add an API feed to pull inventory automatically.',
-  },
-  noIntakeRuns: {
-    title: 'No intake runs yet',
-    subtitle: 'Import a CSV to bring in your first batch of vehicles.',
-  },
-  noImportHistory: {
-    title: 'No import history yet',
-    subtitle: 'Your recent CSV imports will appear here.',
-  },
-  noPerformanceData: {
-    title: 'No performance data yet',
-    subtitle: 'Refresh movement benchmarks on Sync when you want days-online comparisons vs similar stock.',
-  },
-  noPerformanceVehicles: {
-    title: 'No vehicle movement data',
-    subtitle: 'Add active inventory and refresh performance on the Sync tab.',
-  },
-  noPerformancePlatforms: {
-    title: 'No platform impact yet',
-    subtitle: 'Platforms show observed assists after inventory has been submitted and leads come in.',
-  },
-  postImportBenchmarksPending: {
-    title: 'Movement benchmarks updating',
-    subtitle: 'Auto-sync is running after import. Days / Signal will fill in when reconcile finishes.',
-  },
-  movementLowDataFleet: {
-    title: 'Limited movement benchmarks',
-    subtitle: 'Most vehicles need more sold comparables. Fast / slow signals appear as history builds.',
-  },
-  marketplacePreviewUnavailable: {
-    title: 'Not on marketplace index',
-    subtitle: 'Set a price on active inventory before the consumer listing can appear.',
-  },
-  marketplacePreviewEmpty: {
-    title: 'No consumer listing returned',
-    subtitle: 'Marketplace index has no card for this vehicle yet. Sync after the listing is ready.',
-  },
-  noAccountBlockers: {
-    title: 'No account blockers',
-    subtitle: 'Every platform account is clear — Sync can reach all destinations.',
-  },
-  noAccounts: {
-    title: 'No platform accounts yet',
-    subtitle: 'Accounts appear after you prepare inventory for publishing.',
-  },
-  noAccountMatches: {
-    title: 'No matches',
-    subtitle: 'Try another filter or search term.',
-  },
-  noSyncActivity: {
-    title: 'No sync activity yet',
-    subtitle: 'Once inventory is ready, updates to platforms will show up here.',
-  },
-} as const;
+export const EMPTY_STATE_COPY = operatorCopy.emptyStates;
 
 export const TONE_SURFACE: Record<StatusTone, { bg: string; border: string; accent: string }> = {
   neutral: { bg: 'bg-surface-card', border: 'border-silver-200', accent: 'text-ink-body' },

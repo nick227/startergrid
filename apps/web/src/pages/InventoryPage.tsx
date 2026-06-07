@@ -44,6 +44,7 @@ import {
   applyCleanupFilter,
 } from '@/components/inventory';
 import type { CleanupFilter } from '@/components/inventory';
+import { operatorCopy, inventoryLabels } from '@/lib/copy/index.ts';
 
 type Props = OperatorPageBaseProps;
 
@@ -215,17 +216,17 @@ export default function InventoryPage({ dealerId, nav, activeTab }: Props) {
     >
       <div className="space-y-5">
         <PageHeader
-          title="Inventory"
+          title={operatorCopy.inventory.title}
           infoDocId="inventory/inventory-readiness"
-          subtitle="Import stock, fix blockers, then send updates to platforms"
+          subtitle={operatorCopy.inventory.subtitle}
           action={
             isActiveScope && summary && summary.ready > 0 ? (
               <button
                 type="button"
-                onClick={nav.goToSync}
+                onClick={nav.goToQueue}
                 className="btn-primary-operator !px-5 !py-2.5 !text-sm shadow-elevation-1"
               >
-                {summary.ready} ready — Sync →
+                {operatorCopy.inventory.readyCta(summary.ready)}
               </button>
             ) : undefined
           }
@@ -267,14 +268,14 @@ export default function InventoryPage({ dealerId, nav, activeTab }: Props) {
                     onClick={() => setShowImport(true)}
                     className="px-6 py-3 bg-slate-900 text-white text-sm font-semibold rounded-xl"
                   >
-                    Import inventory
+                    {operatorCopy.inventory.importInventory}
                   </button>
                   <button
                     type="button"
-                    onClick={nav.goToSync}
+                    onClick={nav.goToQueue}
                     className="px-6 py-3 bg-white border border-slate-200 text-slate-700 text-sm font-semibold rounded-xl"
                   >
-                    Skip to Sync
+                    {operatorCopy.inventory.skipToQueue}
                   </button>
                 </div>
               }
@@ -285,15 +286,15 @@ export default function InventoryPage({ dealerId, nav, activeTab }: Props) {
         {!isEmpty && summary && summary.blocked > 0 && (
           <InlineCallout
             tone="warning"
-            title="Cleanup recommended"
+            title={operatorCopy.inventory.cleanupRecommended}
             icon="!"
             action={
               <button type="button" onClick={() => setFilter('BLOCKED')} className="text-xs font-bold">
-                Show blocked
+                {operatorCopy.inventory.showBlocked}
               </button>
             }
           >
-            {summary.blocked} vehicle{summary.blocked !== 1 ? 's' : ''} blocked — fix before platforms can update.
+            {operatorCopy.inventory.blockedCallout(summary.blocked)}
           </InlineCallout>
         )}
 
@@ -303,13 +304,13 @@ export default function InventoryPage({ dealerId, nav, activeTab }: Props) {
             <strong>{importResult.updated}</strong> updated
             {importResult.skipped > 0 && <>, <strong>{importResult.skipped}</strong> skipped</>}
             {importResult.errors > 0 && <>, <strong className="text-red-700">{importResult.errors} errors</strong></>}
-            . Platforms will update automatically.
+            . {operatorCopy.inventory.importCompletePlatforms}
             {benchmarksUpdating ? (
               <> {EMPTY_STATE_COPY.postImportBenchmarksPending.title} — {EMPTY_STATE_COPY.postImportBenchmarksPending.subtitle}</>
             ) : hasPerformanceData(perf.data?.computedAt) && benchmarkCount > 0 ? (
-              <> Movement benchmarks for <strong>{benchmarkCount}</strong> vehicle{benchmarkCount !== 1 ? 's' : ''} — expand a row for detail.</>
+              <> {operatorCopy.inventory.movementBenchmarks(benchmarkCount)}</>
             ) : (
-              <> When auto-sync finishes, expand a vehicle for movement vs similar stock.</>
+              <> {operatorCopy.inventory.movementWhenSync}</>
             )}
           </Banner>
         )}
@@ -327,8 +328,8 @@ export default function InventoryPage({ dealerId, nav, activeTab }: Props) {
         )}
 
         {!importResult && staleStocks.length > 0 && (
-          <InlineCallout tone="warning" title="Slower than similar stock" icon="!">
-            Review {staleStocks.join(', ')} in the Days / Signal column — price or photos may need attention.
+          <InlineCallout tone="warning" title={operatorCopy.inventory.slowerThanPeers} icon="!">
+            {operatorCopy.inventory.staleReview(staleStocks.join(', '))}
           </InlineCallout>
         )}
 
@@ -342,7 +343,7 @@ export default function InventoryPage({ dealerId, nav, activeTab }: Props) {
           <>
             <SummaryStrip items={summaryItems} loading={loading && !data} />
 
-            <SectionCard title="Filters" subtitle="Lifecycle, readiness, movement signals, and issue types">
+            <SectionCard title="Filters" subtitle={operatorCopy.inventory.filtersSubtitle}>
               <LifecycleFilterBar
                 active={lifecycleScope}
                 counts={lifecycleCounts}
@@ -375,7 +376,7 @@ export default function InventoryPage({ dealerId, nav, activeTab }: Props) {
               )}
             </SectionCard>
 
-            <SectionCard title="Import history" subtitle="Recent batch imports for this dealer" noPadding>
+            <SectionCard title="Import history" subtitle={operatorCopy.inventory.importHistorySubtitle} noPadding>
               <ImportBatchHistory
                 key={importResult?.batchId ?? 'none'}
                 dealerId={dealerId}
@@ -388,7 +389,7 @@ export default function InventoryPage({ dealerId, nav, activeTab }: Props) {
               <SearchField
                 value={search}
                 onChange={setSearch}
-                placeholder="Search stock #, VIN, make, model…"
+                placeholder={inventoryLabels().searchPlaceholder}
                 className="flex-1 max-w-md"
               />
               <InventorySortBar
@@ -447,19 +448,19 @@ export default function InventoryPage({ dealerId, nav, activeTab }: Props) {
             {isActiveScope && summary && summary.ready > 0 && (
               <InlineCallout
                 tone="success"
-                title="Ready to sync"
+                title={operatorCopy.inventory.readyToSync}
                 icon="✓"
                 action={
                   <button
                     type="button"
-                    onClick={nav.goToSync}
+                    onClick={nav.goToQueue}
                     className="btn-primary-operator"
                   >
-                    Go to Sync
+                    {operatorCopy.inventory.goToQueue}
                   </button>
                 }
               >
-                {summary.ready} vehicle{summary.ready !== 1 ? 's' : ''} passed validation and can feed platforms.
+                {operatorCopy.inventory.readyCallout(summary.ready)}
               </InlineCallout>
             )}
           </>

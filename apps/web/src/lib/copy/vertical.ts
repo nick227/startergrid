@@ -9,6 +9,9 @@ export type VerticalCopyAdapter = {
     refColumn: string;
     titleColumn: string;
     searchPlaceholder: string;
+    invalidIdentifierLabel: string;
+    canonicalRef: string;
+    canonicalId: string;
   };
 };
 
@@ -18,11 +21,14 @@ export const genericVertical: VerticalCopyAdapter = {
   inventory: {
     refColumn: operatorCopy.asset.refLabel,
     titleColumn: 'Asset',
-    searchPlaceholder: 'Search ref #, title, channel…',
+    searchPlaceholder: 'Search ref #, title…',
+    invalidIdentifierLabel: 'Invalid identifier',
+    canonicalRef: 'Ref number',
+    canonicalId: 'Identifier',
   },
 };
 
-/** Automotive v1 — use only where vertical-specific labels are intentional. */
+/** Automotive v1 — field labels when vertical-specific UI is enabled. */
 export const automotiveVertical: VerticalCopyAdapter = {
   id: 'automotive',
   taskActionOverrides: {
@@ -32,5 +38,8 @@ export const automotiveVertical: VerticalCopyAdapter = {
     refColumn: 'Stock #',
     titleColumn: 'Vehicle',
     searchPlaceholder: 'Search stock #, VIN, make, model…',
+    invalidIdentifierLabel: 'Invalid VIN',
+    canonicalRef: 'Stock number',
+    canonicalId: 'VIN',
   },
 };

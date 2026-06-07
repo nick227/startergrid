@@ -92,5 +92,5 @@ When production pilot needs it.
 **Sprint 1:** Layout primitives + **Platforms** page — **shipped** · Queue/History stubs — **shipped (stub)**
 
 **Sprint 2:** **Queue** + **History** + copy modules + platform drill-downs — **shipped** (queue actions read-only until approve API)  
-**Sprint 3:** Inventory row-card migration + Reports wrapper.  
-**Sprint 4:** Copy pass, token purge, auth if needed.
+**Sprint 3:** Inventory row-card migration + Reports wrapper — **partial** (generic copy on Inventory + Reports; table layout unchanged)  
+**Sprint 4:** Token purge, auth if needed, remaining legacy Sync/Accounts pages.

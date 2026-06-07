@@ -19,7 +19,7 @@ export { ImportStepUpload } from './ImportStepUpload.tsx';
 export { ImportStepMapping } from './ImportStepMapping.tsx';
 export { ImportStepPreview } from './ImportStepPreview.tsx';
 export {
-  VEHICLE_COLUMNS,
+  getAssetColumns,
   SUMMARY_STRIP_ITEMS,
   BULK_EDIT_FIELD_DEFS,
   CLEANUP_FILTER_DEFS,

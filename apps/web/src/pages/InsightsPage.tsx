@@ -2,9 +2,10 @@ import { useState } from 'react';
 import type { OperatorPageBaseProps } from '@/lib/operatorPage.ts';
 import { useAsyncQuery } from '@/hooks/useAsyncQuery.ts';
 import { fetchCachedPerformanceSnapshot, triggerPerformanceCompute } from '@/lib/api/sdk.ts';
-import { formatMovementBenchmarkLine, formatChannelMetricsDisplay, formatPlatformChannelHint, formatPlatformExposureLine } from '@/lib/movementBenchmark.ts';
+import { formatMovementBenchmarkLine, formatChannelMetricsDisplay, formatPlatformExposureLine } from '@/lib/movementBenchmark.ts';
 import { formatPerformanceUpdated } from '@/lib/performanceFreshness.ts';
 import { EMPTY_STATE_COPY } from '@/lib/statusRegistry.ts';
+import { operatorCopy } from '@/lib/copy/operator.ts';
 import { OperatorPage, SectionCard, PageHeader, ErrorState } from '@/components/operator';
 import { SummaryStrip } from '@/components/generic';
 import type { SummaryItem } from '@/components/generic';
@@ -44,10 +45,10 @@ export default function InsightsPage({ dealerId, nav, activeTab }: Props) {
 
   const hasData = data?.computedAt != null;
   const summaryItems: SummaryItem[] = data ? [
-    { key: 'active', label: 'Active vehicles', value: data.summary.activeCount, colorClass: 'text-ink-body' },
-    { key: 'fast', label: 'Fast movers', value: data.summary.fastCount, colorClass: 'text-status-success-text' },
-    { key: 'stale', label: 'Stale risks', value: data.summary.staleCount, colorClass: 'text-status-error-text' },
-    { key: 'low', label: 'Low data', value: data.summary.lowDataCount, colorClass: 'text-ink-muted' },
+    { key: 'active', label: operatorCopy.reports.activeAssets, value: data.summary.activeCount, colorClass: 'text-ink-body' },
+    { key: 'fast', label: operatorCopy.reports.fastMovers, value: data.summary.fastCount, colorClass: 'text-status-success-text' },
+    { key: 'stale', label: operatorCopy.reports.staleRisks, value: data.summary.staleCount, colorClass: 'text-status-error-text' },
+    { key: 'low', label: operatorCopy.reports.lowData, value: data.summary.lowDataCount, colorClass: 'text-ink-muted' },
   ] : [];
 
   return (
@@ -58,12 +59,11 @@ export default function InsightsPage({ dealerId, nav, activeTab }: Props) {
       onRefresh={reload}
       lastRefresh={lastRefresh ?? undefined}
       refreshing={loading}
-      sectionLabel="Reference"
     >
       <div className="max-w-6xl mx-auto space-y-6">
         <PageHeader
-          title="Insights"
-          subtitle="Summary reference for movement signals already shown in Inventory and Sync — not a separate workflow."
+          title={operatorCopy.reports.title}
+          subtitle={operatorCopy.reports.subtitle}
           action={
             <button
               type="button"
@@ -71,21 +71,21 @@ export default function InsightsPage({ dealerId, nav, activeTab }: Props) {
               disabled={refreshing}
               className="px-3 py-1.5 text-xs font-semibold border border-slate-200 rounded-lg hover:bg-slate-50 disabled:opacity-50"
             >
-              {refreshing ? 'Refreshing…' : 'Refresh benchmarks'}
+              {refreshing ? operatorCopy.reports.refreshing : operatorCopy.reports.refreshBenchmarks}
             </button>
           }
         />
 
         <p className="text-xs text-slate-500 -mt-2">
-          Day-to-day work lives in{' '}
+          {operatorCopy.reports.dayToDayNote}{' '}
           <button type="button" onClick={nav.goToInventory} className="font-semibold text-orange-600 hover:underline">
             Inventory
           </button>
           {' '}and{' '}
-          <button type="button" onClick={nav.goToSync} className="font-semibold text-orange-600 hover:underline">
-            Sync
+          <button type="button" onClick={nav.goToPlatforms} className="font-semibold text-orange-600 hover:underline">
+            Platforms
           </button>
-          . Observed assists are not sales attribution.
+          . {operatorCopy.reports.assistsDisclaimer}
         </p>
 
         {refreshError && <p className="text-xs text-red-600">{refreshError}</p>}
@@ -112,7 +112,7 @@ export default function InsightsPage({ dealerId, nav, activeTab }: Props) {
                       onClick={() => void handleRefreshBenchmarks()}
                       className="px-4 py-2 text-sm font-semibold bg-slate-900 text-white rounded-lg"
                     >
-                      Refresh benchmarks
+                      {operatorCopy.reports.refreshBenchmarks}
                     </button>
                   }
                 />
@@ -121,15 +121,15 @@ export default function InsightsPage({ dealerId, nav, activeTab }: Props) {
 
             {hasData && (
               <>
-                <SectionCard title="Vehicles" subtitle="Same Days / Signal view as Inventory">
+                <SectionCard title={operatorCopy.reports.assetsSection} subtitle={operatorCopy.reports.assetsSectionSubtitle}>
                   {data.vehicles.length > 0 ? (
                     <div className="overflow-x-auto">
                       <table className="w-full text-sm">
                         <thead>
                           <tr className="text-left text-xs uppercase tracking-wide text-slate-500 border-b border-slate-100">
-                            <th className="py-2 pr-4">Stock</th>
-                            <th className="py-2 pr-4">Vehicle</th>
-                            <th className="py-2">Days / Signal</th>
+                            <th className="py-2 pr-4">{operatorCopy.reports.refColumn}</th>
+                            <th className="py-2 pr-4">{operatorCopy.reports.assetColumn}</th>
+                            <th className="py-2">{operatorCopy.reports.daysSignal}</th>
                           </tr>
                         </thead>
                         <tbody>
@@ -147,14 +147,14 @@ export default function InsightsPage({ dealerId, nav, activeTab }: Props) {
                     </div>
                   ) : (
                     <EmptyState
-                      icon="🚗"
+                      icon="📦"
                       title={EMPTY_STATE_COPY.noPerformanceVehicles.title}
                       subtitle={EMPTY_STATE_COPY.noPerformanceVehicles.subtitle}
                     />
                   )}
                 </SectionCard>
 
-                <SectionCard title="Platforms" subtitle="Channel activity and observed assists — not sales attribution">
+                <SectionCard title={operatorCopy.reports.platformsSection} subtitle={operatorCopy.reports.platformsSectionSubtitle}>
                   {data.platforms.length > 0 ? (
                     <div className="grid gap-3 sm:grid-cols-2">
                       {data.platforms.map(p => {
@@ -194,7 +194,7 @@ export default function InsightsPage({ dealerId, nav, activeTab }: Props) {
                                 </p>
                               </>
                             ) : (
-                              <p className="text-xs text-slate-400 mt-2">No channel activity recorded for this platform.</p>
+                              <p className="text-xs text-slate-400 mt-2">{operatorCopy.reports.noChannelActivity}</p>
                             )}
                           </div>
                         );
@@ -210,24 +210,24 @@ export default function InsightsPage({ dealerId, nav, activeTab }: Props) {
                 </SectionCard>
 
                 {(data.summary.topMovers.length > 0 || data.summary.staleRisks.length > 0) && (
-                  <SectionCard title="Quick lists" subtitle="Mirrors Sync movement strip">
+                  <SectionCard title={operatorCopy.reports.quickLists} subtitle={operatorCopy.reports.quickListsSubtitle}>
                     <div className="grid sm:grid-cols-2 gap-4 text-xs">
                       <div>
-                        <p className="font-semibold text-status-success-text mb-1">Fast movers</p>
+                        <p className="font-semibold text-status-success-text mb-1">{operatorCopy.reports.fastMovers}</p>
                         <ul className="space-y-1 text-slate-600">
                           {data.summary.topMovers.map(v => (
                             <li key={v.vehicleId}>{v.stockNumber} · {formatMovementBenchmarkLine(v)}</li>
                           ))}
-                          {data.summary.topMovers.length === 0 && <li className="text-slate-400">None</li>}
+                          {data.summary.topMovers.length === 0 && <li className="text-slate-400">{operatorCopy.reports.none}</li>}
                         </ul>
                       </div>
                       <div>
-                        <p className="font-semibold text-red-700 mb-1">Stale risks</p>
+                        <p className="font-semibold text-red-700 mb-1">{operatorCopy.reports.staleRisks}</p>
                         <ul className="space-y-1 text-slate-600">
                           {data.summary.staleRisks.map(v => (
                             <li key={v.vehicleId}>{v.stockNumber} · {formatMovementBenchmarkLine(v)}</li>
                           ))}
-                          {data.summary.staleRisks.length === 0 && <li className="text-slate-400">None</li>}
+                          {data.summary.staleRisks.length === 0 && <li className="text-slate-400">{operatorCopy.reports.none}</li>}
                         </ul>
                       </div>
                     </div>

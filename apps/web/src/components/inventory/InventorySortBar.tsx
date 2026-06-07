@@ -1,13 +1,17 @@
 import type { InventorySortKey, SortDirection } from '@/lib/inventoryVehicleOps.ts';
+import { inventoryLabels } from '@/lib/copy/index.ts';
 
-const SORT_OPTIONS: Array<{ key: InventorySortKey; label: string }> = [
-  { key: 'stockNumber', label: 'Stock #' },
-  { key: 'vehicle', label: 'Vehicle' },
-  { key: 'daysOnline', label: 'Days online' },
-  { key: 'movementSignal', label: 'Movement signal' },
-  { key: 'price', label: 'Price' },
-  { key: 'readiness', label: 'Readiness' },
-];
+function sortOptions() {
+  const labels = inventoryLabels();
+  return [
+    { key: 'stockNumber' as InventorySortKey, label: labels.refColumn },
+    { key: 'vehicle' as InventorySortKey, label: labels.titleColumn },
+    { key: 'daysOnline' as InventorySortKey, label: 'Days online' },
+    { key: 'movementSignal' as InventorySortKey, label: 'Movement signal' },
+    { key: 'price' as InventorySortKey, label: 'Price' },
+    { key: 'readiness' as InventorySortKey, label: 'Readiness' },
+  ];
+}
 
 type Props = {
   sortKey: InventorySortKey;
@@ -25,7 +29,7 @@ export function InventorySortBar({ sortKey, direction, onSortKey, onDirection }:
         onChange={e => onSortKey(e.target.value as InventorySortKey)}
         className="rounded-lg border border-slate-200 bg-white px-2.5 py-1.5 text-xs text-slate-700"
       >
-        {SORT_OPTIONS.map(o => (
+        {sortOptions().map(o => (
           <option key={o.key} value={o.key}>{o.label}</option>
         ))}
       </select>

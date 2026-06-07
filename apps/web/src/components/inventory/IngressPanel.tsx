@@ -13,6 +13,7 @@ import type {
   IngressRunPlatformImpact,
 } from '@/lib/types.ts';
 import { ingressRunStatusVisual, EMPTY_STATE_COPY } from '@/lib/statusRegistry.ts';
+import { operatorCopy } from '@/lib/copy/operator.ts';
 import { SnapshotReviewCard } from './SnapshotReviewCard.tsx';
 import { JsonIngestPanel } from './JsonIngestPanel.tsx';
 import { SectionCard } from '@/components/operator';
@@ -176,7 +177,7 @@ export function IngressPanel({ dealerId, latestRunId, onShowBlockedVehicles, onS
 
   const lastRun  = runs[0] ?? null;
   const subtitle = lastRun
-    ? `Last intake ${relativeTime(lastRun.receivedAt)} · ${lastRun.vehicleCount} vehicle${lastRun.vehicleCount !== 1 ? 's' : ''}`
+    ? `Last intake ${relativeTime(lastRun.receivedAt)} · ${operatorCopy.inventory.intakeAssetCount(lastRun.vehicleCount)}`
     : EMPTY_STATE_COPY.noIntakeRuns.subtitle;
 
   const handleSourceSaved = () => { setAddingSource(false); reloadSrc(); };
@@ -295,7 +296,7 @@ function SnapshotModeField({
       <span className="text-xs text-slate-700 min-w-0">
         <span className="font-semibold">Full inventory snapshot on check/poll</span>
         <span className="block text-[11px] text-amber-800 mt-0.5">
-          Dry-run only — missing vehicles appear as removal candidates. Scheduled poll never auto-removes.
+          {operatorCopy.inventory.dryRunRemovalNote}
         </span>
       </span>
     </label>
@@ -703,7 +704,7 @@ function RunRow({ dealerId, run, isLatest, onShowBlockedVehicles, onSnapshotComm
         </div>
 
         <div className="flex items-center gap-3 mt-1 text-slate-500 flex-wrap">
-          <span>{run.vehicleCount} vehicle{run.vehicleCount !== 1 ? 's' : ''}</span>
+          <span>{operatorCopy.inventory.intakeAssetCount(run.vehicleCount)}</span>
           {run.createdCount > 0 && <span className="text-emerald-700">+{run.createdCount} created</span>}
           {run.updatedCount > 0 && <span className="text-sky-700">↻{run.updatedCount} updated</span>}
           {run.skippedCount > 0 && <span className="text-slate-400">{run.skippedCount} skipped</span>}
