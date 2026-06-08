@@ -12,17 +12,78 @@ const AUSTIN_LNG = -97.7431;
 
 type CapturedArgs = { where?: unknown };
 
-function makeCaptureMock(): { prisma: PrismaClient; captured: CapturedArgs } {
+type FakeVehicleRow = {
+  id: string;
+  stockNumber: string;
+  year: number;
+  make: string;
+  model: string;
+  trim: string | null;
+  mileage: number;
+  priceCents: number;
+  originalPriceCents: number | null;
+  condition: string;
+  exteriorColor: string;
+  createdAt: Date;
+  soldAt: null;
+  removedAt: null;
+  dealershipId: string;
+  media: Array<{ url: string; sortOrder: number }>;
+  dealership: {
+    id: string;
+    legalName: string;
+    dbaName: string | null;
+    rooftopAddress: Record<string, string>;
+    rooftopLat: number | null;
+    rooftopLng: number | null;
+    websiteUrl: string | null;
+  };
+};
+
+function fakeVehicleRow(
+  rooftopLat: number | null,
+  rooftopLng: number | null,
+): FakeVehicleRow {
+  return {
+    id: 'vehicle-1',
+    stockNumber: 'PR-001',
+    year: 2022,
+    make: 'Toyota',
+    model: 'Camry',
+    trim: 'SE',
+    mileage: 18_000,
+    priceCents: 2_499_900,
+    originalPriceCents: null,
+    condition: 'USED',
+    exteriorColor: 'Black',
+    createdAt: new Date('2026-05-01T00:00:00.000Z'),
+    soldAt: null,
+    removedAt: null,
+    dealershipId: 'dealer-1',
+    media: [{ url: 'https://cdn.example.com/img1.jpg', sortOrder: 0 }],
+    dealership: {
+      id: 'dealer-1',
+      legalName: 'Prairie Ridge Motors LLC',
+      dbaName: 'Prairie Ridge Motors',
+      rooftopAddress: { city: 'Austin', state: 'TX' },
+      rooftopLat,
+      rooftopLng,
+      websiteUrl: 'https://example.com',
+    },
+  };
+}
+
+function makeCaptureMock(vehicles: FakeVehicleRow[] = []): { prisma: PrismaClient; captured: CapturedArgs } {
   const captured: CapturedArgs = {};
   const prisma = {
     vehicle: {
       count:    async ({ where }: { where?: unknown } = {}) => {
         captured.where = where;
-        return 0;
+        return vehicles.length;
       },
       findMany: async (args: CapturedArgs) => {
         Object.assign(captured, args);
-        return [];
+        return vehicles;
       },
     },
   } as unknown as PrismaClient;
@@ -139,5 +200,43 @@ describe('marketplace geo WHERE clause', () => {
     const lat = geo['rooftopLat'] as Record<string, number>;
     assert.equal(lat.gte, boxRadius1.minLat);
     assert.equal(lat.lte, boxRadius1.maxLat);
+  });
+});
+
+describe('marketplace card distanceMiles (GEO-02)', () => {
+  it('includes distanceMiles when buyer and seller coords exist', async () => {
+    const { prisma } = makeCaptureMock([fakeVehicleRow(AUSTIN_LAT, AUSTIN_LNG)]);
+    const result = await listMarketplaceVehicles(prisma, {
+      buyerLat: AUSTIN_LAT,
+      buyerLng: AUSTIN_LNG,
+      nationwide: true,
+    });
+    assert.equal(result.vehicles[0]?.distanceMiles, 0);
+  });
+
+  it('omits distanceMiles when seller rooftop coords are null', async () => {
+    const { prisma } = makeCaptureMock([fakeVehicleRow(null, null)]);
+    const result = await listMarketplaceVehicles(prisma, {
+      buyerLat: AUSTIN_LAT,
+      buyerLng: AUSTIN_LNG,
+    });
+    assert.equal('distanceMiles' in (result.vehicles[0] ?? {}), false);
+  });
+
+  it('omits distanceMiles when buyer coords are absent', async () => {
+    const { prisma } = makeCaptureMock([fakeVehicleRow(AUSTIN_LAT, AUSTIN_LNG)]);
+    const result = await listMarketplaceVehicles(prisma, {});
+    assert.equal('distanceMiles' in (result.vehicles[0] ?? {}), false);
+  });
+
+  it('never includes buyerLat or buyerLng on card responses', async () => {
+    const { prisma } = makeCaptureMock([fakeVehicleRow(AUSTIN_LAT, AUSTIN_LNG)]);
+    const result = await listMarketplaceVehicles(prisma, {
+      buyerLat: AUSTIN_LAT,
+      buyerLng: AUSTIN_LNG,
+    });
+    const card = result.vehicles[0] as Record<string, unknown>;
+    assert.equal('buyerLat' in card, false);
+    assert.equal('buyerLng' in card, false);
   });
 });

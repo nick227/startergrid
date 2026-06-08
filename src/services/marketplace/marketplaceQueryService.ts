@@ -31,6 +31,7 @@ import {
   geoBoundingBox,
   shouldApplyGeoRadiusFilter,
 } from '../../lib/geo/boundingBox.js';
+import { cardDistanceMiles } from '../../lib/geo/haversine.js';
 import { marketplaceCardAvailabilityStatus } from './marketplaceAvailability.js';
 import {
   shapeDetailResponse,
@@ -75,6 +76,7 @@ export type MarketplaceVehicleCard = {
   listingUrl:           string;
   listedAt:             string;        // ISO 8601
   availabilityStatus?:  'PENDING' | 'SOLD';
+  distanceMiles?:       number;        // omitted unless buyer + seller coords exist
 };
 
 export type MarketplaceMediaItem = {
@@ -208,7 +210,14 @@ type DbDealership = {
   legalName:      string;
   dbaName:        string | null;
   rooftopAddress: unknown;
+  rooftopLat?:    number | null;
+  rooftopLng?:    number | null;
   websiteUrl:     string | null;
+};
+
+type BuyerLocation = {
+  buyerLat: number;
+  buyerLng: number;
 };
 
 type DbVehicleRow = {
@@ -259,7 +268,30 @@ function mediaKind(kind: string | undefined): 'IMAGE' | 'VIDEO' {
 
 // ── Shape functions ───────────────────────────────────────────────────────────
 
-function shapeCard(row: DbVehicleRow): MarketplaceVehicleCard {
+function buyerLocationFromFilters(
+  filters: MarketplaceListFilters,
+): BuyerLocation | undefined {
+  const { buyerLat, buyerLng } = filters;
+  if (buyerLat == null || buyerLng == null) return undefined;
+  if (!Number.isFinite(buyerLat) || !Number.isFinite(buyerLng)) return undefined;
+  return { buyerLat, buyerLng };
+}
+
+function distanceField(
+  row: DbVehicleRow,
+  buyer?: BuyerLocation,
+): Pick<MarketplaceVehicleCard, 'distanceMiles'> {
+  if (!buyer) return {};
+  const distanceMiles = cardDistanceMiles(
+    buyer.buyerLat,
+    buyer.buyerLng,
+    row.dealership.rooftopLat,
+    row.dealership.rooftopLng,
+  );
+  return distanceMiles == null ? {} : { distanceMiles };
+}
+
+function shapeCard(row: DbVehicleRow, buyer?: BuyerLocation): MarketplaceVehicleCard {
   const payload = parseCategoryPayload(row.categoryPayload);
   const addr = extractAddress(row.dealership.rooftopAddress);
   const sorted = [...row.media].sort((a, b) => a.sortOrder - b.sortOrder);
@@ -297,6 +329,7 @@ function shapeCard(row: DbVehicleRow): MarketplaceVehicleCard {
     listingUrl:   buildListingUrl(row.dealershipId, row.stockNumber),
     listedAt:     row.createdAt.toISOString(),
     ...availabilityField(row),
+    ...distanceField(row, buyer),
   };
 }
 
@@ -320,6 +353,8 @@ const DEALER_SELECT: Prisma.DealershipProfileSelect = {
   legalName:        true,
   dbaName:          true,
   rooftopAddress:   true,
+  rooftopLat:       true,
+  rooftopLng:       true,
   websiteUrl:       true,
   businessCategory: true,
   // EXCLUDED: subscription, applications, platformAccounts, syncPolicies,
@@ -655,7 +690,8 @@ export async function listMarketplaceVehicles(
     }),
   ]);
 
-  const vehicles = (rows as unknown as DbVehicleRow[]).map(shapeCard);
+  const buyer = buyerLocationFromFilters(filters);
+  const vehicles = (rows as unknown as DbVehicleRow[]).map(row => shapeCard(row, buyer));
   const hasMore  = (page - 1) * pageSize + vehicles.length < total;
   const nextPage = hasMore
     ? `/api/marketplace/vehicles?page=${page + 1}&pageSize=${pageSize}`
@@ -705,9 +741,10 @@ export async function getMarketplaceFeed(
     ? encodeFeedCursor(pageRows[pageRows.length - 1]!)
     : null;
 
+  const buyer = buyerLocationFromFilters(filters);
   return {
     items: shapeFeedItems(
-      pageRows.map(shapeCard),
+      pageRows.map(row => shapeCard(row, buyer)),
       filters.category ? categoryIdToSlug(filters.category) : 'automotive',
     ),
     nextCursor,
@@ -771,7 +808,7 @@ export async function getMarketplaceFavoriteCards(
     }),
   ]);
 
-  const cards = (availableRows as unknown as DbVehicleRow[]).map(shapeCard);
+  const cards = (availableRows as unknown as DbVehicleRow[]).map(row => shapeCard(row));
   const unavailable = unavailableRows.map(r => ({
     listingId: r.id,
     title:     `${r.year} ${r.make} ${r.model}`,
@@ -806,6 +843,6 @@ export async function getMarketplaceDealerIndex(
     city:       addr.city,
     state:      addr.state,
     websiteUrl: dealer.websiteUrl,
-    vehicles:   (rows as unknown as DbVehicleRow[]).map(shapeCard),
+    vehicles:   (rows as unknown as DbVehicleRow[]).map(row => shapeCard(row)),
   };
 }

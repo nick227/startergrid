@@ -66,6 +66,13 @@ export type MarketplaceVehicleCard = {
      * Omitted when the listing is available. Never faked on cards.
      */
     availabilityStatus?: MarketplaceVehicleCard.availabilityStatus;
+    /**
+     * Straight-line distance from the buyer location query params to the seller rooftop.
+     * Omitted when buyer coords or seller rooftopLat/rooftopLng are unavailable.
+     * Never faked as zero when distance cannot be computed.
+     *
+     */
+    distanceMiles?: number;
 };
 export namespace MarketplaceVehicleCard {
     export enum condition {
