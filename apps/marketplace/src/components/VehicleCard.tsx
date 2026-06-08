@@ -8,12 +8,15 @@ import { VehicleImage } from './ui/VehicleImage.tsx';
 import { ConditionBadge } from './ui/ConditionBadge.tsx';
 import { FavoriteButton } from './ui/FavoriteButton.tsx';
 import { NewArrivalBadge } from './listings/NewArrivalBadge.tsx';
+import { FulfillmentBadge } from './listings/FulfillmentBadge.tsx';
+import { useCategorySchema } from '../contexts/CategoryContext.tsx';
 
 type Props = { card: MarketplaceVehicleCard };
 
 export function VehicleCard({ card }: Props) {
   const slug = useCategorySlug();
   const categoryId = useCategoryId();
+  const schema = useCategorySchema();
   const usageUnit = card.usageUnit === 'hours' ? 'hours' : card.usageUnit === 'miles' ? 'miles' : undefined;
   const tracked = useRef(false);
   const location = formatLocation(card.dealerCity, card.dealerState);
@@ -65,6 +68,7 @@ export function VehicleCard({ card }: Props) {
       </a>
 
       <div className="border-t border-silver-200 px-4 py-3">
+        <FulfillmentBadge schema={schema} className="mb-2" />
         <p className="mp-label text-ink-faint">Seller</p>
         <a
           href={sellerHref(slug, card.dealerId)}

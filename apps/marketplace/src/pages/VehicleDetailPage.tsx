@@ -33,6 +33,7 @@ import {
   ReportListingButton,
   useListingDetailEngagement,
 } from '../components/listings/ListingDetailEngagement.tsx';
+import { FulfillmentSection } from '../components/vdp/FulfillmentSection.tsx';
 import { SimilarListingsRail } from '../components/listings/SimilarListingsRail.tsx';
 
 type Props = { listingId: string };
@@ -178,6 +179,7 @@ function AutomotiveListingDetailContent({
       </div>
 
       <div className="mt-10 space-y-6">
+        <FulfillmentSection />
         <ClassificationSection classification={vehicle.classification} />
         <ColorsSection colors={vehicle.colors} />
         <EngineSection engine={vehicle.engine} />

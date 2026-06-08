@@ -18,6 +18,7 @@ import { ConditionBadge } from '../ui/ConditionBadge.tsx';
 import { FeedMediaCarousel } from '../ui/FeedMediaCarousel.tsx';
 import { FavoriteButton } from '../ui/FavoriteButton.tsx';
 import { NewArrivalBadge } from '../listings/NewArrivalBadge.tsx';
+import { FulfillmentBadge } from '../listings/FulfillmentBadge.tsx';
 import { PriceDropBadge } from '../listings/PriceDropBadge.tsx';
 import {
   buildListingCardMetaLabels,
@@ -115,6 +116,7 @@ function VehicleFeedCard({
         <VehicleMeta card={card} location={location ?? ''} metaLabels={metaLabels} />
 
         <div className="mt-auto border-t border-silver-200 pt-4">
+          <FulfillmentBadge schema={schema} className="mb-2" />
           <p className="mp-label text-ink-faint">Seller</p>
           <a href={sellerHref(slug, card.dealerId)} className="mp-focus mt-1 block text-sm font-semibold text-ink-body hover:text-cta">
             {card.dealerName}

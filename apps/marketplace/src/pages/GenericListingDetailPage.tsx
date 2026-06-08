@@ -24,6 +24,7 @@ import {
   useListingDetailEngagement,
 } from '../components/listings/ListingDetailEngagement.tsx';
 import { ListingActionSidebar } from '../components/listings/StickyListingActionPanel.tsx';
+import { FulfillmentSection } from '../components/vdp/FulfillmentSection.tsx';
 import { SimilarListingsRail } from '../components/listings/SimilarListingsRail.tsx';
 
 type Props = { listingId: string };
@@ -234,6 +235,7 @@ function GenericListingDetailContent({
       </div>
 
       <div className="mt-10 space-y-6">
+        <FulfillmentSection />
         <WarrantySection warranty={vehicle.warranty} />
         <ContentSection content={vehicle.content} />
       </div>
