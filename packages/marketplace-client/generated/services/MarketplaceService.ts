@@ -31,6 +31,9 @@ export class MarketplaceService {
         return __request(OpenAPI, {
             method: 'GET',
             url: '/api/marketplace/sites',
+            errors: {
+                400: `Bad request — invalid query parameter value`,
+            },
         });
     }
     /**

@@ -7,18 +7,31 @@
  */
 
 const BASE_URL = (process.env.BASE_URL ?? 'http://localhost:3000').replace(/\/$/, '');
-const SELLER_ROLE_CATEGORIES = ['apartments', 'homes', 'commercial_property', 'vacation_rentals'];
+const SELLER_ROLE_CATEGORIES = ['apartments', 'homes', 'commercial-property', 'vacation-rentals'];
 const LIVE_SECOND_CATEGORIES = ['BOATS', 'TRAILERS_POWERSPORTS_RV'];
 
 let failed = false;
 
-function pass(name) {
-  console.log(`PASS ${name}`);
+function formatDetails(details) {
+  if (!details) return '';
+  const parts = Object.entries(details)
+    .filter(([, value]) => value != null && value !== '')
+    .map(([key, value]) => `${key}=${value}`);
+  return parts.length ? ` ${parts.join(' ')}` : '';
+}
+
+function pass(name, details) {
+  console.log(`PASS ${name}${formatDetails(details)}`);
 }
 
 function fail(name, detail) {
   console.log(`FAIL ${name} — ${detail}`);
   failed = true;
+}
+
+function feedItemCount(body) {
+  if (!body || !Array.isArray(body.items)) return 0;
+  return body.items.length;
 }
 
 async function request(method, path, { json, headers } = {}) {
@@ -78,7 +91,7 @@ async function checkSites() {
   try {
     const { status, body } = await request('GET', '/api/marketplace/sites');
     if (status === 200 && Array.isArray(body?.sites)) {
-      pass('sites');
+      pass('sites', { count: body.sites.length });
       return;
     }
     fail('sites', `expected 200 { sites: [] }, got ${status}`);
@@ -91,12 +104,12 @@ async function checkAutomotiveFeed() {
   try {
     const { status, body } = await request('GET', '/api/marketplace/feed?category=AUTOMOTIVE&limit=12');
     if (status === 200 && isFeedResponse(body)) {
-      pass('automotive feed');
+      pass('feed', { category: 'AUTOMOTIVE', count: feedItemCount(body) });
       return body;
     }
-    fail('automotive feed', `expected 200 feed shape, got ${status}`);
+    fail('feed', `category=AUTOMOTIVE expected 200 feed shape, got ${status}`);
   } catch (err) {
-    fail('automotive feed', err instanceof Error ? err.message : String(err));
+    fail('feed', err instanceof Error ? err.message : String(err));
   }
   return null;
 }
@@ -118,7 +131,7 @@ async function resolveAutomotiveListingId(feedBody) {
 
 async function checkListingDetail(listingId) {
   if (!listingId) {
-    fail('listing detail', 'no vehicle listing found in feed or vehicles list');
+    fail('detail', 'no vehicle listing found in feed or vehicles list');
     return null;
   }
 
@@ -128,12 +141,12 @@ async function checkListingDetail(listingId) {
       `/api/marketplace/vehicles/${encodeURIComponent(listingId)}?category=AUTOMOTIVE`,
     );
     if (status === 200 && body?.vehicle && body?.promotion && body?.ctas) {
-      pass('listing detail');
+      pass('detail', { listingId, category: 'AUTOMOTIVE' });
       return listingId;
     }
-    fail('listing detail', `expected 200 detail for ${listingId}, got ${status}`);
+    fail('detail', `listingId=${listingId} expected 200 detail, got ${status}`);
   } catch (err) {
-    fail('listing detail', err instanceof Error ? err.message : String(err));
+    fail('detail', err instanceof Error ? err.message : String(err));
   }
   return listingId;
 }
@@ -142,10 +155,10 @@ async function checkKeywordSearch() {
   try {
     const { status, body } = await request('GET', '/api/marketplace/feed?category=AUTOMOTIVE&q=toyota&limit=6');
     if (status === 200 && isFeedResponse(body)) {
-      pass('keyword search');
+      pass('keyword search', { category: 'AUTOMOTIVE', count: feedItemCount(body) });
       return;
     }
-    fail('keyword search', `expected 200 feed shape, got ${status}`);
+    fail('keyword search', `category=AUTOMOTIVE expected 200 feed shape, got ${status}`);
   } catch (err) {
     fail('keyword search', err instanceof Error ? err.message : String(err));
   }
@@ -158,10 +171,10 @@ async function checkFacetFilter() {
       '/api/marketplace/feed?category=AUTOMOTIVE&facets=bodyStyle:Sedan&limit=6',
     );
     if (status === 200 && isFeedResponse(body)) {
-      pass('facet filter');
+      pass('facet filter', { category: 'AUTOMOTIVE', count: feedItemCount(body) });
       return;
     }
-    fail('facet filter', `expected 200 feed shape, got ${status}`);
+    fail('facet filter', `category=AUTOMOTIVE expected 200 feed shape, got ${status}`);
   } catch (err) {
     fail('facet filter', err instanceof Error ? err.message : String(err));
   }
@@ -175,13 +188,13 @@ async function checkSellerFilter() {
         `/api/marketplace/feed?category=${category}&sellerName=SmokeTest&limit=6`,
       );
       if (status === 200 && isFeedResponse(body)) {
-        pass('seller filter');
+        pass('seller filter', { category, count: feedItemCount(body) });
         return;
       }
       if (status === 404 && body?.error === 'Marketplace category not available') {
         continue;
       }
-      fail('seller filter', `${category} unexpected status ${status}`);
+      fail('seller filter', `category=${category} unexpected status ${status}`);
       return;
     } catch (err) {
       fail('seller filter', err instanceof Error ? err.message : String(err));
@@ -195,10 +208,10 @@ async function checkSellerFilter() {
       '/api/marketplace/feed?category=AUTOMOTIVE&sellerName=SmokeTest&limit=6',
     );
     if (status === 200 && isFeedResponse(body)) {
-      pass('seller filter');
+      pass('seller filter', { category: 'AUTOMOTIVE', count: feedItemCount(body) });
       return;
     }
-    fail('seller filter', `automotive fallback expected 200 feed, got ${status}`);
+    fail('seller filter', `category=AUTOMOTIVE expected 200 feed, got ${status}`);
   } catch (err) {
     fail('seller filter', err instanceof Error ? err.message : String(err));
   }
@@ -213,10 +226,10 @@ async function checkInvalidReportValidation(listingId) {
       { json: { reason: 'NOT_A_VALID_REASON' } },
     );
     if (status === 400 && typeof body?.error === 'string') {
-      pass('invalid report validation');
+      pass('invalid report validation', { listingId: targetId });
       return;
     }
-    fail('invalid report validation', `expected 400, got ${status}`);
+    fail('invalid report validation', `listingId=${targetId} expected 400, got ${status}`);
   } catch (err) {
     fail('invalid report validation', err instanceof Error ? err.message : String(err));
   }
@@ -226,10 +239,10 @@ async function checkDisabledCategoryGuard() {
   try {
     const { status, body } = await request('GET', '/api/marketplace/feed?category=SONGS&limit=6');
     if (status === 404 && body?.error === 'Marketplace category not available') {
-      pass('disabled category guard');
+      pass('disabled category guard', { category: 'SONGS' });
       return;
     }
-    fail('disabled category guard', `expected 404, got ${status}`);
+    fail('disabled category guard', `category=SONGS expected 404, got ${status}`);
   } catch (err) {
     fail('disabled category guard', err instanceof Error ? err.message : String(err));
   }
@@ -243,14 +256,14 @@ async function checkLiveSecondCategory() {
         `/api/marketplace/feed?category=${category}&limit=6`,
       );
       if (status === 200 && isFeedResponse(body)) {
-        pass('live second category');
+        pass('feed', { category, count: feedItemCount(body) });
         return;
       }
     } catch {
       // try next category
     }
   }
-  fail('live second category', `expected 200 feed for ${LIVE_SECOND_CATEGORIES.join(' or ')}`);
+  fail('feed', `category=${LIVE_SECOND_CATEGORIES.join('|')} expected 200 feed`);
 }
 
 async function checkCrossCategoryDetailGuard(automotiveListingId) {
@@ -265,17 +278,17 @@ async function checkCrossCategoryDetailGuard(automotiveListingId) {
       `/api/marketplace/vehicles/${encodeURIComponent(automotiveListingId)}?category=BOATS`,
     );
     if (status === 404) {
-      pass('cross-category detail guard');
+      pass('cross-category detail guard', { listingId: automotiveListingId, category: 'BOATS' });
       return;
     }
-    fail('cross-category detail guard', `expected 404, got ${status}`);
+    fail('cross-category detail guard', `listingId=${automotiveListingId} expected 404, got ${status}`);
   } catch (err) {
     fail('cross-category detail guard', err instanceof Error ? err.message : String(err));
   }
 }
 
 async function main() {
-  console.log(`Marketplace smoke — ${BASE_URL}\n`);
+  console.log(`Marketplace smoke BASE_URL: ${BASE_URL}\n`);
 
   await checkHealth();
   await checkSites();

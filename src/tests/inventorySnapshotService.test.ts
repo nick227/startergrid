@@ -106,6 +106,8 @@ describe('dbDealershipToPayload', () => {
     businessCategory: 'AUTOMOTIVE',
     dealerLicense: 'TX-PDM-482917',
     rooftopAddress: { street: '2148 Ridgepoint Pkwy', city: 'Plano', state: 'TX', postalCode: '75024', country: 'US' },
+    rooftopLat: null,
+    rooftopLng: null,
     websiteUrl: 'https://example.com',
     primaryContact: { name: 'Avery Morgan', email: 'avery@example.com', phone: '+19725550184' },
     inventorySize: 64,

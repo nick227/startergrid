@@ -50,6 +50,9 @@ export class MarketplaceAuthService {
         return __request(OpenAPI, {
             method: 'POST',
             url: '/api/marketplace/auth/logout',
+            errors: {
+                400: `Bad request — invalid query parameter value`,
+            },
         });
     }
     /**

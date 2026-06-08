@@ -379,11 +379,15 @@ function decodeFeedCursor(cursor: string | undefined): FeedCursor | null {
   }
 }
 
+function categoryPayloadJsonPath(payloadKey: string): string {
+  return `$.${payloadKey}`;
+}
+
 function facetWhereClause(facet: MarketplaceFacetDef, value: string): Prisma.VehicleWhereInput {
   if (facet.filterStorage.storage === 'categoryPayload') {
     return {
       categoryPayload: {
-        path: [facet.filterStorage.payloadKey],
+        path: categoryPayloadJsonPath(facet.filterStorage.payloadKey),
         equals: value,
       } as Prisma.JsonNullableFilter,
     };
@@ -464,8 +468,8 @@ function buildMarketplaceWhere(filters: MarketplaceListFilters): Prisma.VehicleW
           { exteriorColor: { contains: q } },
           { bodyStyle:     { contains: q } },
           // Category-payload string fields — BOATS (vesselType), TRAILERS/HEAVY_EQUIPMENT (unitType)
-          { categoryPayload: { path: ['vesselType'], string_contains: q } },
-          { categoryPayload: { path: ['unitType'],   string_contains: q } },
+          { categoryPayload: { path: categoryPayloadJsonPath('vesselType'), string_contains: q } },
+          { categoryPayload: { path: categoryPayloadJsonPath('unitType'),   string_contains: q } },
         ],
       },
     ] as Prisma.VehicleWhereInput[];

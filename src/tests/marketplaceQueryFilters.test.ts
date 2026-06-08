@@ -534,11 +534,11 @@ describe('keyword q search — WHERE clause structure', () => {
       .map(c => (c['categoryPayload'] as Record<string, unknown>)['path']);
 
     assert.ok(
-      payloadClauses.some(p => JSON.stringify(p) === '["vesselType"]'),
+      payloadClauses.some(p => p === '$.vesselType'),
       'OR must include categoryPayload.vesselType for BOATS category search',
     );
     assert.ok(
-      payloadClauses.some(p => JSON.stringify(p) === '["unitType"]'),
+      payloadClauses.some(p => p === '$.unitType'),
       'OR must include categoryPayload.unitType for TRAILERS/HEAVY_EQUIPMENT search',
     );
   });
@@ -723,7 +723,7 @@ describe('facet filters — WHERE clause structure', () => {
     const payloadClause = clauses.find(c => 'categoryPayload' in c) as Record<string, unknown> | undefined;
     assert.ok(payloadClause, 'boats facet must add a categoryPayload clause');
     const payload = payloadClause!['categoryPayload'] as Record<string, unknown>;
-    assert.deepEqual(payload['path'], ['vesselType']);
+    assert.equal(payload['path'], '$.vesselType');
     assert.equal(payload['equals'], 'Center Console');
   });
 
@@ -737,7 +737,7 @@ describe('facet filters — WHERE clause structure', () => {
     const payloadClause = clauses.find(c => 'categoryPayload' in c) as Record<string, unknown> | undefined;
     assert.ok(payloadClause, 'trailers facet must add a categoryPayload clause');
     const payload = payloadClause!['categoryPayload'] as Record<string, unknown>;
-    assert.deepEqual(payload['path'], ['unitType']);
+    assert.equal(payload['path'], '$.unitType');
     assert.equal(payload['equals'], 'RV');
   });
 
