@@ -1,4 +1,4 @@
-import type { CategorySchema } from '@auto-dealer/category-schemas';
+import type { CategoryFieldDef, CategorySchema, MarketplaceFilterRole } from '@auto-dealer/category-schemas';
 
 export type ListingFilterKey = 'brand' | 'model' | 'condition' | 'price' | 'usage' | 'year';
 
@@ -8,6 +8,7 @@ export type ListingFilterLabels = {
   usage?: string;
   condition?: string;
   price?: string;
+  year?: string;
 };
 
 export type ListingFilterConfig = {
@@ -16,12 +17,38 @@ export type ListingFilterConfig = {
   enabledFilters: ListingFilterKey[];
 };
 
+export type ListingCardMetaLabels = {
+  brand: string;
+  model: string;
+  year: string;
+  usage?: string;
+};
+
 const GENERIC_LABELS: Required<ListingFilterLabels> = {
   brand: 'Brand',
   model: 'Model / Type',
   usage: 'Usage',
   condition: 'Condition',
   price: 'Price',
+  year: 'Year',
+};
+
+const FILTER_ROLE_FALLBACK_KEY: Partial<Record<MarketplaceFilterRole, string>> = {
+  brand: 'make',
+  model: 'model',
+  usage: 'mileage',
+  year: 'year',
+  condition: 'condition',
+  price: 'priceCents',
+};
+
+const LISTING_FILTER_TO_ROLE: Record<ListingFilterKey, MarketplaceFilterRole> = {
+  brand: 'brand',
+  model: 'model',
+  usage: 'usage',
+  year: 'year',
+  condition: 'condition',
+  price: 'price',
 };
 
 function fieldLabel(schema: CategorySchema, key: string): string | undefined {
@@ -32,25 +59,33 @@ function hasField(schema: CategorySchema, key: string): boolean {
   return schema.fields.some(field => field.key === key);
 }
 
-function resolveBrandLabel(schema: CategorySchema): string | undefined {
-  if (!hasField(schema, 'make')) return undefined;
-  const label = fieldLabel(schema, 'make');
-  if (!label || label === 'Make') return GENERIC_LABELS.brand;
+function fieldByRole(schema: CategorySchema, role: MarketplaceFilterRole): CategoryFieldDef | undefined {
+  return schema.fields.find(field => field.marketplaceFilter === role);
+}
+
+function normalizeDisplayLabel(role: MarketplaceFilterRole, label: string): string {
+  if (role === 'brand' && label === 'Make') return GENERIC_LABELS.brand;
+  if (role === 'model' && label === 'Model') return GENERIC_LABELS.model;
+  if (role === 'usage' && label === 'Mileage') return GENERIC_LABELS.usage;
   return label;
 }
 
-function resolveModelLabel(schema: CategorySchema): string | undefined {
-  if (!hasField(schema, 'model')) return undefined;
-  const label = fieldLabel(schema, 'model');
-  if (!label || label === 'Model') return GENERIC_LABELS.model;
-  return label;
+function roleEnabled(schema: CategorySchema, role: MarketplaceFilterRole): boolean {
+  if (fieldByRole(schema, role)) return true;
+  const fallbackKey = FILTER_ROLE_FALLBACK_KEY[role];
+  return fallbackKey ? hasField(schema, fallbackKey) : false;
 }
 
-function resolveUsageLabel(schema: CategorySchema): string | undefined {
-  if (!hasField(schema, 'mileage')) return undefined;
-  const label = fieldLabel(schema, 'mileage');
-  if (!label || label === 'Mileage') return GENERIC_LABELS.usage;
-  return label;
+function resolveRoleLabel(schema: CategorySchema, role: MarketplaceFilterRole): string | undefined {
+  const explicit = fieldByRole(schema, role);
+  if (explicit) return normalizeDisplayLabel(role, explicit.label);
+
+  const fallbackKey = FILTER_ROLE_FALLBACK_KEY[role];
+  if (!fallbackKey || !hasField(schema, fallbackKey)) return undefined;
+
+  const label = fieldLabel(schema, fallbackKey);
+  if (!label) return GENERIC_LABELS[role as ListingFilterKey] ?? label;
+  return normalizeDisplayLabel(role, label);
 }
 
 export function buildListingFilterConfig(
@@ -59,23 +94,36 @@ export function buildListingFilterConfig(
 ): ListingFilterConfig {
   const enabledFilters: ListingFilterKey[] = [];
 
-  if (resolveBrandLabel(schema)) enabledFilters.push('brand');
-  if (resolveModelLabel(schema)) enabledFilters.push('model');
-  if (hasField(schema, 'condition')) enabledFilters.push('condition');
-  enabledFilters.push('price');
-  if (resolveUsageLabel(schema)) enabledFilters.push('usage');
-  if (hasField(schema, 'year')) enabledFilters.push('year');
+  for (const filter of Object.keys(LISTING_FILTER_TO_ROLE) as ListingFilterKey[]) {
+    const role = LISTING_FILTER_TO_ROLE[filter];
+    if (filter === 'price' || roleEnabled(schema, role)) {
+      enabledFilters.push(filter);
+    }
+  }
 
   return {
     categorySlug,
     labels: {
-      brand: resolveBrandLabel(schema),
-      model: resolveModelLabel(schema),
-      usage: resolveUsageLabel(schema),
-      condition: hasField(schema, 'condition') ? (fieldLabel(schema, 'condition') ?? GENERIC_LABELS.condition) : undefined,
-      price: fieldLabel(schema, 'priceCents') ?? GENERIC_LABELS.price,
+      brand: resolveRoleLabel(schema, 'brand'),
+      model: resolveRoleLabel(schema, 'model'),
+      usage: resolveRoleLabel(schema, 'usage'),
+      condition: resolveRoleLabel(schema, 'condition'),
+      price: resolveRoleLabel(schema, 'price') ?? GENERIC_LABELS.price,
+      year: resolveRoleLabel(schema, 'year'),
     },
     enabledFilters,
+  };
+}
+
+export function buildListingCardMetaLabels(
+  schema: CategorySchema,
+  config: ListingFilterConfig,
+): ListingCardMetaLabels {
+  return {
+    brand: config.labels.brand ?? GENERIC_LABELS.brand,
+    model: config.labels.model ?? GENERIC_LABELS.model,
+    year: config.labels.year ?? fieldLabel(schema, 'year') ?? GENERIC_LABELS.year,
+    usage: config.labels.usage,
   };
 }
 

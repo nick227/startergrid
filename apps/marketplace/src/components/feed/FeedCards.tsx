@@ -1,4 +1,4 @@
-import { useSyncExternalStore } from 'react';
+import { useMemo, useSyncExternalStore } from 'react';
 import type {
   MarketplaceFeedItem,
   MarketplaceVehicleCard,
@@ -19,6 +19,10 @@ import { FeedMediaCarousel } from '../ui/FeedMediaCarousel.tsx';
 import { FavoriteButton } from '../ui/FavoriteButton.tsx';
 import { NewArrivalBadge } from '../listings/NewArrivalBadge.tsx';
 import { PriceDropBadge } from '../listings/PriceDropBadge.tsx';
+import {
+  buildListingCardMetaLabels,
+  buildListingFilterConfig,
+} from '../../features/listings/listingFilterConfig.ts';
 
 type FeedItemProps = {
   item: MarketplaceFeedItem;
@@ -42,7 +46,10 @@ function VehicleFeedCard({
   const slug = useCategorySlug();
   const categoryId = useCategoryId();
   const schema = useCategorySchema();
-  const usageLabel = schema.fields.find(field => field.key === 'mileage')?.label ?? 'Mileage';
+  const metaLabels = useMemo(() => {
+    const config = buildListingFilterConfig(slug, schema);
+    return buildListingCardMetaLabels(schema, config);
+  }, [slug, schema]);
   const ref = useTrackVisibleMarketplaceItem<HTMLElement>({
     type: item.type,
     impressionKey: item.impressionKey,
@@ -110,7 +117,7 @@ function VehicleFeedCard({
           {card.trim && <p className="text-sm leading-snug text-ink-muted">{card.trim}</p>}
         </div>
 
-        <VehicleMeta card={card} location={location ?? ''} usageLabel={usageLabel} />
+        <VehicleMeta card={card} location={location ?? ''} metaLabels={metaLabels} />
 
         <div className="mt-auto border-t border-silver-200 pt-4">
           <p className="mp-label text-ink-faint">Seller</p>
@@ -127,11 +134,11 @@ function VehicleFeedCard({
 function VehicleMeta({
   card,
   location,
-  usageLabel,
+  metaLabels,
 }: {
   card: MarketplaceVehicleCard;
   location: string;
-  usageLabel: string;
+  metaLabels: ReturnType<typeof buildListingCardMetaLabels>;
 }) {
   const usageUnit = card.usageUnit === 'hours' ? 'hours' : card.usageUnit === 'miles' ? 'miles' : undefined;
   return (
@@ -143,10 +150,12 @@ function VehicleMeta({
           <p className="mt-1 text-xs text-ink-muted line-through">{formatPrice(card.originalPriceCents)}</p>
         )}
       </div>
-      <MetaCell label="Year" value={String(card.year)} />
-      <MetaCell label={usageLabel} value={formatUsage(card.mileage, usageUnit)} />
-      <MetaCell label="Make" value={card.make} />
-      <MetaCell label="Model" value={card.model} />
+      <MetaCell label={metaLabels.year} value={String(card.year)} />
+      {metaLabels.usage && (
+        <MetaCell label={metaLabels.usage} value={formatUsage(card.mileage, usageUnit)} />
+      )}
+      <MetaCell label={metaLabels.brand} value={card.make} />
+      <MetaCell label={metaLabels.model} value={card.model} />
       {location && <MetaCell label="Location" value={location} className="col-span-2" />}
     </div>
   );

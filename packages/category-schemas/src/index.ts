@@ -4,6 +4,7 @@ export type {
   CategoryChannelLabels,
   CategoryCopyBundle,
   CategoryFieldDef,
+  MarketplaceFilterRole,
   CategoryFormatters,
   CategoryLifecycleLabels,
   CategoryMarketplaceMeta,

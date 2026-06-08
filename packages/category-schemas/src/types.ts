@@ -26,10 +26,21 @@ export type CategoryStatus = 'active' | 'placeholder';
 
 export type CategoryLifecycleMode = 'physical_inventory' | 'digital_distribution';
 
+export type MarketplaceFilterRole =
+  | 'brand'
+  | 'model'
+  | 'usage'
+  | 'year'
+  | 'condition'
+  | 'seller'
+  | 'price';
+
 export type CategoryFieldDef = {
   key: string;
   label: string;
   kind: 'text' | 'number' | 'currency' | 'identifier';
+  /** Maps this inventory field to a generic marketplace filter or card label slot. */
+  marketplaceFilter?: MarketplaceFilterRole;
 };
 
 export type CategoryCopyBundle = {
