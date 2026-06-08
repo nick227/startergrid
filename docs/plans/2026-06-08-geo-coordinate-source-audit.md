@@ -1,8 +1,26 @@
 # GEO-00: Coordinate Source Audit
 
 **Date:** 2026-06-08  
-**Status:** Audit complete. GEO-01 backend radius filtering and `geo:verify` deploy check are shipped. Buyer location UI (GEO-03), distance display (GEO-04), distance sort, and geo empty-state recovery (GEO-05) remain future work.  
+**Status:** Audit complete. All code through GEO-03 is shipped. See status breakdown below.  
 **Scope:** Determine the safest, most honest source of truth for seller coordinates, buyer location, and distance sorting before any geo implementation begins
+
+### Implementation status (as of 2026-06-08)
+
+| Layer | Status | Notes |
+|---|---|---|
+| GEO-00a — `rooftopLat`/`rooftopLng` columns | ✅ Code complete | Migration `20260608000000` applied |
+| GEO-00b — backfill script (`npm run geo:backfill`) | ✅ Code complete | **Data gap: has not run against any env; 0/3 local dealers geocoded** |
+| GEO-00c — write-time geocoding on dealer create | ✅ Code complete | `geocodeDealerIfNeeded`; no-op when `OPENCAGE_API_KEY` absent |
+| GEO-01 — bounding-box radius filter in API | ✅ Code complete | Fail-closed (nationwide) when dealer or buyer coords are null |
+| GEO-02 — `distanceMiles` on card DTO | ✅ Code complete | Omitted from response when either side has null coords |
+| GEO-03 — buyer location UI (ZIP + radius + nationwide) | ✅ Code complete | `BuyerLocationControls`, `useBuyerLocation`, sessionStorage `mp:buyerLocation` |
+| GEO-03b — ZIP centroid lookup | ✅ Code complete | 33,791 ZCTA centroids bundled; unknown ZIPs show honest pending state |
+| Data: dealers geocoded in local dev | ❌ Data gap | `geo:verify` shows 0/3. Run `npm run geo:backfill` with `OPENCAGE_API_KEY` set |
+| Deploy gate: `geo:verify` strict | ❌ Would fail | Strict mode disabled; would report 0.0% geocoded |
+| Distance *sort* option (GEO-04) | 🔲 Not yet built | Sort option not in `listingSortOptions`; offset pagination only when added |
+| Geo empty-state recovery (GEO-05) | 🔲 Not yet built | Deferred to GEO-05 |
+
+**Distance labels on cards are code-complete but invisible** until `geo:backfill` runs and at least one dealer has `rooftopLat`/`rooftopLng` populated. This is correct fail-closed behaviour — no fake distances are shown.
 
 ---
 
