@@ -31,12 +31,21 @@ export {
   listMarketplaceCategories,
 } from './marketplace/helpers.js';
 export {
+  isConsumerMarketplaceLive,
+  resolveConsumerMarketplaceSiteStatus,
+} from './marketplace/enablement.js';
+export type { ConsumerMarketplaceSiteStatus } from './marketplace/enablement.js';
+export {
   buildMarketplaceFacets,
   isValidMarketplaceFacetValue,
   parseMarketplaceFacetsParam,
   sanitizeMarketplaceFacets,
   serializeMarketplaceFacetsParam,
 } from './marketplace/facets.js';
+export {
+  hasMarketplaceSellerFilter,
+  resolveMarketplaceMakeFilter,
+} from './marketplace/filters.js';
 export type { MarketplaceFacetDef, MarketplaceFacetKind } from './marketplace/facets.js';
 export { automotiveSchema } from './automotive/schema.js';
 export { createPlaceholderSchema, createUnknownFallbackSchema, genericOperatorFallback } from './generic/schema.js';

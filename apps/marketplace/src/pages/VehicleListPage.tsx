@@ -6,8 +6,9 @@ import { formatResultCount } from '../lib/display.ts';
 import { saveListReturn } from '../lib/listReturn.ts';
 import { listHref, parseRoute, type ListQuery } from '../lib/routes.ts';
 import { fromListQuery, toListQuery, type ListingQuery, type ListingSort } from '../features/listings/listingQuery.ts';
+import { isConsumerMarketplaceLive } from '@auto-dealer/category-schemas';
 import { useCategorySchema, useCategorySlug } from '../contexts/CategoryContext.tsx';
-import { buildListingFilterConfig } from '../features/listings/listingFilterConfig.ts';
+import { buildListingFilterConfig, sanitizeListingQuery } from '../features/listings/listingFilterConfig.ts';
 import { sanitizeListingFacets } from '../features/listings/listingFacetConfig.ts';
 import { isCompareEnabled } from '../features/listings/listingCompareFields.ts';
 import { hasListingFilters } from '../features/listings/listingFilterChips.ts';
@@ -33,7 +34,7 @@ export default function VehicleListPage({ initialQuery = {} }: Props) {
   const slug = useCategorySlug();
   const schema = useCategorySchema();
   const filterConfig = useMemo(() => buildListingFilterConfig(slug, schema), [slug, schema]);
-  const consumerActive = schema.status === 'active';
+  const consumerLive = isConsumerMarketplaceLive(schema);
   const initial = useMemo(() => fromListQuery(initialQuery), [initialQuery]);
 
   const [q, setQ] = useState(initial.q ?? '');
@@ -63,10 +64,12 @@ export default function VehicleListPage({ initialQuery = {} }: Props) {
     schema.marketplace.tagline,
   );
 
-  const listingQuery = useMemo<ListingQuery>(() => ({
+  const listingQuery = useMemo<ListingQuery>(() => sanitizeListingQuery({
     q: q.trim() || undefined,
     brand: brand.trim() || undefined,
-    sellerName: sellerName.trim() || undefined,
+    sellerName: isListingFilterEnabled(filterConfig, 'sellerName')
+      ? sellerName.trim() || undefined
+      : undefined,
     model: model.trim() || undefined,
     condition,
     priceMin: dollarsToCents(minPrice),
@@ -76,7 +79,7 @@ export default function VehicleListPage({ initialQuery = {} }: Props) {
     yearMax: parseNonNegative(maxYear),
     facets: sanitizeListingFacets(schema, facetValues),
     sortBy,
-  }), [brand, condition, facetValues, maxPrice, maxUsage, maxYear, minPrice, minYear, model, q, schema, sellerName, sortBy]);
+  }, filterConfig), [brand, condition, facetValues, filterConfig, maxPrice, maxUsage, maxYear, minPrice, minYear, model, q, schema, sellerName, sortBy]);
 
   const feed = useInfiniteMarketplaceFeed(listingQuery);
 
@@ -167,7 +170,7 @@ export default function VehicleListPage({ initialQuery = {} }: Props) {
         subtitle={schema.marketplace.tagline}
       />
 
-      {consumerActive && (
+      {consumerLive && (
       <div className="mb-6 sm:mb-8">
         <ListingFilterBar
           config={filterConfig}
@@ -202,7 +205,7 @@ export default function VehicleListPage({ initialQuery = {} }: Props) {
       </div>
       )}
 
-      {consumerActive && (
+      {consumerLive && (
       <ActiveListingFilterChips
         query={listingQuery}
         config={filterConfig}
@@ -212,7 +215,7 @@ export default function VehicleListPage({ initialQuery = {} }: Props) {
       />
       )}
 
-      {consumerActive && (
+      {consumerLive && (
       <SavedSearchesPanel
         categorySlug={slug}
         config={filterConfig}
@@ -226,7 +229,7 @@ export default function VehicleListPage({ initialQuery = {} }: Props) {
       ) : initialError ? (
         <ErrorState message={queryErrorMessage(feed.error)} onRetry={feed.retry} />
       ) : !hasItems ? (
-        consumerActive && hasActiveFilters ? (
+        consumerLive && hasActiveFilters ? (
           <NoResultsRelaxation
             query={listingQuery}
             config={filterConfig}
@@ -235,10 +238,10 @@ export default function VehicleListPage({ initialQuery = {} }: Props) {
           />
         ) : (
         <EmptyState
-          title={consumerActive
+          title={consumerLive
             ? 'No listings match your search'
             : `${schema.label} marketplace coming soon`}
-          description={consumerActive
+          description={consumerLive
             ? 'Try different brand or model keywords, or reset filters to browse everything available.'
             : `Listings for ${schema.label.toLowerCase()} will appear here when sellers join this marketplace.`}
           actionLabel={hasActiveFilters ? 'Reset filters' : undefined}
@@ -323,7 +326,7 @@ export default function VehicleListPage({ initialQuery = {} }: Props) {
           <RecentlyViewedRail categorySlug={slug} />
         </>
       )}
-      {consumerActive && isCompareEnabled(filterConfig) && (
+      {consumerLive && isCompareEnabled(filterConfig) && (
         <CompareBar categorySlug={slug} config={filterConfig} />
       )}
 

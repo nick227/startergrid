@@ -3,10 +3,10 @@ import {
   categoryIdToSlug,
   listMarketplaceCategories,
   resolveCategorySchema,
+  resolveConsumerMarketplaceSiteStatus,
 } from '../../../packages/category-schemas/src/index.js';
 import {
   marketplaceSiteHref,
-  resolveMarketplaceSiteStatus,
   type MarketplaceSiteStatus,
 } from './marketplaceCategory.js';
 
@@ -67,7 +67,7 @@ export async function listMarketplaceSites(
   const sites = listMarketplaceCategories().map(schema => {
     const listingCount = counts.get(schema.id) ?? 0;
     const slug = categoryIdToSlug(schema.id);
-    const status = resolveMarketplaceSiteStatus(schema.marketplace.consumerEnabled, listingCount);
+    const status = resolveConsumerMarketplaceSiteStatus(schema, listingCount);
 
     return {
       category: schema.id,

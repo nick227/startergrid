@@ -1,9 +1,14 @@
+import type { FastifyReply } from 'fastify';
 import { BusinessCategory } from '@prisma/client';
 import {
   categorySlugToId,
+  isConsumerMarketplaceLive,
   isRegisteredCategory,
+  resolveCategorySchema,
   type BusinessCategoryId,
 } from '../../../packages/category-schemas/src/index.js';
+
+export const MARKETPLACE_CATEGORY_UNAVAILABLE = 'Marketplace category not available';
 
 export const DEFAULT_MARKETPLACE_CATEGORY: BusinessCategory = BusinessCategory.AUTOMOTIVE;
 
@@ -35,13 +40,24 @@ export function marketplaceSiteHref(slug: string): string {
 
 export type MarketplaceSiteStatus = 'active' | 'coming_soon' | 'disabled';
 
-export function resolveMarketplaceSiteStatus(
-  consumerEnabled: boolean,
-  listingCount: number,
-): MarketplaceSiteStatus {
-  if (!consumerEnabled) return 'disabled';
-  if (listingCount > 0) return 'active';
-  return 'coming_soon';
+export function isConsumerMarketplaceCategoryEnabled(category: BusinessCategory): boolean {
+  return isConsumerMarketplaceLive(resolveCategorySchema(category));
+}
+
+export function resolveEnabledMarketplaceCategory(
+  categoryParam: string | undefined,
+  reply: FastifyReply,
+): BusinessCategory | null {
+  const parsed = parseMarketplaceCategoryParam(categoryParam);
+  if (!parsed.ok) {
+    reply.status(400).send({ error: parsed.error });
+    return null;
+  }
+  if (!isConsumerMarketplaceCategoryEnabled(parsed.category)) {
+    reply.status(404).send({ error: MARKETPLACE_CATEGORY_UNAVAILABLE });
+    return null;
+  }
+  return parsed.category;
 }
 
 export function isAutomotiveCategory(category: BusinessCategoryId | BusinessCategory): boolean {

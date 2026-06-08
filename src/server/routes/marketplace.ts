@@ -8,10 +8,11 @@ import {
   type MarketplaceListFilters,
 } from '../../services/marketplace/marketplaceQueryService.js';
 import { listMarketplaceSites } from '../../services/marketplace/marketplaceSitesService.js';
-import { parseMarketplaceCategoryParam } from '../../services/marketplace/marketplaceCategory.js';
+import { resolveEnabledMarketplaceCategory } from '../../services/marketplace/marketplaceCategory.js';
 import {
   parseMarketplaceFacetsParam,
   resolveCategorySchema,
+  resolveMarketplaceMakeFilter,
   sanitizeMarketplaceFacets,
 } from '../../../packages/category-schemas/src/index.js';
 import { captureMarketplaceLead } from '../../services/marketplace/marketplaceLeadService.js';
@@ -33,6 +34,7 @@ type SellerParams  = { sellerId: string };
 type ListQuery = {
   category?:   string;
   make?:       string;
+  sellerName?: string;
   model?:      string;
   condition?:  string;
   minPrice?:   string;
@@ -62,18 +64,6 @@ function parseNonNegIntParam(value: string | undefined): number | undefined {
   return Number.isFinite(n) && n >= 0 ? n : undefined;
 }
 
-function resolveCategory(
-  categoryParam: string | undefined,
-  reply: FastifyReply,
-): BusinessCategory | null {
-  const parsed = parseMarketplaceCategoryParam(categoryParam);
-  if (!parsed.ok) {
-    reply.status(400).send({ error: parsed.error });
-    return null;
-  }
-  return parsed.category;
-}
-
 function parseFacetFilters(
   q: ListQuery,
   category: BusinessCategory,
@@ -92,9 +82,13 @@ function parseFacetFilters(
 }
 
 function listFiltersFromQuery(q: ListQuery, category: BusinessCategory): MarketplaceListFilters {
+  const schema = resolveCategorySchema(category);
   return {
     category,
-    make:       q.make      || undefined,
+    make:       resolveMarketplaceMakeFilter(schema, {
+      make: q.make,
+      sellerName: q.sellerName,
+    }),
     model:      q.model     || undefined,
     condition:  q.condition || undefined,
     dealer:     q.dealer    || undefined,
@@ -135,7 +129,7 @@ export function registerMarketplaceRoutes(app: FastifyInstance, prisma: PrismaCl
   app.get<{ Querystring: ListQuery }>(
     '/api/marketplace/feed',
     async (request, reply) => {
-      const category = resolveCategory(request.query.category, reply);
+      const category = resolveEnabledMarketplaceCategory(request.query.category, reply);
       if (!category) return;
       const filters = listFiltersFromQuery(request.query, category);
       return reply.send(await getMarketplaceFeed(prisma, filters));
@@ -146,7 +140,7 @@ export function registerMarketplaceRoutes(app: FastifyInstance, prisma: PrismaCl
   app.get<{ Querystring: ListQuery }>(
     '/api/marketplace/vehicles',
     async (request, reply) => {
-      const category = resolveCategory(request.query.category, reply);
+      const category = resolveEnabledMarketplaceCategory(request.query.category, reply);
       if (!category) return;
       const filters = listFiltersFromQuery(request.query, category);
       return reply.send(await listMarketplaceVehicles(prisma, filters));
@@ -157,7 +151,7 @@ export function registerMarketplaceRoutes(app: FastifyInstance, prisma: PrismaCl
   app.get<{ Params: ListingParams; Querystring: { category?: string } }>(
     '/api/marketplace/vehicles/:listingId',
     async (request, reply) => {
-      const category = resolveCategory(request.query.category, reply);
+      const category = resolveEnabledMarketplaceCategory(request.query.category, reply);
       if (!category) return;
       const detail = await getMarketplaceVehicle(prisma, request.params.listingId, category);
       if (!detail) return reply.status(404).send({ error: 'Vehicle not found' });
@@ -229,7 +223,7 @@ export function registerMarketplaceRoutes(app: FastifyInstance, prisma: PrismaCl
   app.get<{ Params: SellerParams; Querystring: { category?: string } }>(
     '/api/marketplace/sellers/:sellerId',
     async (request, reply) => {
-      const category = resolveCategory(request.query.category, reply);
+      const category = resolveEnabledMarketplaceCategory(request.query.category, reply);
       if (!category) return;
       return sendSellerIndex(prisma, request.params.sellerId, category, reply);
     }
@@ -239,7 +233,7 @@ export function registerMarketplaceRoutes(app: FastifyInstance, prisma: PrismaCl
   app.get<{ Params: { dealerId: string }; Querystring: { category?: string } }>(
     '/api/marketplace/dealers/:dealerId',
     async (request, reply) => {
-      const category = resolveCategory(request.query.category, reply);
+      const category = resolveEnabledMarketplaceCategory(request.query.category, reply);
       if (!category) return;
       return sendSellerIndex(prisma, request.params.dealerId, category, reply);
     }

@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { categorySlugToId } from '@auto-dealer/category-schemas';
+import { categorySlugToId, isConsumerMarketplaceLive, resolveCategorySchema } from '@auto-dealer/category-schemas';
 import { parseRoute } from './lib/routes.ts';
 import { resetPageMeta } from './lib/pageMeta.ts';
 import { AuthProvider } from './contexts/AuthContext.tsx';
@@ -55,6 +55,23 @@ export default function App() {
           <NotFoundState
             title="Marketplace not found"
             description="That category site does not exist."
+            backHref={sitesHref()}
+            backLabel="All marketplaces"
+          />
+        </PageShell>
+        {shell}
+      </AuthProvider>
+    );
+  }
+
+  const categorySchema = resolveCategorySchema(categoryId);
+  if (!isConsumerMarketplaceLive(categorySchema)) {
+    return (
+      <AuthProvider>
+        <PageShell showCategoryNav={false}>
+          <NotFoundState
+            title="Marketplace unavailable"
+            description={`The ${categorySchema.label.toLowerCase()} marketplace is not open to consumers yet.`}
             backHref={sitesHref()}
             backLabel="All marketplaces"
           />

@@ -1,10 +1,10 @@
-import type { BusinessCategoryId } from '@auto-dealer/category-schemas';
+import { isConsumerMarketplaceLive, type BusinessCategoryId } from '@auto-dealer/category-schemas';
 import { useQuery, queryErrorMessage } from '../hooks/useQuery.ts';
 import { usePageMeta } from '../hooks/usePageMeta.ts';
 import { fetchVehicle, isNotFoundError, type MarketplaceVehicleDetailResponse } from '../lib/api.ts';
 import { formatPrice, formatMileage } from '../lib/display.ts';
 import { getListReturn } from '../lib/listReturn.ts';
-import { isAutomotiveSlug } from '../lib/routes.ts';
+import { isAutomotiveSlug, sitesHref } from '../lib/routes.ts';
 import GenericListingDetailPage from './GenericListingDetailPage.tsx';
 import { MarketplaceEventType } from '../lib/events.ts';
 import { useTrackMarketplaceEvent } from '../hooks/useTrackMarketplaceEvent.ts';
@@ -45,16 +45,16 @@ export default function VehicleDetailPage({ listingId }: Props) {
   const backHref = getListReturn(slug);
 
   if (!isAutomotiveSlug(slug)) {
-    if (schema.status === 'active') {
+    if (isConsumerMarketplaceLive(schema)) {
       return <GenericListingDetailPage listingId={listingId} />;
     }
     return (
       <PageShell backHref={backHref} backLabel="Back to results">
         <NotFoundState
-          title="Listing details coming soon"
-          description={`Item detail pages for the ${schema.label.toLowerCase()} marketplace are not available yet.`}
-          backHref={backHref}
-          backLabel="Back to results"
+          title="Marketplace unavailable"
+          description={`The ${schema.label.toLowerCase()} marketplace is not open to consumers yet.`}
+          backHref={sitesHref()}
+          backLabel="All marketplaces"
         />
       </PageShell>
     );

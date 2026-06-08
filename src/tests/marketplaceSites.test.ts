@@ -96,6 +96,19 @@ describe('GET /api/marketplace/sites', () => {
 });
 
 describe('GET /api/marketplace/vehicles/:listingId category boundary', () => {
+  it('404s when consumer marketplace category is disabled', async () => {
+    const app = buildApp({
+      vehicle: { findFirst: async () => null },
+    } as unknown as PrismaClient);
+
+    const res = await app.inject({
+      method: 'GET',
+      url: '/api/marketplace/vehicles/vehicle-1?category=WATCHES',
+    });
+    assert.equal(res.statusCode, 404);
+    assert.equal((res.json() as { error: string }).error, 'Marketplace category not available');
+  });
+
   it('404s when listing is requested under the wrong category', async () => {
     const createdAt = new Date('2026-06-01T00:00:00.000Z');
     const app = buildApp({

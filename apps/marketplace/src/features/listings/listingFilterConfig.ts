@@ -1,5 +1,6 @@
 import type { CategoryFieldDef, CategorySchema, MarketplaceFilterRole, MarketplaceFacetDef } from '@auto-dealer/category-schemas';
 import { buildListingFacetConfig } from './listingFacetConfig.ts';
+import type { ListingQuery } from './listingQuery.ts';
 
 export type ListingFilterKey = 'brand' | 'model' | 'condition' | 'price' | 'usage' | 'year' | 'sellerName';
 
@@ -161,4 +162,19 @@ export function isListingFilterEnabled(
 
 export function listingSearchAriaLabel(): string {
   return 'Search listings';
+}
+
+/**
+ * Drops fields from a ListingQuery that the active category schema does not support.
+ * Prevents URL-injected params (e.g. ?sellerName=X on automotive) from leaking into
+ * the API call for categories that don't declare the corresponding filter role.
+ */
+export function sanitizeListingQuery(
+  query: ListingQuery,
+  config: ListingFilterConfig,
+): ListingQuery {
+  return {
+    ...query,
+    sellerName: isListingFilterEnabled(config, 'sellerName') ? query.sellerName : undefined,
+  };
 }

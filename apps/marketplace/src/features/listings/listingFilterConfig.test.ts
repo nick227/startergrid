@@ -5,7 +5,9 @@ import {
   buildListingFilterConfig,
   isListingFilterEnabled,
   resolveMarketplaceFilterField,
+  sanitizeListingQuery,
 } from './listingFilterConfig.ts';
+import { toListQuery } from './listingQuery.ts';
 
 function schemaWithDuplicateBrandRole(): CategorySchema {
   const base = resolveCategorySchema('APPAREL');
@@ -108,5 +110,37 @@ describe('buildListingFilterConfig', () => {
 
     expect(isListingFilterEnabled(config, 'sellerName')).toBe(false);
     expect(isListingFilterEnabled(config, 'brand')).toBe(true);
+  });
+});
+
+describe('sanitizeListingQuery', () => {
+  it('drops sellerName for automotive (schema has no seller role)', () => {
+    const config = buildListingFilterConfig('automotive', resolveCategorySchema('AUTOMOTIVE'));
+    const result = sanitizeListingQuery({ sellerName: 'Toyota Dealer' }, config);
+    expect(result.sellerName).toBeUndefined();
+  });
+
+  it('preserves sellerName for apartments (schema declares seller role)', () => {
+    const config = buildListingFilterConfig('apartments', resolveCategorySchema('APARTMENTS'));
+    const result = sanitizeListingQuery({ sellerName: 'Coldwell Banker' }, config);
+    expect(result.sellerName).toBe('Coldwell Banker');
+  });
+
+  it('sellerName for automotive does not reach the make filter in API call', () => {
+    const config = buildListingFilterConfig('automotive', resolveCategorySchema('AUTOMOTIVE'));
+    const sanitized = sanitizeListingQuery({ sellerName: 'Toyota Dealer', brand: 'Honda' }, config);
+    expect(toListQuery(sanitized).make).toBe('Honda');
+  });
+
+  it('sellerName for apartments routes to make in the API call', () => {
+    const config = buildListingFilterConfig('apartments', resolveCategorySchema('APARTMENTS'));
+    const sanitized = sanitizeListingQuery({ sellerName: 'Coldwell Banker' }, config);
+    expect(toListQuery(sanitized).make).toBe('Coldwell Banker');
+  });
+
+  it('brand and sellerName cannot both populate make — sellerName wins for seller-role categories', () => {
+    const config = buildListingFilterConfig('apartments', resolveCategorySchema('APARTMENTS'));
+    const sanitized = sanitizeListingQuery({ sellerName: 'Coldwell', brand: 'SomeBrand' }, config);
+    expect(toListQuery(sanitized).make).toBe('Coldwell');
   });
 });
