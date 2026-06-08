@@ -1,0 +1,6 @@
+[build]
+builder = "NIXPACKS"
+buildCommand = "npm ci && cd apps/web && npm ci && npm run build"
+
+[deploy]
+startCommand = "npx serve apps/web/dist -s -l $PORT"

@@ -1,4 +1,4 @@
-import { useEffect } from 'react';
+import { lazy, Suspense, useEffect } from 'react';
 import DealerPicker from './pages/DealerPicker.tsx';
 import LoginPage from './pages/LoginPage.tsx';
 import PlatformsPage from './pages/PlatformsPage.tsx';
@@ -7,8 +7,9 @@ import HistoryPage from './pages/HistoryPage.tsx';
 import PlatformQueuePage from './pages/PlatformQueuePage.tsx';
 import PlatformHistoryPage from './pages/PlatformHistoryPage.tsx';
 import InventoryPage from './pages/InventoryPage.tsx';
-import ReportsRouter from './pages/ReportsRouter.tsx';
 import KnowledgeBasePage from './pages/KnowledgeBasePage.tsx';
+
+const ReportsRouter = lazy(() => import('./pages/ReportsRouter.tsx'));
 import { AuthLoadingScreen } from '@/components/auth/AuthLoadingScreen.tsx';
 import { useAuth } from '@/contexts/AuthContext.tsx';
 import { useOperatorRoute } from '@/hooks/useOperatorRoute.ts';
@@ -52,7 +53,9 @@ function OperatorApp() {
       ) : page === 'history' ? (
         <HistoryPage dealerId={dealerId} nav={nav} activeTab={activeTab} />
       ) : page === 'reports' ? (
-        <ReportsRouter dealerId={dealerId} nav={nav} activeTab={activeTab} reportSlug={reportSlug} reportRange={reportRange} />
+        <Suspense fallback={null}>
+          <ReportsRouter dealerId={dealerId} nav={nav} activeTab={activeTab} reportSlug={reportSlug} reportRange={reportRange} />
+        </Suspense>
       ) : page === 'inventory' ? (
         <InventoryPage dealerId={dealerId} nav={nav} activeTab={activeTab} />
       ) : (

@@ -1,0 +1,6 @@
+[build]
+builder = "NIXPACKS"
+buildCommand = "npm ci && cd apps/marketplace && npm ci && npm run build"
+
+[deploy]
+startCommand = "npx serve apps/marketplace/dist -s -l $PORT"

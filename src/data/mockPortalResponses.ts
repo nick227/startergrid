@@ -777,6 +777,29 @@ const vimeoOtt = assistedMarketplaceStub('vimeo-ott', 'Vimeo OTT');
 const ebayResale = assistedMarketplaceStub('ebay-resale', 'eBay Seller Hub');
 const mercari = assistedMarketplaceStub('mercari', 'Mercari');
 
+const tunecore = assistedMarketplaceStub('tunecore', 'TuneCore');
+const bandcamp = assistedMarketplaceStub('bandcamp', 'Bandcamp');
+const googlePlayBooks = assistedMarketplaceStub('google-play-books', 'Google Play Books');
+const barnesNoblePress = assistedMarketplaceStub('barnes-noble-press', 'Barnes & Noble Press');
+const poshmark = assistedMarketplaceStub('poshmark', 'Poshmark');
+const depop = assistedMarketplaceStub('depop', 'Depop');
+const saatchiArt = assistedMarketplaceStub('saatchi-art', 'Saatchi Art');
+const redbubble = assistedMarketplaceStub('redbubble', 'Redbubble');
+const tiktokCreator = assistedMarketplaceStub('tiktok-creator', 'TikTok Creator Portal');
+const rumbleCreator = assistedMarketplaceStub('rumble-creator', 'Rumble Creator');
+const offerup = assistedMarketplaceStub('offerup', 'OfferUp');
+const facebookMarketplaceResale = assistedMarketplaceStub('facebook-marketplace-resale', 'Facebook Marketplace Resale');
+const chrono24Dealer = assistedMarketplaceStub('chrono24-dealer', 'Chrono24');
+const watchbox = assistedMarketplaceStub('watchbox', 'WatchBox');
+const stockx = assistedMarketplaceStub('stockx', 'StockX');
+const goatSneakers = assistedMarketplaceStub('goat-sneakers', 'GOAT');
+const tcgplayer = assistedMarketplaceStub('tcgplayer', 'TCGplayer');
+const pwccMarketplace = assistedMarketplaceStub('pwcc-marketplace', 'PWCC Marketplace');
+const chairish = assistedMarketplaceStub('chairish', 'Chairish');
+const wayfairSeller = assistedMarketplaceStub('wayfair-seller', 'Wayfair Seller');
+const airbnbHost = assistedMarketplaceStub('airbnb-host', 'Airbnb Host');
+const vrboOwner = assistedMarketplaceStub('vrbo-owner', 'Vrbo Owner');
+
 export const mockPortalResponses: Record<string, PlatformResponses> = {
   'dealer-storefront': dealerStorefront,
   'consumer-marketplace': consumerMarketplace,
@@ -817,6 +840,28 @@ export const mockPortalResponses: Record<string, PlatformResponses> = {
   'vimeo-ott': vimeoOtt,
   'ebay-resale': ebayResale,
   'mercari': mercari,
+  'tunecore': tunecore,
+  'bandcamp': bandcamp,
+  'google-play-books': googlePlayBooks,
+  'barnes-noble-press': barnesNoblePress,
+  'poshmark': poshmark,
+  'depop': depop,
+  'saatchi-art': saatchiArt,
+  'redbubble': redbubble,
+  'tiktok-creator': tiktokCreator,
+  'rumble-creator': rumbleCreator,
+  'offerup': offerup,
+  'facebook-marketplace-resale': facebookMarketplaceResale,
+  'chrono24-dealer': chrono24Dealer,
+  'watchbox': watchbox,
+  'stockx': stockx,
+  'goat-sneakers': goatSneakers,
+  'tcgplayer': tcgplayer,
+  'pwcc-marketplace': pwccMarketplace,
+  'chairish': chairish,
+  'wayfair-seller': wayfairSeller,
+  'airbnb-host': airbnbHost,
+  'vrbo-owner': vrboOwner,
 };
 
 export function getMockPortalResponse(platformSlug: string, condition: MockPortalCondition): MockPortalResponse | undefined {

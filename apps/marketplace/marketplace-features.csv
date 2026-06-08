@@ -1,0 +1,97 @@
+id,area,feature,generic_description,reusable_pipe_or_module,implementation_note,mvp_priority
+MPF-001,Discovery & Search,Global inventory search,"Search all active listings across categories using keyword, location, and category-aware fields.",Search shell,Generic search bar with category selector and location radius.,P0
+MPF-002,Discovery & Search,Category landing pages,Browse inventory by product category while reusing the same listing-card and filter architecture.,Category shell,One route pattern: /marketplace/:categorySlug.,P0
+MPF-003,Discovery & Search,Saved searches,Let users save filter combinations and return to them later.,Search preferences,"Store query, category, filters, radius, sort.",P0
+MPF-004,Discovery & Search,Search alerts,Notify users when new or updated listings match saved search criteria.,Notification pipe,Email/push later; MVP can be in-app.,P0
+MPF-005,Discovery & Search,Autocomplete search suggestions,"Suggest categories, brands, models, attributes, and locations as users type.",Search assist,"Use generic labels: brand, model, attribute, location.",P0
+MPF-006,Discovery & Search,Recently viewed listings,Show users listings they opened recently for fast comparison.,Activity history,Do not require account for local-only history.,P0
+MPF-007,Discovery & Search,Featured inventory carousel,Promote selected listings without changing the base card schema.,Promotion pipe,Keep paid/pinned status separate from organic ranking.,P0
+MPF-008,Discovery & Search,Browse by lifestyle/use case,"Group inventory into practical buyer intents such as commuter, work-ready, family, collectible, creator, travel, or budget.",Intent taxonomy,"Generic intent tags, not vehicle-only labels.",P0
+MPF-009,Discovery & Search,Nearby inventory,Prioritize listings available near the user’s selected location.,Geo ranking,"Support local pickup, delivery zone, or digital fulfillment.",P0
+MPF-010,Discovery & Search,Nationwide inventory toggle,Allow users to expand beyond local inventory.,Geo scope,Useful for rare/high-value items.,P0
+MPF-011,Discovery & Search,Similar item recommendations,Show listings with comparable brand/model/price/condition/attributes.,Recommendation pipe,Make comparable rules category-configurable.,P0
+MPF-012,Discovery & Search,Recently added listings,Highlight fresh inventory to create urgency and improve browsing.,Inventory freshness,"Use listedAt or activatedAt, not createdAt alone.",P0
+MPF-013,Filters & Sorting,Price range filter,Filter by minimum and maximum price.,Filter primitive,Currency-aware; include financing estimate separately.,P0
+MPF-014,Filters & Sorting,Payment estimate filter,Filter by estimated recurring payment instead of cash price.,Finance pipe,"For non-finance categories, hide safely.",P0
+MPF-015,Filters & Sorting,Brand/make filter,"Filter by manufacturer, creator, publisher, label, or comparable brand field.",Attribute filter,Expose as Brand in generic UI.,P0
+MPF-016,Filters & Sorting,Model/product line filter,"Filter by product line, series, edition, or model.",Attribute filter,Depends on category schema.,P0
+MPF-017,Filters & Sorting,Year/version filter,"Filter by production year, release year, edition year, or model year.",Attribute filter,Label as Year where applicable.,P0
+MPF-018,Filters & Sorting,Condition filter,"Filter by new, used, certified, refurbished, damaged, open-box, or digital-original status.",Condition pipe,Values are category-specific but label remains generic.,P0
+MPF-019,Filters & Sorting,Location radius filter,Filter by distance from ZIP/city.,Geo filter,"For digital products, allow Anywhere.",P0
+MPF-020,Filters & Sorting,Seller type filter,"Filter dealer/store, private seller, verified seller, platform-owned, partner, or creator.",Seller pipe,Avoid car-only dealer language in reusable UI.,P0
+MPF-021,Filters & Sorting,Availability filter,"Filter by available now, coming soon, reserved, pending, sold, archived.",Inventory status,Status labels should come from schema.,P0
+MPF-022,Filters & Sorting,Fulfillment filter,"Filter by delivery, pickup, shipping, local meet, instant access, or appointment required.",Fulfillment pipe,Supports physical and digital products.,P0
+MPF-023,Filters & Sorting,Feature chips,"Filter by category-defined features such as transmission, format, size, genre, material, resolution, medium, or license.",Facet system,Facet registry per category.,P0
+MPF-024,Filters & Sorting,Sort by relevance,"Default sorting based on query match, location, inventory quality, and status.",Sort primitive,Keep ranking explainable.,P0
+MPF-025,Filters & Sorting,Sort by price,Sort low-to-high or high-to-low.,Sort primitive,Use normalized sale price.,P0
+MPF-026,Filters & Sorting,Sort by newest,Sort by activated/listed date.,Sort primitive,Avoid confusing modified date with new listing.,P0
+MPF-027,Filters & Sorting,Sort by distance,Sort nearest first for physical inventory.,Sort primitive,Hide for digital-only inventory.,P0
+MPF-028,Filters & Sorting,Sort by best value,Sort based on price rating or market comparison.,Market signal,"Label as value signal, not guaranteed savings.",P0
+MPF-029,Filters & Sorting,Filter summary bar,Show active filters as removable chips above results.,UI primitive,Useful across all categories.,P0
+MPF-030,Filters & Sorting,No-results relaxation,Suggest removing filters or widening radius when search has no matches.,Search recovery,Keep recommendations category-safe.,P0
+MPF-031,Listing Cards & Results,Inventory result grid,"Responsive card grid showing image, title, price, location, core attributes, and primary CTA.",Card primitive,Same card contract for all categories.,P0
+MPF-032,Listing Cards & Results,Compact list view,Alternate dense view for comparison-heavy browsing.,Result layout,Good for desktop power users.,P0
+MPF-033,Listing Cards & Results,Listing badges,"Show badges like Great Value, New Arrival, Verified, Certified, Delivery Available, Digital Access.",Badge pipe,Badge meanings documented per category.,P0
+MPF-034,Listing Cards & Results,Primary image thumbnails,Show clean thumbnails with fallback image handling.,Media pipe,No broken image states.,P0
+MPF-035,Listing Cards & Results,Multi-photo hover/quick preview,Allow quick scan of multiple media assets from the results page.,Media preview,"Support photos, cover art, screenshots, or stills.",P0
+MPF-036,Listing Cards & Results,Favorite/save listing,Save listings to a personal shortlist.,Favorites pipe,Use marketplace session only.,P0
+MPF-037,Listing Cards & Results,Compare checkbox,Let users select multiple listings for side-by-side comparison.,Compare pipe,Limit count for readability.,P0
+MPF-038,Listing Cards & Results,Quick detail drawer,Open important listing details without leaving the results page.,Detail preview,Drawer uses same safe projection as list/detail policy.,P0
+MPF-039,Listing Cards & Results,Seller name/link,Show seller/store/creator profile entry point.,Seller identity,Generic label: Seller.,P0
+MPF-040,Listing Cards & Results,Distance or access label,Show distance for physical listings or access mode for digital listings.,Fulfillment summary,"Example: 12 mi away, Ships nationwide, Instant access.",P0
+MPF-041,Listing Cards & Results,Price drop indicator,Flag listings with recent price reductions.,Pricing history,Requires audited price history events.,P1
+MPF-042,Listing Cards & Results,Reserved/sold overlay,Clearly mark unavailable listings while preserving user context.,Availability display,Favorites may show stale/unavailable separately.,P1
+MPF-043,Listing Detail Page,Detail hero media gallery,Large photo/media gallery with thumbnails and full-screen viewing.,Media gallery,"Works for product photos, videos, covers, previews.",P1
+MPF-044,Listing Detail Page,Listing title block,"Prominent title assembled from brand, model/product line, trim/edition, year/version.",Title formatter,Category owns title composition.,P1
+MPF-045,Listing Detail Page,Core attribute summary,Display 4-8 top facts in a scannable summary row.,Attribute summary,Category schema selects fields.,P1
+MPF-046,Listing Detail Page,Detailed specifications,Expandable full specification table.,Spec table,Generic key/value sections.,P1
+MPF-047,Listing Detail Page,Condition details,"Explain condition, inspection notes, defects, wear, completeness, or digital quality.",Condition report,Avoid hiding material issues.,P1
+MPF-048,Listing Detail Page,History/report section,"Show provenance, ownership, certification, source, history report, or authenticity documentation.",Trust report,Category-specific provider names hidden behind generic contract.,P1
+MPF-049,Listing Detail Page,Seller profile card,"Summarize seller, rating, location, response behavior, and verification.",Seller profile,No operator-private internals.,P1
+MPF-050,Listing Detail Page,Availability and fulfillment module,"Show delivery, pickup, shipping, appointment, download, transfer, or licensing options.",Fulfillment module,"Same module, category-specific options.",P1
+MPF-051,Listing Detail Page,Price breakdown,"Show item price, fees, taxes estimate, delivery/shipping, credits, incentives, and total estimate.",Pricing pipe,Favor transparent all-in estimates.,P1
+MPF-052,Listing Detail Page,Monthly payment estimate,Show estimated recurring payment when financing/subscription applies.,Payment module,Hide for categories without financing.,P1
+MPF-053,Listing Detail Page,Contact seller CTA,"Lead/contact form, message seller, call, request info, or start purchase.",Lead handoff,Avoid full sales-management workflow.,P1
+MPF-054,Listing Detail Page,Start purchase CTA,Begin checkout/reservation/deposit flow from detail page.,Transaction pipe,Can be disabled by category or seller.,P1
+MPF-055,Listing Detail Page,Schedule appointment CTA,"Book viewing, pickup, demo, test use, consultation, or inspection.",Appointment pipe,Optional integration later.,P1
+MPF-056,Listing Detail Page,Share listing,Generate shareable URL and native share options.,Sharing primitive,Track shares separately from leads.,P1
+MPF-057,Listing Detail Page,Report listing,"Allow users to flag fraud, inaccurate info, sold item, duplicate, or unsafe content.",Safety pipe,Moderation queue later.,P1
+MPF-058,Listing Detail Page,Similar listings rail,Show comparable items below the detail page.,Recommendation pipe,Use safe public data only.,P1
+MPF-059,Listing Detail Page,Recently viewed rail,Show recently viewed inventory for easy backtracking.,Activity rail,Local or account-based.,P1
+MPF-060,Listing Detail Page,Sticky action panel,Keep price and CTAs visible while scrolling.,Conversion shell,Desktop side rail; mobile bottom bar.,P1
+MPF-061,Compare & Research,Side-by-side comparison,"Compare selected listings by price, condition, specs, fulfillment, seller, and value signal.",Compare view,Category determines comparable fields.,P1
+MPF-062,Compare & Research,Market price rating,Rate listed price relative to comparable inventory.,Market signal,Use Great/Good/Fair/High-style generic badges.,P1
+MPF-063,Compare & Research,Price history chart,Show price changes over time.,Pricing history,Useful for urgency and transparency.,P1
+MPF-064,Compare & Research,Total cost estimator,"Estimate full cost including fees, taxes, delivery/shipping, subscription, license, or transfer.",Cost estimator,Avoid exact claims unless data is known.,P1
+MPF-065,Compare & Research,Value explainer,Explain why an item is marked good value or high price.,Explainability,Use observed comparable data.,P1
+MPF-066,Compare & Research,Buying guide content,"Educational content for category, brand, condition, pricing, and fulfillment.",Content pipe,Reusable guide template.,P1
+MPF-067,Compare & Research,Popular searches,Show high-demand saved searches or trending category filters.,Discovery assist,Avoid exposing private user behavior.,P1
+MPF-068,Compare & Research,Demand/supply signal,"Show low stock, popular listing, high views, or rare configuration.",Market signal,Avoid manipulative dark patterns.,P1
+MPF-069,Compare & Research,Inspection checklist,Give buyers a category-aware checklist of what to verify before purchase.,Trust content,"Static first, dynamic later.",P1
+MPF-070,Compare & Research,Ownership/care estimate,"Estimate ongoing costs like maintenance, storage, subscription, renewal, or accessories.",Research module,Vehicle-rich now; generic framework later.,P1
+MPF-071,Buyer Account & Workflow,Marketplace account,"User profile for saved searches, favorites, alerts, messages, and purchase progress.",Buyer auth,Separate from operator auth.,P1
+MPF-072,Buyer Account & Workflow,Favorites page,"List saved items with status, price changes, and availability.",Favorites pipe,Omit or mark unavailable safely.,P1
+MPF-073,Buyer Account & Workflow,Saved search management,"View, edit, delete, and enable alerts for saved searches.",Search preferences,Email frequency setting later.,P1
+MPF-074,Buyer Account & Workflow,Viewed listings history,Account-level list of recently viewed inventory.,Activity history,Privacy controls recommended.,P1
+MPF-075,Buyer Account & Workflow,Lead/message inbox,Basic buyer-side record of inquiries and seller replies.,Message pipe,Not a full CRM/sales platform.,P1
+MPF-076,Buyer Account & Workflow,Purchase progress tracker,"Show steps like reserved, documents, payment, fulfillment, complete.",Transaction progress,Generic statuses by category.,P2
+MPF-077,Buyer Account & Workflow,Document upload,"Upload ID, proof, forms, certificates, licenses, or other purchase docs.",Document pipe,Protect sensitive files.,P2
+MPF-078,Buyer Account & Workflow,Identity/verification step,Verify buyer where required for high-value or regulated categories.,Trust pipe,Category/seller configurable.,P2
+MPF-079,Buyer Account & Workflow,Notification preferences,"Let users choose email/push/SMS for saved searches, messages, purchase updates.",Notification settings,Default to minimal notifications.,P2
+MPF-080,Buyer Account & Workflow,Recently contacted sellers,Track sellers/items the user has contacted.,Lead history,Buyer-visible only.,P2
+MPF-081,Seller & Operator Workflow,Inventory import,Create listings from CSV/API/manual entry.,Ingress pipe,Shared source ingest across categories.,P2
+MPF-082,Seller & Operator Workflow,Listing editor,"Edit title, price, specs, media, condition, fulfillment, and seller notes.",Listing management,Fields generated from category schema.,P2
+MPF-083,Seller & Operator Workflow,Media manager,"Upload, reorder, crop, caption, and validate listing media.",Media pipe,"Same for photos, videos, cover art, screenshots.",P2
+MPF-084,Seller & Operator Workflow,Readiness checklist,"Show missing fields, media, price, fulfillment, and category-specific blockers.",Readiness rules,Category owns required fields.,P2
+MPF-085,Seller & Operator Workflow,Publish status queue,"Track draft, ready, published, pending, failed, paused, archived.",Publishing pipe,Generic visible copy.,P2
+MPF-086,Seller & Operator Workflow,Channel distribution,"Send listings to owned marketplace, partner channels, feeds, and embeds.",Channel pipe,Category-specific adapters only where needed.,P2
+MPF-087,Seller & Operator Workflow,Listing quality score,"Score completeness of media, description, specs, price, and trust docs.",Quality signal,"Guide improvement, not buyer-facing unless intentional.",P2
+MPF-088,Seller & Operator Workflow,Bulk edit,"Apply price, status, fulfillment, category, or seller updates across many listings.",Bulk ops,Audit all writes.,P2
+MPF-089,Seller & Operator Workflow,Duplicate detection,"Detect duplicate listings by source ID, canonical identity, media, or core specs.",Inventory hygiene,Category-specific matching rules.,P2
+MPF-090,Seller & Operator Workflow,Seller dashboard,"Show active listings, leads, saves, views, price changes, publish health.",Seller overview,"Keep BI aggregate, not full CRM.",P2
+MPF-091,Seller & Operator Workflow,Lead handoff,Route contact requests to seller email/webhook/export without owning full sales workflow.,Lead handoff pipe,Minimal but reliable.,P2
+MPF-092,Seller & Operator Workflow,Listing performance analytics,"Track views, saves, clicks, contacts, channel impact, and confidence.",Analytics pipe,Use observed assist language.,P2
+MPF-093,Seller & Operator Workflow,Channel comparison,Compare inventory movement across channels and marketplace surfaces.,Performance view,Avoid attribution overclaiming.,P2
+MPF-094,Seller & Operator Workflow,Seller profile management,"Manage public seller bio, logo, contact options, locations, fulfillment settings.",Seller profile,Reusable across seller types.,P2
+MPF-095,Trust & Safety,Verified seller badge,Indicate sellers who passed verification.,Trust badge,Keep criteria documented.,P2
+MPF-096,Trust & Safety,Fraud warning patterns,"Warn users about suspicious pricing, off-platform payment, mismatched details, or duplicate media.",Safety signal,Do not accuse; flag risk.,P2

@@ -12,6 +12,7 @@
 import assert from 'node:assert/strict';
 import { describe, it } from 'node:test';
 import { platformProfiles } from '../data/platformProfiles.js';
+import { PLATFORM_REGISTRY_TOTAL } from '../data/nonVehiclePlatformStubs.js';
 import { generateFeedForPlatform } from '../services/publishing/feedGeneratorService.js';
 import { derivePublishState, needsInitialQueueItem } from '../services/publishing/prepareAndPublishService.js';
 import { defaultSyncMode, resolveQueueStatus } from '../services/publishing/syncPolicyService.js';
@@ -68,8 +69,8 @@ describe('consumer-marketplace platform registry', () => {
     assert.equal(p.outputFormat, 'MARKETPLACE_LISTING_JSON');
   });
 
-  it('platform registry now has 39 entries', () => {
-    assert.equal(platformProfiles.length, 39, 'expected 39 platforms after non-vehicle stubs');
+  it(`platform registry now has ${PLATFORM_REGISTRY_TOTAL} entries`, () => {
+    assert.equal(platformProfiles.length, PLATFORM_REGISTRY_TOTAL);
   });
 
   it('vin is NOT in requiredVehicleFields', () => {

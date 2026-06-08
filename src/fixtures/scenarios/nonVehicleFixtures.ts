@@ -232,6 +232,8 @@ export const pawnDealerInventory: VehiclePayload[] = [
   },
 ];
 
+import { EXTENDED_NON_VEHICLE_FIXTURES } from './nonVehicleExtendedFixtures.js';
+
 /** All non-vehicle fixture bundles keyed by category. */
 export const NON_VEHICLE_FIXTURES = {
   SONGS: { dealer: songsDealerPayload, inventory: songsDealerInventory },
@@ -240,4 +242,5 @@ export const NON_VEHICLE_FIXTURES = {
   DIGITAL_ART: { dealer: digitalArtDealerPayload, inventory: digitalArtDealerInventory },
   VIDEO_DISTRIBUTION: { dealer: videoDealerPayload, inventory: videoDealerInventory },
   PAWN: { dealer: pawnDealerPayload, inventory: pawnDealerInventory },
-} as const;
+  ...EXTENDED_NON_VEHICLE_FIXTURES,
+};

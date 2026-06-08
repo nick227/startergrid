@@ -17,14 +17,18 @@ function parseCookieHeader(header: string | undefined, name: string): string | u
 }
 
 function makeSessionCookieHeader(rawToken: string): string {
-  const isProd = process.env['NODE_ENV'] === 'production';
-  const maxAge = Math.floor(MARKETPLACE_SESSION_LIFETIME_MS / 1000); // 2,592,000 (30 days)
-  const secure = isProd ? '; Secure' : '';
-  return `mp_session=${rawToken}; HttpOnly; SameSite=Strict; Path=/api/marketplace; Max-Age=${maxAge}${secure}`;
+  const isProd   = process.env['NODE_ENV'] === 'production';
+  const maxAge   = Math.floor(MARKETPLACE_SESSION_LIFETIME_MS / 1000); // 2,592,000 (30 days)
+  const sameSite = isProd ? 'None' : 'Strict';
+  const secure   = isProd ? '; Secure' : '';
+  return `mp_session=${rawToken}; HttpOnly; SameSite=${sameSite}; Path=/api/marketplace; Max-Age=${maxAge}${secure}`;
 }
 
 function makeClearCookieHeader(): string {
-  return 'mp_session=; HttpOnly; SameSite=Strict; Path=/api/marketplace; Max-Age=0';
+  const isProd   = process.env['NODE_ENV'] === 'production';
+  const sameSite = isProd ? 'None' : 'Strict';
+  const secure   = isProd ? '; Secure' : '';
+  return `mp_session=; HttpOnly; SameSite=${sameSite}; Path=/api/marketplace; Max-Age=0${secure}`;
 }
 
 export function registerMarketplaceAuthRoutes(app: FastifyInstance, prisma: PrismaClient): void {

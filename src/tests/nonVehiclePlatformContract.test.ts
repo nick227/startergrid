@@ -7,21 +7,27 @@
 import assert from 'node:assert/strict';
 import { describe, it } from 'node:test';
 import { platformProfiles } from '../data/platformProfiles.js';
-import {
-  NON_VEHICLE_PLATFORM_CATEGORIES,
-  nonVehiclePlatformsForCategory,
-  type NonVehiclePlatformCategory,
-} from '../data/nonVehiclePlatformStubs.js';
 import { NON_VEHICLE_FIXTURES } from '../fixtures/scenarios/nonVehicleFixtures.js';
 import {
   NON_VEHICLE_PAYLOAD_KEYS,
   parseApparelCategoryPayload,
+  parseCollectiblesCategoryPayload,
   parseDigitalArtCategoryPayload,
   parseEbooksCategoryPayload,
+  parseFurnitureCategoryPayload,
   parsePawnCategoryPayload,
+  parseSneakersCategoryPayload,
   parseSongsCategoryPayload,
+  parseVacationRentalsCategoryPayload,
   parseVideoCategoryPayload,
+  parseWatchesCategoryPayload,
 } from '../lib/nonVehicleCategoryPayload.js';
+import {
+  NON_VEHICLE_PLATFORM_CATEGORIES,
+  nonVehiclePlatformsForCategory,
+  PLATFORM_REGISTRY_TOTAL,
+  type NonVehiclePlatformCategory,
+} from '../data/nonVehiclePlatformStubs.js';
 import {
   BUSINESS_CATEGORY_IDS,
   resolveCategorySchema,
@@ -34,6 +40,11 @@ const PAYLOAD_PARSERS = {
   DIGITAL_ART: parseDigitalArtCategoryPayload,
   VIDEO_DISTRIBUTION: parseVideoCategoryPayload,
   PAWN: parsePawnCategoryPayload,
+  WATCHES: parseWatchesCategoryPayload,
+  SNEAKERS: parseSneakersCategoryPayload,
+  COLLECTIBLES: parseCollectiblesCategoryPayload,
+  FURNITURE: parseFurnitureCategoryPayload,
+  VACATION_RENTALS: parseVacationRentalsCategoryPayload,
 } as const;
 
 function isHttpsUrl(value: string | undefined): boolean {
@@ -139,8 +150,8 @@ describe('non-vehicle fixtures — dealer channel alignment', () => {
 });
 
 describe('non-vehicle platform count — registry growth', () => {
-  it('platform registry includes non-vehicle stubs (39 total)', () => {
-    assert.equal(platformProfiles.length, 39, 'expected 27 existing + 12 non-vehicle stubs');
+  it(`platform registry includes non-vehicle stubs (${PLATFORM_REGISTRY_TOTAL} total)`, () => {
+    assert.equal(platformProfiles.length, PLATFORM_REGISTRY_TOTAL);
   });
 
   it('automotive-only platforms do not claim non-vehicle categories', () => {

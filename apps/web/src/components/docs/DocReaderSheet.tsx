@@ -1,8 +1,11 @@
-import { useEffect } from 'react';
+import { lazy, Suspense, useEffect } from 'react';
 import { getDoc, docTitle } from '@/lib/docs/registry.ts';
-import { DocMarkdown } from '@/lib/docs/DocMarkdown.tsx';
 import { docCategoryLabel } from '@/lib/docs/docCategory.ts';
 import { useDocReader } from './DocReaderContext.tsx';
+
+const DocMarkdown = lazy(() =>
+  import('@/lib/docs/DocMarkdown.tsx').then(m => ({ default: m.DocMarkdown }))
+);
 
 export function DocReaderSheet() {
   const { docId, closeDoc, openDoc } = useDocReader();
@@ -67,7 +70,9 @@ export function DocReaderSheet() {
         <div className="flex-1 overflow-y-auto scrollbar-thin px-5 py-7 sm:px-8">
           <div className="max-w-2xl mx-auto doc-reader-body">
             {doc ? (
-              <DocMarkdown body={doc.body} onDocLink={openDoc} />
+              <Suspense fallback={<div className="h-24 animate-pulse rounded bg-stone-100" />}>
+                <DocMarkdown body={doc.body} onDocLink={openDoc} />
+              </Suspense>
             ) : (
               <p className="text-sm text-stone-600">
                 No document at <code className="font-mono text-xs">{docId}</code>.

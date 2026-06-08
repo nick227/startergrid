@@ -31,13 +31,45 @@ export type PawnCategoryPayload = {
   itemCategory?: string;
 };
 
+export type WatchesCategoryPayload = {
+  movement?: string;
+  caseMaterial?: string;
+  caseSizeMm?: number;
+};
+
+export type SneakersCategoryPayload = {
+  size?: string;
+  colorway?: string;
+};
+
+export type CollectiblesCategoryPayload = {
+  grade?: string;
+  category?: string;
+};
+
+export type FurnitureCategoryPayload = {
+  material?: string;
+  dimensions?: string;
+};
+
+export type VacationRentalsCategoryPayload = {
+  bedrooms?: number;
+  sleeps?: number;
+  nightlyRateCents?: number;
+};
+
 export type NonVehicleCategoryPayload =
   | SongsCategoryPayload
   | EbooksCategoryPayload
   | ApparelCategoryPayload
   | DigitalArtCategoryPayload
   | VideoCategoryPayload
-  | PawnCategoryPayload;
+  | PawnCategoryPayload
+  | WatchesCategoryPayload
+  | SneakersCategoryPayload
+  | CollectiblesCategoryPayload
+  | FurnitureCategoryPayload
+  | VacationRentalsCategoryPayload;
 
 function asOptionalString(value: unknown): string | undefined {
   return typeof value === 'string' && value.length > 0 ? value : undefined;
@@ -107,6 +139,53 @@ export function parsePawnCategoryPayload(raw: unknown): PawnCategoryPayload {
   };
 }
 
+export function parseWatchesCategoryPayload(raw: unknown): WatchesCategoryPayload {
+  const record = parseRecord(raw);
+  if (!record) return {};
+  return {
+    movement: asOptionalString(record['movement']),
+    caseMaterial: asOptionalString(record['caseMaterial']),
+    caseSizeMm: asOptionalNumber(record['caseSizeMm']),
+  };
+}
+
+export function parseSneakersCategoryPayload(raw: unknown): SneakersCategoryPayload {
+  const record = parseRecord(raw);
+  if (!record) return {};
+  return {
+    size: asOptionalString(record['size']),
+    colorway: asOptionalString(record['colorway']),
+  };
+}
+
+export function parseCollectiblesCategoryPayload(raw: unknown): CollectiblesCategoryPayload {
+  const record = parseRecord(raw);
+  if (!record) return {};
+  return {
+    grade: asOptionalString(record['grade']),
+    category: asOptionalString(record['category']),
+  };
+}
+
+export function parseFurnitureCategoryPayload(raw: unknown): FurnitureCategoryPayload {
+  const record = parseRecord(raw);
+  if (!record) return {};
+  return {
+    material: asOptionalString(record['material']),
+    dimensions: asOptionalString(record['dimensions']),
+  };
+}
+
+export function parseVacationRentalsCategoryPayload(raw: unknown): VacationRentalsCategoryPayload {
+  const record = parseRecord(raw);
+  if (!record) return {};
+  return {
+    bedrooms: asOptionalNumber(record['bedrooms']),
+    sleeps: asOptionalNumber(record['sleeps']),
+    nightlyRateCents: asOptionalNumber(record['nightlyRateCents']),
+  };
+}
+
 /** Expected categoryPayload keys per non-vehicle category — used by contract tests. */
 export const NON_VEHICLE_PAYLOAD_KEYS = {
   SONGS: ['format', 'genre', 'trackCount'],
@@ -115,4 +194,9 @@ export const NON_VEHICLE_PAYLOAD_KEYS = {
   DIGITAL_ART: ['medium', 'editionSize'],
   VIDEO_DISTRIBUTION: ['durationSec', 'resolution'],
   PAWN: ['itemCategory'],
+  WATCHES: ['movement', 'caseMaterial', 'caseSizeMm'],
+  SNEAKERS: ['size', 'colorway'],
+  COLLECTIBLES: ['grade', 'category'],
+  FURNITURE: ['material', 'dimensions'],
+  VACATION_RENTALS: ['bedrooms', 'sleeps', 'nightlyRateCents'],
 } as const;

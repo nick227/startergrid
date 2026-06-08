@@ -1,4 +1,5 @@
 import Fastify, { type FastifyInstance } from 'fastify';
+import cors from '@fastify/cors';
 import type { PrismaClient } from '@prisma/client';
 import { registerAuthRoutes }        from './routes/auth.js';
 import { registerDealerRoutes }     from './routes/dealers.js';
@@ -16,6 +17,13 @@ import { demoFeedPayload }          from '../fixtures/scenarios/connectedInvento
 
 export function buildApp(prisma: PrismaClient): FastifyInstance {
   const app = Fastify({ logger: false });
+
+  const allowedOrigins = (process.env['ALLOWED_ORIGINS'] ?? '')
+    .split(',').map(o => o.trim()).filter(Boolean);
+  app.register(cors, {
+    origin: allowedOrigins.length > 0 ? allowedOrigins : false,
+    credentials: true,
+  });
 
   app.get('/health', async (_req, reply) => {
     return reply.send({ ok: true, ts: new Date().toISOString() });

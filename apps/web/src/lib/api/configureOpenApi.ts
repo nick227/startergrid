@@ -7,7 +7,7 @@ let configured = false;
 export function configureOpenApiClient(): void {
   if (configured) return;
   configured = true;
-  OpenAPI.BASE = '';
+  OpenAPI.BASE = import.meta.env.VITE_API_URL ?? '';
   OpenAPI.WITH_CREDENTIALS = true;
   OpenAPI.CREDENTIALS = 'include';
   OpenAPI.HEADERS = async () => devOperatorHeaders();
