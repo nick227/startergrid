@@ -10,13 +10,14 @@ import {
 import { listMarketplaceSites } from '../../services/marketplace/marketplaceSitesService.js';
 import { parseMarketplaceCategoryParam } from '../../services/marketplace/marketplaceCategory.js';
 import { captureMarketplaceLead } from '../../services/marketplace/marketplaceLeadService.js';
+import { submitListingReport } from '../../services/marketplace/marketplaceReportService.js';
 import {
   recordMarketplaceChannelEvent,
   getDealerMarketplaceStats,
 } from '../../services/channel/channelEventService.js';
 import { parsePublicMarketplaceEventType } from '../../services/channel/channelMetrics.js';
 import { checkPublicWriteAbuseLimit } from '../security.js';
-import { marketplaceLeadCaptureSchema, marketplaceChannelEventSchema, validateBody } from '../requestValidation.js';
+import { marketplaceLeadCaptureSchema, marketplaceChannelEventSchema, listingReportSchema, validateBody } from '../requestValidation.js';
 
 // Marketplace GET routes are public read-only.
 // Lead capture is public-write with abuse limiting.
@@ -32,6 +33,9 @@ type ListQuery = {
   minPrice?:   string;
   maxPrice?:   string;
   maxMileage?: string;
+  minYear?:    string;
+  maxYear?:    string;
+  sortBy?:     string;
   dealer?:     string;
   cursor?:     string;
   limit?:      string;
@@ -72,6 +76,9 @@ function listFiltersFromQuery(q: ListQuery, category: BusinessCategory): Marketp
     minPrice:   parseNonNegIntParam(q.minPrice),
     maxPrice:   parseNonNegIntParam(q.maxPrice),
     maxMileage: parseNonNegIntParam(q.maxMileage),
+    minYear:    parseNonNegIntParam(q.minYear),
+    maxYear:    parseNonNegIntParam(q.maxYear),
+    sortBy:     q.sortBy    || undefined,
     cursor:     q.cursor    || undefined,
     limit:      parsePosIntParam(q.limit, 24),
     page:       parsePosIntParam(q.page, 1),
@@ -170,6 +177,24 @@ export function registerMarketplaceRoutes(app: FastifyInstance, prisma: PrismaCl
       if (!result) return reply.status(404).send({ error: 'Vehicle not found' });
 
       return reply.status(201).send({ message: 'Inquiry received', leadId: result.leadId });
+    }
+  );
+
+  // POST /api/marketplace/vehicles/:listingId/report
+  app.post<{ Params: ListingParams }>(
+    '/api/marketplace/vehicles/:listingId/report',
+    async (request, reply) => {
+      const { listingId } = request.params;
+
+      if (!checkPublicWriteAbuseLimit(request, reply, `marketplace-report:${listingId}`, { limit: 5, windowMs: 300_000 })) return;
+
+      const body = validateBody(listingReportSchema, request.body);
+      if (!body.ok) return reply.status(400).send({ error: body.error });
+
+      const result = await submitListingReport(prisma, listingId, body.data, request.ip);
+      if (!result) return reply.status(404).send({ error: 'Vehicle not found' });
+
+      return reply.status(201).send({ message: 'Report received', reportId: result.reportId });
     }
   );
 

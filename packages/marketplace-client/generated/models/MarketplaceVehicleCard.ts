@@ -20,6 +20,10 @@ export type MarketplaceVehicleCard = {
     trim: string | null;
     condition: MarketplaceVehicleCard.condition;
     priceCents: number;
+    /**
+     * Previous price before a price drop. Null when no drop has occurred.
+     */
+    originalPriceCents?: number | null;
     mileage: number;
     /**
      * Optional usage suffix for non-automotive inventory (defaults to miles when omitted).

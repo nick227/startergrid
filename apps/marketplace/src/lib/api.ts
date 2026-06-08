@@ -11,11 +11,14 @@ import {
   type MarketplaceVehicleDetailResponse,
   type MarketplaceDealerIndexResponse,
   type MarketplaceLeadCaptureResponse,
+  type MarketplaceListingReportRequest,
+  type MarketplaceListingReportResponse,
   type MarketplaceUserIdentity,
   type MarketplaceFavoritesResponse,
   type MarketplaceSitesResponse,
 } from '@dealer-marketplace/client';
 import type { BusinessCategoryId } from '@auto-dealer/category-schemas';
+import type { SortBy } from './routes.ts';
 
 export type {
   MarketplaceVehicleCard,
@@ -26,6 +29,8 @@ export type {
   MarketplaceVehicleDetailResponse,
   MarketplaceDealerIndexResponse,
   MarketplaceLeadCaptureResponse,
+  MarketplaceListingReportRequest,
+  MarketplaceListingReportResponse,
   MarketplaceUserIdentity,
   MarketplaceFavoritesResponse,
   MarketplaceSitesResponse,
@@ -69,6 +74,9 @@ export type ListFilters = CategoryScope & {
   minPrice?:   number;
   maxPrice?:   number;
   maxMileage?: number;
+  minYear?:    number;
+  maxYear?:    number;
+  sortBy?:     SortBy;
   dealer?:     string;
   page?:      number;
   pageSize?:  number;
@@ -125,6 +133,9 @@ export function fetchFeed(filters: FeedFilters = {}): Promise<MarketplaceFeedRes
     minPrice:   filters.minPrice,
     maxPrice:   filters.maxPrice,
     maxMileage: filters.maxMileage,
+    minYear:    filters.minYear,
+    maxYear:    filters.maxYear,
+    sortBy:     filters.sortBy,
     dealer:     filters.dealer,
   }));
 }
@@ -203,4 +214,11 @@ export function addFavorite(
 
 export function removeFavorite(listingId: string): Promise<void> {
   return call(() => MarketplaceAuthService.removeMarketplaceFavorite({ listingId }).then(() => undefined));
+}
+
+export function submitListingReport(
+  listingId: string,
+  body: MarketplaceListingReportRequest,
+): Promise<MarketplaceListingReportResponse> {
+  return call(() => MarketplaceService.reportMarketplaceListing({ listingId, requestBody: body }));
 }

@@ -25,6 +25,8 @@ export type MarketplaceRoute =
   | { page: 'favorites'; slug: string }
   | { page: 'redirect'; href: string };
 
+export type SortBy = 'newest' | 'price-asc' | 'price-desc' | 'mileage-asc' | 'year-asc' | 'year-desc';
+
 export type ListQuery = {
   make?:      string;
   model?:     string;
@@ -32,18 +34,26 @@ export type ListQuery = {
   minPrice?:   number;
   maxPrice?:   number;
   maxMileage?: number;
+  minYear?:    number;
+  maxYear?:    number;
+  sortBy?:     SortBy;
   dealer?:     string;
   page?:      number;
 };
 
+const SORT_VALUES: SortBy[] = ['newest', 'price-asc', 'price-desc', 'mileage-asc', 'year-asc', 'year-desc'];
+
 function parseHashQuery(search: string): ListQuery {
   const params = new URLSearchParams(search.startsWith('?') ? search.slice(1) : search);
   const condition = params.get('condition');
+  const sortRaw = params.get('sortBy');
   const pageRaw = params.get('page');
   const page = pageRaw ? Number(pageRaw) : undefined;
   const minPrice = parseNonNegative(params.get('minPrice'));
   const maxPrice = parseNonNegative(params.get('maxPrice'));
   const maxMileage = parseNonNegative(params.get('maxMileage'));
+  const minYear = parseNonNegative(params.get('minYear'));
+  const maxYear = parseNonNegative(params.get('maxYear'));
 
   return {
     make:      params.get('make') || undefined,
@@ -52,7 +62,10 @@ function parseHashQuery(search: string): ListQuery {
     minPrice,
     maxPrice,
     maxMileage,
-    dealer:     params.get('dealer') || undefined,
+    minYear,
+    maxYear,
+    sortBy:    SORT_VALUES.includes(sortRaw as SortBy) ? (sortRaw as SortBy) : undefined,
+    dealer:    params.get('dealer') || undefined,
     page:      page && page > 0 ? page : undefined,
   };
 }
@@ -140,6 +153,9 @@ export function listHref(slug: string, query: ListQuery = {}): string {
   if (query.minPrice != null) params.set('minPrice', String(query.minPrice));
   if (query.maxPrice != null) params.set('maxPrice', String(query.maxPrice));
   if (query.maxMileage != null) params.set('maxMileage', String(query.maxMileage));
+  if (query.minYear != null) params.set('minYear', String(query.minYear));
+  if (query.maxYear != null) params.set('maxYear', String(query.maxYear));
+  if (query.sortBy && query.sortBy !== 'newest') params.set('sortBy', query.sortBy);
   if (query.dealer) params.set('dealer', query.dealer);
   if (query.page && query.page > 1) params.set('page', String(query.page));
 

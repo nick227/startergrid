@@ -206,6 +206,24 @@ export const marketplaceLeadCaptureSchema = z.object({
 
 export type MarketplaceLeadCaptureBody = z.infer<typeof marketplaceLeadCaptureSchema>;
 
+export const LISTING_REPORT_REASONS = [
+  'PRICE_MISMATCH',
+  'SOLD_OR_UNAVAILABLE',
+  'SUSPECTED_FRAUD',
+  'INACCURATE_DESCRIPTION',
+  'INAPPROPRIATE_CONTENT',
+  'OTHER',
+] as const;
+
+export type ListingReportReason = typeof LISTING_REPORT_REASONS[number];
+
+export const listingReportSchema = z.object({
+  reason:  z.enum(LISTING_REPORT_REASONS),
+  details: z.string().trim().max(1000).optional(),
+}).strict();
+
+export type ListingReportBody = z.infer<typeof listingReportSchema>;
+
 // operationId: operatorLogin
 export const operatorLoginSchema = z.object({
   email:    z.string().trim().email().max(255),

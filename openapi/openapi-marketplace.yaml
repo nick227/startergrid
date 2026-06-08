@@ -282,6 +282,24 @@ paths:
           schema:
             type: integer
             minimum: 0
+        - name: minYear
+          in: query
+          description: Minimum model year (inclusive).
+          schema:
+            type: integer
+            minimum: 1900
+        - name: maxYear
+          in: query
+          description: Maximum model year (inclusive).
+          schema:
+            type: integer
+            minimum: 1900
+        - name: sortBy
+          in: query
+          description: Sort order for results. Defaults to newest.
+          schema:
+            type: string
+            enum: [newest, price-asc, price-desc, mileage-asc, year-asc, year-desc]
         - name: dealer
           in: query
           description: Filter by dealer ID
@@ -347,6 +365,24 @@ paths:
           schema:
             type: integer
             minimum: 0
+        - name: minYear
+          in: query
+          description: Minimum model year (inclusive).
+          schema:
+            type: integer
+            minimum: 1900
+        - name: maxYear
+          in: query
+          description: Maximum model year (inclusive).
+          schema:
+            type: integer
+            minimum: 1900
+        - name: sortBy
+          in: query
+          description: Sort order for results. Defaults to newest.
+          schema:
+            type: string
+            enum: [newest, price-asc, price-desc, mileage-asc, year-asc, year-desc]
         - name: dealer
           in: query
           description: Filter by dealer ID
@@ -439,6 +475,48 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/MarketplaceLeadCaptureResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '429':
+          description: Too many requests
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MarketplaceErrorResponse'
+
+  /api/marketplace/vehicles/{listingId}/report:
+    post:
+      tags: [Marketplace]
+      security: []
+      x-route-classification: public-write
+      operationId: reportMarketplaceListing
+      summary: Report a marketplace listing
+      description: |
+        Public trust signal — allows shoppers to flag a listing for review.
+        Rate-limited to 5 reports per IP per 5 minutes per listing.
+        Returns 404 when the listing is sold, removed, or not found.
+      parameters:
+        - name: listingId
+          in: path
+          required: true
+          description: Opaque vehicle identifier from MarketplaceVehicleCard.listingId
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/MarketplaceListingReportRequest'
+      responses:
+        '201':
+          description: Report accepted
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MarketplaceListingReportResponse'
         '400':
           $ref: '#/components/responses/BadRequest'
         '404':
@@ -703,7 +781,7 @@ components:
 
     MarketplaceFavoritesResponse:
       type: object
-      required: [favorites, total]
+      required: [favorites, total, unavailableFavorites]
       properties:
         favorites:
           type: array
@@ -717,6 +795,21 @@ components:
           type: integer
           minimum: 0
           description: Count of eligible favorited vehicles in this response.
+        unavailableFavorites:
+          type: array
+          description: Stale favorites — saved listings that are no longer available.
+          items:
+            $ref: '#/components/schemas/MarketplaceUnavailableFavorite'
+
+    MarketplaceUnavailableFavorite:
+      type: object
+      required: [listingId, title]
+      properties:
+        listingId:
+          type: string
+        title:
+          type: string
+          description: Formatted title (year make model) at time of last known state.
 
     MarketplaceFavoriteAddResponse:
       type: object
@@ -795,6 +888,11 @@ components:
         priceCents:
           type: integer
           minimum: 0
+        originalPriceCents:
+          type: integer
+          nullable: true
+          minimum: 0
+          description: Previous price before a price drop. Null when no drop has occurred.
         mileage:
           type: integer
           minimum: 0
@@ -1563,6 +1661,35 @@ components:
         message:
           type: string
         leadId:
+          type: string
+          nullable: true
+
+    MarketplaceListingReportRequest:
+      type: object
+      additionalProperties: false
+      required: [reason]
+      properties:
+        reason:
+          type: string
+          enum:
+            - PRICE_MISMATCH
+            - SOLD_OR_UNAVAILABLE
+            - SUSPECTED_FRAUD
+            - INACCURATE_DESCRIPTION
+            - INAPPROPRIATE_CONTENT
+            - OTHER
+        details:
+          type: string
+          maxLength: 1000
+          description: Optional additional context from the reporter.
+
+    MarketplaceListingReportResponse:
+      type: object
+      required: [message]
+      properties:
+        message:
+          type: string
+        reportId:
           type: string
           nullable: true
 

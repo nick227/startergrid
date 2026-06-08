@@ -10,6 +10,8 @@ import type { MarketplaceDealerStatsResponse } from '../models/MarketplaceDealer
 import type { MarketplaceFeedResponse } from '../models/MarketplaceFeedResponse';
 import type { MarketplaceLeadCaptureRequest } from '../models/MarketplaceLeadCaptureRequest';
 import type { MarketplaceLeadCaptureResponse } from '../models/MarketplaceLeadCaptureResponse';
+import type { MarketplaceListingReportRequest } from '../models/MarketplaceListingReportRequest';
+import type { MarketplaceListingReportResponse } from '../models/MarketplaceListingReportResponse';
 import type { MarketplaceSitesResponse } from '../models/MarketplaceSitesResponse';
 import type { MarketplaceVehicleDetailResponse } from '../models/MarketplaceVehicleDetailResponse';
 import type { MarketplaceVehicleListResponse } from '../models/MarketplaceVehicleListResponse';
@@ -50,6 +52,9 @@ export class MarketplaceService {
         minPrice,
         maxPrice,
         maxMileage,
+        minYear,
+        maxYear,
+        sortBy,
         dealer,
     }: {
         /**
@@ -74,6 +79,18 @@ export class MarketplaceService {
          */
         maxMileage?: number,
         /**
+         * Minimum model year (inclusive).
+         */
+        minYear?: number,
+        /**
+         * Maximum model year (inclusive).
+         */
+        maxYear?: number,
+        /**
+         * Sort order for results. Defaults to newest.
+         */
+        sortBy?: 'newest' | 'price-asc' | 'price-desc' | 'mileage-asc' | 'year-asc' | 'year-desc',
+        /**
          * Filter by dealer ID
          */
         dealer?: string,
@@ -91,6 +108,9 @@ export class MarketplaceService {
                 'minPrice': minPrice,
                 'maxPrice': maxPrice,
                 'maxMileage': maxMileage,
+                'minYear': minYear,
+                'maxYear': maxYear,
+                'sortBy': sortBy,
                 'dealer': dealer,
             },
             errors: {
@@ -115,6 +135,9 @@ export class MarketplaceService {
         minPrice,
         maxPrice,
         maxMileage,
+        minYear,
+        maxYear,
+        sortBy,
         dealer,
         page = 1,
         pageSize = 24,
@@ -139,6 +162,18 @@ export class MarketplaceService {
          */
         maxMileage?: number,
         /**
+         * Minimum model year (inclusive).
+         */
+        minYear?: number,
+        /**
+         * Maximum model year (inclusive).
+         */
+        maxYear?: number,
+        /**
+         * Sort order for results. Defaults to newest.
+         */
+        sortBy?: 'newest' | 'price-asc' | 'price-desc' | 'mileage-asc' | 'year-asc' | 'year-desc',
+        /**
          * Filter by dealer ID
          */
         dealer?: string,
@@ -156,6 +191,9 @@ export class MarketplaceService {
                 'minPrice': minPrice,
                 'maxPrice': maxPrice,
                 'maxMileage': maxMileage,
+                'minYear': minYear,
+                'maxYear': maxYear,
+                'sortBy': sortBy,
                 'dealer': dealer,
                 'page': page,
                 'pageSize': pageSize,
@@ -223,6 +261,40 @@ export class MarketplaceService {
         return __request(OpenAPI, {
             method: 'POST',
             url: '/api/marketplace/vehicles/{listingId}/leads',
+            path: {
+                'listingId': listingId,
+            },
+            body: requestBody,
+            mediaType: 'application/json',
+            errors: {
+                400: `Bad request — invalid query parameter value`,
+                404: `Not found`,
+                429: `Too many requests`,
+            },
+        });
+    }
+    /**
+     * Report a marketplace listing
+     * Public trust signal — allows shoppers to flag a listing for review.
+     * Rate-limited to 5 reports per IP per 5 minutes per listing.
+     * Returns 404 when the listing is sold, removed, or not found.
+     *
+     * @returns MarketplaceListingReportResponse Report accepted
+     * @throws ApiError
+     */
+    public static reportMarketplaceListing({
+        listingId,
+        requestBody,
+    }: {
+        /**
+         * Opaque vehicle identifier from MarketplaceVehicleCard.listingId
+         */
+        listingId: string,
+        requestBody: MarketplaceListingReportRequest,
+    }): CancelablePromise<MarketplaceListingReportResponse> {
+        return __request(OpenAPI, {
+            method: 'POST',
+            url: '/api/marketplace/vehicles/{listingId}/report',
             path: {
                 'listingId': listingId,
             },

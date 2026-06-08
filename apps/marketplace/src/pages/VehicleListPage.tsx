@@ -4,7 +4,7 @@ import { useInfiniteMarketplaceFeed } from '../hooks/useInfiniteMarketplaceFeed.
 import { usePageMeta } from '../hooks/usePageMeta.ts';
 import { formatResultCount } from '../lib/display.ts';
 import { saveListReturn } from '../lib/listReturn.ts';
-import { listHref, parseRoute, type ListQuery } from '../lib/routes.ts';
+import { isAutomotiveSlug, listHref, parseRoute, type ListQuery, type SortBy } from '../lib/routes.ts';
 import { useCategorySchema, useCategorySlug } from '../contexts/CategoryContext.tsx';
 import { buildListingFilterConfig } from '../features/listings/listingFilterConfig.ts';
 import { hasListingFilters } from '../features/listings/listingFilterChips.ts';
@@ -20,6 +20,7 @@ import { EmptyState } from '../components/ui/EmptyState.tsx';
 import { FeedItemCard } from '../components/feed/FeedCards.tsx';
 import { EndOfFeedState, FeedCardSkeleton, LoadingMoreState } from '../components/feed/FeedStates.tsx';
 import { RecentlyViewedRail } from '../components/listings/RecentlyViewedRail.tsx';
+import { CompareBar } from '../components/listings/CompareBar.tsx';
 
 type Props = { initialQuery?: ListQuery };
 
@@ -34,6 +35,9 @@ export default function VehicleListPage({ initialQuery = {} }: Props) {
   const [minPrice, setMinPrice] = useState(formatMoneyInput(initialQuery.minPrice));
   const [maxPrice, setMaxPrice] = useState(formatMoneyInput(initialQuery.maxPrice));
   const [maxMileage, setMaxMileage] = useState(formatNumberInput(initialQuery.maxMileage));
+  const [minYear, setMinYear] = useState(formatNumberInput(initialQuery.minYear));
+  const [maxYear, setMaxYear] = useState(formatNumberInput(initialQuery.maxYear));
+  const [sortBy, setSortBy] = useState<SortBy | undefined>(initialQuery.sortBy);
   const [focusToken, setFocusToken] = useState(0);
   const sentinelRef = useRef<HTMLDivElement | null>(null);
 
@@ -49,7 +53,10 @@ export default function VehicleListPage({ initialQuery = {} }: Props) {
     minPrice:   dollarsToCents(minPrice),
     maxPrice:   dollarsToCents(maxPrice),
     maxMileage: parseNonNegative(maxMileage),
-  }), [condition, make, maxMileage, maxPrice, minPrice, model]);
+    minYear:    parseNonNegative(minYear),
+    maxYear:    parseNonNegative(maxYear),
+    sortBy,
+  }), [condition, make, maxMileage, maxPrice, maxYear, minPrice, minYear, model, sortBy]);
 
   const feed = useInfiniteMarketplaceFeed(listQuery);
 
@@ -72,6 +79,9 @@ export default function VehicleListPage({ initialQuery = {} }: Props) {
       setMinPrice(formatMoneyInput(q.minPrice));
       setMaxPrice(formatMoneyInput(q.maxPrice));
       setMaxMileage(formatNumberInput(q.maxMileage));
+      setMinYear(formatNumberInput(q.minYear));
+      setMaxYear(formatNumberInput(q.maxYear));
+      setSortBy(q.sortBy);
     }
     window.addEventListener('hashchange', syncFromHash);
     return () => window.removeEventListener('hashchange', syncFromHash);
@@ -94,6 +104,8 @@ export default function VehicleListPage({ initialQuery = {} }: Props) {
     setMinPrice('');
     setMaxPrice('');
     setMaxMileage('');
+    setMinYear('');
+    setMaxYear('');
     setFocusToken(t => t + 1);
   }
 
@@ -104,6 +116,9 @@ export default function VehicleListPage({ initialQuery = {} }: Props) {
     setMinPrice(formatMoneyInput(query.minPrice));
     setMaxPrice(formatMoneyInput(query.maxPrice));
     setMaxMileage(formatNumberInput(query.maxMileage));
+    setMinYear(formatNumberInput(query.minYear));
+    setMaxYear(formatNumberInput(query.maxYear));
+    setSortBy(query.sortBy);
   }
 
   const hasActiveFilters = hasListingFilters(listQuery);
@@ -128,12 +143,16 @@ export default function VehicleListPage({ initialQuery = {} }: Props) {
           minPrice={minPrice}
           maxPrice={maxPrice}
           maxUsage={maxMileage}
+          minYear={minYear}
+          maxYear={maxYear}
           onBrandChange={setMake}
           onModelChange={setModel}
           onConditionChange={setCondition}
           onMinPriceChange={setMinPrice}
           onMaxPriceChange={setMaxPrice}
           onMaxUsageChange={setMaxMileage}
+          onMinYearChange={setMinYear}
+          onMaxYearChange={setMaxYear}
           onSubmit={feed.reload}
           onClear={resetFilters}
           hasActiveFilters={hasActiveFilters}
@@ -186,9 +205,26 @@ export default function VehicleListPage({ initialQuery = {} }: Props) {
         )
       ) : (
         <>
-          <p className="mb-4 text-sm font-medium text-slate-600 sm:mb-5">
-            {formatResultCount(feed.totalEstimate, schema.asset.singular)}
-          </p>
+          <div className="mb-4 flex flex-wrap items-center justify-between gap-3 sm:mb-5">
+            <p className="text-sm font-medium text-slate-600">
+              {formatResultCount(feed.totalEstimate, schema.asset.singular)}
+            </p>
+            <label className="flex items-center gap-2 text-sm">
+              <span className="mp-label">Sort</span>
+              <select
+                value={sortBy ?? 'newest'}
+                onChange={e => setSortBy((e.target.value as SortBy) || undefined)}
+                className="mp-input py-1"
+              >
+                <option value="newest">Newest first</option>
+                <option value="price-asc">Price: low to high</option>
+                <option value="price-desc">Price: high to low</option>
+                <option value="mileage-asc">Mileage: low to high</option>
+                <option value="year-desc">Year: newest first</option>
+                <option value="year-asc">Year: oldest first</option>
+              </select>
+            </label>
+          </div>
 
           <VehicleGrid>
             {feed.items.map((item, index) => (
@@ -217,6 +253,7 @@ export default function VehicleListPage({ initialQuery = {} }: Props) {
           <RecentlyViewedRail categorySlug={slug} />
         </>
       )}
+      {isAutomotiveSlug(slug) && <CompareBar categorySlug={slug} />}
     </PageShell>
   );
 }

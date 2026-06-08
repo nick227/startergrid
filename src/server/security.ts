@@ -29,6 +29,7 @@ export const marketplaceRouteClassifications = {
   ],
   publicWrite: [
     'POST /api/marketplace/vehicles/:listingId/leads',
+    'POST /api/marketplace/vehicles/:listingId/report',
     'POST /api/marketplace/events',
   ],
   // Consumer auth — mp_session only; never guarded by op_session.

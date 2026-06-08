@@ -13,12 +13,18 @@ import { ErrorState } from '../components/ui/ErrorState.tsx';
 import { NotFoundState } from '../components/ui/NotFoundState.tsx';
 import { LeadInquiryForm } from '../components/ui/LeadInquiryForm.tsx';
 import { MediaSection } from '../components/vdp/MediaSection.tsx';
+import { ContentSection } from '../components/vdp/ContentSection.tsx';
+import { WarrantySection } from '../components/vdp/WarrantySection.tsx';
 import { ConditionBadge } from '../components/ui/ConditionBadge.tsx';
+import { PriceDropBadge } from '../components/listings/PriceDropBadge.tsx';
 import {
   ListingDetailEngagementPanels,
   ListingDetailShareAction,
+  ReportListingButton,
   useListingDetailEngagement,
 } from '../components/listings/ListingDetailEngagement.tsx';
+import { ListingActionSidebar } from '../components/listings/StickyListingActionPanel.tsx';
+import { SimilarListingsRail } from '../components/listings/SimilarListingsRail.tsx';
 
 type Props = { listingId: string };
 
@@ -81,6 +87,7 @@ export default function GenericListingDetailPage({ listingId }: Props) {
       slug={slug}
       backHref={backHref}
       vehicle={data.vehicle}
+      ctas={data.ctas}
       usageFieldLabel={usageFieldLabel}
       refLabel={schema.asset.refLabel}
     />
@@ -92,6 +99,7 @@ function GenericListingDetailContent({
   slug,
   backHref,
   vehicle,
+  ctas,
   usageFieldLabel,
   refLabel,
 }: {
@@ -99,9 +107,11 @@ function GenericListingDetailContent({
   slug: string;
   backHref: string;
   vehicle: MarketplaceVehicleDetailResponse['vehicle'];
+  ctas: MarketplaceVehicleDetailResponse['ctas'];
   usageFieldLabel: string;
   refLabel: string;
 }) {
+  const categoryId = useCategoryId();
   const engagement = useListingDetailEngagement({
     categorySlug: slug,
     listingId,
@@ -147,6 +157,12 @@ function GenericListingDetailContent({
             <p className="mt-1 text-3xl font-bold tabular-nums text-ink">
               {formatPrice(vehicle.commerce.priceCents)}
             </p>
+            {vehicle.commerce.originalPriceCents != null && vehicle.commerce.originalPriceCents > vehicle.commerce.priceCents && (
+              <div className="mt-2 flex items-center gap-2">
+                <span className="text-sm text-ink-muted line-through">{formatPrice(vehicle.commerce.originalPriceCents)}</span>
+                <PriceDropBadge originalPriceCents={vehicle.commerce.originalPriceCents} priceCents={vehicle.commerce.priceCents} />
+              </div>
+            )}
           </div>
 
           <dl className="grid grid-cols-2 gap-4 rounded-xl bg-surface-inset p-4">
@@ -184,11 +200,27 @@ function GenericListingDetailContent({
               className="ml-auto"
             />
           </div>
+          <div className="text-right">
+            <ReportListingButton listingId={listingId} />
+          </div>
 
-          <div className="rounded-xl border border-silver-200 bg-white p-5">
+          <ListingActionSidebar
+            priceSummary={engagement.priceSummary}
+            sellerSummary={engagement.sellerSummary}
+            shareTitle={engagement.shareTitle}
+            shareUrl={engagement.shareUrl}
+            ctas={ctas}
+          />
+
+          <div className="rounded-xl border border-silver-200 bg-white p-5 lg:hidden">
             <p className="mp-label text-ink-faint">Seller</p>
             <p className="mt-1 text-lg font-semibold text-ink-heading">{location.dealerName}</p>
             {sellerLocation && <p className="mt-1 text-sm text-ink-muted">{sellerLocation}</p>}
+            {location.dealerWebsiteUrl && (
+              <a href={location.dealerWebsiteUrl} target="_blank" rel="noopener noreferrer" className="mp-focus mt-2 block text-sm text-cta hover:underline">
+                Visit website
+              </a>
+            )}
           </div>
 
           <div id="inquiry">
@@ -201,6 +233,17 @@ function GenericListingDetailContent({
         </div>
       </div>
 
+      <div className="mt-10 space-y-6">
+        <WarrantySection warranty={vehicle.warranty} />
+        <ContentSection content={vehicle.content} />
+      </div>
+
+      <SimilarListingsRail
+        listingId={listingId}
+        categoryId={categoryId}
+        categorySlug={slug}
+      />
+
       <ListingDetailEngagementPanels
         categorySlug={slug}
         listingId={listingId}
@@ -208,6 +251,7 @@ function GenericListingDetailContent({
         shareUrl={engagement.shareUrl}
         priceSummary={engagement.priceSummary}
         sellerSummary={engagement.sellerSummary}
+        ctas={ctas}
       />
       </div>
     </PageShell>

@@ -12,16 +12,18 @@ type DbMedia = {
 };
 
 export type DbVehicleDetailRow = {
-  id:            string;
-  vin:           string;
-  stockNumber:   string;
-  year:          number;
-  make:          string;
-  model:         string;
-  trim:          string | null;
-  mileage:       number;
-  priceCents:    number;
-  condition:     string;
+  id:                 string;
+  vin:                string;
+  stockNumber:        string;
+  year:               number;
+  make:               string;
+  model:              string;
+  trim:               string | null;
+  mileage:            number;
+  priceCents:         number;
+  originalPriceCents: number | null;
+  priceLastChangedAt: Date | null;
+  condition:          string;
   exteriorColor: string;
   interiorColor: string | null;
   bodyStyle:     string | null;
@@ -122,10 +124,11 @@ function shapeCore(row: DbVehicleDetailRow) {
 }
 
 function shapeCommerce(row: DbVehicleDetailRow) {
+  const hasDrop = row.originalPriceCents != null && row.originalPriceCents > row.priceCents;
   return {
     priceCents:                   row.priceCents,
-    originalPriceCents:           null,
-    priceLastChangedAt:           null,
+    originalPriceCents:           hasDrop ? row.originalPriceCents : null,
+    priceLastChangedAt:           row.priceLastChangedAt?.toISOString() ?? null,
     estimatedMonthlyPaymentCents: null,
     availabilityStatus:           'AVAILABLE' as const,
     shippingPriceCents:           null,

@@ -1,6 +1,6 @@
 import type { CategorySchema } from '@auto-dealer/category-schemas';
 
-export type ListingFilterKey = 'brand' | 'model' | 'condition' | 'price' | 'usage';
+export type ListingFilterKey = 'brand' | 'model' | 'condition' | 'price' | 'usage' | 'year';
 
 export type ListingFilterLabels = {
   brand?: string;
@@ -64,6 +64,7 @@ export function buildListingFilterConfig(
   if (hasField(schema, 'condition')) enabledFilters.push('condition');
   enabledFilters.push('price');
   if (resolveUsageLabel(schema)) enabledFilters.push('usage');
+  if (hasField(schema, 'year')) enabledFilters.push('year');
 
   return {
     categorySlug,

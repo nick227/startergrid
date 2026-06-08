@@ -14,6 +14,8 @@ const baseDbVehicle: DbVehicle = {
   trim: 'EX-L',
   mileage: 37240,
   priceCents: 2399500,
+  originalPriceCents: null,
+  priceLastChangedAt: null,
   condition: 'USED',
   exteriorColor: 'Platinum White Pearl',
   interiorColor: 'Ivory',

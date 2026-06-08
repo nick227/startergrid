@@ -25,8 +25,13 @@ export function registerMarketplaceFavoritesRoutes(app: FastifyInstance, prisma:
     const parsed = resolveCategory(request.query.category);
     if (!parsed.ok) return reply.status(400).send({ error: parsed.error });
 
-    const favorites = await getMarketplaceFavoriteCards(prisma, user.id, parsed.category);
-    return reply.send({ favorites, total: favorites.length, category: parsed.category });
+    const { cards, unavailable } = await getMarketplaceFavoriteCards(prisma, user.id, parsed.category);
+    return reply.send({
+      favorites:            cards,
+      total:                cards.length,
+      unavailableFavorites: unavailable,
+      category:             parsed.category,
+    });
   });
 
   // POST /api/marketplace/me/favorites/:listingId

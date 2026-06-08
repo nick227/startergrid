@@ -2,7 +2,7 @@ import { useEffect } from 'react';
 import { useAuth } from '../contexts/AuthContext.tsx';
 import { useQuery, queryErrorMessage } from '../hooks/useQuery.ts';
 import { usePageMeta } from '../hooks/usePageMeta.ts';
-import { fetchFavorites } from '../lib/api.ts';
+import { fetchFavorites, removeFavorite } from '../lib/api.ts';
 import { listHref } from '../lib/routes.ts';
 import { useCategoryId, useCategorySchema, useCategorySlug } from '../contexts/CategoryContext.tsx';
 import { PageShell } from '../components/layout/PageShell.tsx';
@@ -33,9 +33,12 @@ export default function FavoritesPage() {
     { enabled: Boolean(user) },
   );
 
-  const visibleCards = data?.favorites.filter(v => favoriteIds.has(v.listingId)) ?? [];
+  const visibleCards         = data?.favorites.filter(v => favoriteIds.has(v.listingId)) ?? [];
+  const unavailableFavorites = data?.unavailableFavorites ?? [];
 
   if (!authReady || !user) return null;
+
+  const isEmpty = visibleCards.length === 0 && unavailableFavorites.length === 0;
 
   return (
     <PageShell>
@@ -48,7 +51,7 @@ export default function FavoritesPage() {
         <SkeletonGrid />
       ) : error ? (
         <ErrorState message={queryErrorMessage(error)} onRetry={reload} />
-      ) : visibleCards.length === 0 ? (
+      ) : isEmpty ? (
         <EmptyState
           title={`No saved ${schema.asset.plural}`}
           description="Tap the heart icon on any listing to save it here."
@@ -56,11 +59,46 @@ export default function FavoritesPage() {
           onAction={() => { window.location.hash = listHref(slug).slice(1); }}
         />
       ) : (
-        <VehicleGrid>
-          {visibleCards.map(card => (
-            <VehicleCard key={card.listingId} card={card} />
-          ))}
-        </VehicleGrid>
+        <>
+          {visibleCards.length > 0 && (
+            <VehicleGrid>
+              {visibleCards.map(card => (
+                <VehicleCard key={card.listingId} card={card} />
+              ))}
+            </VehicleGrid>
+          )}
+
+          {unavailableFavorites.length > 0 && (
+            <section className="mt-10 border-t border-silver-200 pt-8" aria-labelledby="unavailable-favorites-heading">
+              <h2 id="unavailable-favorites-heading" className="mp-section-title mb-4">
+                No longer available
+              </h2>
+              <p className="mb-5 text-sm text-ink-muted">
+                These listings have sold or been removed. You can dismiss them from your saved list.
+              </p>
+              <ul className="space-y-3">
+                {unavailableFavorites.map(item => (
+                  <li
+                    key={item.listingId}
+                    className="flex items-center justify-between gap-4 rounded-xl border border-silver-200 bg-white px-4 py-3 opacity-60"
+                  >
+                    <div>
+                      <p className="text-sm font-semibold text-ink-body line-through">{item.title}</p>
+                      <p className="mt-0.5 text-xs text-ink-muted">No longer available</p>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => removeFavorite(item.listingId).then(() => reload())}
+                      className="mp-focus shrink-0 text-xs text-ink-faint underline-offset-2 hover:text-ink-muted hover:underline"
+                    >
+                      Dismiss
+                    </button>
+                  </li>
+                ))}
+              </ul>
+            </section>
+          )}
+        </>
       )}
     </PageShell>
   );

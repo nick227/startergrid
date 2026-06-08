@@ -20,6 +20,9 @@ export function feedFilterKey(slug: string, query: ListQuery): string {
     minPrice:   query.minPrice ?? null,
     maxPrice:   query.maxPrice ?? null,
     maxMileage: query.maxMileage ?? null,
+    minYear:    query.minYear ?? null,
+    maxYear:    query.maxYear ?? null,
+    sortBy:     query.sortBy ?? null,
     dealer:     query.dealer ?? null,
   });
 }

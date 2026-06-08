@@ -270,20 +270,20 @@ describe('marketplace query — AUTOMOTIVE vs TRAILERS isolation', () => {
       },
     } as unknown as PrismaClient;
 
-    const automotiveCards = await getMarketplaceFavoriteCards(
+    const automotiveResult = await getMarketplaceFavoriteCards(
       prismaWithFavorites,
       'shopper-1',
       'AUTOMOTIVE',
     );
-    const trailerCards = await getMarketplaceFavoriteCards(
+    const trailerResult = await getMarketplaceFavoriteCards(
       prismaWithFavorites,
       'shopper-1',
       'TRAILERS_POWERSPORTS_RV',
     );
-    assert.equal(automotiveCards.length, 1);
-    assert.equal(trailerCards.length, 1);
-    assert.equal(automotiveCards[0]!.listingId, 'listing-auto-1');
-    assert.equal(trailerCards[0]!.listingId, 'listing-trailer-1');
+    assert.equal(automotiveResult.cards.length, 1);
+    assert.equal(trailerResult.cards.length, 1);
+    assert.equal(automotiveResult.cards[0]!.listingId, 'listing-auto-1');
+    assert.equal(trailerResult.cards[0]!.listingId, 'listing-trailer-1');
   });
 
   it('browse cards never expose vin and trailers cards expose usageUnit', async () => {

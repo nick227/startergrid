@@ -1,15 +1,24 @@
+import { useSyncExternalStore } from 'react';
 import type {
   MarketplaceFeedItem,
   MarketplaceVehicleCard,
 } from '../../lib/api.ts';
 import { formatLocation, formatPrice, formatUsage, vehicleHeading } from '../../lib/display.ts';
-import { listingHref, sellerHref } from '../../lib/routes.ts';
+import { isAutomotiveSlug, listingHref, sellerHref } from '../../lib/routes.ts';
 import { useCategoryId, useCategorySchema, useCategorySlug } from '../../contexts/CategoryContext.tsx';
 import { useTrackVisibleMarketplaceItem } from '../../hooks/useTrackVisibleMarketplaceItem.ts';
+import {
+  getCompareServerSnapshot,
+  getCompareSnapshot,
+  MAX_COMPARE,
+  subscribeCompare,
+  toggleCompare,
+} from '../../features/listings/listingCompare.ts';
 import { ConditionBadge } from '../ui/ConditionBadge.tsx';
 import { FeedMediaCarousel } from '../ui/FeedMediaCarousel.tsx';
 import { FavoriteButton } from '../ui/FavoriteButton.tsx';
 import { NewArrivalBadge } from '../listings/NewArrivalBadge.tsx';
+import { PriceDropBadge } from '../listings/PriceDropBadge.tsx';
 
 type FeedItemProps = {
   item: MarketplaceFeedItem;
@@ -42,6 +51,10 @@ function VehicleFeedCard({
   });
   const title = vehicleHeading(card);
   const location = formatLocation(card.dealerCity, card.dealerState);
+  const showCompare = isAutomotiveSlug(slug);
+  const compareItems = useSyncExternalStore(subscribeCompare, getCompareSnapshot, getCompareServerSnapshot);
+  const inCompare = compareItems.some(i => i.listingId === card.listingId);
+  const compareDisabled = !inCompare && compareItems.length >= MAX_COMPARE;
 
   return (
     <article ref={ref} className="group mp-card flex h-full flex-col transition hover:border-navy-500/40 hover:shadow-elevation-3">
@@ -56,8 +69,34 @@ function VehicleFeedCard({
         </a>
         <div className="absolute right-2 top-2 z-10 flex flex-col items-end gap-2">
           <NewArrivalBadge listedAt={card.listedAt} />
+          <PriceDropBadge originalPriceCents={card.originalPriceCents} priceCents={card.priceCents} />
           <FavoriteButton listingId={card.listingId} />
         </div>
+        {showCompare && <button
+          type="button"
+          disabled={compareDisabled}
+          onClick={() => toggleCompare({
+            listingId:  card.listingId,
+            title,
+            priceCents: card.priceCents,
+            year:       card.year,
+            mileage:    card.mileage,
+            imageUrl:   card.mediaUrls[0] ?? null,
+            slug,
+          })}
+          className={[
+            'absolute bottom-2 left-2 z-10 rounded-lg px-2.5 py-1 text-xs font-semibold shadow',
+            inCompare
+              ? 'bg-navy-700 text-white'
+              : compareDisabled
+                ? 'cursor-not-allowed bg-white/70 text-ink-muted'
+                : 'bg-white/90 text-ink hover:bg-white',
+          ].join(' ')}
+          aria-pressed={inCompare}
+          aria-label={inCompare ? `Remove ${title} from compare` : `Add ${title} to compare`}
+        >
+          {inCompare ? '✓ Comparing' : compareDisabled ? 'Max reached' : '+ Compare'}
+        </button>}
       </div>
 
       <div className="flex flex-1 flex-col gap-4 p-5">
@@ -100,6 +139,9 @@ function VehicleMeta({
       <div className="col-span-2">
         <p className="mp-label text-ink-faint">Price</p>
         <p className="text-2xl font-bold tabular-nums text-ink">{formatPrice(card.priceCents)}</p>
+        {card.originalPriceCents != null && card.originalPriceCents > card.priceCents && (
+          <p className="mt-1 text-xs text-ink-muted line-through">{formatPrice(card.originalPriceCents)}</p>
+        )}
       </div>
       <MetaCell label="Year" value={String(card.year)} />
       <MetaCell label={usageLabel} value={formatUsage(card.mileage, usageUnit)} />

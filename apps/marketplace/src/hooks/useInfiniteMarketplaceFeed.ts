@@ -33,9 +33,12 @@ export function useInfiniteMarketplaceFeed(query: ListQuery) {
     minPrice:   query.minPrice,
     maxPrice:   query.maxPrice,
     maxMileage: query.maxMileage,
+    minYear:    query.minYear,
+    maxYear:    query.maxYear,
+    sortBy:     query.sortBy,
     dealer:     query.dealer,
     limit:      FEED_LIMIT,
-  }), [categoryId, query.make, query.model, query.condition, query.minPrice, query.maxPrice, query.maxMileage, query.dealer]);
+  }), [categoryId, query.make, query.model, query.condition, query.minPrice, query.maxPrice, query.maxMileage, query.minYear, query.maxYear, query.sortBy, query.dealer]);
 
   const filterKey = useMemo(() => feedFilterKey(slug, query), [slug, query]);
   const requestId = useRef(0);

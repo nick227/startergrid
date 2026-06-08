@@ -11,6 +11,7 @@ export type ListingPrimaryAction = {
 
 export type PriceSummary = {
   priceCents: number;
+  originalPriceCents?: number | null;
   label?: string;
 };
 

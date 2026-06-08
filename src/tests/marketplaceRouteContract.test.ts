@@ -24,6 +24,7 @@ const REGISTERED_MARKETPLACE_ROUTES = new Set([
   'GET    /api/marketplace/vehicles',
   'GET    /api/marketplace/vehicles/{listingId}',
   'POST   /api/marketplace/vehicles/{listingId}/leads',
+  'POST   /api/marketplace/vehicles/{listingId}/report',
   'POST   /api/marketplace/events',
   'GET    /api/marketplace/sellers/{sellerId}',
   'GET    /api/marketplace/dealers/{dealerId}',

@@ -17,13 +17,28 @@ type StorageLike = Pick<Storage, 'getItem' | 'setItem'>;
 
 const listeners = new Set<() => void>();
 
+// Cached snapshot for useSyncExternalStore — only replaced when storage actually changes.
+let cachedSnapshot: SavedSearch[] | null = null;
+
 export function subscribeSavedSearches(onChange: () => void): () => void {
   listeners.add(onChange);
   return () => listeners.delete(onChange);
 }
 
 function notifySavedSearches(): void {
+  cachedSnapshot = null; // invalidate so next getSnapshot re-reads
   listeners.forEach(listener => listener());
+}
+
+export function getSnapshot(): SavedSearch[] {
+  if (cachedSnapshot === null) {
+    cachedSnapshot = readStorage(getBrowserStorage());
+  }
+  return cachedSnapshot;
+}
+
+export function getServerSnapshot(): SavedSearch[] {
+  return [];
 }
 
 function readStorage(storage: StorageLike | null | undefined): SavedSearch[] {
@@ -67,6 +82,9 @@ function querySignature(query: ListQuery): string {
     minPrice: query.minPrice ?? null,
     maxPrice: query.maxPrice ?? null,
     maxMileage: query.maxMileage ?? null,
+    minYear: query.minYear ?? null,
+    maxYear: query.maxYear ?? null,
+    sortBy: query.sortBy ?? null,
     dealer: query.dealer ?? null,
   });
 }

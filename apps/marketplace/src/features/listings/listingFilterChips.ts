@@ -18,6 +18,8 @@ export function hasListingFilters(query: ListQuery): boolean {
     query.minPrice != null ||
     query.maxPrice != null ||
     query.maxMileage != null ||
+    query.minYear != null ||
+    query.maxYear != null ||
     query.dealer,
   );
 }
@@ -40,6 +42,8 @@ export function buildListingFilterChips(
   if (query.maxMileage != null) {
     chips.push({ key: 'maxMileage', label: `Max ${usageLabel.toLowerCase()}: ${query.maxMileage.toLocaleString()}` });
   }
+  if (query.minYear != null) chips.push({ key: 'minYear', label: `From: ${query.minYear}` });
+  if (query.maxYear != null) chips.push({ key: 'maxYear', label: `To: ${query.maxYear}` });
   if (query.dealer) chips.push({ key: 'dealer', label: `Seller: ${query.dealer}` });
 
   return chips;

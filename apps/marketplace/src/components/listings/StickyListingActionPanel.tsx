@@ -1,26 +1,46 @@
 import {
-  buildDefaultListingActions,
+  LISTING_INQUIRY_TARGET_ID,
   runListingPrimaryAction,
+  type ListingPrimaryAction,
   type PriceSummary,
   type SellerSummary,
 } from '../../features/listings/listingActions.ts';
+import type { MarketplaceVehicleCtas } from '../../lib/api.ts';
 import { formatPrice } from '../../lib/display.ts';
 import { ShareListingButton } from './ShareListingButton.tsx';
+import { PriceDropBadge } from './PriceDropBadge.tsx';
 
 type Props = {
   priceSummary: PriceSummary;
   sellerSummary: SellerSummary;
   shareTitle: string;
   shareUrl: string;
+  ctas?: MarketplaceVehicleCtas;
 };
+
+function ctasToPrimaryAction(ctas: MarketplaceVehicleCtas | undefined): ListingPrimaryAction {
+  if (!ctas) {
+    return { label: 'Contact seller', kind: 'scroll', targetId: LISTING_INQUIRY_TARGET_ID };
+  }
+  const { action, label } = ctas.primary;
+  if (action === 'INQUIRY') {
+    return { label, kind: 'scroll', targetId: LISTING_INQUIRY_TARGET_ID };
+  }
+  if (action === 'EXTERNAL_URL') {
+    const secondary = ctas.secondary.find(s => s.action === 'EXTERNAL_URL' && s.href);
+    return { label, kind: 'link', href: secondary?.href ?? '#' };
+  }
+  return { label, kind: 'scroll', targetId: LISTING_INQUIRY_TARGET_ID };
+}
 
 export function StickyListingActionPanel({
   priceSummary,
   sellerSummary,
   shareTitle,
   shareUrl,
+  ctas,
 }: Props) {
-  const { primary } = buildDefaultListingActions();
+  const primary = ctasToPrimaryAction(ctas);
 
   return (
     <div
@@ -52,8 +72,12 @@ export function ListingActionSidebar({
   sellerSummary,
   shareTitle,
   shareUrl,
+  ctas,
 }: Props) {
-  const { primary } = buildDefaultListingActions();
+  const primary = ctasToPrimaryAction(ctas);
+  const secondaryLinks = (ctas?.secondary ?? []).filter(
+    s => s.action === 'DEALER_PAGE' || s.action === 'DEALER_INVENTORY',
+  );
 
   return (
     <div className="hidden rounded-xl border border-silver-200 bg-white p-5 shadow-elevation-1 lg:block">
@@ -61,6 +85,12 @@ export function ListingActionSidebar({
       <p className="mt-1 text-3xl font-bold tabular-nums text-ink">
         {formatPrice(priceSummary.priceCents)}
       </p>
+      {priceSummary.originalPriceCents != null && priceSummary.originalPriceCents > priceSummary.priceCents && (
+        <div className="mt-2 flex items-center gap-2">
+          <span className="text-sm text-ink-muted line-through">{formatPrice(priceSummary.originalPriceCents)}</span>
+          <PriceDropBadge originalPriceCents={priceSummary.originalPriceCents} priceCents={priceSummary.priceCents} />
+        </div>
+      )}
       <p className="mt-3 mp-label text-ink-faint">Seller</p>
       <p className="mt-0.5 text-sm font-semibold text-ink-heading">{sellerSummary.name}</p>
       {sellerSummary.location && (
@@ -74,6 +104,11 @@ export function ListingActionSidebar({
         >
           {primary.label}
         </button>
+        {secondaryLinks.map(s => (
+          <a key={s.action} href={s.href ?? '#'} className="mp-btn-secondary w-full text-center">
+            {s.label}
+          </a>
+        ))}
         <ShareListingButton title={shareTitle} url={shareUrl} className="w-full" />
       </div>
     </div>

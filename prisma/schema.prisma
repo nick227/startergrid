@@ -265,8 +265,10 @@ model Vehicle {
   model           String   @db.VarChar(80)
   trim            String?  @db.VarChar(120)
   mileage         Int
-  priceCents      Int
-  condition       String   @db.VarChar(24)
+  priceCents          Int
+  originalPriceCents  Int?
+  priceLastChangedAt  DateTime?
+  condition           String   @db.VarChar(24)
   exteriorColor   String   @db.VarChar(80)
   interiorColor   String?  @db.VarChar(80)
   bodyStyle       String?  @db.VarChar(80)
@@ -292,9 +294,23 @@ model Vehicle {
   performanceCache  VehiclePerformanceCache?
   channelEvents     ChannelEvent[]
   favorites         MarketplaceFavorite[]
+  listingReports    ListingReport[]
 
   @@index([dealershipId])
   @@unique([dealershipId, stockNumber])
+}
+
+model ListingReport {
+  id          String   @id @default(cuid())
+  vehicleId   String
+  reason      String   @db.VarChar(80)
+  details     String?  @db.VarChar(1000)
+  reporterIp  String   @db.VarChar(45)
+  createdAt   DateTime @default(now())
+
+  vehicle     Vehicle @relation(fields: [vehicleId], references: [id], onDelete: Cascade)
+
+  @@index([vehicleId])
 }
 
 model VehicleMedia {

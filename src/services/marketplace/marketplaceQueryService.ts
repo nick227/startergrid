@@ -37,25 +37,26 @@ const MAX_FEED_LIMIT = 60;
 // ── Public types ──────────────────────────────────────────────────────────────
 
 export type MarketplaceVehicleCard = {
-  listingId:    string;        // opaque stable ID — not a VIN; used for the detail route
-  stockNumber:  string;
-  year:         number;
-  make:         string;
-  model:        string;
-  trim:         string | null;
-  condition:    string;
-  priceCents:   number;
-  mileage:      number;
-  usageUnit?:   'miles' | 'hours';
-  exteriorColor: string | null;
-  mediaUrls:    string[];      // first MAX_CARD_IMAGES, ordered by sortOrder
-  mediaItems:   MarketplaceMediaItem[];
-  dealerId:     string;
-  dealerName:   string;        // dbaName ?? legalName
-  dealerCity:   string | null;
-  dealerState:  string | null;
-  listingUrl:   string;
-  listedAt:     string;        // ISO 8601
+  listingId:          string;        // opaque stable ID — not a VIN; used for the detail route
+  stockNumber:        string;
+  year:               number;
+  make:               string;
+  model:              string;
+  trim:               string | null;
+  condition:          string;
+  priceCents:         number;
+  originalPriceCents: number | null;
+  mileage:            number;
+  usageUnit?:         'miles' | 'hours';
+  exteriorColor:      string | null;
+  mediaUrls:          string[];      // first MAX_CARD_IMAGES, ordered by sortOrder
+  mediaItems:         MarketplaceMediaItem[];
+  dealerId:           string;
+  dealerName:         string;        // dbaName ?? legalName
+  dealerCity:         string | null;
+  dealerState:        string | null;
+  listingUrl:         string;
+  listedAt:           string;        // ISO 8601
 };
 
 export type MarketplaceMediaItem = {
@@ -153,6 +154,9 @@ export type MarketplaceListFilters = {
   minPrice?:   number;
   maxPrice?:   number;
   maxMileage?: number;
+  minYear?:    number;
+  maxYear?:    number;
+  sortBy?:     string;
   dealer?:     string;
   page?:       number;
   pageSize?:   number;
@@ -180,21 +184,22 @@ type DbDealership = {
 };
 
 type DbVehicleRow = {
-  id:           string;
-  stockNumber:  string;
-  year:         number;
-  make:         string;
-  model:        string;
-  trim:         string | null;
-  mileage:      number;
-  priceCents:   number;
-  condition:    string;
-  exteriorColor: string;
-  categoryPayload?: unknown;
-  createdAt:    Date;
-  dealershipId: string;
-  media:        DbMedia[];
-  dealership:   DbDealership;
+  id:                 string;
+  stockNumber:        string;
+  year:               number;
+  make:               string;
+  model:              string;
+  trim:               string | null;
+  mileage:            number;
+  priceCents:         number;
+  originalPriceCents: number | null;
+  condition:          string;
+  exteriorColor:      string;
+  categoryPayload?:   unknown;
+  createdAt:          Date;
+  dealershipId:       string;
+  media:              DbMedia[];
+  dealership:         DbDealership;
 };
 
 // ── Address helper ────────────────────────────────────────────────────────────
@@ -238,17 +243,18 @@ function shapeCard(row: DbVehicleRow): MarketplaceVehicleCard {
   }));
 
   return {
-    listingId:    row.id,
-    stockNumber:  row.stockNumber,
-    year:         row.year,
-    make:         row.make,
-    model:        row.model,
-    trim:         row.trim,
-    condition:    row.condition,
-    priceCents:   row.priceCents,
-    mileage:      row.mileage,
-    usageUnit:    usageUnitFromPayload(row.categoryPayload),
-    exteriorColor: row.exteriorColor ?? null,
+    listingId:          row.id,
+    stockNumber:        row.stockNumber,
+    year:               row.year,
+    make:               row.make,
+    model:              row.model,
+    trim:               row.trim,
+    condition:          row.condition,
+    priceCents:         row.priceCents,
+    originalPriceCents: row.originalPriceCents,
+    mileage:            row.mileage,
+    usageUnit:          usageUnitFromPayload(row.categoryPayload),
+    exteriorColor:      row.exteriorColor ?? null,
     mediaUrls,
     mediaItems,
     dealerId:     row.dealershipId,
@@ -283,19 +289,20 @@ const DEALER_SELECT: Prisma.DealershipProfileSelect = {
 
 // Card select — includes media limited to MAX_CARD_IMAGES.
 const VEHICLE_CARD_SELECT: Prisma.VehicleSelect = {
-  id:            true,
-  dealershipId:  true,
-  stockNumber:   true,
-  year:          true,
-  make:          true,
-  model:         true,
-  trim:          true,
-  condition:     true,
-  priceCents:    true,
-  mileage:       true,
-  exteriorColor: true,
-  categoryPayload: true,
-  createdAt:     true,
+  id:                 true,
+  dealershipId:       true,
+  stockNumber:        true,
+  year:               true,
+  make:               true,
+  model:              true,
+  trim:               true,
+  condition:          true,
+  priceCents:         true,
+  originalPriceCents: true,
+  mileage:            true,
+  exteriorColor:      true,
+  categoryPayload:    true,
+  createdAt:          true,
   media: {
     select:  { url: true, kind: true, sortOrder: true, width: true, height: true, mimeType: true },
     orderBy: { sortOrder: 'asc' },
@@ -306,25 +313,27 @@ const VEHICLE_CARD_SELECT: Prisma.VehicleSelect = {
 
 // Detail select — all media + VIN (detail-only). VIN never selected on card queries.
 const VEHICLE_DETAIL_SELECT: Prisma.VehicleSelect = {
-  id:            true,
-  vin:           true,
-  dealershipId:  true,
-  stockNumber:   true,
-  year:          true,
-  make:          true,
-  model:         true,
-  trim:          true,
-  condition:     true,
-  priceCents:    true,
-  mileage:       true,
-  exteriorColor: true,
-  interiorColor: true,
-  bodyStyle:     true,
-  drivetrain:    true,
-  fuelType:      true,
-  transmission:  true,
-  categoryPayload: true,
-  createdAt:     true,
+  id:                 true,
+  vin:                true,
+  dealershipId:       true,
+  stockNumber:        true,
+  year:               true,
+  make:               true,
+  model:              true,
+  trim:               true,
+  condition:          true,
+  priceCents:         true,
+  originalPriceCents: true,
+  priceLastChangedAt: true,
+  mileage:            true,
+  exteriorColor:      true,
+  interiorColor:      true,
+  bodyStyle:          true,
+  drivetrain:         true,
+  fuelType:           true,
+  transmission:       true,
+  categoryPayload:    true,
+  createdAt:          true,
   media: {
     select:  { id: true, url: true, kind: true, sortOrder: true, width: true, height: true, mimeType: true },
     orderBy: { sortOrder: 'asc' },
@@ -372,7 +381,38 @@ function buildMarketplaceWhere(filters: MarketplaceListFilters): Prisma.VehicleW
   if (filters.dealer)    where.dealershipId = filters.dealer;
   if (filters.maxMileage != null) where.mileage = { lte: filters.maxMileage };
 
+  if (filters.minYear != null || filters.maxYear != null) {
+    const yearFilter: Prisma.IntFilter<'Vehicle'> = {};
+    if (filters.minYear != null) yearFilter.gte = filters.minYear;
+    if (filters.maxYear != null) yearFilter.lte = filters.maxYear;
+    where.year = yearFilter;
+  }
+
   return where;
+}
+
+// Used by listMarketplaceVehicles (offset pagination — id asc is fine as tie-breaker).
+function buildOrderBy(sortBy: string | undefined): Prisma.VehicleOrderByWithRelationInput[] {
+  switch (sortBy) {
+    case 'price-asc':   return [{ priceCents: 'asc'  }, { id: 'asc' }];
+    case 'price-desc':  return [{ priceCents: 'desc' }, { id: 'asc' }];
+    case 'mileage-asc': return [{ mileage:    'asc'  }, { id: 'asc' }];
+    case 'year-asc':    return [{ year:       'asc'  }, { id: 'asc' }];
+    case 'year-desc':   return [{ year:       'desc' }, { id: 'asc' }];
+    default:            return [{ createdAt:  'desc' }, { id: 'asc' }];
+  }
+}
+
+// Used by getMarketplaceFeed (cursor pagination — id desc matches cursor WHERE id < cursor.id).
+function buildFeedOrderBy(sortBy: string | undefined): Prisma.VehicleOrderByWithRelationInput[] {
+  switch (sortBy) {
+    case 'price-asc':   return [{ priceCents: 'asc'  }, { id: 'asc' }];
+    case 'price-desc':  return [{ priceCents: 'desc' }, { id: 'asc' }];
+    case 'mileage-asc': return [{ mileage:    'asc'  }, { id: 'asc' }];
+    case 'year-asc':    return [{ year:       'asc'  }, { id: 'asc' }];
+    case 'year-desc':   return [{ year:       'desc' }, { id: 'asc' }];
+    default:            return [{ createdAt:  'desc' }, { id: 'desc' }]; // cursor: id desc
+  }
 }
 
 function appliedFilters(filters: MarketplaceListFilters): MarketplaceFeedAppliedFilters {
@@ -459,12 +499,7 @@ export async function listMarketplaceVehicles(
   const pageSize = Math.min(100, Math.max(1, filters.pageSize ?? 24));
 
   const where = buildMarketplaceWhere(filters);
-
-  // Stable sort: primary = newest first; secondary = id for deterministic tie-breaking.
-  const orderBy: Prisma.VehicleOrderByWithRelationInput[] = [
-    { createdAt: 'desc' },
-    { id:        'asc'  },
-  ];
+  const orderBy = buildOrderBy(filters.sortBy);
 
   const [total, rows] = await Promise.all([
     prisma.vehicle.count({ where }),
@@ -492,7 +527,11 @@ export async function getMarketplaceFeed(
 ): Promise<MarketplaceFeedResponse> {
   const limit = Math.min(MAX_FEED_LIMIT, Math.max(1, filters.limit ?? DEFAULT_FEED_LIMIT));
   const baseWhere = buildMarketplaceWhere(filters);
-  const cursor = decodeFeedCursor(filters.cursor);
+  const useDefaultSort = !filters.sortBy || filters.sortBy === 'newest';
+  const orderBy = buildFeedOrderBy(filters.sortBy);
+
+  // Non-default sorts can't use createdAt-based cursor pagination; serve first page only.
+  const cursor = useDefaultSort ? decodeFeedCursor(filters.cursor) : null;
   const where: Prisma.VehicleWhereInput = cursor
     ? {
         AND: [
@@ -507,11 +546,6 @@ export async function getMarketplaceFeed(
       }
     : baseWhere;
 
-  const orderBy: Prisma.VehicleOrderByWithRelationInput[] = [
-    { createdAt: 'desc' },
-    { id:        'desc' },
-  ];
-
   const [totalEstimate, rows] = await Promise.all([
     prisma.vehicle.count({ where: baseWhere }),
     prisma.vehicle.findMany({
@@ -524,7 +558,7 @@ export async function getMarketplaceFeed(
 
   const typedRows = rows as unknown as DbVehicleRow[];
   const pageRows = typedRows.slice(0, limit);
-  const nextCursor = typedRows.length > limit && pageRows.length > 0
+  const nextCursor = useDefaultSort && typedRows.length > limit && pageRows.length > 0
     ? encodeFeedCursor(pageRows[pageRows.length - 1]!)
     : null;
 
@@ -561,27 +595,46 @@ export async function getMarketplaceVehicle(
 // Returns marketplace-safe vehicle cards for all currently-eligible vehicles that
 // the given user has favorited. Sold/removed/unpriced vehicles are silently omitted —
 // the MarketplaceFavorite row is preserved so cards reappear if the vehicle is re-listed.
+export type MarketplaceUnavailableFavorite = {
+  listingId: string;
+  title:     string;
+};
+
 export async function getMarketplaceFavoriteCards(
   prisma: PrismaClient,
   userId: string,
   category?: BusinessCategory,
-): Promise<MarketplaceVehicleCard[]> {
-  const where: Prisma.VehicleWhereInput = {
-    soldAt:    null,
-    removedAt: null,
-    priceCents: { gt: 0 },
+): Promise<{ cards: MarketplaceVehicleCard[]; unavailable: MarketplaceUnavailableFavorite[] }> {
+  const baseWhere: Prisma.VehicleWhereInput = {
     favorites: { some: { marketplaceUserId: userId } },
   };
   if (category) {
-    where.dealership = { businessCategory: category };
+    baseWhere.dealership = { businessCategory: category };
   }
 
-  const rows = await prisma.vehicle.findMany({
-    where,
-    select:  VEHICLE_CARD_SELECT,
-    orderBy: [{ createdAt: 'desc' }, { id: 'asc' }],
-  });
-  return (rows as unknown as DbVehicleRow[]).map(shapeCard);
+  const [availableRows, unavailableRows] = await Promise.all([
+    prisma.vehicle.findMany({
+      where:   { ...baseWhere, soldAt: null, removedAt: null, priceCents: { gt: 0 } },
+      select:  VEHICLE_CARD_SELECT,
+      orderBy: [{ createdAt: 'desc' }, { id: 'asc' }],
+    }),
+    prisma.vehicle.findMany({
+      where: {
+        ...baseWhere,
+        OR: [{ soldAt: { not: null } }, { removedAt: { not: null } }, { priceCents: 0 }],
+      },
+      select: { id: true, year: true, make: true, model: true },
+      orderBy: [{ createdAt: 'desc' }, { id: 'asc' }],
+    }),
+  ]);
+
+  const cards = (availableRows as unknown as DbVehicleRow[]).map(shapeCard);
+  const unavailable = unavailableRows.map(r => ({
+    listingId: r.id,
+    title:     `${r.year} ${r.make} ${r.model}`,
+  }));
+
+  return { cards, unavailable };
 }
 
 export async function getMarketplaceDealerIndex(

@@ -2,6 +2,7 @@
 /* istanbul ignore file */
 /* tslint:disable */
 /* eslint-disable */
+import type { MarketplaceUnavailableFavorite } from './MarketplaceUnavailableFavorite';
 import type { MarketplaceVehicleCard } from './MarketplaceVehicleCard';
 export type MarketplaceFavoritesResponse = {
     /**
@@ -15,5 +16,9 @@ export type MarketplaceFavoritesResponse = {
      * Count of eligible favorited vehicles in this response.
      */
     total: number;
+    /**
+     * Stale favorites — saved listings that are no longer available.
+     */
+    unavailableFavorites: Array<MarketplaceUnavailableFavorite>;
 };
 

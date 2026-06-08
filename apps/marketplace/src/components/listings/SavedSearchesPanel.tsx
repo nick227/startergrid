@@ -2,7 +2,8 @@ import { useSyncExternalStore } from 'react';
 import type { ListingFilterConfig } from '../../features/listings/listingFilterConfig.ts';
 import { hasListingFilters } from '../../features/listings/listingFilterChips.ts';
 import {
-  readSavedSearches,
+  getServerSnapshot,
+  getSnapshot,
   removeSavedSearch,
   saveSearch,
   savedSearchMatchesQuery,
@@ -18,21 +19,14 @@ type Props = {
   onApply: (query: ListQuery) => void;
 };
 
-function getSnapshot(categorySlug: string): SavedSearch[] {
-  return readSavedSearches(categorySlug);
-}
-
 export function SavedSearchesPanel({
   categorySlug,
   config,
   currentQuery,
   onApply,
 }: Props) {
-  const saved = useSyncExternalStore(
-    subscribeSavedSearches,
-    () => getSnapshot(categorySlug),
-    () => [],
-  );
+  const allSaved = useSyncExternalStore(subscribeSavedSearches, getSnapshot, getServerSnapshot);
+  const saved = allSaved.filter((entry: SavedSearch) => entry.categorySlug === categorySlug);
   const canSave = hasListingFilters(currentQuery);
   const currentSaved = saved.some(entry => savedSearchMatchesQuery(entry, currentQuery));
 

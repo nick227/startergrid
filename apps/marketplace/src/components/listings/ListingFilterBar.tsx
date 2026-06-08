@@ -15,12 +15,16 @@ type Props = {
   minPrice: string;
   maxPrice: string;
   maxUsage: string;
+  minYear: string;
+  maxYear: string;
   onBrandChange: (value: string) => void;
   onModelChange: (value: string) => void;
   onConditionChange: (value: ListFilters['condition']) => void;
   onMinPriceChange: (value: string) => void;
   onMaxPriceChange: (value: string) => void;
   onMaxUsageChange: (value: string) => void;
+  onMinYearChange: (value: string) => void;
+  onMaxYearChange: (value: string) => void;
   onSubmit: () => void;
   onClear: () => void;
   hasActiveFilters: boolean;
@@ -35,12 +39,16 @@ export function ListingFilterBar({
   minPrice,
   maxPrice,
   maxUsage,
+  minYear,
+  maxYear,
   onBrandChange,
   onModelChange,
   onConditionChange,
   onMinPriceChange,
   onMaxPriceChange,
   onMaxUsageChange,
+  onMinYearChange,
+  onMaxYearChange,
   onSubmit,
   onClear,
   hasActiveFilters,
@@ -151,6 +159,37 @@ export function ListingFilterBar({
               className="mp-input"
             />
           </label>
+        )}
+
+        {isListingFilterEnabled(config, 'year') && (
+          <>
+            <label className="flex flex-col gap-1.5">
+              <span className="mp-label">Min year</span>
+              <input
+                type="number"
+                min="1900"
+                max="2099"
+                inputMode="numeric"
+                value={minYear}
+                onChange={e => onMinYearChange(e.target.value)}
+                placeholder="e.g. 2020"
+                className="mp-input"
+              />
+            </label>
+            <label className="flex flex-col gap-1.5">
+              <span className="mp-label">Max year</span>
+              <input
+                type="number"
+                min="1900"
+                max="2099"
+                inputMode="numeric"
+                value={maxYear}
+                onChange={e => onMaxYearChange(e.target.value)}
+                placeholder="e.g. 2024"
+                className="mp-input"
+              />
+            </label>
+          </>
         )}
 
         <div className="flex flex-col gap-2 sm:col-span-2 sm:flex-row sm:items-end lg:col-span-full xl:col-span-1">

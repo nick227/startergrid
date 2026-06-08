@@ -5,6 +5,7 @@ const TONE_CLASS = {
   sky:     'bg-status-info-bg text-status-info-text ring-status-info-border',
   slate:   'bg-status-neutral-bg text-status-neutral-text ring-status-neutral-border',
   emerald: 'bg-status-success-bg text-status-success-text ring-status-success-border',
+  rose:    'bg-rose-50 text-rose-700 ring-rose-200',
 } as const;
 
 type Tone = keyof typeof TONE_CLASS;

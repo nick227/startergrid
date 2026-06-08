@@ -1,3 +1,4 @@
+import type { BusinessCategoryId } from '@auto-dealer/category-schemas';
 import { useQuery, queryErrorMessage } from '../hooks/useQuery.ts';
 import { usePageMeta } from '../hooks/usePageMeta.ts';
 import { fetchVehicle, isNotFoundError, type MarketplaceVehicleDetailResponse } from '../lib/api.ts';
@@ -29,8 +30,10 @@ import { ContentSection } from '../components/vdp/ContentSection.tsx';
 import {
   ListingDetailEngagementPanels,
   ListingDetailShareAction,
+  ReportListingButton,
   useListingDetailEngagement,
 } from '../components/listings/ListingDetailEngagement.tsx';
+import { SimilarListingsRail } from '../components/listings/SimilarListingsRail.tsx';
 
 type Props = { listingId: string };
 
@@ -112,23 +115,29 @@ function AutomotiveVehicleDetailPage({ listingId }: Props) {
   return (
     <AutomotiveListingDetailContent
       listingId={listingId}
+      categoryId={categoryId}
       slug={slug}
       backHref={backHref}
       vehicle={data.vehicle}
+      ctas={data.ctas}
     />
   );
 }
 
 function AutomotiveListingDetailContent({
   listingId,
+  categoryId,
   slug,
   backHref,
   vehicle,
+  ctas,
 }: {
   listingId: string;
+  categoryId: BusinessCategoryId;
   slug: string;
   backHref: string;
   vehicle: MarketplaceVehicleDetailResponse['vehicle'];
+  ctas: MarketplaceVehicleDetailResponse['ctas'];
 }) {
   const engagement = useListingDetailEngagement({
     categorySlug: slug,
@@ -153,6 +162,9 @@ function AutomotiveListingDetailContent({
               className="ml-auto"
             />
           </div>
+          <div className="text-right">
+            <ReportListingButton listingId={listingId} />
+          </div>
           <CommerceSection commerce={vehicle.commerce} />
           <LocationSection location={vehicle.location} />
           <div id="inquiry">
@@ -176,6 +188,13 @@ function AutomotiveListingDetailContent({
         <ContentSection content={vehicle.content} />
       </div>
 
+      <SimilarListingsRail
+        listingId={listingId}
+        categoryId={categoryId}
+        categorySlug={slug}
+        make={vehicle.core.make}
+      />
+
       <ListingDetailEngagementPanels
         categorySlug={slug}
         listingId={listingId}
@@ -183,6 +202,7 @@ function AutomotiveListingDetailContent({
         shareUrl={engagement.shareUrl}
         priceSummary={engagement.priceSummary}
         sellerSummary={engagement.sellerSummary}
+        ctas={ctas}
       />
       </div>
     </PageShell>
