@@ -91,6 +91,8 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/MarketplaceLogoutResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
 
   /api/marketplace/auth/me:
     get:
@@ -220,6 +222,8 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/MarketplaceSitesResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
 
   /api/marketplace/feed:
     get:
