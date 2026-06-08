@@ -92,6 +92,8 @@ function VehicleFeedCard({
           <p className="mt-1 text-base font-bold tabular-nums text-ink">{formatPrice(card.priceCents)}</p>
           <div className="mt-1 flex flex-wrap gap-x-3 gap-y-0.5 text-xs text-ink-muted">
             {card.mileage > 0 && <span>{formatUsage(card.mileage, card.usageUnit === 'hours' ? 'hours' : 'miles')}</span>}
+            {card.unitType && <span>{card.unitType}</span>}
+            {card.lengthFt != null && <span>{card.lengthFt} ft</span>}
             <span>{card.condition}</span>
             {location && <span>{location}</span>}
           </div>
@@ -198,6 +200,12 @@ function VehicleMeta({
       )}
       <MetaCell label={metaLabels.brand} value={card.make} />
       <MetaCell label={metaLabels.model} value={card.model} />
+      {metaLabels.unitType && card.unitType && (
+        <MetaCell label={metaLabels.unitType} value={card.unitType} className="col-span-2" />
+      )}
+      {card.lengthFt != null && (
+        <MetaCell label="Length" value={`${card.lengthFt} ft`} className="col-span-2" />
+      )}
       {location && <MetaCell label="Location" value={location} className="col-span-2" />}
     </div>
   );

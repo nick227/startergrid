@@ -121,6 +121,21 @@ describe('buildCompareRows', () => {
     })).toBe('250 hrs');
   });
 
+  it('enables compare for trailers with brand/model/usage rows', () => {
+    const config = buildListingFilterConfig('trailers-powersports-rv', resolveCategorySchema('TRAILERS_POWERSPORTS_RV'));
+    expect(isCompareEnabled(config)).toBe(true);
+    expect(rowLabels(config)).toEqual([
+      'Brand',
+      'Model / Type',
+      'Year',
+      'Price',
+      'Miles / Hours',
+      'Condition',
+      'Seller',
+      'Location',
+    ]);
+  });
+
   it('shows useful ebook rows with author/title labels', () => {
     const config = buildListingFilterConfig('ebooks', resolveCategorySchema('EBOOKS'));
     expect(rowLabels(config)).toEqual([

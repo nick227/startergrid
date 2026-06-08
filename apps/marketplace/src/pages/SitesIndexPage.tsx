@@ -45,7 +45,7 @@ export default function SitesIndexPage() {
     <PageShell showCategoryNav={false}>
       <PageHeader
         title="Marketplaces"
-        subtitle="Each site is tailored to a business category. Automotive is live today; more categories are on the way."
+        subtitle="Each site is tailored to a business category. Automotive, Boats, and Trailers marketplaces are live today; more categories are on the way."
       />
 
       <div className="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">

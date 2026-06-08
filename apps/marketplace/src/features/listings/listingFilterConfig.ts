@@ -26,7 +26,13 @@ export type ListingCardMetaLabels = {
   model: string;
   year: string;
   usage?: string;
+  unitType?: string;
 };
+
+export function resolveListingTypeLabel(schema: CategorySchema): string | undefined {
+  const field = schema.fields.find(f => f.key === 'vesselType' || f.key === 'unitType');
+  return field?.label;
+}
 
 const GENERIC_LABELS: Required<ListingFilterLabels> = {
   brand: 'Brand',
@@ -150,6 +156,7 @@ export function buildListingCardMetaLabels(
     model: config.labels.model ?? GENERIC_LABELS.model,
     year: config.labels.year ?? fieldLabel(schema, 'year') ?? GENERIC_LABELS.year,
     usage: config.labels.usage,
+    unitType: resolveListingTypeLabel(schema),
   };
 }
 

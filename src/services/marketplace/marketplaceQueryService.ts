@@ -23,7 +23,7 @@ import {
   sanitizeMarketplaceFacets,
   type MarketplaceFacetDef,
 } from '../../../packages/category-schemas/src/index.js';
-import { usageUnitFromPayload } from '../../lib/categoryPayload.js';
+import { parseCategoryPayload, usageUnitFromPayload } from '../../lib/categoryPayload.js';
 import {
   shapeDetailResponse,
   type DbVehicleDetailRow,
@@ -55,6 +55,8 @@ export type MarketplaceVehicleCard = {
   originalPriceCents: number | null;
   mileage:            number;
   usageUnit?:         'miles' | 'hours';
+  unitType?:          string | null;
+  lengthFt?:          number | null;
   exteriorColor:      string | null;
   mediaUrls:          string[];      // first MAX_CARD_IMAGES, ordered by sortOrder
   mediaItems:         MarketplaceMediaItem[];
@@ -241,6 +243,7 @@ function mediaKind(kind: string | undefined): 'IMAGE' | 'VIDEO' {
 // ── Shape functions ───────────────────────────────────────────────────────────
 
 function shapeCard(row: DbVehicleRow): MarketplaceVehicleCard {
+  const payload = parseCategoryPayload(row.categoryPayload);
   const addr = extractAddress(row.dealership.rooftopAddress);
   const sorted = [...row.media].sort((a, b) => a.sortOrder - b.sortOrder);
   const mediaUrls = sorted.slice(0, MAX_CARD_IMAGES).map(m => m.url);
@@ -265,6 +268,8 @@ function shapeCard(row: DbVehicleRow): MarketplaceVehicleCard {
     originalPriceCents: row.originalPriceCents,
     mileage:            row.mileage,
     usageUnit:          usageUnitFromPayload(row.categoryPayload),
+    unitType:           payload.vesselType ?? payload.unitType ?? null,
+    lengthFt:           payload.lengthFt ?? null,
     exteriorColor:      row.exteriorColor ?? null,
     mediaUrls,
     mediaItems,

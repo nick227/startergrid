@@ -727,6 +727,20 @@ describe('facet filters — WHERE clause structure', () => {
     assert.equal(payload['equals'], 'Center Console');
   });
 
+  it('applies trailers unitType facet against categoryPayload', async () => {
+    const { prisma, captured } = makeCaptureMock([fakeVehicle()]);
+    await listMarketplaceVehicles(prisma, {
+      category: 'TRAILERS_POWERSPORTS_RV',
+      facets: { unitType: 'RV' },
+    });
+    const clauses = extractAndClauses(captured);
+    const payloadClause = clauses.find(c => 'categoryPayload' in c) as Record<string, unknown> | undefined;
+    assert.ok(payloadClause, 'trailers facet must add a categoryPayload clause');
+    const payload = payloadClause!['categoryPayload'] as Record<string, unknown>;
+    assert.deepEqual(payload['path'], ['unitType']);
+    assert.equal(payload['equals'], 'RV');
+  });
+
   it('ignores invalid facet values fail-closed', async () => {
     const { prisma, captured } = makeCaptureMock([fakeVehicle()]);
     await listMarketplaceVehicles(prisma, {

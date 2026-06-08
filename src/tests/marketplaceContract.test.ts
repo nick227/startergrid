@@ -708,4 +708,39 @@ describe('Marketplace category scoping', () => {
     assert.equal(trailers.vehicles.length, 1);
     assert.equal(trailers.vehicles[0]!.usageUnit, 'hours');
   });
+
+  it('boats card exposes vesselType as unitType and lengthFt from categoryPayload', async () => {
+    const boat = fakeVehicle({
+      id: 'boat-1',
+      make: 'Boston Whaler',
+      model: '280 Outrage',
+      categoryPayload: { vesselType: 'Center Console', lengthFt: 28, usageUnit: 'hours' },
+      dealership: { ...DEALER, businessCategory: 'BOATS' },
+    });
+    const prisma = makeMockPrisma([boat], boat.dealership);
+    const result = await listMarketplaceVehicles(prisma, { category: 'BOATS' });
+    const card = result.vehicles[0]!;
+    assert.equal(card.unitType, 'Center Console');
+    assert.equal(card.lengthFt, 28);
+    assert.equal(card.usageUnit, 'hours');
+  });
+
+  it('trailers card exposes unitType from categoryPayload', async () => {
+    const trailer = fakeVehicle({
+      id: 'trailer-1',
+      make: 'Jayco',
+      model: 'Jay Flight',
+      categoryPayload: { unitType: 'RV', lengthFt: 32 },
+      dealership: {
+        ...DEALER,
+        id: 'dealer-trailers',
+        businessCategory: 'TRAILERS_POWERSPORTS_RV',
+      },
+    });
+    const prisma = makeMockPrisma([trailer], trailer.dealership);
+    const result = await listMarketplaceVehicles(prisma, { category: 'TRAILERS_POWERSPORTS_RV' });
+    const card = result.vehicles[0]!;
+    assert.equal(card.unitType, 'RV');
+    assert.equal(card.lengthFt, 32);
+  });
 });

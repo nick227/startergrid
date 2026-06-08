@@ -947,6 +947,14 @@ components:
           nullable: true
           enum: [miles, hours]
           description: Optional usage suffix for non-automotive inventory (defaults to miles when omitted).
+        unitType:
+          type: string
+          nullable: true
+          description: Vessel or unit type from categoryPayload (boats vesselType, trailers unitType).
+        lengthFt:
+          type: number
+          nullable: true
+          description: Length in feet when stored on categoryPayload.
         exteriorColor:
           type: string
           nullable: true

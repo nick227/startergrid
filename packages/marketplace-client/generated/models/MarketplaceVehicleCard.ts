@@ -29,6 +29,14 @@ export type MarketplaceVehicleCard = {
      * Optional usage suffix for non-automotive inventory (defaults to miles when omitted).
      */
     usageUnit?: MarketplaceVehicleCard.usageUnit | null;
+    /**
+     * Vessel or unit type from categoryPayload (boats vesselType, trailers unitType).
+     */
+    unitType?: string | null;
+    /**
+     * Length in feet when stored on categoryPayload.
+     */
+    lengthFt?: number | null;
     exteriorColor: string | null;
     /**
      * First 8 images ordered by sort sequence. Additional images available in the detail endpoint.

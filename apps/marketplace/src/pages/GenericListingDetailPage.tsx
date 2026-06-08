@@ -6,6 +6,7 @@ import { getListReturn } from '../lib/listReturn.ts';
 import { MarketplaceEventType } from '../lib/events.ts';
 import { useTrackMarketplaceEvent } from '../hooks/useTrackMarketplaceEvent.ts';
 import { useCategoryId, useCategorySchema, useCategorySlug } from '../contexts/CategoryContext.tsx';
+import { buildListingFilterConfig, resolveListingTypeLabel } from '../features/listings/listingFilterConfig.ts';
 import { PageShell } from '../components/layout/PageShell.tsx';
 import { FavoriteButton } from '../components/ui/FavoriteButton.tsx';
 import { DetailPageSkeleton } from '../components/ui/SkeletonGrid.tsx';
@@ -36,7 +37,11 @@ export default function GenericListingDetailPage({ listingId }: Props) {
   const slug = useCategorySlug();
   const schema = useCategorySchema();
   const backHref = getListReturn(slug);
-  const usageFieldLabel = schema.fields.find(field => field.key === 'mileage')?.label ?? 'Usage';
+  const filterConfig = buildListingFilterConfig(slug, schema);
+  const usageFieldLabel = filterConfig.labels.usage ?? 'Usage';
+  const brandLabel = filterConfig.labels.brand ?? 'Make';
+  const modelLabel = filterConfig.labels.model ?? 'Model';
+  const typeLabel = resolveListingTypeLabel(schema);
 
   const { data, loading, error, reload } = useQuery(
     () => fetchVehicle(listingId, categoryId),
@@ -92,6 +97,9 @@ export default function GenericListingDetailPage({ listingId }: Props) {
       vehicle={data.vehicle}
       ctas={data.ctas}
       usageFieldLabel={usageFieldLabel}
+      brandLabel={brandLabel}
+      modelLabel={modelLabel}
+      typeLabel={typeLabel}
       refLabel={schema.asset.refLabel}
     />
   );
@@ -104,6 +112,9 @@ function GenericListingDetailContent({
   vehicle,
   ctas,
   usageFieldLabel,
+  brandLabel,
+  modelLabel,
+  typeLabel,
   refLabel,
 }: {
   listingId: string;
@@ -112,6 +123,9 @@ function GenericListingDetailContent({
   vehicle: MarketplaceVehicleDetailResponse['vehicle'];
   ctas: MarketplaceVehicleDetailResponse['ctas'];
   usageFieldLabel: string;
+  brandLabel: string;
+  modelLabel: string;
+  typeLabel?: string;
   refLabel: string;
 }) {
   const categoryId = useCategoryId();
@@ -170,11 +184,11 @@ function GenericListingDetailContent({
 
           <dl className="grid grid-cols-2 gap-4 rounded-xl bg-surface-inset p-4">
             <Spec label="Year" value={String(vehicle.core.year)} />
-            <Spec label="Make" value={vehicle.core.make} />
-            <Spec label="Model" value={vehicle.core.model} />
+            <Spec label={brandLabel} value={vehicle.core.make} />
+            <Spec label={modelLabel} value={vehicle.core.model} />
             <Spec label={usageFieldLabel} value={usageValue} />
-            {detailClassification.unitType && (
-              <Spec label="Type" value={detailClassification.unitType} className="col-span-2" />
+            {detailClassification.unitType && typeLabel && (
+              <Spec label={typeLabel} value={detailClassification.unitType} className="col-span-2" />
             )}
             {detailClassification.lengthFt != null && (
               <Spec label="Length" value={`${detailClassification.lengthFt} ft`} className="col-span-2" />
