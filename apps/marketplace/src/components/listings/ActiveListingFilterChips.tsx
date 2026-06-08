@@ -1,11 +1,11 @@
 import { buildListingFilterChips } from '../../features/listings/listingFilterChips.ts';
 import type { ListingFilterConfig } from '../../features/listings/listingFilterConfig.ts';
-import type { ListQuery } from '../../lib/routes.ts';
+import type { ListingQuery } from '../../features/listings/listingQuery.ts';
 
 type Props = {
-  query: ListQuery;
+  query: ListingQuery;
   config: ListingFilterConfig;
-  onChange: (query: ListQuery) => void;
+  onChange: (query: ListingQuery) => void;
   onClearAll: () => void;
 };
 

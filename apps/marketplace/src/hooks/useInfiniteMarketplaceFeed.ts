@@ -7,7 +7,7 @@ import {
 } from '../lib/api.ts';
 import { useCategoryId, useCategorySlug } from '../contexts/CategoryContext.tsx';
 import { feedFilterKey, getSavedFeedState, saveFeedState } from '../lib/feedState.ts';
-import type { ListQuery } from '../lib/routes.ts';
+import { toListQuery, type ListingQuery } from '../features/listings/listingQuery.ts';
 
 const FEED_LIMIT = 24;
 
@@ -21,24 +21,25 @@ type FeedStatus = {
   restoredScrollY: number | null;
 };
 
-export function useInfiniteMarketplaceFeed(query: ListQuery) {
+export function useInfiniteMarketplaceFeed(query: ListingQuery) {
   const categoryId = useCategoryId();
   const slug = useCategorySlug();
+  const listQuery = useMemo(() => toListQuery(query), [query]);
 
   const filters = useMemo<FeedFilters>(() => ({
     category:   categoryId,
-    make:       query.make,
-    model:      query.model,
-    condition:  query.condition,
-    minPrice:   query.minPrice,
-    maxPrice:   query.maxPrice,
-    maxMileage: query.maxMileage,
-    minYear:    query.minYear,
-    maxYear:    query.maxYear,
-    sortBy:     query.sortBy,
-    dealer:     query.dealer,
+    make:       listQuery.make,
+    model:      listQuery.model,
+    condition:  listQuery.condition,
+    minPrice:   listQuery.minPrice,
+    maxPrice:   listQuery.maxPrice,
+    maxMileage: listQuery.maxMileage,
+    minYear:    listQuery.minYear,
+    maxYear:    listQuery.maxYear,
+    sortBy:     listQuery.sortBy,
+    dealer:     listQuery.dealer,
     limit:      FEED_LIMIT,
-  }), [categoryId, query.make, query.model, query.condition, query.minPrice, query.maxPrice, query.maxMileage, query.minYear, query.maxYear, query.sortBy, query.dealer]);
+  }), [categoryId, listQuery]);
 
   const filterKey = useMemo(() => feedFilterKey(slug, query), [slug, query]);
   const requestId = useRef(0);

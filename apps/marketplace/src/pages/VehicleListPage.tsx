@@ -4,10 +4,12 @@ import { useInfiniteMarketplaceFeed } from '../hooks/useInfiniteMarketplaceFeed.
 import { usePageMeta } from '../hooks/usePageMeta.ts';
 import { formatResultCount } from '../lib/display.ts';
 import { saveListReturn } from '../lib/listReturn.ts';
-import { isAutomotiveSlug, listHref, parseRoute, type ListQuery, type SortBy } from '../lib/routes.ts';
+import { listHref, parseRoute, type ListQuery } from '../lib/routes.ts';
+import { fromListQuery, toListQuery, type ListingQuery, type ListingSort } from '../features/listings/listingQuery.ts';
 import { useCategorySchema, useCategorySlug } from '../contexts/CategoryContext.tsx';
 import { buildListingFilterConfig } from '../features/listings/listingFilterConfig.ts';
 import { hasListingFilters } from '../features/listings/listingFilterChips.ts';
+import { buildListingSortOptions } from '../features/listings/listingSortOptions.ts';
 import { PageShell } from '../components/layout/PageShell.tsx';
 import { PageHeader } from '../components/ui/PageHeader.tsx';
 import { ListingFilterBar } from '../components/listings/ListingFilterBar.tsx';
@@ -28,16 +30,19 @@ export default function VehicleListPage({ initialQuery = {} }: Props) {
   const slug = useCategorySlug();
   const schema = useCategorySchema();
   const filterConfig = useMemo(() => buildListingFilterConfig(slug, schema), [slug, schema]);
+  const sortOptions = useMemo(() => buildListingSortOptions(filterConfig), [filterConfig]);
   const consumerActive = schema.status === 'active';
-  const [make,      setMake]      = useState(initialQuery.make ?? '');
-  const [model,     setModel]     = useState(initialQuery.model ?? '');
-  const [condition, setCondition] = useState<ListQuery['condition']>(initialQuery.condition);
-  const [minPrice, setMinPrice] = useState(formatMoneyInput(initialQuery.minPrice));
-  const [maxPrice, setMaxPrice] = useState(formatMoneyInput(initialQuery.maxPrice));
-  const [maxMileage, setMaxMileage] = useState(formatNumberInput(initialQuery.maxMileage));
-  const [minYear, setMinYear] = useState(formatNumberInput(initialQuery.minYear));
-  const [maxYear, setMaxYear] = useState(formatNumberInput(initialQuery.maxYear));
-  const [sortBy, setSortBy] = useState<SortBy | undefined>(initialQuery.sortBy);
+  const initial = useMemo(() => fromListQuery(initialQuery), [initialQuery]);
+
+  const [brand, setBrand] = useState(initial.brand ?? '');
+  const [model, setModel] = useState(initial.model ?? '');
+  const [condition, setCondition] = useState<ListingQuery['condition']>(initial.condition);
+  const [minPrice, setMinPrice] = useState(formatMoneyInput(initial.priceMin));
+  const [maxPrice, setMaxPrice] = useState(formatMoneyInput(initial.priceMax));
+  const [maxUsage, setMaxUsage] = useState(formatNumberInput(initial.usageMax));
+  const [minYear, setMinYear] = useState(formatNumberInput(initial.yearMin));
+  const [maxYear, setMaxYear] = useState(formatNumberInput(initial.yearMax));
+  const [sortBy, setSortBy] = useState<ListingSort | undefined>(initial.sortBy);
   const [focusToken, setFocusToken] = useState(0);
   const sentinelRef = useRef<HTMLDivElement | null>(null);
 
@@ -46,42 +51,33 @@ export default function VehicleListPage({ initialQuery = {} }: Props) {
     schema.marketplace.tagline,
   );
 
-  const listQuery = useMemo<ListQuery>(() => ({
-    make:      make.trim()  || undefined,
-    model:     model.trim() || undefined,
+  const listingQuery = useMemo<ListingQuery>(() => ({
+    brand: brand.trim() || undefined,
+    model: model.trim() || undefined,
     condition,
-    minPrice:   dollarsToCents(minPrice),
-    maxPrice:   dollarsToCents(maxPrice),
-    maxMileage: parseNonNegative(maxMileage),
-    minYear:    parseNonNegative(minYear),
-    maxYear:    parseNonNegative(maxYear),
+    priceMin: dollarsToCents(minPrice),
+    priceMax: dollarsToCents(maxPrice),
+    usageMax: parseNonNegative(maxUsage),
+    yearMin: parseNonNegative(minYear),
+    yearMax: parseNonNegative(maxYear),
     sortBy,
-  }), [condition, make, maxMileage, maxPrice, maxYear, minPrice, minYear, model, sortBy]);
+  }), [brand, condition, maxPrice, maxUsage, maxYear, minPrice, minYear, model, sortBy]);
 
-  const feed = useInfiniteMarketplaceFeed(listQuery);
+  const feed = useInfiniteMarketplaceFeed(listingQuery);
 
   useEffect(() => {
-    saveListReturn(slug, listQuery);
-    const target = listHref(slug, listQuery);
+    saveListReturn(slug, listingQuery);
+    const target = listHref(slug, toListQuery(listingQuery));
     if (window.location.hash !== target) {
       window.location.hash = target.slice(1);
     }
-  }, [listQuery, slug]);
+  }, [listingQuery, slug]);
 
   useEffect(() => {
     function syncFromHash() {
       const route = parseRoute();
       if (route.page !== 'list') return;
-      const q = route.query;
-      setMake(q.make ?? '');
-      setModel(q.model ?? '');
-      setCondition(q.condition);
-      setMinPrice(formatMoneyInput(q.minPrice));
-      setMaxPrice(formatMoneyInput(q.maxPrice));
-      setMaxMileage(formatNumberInput(q.maxMileage));
-      setMinYear(formatNumberInput(q.minYear));
-      setMaxYear(formatNumberInput(q.maxYear));
-      setSortBy(q.sortBy);
+      applyListingQuery(fromListQuery(route.query));
     }
     window.addEventListener('hashchange', syncFromHash);
     return () => window.removeEventListener('hashchange', syncFromHash);
@@ -98,33 +94,36 @@ export default function VehicleListPage({ initialQuery = {} }: Props) {
   }, [feed]);
 
   function resetFilters() {
-    setMake('');
+    setBrand('');
     setModel('');
     setCondition(undefined);
     setMinPrice('');
     setMaxPrice('');
-    setMaxMileage('');
+    setMaxUsage('');
     setMinYear('');
     setMaxYear('');
     setFocusToken(t => t + 1);
   }
 
-  function applyChipQuery(query: ListQuery) {
-    setMake(query.make ?? '');
+  function applyListingQuery(query: ListingQuery) {
+    setBrand(query.brand ?? '');
     setModel(query.model ?? '');
     setCondition(query.condition);
-    setMinPrice(formatMoneyInput(query.minPrice));
-    setMaxPrice(formatMoneyInput(query.maxPrice));
-    setMaxMileage(formatNumberInput(query.maxMileage));
-    setMinYear(formatNumberInput(query.minYear));
-    setMaxYear(formatNumberInput(query.maxYear));
+    setMinPrice(formatMoneyInput(query.priceMin));
+    setMaxPrice(formatMoneyInput(query.priceMax));
+    setMaxUsage(formatNumberInput(query.usageMax));
+    setMinYear(formatNumberInput(query.yearMin));
+    setMaxYear(formatNumberInput(query.yearMax));
     setSortBy(query.sortBy);
   }
 
-  const hasActiveFilters = hasListingFilters(listQuery);
+  const hasActiveFilters = hasListingFilters(listingQuery);
   const hasItems = feed.items.length > 0;
   const initialError = feed.error && !hasItems;
   const appendError = feed.error && hasItems;
+  const resolvedSort = sortOptions.some(option => option.value === sortBy)
+    ? (sortBy ?? 'newest')
+    : 'newest';
 
   return (
     <PageShell>
@@ -137,20 +136,20 @@ export default function VehicleListPage({ initialQuery = {} }: Props) {
       <div className="mb-6 sm:mb-8">
         <ListingFilterBar
           config={filterConfig}
-          brand={make}
+          brand={brand}
           model={model}
           condition={condition}
           minPrice={minPrice}
           maxPrice={maxPrice}
-          maxUsage={maxMileage}
+          maxUsage={maxUsage}
           minYear={minYear}
           maxYear={maxYear}
-          onBrandChange={setMake}
+          onBrandChange={setBrand}
           onModelChange={setModel}
           onConditionChange={setCondition}
           onMinPriceChange={setMinPrice}
           onMaxPriceChange={setMaxPrice}
-          onMaxUsageChange={setMaxMileage}
+          onMaxUsageChange={setMaxUsage}
           onMinYearChange={setMinYear}
           onMaxYearChange={setMaxYear}
           onSubmit={feed.reload}
@@ -163,9 +162,9 @@ export default function VehicleListPage({ initialQuery = {} }: Props) {
 
       {consumerActive && (
       <ActiveListingFilterChips
-        query={listQuery}
+        query={listingQuery}
         config={filterConfig}
-        onChange={applyChipQuery}
+        onChange={applyListingQuery}
         onClearAll={resetFilters}
       />
       )}
@@ -174,8 +173,8 @@ export default function VehicleListPage({ initialQuery = {} }: Props) {
       <SavedSearchesPanel
         categorySlug={slug}
         config={filterConfig}
-        currentQuery={listQuery}
-        onApply={applyChipQuery}
+        currentQuery={listingQuery}
+        onApply={applyListingQuery}
       />
       )}
 
@@ -186,9 +185,9 @@ export default function VehicleListPage({ initialQuery = {} }: Props) {
       ) : !hasItems ? (
         consumerActive && hasActiveFilters ? (
           <NoResultsRelaxation
-            query={listQuery}
+            query={listingQuery}
             config={filterConfig}
-            onApplyQuery={applyChipQuery}
+            onApplyQuery={applyListingQuery}
             onClearAll={resetFilters}
           />
         ) : (
@@ -212,16 +211,13 @@ export default function VehicleListPage({ initialQuery = {} }: Props) {
             <label className="flex items-center gap-2 text-sm">
               <span className="mp-label">Sort</span>
               <select
-                value={sortBy ?? 'newest'}
-                onChange={e => setSortBy((e.target.value as SortBy) || undefined)}
+                value={resolvedSort}
+                onChange={e => setSortBy((e.target.value as ListingSort) || undefined)}
                 className="mp-input py-1"
               >
-                <option value="newest">Newest first</option>
-                <option value="price-asc">Price: low to high</option>
-                <option value="price-desc">Price: high to low</option>
-                <option value="mileage-asc">Mileage: low to high</option>
-                <option value="year-desc">Year: newest first</option>
-                <option value="year-asc">Year: oldest first</option>
+                {sortOptions.map(option => (
+                  <option key={option.value} value={option.value}>{option.label}</option>
+                ))}
               </select>
             </label>
           </div>
@@ -253,7 +249,7 @@ export default function VehicleListPage({ initialQuery = {} }: Props) {
           <RecentlyViewedRail categorySlug={slug} />
         </>
       )}
-      {isAutomotiveSlug(slug) && <CompareBar categorySlug={slug} />}
+      {consumerActive && <CompareBar categorySlug={slug} config={filterConfig} />}
     </PageShell>
   );
 }

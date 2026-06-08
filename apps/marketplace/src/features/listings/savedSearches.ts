@@ -1,11 +1,16 @@
 import { buildListingFilterChips, hasListingFilters } from './listingFilterChips.ts';
 import type { ListingFilterConfig } from './listingFilterConfig.ts';
+import {
+  fromListQuery,
+  listingQuerySignature,
+  type ListingQuery,
+} from './listingQuery.ts';
 import type { ListQuery } from '../../lib/routes.ts';
 
 export type SavedSearch = {
   id: string;
   categorySlug: string;
-  query: ListQuery;
+  query: ListingQuery;
   savedAt: string;
   label: string;
 };
@@ -17,7 +22,6 @@ type StorageLike = Pick<Storage, 'getItem' | 'setItem'>;
 
 const listeners = new Set<() => void>();
 
-// Cached snapshot for useSyncExternalStore — only replaced when storage actually changes.
 let cachedSnapshot: SavedSearch[] | null = null;
 
 export function subscribeSavedSearches(onChange: () => void): () => void {
@@ -26,7 +30,7 @@ export function subscribeSavedSearches(onChange: () => void): () => void {
 }
 
 function notifySavedSearches(): void {
-  cachedSnapshot = null; // invalidate so next getSnapshot re-reads
+  cachedSnapshot = null;
   listeners.forEach(listener => listener());
 }
 
@@ -41,6 +45,15 @@ export function getServerSnapshot(): SavedSearch[] {
   return [];
 }
 
+function normalizeStoredQuery(value: unknown): ListingQuery | null {
+  if (!value || typeof value !== 'object') return null;
+  const row = value as Record<string, unknown>;
+  if ('brand' in row || 'usageMax' in row || 'priceMin' in row) {
+    return row as ListingQuery;
+  }
+  return fromListQuery(row as ListQuery);
+}
+
 function readStorage(storage: StorageLike | null | undefined): SavedSearch[] {
   if (!storage) return [];
   try {
@@ -48,7 +61,7 @@ function readStorage(storage: StorageLike | null | undefined): SavedSearch[] {
     if (!raw) return [];
     const parsed = JSON.parse(raw) as unknown;
     if (!Array.isArray(parsed)) return [];
-    return parsed.filter(isSavedSearch);
+    return parsed.map(parseSavedSearch).filter((item): item is SavedSearch => item != null);
   } catch {
     return [];
   }
@@ -63,30 +76,24 @@ function writeStorage(storage: StorageLike | null | undefined, items: SavedSearc
   }
 }
 
-function isSavedSearch(value: unknown): value is SavedSearch {
-  if (!value || typeof value !== 'object') return false;
+function parseSavedSearch(value: unknown): SavedSearch | null {
+  if (!value || typeof value !== 'object') return null;
   const row = value as Partial<SavedSearch>;
-  return typeof row.id === 'string'
-    && typeof row.categorySlug === 'string'
-    && typeof row.savedAt === 'string'
-    && typeof row.label === 'string'
-    && row.query != null
-    && typeof row.query === 'object';
-}
-
-function querySignature(query: ListQuery): string {
-  return JSON.stringify({
-    make: query.make ?? null,
-    model: query.model ?? null,
-    condition: query.condition ?? null,
-    minPrice: query.minPrice ?? null,
-    maxPrice: query.maxPrice ?? null,
-    maxMileage: query.maxMileage ?? null,
-    minYear: query.minYear ?? null,
-    maxYear: query.maxYear ?? null,
-    sortBy: query.sortBy ?? null,
-    dealer: query.dealer ?? null,
-  });
+  const query = normalizeStoredQuery(row.query);
+  if (!query) return null;
+  if (typeof row.id !== 'string'
+    || typeof row.categorySlug !== 'string'
+    || typeof row.savedAt !== 'string'
+    || typeof row.label !== 'string') {
+    return null;
+  }
+  return {
+    id: row.id,
+    categorySlug: row.categorySlug,
+    query,
+    savedAt: row.savedAt,
+    label: row.label,
+  };
 }
 
 function getBrowserStorage(): StorageLike | null {
@@ -109,7 +116,7 @@ export function readSavedSearches(
 }
 
 export function formatSavedSearchLabel(
-  query: ListQuery,
+  query: ListingQuery,
   config: ListingFilterConfig,
 ): string {
   const chips = buildListingFilterChips(query, config);
@@ -120,7 +127,7 @@ export function formatSavedSearchLabel(
 
 export function saveSearch(
   categorySlug: string,
-  query: ListQuery,
+  query: ListingQuery,
   config: ListingFilterConfig,
   options: {
     maxItems?: number;
@@ -131,9 +138,9 @@ export function saveSearch(
 
   const storage = options.storage ?? getBrowserStorage();
   const maxItems = options.maxItems ?? DEFAULT_SAVED_SEARCHES_MAX;
-  const signature = querySignature(query);
+  const signature = listingQuerySignature(query);
   const existing = readStorage(storage).find(item =>
-    item.categorySlug === categorySlug && querySignature(item.query) === signature,
+    item.categorySlug === categorySlug && listingQuerySignature(item.query) === signature,
   );
   if (existing) return existing;
 
@@ -162,6 +169,6 @@ export function removeSavedSearch(
   notifySavedSearches();
 }
 
-export function savedSearchMatchesQuery(saved: SavedSearch, query: ListQuery): boolean {
-  return querySignature(saved.query) === querySignature(query);
+export function savedSearchMatchesQuery(saved: SavedSearch, query: ListingQuery): boolean {
+  return listingQuerySignature(saved.query) === listingQuerySignature(query);
 }

@@ -8,14 +8,14 @@ describe('suggestFilterRelaxation', () => {
 
   it('removes the narrowest active filter first', () => {
     const suggestion = suggestFilterRelaxation({
-      make: 'Toyota',
+      brand: 'Toyota',
       model: 'Camry',
       condition: 'USED',
     }, config);
 
     expect(suggestion?.removedKey).toBe('model');
     expect(suggestion?.query).toEqual({
-      make: 'Toyota',
+      brand: 'Toyota',
       condition: 'USED',
     });
     expect(relaxationActionLabel(suggestion!)).toBe('Remove Model / Type: Camry');

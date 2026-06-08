@@ -51,24 +51,24 @@ describe('feed state persistence', () => {
 
   it('uses a stable filter key for active feed filters', () => {
     expect(feedFilterKey('automotive', {
-      make: 'Toyota',
+      brand: 'Toyota',
       model: 'Camry',
       condition: 'USED',
-      minPrice: 1000000,
-      maxPrice: 3000000,
-      maxMileage: 50000,
+      priceMin: 1000000,
+      priceMax: 3000000,
+      usageMax: 50000,
     })).toBe(feedFilterKey('automotive', {
-      make: 'Toyota',
+      brand: 'Toyota',
       model: 'Camry',
       condition: 'USED',
-      minPrice: 1000000,
-      maxPrice: 3000000,
-      maxMileage: 50000,
+      priceMin: 1000000,
+      priceMax: 3000000,
+      usageMax: 50000,
     }));
   });
 
   it('restores saved feed items, cursor, and scroll position for matching filters', () => {
-    const filterKey = feedFilterKey('automotive', { make: 'Toyota' });
+    const filterKey = feedFilterKey('automotive', { brand: 'Toyota' });
     saveFeedState({
       filterKey,
       items: [vehicleItem],
@@ -87,13 +87,13 @@ describe('feed state persistence', () => {
 
   it('does not restore state for different filters', () => {
     saveFeedState({
-      filterKey: feedFilterKey('automotive', { make: 'Toyota' }),
+      filterKey: feedFilterKey('automotive', { brand: 'Toyota' }),
       items: [vehicleItem],
       nextCursor: null,
       totalEstimate: 1,
       scrollY: 0,
     });
 
-    expect(getSavedFeedState(feedFilterKey('automotive', { make: 'Honda' }))).toBeNull();
+    expect(getSavedFeedState(feedFilterKey('automotive', { brand: 'Honda' }))).toBeNull();
   });
 });

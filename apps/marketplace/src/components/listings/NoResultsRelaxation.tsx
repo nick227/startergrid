@@ -3,13 +3,13 @@ import {
   suggestFilterRelaxation,
 } from '../../features/listings/listingFilterRelaxation.ts';
 import type { ListingFilterConfig } from '../../features/listings/listingFilterConfig.ts';
-import type { ListQuery } from '../../lib/routes.ts';
+import type { ListingQuery } from '../../features/listings/listingQuery.ts';
 import { ActiveListingFilterChips } from './ActiveListingFilterChips.tsx';
 
 type Props = {
-  query: ListQuery;
+  query: ListingQuery;
   config: ListingFilterConfig;
-  onApplyQuery: (query: ListQuery) => void;
+  onApplyQuery: (query: ListingQuery) => void;
   onClearAll: () => void;
 };
 

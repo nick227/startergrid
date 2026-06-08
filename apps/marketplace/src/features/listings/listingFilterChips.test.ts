@@ -7,19 +7,19 @@ describe('listing filter chips', () => {
   const automotiveConfig = buildListingFilterConfig('automotive', resolveCategorySchema('AUTOMOTIVE'));
 
   it('detects active listing filters', () => {
-    expect(hasListingFilters({ make: 'Toyota' })).toBe(true);
+    expect(hasListingFilters({ brand: 'Toyota' })).toBe(true);
     expect(hasListingFilters({})).toBe(false);
   });
 
   it('builds category-safe chip labels', () => {
     expect(buildListingFilterChips({
-      make: 'Toyota',
+      brand: 'Toyota',
       model: 'Camry',
-      maxMileage: 50000,
+      usageMax: 50000,
     }, automotiveConfig)).toEqual([
-      { key: 'make', label: 'Brand: Toyota' },
+      { key: 'brand', label: 'Brand: Toyota' },
       { key: 'model', label: 'Model / Type: Camry' },
-      { key: 'maxMileage', label: 'Max usage: 50,000' },
+      { key: 'usageMax', label: 'Max usage: 50,000' },
     ]);
   });
 });

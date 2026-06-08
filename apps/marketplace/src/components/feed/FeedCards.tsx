@@ -4,7 +4,7 @@ import type {
   MarketplaceVehicleCard,
 } from '../../lib/api.ts';
 import { formatLocation, formatPrice, formatUsage, vehicleHeading } from '../../lib/display.ts';
-import { isAutomotiveSlug, listingHref, sellerHref } from '../../lib/routes.ts';
+import { listingHref, sellerHref } from '../../lib/routes.ts';
 import { useCategoryId, useCategorySchema, useCategorySlug } from '../../contexts/CategoryContext.tsx';
 import { useTrackVisibleMarketplaceItem } from '../../hooks/useTrackVisibleMarketplaceItem.ts';
 import {
@@ -58,7 +58,7 @@ function VehicleFeedCard({
   });
   const title = vehicleHeading(card);
   const location = formatLocation(card.dealerCity, card.dealerState);
-  const showCompare = isAutomotiveSlug(slug);
+  const showCompare = schema.status === 'active';
   const compareItems = useSyncExternalStore(subscribeCompare, getCompareSnapshot, getCompareServerSnapshot);
   const inCompare = compareItems.some(i => i.listingId === card.listingId);
   const compareDisabled = !inCompare && compareItems.length >= MAX_COMPARE;

@@ -59,6 +59,7 @@ export function ListingFilterBar({
   const modelLabel = config.labels.model ?? 'Model / Type';
   const usageLabel = config.labels.usage ?? 'Usage';
   const conditionLabel = config.labels.condition ?? 'Condition';
+  const yearLabel = config.labels.year ?? 'Year';
 
   useEffect(() => {
     if (focusToken > 0) brandRef.current?.focus();
@@ -164,7 +165,7 @@ export function ListingFilterBar({
         {isListingFilterEnabled(config, 'year') && (
           <>
             <label className="flex flex-col gap-1.5">
-              <span className="mp-label">Min year</span>
+              <span className="mp-label">Min {yearLabel.toLowerCase()}</span>
               <input
                 type="number"
                 min="1900"
@@ -177,7 +178,7 @@ export function ListingFilterBar({
               />
             </label>
             <label className="flex flex-col gap-1.5">
-              <span className="mp-label">Max year</span>
+              <span className="mp-label">Max {yearLabel.toLowerCase()}</span>
               <input
                 type="number"
                 min="1900"

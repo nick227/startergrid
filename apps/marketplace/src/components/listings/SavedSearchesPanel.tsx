@@ -10,13 +10,13 @@ import {
   subscribeSavedSearches,
   type SavedSearch,
 } from '../../features/listings/savedSearches.ts';
-import type { ListQuery } from '../../lib/routes.ts';
+import type { ListingQuery } from '../../features/listings/listingQuery.ts';
 
 type Props = {
   categorySlug: string;
   config: ListingFilterConfig;
-  currentQuery: ListQuery;
-  onApply: (query: ListQuery) => void;
+  currentQuery: ListingQuery;
+  onApply: (query: ListingQuery) => void;
 };
 
 export function SavedSearchesPanel({

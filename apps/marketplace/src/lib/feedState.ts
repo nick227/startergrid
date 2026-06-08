@@ -1,5 +1,5 @@
 import type { MarketplaceFeedItem } from './api.ts';
-import type { ListQuery } from './routes.ts';
+import { listingQuerySignature, type ListingQuery } from '../features/listings/listingQuery.ts';
 
 const KEY = 'marketplace:feedState';
 
@@ -11,20 +11,8 @@ export type SavedFeedState = {
   scrollY: number;
 };
 
-export function feedFilterKey(slug: string, query: ListQuery): string {
-  return JSON.stringify({
-    slug,
-    make:       query.make ?? null,
-    model:      query.model ?? null,
-    condition:  query.condition ?? null,
-    minPrice:   query.minPrice ?? null,
-    maxPrice:   query.maxPrice ?? null,
-    maxMileage: query.maxMileage ?? null,
-    minYear:    query.minYear ?? null,
-    maxYear:    query.maxYear ?? null,
-    sortBy:     query.sortBy ?? null,
-    dealer:     query.dealer ?? null,
-  });
+export function feedFilterKey(slug: string, query: ListingQuery): string {
+  return JSON.stringify({ slug, ...JSON.parse(listingQuerySignature(query)) });
 }
 
 export function saveFeedState(state: SavedFeedState): void {

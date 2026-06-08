@@ -1,24 +1,26 @@
 import { buildListingFilterChips } from './listingFilterChips.ts';
 import type { ListingFilterConfig } from './listingFilterConfig.ts';
-import type { ListQuery } from '../../lib/routes.ts';
+import type { ListingQuery, ListingQueryKey } from './listingQuery.ts';
 
-const RELAXATION_ORDER: (keyof ListQuery)[] = [
+const RELAXATION_ORDER: ListingQueryKey[] = [
   'model',
-  'make',
+  'brand',
   'condition',
-  'maxMileage',
-  'minPrice',
-  'maxPrice',
-  'dealer',
+  'usageMax',
+  'priceMin',
+  'priceMax',
+  'seller',
+  'yearMin',
+  'yearMax',
 ];
 
 export type FilterRelaxationSuggestion = {
-  query: ListQuery;
-  removedKey: keyof ListQuery;
+  query: ListingQuery;
+  removedKey: ListingQueryKey;
   removedLabel: string;
 };
 
-function isActiveFilterValue(key: keyof ListQuery, query: ListQuery): boolean {
+function isActiveFilterValue(key: ListingQueryKey, query: ListingQuery): boolean {
   const value = query[key];
   if (value == null) return false;
   if (typeof value === 'string') return value.trim().length > 0;
@@ -26,7 +28,7 @@ function isActiveFilterValue(key: keyof ListQuery, query: ListQuery): boolean {
 }
 
 export function suggestFilterRelaxation(
-  query: ListQuery,
+  query: ListingQuery,
   config: ListingFilterConfig,
 ): FilterRelaxationSuggestion | null {
   const chips = buildListingFilterChips(query, config);

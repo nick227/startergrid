@@ -1,8 +1,8 @@
-import type { ListQuery } from '../../lib/routes.ts';
 import type { ListingFilterConfig } from './listingFilterConfig.ts';
+import { hasListingQueryFilters, type ListingQuery, type ListingQueryKey } from './listingQuery.ts';
 
 export type ListingFilterChip = {
-  key: keyof ListQuery;
+  key: ListingQueryKey;
   label: string;
 };
 
@@ -10,22 +10,12 @@ function formatDollars(cents: number): string {
   return `$${Math.round(cents / 100).toLocaleString()}`;
 }
 
-export function hasListingFilters(query: ListQuery): boolean {
-  return Boolean(
-    query.make ||
-    query.model ||
-    query.condition ||
-    query.minPrice != null ||
-    query.maxPrice != null ||
-    query.maxMileage != null ||
-    query.minYear != null ||
-    query.maxYear != null ||
-    query.dealer,
-  );
+export function hasListingFilters(query: ListingQuery): boolean {
+  return hasListingQueryFilters(query);
 }
 
 export function buildListingFilterChips(
-  query: ListQuery,
+  query: ListingQuery,
   config: ListingFilterConfig,
 ): ListingFilterChip[] {
   const chips: ListingFilterChip[] = [];
@@ -33,18 +23,19 @@ export function buildListingFilterChips(
   const modelLabel = config.labels.model ?? 'Model / Type';
   const usageLabel = config.labels.usage ?? 'Usage';
   const conditionLabel = config.labels.condition ?? 'Condition';
+  const yearLabel = config.labels.year ?? 'Year';
 
-  if (query.make) chips.push({ key: 'make', label: `${brandLabel}: ${query.make}` });
+  if (query.brand) chips.push({ key: 'brand', label: `${brandLabel}: ${query.brand}` });
   if (query.model) chips.push({ key: 'model', label: `${modelLabel}: ${query.model}` });
   if (query.condition) chips.push({ key: 'condition', label: `${conditionLabel}: ${query.condition}` });
-  if (query.minPrice != null) chips.push({ key: 'minPrice', label: `Min price: ${formatDollars(query.minPrice)}` });
-  if (query.maxPrice != null) chips.push({ key: 'maxPrice', label: `Max price: ${formatDollars(query.maxPrice)}` });
-  if (query.maxMileage != null) {
-    chips.push({ key: 'maxMileage', label: `Max ${usageLabel.toLowerCase()}: ${query.maxMileage.toLocaleString()}` });
+  if (query.priceMin != null) chips.push({ key: 'priceMin', label: `Min price: ${formatDollars(query.priceMin)}` });
+  if (query.priceMax != null) chips.push({ key: 'priceMax', label: `Max price: ${formatDollars(query.priceMax)}` });
+  if (query.usageMax != null) {
+    chips.push({ key: 'usageMax', label: `Max ${usageLabel.toLowerCase()}: ${query.usageMax.toLocaleString()}` });
   }
-  if (query.minYear != null) chips.push({ key: 'minYear', label: `From: ${query.minYear}` });
-  if (query.maxYear != null) chips.push({ key: 'maxYear', label: `To: ${query.maxYear}` });
-  if (query.dealer) chips.push({ key: 'dealer', label: `Seller: ${query.dealer}` });
+  if (query.yearMin != null) chips.push({ key: 'yearMin', label: `Min ${yearLabel.toLowerCase()}: ${query.yearMin}` });
+  if (query.yearMax != null) chips.push({ key: 'yearMax', label: `Max ${yearLabel.toLowerCase()}: ${query.yearMax}` });
+  if (query.seller) chips.push({ key: 'seller', label: `Seller: ${query.seller}` });
 
   return chips;
 }
