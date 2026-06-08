@@ -47,6 +47,7 @@ export class MarketplaceService {
         cursor,
         limit = 24,
         make,
+        sellerName,
         model,
         condition,
         minPrice,
@@ -66,6 +67,13 @@ export class MarketplaceService {
         cursor?: string,
         limit?: number,
         make?: string,
+        /**
+         * Seller-name text filter (property manager, broker, host, etc.).
+         * Only applied for categories whose schema declares marketplaceFilter seller.
+         * Ignored for automotive and other brand-filter categories.
+         *
+         */
+        sellerName?: string,
         model?: string,
         condition?: 'NEW' | 'USED' | 'CPO',
         /**
@@ -115,6 +123,7 @@ export class MarketplaceService {
                 'cursor': cursor,
                 'limit': limit,
                 'make': make,
+                'sellerName': sellerName,
                 'model': model,
                 'condition': condition,
                 'minPrice': minPrice,
@@ -144,6 +153,7 @@ export class MarketplaceService {
     public static listMarketplaceVehicles({
         category,
         make,
+        sellerName,
         model,
         condition,
         minPrice,
@@ -163,6 +173,13 @@ export class MarketplaceService {
          */
         category?: MarketplaceBusinessCategory,
         make?: string,
+        /**
+         * Seller-name text filter (property manager, broker, host, etc.).
+         * Only applied for categories whose schema declares marketplaceFilter seller.
+         * Ignored for automotive and other brand-filter categories.
+         *
+         */
+        sellerName?: string,
         model?: string,
         condition?: 'NEW' | 'USED' | 'CPO',
         /**
@@ -212,6 +229,7 @@ export class MarketplaceService {
             query: {
                 'category': category,
                 'make': make,
+                'sellerName': sellerName,
                 'model': model,
                 'condition': condition,
                 'minPrice': minPrice,

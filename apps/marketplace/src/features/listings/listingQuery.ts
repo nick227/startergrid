@@ -27,9 +27,7 @@ export type ListingQueryKey = keyof ListingQuery;
 
 export function toListQuery(query: ListingQuery): ListQuery {
   return {
-    // sellerName (seller-name text search) and brand both map to the make column.
-    // sellerName takes precedence; they are mutually exclusive by category schema.
-    make: query.sellerName ?? query.brand,
+    make: query.brand,
     sellerName: query.sellerName,
     model: query.model,
     condition: query.condition,

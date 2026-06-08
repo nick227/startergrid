@@ -19,6 +19,7 @@ import {
   buildMarketplaceFacets,
   categoryIdToSlug,
   resolveCategorySchema,
+  resolveMarketplaceMakeFilter,
   sanitizeMarketplaceFacets,
   type MarketplaceFacetDef,
 } from '../../../packages/category-schemas/src/index.js';
@@ -156,6 +157,7 @@ export type MarketplaceFeedResponse = {
 export type MarketplaceListFilters = {
   category?:   BusinessCategory;
   make?:       string;
+  sellerName?: string;
   model?:      string;
   condition?:  string;
   minPrice?:   number;
@@ -404,7 +406,13 @@ function buildMarketplaceWhere(filters: MarketplaceListFilters): Prisma.VehicleW
   if (filters.category) {
     where.dealership = { businessCategory: filters.category };
   }
-  if (filters.make)      where.make  = filters.make;
+  const make = filters.category
+    ? resolveMarketplaceMakeFilter(resolveCategorySchema(filters.category), {
+      make: filters.make,
+      sellerName: filters.sellerName,
+    })
+    : filters.make;
+  if (make) where.make = make;
   if (filters.model)     where.model = filters.model;
   if (filters.condition) where.condition    = filters.condition;
   if (filters.dealer)    where.dealershipId = filters.dealer;
@@ -489,7 +497,12 @@ function buildFeedOrderBy(sortBy: string | undefined): Prisma.VehicleOrderByWith
 
 function appliedFilters(filters: MarketplaceListFilters): MarketplaceFeedAppliedFilters {
   return {
-    make:       filters.make ?? null,
+    make:       (filters.category
+      ? resolveMarketplaceMakeFilter(resolveCategorySchema(filters.category), {
+        make: filters.make,
+        sellerName: filters.sellerName,
+      })
+      : filters.make) ?? null,
     model:      filters.model ?? null,
     condition:  filters.condition ?? null,
     minPrice:   filters.minPrice ?? null,

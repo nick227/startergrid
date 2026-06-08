@@ -12,7 +12,6 @@ import { resolveEnabledMarketplaceCategory } from '../../services/marketplace/ma
 import {
   parseMarketplaceFacetsParam,
   resolveCategorySchema,
-  resolveMarketplaceMakeFilter,
   sanitizeMarketplaceFacets,
 } from '../../../packages/category-schemas/src/index.js';
 import { captureMarketplaceLead } from '../../services/marketplace/marketplaceLeadService.js';
@@ -82,13 +81,10 @@ function parseFacetFilters(
 }
 
 function listFiltersFromQuery(q: ListQuery, category: BusinessCategory): MarketplaceListFilters {
-  const schema = resolveCategorySchema(category);
   return {
     category,
-    make:       resolveMarketplaceMakeFilter(schema, {
-      make: q.make,
-      sellerName: q.sellerName,
-    }),
+    make:       q.make      || undefined,
+    sellerName: q.sellerName || undefined,
     model:      q.model     || undefined,
     condition:  q.condition || undefined,
     dealer:     q.dealer    || undefined,

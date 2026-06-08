@@ -254,6 +254,15 @@ paths:
           schema:
             type: string
             maxLength: 80
+        - name: sellerName
+          in: query
+          description: |
+            Seller-name text filter (property manager, broker, host, etc.).
+            Only applied for categories whose schema declares marketplaceFilter seller.
+            Ignored for automotive and other brand-filter categories.
+          schema:
+            type: string
+            maxLength: 80
         - name: model
           in: query
           schema:
@@ -348,6 +357,15 @@ paths:
             $ref: '#/components/schemas/MarketplaceBusinessCategory'
         - name: make
           in: query
+          schema:
+            type: string
+            maxLength: 80
+        - name: sellerName
+          in: query
+          description: |
+            Seller-name text filter (property manager, broker, host, etc.).
+            Only applied for categories whose schema declares marketplaceFilter seller.
+            Ignored for automotive and other brand-filter categories.
           schema:
             type: string
             maxLength: 80

@@ -132,15 +132,17 @@ describe('sanitizeListingQuery', () => {
     expect(toListQuery(sanitized).make).toBe('Honda');
   });
 
-  it('sellerName for apartments routes to make in the API call', () => {
+  it('sellerName for apartments is sent as a distinct API param', () => {
     const config = buildListingFilterConfig('apartments', resolveCategorySchema('APARTMENTS'));
     const sanitized = sanitizeListingQuery({ sellerName: 'Coldwell Banker' }, config);
-    expect(toListQuery(sanitized).make).toBe('Coldwell Banker');
+    expect(toListQuery(sanitized).sellerName).toBe('Coldwell Banker');
+    expect(toListQuery(sanitized).make).toBeUndefined();
   });
 
-  it('brand and sellerName cannot both populate make — sellerName wins for seller-role categories', () => {
+  it('keeps brand and sellerName separate for seller-role categories', () => {
     const config = buildListingFilterConfig('apartments', resolveCategorySchema('APARTMENTS'));
     const sanitized = sanitizeListingQuery({ sellerName: 'Coldwell', brand: 'SomeBrand' }, config);
-    expect(toListQuery(sanitized).make).toBe('Coldwell');
+    expect(toListQuery(sanitized).sellerName).toBe('Coldwell');
+    expect(toListQuery(sanitized).make).toBe('SomeBrand');
   });
 });

@@ -652,6 +652,46 @@ describe('keyword q search — WHERE clause structure', () => {
   });
 });
 
+// ── sellerName / make gating ──────────────────────────────────────────────────
+
+describe('sellerName make-filter gating', () => {
+  it('applies make for automotive brand filter', async () => {
+    const { prisma, captured } = makeCaptureMock([fakeVehicle()]);
+    await listMarketplaceVehicles(prisma, { category: 'AUTOMOTIVE', make: 'Toyota' });
+    assert.equal(where(captured)['make'], 'Toyota');
+  });
+
+  it('ignores sellerName for automotive', async () => {
+    const { prisma, captured } = makeCaptureMock([fakeVehicle()]);
+    await listMarketplaceVehicles(prisma, {
+      category: 'AUTOMOTIVE',
+      make: 'Toyota',
+      sellerName: 'Coldwell Banker',
+    });
+    const w = where(captured);
+    assert.equal(w['make'], 'Toyota');
+    assert.ok(!('sellerName' in w), 'sellerName must not appear in Prisma WHERE');
+  });
+
+  it('drops sellerName-only automotive requests', async () => {
+    const { prisma, captured } = makeCaptureMock([fakeVehicle()]);
+    await listMarketplaceVehicles(prisma, {
+      category: 'AUTOMOTIVE',
+      sellerName: 'Coldwell Banker',
+    });
+    assert.equal(where(captured)['make'], undefined);
+  });
+
+  it('applies sellerName as make filter for apartments', async () => {
+    const { prisma, captured } = makeCaptureMock([fakeVehicle()]);
+    await listMarketplaceVehicles(prisma, {
+      category: 'APARTMENTS',
+      sellerName: 'Coldwell Banker',
+    });
+    assert.equal(where(captured)['make'], 'Coldwell Banker');
+  });
+});
+
 // ── schema-backed facet filters ───────────────────────────────────────────────
 
 describe('facet filters — WHERE clause structure', () => {
@@ -696,6 +736,41 @@ describe('facet filters — WHERE clause structure', () => {
     const clauses = extractAndClauses(captured);
     assert.ok(!clauses.some(c => c['bodyStyle'] === 'Hovercraft'), 'invalid bodyStyle must be dropped');
     assert.ok(clauses.some(c => c['drivetrain'] === 'AWD'), 'valid drivetrain must still apply');
+  });
+});
+
+// ── Seller name filter (FILTER-02a) ──────────────────────────────────────────
+//
+// The seller name filter uses the existing `make` column for real estate / rental
+// categories (apartments, homes, commercial_property, vacation_rentals). The
+// frontend translates `sellerName` → `make` in toListQuery before calling the API.
+// The backend applies `make` regardless of category — gating is entirely frontend.
+// These tests confirm the backend's make filter behavior for category-scoped queries.
+
+describe('seller name filter — make column for real estate categories', () => {
+  it('make filter applies for a seller-role category (HOMES + seller name)', async () => {
+    const { prisma, captured } = makeCaptureMock([fakeVehicle()]);
+    await listMarketplaceVehicles(prisma, { category: 'HOMES', make: 'Coldwell Banker' });
+    assert.equal(where(captured)['make'], 'Coldwell Banker',
+      'seller name passed as make is applied to WHERE');
+    const dealer = where(captured)['dealership'] as Record<string, unknown> | undefined;
+    assert.equal(dealer?.['businessCategory'], 'HOMES',
+      'category filter scopes results to HOMES');
+  });
+
+  it('brand filter for automotive applies as make (same column, gating is frontend)', async () => {
+    const { prisma, captured } = makeCaptureMock([fakeVehicle()]);
+    await listMarketplaceVehicles(prisma, { category: 'AUTOMOTIVE', make: 'Toyota' });
+    assert.equal(where(captured)['make'], 'Toyota', 'brand filter routes to make for automotive');
+    const dealer = where(captured)['dealership'] as Record<string, unknown> | undefined;
+    assert.equal(dealer?.['businessCategory'], 'AUTOMOTIVE');
+  });
+
+  it('omitting make for automotive does not add make to WHERE', async () => {
+    const { prisma, captured } = makeCaptureMock([fakeVehicle()]);
+    await listMarketplaceVehicles(prisma, { category: 'AUTOMOTIVE' });
+    assert.ok(!('make' in where(captured)),
+      'no make in WHERE when neither brand nor seller name is provided');
   });
 });
 

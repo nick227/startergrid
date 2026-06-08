@@ -75,15 +75,10 @@ describe('listingQuery adapter', () => {
     expect(hasListingQueryFilters({ facets: { bodyStyle: 'SUV' } })).toBe(true);
   });
 
-  it('maps sellerName to make in toListQuery for seller-role categories', () => {
-    const result = toListQuery({ sellerName: 'Coldwell Banker' });
-    expect(result.make).toBe('Coldwell Banker');
+  it('keeps sellerName and brand as separate list query params', () => {
+    const result = toListQuery({ sellerName: 'Coldwell Banker', brand: 'Toyota' });
     expect(result.sellerName).toBe('Coldwell Banker');
-  });
-
-  it('sellerName takes precedence over brand in toListQuery make field', () => {
-    const result = toListQuery({ sellerName: 'Coldwell', brand: 'SomeBrand' });
-    expect(result.make).toBe('Coldwell');
+    expect(result.make).toBe('Toyota');
   });
 
   it('fromListQuery restores sellerName from URL and leaves brand undefined', () => {
