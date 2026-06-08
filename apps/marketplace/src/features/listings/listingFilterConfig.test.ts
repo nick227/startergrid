@@ -1,10 +1,24 @@
 import { describe, expect, it } from 'vitest';
-import { resolveCategorySchema } from '@auto-dealer/category-schemas';
+import { resolveCategorySchema, type CategorySchema } from '@auto-dealer/category-schemas';
 import {
   buildListingCardMetaLabels,
   buildListingFilterConfig,
   isListingFilterEnabled,
+  resolveMarketplaceFilterField,
 } from './listingFilterConfig.ts';
+
+function schemaWithDuplicateBrandRole(): CategorySchema {
+  const base = resolveCategorySchema('APPAREL');
+  return {
+    ...base,
+    fields: [
+      { key: 'brand', label: 'Brand', kind: 'text', marketplaceFilter: 'brand' },
+      { key: 'manufacturer', label: 'Manufacturer', kind: 'text', marketplaceFilter: 'brand' },
+      { key: 'model', label: 'Style', kind: 'text', marketplaceFilter: 'model' },
+      { key: 'priceCents', label: 'Price', kind: 'currency', marketplaceFilter: 'price' },
+    ],
+  };
+}
 
 describe('buildListingFilterConfig', () => {
   it('uses generic brand, model, and usage labels for automotive', () => {
@@ -61,5 +75,14 @@ describe('buildListingFilterConfig', () => {
     expect(config.labels.model).toBe('Style');
     expect(isListingFilterEnabled(config, 'condition')).toBe(true);
     expect(isListingFilterEnabled(config, 'usage')).toBe(false);
+  });
+
+  it('uses the first declared field when multiple fields share a marketplaceFilter role', () => {
+    const schema = schemaWithDuplicateBrandRole();
+    const config = buildListingFilterConfig('apparel', schema);
+
+    expect(resolveMarketplaceFilterField(schema, 'brand')?.key).toBe('brand');
+    expect(config.labels.brand).toBe('Brand');
+    expect(config.labels.brand).not.toBe('Manufacturer');
   });
 });

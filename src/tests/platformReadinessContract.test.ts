@@ -29,8 +29,8 @@ function readinessFailures(
   return platforms
     .map(platform => {
       const report = mode === 'strict'
-        ? validatePlatformReadinessStrict(platform, fixture.dealer, fixture.inventory)
-        : validatePlatformReadiness(platform, fixture.dealer, fixture.inventory);
+        ? validatePlatformReadinessStrict(platform, fixture.dealer, fixture.inventory, undefined, { businessCategory: category })
+        : validatePlatformReadiness(platform, fixture.dealer, fixture.inventory, { businessCategory: category });
       return { platform, report };
     })
     .filter(({ report }) =>

@@ -45,6 +45,12 @@ describe('validateVehiclePayloads', () => {
     assert.ok(issues.some(i => i.path.includes('vin') && i.severity === 'FAIL'));
   });
 
+  it('does not warn about low price for digital distribution categories', () => {
+    const vehicle = { ...baseVehicle, priceCents: 999 };
+    const issues = validateVehiclePayloads([vehicle], [], {}, { businessCategory: 'SONGS' });
+    assert.equal(issues.filter(i => i.code === 'PRICE_SUSPICIOUS').length, 0);
+  });
+
   it('returns WARN when priceCents is below $1000 (100000 cents)', () => {
     const vehicle = { ...baseVehicle, priceCents: 95000 };
     const issues = validateVehiclePayloads([vehicle], [], {});

@@ -1,4 +1,5 @@
-﻿import type {
+﻿import { minPriceCentsForPlatform } from '../../lib/categoryPricePolicy.js';
+import type {
   DealershipPayload,
   PlatformProfileSeed,
   PlatformReadinessReport,
@@ -27,30 +28,51 @@ function toReadiness(status: ValidationSignal) {
   return status === 'PASS' ? 'GREEN' : status === 'WARN' ? 'YELLOW' : 'RED';
 }
 
-export function validatePlatformReadiness(platform: PlatformProfileSeed, dealership: DealershipPayload, vehicles: VehiclePayload[]): PlatformReadinessReport {
-  return validatePlatformReadinessWithOptions(platform, dealership, vehicles, { strictProfile: false });
+export function validatePlatformReadiness(
+  platform: PlatformProfileSeed,
+  dealership: DealershipPayload,
+  vehicles: VehiclePayload[],
+  options?: { businessCategory?: string },
+): PlatformReadinessReport {
+  return validatePlatformReadinessWithOptions(platform, dealership, vehicles, {
+    strictProfile: false,
+    businessCategory: options?.businessCategory,
+  });
 }
 
 export function validatePlatformReadinessStrict(
   platform: PlatformProfileSeed,
   dealership: DealershipPayload,
   vehicles: VehiclePayload[],
-  policy?: StrictProfilePolicy
+  policy?: StrictProfilePolicy,
+  options?: { businessCategory?: string },
 ): PlatformReadinessReport {
-  return validatePlatformReadinessWithOptions(platform, dealership, vehicles, { strictProfile: true, policy });
+  return validatePlatformReadinessWithOptions(platform, dealership, vehicles, {
+    strictProfile: true,
+    policy,
+    businessCategory: options?.businessCategory,
+  });
 }
 
 function validatePlatformReadinessWithOptions(
   platform: PlatformProfileSeed,
   dealership: DealershipPayload,
   vehicles: VehiclePayload[],
-  options: { strictProfile: boolean; policy?: StrictProfilePolicy }
+  options: { strictProfile: boolean; policy?: StrictProfilePolicy; businessCategory?: string },
 ): PlatformReadinessReport {
   const schemaFreshnessDays = daysSince(platform.lastVerifiedAt);
   const schemaFreshnessStatus: ValidationSignal = platform.needsReview ? 'FAIL' : schemaFreshnessDays > FRESH_DAYS ? 'WARN' : 'PASS';
+  const priceCategory = options.businessCategory
+    ?? (platform.supportedCategories.length === 1 ? platform.supportedCategories[0] : undefined);
+
   const issues = [
     ...validateDealershipProfile(dealership, platform.requiredDealershipFields),
-    ...validateVehiclePayloads(vehicles, platform.requiredVehicleFields, platform.requiredMediaRules)
+    ...validateVehiclePayloads(vehicles, platform.requiredVehicleFields, platform.requiredMediaRules, {
+      businessCategory: priceCategory,
+      minPriceCents: priceCategory
+        ? undefined
+        : minPriceCentsForPlatform(platform.supportedCategories),
+    }),
   ];
 
   if (schemaFreshnessStatus === 'FAIL') {

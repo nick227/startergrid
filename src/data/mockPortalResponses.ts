@@ -800,6 +800,15 @@ const wayfairSeller = assistedMarketplaceStub('wayfair-seller', 'Wayfair Seller'
 const airbnbHost = assistedMarketplaceStub('airbnb-host', 'Airbnb Host');
 const vrboOwner = assistedMarketplaceStub('vrbo-owner', 'Vrbo Owner');
 
+const zillowRentalManager = assistedMarketplaceStub('zillow-rental-manager', 'Zillow Rental Manager');
+const apartmentsCom = assistedMarketplaceStub('apartments-com', 'Apartments.com');
+const zillowHomes = assistedMarketplaceStub('zillow-homes', 'Zillow Premier Agent');
+const realtorCom = assistedMarketplaceStub('realtor-com', 'Realtor.com');
+const loopnet = assistedMarketplaceStub('loopnet', 'LoopNet');
+const crexi = assistedMarketplaceStub('crexi', 'Crexi');
+const machineryTrader = assistedMarketplaceStub('machinery-trader', 'MachineryTrader');
+const ironplanet = assistedMarketplaceStub('ironplanet', 'IronPlanet');
+
 export const mockPortalResponses: Record<string, PlatformResponses> = {
   'dealer-storefront': dealerStorefront,
   'consumer-marketplace': consumerMarketplace,
@@ -862,6 +871,14 @@ export const mockPortalResponses: Record<string, PlatformResponses> = {
   'wayfair-seller': wayfairSeller,
   'airbnb-host': airbnbHost,
   'vrbo-owner': vrboOwner,
+  'zillow-rental-manager': zillowRentalManager,
+  'apartments-com': apartmentsCom,
+  'zillow-homes': zillowHomes,
+  'realtor-com': realtorCom,
+  'loopnet': loopnet,
+  'crexi': crexi,
+  'machinery-trader': machineryTrader,
+  'ironplanet': ironplanet,
 };
 
 export function getMockPortalResponse(platformSlug: string, condition: MockPortalCondition): MockPortalResponse | undefined {

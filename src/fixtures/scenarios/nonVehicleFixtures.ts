@@ -34,7 +34,7 @@ export const songsDealerInventory: VehiclePayload[] = [
     make: 'The Midnight Echoes',
     model: 'Neon Horizons',
     trim: 'Digital Album',
-    priceCents: 129900,
+    priceCents: 999,
     media: [image('https://media.indiewave.example.com/releases/neon-horizons/cover.jpg')],
     categoryPayload: { format: 'Digital Album', genre: 'Synthwave', trackCount: 12 },
   },
@@ -45,7 +45,7 @@ export const songsDealerInventory: VehiclePayload[] = [
     make: 'River & Stone',
     model: 'Acoustic Sessions Vol. 2',
     trim: 'EP',
-    priceCents: 100000,
+    priceCents: 499,
     media: [image('https://media.indiewave.example.com/releases/acoustic-v2/cover.jpg')],
     categoryPayload: { format: 'EP', genre: 'Folk', trackCount: 6 },
   },
@@ -71,7 +71,7 @@ export const ebooksDealerInventory: VehiclePayload[] = [
     make: 'Robert C. Martin',
     model: 'Clean Architecture',
     trim: '2nd Edition',
-    priceCents: 149900,
+    priceCents: 3999,
     media: [image('https://media.harborlight.example.com/titles/clean-architecture/cover.jpg')],
     categoryPayload: { format: 'Kindle', pageCount: 432, language: 'en' },
   },
@@ -82,7 +82,7 @@ export const ebooksDealerInventory: VehiclePayload[] = [
     make: 'Luc Perkins',
     model: 'Designing Data-Intensive Applications',
     trim: '1st Edition',
-    priceCents: 199900,
+    priceCents: 4999,
     media: [image('https://media.harborlight.example.com/titles/ddia/cover.jpg')],
     categoryPayload: { format: 'ePub', pageCount: 616, language: 'en' },
   },
@@ -107,7 +107,7 @@ export const apparelDealerInventory: VehiclePayload[] = [
     make: 'Northline',
     model: 'Essential Crew Tee',
     trim: 'M',
-    priceCents: 249900,
+    priceCents: 2499,
     condition: 'NEW',
     exteriorColor: 'Black',
     media: [image('https://media.northline.example.com/apparel/essential-tee-black.jpg')],
@@ -119,7 +119,7 @@ export const apparelDealerInventory: VehiclePayload[] = [
     make: 'Northline',
     model: 'Heavyweight Hoodie',
     trim: 'L',
-    priceCents: 599900,
+    priceCents: 5999,
     condition: 'NEW',
     exteriorColor: 'Heather Gray',
     media: [image('https://media.northline.example.com/apparel/heavy-hoodie-gray.jpg')],
@@ -147,7 +147,7 @@ export const digitalArtDealerInventory: VehiclePayload[] = [
     make: 'Lena Voss',
     model: 'Chromatic Drift',
     trim: 'Neon Series',
-    priceCents: 1500000,
+    priceCents: 15000,
     media: [image('https://media.pixelcanvas.example.com/art/chromatic-drift.jpg')],
     categoryPayload: { medium: 'Digital Print', editionSize: 100 },
   },
@@ -158,7 +158,7 @@ export const digitalArtDealerInventory: VehiclePayload[] = [
     make: 'Lena Voss',
     model: 'Midnight Bloom',
     trim: 'Neon Series',
-    priceCents: 2500000,
+    priceCents: 25000,
     media: [image('https://media.pixelcanvas.example.com/art/midnight-bloom.jpg')],
     categoryPayload: { medium: 'Digital Print', editionSize: 50 },
   },
@@ -182,7 +182,7 @@ export const videoDealerInventory: VehiclePayload[] = [
     year: 2024,
     make: 'Riley Chen',
     model: 'Building Better Workflows',
-    priceCents: 100000,
+    priceCents: 0,
     media: [image('https://media.frameshift.example.com/videos/building-workflows/thumb.jpg')],
     categoryPayload: { durationSec: 720, resolution: '4K' },
   },
@@ -191,7 +191,7 @@ export const videoDealerInventory: VehiclePayload[] = [
     year: 2023,
     make: 'FrameShift Media',
     model: 'Creator Toolkit Series: Lighting',
-    priceCents: 499900,
+    priceCents: 499,
     media: [image('https://media.frameshift.example.com/videos/lighting-series/thumb.jpg')],
     categoryPayload: { durationSec: 1840, resolution: '1080p' },
   },
@@ -233,6 +233,7 @@ export const pawnDealerInventory: VehiclePayload[] = [
 ];
 
 import { EXTENDED_NON_VEHICLE_FIXTURES } from './nonVehicleExtendedFixtures.js';
+import { PROPERTY_NON_VEHICLE_FIXTURES } from './nonVehiclePropertyFixtures.js';
 
 /** All non-vehicle fixture bundles keyed by category. */
 export const NON_VEHICLE_FIXTURES = {
@@ -243,4 +244,5 @@ export const NON_VEHICLE_FIXTURES = {
   VIDEO_DISTRIBUTION: { dealer: videoDealerPayload, inventory: videoDealerInventory },
   PAWN: { dealer: pawnDealerPayload, inventory: pawnDealerInventory },
   ...EXTENDED_NON_VEHICLE_FIXTURES,
+  ...PROPERTY_NON_VEHICLE_FIXTURES,
 };

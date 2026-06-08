@@ -11,10 +11,14 @@ import { NON_VEHICLE_FIXTURES } from '../fixtures/scenarios/nonVehicleFixtures.j
 import {
   NON_VEHICLE_PAYLOAD_KEYS,
   parseApparelCategoryPayload,
+  parseApartmentsCategoryPayload,
   parseCollectiblesCategoryPayload,
+  parseCommercialPropertyCategoryPayload,
   parseDigitalArtCategoryPayload,
   parseEbooksCategoryPayload,
   parseFurnitureCategoryPayload,
+  parseHeavyEquipmentCategoryPayload,
+  parseHomesCategoryPayload,
   parsePawnCategoryPayload,
   parseSneakersCategoryPayload,
   parseSongsCategoryPayload,
@@ -45,6 +49,10 @@ const PAYLOAD_PARSERS = {
   COLLECTIBLES: parseCollectiblesCategoryPayload,
   FURNITURE: parseFurnitureCategoryPayload,
   VACATION_RENTALS: parseVacationRentalsCategoryPayload,
+  APARTMENTS: parseApartmentsCategoryPayload,
+  HOMES: parseHomesCategoryPayload,
+  COMMERCIAL_PROPERTY: parseCommercialPropertyCategoryPayload,
+  HEAVY_EQUIPMENT: parseHeavyEquipmentCategoryPayload,
 } as const;
 
 function isHttpsUrl(value: string | undefined): boolean {

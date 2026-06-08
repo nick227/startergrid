@@ -58,6 +58,30 @@ export type VacationRentalsCategoryPayload = {
   nightlyRateCents?: number;
 };
 
+export type ApartmentsCategoryPayload = {
+  beds?: number;
+  baths?: number;
+  sqft?: number;
+};
+
+export type HomesCategoryPayload = {
+  beds?: number;
+  baths?: number;
+  sqft?: number;
+  lotAcres?: number;
+};
+
+export type CommercialPropertyCategoryPayload = {
+  propertyType?: string;
+  sqft?: number;
+  capRate?: number;
+};
+
+export type HeavyEquipmentCategoryPayload = {
+  usageUnit?: string;
+  equipmentType?: string;
+};
+
 export type NonVehicleCategoryPayload =
   | SongsCategoryPayload
   | EbooksCategoryPayload
@@ -69,7 +93,11 @@ export type NonVehicleCategoryPayload =
   | SneakersCategoryPayload
   | CollectiblesCategoryPayload
   | FurnitureCategoryPayload
-  | VacationRentalsCategoryPayload;
+  | VacationRentalsCategoryPayload
+  | ApartmentsCategoryPayload
+  | HomesCategoryPayload
+  | CommercialPropertyCategoryPayload
+  | HeavyEquipmentCategoryPayload;
 
 function asOptionalString(value: unknown): string | undefined {
   return typeof value === 'string' && value.length > 0 ? value : undefined;
@@ -186,6 +214,46 @@ export function parseVacationRentalsCategoryPayload(raw: unknown): VacationRenta
   };
 }
 
+export function parseApartmentsCategoryPayload(raw: unknown): ApartmentsCategoryPayload {
+  const record = parseRecord(raw);
+  if (!record) return {};
+  return {
+    beds: asOptionalNumber(record['beds']),
+    baths: asOptionalNumber(record['baths']),
+    sqft: asOptionalNumber(record['sqft']),
+  };
+}
+
+export function parseHomesCategoryPayload(raw: unknown): HomesCategoryPayload {
+  const record = parseRecord(raw);
+  if (!record) return {};
+  return {
+    beds: asOptionalNumber(record['beds']),
+    baths: asOptionalNumber(record['baths']),
+    sqft: asOptionalNumber(record['sqft']),
+    lotAcres: asOptionalNumber(record['lotAcres']),
+  };
+}
+
+export function parseCommercialPropertyCategoryPayload(raw: unknown): CommercialPropertyCategoryPayload {
+  const record = parseRecord(raw);
+  if (!record) return {};
+  return {
+    propertyType: asOptionalString(record['propertyType']),
+    sqft: asOptionalNumber(record['sqft']),
+    capRate: asOptionalNumber(record['capRate']),
+  };
+}
+
+export function parseHeavyEquipmentCategoryPayload(raw: unknown): HeavyEquipmentCategoryPayload {
+  const record = parseRecord(raw);
+  if (!record) return {};
+  return {
+    usageUnit: asOptionalString(record['usageUnit']),
+    equipmentType: asOptionalString(record['equipmentType']),
+  };
+}
+
 /** Expected categoryPayload keys per non-vehicle category — used by contract tests. */
 export const NON_VEHICLE_PAYLOAD_KEYS = {
   SONGS: ['format', 'genre', 'trackCount'],
@@ -199,4 +267,8 @@ export const NON_VEHICLE_PAYLOAD_KEYS = {
   COLLECTIBLES: ['grade', 'category'],
   FURNITURE: ['material', 'dimensions'],
   VACATION_RENTALS: ['bedrooms', 'sleeps', 'nightlyRateCents'],
+  APARTMENTS: ['beds', 'baths', 'sqft'],
+  HOMES: ['beds', 'baths', 'sqft', 'lotAcres'],
+  COMMERCIAL_PROPERTY: ['propertyType', 'sqft', 'capRate'],
+  HEAVY_EQUIPMENT: ['usageUnit', 'equipmentType'],
 } as const;

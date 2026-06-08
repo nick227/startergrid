@@ -13,6 +13,10 @@ export const NON_VEHICLE_PLATFORM_CATEGORIES = [
   'COLLECTIBLES',
   'FURNITURE',
   'VACATION_RENTALS',
+  'APARTMENTS',
+  'HOMES',
+  'COMMERCIAL_PROPERTY',
+  'HEAVY_EQUIPMENT',
 ] as const satisfies readonly BusinessCategoryId[];
 
 export type NonVehiclePlatformCategory = (typeof NON_VEHICLE_PLATFORM_CATEGORIES)[number];

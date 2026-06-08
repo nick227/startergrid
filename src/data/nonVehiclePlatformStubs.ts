@@ -1,6 +1,7 @@
 import type { PlatformProfileSeed } from '../lib/types.js';
 import { CORE_NON_VEHICLE_STUB_DEFINITIONS } from './nonVehiclePlatformStubDefinitions.js';
 import { EXTENDED_NON_VEHICLE_STUB_DEFINITIONS } from './nonVehiclePlatformStubDefinitionsExtended.js';
+import { PROPERTY_NON_VEHICLE_STUB_DEFINITIONS } from './nonVehiclePlatformStubDefinitionsProperty.js';
 import {
   NON_VEHICLE_PLATFORM_CATEGORIES,
   type NonVehiclePlatformCategory,
@@ -10,7 +11,8 @@ import {
 export { NON_VEHICLE_PLATFORM_CATEGORIES, type NonVehiclePlatformCategory };
 
 export const NON_VEHICLE_PLATFORM_COUNT = CORE_NON_VEHICLE_STUB_DEFINITIONS.length
-  + EXTENDED_NON_VEHICLE_STUB_DEFINITIONS.length;
+  + EXTENDED_NON_VEHICLE_STUB_DEFINITIONS.length
+  + PROPERTY_NON_VEHICLE_STUB_DEFINITIONS.length;
 
 function buildStub(input: NonVehicleStubInput): PlatformProfileSeed {
   const integrationClass = input.integrationClass ?? 'ASSISTED';
@@ -48,6 +50,7 @@ function buildStub(input: NonVehicleStubInput): PlatformProfileSeed {
 const STUB_DEFINITIONS = [
   ...CORE_NON_VEHICLE_STUB_DEFINITIONS,
   ...EXTENDED_NON_VEHICLE_STUB_DEFINITIONS,
+  ...PROPERTY_NON_VEHICLE_STUB_DEFINITIONS,
 ];
 
 export const nonVehiclePlatformStubs: PlatformProfileSeed[] = STUB_DEFINITIONS.map(buildStub);

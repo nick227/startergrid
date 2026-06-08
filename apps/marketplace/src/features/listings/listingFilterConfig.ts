@@ -59,8 +59,19 @@ function hasField(schema: CategorySchema, key: string): boolean {
   return schema.fields.some(field => field.key === key);
 }
 
-function fieldByRole(schema: CategorySchema, role: MarketplaceFilterRole): CategoryFieldDef | undefined {
+/**
+ * Resolves the schema field for a marketplace filter role.
+ * When multiple fields declare the same role, the first declared field wins.
+ */
+export function resolveMarketplaceFilterField(
+  schema: CategorySchema,
+  role: MarketplaceFilterRole,
+): CategoryFieldDef | undefined {
   return schema.fields.find(field => field.marketplaceFilter === role);
+}
+
+function fieldByRole(schema: CategorySchema, role: MarketplaceFilterRole): CategoryFieldDef | undefined {
+  return resolveMarketplaceFilterField(schema, role);
 }
 
 function normalizeDisplayLabel(role: MarketplaceFilterRole, label: string): string {
