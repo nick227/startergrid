@@ -48,4 +48,12 @@ export const automotiveSchema: CategorySchema = {
   },
   formatters: automotiveFormatters,
   marketplace: buildMarketplaceMeta('AUTOMOTIVE', 'Automotive'),
+  fulfillmentPolicy: {
+    allowedModes: ['pickup', 'seller_delivery', 'contact_seller'],
+    defaultMode: 'contact_seller',
+    methodLabel: 'Pickup or arranged delivery',
+    timingLabel: 'By arrangement',
+    costLabel: 'Delivery may cost extra',
+    buyerMessage: 'Ask the seller about pickup, transport, or delivery options.',
+  },
 };

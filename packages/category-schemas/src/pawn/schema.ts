@@ -35,6 +35,13 @@ export const pawnSchema: CategorySchema = {
     consumerEnabled: false,
     tagline: 'Browse pre-owned items from participating shops',
   }),
+  fulfillmentPolicy: {
+    allowedModes: ['pickup', 'contact_seller'],
+    defaultMode: 'contact_seller',
+    methodLabel: 'Pickup or contact seller',
+    timingLabel: 'By arrangement',
+    buyerMessage: 'Contact seller about availability and pickup.',
+  },
 };
 
 /** @deprecated use pawnSchema */

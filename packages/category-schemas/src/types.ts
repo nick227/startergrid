@@ -95,6 +95,25 @@ export type CategoryMarketplaceMeta = {
   tagline: string;
 };
 
+export type FulfillmentMode =
+  | 'digital'
+  | 'pickup'
+  | 'local_delivery'
+  | 'seller_delivery'
+  | 'platform_delivery'
+  | 'third_party_shipping'
+  | 'not_offered'
+  | 'contact_seller';
+
+export type FulfillmentPolicy = {
+  allowedModes: FulfillmentMode[];
+  defaultMode: FulfillmentMode;
+  methodLabel?: string;
+  timingLabel?: string;
+  costLabel?: string;
+  buyerMessage?: string;
+};
+
 export type CategorySchema = {
   id: BusinessCategoryId;
   status: CategoryStatus;
@@ -109,4 +128,5 @@ export type CategorySchema = {
   performance: CategoryPerformanceLabels;
   formatters: CategoryFormatters;
   marketplace: CategoryMarketplaceMeta;
+  fulfillmentPolicy?: FulfillmentPolicy;
 };

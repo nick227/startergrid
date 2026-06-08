@@ -1,4 +1,4 @@
-import type { BusinessCategoryId, CategoryCopyBundle, CategoryLifecycleMode, CategorySchema } from '../types.js';
+import type { BusinessCategoryId, CategoryCopyBundle, CategoryLifecycleMode, CategorySchema, FulfillmentPolicy } from '../types.js';
 import { buildMarketplaceMeta } from '../marketplace/helpers.js';
 import {
   genericAsset,
@@ -14,6 +14,7 @@ export function createPlaceholderSchema(
   id: BusinessCategoryId,
   label: string,
   copyOverrides: Partial<CategoryCopyBundle> = {},
+  options: { fulfillmentPolicy?: FulfillmentPolicy } = {},
 ): CategorySchema {
   return {
     id,
@@ -29,6 +30,7 @@ export function createPlaceholderSchema(
     performance: { ...genericPerformance },
     formatters: genericFormatters,
     marketplace: buildMarketplaceMeta(id, label, { consumerEnabled: false }),
+    ...( options.fulfillmentPolicy !== undefined && { fulfillmentPolicy: options.fulfillmentPolicy }),
   };
 }
 

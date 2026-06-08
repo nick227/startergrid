@@ -34,6 +34,14 @@ export const videoDistributionSchema: CategorySchema = {
     consumerEnabled: false,
     tagline: 'Browse videos from participating creators',
   }),
+  fulfillmentPolicy: {
+    allowedModes: ['digital'],
+    defaultMode: 'digital',
+    methodLabel: 'Online delivery',
+    timingLabel: 'Online access',
+    costLabel: 'No shipping required',
+    buyerMessage: 'Delivered online or handled through the seller/platform flow.',
+  },
 };
 
 /** @deprecated use videoDistributionSchema */

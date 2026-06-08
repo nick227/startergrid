@@ -35,6 +35,13 @@ export const sneakersSchema: CategorySchema = {
     consumerEnabled: false,
     tagline: 'Browse sneakers from participating sellers',
   }),
+  fulfillmentPolicy: {
+    allowedModes: ['third_party_shipping', 'contact_seller'],
+    defaultMode: 'third_party_shipping',
+    methodLabel: 'Shipping available',
+    timingLabel: 'Seller-provided timing',
+    costLabel: 'Shipping may cost extra',
+  },
 };
 
 /** @deprecated use sneakersSchema */

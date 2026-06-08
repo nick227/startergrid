@@ -36,6 +36,14 @@ export const ebooksSchema: CategorySchema = {
     consumerEnabled: false,
     tagline: 'Browse digital titles from participating publishers',
   }),
+  fulfillmentPolicy: {
+    allowedModes: ['digital'],
+    defaultMode: 'digital',
+    methodLabel: 'Online delivery',
+    timingLabel: 'Online access',
+    costLabel: 'No shipping required',
+    buyerMessage: 'Delivered online or handled through the seller/platform flow.',
+  },
 };
 
 /** @deprecated use ebooksSchema */

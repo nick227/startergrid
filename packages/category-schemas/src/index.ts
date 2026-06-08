@@ -12,6 +12,8 @@ export type {
   CategoryReadinessLabels,
   CategorySchema,
   CategoryStatus,
+  FulfillmentMode,
+  FulfillmentPolicy,
 } from './types.js';
 
 export { BUSINESS_CATEGORY_IDS } from './types.js';
@@ -28,3 +30,8 @@ export {
 } from './marketplace/helpers.js';
 export { automotiveSchema } from './automotive/schema.js';
 export { createPlaceholderSchema, createUnknownFallbackSchema, genericOperatorFallback } from './generic/schema.js';
+export {
+  getFulfillmentPolicy,
+  getFulfillmentSummary,
+} from './fulfillment/helpers.js';
+export type { FulfillmentSummary } from './fulfillment/helpers.js';

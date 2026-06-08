@@ -39,6 +39,14 @@ export const boatsSchema: CategorySchema = {
   marketplace: buildMarketplaceMeta('BOATS', 'Boats', {
     tagline: 'Browse boats and watercraft from participating dealers',
   }),
+  fulfillmentPolicy: {
+    allowedModes: ['pickup', 'seller_delivery', 'contact_seller'],
+    defaultMode: 'contact_seller',
+    methodLabel: 'Pickup or arranged transport',
+    timingLabel: 'By arrangement',
+    costLabel: 'Transport may cost extra',
+    buyerMessage: 'Ask the seller about pickup, transport, or delivery options.',
+  },
 };
 
 /** @deprecated use boatsSchema */
