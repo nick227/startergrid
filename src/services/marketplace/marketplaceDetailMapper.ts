@@ -1,5 +1,6 @@
 import { mapDbMediaToDetailMedia } from './mediaSlotFixtures.js';
 import { parseCategoryPayload, usageUnitFromPayload } from '../../lib/categoryPayload.js';
+import { deriveMarketplaceAvailabilityStatus } from './marketplaceAvailability.js';
 
 type DbMedia = {
   id:         string;
@@ -14,6 +15,8 @@ type DbMedia = {
 export type DbVehicleDetailRow = {
   id:                 string;
   vin:                string;
+  soldAt:             Date | null;
+  removedAt:          Date | null;
   stockNumber:        string;
   year:               number;
   make:               string;
@@ -130,7 +133,7 @@ function shapeCommerce(row: DbVehicleDetailRow) {
     originalPriceCents:           hasDrop ? row.originalPriceCents : null,
     priceLastChangedAt:           row.priceLastChangedAt?.toISOString() ?? null,
     estimatedMonthlyPaymentCents: null,
-    availabilityStatus:           'AVAILABLE' as const,
+    availabilityStatus:           deriveMarketplaceAvailabilityStatus(row),
     shippingPriceCents:           null,
     estimatedArrival:             null,
     listedAt:                     row.createdAt.toISOString(),

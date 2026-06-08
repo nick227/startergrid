@@ -137,6 +137,7 @@ export type MarketplaceFeedAppliedFilters = {
   maxPrice:   number | null;
   maxMileage: number | null;
   dealer:     string | null;
+  q:          string | null;
 };
 
 export type MarketplaceFeedResponse = {
@@ -158,6 +159,7 @@ export type MarketplaceListFilters = {
   maxYear?:    number;
   sortBy?:     string;
   dealer?:     string;
+  q?:          string;
   page?:       number;
   pageSize?:   number;
   cursor?:     string;
@@ -315,6 +317,8 @@ const VEHICLE_CARD_SELECT: Prisma.VehicleSelect = {
 const VEHICLE_DETAIL_SELECT: Prisma.VehicleSelect = {
   id:                 true,
   vin:                true,
+  soldAt:             true,
+  removedAt:          true,
   dealershipId:       true,
   stockNumber:        true,
   year:               true,
@@ -388,6 +392,29 @@ function buildMarketplaceWhere(filters: MarketplaceListFilters): Prisma.VehicleW
     where.year = yearFilter;
   }
 
+  const q = filters.q?.trim();
+  if (q) {
+    const existing = where.AND ? (Array.isArray(where.AND) ? where.AND : [where.AND]) : [];
+    where.AND = [
+      ...existing,
+      {
+        OR: [
+          // Core text columns — semantically mapped for every category (brand/title/style/etc.)
+          { make:          { contains: q } },
+          { model:         { contains: q } },
+          { trim:          { contains: q } },
+          // Generic listing columns available across all categories
+          { stockNumber:   { contains: q } },
+          { exteriorColor: { contains: q } },
+          { bodyStyle:     { contains: q } },
+          // Category-payload string fields — BOATS (vesselType), TRAILERS/HEAVY_EQUIPMENT (unitType)
+          { categoryPayload: { path: ['vesselType'], string_contains: q } },
+          { categoryPayload: { path: ['unitType'],   string_contains: q } },
+        ],
+      },
+    ] as Prisma.VehicleWhereInput[];
+  }
+
   return where;
 }
 
@@ -399,6 +426,7 @@ function buildOrderBy(sortBy: string | undefined): Prisma.VehicleOrderByWithRela
     case 'mileage-asc': return [{ mileage:    'asc'  }, { id: 'asc' }];
     case 'year-asc':    return [{ year:       'asc'  }, { id: 'asc' }];
     case 'year-desc':   return [{ year:       'desc' }, { id: 'asc' }];
+    case 'relevance':   return [{ createdAt:  'desc' }, { id: 'asc' }]; // no scoring in SQL; newest is stable fallback
     default:            return [{ createdAt:  'desc' }, { id: 'asc' }];
   }
 }
@@ -411,6 +439,7 @@ function buildFeedOrderBy(sortBy: string | undefined): Prisma.VehicleOrderByWith
     case 'mileage-asc': return [{ mileage:    'asc'  }, { id: 'asc' }];
     case 'year-asc':    return [{ year:       'asc'  }, { id: 'asc' }];
     case 'year-desc':   return [{ year:       'desc' }, { id: 'asc' }];
+    case 'relevance':   return [{ createdAt:  'desc' }, { id: 'desc' }]; // no scoring in SQL; newest is stable fallback
     default:            return [{ createdAt:  'desc' }, { id: 'desc' }]; // cursor: id desc
   }
 }
@@ -424,6 +453,7 @@ function appliedFilters(filters: MarketplaceListFilters): MarketplaceFeedApplied
     maxPrice:   filters.maxPrice ?? null,
     maxMileage: filters.maxMileage ?? null,
     dealer:     filters.dealer ?? null,
+    q:          filters.q?.trim() || null,
   };
 }
 
