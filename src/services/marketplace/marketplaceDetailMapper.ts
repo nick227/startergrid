@@ -89,7 +89,7 @@ function extractAddress(raw: unknown): { city: string | null; state: string | nu
   return {
     city:  typeof addr['city']  === 'string' ? addr['city']  : null,
     state: typeof addr['state'] === 'string' ? addr['state'] : null,
-    zip:   typeof addr['zip']   === 'string' ? addr['zip']   : null,
+    zip:   typeof addr['postalCode'] === 'string' ? addr['postalCode'] : null,
   };
 }
 

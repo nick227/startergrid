@@ -72,7 +72,7 @@ const DEALER: FakeDealership = {
   id:             'dealer-1',
   legalName:      'Prairie Ridge Motors LLC',
   dbaName:        'Prairie Ridge Motors',
-  rooftopAddress: { street: '123 Main St', city: 'Springfield', state: 'IL', zip: '62701' },
+  rooftopAddress: { street: '123 Main St', city: 'Springfield', state: 'IL', postalCode: '62701' },
   websiteUrl:     'https://prairieridge.example.com',
   businessCategory: 'AUTOMOTIVE',
 };
@@ -619,6 +619,21 @@ describe('MarketplaceVehicleDetailResponse — shape contract', () => {
     const detail = await getMarketplaceVehicle(prisma, v.id);
     assert.equal(detail!.promotion.syndicationStatus, 'LIVE');
     assert.ok(detail!.promotion.channels.length > 0);
+  });
+
+  it('vehicle.location.dealerZip is populated from rooftopAddress.postalCode', async () => {
+    const v = fakeVehicle();
+    const prisma = makeMockPrisma([v]);
+    const detail = await getMarketplaceVehicle(prisma, v.id);
+    assert.equal(detail!.vehicle.location.dealerZip, '62701');
+  });
+
+  it('vehicle.location.dealerZip is null when rooftopAddress has no postalCode', async () => {
+    const noZip = { ...DEALER, rooftopAddress: { city: 'Springfield', state: 'IL' } };
+    const v = fakeVehicle({ dealership: noZip });
+    const prisma = makeMockPrisma([v], noZip);
+    const detail = await getMarketplaceVehicle(prisma, v.id);
+    assert.equal(detail!.vehicle.location.dealerZip, null);
   });
 });
 

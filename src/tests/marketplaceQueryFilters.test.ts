@@ -57,7 +57,7 @@ const DEALER: FakeDealership = {
   id:             'dealer-1',
   legalName:      'Prairie Ridge Motors LLC',
   dbaName:        'Prairie Ridge Motors',
-  rooftopAddress: { street: '123 Main St', city: 'Springfield', state: 'IL', zip: '62701' },
+  rooftopAddress: { street: '123 Main St', city: 'Springfield', state: 'IL', postalCode: '62701' },
   websiteUrl:     'https://prairieridge.example.com',
 };
 

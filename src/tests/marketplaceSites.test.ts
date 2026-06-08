@@ -124,7 +124,7 @@ describe('GET /api/marketplace/vehicles/:listingId category boundary', () => {
             id: 'dealer-1',
             legalName: 'Test Motors LLC',
             dbaName: 'Test Motors',
-            rooftopAddress: { city: 'Springfield', state: 'IL', zip: '62701' },
+            rooftopAddress: { city: 'Springfield', state: 'IL', postalCode: '62701' },
             websiteUrl: null,
             businessCategory: 'AUTOMOTIVE',
           },
