@@ -1,11 +1,12 @@
 # Operator Web — Experience & Language Design
 
 **Created:** 2026-06-06  
-**Updated:** 2026-06-06 — platform-first IA, row-card layout  
-**Status:** Approved direction — not yet implemented  
+**Updated:** 2026-06-08 — synced with shipped layout + copy layer; Phase 4 copy pass partial  
+**Status:** Approved direction — **largely implemented** (layout + shell copy shipped; engineer terms remain in places)  
 **App:** `apps/web/` (Operator Console)  
 **Audience:** Dealership staff, onboarding operators, product/design — not engineers  
-**Related:** [2026-06-06-operator-web-design.md](./2026-06-06-operator-web-design.md) · [2026-06-06-ui-design-system-design.md](./2026-06-06-ui-design-system-design.md)
+**Live status:** [ui-status.md](../ui-status.md)  
+**Related:** [2026-06-06-operator-web-design.md](./2026-06-06-operator-web-design.md) · [2026-06-06-ui-design-system-design.md](./2026-06-06-ui-design-system-design.md) · [UI roadmap](./2026-06-06-operator-web-ui-roadmap.md)
 
 ---
 
@@ -24,6 +25,20 @@ This document is the **human layer** — how we speak, what we show first, and h
 3. **Where are the details?** (row-card list → drawer — not tables and panel stacks)
 
 **Layout rule:** Every core page is a **searchable, filterable, sortable list of operational row cards**. Mobile-first row design; desktop uses width for side-by-side list + detail — not wide tables.
+
+### Shipped (2026-06-08)
+
+- All six nav tabs on **OpsRowCard** layout with `PageSituation` + `ControlBlock` + drawer
+- Shell copy centralized in `apps/web/src/lib/copy/operator.ts`; schema-driven vertical labels via `CategoryProvider`
+- Platforms desktop list + detail split (`lg:grid`); other pages use drawer overlay
+- Legacy Sync / Accounts / Insights labels removed from nav (hash redirects only)
+- Row actions: Details · Queue · History · Inventory with asset deep links
+
+### Remaining gaps
+
+- **Copy pass incomplete** — import/ingest panels still expose engineer terms (e.g. "JSON / API ingest", "snapshot dry-run", "movement signals" in filter subtitles)
+- **Queue bulk bar** — sticky approve/retry bar not built (Inventory has `BulkActionBar`)
+- **List + detail split** — only Platforms uses persistent side-by-side pane; Queue/History/Inventory use overlay drawer on all viewports
 
 ---
 
@@ -109,7 +124,7 @@ Same five layers on **Platforms**, **Queue**, **History**, **Platform Queue**, *
 | History | One **transaction** — read-only |
 | Platform Queue | One task on one channel |
 | Platform History | One event on one channel |
-| Inventory | One **asset** (vehicle in automotive v1) |
+| Inventory | One **asset** (vehicle in automotive v1; UI moving to asset naming — `AssetDetailPanel`) |
 
 Row **lead** and **meta** lines come from the vertical adapter — not hard-coded in shell components. Automotive v1: year/make/model, VIN, price, mileage.
 
@@ -120,7 +135,7 @@ Row **lead** and **meta** lines come from the vertical adapter — not hard-code
 3. **Desktop uses width** — list + detail pane side-by-side when viewport allows; never an empty 7xl table with five columns.
 4. **One situation line** — the headline band summarizes counts (“2 sites blocked · 5 tasks waiting”).
 5. **Progressive disclosure** — drawer holds setup fields, error detail, and help links; list stays scannable.
-6. **Sticky actions** — bulk approve, bulk edit, import — bottom bar only when something is selected or editing.
+6. **Sticky actions** — bulk edit on Inventory (`BulkActionBar` shipped); queue bulk approve/retry **not yet built**.
 
 ### Responsive behavior
 
@@ -260,7 +275,7 @@ Identical on every core page — only placeholders and filter options change.
 
 **Admin-only:** Dealer Picker · Support View · Audit
 
-Remove v4.7 labels Sync, Accounts, Insights from dealer nav.
+v4.7 labels Sync, Accounts, Insights **removed** from nav — legacy hashes redirect to Platforms / Reports.
 
 ---
 
@@ -411,51 +426,55 @@ No raw JSON in default drawer — “Show technical details” collapsed at bott
 
 ## Implementation approach
 
-Do **not** rewrite business logic. Add a **presentation layer**:
+Presentation layer — **do not rewrite business logic**. Shipped structure:
 
 ```
-apps/web/src/lib/copy/          — user-facing strings and label maps
-apps/web/src/lib/statusRegistry.ts  — keep keys; add displayLabel where needed
+apps/web/src/lib/copy/
+  operator.ts              — shell strings (nav, queue, history, auth, reports)
+  vertical.ts              — vertical adapters
+  activeCategoryCopy.ts    — org schema → display labels
+  verticalFromSchema.ts    — category resolution
+apps/web/src/lib/statusRegistry.ts  — status keys + display visuals
+apps/web/src/components/layout/
+  PageSituation · ControlBlock · OpsRowCard · RowDetailDrawer
 ```
 
-### Phase 1 — Platforms page (core)
+### Phase status
 
-- Situation line + control block + platform row cards
-- Drawer for account setup (replaces Accounts tab)
-- Default landing after dealer pick
+| Phase | Scope | Status |
+|-------|-------|--------|
+| **1 — Platforms** | Situation + control block + row cards + account drawer; default landing | **Shipped** |
+| **2 — Queue + History** | Row cards from publish queue + history APIs; platform drill-downs | **Shipped** |
+| **3 — Layout + Inventory** | `OpsRowCard` on Inventory; Reports hub replaces Insights | **Shipped** |
+| **4 — Copy pass** | Plain labels on all surfaces | **Partial** — shell + row status shipped; import/ingest panels remain |
 
-### Phase 2 — Queue + History
+### Phase 4 — remaining copy targets
 
-- Site Queue row cards from publish queue API
-- Site History row cards from sync events + performance
-- Platform drill-down routes
-
-### Phase 3 — Layout primitives + Inventory migration
-
-- `OperationalRowCard`, `RowDetailDrawer`, `ControlBlock`
-- Inventory: table → row cards
-- Reports replaces Insights tab label and layout
-
-### Phase 4 — Copy pass
-
-- Centralize strings in `copy/operator.ts`
-- Plain status words on all row cards
+| Internal term (today) | Target label |
+|-----------------------|--------------|
+| JSON / API ingest | Paste inventory data |
+| Snapshot dry-run | Review before removing |
+| Movement signals (filter subtitle) | Sales pace |
+| Ingress run | Last import |
 
 ---
 
 ## Success criteria
 
-- [ ] User lands on **Platforms** and understands site connection state without training
-- [ ] Every core page follows: situation → control block → row cards → drawer
-- [ ] No dealer-facing page uses a wide table as its primary layout
-- [ ] Nav reads: Platforms · Queue · History · Reports · Inventory · Help
-- [ ] Queue tasks use plain verbs: Post · Update · Remove — not internal queue status codes
-- [ ] History is clearly read-only; fixes link to Queue
-- [ ] Desktop shows list + detail pane; mobile shows list → full sheet
-- [ ] Shared control block appears in the same position on all core pages
+- [x] User lands on **Platforms** and understands site connection state without training
+- [x] Every core page follows: situation → control block → row cards → drawer
+- [x] No dealer-facing page uses a wide table as its primary layout
+- [x] Nav reads: Platforms · Queue · History · Reports · Inventory · Help
+- [x] Queue tasks use plain verbs: Publish · Update · Remove — via `taskActionLabel()`
+- [x] History is clearly read-only; fixes link to Queue
+- [~] Desktop list + detail pane — Platforms yes; other pages overlay drawer
+- [x] Shared control block appears in the same position on all core pages
+- [ ] All import/ingest surfaces use plain-language labels (Phase 4)
 
 ---
 
 ## Next step
 
-Build **Platforms** first — one situation line, one control block, 18 row cards, drawer for setup. Reuse existing platform list data; change presentation only.
+Finish **Phase 4 copy pass** on import/ingest panels (`JsonIngestPanel`, `IngressPanel`, filter subtitles). Then queue bulk-action labels when approve/retry ships.
+
+Live tracking: [ui-status.md](../ui-status.md)

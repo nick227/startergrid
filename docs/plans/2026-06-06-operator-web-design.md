@@ -1,9 +1,10 @@
 # Operator Web — Design Plan
 
 **Created:** 2026-06-06  
-**Updated:** 2026-06-06 — channel operations console (multi-vertical shell, cars-first)  
-**Status:** Approved direction — Sprint 1 shipped; vertical adapter extraction deferred  
-**Related:** [channel console architecture](./2026-06-06-operator-channel-console-architecture.md) · [2026-06-06-ui-design-system-design.md](./2026-06-06-ui-design-system-design.md) · [2026-06-06-operator-web-experience-design.md](./2026-06-06-operator-web-experience-design.md) · [UI roadmap](./2026-06-06-operator-web-ui-roadmap.md)
+**Updated:** 2026-06-08 — synced with shipped IA, auth, row-card shell, reports catalog  
+**Status:** Approved direction — **core shell shipped** (Sprints 1–4); inventory ops backlog and queue actions remain  
+**Live status:** [ui-status.md](../ui-status.md) · [UI roadmap](./2026-06-06-operator-web-ui-roadmap.md)  
+**Related:** [channel console architecture](./2026-06-06-operator-channel-console-architecture.md) · [2026-06-06-ui-design-system-design.md](./2026-06-06-ui-design-system-design.md) · [2026-06-06-operator-web-experience-design.md](./2026-06-06-operator-web-experience-design.md) · [reports catalog](./2026-06-06-operator-reports-catalog-design.md) · [layered naming ADR](./2026-06-08-layered-category-naming-adr.md)
 
 ---
 
@@ -59,8 +60,8 @@ The product retrenches on **platform connectivity + queue + history + reporting*
 
 **Drill-down routes** (not top-level tabs):
 
-- `#/{dealerId}/platforms/{platformSlug}/queue` → Platform Queue (#4)
-- `#/{dealerId}/platforms/{platformSlug}/history` → Platform History (#5)
+- `#/{orgId}/platforms/{platformSlug}/queue` → Platform Queue (#4)
+- `#/{orgId}/platforms/{platformSlug}/history` → Platform History (#5)
 
 **Admin-only** (separate shell or role-gated):
 
@@ -70,9 +71,9 @@ The product retrenches on **platform connectivity + queue + history + reporting*
 | **Support View** | Cross-dealer diagnostics (internal) |
 | **Audit** | Who changed vehicle / account / publish state |
 
-### Legacy mapping (v4.7 → target IA)
+### Legacy mapping (v4.7 → target IA) — complete
 
-Current shipped UI maps to the new model as follows:
+Migration shipped. Legacy hashes redirect; mapping for reference:
 
 | v4.7 screen | Absorbed into |
 |-------------|---------------|
@@ -114,30 +115,37 @@ Inventory lifecycle, cost, and margin features still matter — but only in serv
 
 ## What we have already
 
-### Product (v4.7)
+### Product (shipped shell — 2026-06-08)
 
-Functional operator workflow across five dealer-scoped tabs plus a gate screen:
+Channel ops console with six dealer-scoped tabs, login gate, and organization picker:
 
 | Screen | Route | Status |
 |--------|-------|--------|
-| Dealer picker | `#/` | Complete |
-| Sync (default home) | `#/{dealerId}` | Complete |
-| Inventory | `#/{dealerId}/inventory` | Complete |
-| Platform accounts | `#/{dealerId}/accounts` | Complete |
-| Insights | `#/{dealerId}/insights` | Complete (reference-only) |
-| Knowledge base | `#/knowledge`, `#/{dealerId}/knowledge` | Complete |
+| Login | (unauthenticated) | Shipped |
+| Organization picker | `#/` | Shipped — scoped by session |
+| **Platforms** (default home) | `#/{orgId}/platforms` | Shipped — row cards + account setup drawer |
+| **Queue** | `#/{orgId}/queue` | Shipped — read-only task list; optional `?ref=` / `?assetId=` |
+| **History** | `#/{orgId}/history` | Shipped — read-only events; optional asset query |
+| **Platform Queue / History** | `#/{orgId}/platforms/{slug}/queue` · `…/history` | Shipped |
+| **Reports** | `#/{orgId}/reports` | Shipped — hub + 10 report detail pages |
+| **Inventory** | `#/{orgId}/inventory` | Shipped — row cards, bulk edit, import |
+| **Help** | `#/{orgId}/help` | Shipped |
 
-**Workflow story:** Dealer picker (dark gate) → Inventory (import & clean) → Accounts (resolve blockers) → Sync (push & monitor). Cross-links and fix CTAs steer operators forward when ready and backward when blocked.
+**Legacy redirects:** `#/{id}/sync`, `/accounts` → `platforms`; `/insights` → `reports`. Old page files remain for reference but are not routed.
+
+**Workflow story:** Sign in → pick organization → **Platforms** (connectivity home) → Queue / History for pending work and proof → Inventory for import and blockers. v4.7 workflow strip removed.
 
 ### Feature inventory (shipped)
 
-- **Inventory:** CSV import wizard, portal JSON/API ingest, snapshot dry-run review + explicit commit, lifecycle filters + vehicle history, movement signal filters/sort, expandable vehicle detail panel, bulk edit bar, ingress sources + run history, API source snapshot polling (v4.7)
-- **Sync:** State-driven hero banner, readiness summary strip, blocked inventory peek, 18-platform list with fix deep-links, last sync line, movement context on platform rows
-- **Accounts:** Summary metrics, filter chips, searchable grid, inline expand/edit per platform
-- **Insights:** Cached movement benchmark reference (not on critical path)
-- **Vehicle detail panel:** Operator movement context + marketplace consumer preview via `@dealer-marketplace/client` (operator-only ineligibility banner; no VIN in preview)
-- **Knowledge base:** Bundled markdown articles, doc reader sheet, contextual InfoLabel/InfoButton links throughout workflow screens
-- **Performance intelligence:** Movement benchmarks embedded in Inventory and Sync; channel metrics on platform rows where available
+- **Auth:** Login page, session cookie, global 401 → sign-in, sign-out in header, org access scoping
+- **Platforms:** Connection state row cards, account setup in drawer, platform performance on rows, desktop list + detail split
+- **Queue:** Cross-platform pending tasks, filters, situation line, task detail drawer (read-only — no approve/retry yet)
+- **History:** Sync/publish events, filters, read-only drawer, link to Queue for remediation
+- **Reports:** Full catalog (movement, readiness, throughput, demand, lifecycle, merchandising, velocity, etc.) on OpsRowCard layout
+- **Inventory:** CSV import wizard, JSON/API ingest, snapshot dry-run review + commit, lifecycle filters, asset history, movement filters/sort, `AssetDetailPanel` + marketplace preview, bulk edit bar, ingress sources + run history
+- **Copy layer:** `apps/web/src/lib/copy/operator.ts` + schema-driven vertical copy via `CategoryProvider`
+- **Row actions:** Unified Details · Queue · History · Inventory labels; asset-scoped deep links via hash query
+- **Knowledge base:** Bundled markdown articles, doc reader sheet, contextual help links
 
 ### Tech stack
 
@@ -150,31 +158,39 @@ Functional operator workflow across five dealer-scoped tabs plus a gate screen:
 
 ```
 apps/web/src/
-  pages/           DealerPicker, SyncPage, InventoryPage, AccountManagementPage, InsightsPage, KnowledgeBasePage
+  pages/           LoginPage, DealerPicker, PlatformsPage, QueuePage, HistoryPage,
+                   PlatformQueuePage, PlatformHistoryPage, InventoryPage, ReportsRouter, KnowledgeBasePage
   components/
-    operator/      PageShell, WorkflowStrip, OperatorNav, PageHeader, StatusBadge, ErrorState
-    generic/       DataTable, FilterChips, SummaryStrip, BulkActionBar, WizardModal
-    sync/          SyncHero, SyncSummaryStrip, SyncPlatformList, …
-    inventory/     IngressPanel, VehicleDetailPanel, SnapshotReviewCard, JsonIngestPanel, …
-    ui/            Button, Card, Badge, Modal, Select, Skeleton
+    layout/        PageSituation, ControlBlock, OpsRowCard, RowDetailDrawer
+    operator/      PageShell, OperatorNav, OperatorPage, SectionCard, StatusBadge, ErrorState
+    platforms/     PlatformChannelList, PlatformDetailDrawer
+    queue/         QueueListPanel, QueueDetailDrawer
+    history/       HistoryListPanel, HistoryEventDrawer
+    inventory/     InventoryAssetList, AssetDetailPanel, IngressPanel, SnapshotReviewCard, …
+    reports/       ReportPageShell, ReportAssetList, ReportPlatformList, …
+    generic/       FilterChips, SummaryStrip, BulkActionBar, WizardModal
     docs/          DocReaderSheet, InfoLabel, KnowledgeCatalog
-  lib/             statusRegistry, syncPresentation, operatorNav, routes
+  lib/
+    copy/          operator.ts, vertical.ts, activeCategoryCopy.ts, verticalFromSchema.ts
+    routes.ts      parseOperatorRoute, legacy segment redirects
+    operatorNav.ts OPERATOR_TABS, row-action handlers
 ```
 
-### Design migration (partial)
+Route param is `dealerId` in code; user-facing copy uses **organization**.
 
-Phase 0–1 of the shared design system is **in progress**:
+### Design migration
+
+Phase 0–1 of the shared design system is **shipped**:
 
 | Area | Current state |
 |------|---------------|
-| `PageShell` | Navy chrome (`navy-950`), workflow strip active step orange |
+| `PageShell` | Navy chrome (`navy-950`), six-tab nav, sign-out |
 | `Button` primary | Orange (`orange-600`) |
-| `BulkActionBar` | Uses `btn-primary-operator` |
-| `SyncHero` | Navy/orange/red gradients — emerald removed from hero |
-| `DealerPicker` | Navy gate, navy gradient logo tile |
+| `BulkActionBar` | Uses `btn-primary-operator` (Inventory) |
+| `DealerPicker` | Navy gate, scoped org list |
 | Design tokens | `packages/design-tokens/` consumed by both apps |
-| Legacy drift | ~40 files still reference `emerald-*`, `slate-*`, or `teal-*` in feature components |
-| `docs/ui-status.md` | Describes old emerald/teal identity — out of date |
+| Legacy drift | Emerald/slate/teal removed from `apps/web/src` |
+| `docs/ui-status.md` | Tracks shipped IA and implementation status |
 
 ---
 
@@ -184,43 +200,45 @@ Grouped by priority. Backend capabilities noted where the API exists but UI does
 
 ### P0 — Pilot blockers
 
-| Feature | Why | Notes |
-|---------|-----|-------|
-| **Login screen** | Production auth API exists (`POST /api/auth/login`, `op_session` cookie); no UI | Gate before dealer picker; email + password; session error states |
-| **Logout + session identity** | Operators need to sign out and see who they are | Header affordance; call `POST /api/auth/logout`; handle 401 globally |
-| **Dealer list scoping** | `dealerAccessIds` from session should filter picker | Hide/degrade manual ID paste for scoped operators |
-| **401 / session expiry handling** | Unauthenticated API calls should redirect to login | Central fetch wrapper or SDK interceptor |
+| Feature | Status | Notes |
+|---------|--------|-------|
+| **Login screen** | **Shipped** | `LoginPage` — email + password; session error states |
+| **Logout + session identity** | **Shipped** | Header sign-out; `AuthContext` |
+| **Dealer list scoping** | **Shipped** | Org picker filtered by session access |
+| **401 / session expiry handling** | **Shipped** | SDK interceptor → `subscribeUnauthorized` → login |
 
 ### P1 — Design system completion
 
-| Feature | Why | Notes |
-|---------|-----|-------|
-| **Emerald/slate purge** | Visual inconsistency vs approved navy/orange system | Migrate remaining ~40 files; green only via `statusRegistry` |
-| **`SectionCard` primitive** | Operator uses ad-hoc `Card` + inline borders | Unified `surface-card-operator`, optional title/subtitle, compact padding |
-| **`statusRegistry` alignment** | Single source for all badge/callout colors | Replace inline color maps in inventory/sync components |
-| **Doc reader accent update** | KB links still use emerald in places | Navy/blue-cta-light per shared design doc; keep warm paper prose |
-| **Update `docs/ui-status.md`** | Team doc reflects final identity | Mirror this plan’s visual section |
+| Feature | Status | Notes |
+|---------|--------|-------|
+| **Emerald/slate purge** | **Shipped** | Navy + orange semantic tokens across operator UI |
+| **`SectionCard` primitive** | **Shipped** | `components/operator/SectionCard.tsx` |
+| **`statusRegistry` alignment** | **Mostly shipped** | Inventory/sync presentation uses registry; spot-check on new surfaces |
+| **Doc reader accent update** | **Open** | KB link/chip accents — verify against shared design doc |
+| **Update `docs/ui-status.md`** | **Ongoing** | Keep in sync when shipping new surfaces |
 
 ### P1 — Inventory & margin foundation
 
 | Priority | Feature | Short description | Why it belongs |
 |----------|---------|-------------------|----------------|
 | P1 | **Inventory financial fields** | Acquisition cost, recon cost, list price, floor price | Starts DMS-lite value without deal/accounting bloat |
-| P1 | **Vehicle lifecycle status** | Acquired, recon, ready, listed, pending, sold | Makes inventory the operational source of truth |
+| P1 | **Asset lifecycle status** | Acquired, recon, ready, listed, pending, sold | Makes inventory the operational source of truth |
 | P1 | **Sold outcome tracking** | Sold date, sold price, source platform | Needed for real platform ROI and days-to-sell |
 | P1 | **Gross estimate** | Simple margin estimate per vehicle | High dealer value, low complexity |
 | P1 | **Inventory aging board** | Aging by status, platform, price band | Turns analysis into daily workflow |
 
 ### P2 — Workflow polish
 
-| Feature | Why | Notes |
-|---------|-----|-------|
-| **Per-section loading skeletons** | Full-page spinner on some paths | Match Sync/Inventory section shapes |
-| **Per-section error boundaries** | One failed panel shouldn’t blank the page | Retry per panel; keep header chrome |
-| **Sync queue visibility** | Operators need scheduled/pending dispatch context | `GET /api/dealers/:id/publish/queue` — backend service exists; UI panel on Sync |
-| **Prepare / dry-run modal polish** | Exists but copy and states could match final design | Align with SyncHero tone semantics |
-| **Insights tab integration** | Fourth tab feels secondary | Clear “reference only” eyebrow; link back to Inventory movement filters |
-| **Keyboard / density pass** | Desktop program expectation | Tab order on tables, Escape on modals (partial today), compact row focus states |
+| Feature | Status | Notes |
+|---------|--------|-------|
+| **Per-section loading skeletons** | **Partial** | `PanelSkeleton` on list panels; some paths still full-page |
+| **Per-section error boundaries** | **Open** | ErrorState per panel; not universal |
+| **Queue visibility** | **Shipped** | Dedicated Queue page + platform drill-downs |
+| **Queue approve / retry** | **Open** | Read-only queue UI; API wiring deferred |
+| **Dry-run / import copy polish** | **Open** | Some panels still use engineer terms (see experience design doc) |
+| **Reports integration** | **Shipped** | Hub + 10 reports replace Insights tab |
+| **Keyboard / density pass** | **Partial** | Escape on modals; row-card focus states incomplete |
+| **Queue sticky bulk bar** | **Open** | `BulkActionBar` on Inventory only |
 
 ### P2.5 — Inventory operations layer
 
@@ -228,7 +246,7 @@ Cross-cutting inventory capabilities that extend Operator Web toward DMS-lite wi
 
 | Feature | Why | Boundary |
 |---------|-----|----------|
-| **Vehicle lifecycle status** | Lets operators track vehicles from intake to sold | Vehicle status only; no customer pipeline |
+| **Asset lifecycle status** | Lets operators track assets from intake to sold | Asset status only; no customer pipeline |
 | **Cost basis fields** | Supports margin and pricing analysis | No accounting ledger |
 | **Recon cost tracking** | Shows true vehicle investment | Simple totals, not vendor invoices |
 | **Floor price / target price** | Helps publishing and pricing decisions | Internal vehicle field only |
@@ -344,7 +362,7 @@ Every authenticated dealer-scoped page shares **PageShell**:
 
 Remove the v4.7 **workflow strip** (Inventory → Accounts → Sync) from primary chrome — platform sync *is* the workflow. Cross-links live in row actions (“Fix in Inventory”, “Open queue”).
 
-**Default landing:** `#/{dealerId}/platforms` (Platform Status List).
+**Default landing:** `#/{orgId}/platforms` (Platform Status List). Route param is `dealerId` in code; UI copy says **organization**.
 
 ---
 
@@ -444,7 +462,7 @@ Feeds and import live in a collapsible **Add inventory** section above the list 
 
 #### Reports
 
-Roll-up views fed by Site History + sold outcomes. Reference-only eyebrow. Links back to Platforms / History.
+**Shipped:** Hub + 10 report detail pages (movement, readiness, throughput, demand, lifecycle, merchandising, velocity, etc.) on OpsRowCard layout. Action vs management groupings. Links back to Platforms / History / Inventory.
 
 #### Help
 
@@ -460,24 +478,23 @@ Dealer Picker remains dark gate. Support View and Audit are admin-role surfaces 
 
 Unchanged from [UI design system](./2026-06-06-ui-design-system-design.md): navy chrome, orange CTAs, compact density, shared status semantics.
 
-### Component library (target state)
+### Component library (shipped)
 
-| Component | Role |
-|-----------|------|
-| `PageShell` | Navy header + dealer nav (Platforms, Queue, History, Reports, Inventory, Help) |
-| `PageSituation` | Headline + one-line status sentence |
-| `ControlBlock` | Shared search / filter / sort / refresh |
-| `OperationalRowCard` | Primary list unit — lead, status, meta, action |
-| `RowDetailDrawer` | Desktop side pane; full-screen sheet on mobile |
-| `StickyActionBar` | Bottom bar for bulk edit / approve (Queue, Inventory) |
-| `StatusBadge` | From `statusRegistry` — plain words, not codes |
-| `FilterChips` | Horizontal filters with counts |
-| `Button` | Orange primary, compact |
-| `EmptyState` / `ErrorState` / `Skeleton` | Match row-card shapes |
+| Component | Role | Status |
+|-----------|------|--------|
+| `PageShell` | Navy header + nav + sign-out | Shipped |
+| `PageSituation` | Headline + one-line status sentence | Shipped |
+| `ControlBlock` | Shared search / filter / sort / refresh | Shipped |
+| `OpsRowCard` | Primary list unit — lead, status, meta, row actions | Shipped |
+| `RowDetailDrawer` | Sticky side pane on desktop; overlay on mobile | Shipped |
+| `BulkActionBar` | Bottom bar for bulk edit (Inventory) | Shipped (Inventory only) |
+| `StatusBadge` | From `statusRegistry` — plain words, not codes | Shipped |
+| `FilterChips` | Horizontal filters with counts | Shipped |
+| `PanelSkeleton` | Row-card loading shapes | Shipped |
 
-**Deprioritize:** `DataTable` as default layout — retain for admin/audit export views only.
+**Deprioritized:** `DataTable` as default layout — removed from Inventory; retain only where admin/export needs it.
 
-**Reuse from v4.7 during migration:** `SyncPlatformList` → Platforms rows · publish queue API → Queue rows · `LastSyncLine` → History rows · account inline edit → Platform row detail.
+**v4.7 migration complete:** platform list → `PlatformChannelList` · publish queue API → `QueueListPanel` · sync events → `HistoryListPanel` · account inline edit → `PlatformDetailDrawer`.
 
 ---
 
@@ -487,7 +504,7 @@ Unchanged from [UI design system](./2026-06-06-ui-design-system-design.md): navy
 |---------|----------|
 | **Row tap → detail** | Primary navigation into depth; no inline expand on desktop tables |
 | **Cross-page fixes** | Platform row “Fix setup” → Inventory or account fields in drawer |
-| **Queue edits** | Sticky bottom bar for bulk approve / retry |
+| **Queue edits** | Sticky bottom bar for bulk approve / retry — **not yet wired** (queue is read-only) |
 | **History is read-only** | Link forward to Queue for remediation |
 | **Platform drill-down** | Platforms → Platform Queue / Platform History preserves filter context |
 | **Explicit danger** | Approve removal, bulk cancel — confirm with plain label |
@@ -510,74 +527,47 @@ Operator embeds marketplace preview in Inventory — the only intentional visual
 
 ## Implementation phases
 
-### Phase A — Auth UI (P0)
-
-1. Login page + route guard (unauthenticated → login)
-2. Session bootstrap on app load (`GET /api/auth/me`)
-3. Logout control in header
-4. Global 401 handler → login with return path
-5. Dealer picker filtered by `dealerAccessIds`
-
-### Phase B — Design migration (P1)
-
-1. Purge `emerald-*` / `slate-*` / `teal-*` from `apps/web/src/components/**`
-2. Introduce operator `SectionCard`; migrate inline card wrappers
-3. Align `SyncSummaryStrip`, `IngressPanel`, import wizard, Insights to tokens
-4. Update doc reader link/chip accents
-5. Refresh `docs/ui-status.md`
-
-### Phase C — IA restructure (P0 product)
-
-1. New nav: Platforms · Queue · History · Reports · Inventory · Help
-2. **Platforms** page — row cards from existing platform list + account state
-3. **Queue** page — wire `GET /api/dealers/:id/publish/queue`
-4. **History** page — sync events + performance signals as row cards
-5. Platform drill routes: `{slug}/queue`, `{slug}/history`
-6. Default landing → Platforms; deprecate Sync/Accounts/Insights tabs
-
-### Phase D — Row-card layout system (P1 UX)
-
-1. `PageSituation`, `ControlBlock`, `OperationalRowCard`, `RowDetailDrawer`
-2. Migrate Inventory from `DataTable` to row cards
-3. Responsive: drawer on desktop, full-screen sheet on narrow viewports
-4. Remove workflow strip from chrome
-
-### Phase E — Design migration (P1 visual)
-
-1. Token purge (emerald/slate)
-2. Update `docs/ui-status.md`
-
-### Phase F — Inventory operations layer (as scoped)
-
-Financial fields, lifecycle, sold outcomes — row detail in Inventory, performance in Reports/History.
-
-### Phase G — Post-pilot (P3)
-
-Auth UI, QuickBooks export, deal packet, audit timeline, support view.
+| Phase | Scope | Status |
+|-------|-------|--------|
+| **A — Auth UI** | Login, session, 401, scoped org picker | **Shipped** |
+| **B — Design migration** | Token purge, `SectionCard`, navy/orange chrome | **Shipped** |
+| **C — IA restructure** | Platforms · Queue · History · Reports · Inventory · Help; legacy redirects | **Shipped** |
+| **D — Row-card layout** | `PageSituation`, `ControlBlock`, `OpsRowCard`, `RowDetailDrawer`; Inventory off `DataTable` | **Shipped** |
+| **E — Reports catalog** | Hub + 10 report pages on row-card layout | **Shipped** |
+| **F — Copy + verticals** | `operator.ts`, `CategoryProvider`, schema-driven labels | **Mostly shipped** — engineer terms remain in some import panels |
+| **G — Inventory ops layer** | Financial fields, lifecycle, sold outcomes, aging board | **Not started** |
+| **H — Queue actions** | Approve, retry, bulk bar on Queue | **Not started** |
+| **I — Post-pilot (P3)** | QuickBooks export, deal packet, audit timeline, support view | **Proposed** |
 
 ---
 
 ## Success criteria
 
-### Platform core (new)
+### Platform core
 
-- [ ] Dealer lands on **Platforms** after pick — 18+ sites visible as row cards with connection state
-- [ ] **Queue** shows cross-platform pending post/update/remove tasks; bulk approve works
-- [ ] **History** shows read-only transaction proof + performance signals across sites
-- [ ] **Platform Queue** and **Platform History** drill-downs work per site
-- [ ] All core pages use: situation → control block → row-card list → drawer detail
-- [ ] Nav matches: Platforms · Queue · History · Reports · Inventory · Help
+- [x] Organization lands on **Platforms** after pick — channels visible as row cards with connection state
+- [x] **Queue** shows cross-platform pending post/update/remove tasks
+- [ ] **Queue** bulk approve / retry works — read-only today
+- [x] **History** shows read-only transaction proof + performance signals across channels
+- [x] **Platform Queue** and **Platform History** drill-downs work per site
+- [x] All core pages use: situation → control block → row-card list → drawer detail
+- [x] Nav matches: Platforms · Queue · History · Reports · Inventory · Help
+- [x] Asset-scoped deep links (`?ref=` / `?assetId=`) from row actions
 
-### Foundation (carried forward)
+### Foundation
 
-- [ ] Zero emerald/teal brand usage in operator chrome
-- [ ] Plain-language status on every row (experience design doc)
-- [ ] Inventory remains available as supporting input — row-card layout
-- [ ] No customer pipeline, F&I, accounting ledger, or BHPH servicing in Operator Web
-- [ ] Platform ROI uses sold outcomes when captured (Reports / History)
+- [x] Zero emerald/teal brand usage in operator chrome
+- [~] Plain-language status on every row — shell copy shipped; some import/ingest panels still use engineer terms
+- [x] Inventory available as supporting input — row-card layout (`AssetDetailPanel`)
+- [x] No customer pipeline, F&I, accounting ledger, or BHPH servicing in Operator Web
+- [ ] Platform ROI uses sold outcomes when captured — reports exist; sold-outcome capture not built
 
 ---
 
 ## Next step
 
-Execute **Phase C (IA restructure)** — ship **Platforms** row-card page by composing existing `SyncPlatformList` + account data, then **Queue** from publish queue API. Layout primitives (Phase D) can land in the same sprint as Platforms.
+1. **Copy pass (Phase F)** — finish plain-language labels on import/ingest panels per [experience design](./2026-06-06-operator-web-experience-design.md)
+2. **Queue actions (Phase H)** — wire approve/retry + sticky bulk bar
+3. **Inventory ops (Phase G)** — financial fields, sold outcomes, aging board
+
+Live tracking: [ui-status.md](../ui-status.md)
