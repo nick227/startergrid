@@ -37,6 +37,7 @@ type ListQuery = {
   maxYear?:    string;
   sortBy?:     string;
   dealer?:     string;
+  q?:          string;
   cursor?:     string;
   limit?:      string;
   page?:       string;
@@ -79,6 +80,7 @@ function listFiltersFromQuery(q: ListQuery, category: BusinessCategory): Marketp
     minYear:    parseNonNegIntParam(q.minYear),
     maxYear:    parseNonNegIntParam(q.maxYear),
     sortBy:     q.sortBy    || undefined,
+    q:          q.q         || undefined,
     cursor:     q.cursor    || undefined,
     limit:      parsePosIntParam(q.limit, 24),
     page:       parsePosIntParam(q.page, 1),

@@ -17,4 +17,13 @@ describe('buildListingSortOptions', () => {
     const values = buildListingSortOptions(config).map(option => option.value);
     expect(values).not.toContain('mileage-asc');
   });
+
+  it('adds best-match option at top when hasQuery is true', () => {
+    const config = buildListingFilterConfig('automotive', resolveCategorySchema('AUTOMOTIVE'));
+    const withQuery = buildListingSortOptions(config, true);
+    const withoutQuery = buildListingSortOptions(config, false);
+    expect(withQuery[0]?.value).toBe('relevance');
+    expect(withQuery[0]?.label).toBe('Best match');
+    expect(withoutQuery.map(o => o.value)).not.toContain('relevance');
+  });
 });

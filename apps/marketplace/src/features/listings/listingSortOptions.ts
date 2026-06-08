@@ -6,15 +6,19 @@ export type ListingSortOption = {
   label: string;
 };
 
-export function buildListingSortOptions(config: ListingFilterConfig): ListingSortOption[] {
+export function buildListingSortOptions(config: ListingFilterConfig, hasQuery = false): ListingSortOption[] {
   const usageLabel = config.labels.usage ?? 'Usage';
   const yearLabel = config.labels.year ?? 'Year';
 
-  const options: ListingSortOption[] = [
+  const options: ListingSortOption[] = hasQuery
+    ? [{ value: 'relevance', label: 'Best match' }]
+    : [];
+
+  options.push(
     { value: 'newest', label: 'Newest first' },
     { value: 'price-asc', label: 'Price: low to high' },
     { value: 'price-desc', label: 'Price: high to low' },
-  ];
+  );
 
   if (isListingFilterEnabled(config, 'usage')) {
     options.push({ value: 'mileage-asc', label: `${usageLabel}: low to high` });

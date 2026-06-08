@@ -19,6 +19,7 @@ describe('listingQuery adapter', () => {
       seller: 'dealer-1',
       condition: 'USED',
       sortBy: 'mileage-asc',
+      q: 'camry sedan',
     })).toEqual({
       make: 'Toyota',
       model: 'Camry',
@@ -30,6 +31,7 @@ describe('listingQuery adapter', () => {
       dealer: 'dealer-1',
       condition: 'USED',
       sortBy: 'mileage-asc',
+      q: 'camry sedan',
     });
   });
 
@@ -46,6 +48,7 @@ describe('listingQuery adapter', () => {
 
   it('detects active listing query filters', () => {
     expect(hasListingQueryFilters({ brand: 'Ford' })).toBe(true);
+    expect(hasListingQueryFilters({ q: 'camry' })).toBe(true);
     expect(hasListingQueryFilters({})).toBe(false);
   });
 

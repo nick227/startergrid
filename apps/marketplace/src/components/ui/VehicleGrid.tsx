@@ -1,10 +1,15 @@
 import type { ReactNode } from 'react';
 
-type Props = { children: ReactNode; className?: string };
+export type ViewMode = 'grid' | 'list';
 
-export function VehicleGrid({ children, className = '' }: Props) {
+type Props = { children: ReactNode; viewMode?: ViewMode; className?: string };
+
+export function VehicleGrid({ children, viewMode = 'grid', className = '' }: Props) {
+  const cls = viewMode === 'list'
+    ? `flex flex-col gap-2 ${className}`
+    : `mp-grid-vehicles ${className}`;
   return (
-    <div className={`mp-grid-vehicles ${className}`}>
+    <div className={cls}>
       {children}
     </div>
   );

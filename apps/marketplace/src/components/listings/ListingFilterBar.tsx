@@ -9,6 +9,7 @@ import { SectionCard } from '../ui/SectionCard.tsx';
 
 type Props = {
   config: ListingFilterConfig;
+  q: string;
   brand: string;
   model: string;
   condition: ListFilters['condition'];
@@ -17,6 +18,7 @@ type Props = {
   maxUsage: string;
   minYear: string;
   maxYear: string;
+  onQChange: (value: string) => void;
   onBrandChange: (value: string) => void;
   onModelChange: (value: string) => void;
   onConditionChange: (value: ListFilters['condition']) => void;
@@ -33,6 +35,7 @@ type Props = {
 
 export function ListingFilterBar({
   config,
+  q,
   brand,
   model,
   condition,
@@ -41,6 +44,7 @@ export function ListingFilterBar({
   maxUsage,
   minYear,
   maxYear,
+  onQChange,
   onBrandChange,
   onModelChange,
   onConditionChange,
@@ -54,6 +58,7 @@ export function ListingFilterBar({
   hasActiveFilters,
   focusToken = 0,
 }: Props) {
+  const searchRef = useRef<HTMLInputElement>(null);
   const brandRef = useRef<HTMLInputElement>(null);
   const brandLabel = config.labels.brand ?? 'Brand';
   const modelLabel = config.labels.model ?? 'Model / Type';
@@ -62,7 +67,7 @@ export function ListingFilterBar({
   const yearLabel = config.labels.year ?? 'Year';
 
   useEffect(() => {
-    if (focusToken > 0) brandRef.current?.focus();
+    if (focusToken > 0) (searchRef.current ?? brandRef.current)?.focus();
   }, [focusToken]);
 
   return (
@@ -72,6 +77,19 @@ export function ListingFilterBar({
         className="grid gap-4 sm:grid-cols-2 lg:grid-cols-[repeat(auto-fit,minmax(9rem,1fr))]"
         aria-label={listingSearchAriaLabel()}
       >
+        <label className="flex flex-col gap-1.5 sm:col-span-2 lg:col-span-full">
+          <span className="mp-label">Search</span>
+          <input
+            ref={searchRef}
+            type="search"
+            value={q}
+            onChange={e => onQChange(e.target.value)}
+            placeholder="Search by keyword…"
+            className="mp-input"
+            autoComplete="off"
+          />
+        </label>
+
         {isListingFilterEnabled(config, 'brand') && (
           <label className="flex flex-col gap-1.5">
             <span className="mp-label">{brandLabel}</span>

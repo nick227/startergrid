@@ -492,6 +492,166 @@ describe('pagination skip/take math', () => {
   });
 });
 
+// ── Keyword q search ─────────────────────────────────────────────────────────
+//
+// q adds an AND clause with an OR across all searchable text columns.
+// Eligibility invariants (soldAt, removedAt, priceCents) must survive.
+
+describe('keyword q search — WHERE clause structure', () => {
+  function extractQOrClause(captured: CapturedArgs): Array<Record<string, unknown>> {
+    const w = where(captured);
+    const and = w['AND'] as Array<Record<string, unknown>>;
+    assert.ok(Array.isArray(and), 'q filter must add an AND array to WHERE');
+    const qClause = and.find(c => 'OR' in c) as Record<string, unknown> | undefined;
+    assert.ok(qClause, 'AND must contain an OR clause for q search');
+    return qClause['OR'] as Array<Record<string, unknown>>;
+  }
+
+  it('q adds OR across all searchable text columns', async () => {
+    const { prisma, captured } = makeCaptureMock([fakeVehicle()]);
+    await listMarketplaceVehicles(prisma, { q: 'camry' });
+    const orClauses = extractQOrClause(captured);
+
+    const fields = orClauses
+      .filter(c => !('categoryPayload' in c))
+      .map(c => Object.keys(c)[0]);
+
+    assert.ok(fields.includes('make'),          'OR must include make');
+    assert.ok(fields.includes('model'),         'OR must include model');
+    assert.ok(fields.includes('trim'),          'OR must include trim');
+    assert.ok(fields.includes('stockNumber'),   'OR must include stockNumber');
+    assert.ok(fields.includes('exteriorColor'), 'OR must include exteriorColor');
+    assert.ok(fields.includes('bodyStyle'),     'OR must include bodyStyle');
+  });
+
+  it('q includes categoryPayload vesselType and unitType paths for non-automotive categories', async () => {
+    const { prisma, captured } = makeCaptureMock([fakeVehicle()]);
+    await listMarketplaceVehicles(prisma, { q: 'sailboat' });
+    const orClauses = extractQOrClause(captured);
+
+    const payloadClauses = orClauses
+      .filter(c => 'categoryPayload' in c)
+      .map(c => (c['categoryPayload'] as Record<string, unknown>)['path']);
+
+    assert.ok(
+      payloadClauses.some(p => JSON.stringify(p) === '["vesselType"]'),
+      'OR must include categoryPayload.vesselType for BOATS category search',
+    );
+    assert.ok(
+      payloadClauses.some(p => JSON.stringify(p) === '["unitType"]'),
+      'OR must include categoryPayload.unitType for TRAILERS/HEAVY_EQUIPMENT search',
+    );
+  });
+
+  it('q contains filter targets match correctly', async () => {
+    const { prisma, captured } = makeCaptureMock([fakeVehicle()]);
+    await listMarketplaceVehicles(prisma, { q: 'Rolex' });
+    const orClauses = extractQOrClause(captured);
+
+    const makeClause = orClauses.find(c => 'make' in c) as Record<string, unknown>;
+    const makeFilter = makeClause['make'] as Record<string, unknown>;
+    assert.equal(makeFilter['contains'], 'Rolex', 'contains value must be the trimmed q value');
+  });
+
+  it('eligibility invariants survive when q is set', async () => {
+    const { prisma, captured } = makeCaptureMock([fakeVehicle()]);
+    await listMarketplaceVehicles(prisma, { q: 'Toyota' });
+    const w = where(captured);
+    assert.equal(w['soldAt'],    null, 'soldAt must remain null when q is set');
+    assert.equal(w['removedAt'], null, 'removedAt must remain null when q is set');
+    const price = w['priceCents'] as Record<string, unknown>;
+    assert.equal(price['gt'], 0, 'priceCents.gt must remain 0 when q is set');
+  });
+
+  it('q + other filters — all conditions present', async () => {
+    const { prisma, captured } = makeCaptureMock([fakeVehicle()]);
+    await listMarketplaceVehicles(prisma, {
+      q: 'Camry', condition: 'USED', maxMileage: 30_000,
+    });
+    const w = where(captured);
+    assert.equal(w['condition'],    'USED',           'condition filter must still apply');
+    assert.equal(w['soldAt'],       null,             'soldAt must remain null');
+    assert.ok('AND' in w,                             'q must still add AND clause');
+    const mileage = w['mileage'] as Record<string, unknown>;
+    assert.equal(mileage['lte'], 30_000,              'maxMileage filter must still apply');
+  });
+
+  it('whitespace-only q does not add AND clause', async () => {
+    const { prisma, captured } = makeCaptureMock([fakeVehicle()]);
+    await listMarketplaceVehicles(prisma, { q: '   ' });
+    const w = where(captured);
+    assert.ok(!('AND' in w), 'whitespace-only q must not add AND clause to WHERE');
+  });
+
+  it('omitted q does not add AND clause', async () => {
+    const { prisma, captured } = makeCaptureMock([fakeVehicle()]);
+    await listMarketplaceVehicles(prisma, {});
+    const w = where(captured);
+    assert.ok(!('AND' in w), 'omitted q must not add AND clause to WHERE');
+  });
+
+  it('q with category filter — both apply simultaneously (e.g. BOATS + "sailboat")', async () => {
+    const { prisma, captured } = makeCaptureMock([fakeVehicle()]);
+    await listMarketplaceVehicles(prisma, { category: 'BOATS', q: 'sailboat' });
+    const w = where(captured);
+    const dealerFilter = w['dealership'] as Record<string, unknown> | undefined;
+    assert.equal(
+      (dealerFilter?.['businessCategory']),
+      'BOATS',
+      'category filter must apply alongside q',
+    );
+    assert.ok('AND' in w, 'q AND clause must be present alongside category filter');
+  });
+
+  it('q in feed respects eligibility invariants (soldAt, removedAt, priceCents)', async () => {
+    const { prisma, captured } = makeCaptureMock([fakeVehicle()]);
+    await getMarketplaceFeed(prisma, { q: 'Tacoma' });
+    const w = where(captured);
+    assert.equal(w['soldAt'],    null);
+    assert.equal(w['removedAt'], null);
+    const price = w['priceCents'] as Record<string, unknown>;
+    assert.equal(price['gt'], 0);
+  });
+
+  it('relevance sortBy is accepted and falls back to createdAt desc', async () => {
+    const { prisma, captured } = makeCaptureMock([fakeVehicle()]);
+    await getMarketplaceFeed(prisma, { q: 'Civic', sortBy: 'relevance' });
+    const ob = captured.orderBy as Array<Record<string, string>>;
+    assert.equal(ob[0]?.['createdAt'], 'desc', 'relevance must fall back to createdAt desc');
+  });
+
+  it('cursor + q — eligibility invariants preserved in base clause', async () => {
+    const { prisma, captured } = makeCaptureMock([
+      fakeVehicle({ id: 'v2', createdAt: new Date('2026-05-02T00:00:00.000Z') }),
+      fakeVehicle({ id: 'v1', createdAt: new Date('2026-05-01T00:00:00.000Z') }),
+    ]);
+    const first = await getMarketplaceFeed(prisma, { q: 'toyota', limit: 1 });
+    assert.ok(first.nextCursor, 'cursor must be present for next-page assertion');
+    await getMarketplaceFeed(prisma, { q: 'toyota', cursor: first.nextCursor!, limit: 1 });
+
+    const w = where(captured);
+    const and = w['AND'] as Array<Record<string, unknown>>;
+    assert.ok(Array.isArray(and), 'cursor+q must produce top-level AND');
+    const base = and[0] as Record<string, unknown>;
+    assert.equal(base['soldAt'],    null, 'base clause must retain soldAt: null');
+    assert.equal(base['removedAt'], null, 'base clause must retain removedAt: null');
+    const price = base['priceCents'] as Record<string, unknown>;
+    assert.equal(price['gt'], 0, 'base clause must retain priceCents.gt: 0');
+  });
+
+  it('appliedFilters.q reflects the trimmed search query', async () => {
+    const { prisma } = makeCaptureMock([fakeVehicle()]);
+    const result = await getMarketplaceFeed(prisma, { q: '  Honda  ' });
+    assert.equal(result.appliedFilters.q, 'Honda', 'appliedFilters.q must be trimmed');
+  });
+
+  it('appliedFilters.q is null when q is not set', async () => {
+    const { prisma } = makeCaptureMock([fakeVehicle()]);
+    const result = await getMarketplaceFeed(prisma, {});
+    assert.equal(result.appliedFilters.q, null, 'appliedFilters.q must be null when q is absent');
+  });
+});
+
 // ── getMarketplaceVehicle eligibility ─────────────────────────────────────────
 
 describe('getMarketplaceVehicle WHERE clause', () => {

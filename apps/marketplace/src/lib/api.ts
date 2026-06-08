@@ -78,6 +78,7 @@ export type ListFilters = CategoryScope & {
   maxYear?:    number;
   sortBy?:     SortBy;
   dealer?:     string;
+  q?:          string;
   page?:      number;
   pageSize?:  number;
 };
@@ -137,6 +138,7 @@ export function fetchFeed(filters: FeedFilters = {}): Promise<MarketplaceFeedRes
     maxYear:    filters.maxYear,
     sortBy:     filters.sortBy,
     dealer:     filters.dealer,
+    q:          filters.q,
   }));
 }
 
@@ -150,6 +152,7 @@ export function fetchVehicles(filters: ListFilters = {}): Promise<MarketplaceVeh
     maxPrice:   filters.maxPrice,
     maxMileage: filters.maxMileage,
     dealer:     filters.dealer,
+    q:          filters.q,
     page:      filters.page,
     pageSize:  filters.pageSize,
   }));

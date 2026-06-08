@@ -25,6 +25,7 @@ export function buildListingFilterChips(
   const conditionLabel = config.labels.condition ?? 'Condition';
   const yearLabel = config.labels.year ?? 'Year';
 
+  if (query.q) chips.push({ key: 'q', label: `Search: "${query.q}"` });
   if (query.brand) chips.push({ key: 'brand', label: `${brandLabel}: ${query.brand}` });
   if (query.model) chips.push({ key: 'model', label: `${modelLabel}: ${query.model}` });
   if (query.condition) chips.push({ key: 'condition', label: `${conditionLabel}: ${query.condition}` });

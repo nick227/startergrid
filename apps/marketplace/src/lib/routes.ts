@@ -25,7 +25,7 @@ export type MarketplaceRoute =
   | { page: 'favorites'; slug: string }
   | { page: 'redirect'; href: string };
 
-export type SortBy = 'newest' | 'price-asc' | 'price-desc' | 'mileage-asc' | 'year-asc' | 'year-desc';
+export type SortBy = 'newest' | 'price-asc' | 'price-desc' | 'mileage-asc' | 'year-asc' | 'year-desc' | 'relevance';
 
 export type ListQuery = {
   make?:      string;
@@ -38,10 +38,11 @@ export type ListQuery = {
   maxYear?:    number;
   sortBy?:     SortBy;
   dealer?:     string;
+  q?:          string;
   page?:      number;
 };
 
-const SORT_VALUES: SortBy[] = ['newest', 'price-asc', 'price-desc', 'mileage-asc', 'year-asc', 'year-desc'];
+const SORT_VALUES: SortBy[] = ['newest', 'price-asc', 'price-desc', 'mileage-asc', 'year-asc', 'year-desc', 'relevance'];
 
 function parseHashQuery(search: string): ListQuery {
   const params = new URLSearchParams(search.startsWith('?') ? search.slice(1) : search);
@@ -66,6 +67,7 @@ function parseHashQuery(search: string): ListQuery {
     maxYear,
     sortBy:    SORT_VALUES.includes(sortRaw as SortBy) ? (sortRaw as SortBy) : undefined,
     dealer:    params.get('dealer') || undefined,
+    q:         params.get('q') || undefined,
     page:      page && page > 0 ? page : undefined,
   };
 }
@@ -157,6 +159,7 @@ export function listHref(slug: string, query: ListQuery = {}): string {
   if (query.maxYear != null) params.set('maxYear', String(query.maxYear));
   if (query.sortBy && query.sortBy !== 'newest') params.set('sortBy', query.sortBy);
   if (query.dealer) params.set('dealer', query.dealer);
+  if (query.q) params.set('q', query.q);
   if (query.page && query.page > 1) params.set('page', String(query.page));
 
   const qs = params.toString();

@@ -9,6 +9,27 @@ export type VehiclePayloadValidationOptions = {
   minPriceCents?: number | null;
 };
 
+const VEHICLE_VIN_REGEX = /^[A-HJ-NPR-Z0-9]{10,17}$/i;
+const BOAT_HIN_REGEX = /^[A-HJ-NPR-Z0-9]{12}$/i;
+const EBOOK_ISBN_REGEX = /^[0-9]{10,13}$/;
+/** Generic sanity check for non-vehicle identifiers (ISRC, MLS, serial #, etc.). */
+const GENERIC_IDENTIFIER_REGEX = /^[A-Z0-9-]{6,20}$/i;
+
+function isValidIdentifierForCategory(category: string | undefined, identifier: string): boolean {
+  if (!category) return VEHICLE_VIN_REGEX.test(identifier);
+  switch (category) {
+    case 'AUTOMOTIVE':
+    case 'TRAILERS_POWERSPORTS_RV':
+      return VEHICLE_VIN_REGEX.test(identifier);
+    case 'BOATS':
+      return BOAT_HIN_REGEX.test(identifier);
+    case 'EBOOKS':
+      return EBOOK_ISBN_REGEX.test(identifier);
+    default:
+      return GENERIC_IDENTIFIER_REGEX.test(identifier);
+  }
+}
+
 export function validateVehiclePayloads(
   vehicles: VehiclePayload[],
   requiredFields: string[],
@@ -31,8 +52,14 @@ export function validateVehiclePayloads(
     ) {
       issues.push({ path: `vehicles.${vehicle.stockNumber}.priceCents`, message: `Vehicle ${vehicle.stockNumber} price looks suspiciously low`, severity: 'WARN', code: 'PRICE_SUSPICIOUS' });
     }
-    if (vehicle.vin && !/^[A-HJ-NPR-Z0-9]{10,17}$/i.test(String(vehicle.vin))) {
-      issues.push({ path: `vehicles.${vehicle.stockNumber}.vin`, message: `Vehicle ${vehicle.stockNumber} VIN has invalid characters/length for POC submission`, severity: 'FAIL', code: 'INVALID_VIN' });
+    if (vehicle.vin && !isValidIdentifierForCategory(options.businessCategory, String(vehicle.vin))) {
+      const label = options.businessCategory ? `${options.businessCategory} identifier` : 'VIN';
+      issues.push({
+        path: `vehicles.${vehicle.stockNumber}.vin`,
+        message: `Vehicle ${vehicle.stockNumber} ${label} has invalid characters/length for POC submission`,
+        severity: 'FAIL',
+        code: 'INVALID_VIN',
+      });
     }
   }
   issues.push(...validateMediaRules(vehicles, mediaRules));

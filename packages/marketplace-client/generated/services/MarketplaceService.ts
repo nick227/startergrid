@@ -56,6 +56,7 @@ export class MarketplaceService {
         maxYear,
         sortBy,
         dealer,
+        q,
     }: {
         /**
          * Business category slug or enum. Defaults to AUTOMOTIVE.
@@ -87,13 +88,17 @@ export class MarketplaceService {
          */
         maxYear?: number,
         /**
-         * Sort order for results. Defaults to newest.
+         * Sort order for results. Defaults to newest. Use relevance when q is set for best-match ordering.
          */
-        sortBy?: 'newest' | 'price-asc' | 'price-desc' | 'mileage-asc' | 'year-asc' | 'year-desc',
+        sortBy?: 'newest' | 'price-asc' | 'price-desc' | 'mileage-asc' | 'year-asc' | 'year-desc' | 'relevance',
         /**
          * Filter by dealer ID
          */
         dealer?: string,
+        /**
+         * Keyword search across make, model, and trim.
+         */
+        q?: string,
     }): CancelablePromise<MarketplaceFeedResponse> {
         return __request(OpenAPI, {
             method: 'GET',
@@ -112,6 +117,7 @@ export class MarketplaceService {
                 'maxYear': maxYear,
                 'sortBy': sortBy,
                 'dealer': dealer,
+                'q': q,
             },
             errors: {
                 400: `Bad request — invalid query parameter value`,
@@ -139,6 +145,7 @@ export class MarketplaceService {
         maxYear,
         sortBy,
         dealer,
+        q,
         page = 1,
         pageSize = 24,
     }: {
@@ -170,13 +177,17 @@ export class MarketplaceService {
          */
         maxYear?: number,
         /**
-         * Sort order for results. Defaults to newest.
+         * Sort order for results. Defaults to newest. Use relevance when q is set for best-match ordering.
          */
-        sortBy?: 'newest' | 'price-asc' | 'price-desc' | 'mileage-asc' | 'year-asc' | 'year-desc',
+        sortBy?: 'newest' | 'price-asc' | 'price-desc' | 'mileage-asc' | 'year-asc' | 'year-desc' | 'relevance',
         /**
          * Filter by dealer ID
          */
         dealer?: string,
+        /**
+         * Keyword search across make, model, and trim.
+         */
+        q?: string,
         page?: number,
         pageSize?: number,
     }): CancelablePromise<MarketplaceVehicleListResponse> {
@@ -195,6 +206,7 @@ export class MarketplaceService {
                 'maxYear': maxYear,
                 'sortBy': sortBy,
                 'dealer': dealer,
+                'q': q,
                 'page': page,
                 'pageSize': pageSize,
             },

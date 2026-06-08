@@ -8,6 +8,7 @@ describe('listing filter chips', () => {
 
   it('detects active listing filters', () => {
     expect(hasListingFilters({ brand: 'Toyota' })).toBe(true);
+    expect(hasListingFilters({ q: 'camry' })).toBe(true);
     expect(hasListingFilters({})).toBe(false);
   });
 
@@ -21,5 +22,11 @@ describe('listing filter chips', () => {
       { key: 'model', label: 'Model / Type: Camry' },
       { key: 'usageMax', label: 'Max usage: 50,000' },
     ]);
+  });
+
+  it('adds q chip before field chips', () => {
+    const chips = buildListingFilterChips({ q: 'camry', brand: 'Toyota' }, automotiveConfig);
+    expect(chips[0]).toEqual({ key: 'q', label: 'Search: "camry"' });
+    expect(chips[1]).toEqual({ key: 'brand', label: 'Brand: Toyota' });
   });
 });

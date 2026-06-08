@@ -36,9 +36,10 @@ describe('listingAvailability helpers', () => {
 
   it('uses inquiry-oriented language for property categories', () => {
     const homes = resolveCategorySchema('HOMES');
-    expect(getListingNotFoundDescription(homes)).toContain('removed');
-    expect(getListingNotFoundDescription(homes)).not.toContain('delivery');
-    expect(getListingNotFoundDescription(homes)).not.toContain('dealer');
+    const desc = getListingNotFoundDescription(homes);
+    expect(desc).toContain(homes.lifecycle.removed.toLowerCase()); // 'delisted' for HOMES
+    expect(desc).not.toContain('delivery');
+    expect(desc).not.toContain('dealer');
   });
 
   it('does not promise free delivery for vehicle categories', () => {

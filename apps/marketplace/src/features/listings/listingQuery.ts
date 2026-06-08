@@ -13,6 +13,7 @@ export type ListingQuery = {
   yearMax?: number;
   sortBy?: ListingSort;
   seller?: string;
+  q?: string;
   page?: number;
 };
 
@@ -30,6 +31,7 @@ export function toListQuery(query: ListingQuery): ListQuery {
     maxYear: query.yearMax,
     sortBy: query.sortBy,
     dealer: query.seller,
+    q: query.q,
     page: query.page,
   };
 }
@@ -46,6 +48,7 @@ export function fromListQuery(query: ListQuery): ListingQuery {
     yearMax: query.maxYear,
     sortBy: query.sortBy,
     seller: query.dealer,
+    q: query.q,
     page: query.page,
   };
 }
@@ -62,6 +65,7 @@ export function listingQuerySignature(query: ListingQuery): string {
     yearMax: query.yearMax ?? null,
     sortBy: query.sortBy ?? null,
     seller: query.seller ?? null,
+    q: query.q ?? null,
   });
 }
 
@@ -75,6 +79,7 @@ export function hasListingQueryFilters(query: ListingQuery): boolean {
     query.usageMax != null ||
     query.yearMin != null ||
     query.yearMax != null ||
-    query.seller,
+    query.seller ||
+    query.q,
   );
 }

@@ -296,15 +296,21 @@ paths:
             minimum: 1900
         - name: sortBy
           in: query
-          description: Sort order for results. Defaults to newest.
+          description: Sort order for results. Defaults to newest. Use relevance when q is set for best-match ordering.
           schema:
             type: string
-            enum: [newest, price-asc, price-desc, mileage-asc, year-asc, year-desc]
+            enum: [newest, price-asc, price-desc, mileage-asc, year-asc, year-desc, relevance]
         - name: dealer
           in: query
           description: Filter by dealer ID
           schema:
             type: string
+        - name: q
+          in: query
+          description: Keyword search across make, model, and trim.
+          schema:
+            type: string
+            maxLength: 120
       responses:
         '200':
           description: Mixed marketplace feed page
@@ -379,15 +385,21 @@ paths:
             minimum: 1900
         - name: sortBy
           in: query
-          description: Sort order for results. Defaults to newest.
+          description: Sort order for results. Defaults to newest. Use relevance when q is set for best-match ordering.
           schema:
             type: string
-            enum: [newest, price-asc, price-desc, mileage-asc, year-asc, year-desc]
+            enum: [newest, price-asc, price-desc, mileage-asc, year-asc, year-desc, relevance]
         - name: dealer
           in: query
           description: Filter by dealer ID
           schema:
             type: string
+        - name: q
+          in: query
+          description: Keyword search across make, model, and trim.
+          schema:
+            type: string
+            maxLength: 120
         - name: page
           in: query
           schema:
