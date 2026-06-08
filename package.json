@@ -32,6 +32,7 @@
     "validate:pristine": "npm run -s build && node dist/src/scripts/dev/validatePristine.js",
     "validate:pristine:db": "npm run -s build && node dist/src/scripts/dev/validatePristine.js --db",
     "smoke:test": "npm run -s build && node dist/src/scripts/dev/smokeTest.js",
+    "smoke:marketplace": "node scripts/smoke-marketplace.mjs",
     "performance:compute": "npm run -s build && node dist/src/scripts/performance/computePerformance.js",
     "demo:reset": "npm run -s build && node dist/src/scripts/dev/demoReset.js",
     "demo:connected-inventory": "npm run -s build && node dist/src/scripts/dev/connectedInventoryDemo.js",
