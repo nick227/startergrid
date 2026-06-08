@@ -11,7 +11,7 @@ Four Railway services in one project:
 | `web` | Operator portal SPA | `portal-<project>.up.railway.app` |
 | `marketplace` | Consumer marketplace SPA | `marketplace-<project>.up.railway.app` |
 
-All three app services point to the **same GitHub repo** with different build/start commands. Root directory for all three stays at `/` (repo root) because the SPA packages use `file:../../packages/` links that require the monorepo root to be present.
+All app services point to the **same GitHub repo** with different build/start commands. Root directory stays at `/` (repo root) so npm workspaces can resolve `apps/*` + `packages/*` from a single install.
 
 ---
 
@@ -86,7 +86,7 @@ restartPolicyMaxRetries = 3
 ```toml
 [build]
 builder = "NIXPACKS"
-buildCommand = "npm ci && cd apps/web && npm ci && npm run build"
+buildCommand = "npm ci && npm run ui:build"
 
 [deploy]
 startCommand = "npx serve apps/web/dist -s -l $PORT"
@@ -96,7 +96,7 @@ startCommand = "npx serve apps/web/dist -s -l $PORT"
 ```toml
 [build]
 builder = "NIXPACKS"
-buildCommand = "npm ci && cd apps/marketplace && npm ci && npm run build"
+buildCommand = "npm ci && npm run marketplace:build"
 
 [deploy]
 startCommand = "npx serve apps/marketplace/dist -s -l $PORT"

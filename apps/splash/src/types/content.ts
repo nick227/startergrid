@@ -122,7 +122,7 @@ export interface SplashContent {
   meta: SplashContentMeta;
   brand: SplashContentBrand;
   audience: SplashContentAudience;
-  images: SplashContentImages;
+  images?: SplashContentImages;
   block1_hero: Block1Hero;
   block2_pain: Block2Pain;
   block3_features: Block3Features;

@@ -2,15 +2,15 @@
 
 End-to-end guide for running, verifying, and demonstrating the system.
 
-**Stack:** Fastify API (port 3000) · Operator portal (port 5173) · Marketplace (port 5174) · MySQL
+**Stack:** Fastify API (port 3000) · Operator portal (port 5173) · Marketplace (port 5174) · Splash (port 5175) · Corporate (port 5176) · MySQL
 
 ---
 
 ## TL;DR — fast verification (no browser required)
 
 ```bash
-npm run verify:all   # spec validate → 861 tests → boundary check
-npm run build:all    # TypeScript + operator UI + marketplace Vite builds
+npm run verify:all   # spec validate → tests → app builds → boundary checks
+npm run build:all    # TypeScript + all frontend builds
 npm run smoke:test   # 8/8 system checks (requires running DB)
 ```
 
@@ -36,14 +36,10 @@ Ports **3000**, **5173**, and **5174** must be free.
 # 1. Install root dependencies
 npm install
 
-# 2. Install UI dependencies
-npm run ui:install
-npm run marketplace:install
-
-# 3. Copy env template and adjust if needed (see Environment Variables below)
+# 2. Copy env template and adjust if needed (see Environment Variables below)
 cp .env.example .env
 
-# 4. Push schema and seed platform profiles + demo dealer
+# 3. Push schema and seed platform profiles + demo dealer
 npm run db:push
 npm run db:seed
 ```

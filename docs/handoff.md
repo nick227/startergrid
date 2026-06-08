@@ -395,7 +395,7 @@ Cached movement benchmarks answer: *Is this vehicle moving faster or slower than
 - Marketplace preview: loading skeleton, error + retry, empty state; operator-only ineligibility when price unset.
 - `marketplacePreview.ts` + vitest UI tests enforce no VIN/readiness/movement/performance in consumer preview text.
 - `composeInventoryList` — readiness → search → movement → sort; movement chip counts scoped to readiness + search.
-- `npm run test --prefix apps/web` — marketplace isolation + filter composition tests.
+- `npm run test -w auto-dealer-operator-ui` — marketplace isolation + filter composition tests.
 
 ---
 
@@ -625,7 +625,7 @@ npm run db:push
 npm run db:seed
 
 # Operator UI
-npm run ui:install
+npm install
 ```
 
 **`.env` values:**

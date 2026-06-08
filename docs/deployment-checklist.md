@@ -162,8 +162,6 @@ git pull origin main
 
 # 2. Install deps
 npm install
-npm run ui:install
-npm run marketplace:install
 
 # 3. Build
 npm run build:all
