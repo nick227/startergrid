@@ -1,5 +1,5 @@
 {
-  "name": "auto-dealer-splash-ui",
+  "name": "auto-dealer-corporate-ui",
   "version": "0.0.1",
   "private": true,
   "type": "module",
@@ -10,7 +10,7 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
-    "@auto-dealer/category-schemas": "*",
+    "@auto-dealer/design-tokens": "*",
     "react": "^18.3.1",
     "react-dom": "^18.3.1"
   },

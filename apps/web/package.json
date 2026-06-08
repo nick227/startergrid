@@ -15,8 +15,9 @@
     "lint:fix": "eslint src --fix"
   },
   "dependencies": {
-    "@auto-dealer/api-client": "file:../../packages/api-client",
-    "auto-dealer-onboarding-poc-v1": "file:../..",
+    "@auto-dealer/api-client": "*",
+    "@auto-dealer/category-schemas": "*",
+    "@auto-dealer/design-tokens": "*",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
     "react-markdown": "^10.1.0",

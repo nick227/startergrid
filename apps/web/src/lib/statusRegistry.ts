@@ -3,7 +3,7 @@ import type {
   PublishState,
   PublishStateSummary,
 } from './types.ts';
-import { statusDot, statusPill, statusRing } from '../../../../packages/design-tokens/colors.ts';
+import { statusDot, statusPill, statusRing } from '@auto-dealer/design-tokens/colors';
 import { operatorCopy } from './copy/operator.ts';
 
 const P = statusPill;

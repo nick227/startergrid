@@ -13,8 +13,9 @@
     "lint:fix": "eslint src --fix"
   },
   "dependencies": {
-    "@auto-dealer/category-schemas": "file:../../packages/category-schemas",
-    "@dealer-marketplace/client": "file:../../packages/marketplace-client",
+    "@auto-dealer/category-schemas": "*",
+    "@auto-dealer/design-tokens": "*",
+    "@dealer-marketplace/client": "*",
     "react": "^18.3.1",
     "react-dom": "^18.3.1"
   },

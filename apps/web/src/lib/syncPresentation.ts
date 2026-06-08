@@ -5,7 +5,7 @@ import type {
   PublishStatusResponse,
   SyncEvent,
 } from './types.ts';
-import { statusPill } from '../../../../packages/design-tokens/colors.ts';
+import { statusPill } from '@auto-dealer/design-tokens/colors';
 import { getActiveCategorySchema } from './copy/activeCategoryCopy.ts';
 
 function assetCount(n: number): string {

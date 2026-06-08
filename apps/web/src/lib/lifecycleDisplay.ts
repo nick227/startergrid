@@ -1,5 +1,5 @@
 import type { VehicleLifecycleState } from '@/lib/types.ts';
-import { statusPill } from '../../../../packages/design-tokens/colors.ts';
+import { statusPill } from '@auto-dealer/design-tokens/colors';
 
 export type LifecycleScope = 'active' | 'sold' | 'removed' | 'all';
 

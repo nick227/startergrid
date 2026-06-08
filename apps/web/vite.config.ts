@@ -7,7 +7,6 @@ export default defineConfig({
   resolve: {
     alias: {
       '@': path.resolve(__dirname, 'src'),
-      '@auto-dealer/category-schemas': path.resolve(__dirname, '../../packages/category-schemas/src/index.ts'),
     },
   },
   build: {

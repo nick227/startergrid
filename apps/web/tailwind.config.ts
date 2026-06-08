@@ -1,5 +1,5 @@
 import type { Config } from 'tailwindcss';
-import companyPreset from '../../packages/design-tokens/tailwind.preset.ts';
+import companyPreset from '@auto-dealer/design-tokens/tailwind.preset';
 
 export default {
   presets: [companyPreset],

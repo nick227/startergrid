@@ -1,0 +1,8 @@
+@import '@auto-dealer/design-tokens/tokens.css';
+@import '@auto-dealer/design-tokens/components.css';
+
+body {
+  margin: 0;
+  background: var(--surface-page, #fff);
+  color: var(--ink, #111);
+}

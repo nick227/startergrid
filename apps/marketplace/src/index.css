@@ -1,5 +1,5 @@
-@import '../../../packages/design-tokens/tokens.css';
-@import '../../../packages/design-tokens/components.css';
+@import '@auto-dealer/design-tokens/tokens.css';
+@import '@auto-dealer/design-tokens/components.css';
 
 @tailwind base;
 @tailwind components;
