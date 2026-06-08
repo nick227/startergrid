@@ -11,9 +11,12 @@ import { NewArrivalBadge } from './listings/NewArrivalBadge.tsx';
 import { FulfillmentBadge } from './listings/FulfillmentBadge.tsx';
 import { useCategorySchema } from '../contexts/CategoryContext.tsx';
 
-type Props = { card: MarketplaceVehicleCard };
+type Props = {
+  card: MarketplaceVehicleCard;
+  onQuickView?: (listingId: string) => void;
+};
 
-export function VehicleCard({ card }: Props) {
+export function VehicleCard({ card, onQuickView }: Props) {
   const slug = useCategorySlug();
   const categoryId = useCategoryId();
   const schema = useCategorySchema();
@@ -46,6 +49,15 @@ export function VehicleCard({ card }: Props) {
           <NewArrivalBadge listedAt={card.listedAt} />
           <FavoriteButton listingId={card.listingId} />
         </div>
+        {onQuickView && (
+          <button
+            type="button"
+            onClick={() => onQuickView(card.listingId)}
+            className="absolute bottom-2 left-2 z-10 rounded-lg bg-white/90 px-2.5 py-1 text-xs font-semibold text-ink shadow hover:bg-white"
+          >
+            Quick view
+          </button>
+        )}
       </div>
 
       <a href={listingHref(slug, card.listingId)} className="mp-focus block flex-1">

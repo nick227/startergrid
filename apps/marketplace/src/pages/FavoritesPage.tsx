@@ -1,4 +1,4 @@
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { useAuth } from '../contexts/AuthContext.tsx';
 import { useQuery, queryErrorMessage } from '../hooks/useQuery.ts';
 import { usePageMeta } from '../hooks/usePageMeta.ts';
@@ -13,12 +13,15 @@ import { EmptyState } from '../components/ui/EmptyState.tsx';
 import { ErrorState } from '../components/ui/ErrorState.tsx';
 import { SkeletonGrid } from '../components/ui/SkeletonGrid.tsx';
 import { getUnavailableFavoritesDescription } from '../features/availability/listingAvailability.ts';
+import { QuickDetailDrawer } from '../components/listings/QuickDetailDrawer.tsx';
 
 export default function FavoritesPage() {
   const { user, authReady, favoriteIds } = useAuth();
   const categoryId = useCategoryId();
   const slug = useCategorySlug();
   const schema = useCategorySchema();
+  const [quickViewListingId, setQuickViewListingId] = useState<string | null>(null);
+  const [quickViewOpen, setQuickViewOpen] = useState(false);
 
   usePageMeta(`Saved ${schema.asset.plural}`, `Your saved ${schema.asset.plural} on the ${schema.label.toLowerCase()} marketplace.`);
 
@@ -64,7 +67,14 @@ export default function FavoritesPage() {
           {visibleCards.length > 0 && (
             <VehicleGrid>
               {visibleCards.map(card => (
-                <VehicleCard key={card.listingId} card={card} />
+                <VehicleCard
+                  key={card.listingId}
+                  card={card}
+                  onQuickView={(listingId) => {
+                    setQuickViewListingId(listingId);
+                    setQuickViewOpen(true);
+                  }}
+                />
               ))}
             </VehicleGrid>
           )}
@@ -101,6 +111,11 @@ export default function FavoritesPage() {
           )}
         </>
       )}
+      <QuickDetailDrawer
+        open={quickViewOpen}
+        listingId={quickViewListingId}
+        onClose={() => setQuickViewOpen(false)}
+      />
     </PageShell>
   );
 }

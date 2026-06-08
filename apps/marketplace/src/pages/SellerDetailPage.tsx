@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { useQuery, queryErrorMessage } from '../hooks/useQuery.ts';
 import { usePageMeta } from '../hooks/usePageMeta.ts';
 import { fetchSeller, isNotFoundError } from '../lib/api.ts';
@@ -15,6 +16,7 @@ import { DealerHeaderSkeleton, SkeletonGrid } from '../components/ui/SkeletonGri
 import { ErrorState } from '../components/ui/ErrorState.tsx';
 import { EmptyState } from '../components/ui/EmptyState.tsx';
 import { NotFoundState } from '../components/ui/NotFoundState.tsx';
+import { QuickDetailDrawer } from '../components/listings/QuickDetailDrawer.tsx';
 
 type Props = { sellerId: string };
 
@@ -22,6 +24,8 @@ export default function SellerDetailPage({ sellerId }: Props) {
   const categoryId = useCategoryId();
   const slug = useCategorySlug();
   const schema = useCategorySchema();
+  const [quickViewListingId, setQuickViewListingId] = useState<string | null>(null);
+  const [quickViewOpen, setQuickViewOpen] = useState(false);
   const { data, loading, error, reload } = useQuery(
     () => fetchSeller(sellerId, categoryId),
     [sellerId, categoryId],
@@ -99,11 +103,23 @@ export default function SellerDetailPage({ sellerId }: Props) {
         ) : (
           <VehicleGrid>
             {data.vehicles.map(card => (
-              <VehicleCard key={card.listingId} card={card} />
+              <VehicleCard
+                key={card.listingId}
+                card={card}
+                onQuickView={(listingId) => {
+                  setQuickViewListingId(listingId);
+                  setQuickViewOpen(true);
+                }}
+              />
             ))}
           </VehicleGrid>
         )}
       </section>
+      <QuickDetailDrawer
+        open={quickViewOpen}
+        listingId={quickViewListingId}
+        onClose={() => setQuickViewOpen(false)}
+      />
     </PageShell>
   );
 }
