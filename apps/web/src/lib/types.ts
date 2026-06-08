@@ -350,6 +350,13 @@ export type BulkEditResponse = { updated: number };
 
 // ── Platform Account Management ───────────────────────────────────────────────
 
+export type ConnectionField = {
+  field: 'accountId' | 'membershipStatus' | 'platformRepName' | 'platformRepEmail';
+  label: string;
+  hint?: string;
+  placeholder?: string;
+};
+
 export type PlatformAccountDetail = {
   id: string;
   platformSlug: string;
@@ -367,6 +374,10 @@ export type PlatformAccountDetail = {
   createdAt: string;
   updatedAt: string;
   readinessScore: number;
+  connectionFields?: ConnectionField[];
+  oauthProvider: string | null;
+  oauthConnected: boolean;
+  oauthExpired: boolean;
 };
 
 export type AccountStateSummary = {

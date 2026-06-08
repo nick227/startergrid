@@ -1,3 +1,4 @@
+import type React from 'react';
 import type { OpsRowField } from '@/lib/opsRowPresentation.ts';
 
 export type OpsRowAction = {
@@ -17,6 +18,7 @@ type Props = {
   onSelect?: () => void;
   actions: OpsRowAction[];
   surfaceClassName?: string;
+  ctaNode?: React.ReactNode;
 };
 
 export function OpsRowCard({
@@ -31,6 +33,7 @@ export function OpsRowCard({
   onSelect,
   actions,
   surfaceClassName,
+  ctaNode,
 }: Props) {
   return (
     <article
@@ -58,6 +61,7 @@ export function OpsRowCard({
             <span className={`shrink-0 px-2 py-0.5 rounded-md text-[11px] font-bold border ${statusClassName}`}>
               {statusLabel}
             </span>
+            {ctaNode}
           </div>
 
           <p className="text-xs text-ink-muted leading-snug">{secondaryMeta}</p>

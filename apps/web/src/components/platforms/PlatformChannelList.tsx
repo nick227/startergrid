@@ -3,7 +3,8 @@ import type { OperatorNavHandlers } from '@/lib/operatorNav.ts';
 import { OpsRowCard } from '@/components/layout/OpsRowCard.tsx';
 import { PanelSkeleton } from '@/components/operator';
 import { PlatformDetailDrawer } from './PlatformDetailDrawer.tsx';
-import { platformConnection } from '@/lib/platformPresentation.ts';
+import { OAuthConnectButton } from './OAuthConnectButton.tsx';
+import { platformConnectionWithAccount, oauthProviderDisplayName } from '@/lib/platformPresentation.ts';
 import {
   channelSecondaryMeta,
   channelDesktopFields,
@@ -49,7 +50,8 @@ export function PlatformChannelList({
     <div className={`${selected ? 'lg:grid lg:grid-cols-[1fr_min(22rem,38%)] lg:gap-4 lg:items-start' : ''}`}>
       <div className="space-y-3">
         {platforms.map(platform => {
-          const conn = platformConnection(platform);
+          const account = accountBySlug.get(platform.platformSlug);
+          const conn = platformConnectionWithAccount(platform, account);
           const perf = perfBySlug.get(platform.platformSlug);
 
           return (
@@ -62,6 +64,17 @@ export function PlatformChannelList({
               desktopFields={channelDesktopFields(platform, perf)}
               detailOpen={selectedSlug === platform.platformSlug}
               surfaceClassName={channelRowSurface(conn.connection)}
+              ctaNode={
+                conn.connection === 'needs_oauth' && account?.oauthProvider ? (
+                  <OAuthConnectButton
+                    dealerId={dealerId}
+                    platformSlug={platform.platformSlug}
+                    providerDisplayName={oauthProviderDisplayName(account.oauthProvider)}
+                    isReconnect={account.oauthExpired}
+                    onDone={onAccountSaved}
+                  />
+                ) : undefined
+              }
               actions={[
                 {
                   label: operatorCopy.channels.rowActions.details,

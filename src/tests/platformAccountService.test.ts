@@ -207,6 +207,9 @@ describe('PlatformAccountDetail shape', () => {
     createdAt:        new Date().toISOString(),
     updatedAt:        new Date().toISOString(),
     readinessScore:   10,
+    oauthProvider:    null,
+    oauthConnected:   false,
+    oauthExpired:     false,
   };
 
   it('has all required fields', () => {

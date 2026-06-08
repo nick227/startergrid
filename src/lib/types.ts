@@ -89,6 +89,20 @@ export type PlatformIntegrationUrls = {
 
 export type IntegrationClass = 'OWNED' | 'FEEDABLE' | 'ASSISTED' | 'PARTNER_DEPENDENT';
 
+export type OAuthProvider =
+  | 'meta'       // meta-automotive-ads, facebook-marketplace-general, facebook-marketplace-resale
+  | 'google'     // google-vehicle-ads, youtube-creator
+  | 'microsoft'  // microsoft-automotive-ads, linkedin-lead-gen-forms (same Azure AD app)
+  | 'ebay'       // ebay-motors, ebay-resale
+  | 'tiktok'     // tiktok-automotive-ads, tiktok-creator
+  | 'apple'      // apple-business-connect, apple-books (JWT-based, not standard OAuth2)
+  | 'pinterest'  // pinterest-shopping-ads
+  | 'reddit'     // reddit-dynamic-product-ads
+  | 'snapchat'   // snapchat-dynamic-product-ads
+  | 'x'          // x-dynamic-product-ads
+  | 'nextdoor'   // nextdoor-ads
+  | 'shopify';   // shopify-catalog (APPAREL — activate when category goes live)
+
 export type VehicleUpdateKind = 'PRICE_CHANGE' | 'PHOTO_CHANGE' | 'SOLD' | 'REMOVED' | 'RELISTED' | 'DETAILS_CHANGE';
 
 export type LeadSource = 'DEALER_STOREFRONT' | 'ADF_XML' | 'PLATFORM_FORM' | 'MANUAL';
@@ -156,6 +170,13 @@ export type FeedArtifact = {
   generatedAt: string;
 };
 
+export type ConnectionField = {
+  field: 'accountId' | 'membershipStatus' | 'platformRepName' | 'platformRepEmail';
+  label: string;
+  hint?: string;
+  placeholder?: string;
+};
+
 export type PlatformProfileSeed = {
   slug: string;
   name: string;
@@ -176,6 +197,8 @@ export type PlatformProfileSeed = {
   requiredVehicleFields: string[];
   requiredMediaRules: MediaRules;
   testFixtures: JsonRecord;
+  connectionFields?: ConnectionField[];
+  oauthProvider?: OAuthProvider;
 };
 
 export type IssueCode =

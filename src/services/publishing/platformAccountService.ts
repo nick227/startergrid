@@ -1,5 +1,6 @@
 import type { PrismaClient, PlatformAccountState, Prisma } from '@prisma/client';
 import { platformProfiles } from '../../data/platformProfiles.js';
+import type { PlatformProfileSeed, ConnectionField } from '../../lib/types.js';
 
 // ── State classification helpers ─────────────────────────────────────────────
 
@@ -131,16 +132,28 @@ export type PlatformAccountDetail = {
   createdAt: string;
   updatedAt: string;
   readinessScore: number;
+  connectionFields?: ConnectionField[];
+  oauthProvider: string | null;
+  oauthConnected: boolean;
+  oauthExpired: boolean;
 };
 
 // ── DB functions ─────────────────────────────────────────────────────────────
 
-async function ensureAccountRows(prisma: PrismaClient, dealershipId: string): Promise<void> {
+function profilesForCategory(category: string): PlatformProfileSeed[] {
+  return platformProfiles.filter(p => p.supportedCategories.includes(category));
+}
+
+async function ensureAccountRows(
+  prisma: PrismaClient,
+  dealershipId: string,
+  profiles: PlatformProfileSeed[]
+): Promise<void> {
   const existing = await prisma.platformAccount.findMany({
     where: { dealershipId }, select: { platformSlug: true }
   });
   const existingSlugs = new Set(existing.map(a => a.platformSlug));
-  const missing = platformProfiles.filter(p => !existingSlugs.has(p.slug));
+  const missing = profiles.filter(p => !existingSlugs.has(p.slug));
   if (!missing.length) return;
   await prisma.platformAccount.createMany({
     data: missing.map(p => ({
@@ -154,12 +167,27 @@ export async function listPlatformAccounts(
   prisma: PrismaClient,
   dealershipId: string
 ): Promise<{ accounts: PlatformAccountDetail[]; summary: AccountStateSummary }> {
-  await ensureAccountRows(prisma, dealershipId);
+  const dealer = await prisma.dealershipProfile.findUnique({
+    where: { id: dealershipId },
+    select: { businessCategory: true },
+  });
+  const category = dealer?.businessCategory ?? 'AUTOMOTIVE';
+  const profiles = profilesForCategory(category);
 
-  const rows = await prisma.platformAccount.findMany({ where: { dealershipId } });
+  await ensureAccountRows(prisma, dealershipId, profiles);
+
+  const [rows, tokenRows] = await Promise.all([
+    prisma.platformAccount.findMany({ where: { dealershipId } }),
+    prisma.platformOAuthToken.findMany({ where: { dealershipId }, select: { provider: true, expiresAt: true } }),
+  ]);
   const bySlug = new Map(rows.map(r => [r.platformSlug, r]));
+  // 60 s buffer: treat tokens expiring within the next minute as already expired
+  const EXPIRY_BUFFER_MS = 60_000;
+  const isExpired = (exp: Date | null) => exp !== null && exp.getTime() - EXPIRY_BUFFER_MS <= Date.now();
+  const liveProviders = new Set(tokenRows.filter(t => !isExpired(t.expiresAt)).map(t => t.provider));
+  const anyProviders  = new Set(tokenRows.map(t => t.provider));
 
-  const accounts: PlatformAccountDetail[] = platformProfiles.map(p => {
+  const accounts: PlatformAccountDetail[] = profiles.map(p => {
     const r = bySlug.get(p.slug);
     const base: Omit<PlatformAccountDetail, 'readinessScore'> = {
       id:                r?.id ?? p.slug,
@@ -177,6 +205,12 @@ export async function listPlatformAccounts(
       lastChecked:       r?.lastChecked?.toISOString() ?? null,
       createdAt:         r?.createdAt.toISOString() ?? new Date().toISOString(),
       updatedAt:         r?.updatedAt.toISOString() ?? new Date().toISOString(),
+      connectionFields:  p.connectionFields,
+      oauthProvider:     p.oauthProvider ?? null,
+      oauthConnected:    p.oauthProvider ? liveProviders.has(p.oauthProvider) : false,
+      oauthExpired:      p.oauthProvider
+        ? anyProviders.has(p.oauthProvider) && !liveProviders.has(p.oauthProvider)
+        : false,
     };
     return { ...base, readinessScore: computeReadinessScore(base).score };
   });
@@ -261,6 +295,17 @@ export async function updatePlatformAccount(
   }
 
   const platform = platformProfiles.find(p => p.slug === platformSlug);
+  const tokenRow = platform?.oauthProvider
+    ? await prisma.platformOAuthToken.findUnique({
+        where: { dealershipId_provider: { dealershipId, provider: platform.oauthProvider } },
+        select: { expiresAt: true },
+      })
+    : null;
+
+  const EXPIRY_BUFFER_MS = 60_000;
+  const tokenExpired = tokenRow?.expiresAt !== undefined && tokenRow.expiresAt !== null
+    && tokenRow.expiresAt.getTime() - EXPIRY_BUFFER_MS <= Date.now();
+
   const base: Omit<PlatformAccountDetail, 'readinessScore'> = {
     id:               updated.id,
     platformSlug,
@@ -277,6 +322,10 @@ export async function updatePlatformAccount(
     lastChecked:      updated.lastChecked?.toISOString() ?? null,
     createdAt:        updated.createdAt.toISOString(),
     updatedAt:        updated.updatedAt.toISOString(),
+    connectionFields: platform?.connectionFields,
+    oauthProvider:    platform?.oauthProvider ?? null,
+    oauthConnected:   tokenRow !== null && !tokenExpired,
+    oauthExpired:     tokenRow !== null && tokenExpired,
   };
   return { ...base, readinessScore: computeReadinessScore(base).score };
 }

@@ -53,6 +53,7 @@ export const routeClassifications = {
     'GET /health',
     'GET /api/dealers/:dealershipId/storefront',
     'GET /api/dealers/:dealershipId/vehicles/:stockNumber',
+    'GET /api/oauth/callback',
   ],
   operator: [
     'GET /api/dealers',
@@ -92,6 +93,8 @@ export const routeClassifications = {
     'PATCH /api/dealers/:dealershipId/ingress/sources/:sourceId',
     'POST /api/dealers/:dealershipId/ingress/sources/:sourceId/check',
     'GET /api/dealers/:dealershipId/ingress/runs',
+    'GET /api/dealers/:dealershipId/platforms/:platformSlug/connect-url',
+    'DELETE /api/dealers/:dealershipId/platforms/:platformSlug/oauth-token',
   ],
   publicWrite: [
     'POST /api/dealers/:dealershipId/leads',

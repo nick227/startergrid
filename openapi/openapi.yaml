@@ -310,6 +310,92 @@ paths:
         '404':
           $ref: '#/components/responses/NotFound'
 
+  /api/dealers/{dealershipId}/platforms/{platformSlug}/connect-url:
+    get:
+      tags: [Accounts]
+      security:
+        - OperatorAuth: []
+      x-route-classification: operator
+      operationId: getPlatformConnectUrl
+      summary: Get OAuth authorization URL for a platform
+      parameters:
+        - $ref: '#/components/parameters/dealershipId'
+        - $ref: '#/components/parameters/platformSlug'
+      responses:
+        '200':
+          description: Authorization URL and CSRF state token
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [authUrl, state]
+                properties:
+                  authUrl:
+                    type: string
+                    description: Redirect the user to this URL to begin OAuth authorization
+                  state:
+                    type: string
+                    description: CSRF state token stored server-side
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /api/dealers/{dealershipId}/platforms/{platformSlug}/oauth-token:
+    delete:
+      tags: [Accounts]
+      security:
+        - OperatorAuth: []
+      x-route-classification: operator
+      operationId: deletePlatformOAuthToken
+      summary: Revoke stored OAuth token for a platform
+      parameters:
+        - $ref: '#/components/parameters/dealershipId'
+        - $ref: '#/components/parameters/platformSlug'
+      responses:
+        '204':
+          description: Token deleted
+        '400':
+          $ref: '#/components/responses/BadRequest'
+
+  /api/oauth/callback:
+    get:
+      tags: [Accounts]
+      security: []
+      x-route-classification: public
+      operationId: oauthCallback
+      summary: OAuth provider callback — exchanges authorization code for tokens
+      parameters:
+        - name: state
+          in: query
+          schema:
+            type: string
+        - name: code
+          in: query
+          schema:
+            type: string
+        - name: error
+          in: query
+          schema:
+            type: string
+        - name: error_description
+          in: query
+          schema:
+            type: string
+      responses:
+        '200':
+          description: HTML popup-close page (success or error)
+          content:
+            text/html:
+              schema:
+                type: string
+        '400':
+          description: HTML popup-close page (invalid state)
+          content:
+            text/html:
+              schema:
+                type: string
+
   /api/dealers/{dealershipId}/inventory:
     get:
       tags: [Inventory]
@@ -1870,6 +1956,8 @@ components:
         - lastChecked
         - createdAt
         - updatedAt
+        - oauthConnected
+        - oauthExpired
       properties:
         id:
           type: string
@@ -1912,6 +2000,16 @@ components:
         updatedAt:
           type: string
           format: date-time
+        oauthProvider:
+          type: string
+          nullable: true
+          description: OAuth provider key for this platform, or null if not OAuth-connected
+        oauthConnected:
+          type: boolean
+          description: Whether a live OAuth token exists for this dealership+provider pair
+        oauthExpired:
+          type: boolean
+          description: Whether a token row exists but has passed its expiry (re-auth needed)
 
     AccountStateSummary:
       type: object

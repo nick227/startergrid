@@ -209,6 +209,34 @@ export async function updateAccount(
   ) as Promise<AccountUpdateResponse>;
 }
 
+export async function fetchConnectUrl(
+  dealershipId: string,
+  platformSlug: string,
+): Promise<{ authUrl: string; state: string }> {
+  const res = await fetch(`/api/dealers/${dealershipId}/platforms/${platformSlug}/connect-url`, {
+    credentials: 'include',
+  });
+  if (!res.ok) {
+    const body = await res.json().catch(() => ({})) as { error?: string };
+    throw new Error(body.error ?? `HTTP ${res.status}`);
+  }
+  return res.json() as Promise<{ authUrl: string; state: string }>;
+}
+
+export async function deleteOAuthToken(
+  dealershipId: string,
+  platformSlug: string,
+): Promise<void> {
+  const res = await fetch(`/api/dealers/${dealershipId}/platforms/${platformSlug}/oauth-token`, {
+    method: 'DELETE',
+    credentials: 'include',
+  });
+  if (!res.ok && res.status !== 204) {
+    const body = await res.json().catch(() => ({})) as { error?: string };
+    throw new Error(body.error ?? `HTTP ${res.status}`);
+  }
+}
+
 export async function fetchIngressSources(dealershipId: string): Promise<IngressSourcesResponse> {
   return fromSdk(InventoryService.listIngressSources({ dealershipId })) as Promise<IngressSourcesResponse>;
 }

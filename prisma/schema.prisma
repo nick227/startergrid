@@ -255,6 +255,7 @@ model DealershipProfile {
   platformPerformanceSummaries PlatformPerformanceSummary[]
   channelEvents                ChannelEvent[]
   operatorAccess               OperatorDealerAccess[]
+  platformOAuthTokens          PlatformOAuthToken[]
 }
 
 model Vehicle {
@@ -908,6 +909,47 @@ model PlatformPerformanceSummary {
   dealership  DealershipProfile @relation(fields: [dealershipId], references: [id], onDelete: Cascade)
 
   @@unique([dealershipId, platformSlug])
+  @@index([dealershipId])
+}
+
+// ─── Platform OAuth tokens ───────────────────────────────────────────────────
+
+// One row per dealership+provider. A single Meta token covers all Meta slugs;
+// a single Google token covers google-vehicle-ads and youtube-creator, etc.
+model PlatformOAuthToken {
+  id           String    @id @default(cuid())
+  dealershipId String
+  provider     String    @db.VarChar(40)   // 'meta' | 'google' | 'microsoft' | 'ebay' | 'tiktok' | ...
+  accessToken  String    @db.Text
+  refreshToken String?   @db.Text
+  tokenType    String    @default("Bearer") @db.VarChar(20)
+  scope        String?   @db.Text
+  expiresAt    DateTime?
+  rawPayload   Json
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+
+  dealership   DealershipProfile @relation(fields: [dealershipId], references: [id], onDelete: Cascade)
+
+  @@unique([dealershipId, provider])
+  @@index([dealershipId])
+  @@index([provider])
+}
+
+// Temporary CSRF state rows created at connect-url time, consumed at callback.
+model OAuthState {
+  id           String    @id @default(cuid())
+  state        String    @unique @db.VarChar(64)
+  dealershipId String
+  platformSlug String    @db.VarChar(80)   // slug that initiated the flow
+  provider     String    @db.VarChar(40)
+  returnUrl    String?   @db.VarChar(500)
+  codeVerifier String?   @db.VarChar(256)  // PKCE verifier, required for X OAuth2
+  expiresAt    DateTime
+  usedAt       DateTime?
+  createdAt    DateTime  @default(now())
+
+  @@index([state])
   @@index([dealershipId])
 }
 

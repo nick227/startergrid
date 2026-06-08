@@ -1,8 +1,27 @@
-import type { PlatformPublishResult } from './types.ts';
+import type { PlatformPublishResult, PlatformAccountDetail } from './types.ts';
 import { friendlyPlatformDetail, platformOutcomeMeta, sortPlatformsForSync } from './syncPresentation.ts';
 import { operatorCopy } from './copy/operator.ts';
 
-export type PlatformConnection = 'inactive' | 'connected' | 'blocked' | 'updating';
+export type PlatformConnection = 'inactive' | 'connected' | 'blocked' | 'updating' | 'needs_oauth';
+
+const OAUTH_PROVIDER_NAMES: Record<string, string> = {
+  meta: 'Meta',
+  google: 'Google',
+  microsoft: 'Microsoft',
+  ebay: 'eBay',
+  tiktok: 'TikTok',
+  apple: 'Apple',
+  pinterest: 'Pinterest',
+  reddit: 'Reddit',
+  snapchat: 'Snapchat',
+  x: 'X',
+  nextdoor: 'Nextdoor',
+  shopify: 'Shopify',
+};
+
+export function oauthProviderDisplayName(provider: string): string {
+  return OAUTH_PROVIDER_NAMES[provider] ?? (provider.charAt(0).toUpperCase() + provider.slice(1));
+}
 
 export type PlatformConnectionMeta = {
   connection: PlatformConnection;
@@ -14,6 +33,7 @@ export type PlatformConnectionMeta = {
 const CONNECTION_PILL: Record<PlatformConnection, string> = {
   blocked: 'bg-status-error-bg text-status-error-text border-status-error-border',
   inactive: 'bg-silver-100 text-ink-muted border-silver-200',
+  needs_oauth: 'bg-amber-50 text-amber-700 border-amber-200',
   updating: 'bg-status-info-bg text-status-info-text border-status-info-border',
   connected: 'bg-status-success-bg text-status-success-text border-status-success-border',
 };
@@ -39,6 +59,21 @@ export function platformConnection(p: PlatformPublishResult): PlatformConnection
     return { connection: 'connected', label: operatorCopy.connection.connected, sort: 3, pill: CONNECTION_PILL.connected };
   }
   return { connection: 'inactive', label: operatorCopy.connection.inactive, sort: 1, pill: CONNECTION_PILL.inactive };
+}
+
+export function platformConnectionWithAccount(
+  p: PlatformPublishResult,
+  account: PlatformAccountDetail | null | undefined
+): PlatformConnectionMeta {
+  const base = platformConnection(p);
+  if (base.connection === 'inactive' && account?.oauthProvider && !account.oauthConnected) {
+    const displayName = oauthProviderDisplayName(account.oauthProvider);
+    const label = account.oauthExpired
+      ? `Re-connect ${displayName}`
+      : `Connect ${displayName}`;
+    return { connection: 'needs_oauth', label, sort: 0, pill: CONNECTION_PILL.needs_oauth };
+  }
+  return base;
 }
 
 export type PlatformConnectionFilter = 'ALL' | PlatformConnection;
@@ -67,7 +102,7 @@ export function platformSituationSummary(platforms: PlatformPublishResult[]): st
   for (const p of platforms) {
     const c = platformConnection(p).connection;
     if (c === 'connected') connected++;
-    else if (c === 'inactive') setup++;
+    else if (c === 'inactive' || c === 'needs_oauth') setup++;
     else if (c === 'blocked') blocked++;
     else if (c === 'updating') updating++;
   }

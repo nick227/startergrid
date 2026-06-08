@@ -13,6 +13,7 @@ import { registerReportsRoutes }      from './routes/reports.js';
 import { registerMarketplaceRoutes }  from './routes/marketplace.js';
 import { registerMarketplaceAuthRoutes }     from './routes/marketplaceAuth.js';
 import { registerMarketplaceFavoritesRoutes } from './routes/marketplaceFavorites.js';
+import { registerPlatformConnectRoutes }     from './routes/platformConnect.js';
 import { demoFeedPayload }          from '../fixtures/scenarios/connectedInventoryDemo.fixture.js';
 
 export function buildApp(prisma: PrismaClient): FastifyInstance {
@@ -48,6 +49,7 @@ export function buildApp(prisma: PrismaClient): FastifyInstance {
   registerMarketplaceRoutes(app, prisma);
   registerMarketplaceAuthRoutes(app, prisma);
   registerMarketplaceFavoritesRoutes(app, prisma);
+  registerPlatformConnectRoutes(app, prisma);
 
   return app;
 }

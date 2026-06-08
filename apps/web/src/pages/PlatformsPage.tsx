@@ -7,6 +7,7 @@ import { OperatorPage, ErrorState } from '@/components/operator';
 import { PageSituation, ControlBlock } from '@/components/layout';
 import { FilterChips } from '@/components/generic';
 import { PlatformChannelList } from '@/components/platforms/PlatformChannelList.tsx';
+import { OAuthConnectBanner } from '@/components/platforms/OAuthConnectBanner.tsx';
 import {
   PLATFORM_CONNECTION_FILTERS,
   platformMatchesFilter,
@@ -125,6 +126,16 @@ export default function PlatformsPage({ dealerId, nav, activeTab, initialPlatfor
             onSelect={key => setFilter(key as PlatformConnectionFilter)}
           />
         }
+      />
+
+      <OAuthConnectBanner
+        platforms={platforms}
+        accountBySlug={accountBySlug}
+        dealerId={dealerId}
+        onDone={() => {
+          accountsQuery.reload();
+          reload();
+        }}
       />
 
       <PlatformChannelList
