@@ -15,3 +15,12 @@ export function deriveMarketplaceAvailabilityStatus(input: {
   return 'AVAILABLE';
 }
 
+/** Card DTO field — omit when available; never invent PENDING without a source. */
+export function marketplaceCardAvailabilityStatus(input: {
+  soldAt?: Date | null;
+  removedAt?: Date | null;
+}): 'PENDING' | 'SOLD' | undefined {
+  const status = deriveMarketplaceAvailabilityStatus(input);
+  return status === 'AVAILABLE' ? undefined : status;
+}
+

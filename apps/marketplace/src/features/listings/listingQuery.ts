@@ -1,6 +1,8 @@
 import {
+  parseMarketplaceAvailabilityFilter,
   parseMarketplaceFacetsParam,
   serializeMarketplaceFacetsParam,
+  type MarketplaceAvailabilityFilter,
 } from '@auto-dealer/category-schemas';
 import type { ListQuery, SortBy } from '../../lib/routes.ts';
 
@@ -21,6 +23,7 @@ export type ListingQuery = {
   q?: string;
   page?: number;
   facets?: Record<string, string>;
+  availability?: MarketplaceAvailabilityFilter;
 };
 
 export type ListingQueryKey = keyof ListingQuery;
@@ -42,6 +45,7 @@ export function toListQuery(query: ListingQuery): ListQuery {
     page: query.page,
     facets: query.facets,
     facetsParam: serializeMarketplaceFacetsParam(query.facets),
+    availability: query.availability,
   };
 }
 
@@ -63,6 +67,9 @@ export function fromListQuery(query: ListQuery): ListingQuery {
     q: query.q,
     page: query.page,
     facets: query.facets ?? parseMarketplaceFacetsParam(query.facetsParam),
+    availability: query.availability
+      ? parseMarketplaceAvailabilityFilter(query.availability)
+      : undefined,
   };
 }
 
@@ -85,6 +92,7 @@ export function listingQuerySignature(query: ListingQuery): string {
     seller: query.seller ?? null,
     q: query.q ?? null,
     facets: facetEntries.length > 0 ? Object.fromEntries(facetEntries) : null,
+    availability: query.availability ?? null,
   });
 }
 

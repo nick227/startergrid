@@ -650,6 +650,18 @@ describe('keyword q search — WHERE clause structure', () => {
     const result = await getMarketplaceFeed(prisma, {});
     assert.equal(result.appliedFilters.q, null, 'appliedFilters.q must be null when q is absent');
   });
+
+  it('appliedFilters.availability defaults to available', async () => {
+    const { prisma } = makeCaptureMock([fakeVehicle()]);
+    const result = await getMarketplaceFeed(prisma, {});
+    assert.equal(result.appliedFilters.availability, 'available');
+  });
+
+  it('normalizes unsupported availability values to available', async () => {
+    const { prisma } = makeCaptureMock([fakeVehicle()]);
+    const result = await getMarketplaceFeed(prisma, { availability: 'pending' as never });
+    assert.equal(result.appliedFilters.availability, 'available');
+  });
 });
 
 // ── sellerName / make gating ──────────────────────────────────────────────────

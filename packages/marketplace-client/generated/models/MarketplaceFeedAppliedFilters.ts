@@ -10,12 +10,17 @@ export type MarketplaceFeedAppliedFilters = {
     maxPrice: number | null;
     maxMileage: number | null;
     dealer: string | null;
+    'q'?: string | null;
+    availability: MarketplaceFeedAppliedFilters.availability;
 };
 export namespace MarketplaceFeedAppliedFilters {
     export enum condition {
         NEW = 'NEW',
         USED = 'USED',
         CPO = 'CPO',
+    }
+    export enum availability {
+        AVAILABLE = 'available',
     }
 }
 

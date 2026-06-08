@@ -46,6 +46,12 @@ export {
   hasMarketplaceSellerFilter,
   resolveMarketplaceMakeFilter,
 } from './marketplace/filters.js';
+export {
+  isMarketplaceAvailabilityFilterSupported,
+  parseMarketplaceAvailabilityFilter,
+  MARKETPLACE_AVAILABILITY_FILTERS,
+} from './marketplace/availabilityFilter.js';
+export type { MarketplaceAvailabilityFilter } from './marketplace/availabilityFilter.js';
 export type { MarketplaceFacetDef, MarketplaceFacetKind } from './marketplace/facets.js';
 export { automotiveSchema } from './automotive/schema.js';
 export { createPlaceholderSchema, createUnknownFallbackSchema, genericOperatorFallback } from './generic/schema.js';

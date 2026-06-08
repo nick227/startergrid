@@ -13,3 +13,13 @@ export function isNewArrival(
 }
 
 export const NEW_ARRIVAL_LABEL = 'New arrival';
+
+/** FILTER-10 — no confidence source; never show on cards. */
+export function shouldShowGreatValueBadge(): boolean {
+  return false;
+}
+
+/** FILTER-10 — finance model not wired; hide payment estimate badges. */
+export function shouldShowPaymentEstimateBadge(): boolean {
+  return false;
+}

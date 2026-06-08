@@ -79,10 +79,11 @@ export type ListFilters = CategoryScope & {
   maxYear?:    number;
   sortBy?:     SortBy;
   dealer?:     string;
-  q?:          string;
-  facets?:     string;
-  page?:       number;
-  pageSize?:   number;
+  q?:             string;
+  facets?:        string;
+  availability?:  'available';
+  page?:          number;
+  pageSize?:      number;
 };
 
 export type FeedFilters = Omit<ListFilters, 'page' | 'pageSize'> & {
@@ -141,8 +142,9 @@ export function fetchFeed(filters: FeedFilters = {}): Promise<MarketplaceFeedRes
     maxYear:    filters.maxYear,
     sortBy:     filters.sortBy,
     dealer:     filters.dealer,
-    q:          filters.q,
-    facets:     filters.facets,
+    q:            filters.q,
+    facets:       filters.facets,
+    availability: filters.availability ?? 'available',
   }));
 }
 
@@ -156,9 +158,10 @@ export function fetchVehicles(filters: ListFilters = {}): Promise<MarketplaceVeh
     maxPrice:   filters.maxPrice,
     maxMileage: filters.maxMileage,
     dealer:     filters.dealer,
-    q:          filters.q,
-    page:      filters.page,
-    pageSize:  filters.pageSize,
+    q:            filters.q,
+    availability: filters.availability ?? 'available',
+    page:         filters.page,
+    pageSize:     filters.pageSize,
   }));
 }
 

@@ -13,7 +13,11 @@
 //   #/favorites                 → #/automotive/favorites
 //   #/?filters                  → #/automotive/?filters
 
-import { categorySlugToId } from '@auto-dealer/category-schemas';
+import {
+  categorySlugToId,
+  parseMarketplaceAvailabilityFilter,
+  type MarketplaceAvailabilityFilter,
+} from '@auto-dealer/category-schemas';
 
 export const DEFAULT_CATEGORY_SLUG = 'automotive';
 
@@ -44,6 +48,7 @@ export type ListQuery = {
   facets?: Record<string, string>;
   /** Serialized facet filters for API requests (key:value pairs). */
   facetsParam?: string;
+  availability?: MarketplaceAvailabilityFilter;
 };
 
 const FACET_PARAM_PREFIX = 'facet.';
@@ -83,7 +88,10 @@ function parseHashQuery(search: string): ListQuery {
     sellerName: params.get('sellerName') || undefined,
     q:          params.get('q') || undefined,
     page:       page && page > 0 ? page : undefined,
-    facets:     Object.keys(facets).length > 0 ? facets : undefined,
+    facets: Object.keys(facets).length > 0 ? facets : undefined,
+    availability: params.get('availability')
+      ? parseMarketplaceAvailabilityFilter(params.get('availability') ?? undefined)
+      : undefined,
   };
 }
 

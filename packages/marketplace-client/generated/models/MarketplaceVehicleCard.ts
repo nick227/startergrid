@@ -62,6 +62,10 @@ export type MarketplaceVehicleCard = {
      * When the vehicle was first listed.
      */
     listedAt: string;
+    /**
+     * Omitted when the listing is available. Never faked on cards.
+     */
+    availabilityStatus?: MarketplaceVehicleCard.availabilityStatus;
 };
 export namespace MarketplaceVehicleCard {
     export enum condition {
@@ -75,6 +79,13 @@ export namespace MarketplaceVehicleCard {
     export enum usageUnit {
         MILES = 'miles',
         HOURS = 'hours',
+    }
+    /**
+     * Omitted when the listing is available. Never faked on cards.
+     */
+    export enum availabilityStatus {
+        PENDING = 'PENDING',
+        SOLD = 'SOLD',
     }
 }
 

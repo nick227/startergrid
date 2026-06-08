@@ -7,6 +7,7 @@ import { trackMarketplaceEvent, MarketplaceEventType } from '../lib/events.ts';
 import { VehicleImage } from './ui/VehicleImage.tsx';
 import { ConditionBadge } from './ui/ConditionBadge.tsx';
 import { FavoriteButton } from './ui/FavoriteButton.tsx';
+import { AvailabilityBadge } from './listings/AvailabilityBadge.tsx';
 import { NewArrivalBadge } from './listings/NewArrivalBadge.tsx';
 import { FulfillmentBadge } from './listings/FulfillmentBadge.tsx';
 import { useCategorySchema } from '../contexts/CategoryContext.tsx';
@@ -46,6 +47,7 @@ export function VehicleCard({ card, onQuickView }: Props) {
           />
         </a>
         <div className="absolute right-2 top-2 z-10 flex flex-col items-end gap-2">
+          <AvailabilityBadge schema={schema} status={card.availabilityStatus} />
           <NewArrivalBadge listedAt={card.listedAt} />
           <FavoriteButton listingId={card.listingId} />
         </div>

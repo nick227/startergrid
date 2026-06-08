@@ -114,6 +114,10 @@ export function SavedSearchesPanel({
                       Saved {new Date(entry.savedAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
                     </span>
                   </button>
+                  <label className="flex shrink-0 items-center gap-2 text-xs text-ink-faint" title="Email alerts are not available yet">
+                    <input type="checkbox" disabled aria-disabled="true" className="size-3.5 rounded border-silver-300" />
+                    <span>Alerts — coming later</span>
+                  </label>
                   <div className="flex shrink-0 gap-1">
                     <button
                       type="button"

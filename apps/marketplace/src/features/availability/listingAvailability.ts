@@ -47,8 +47,10 @@ export function shouldShowAvailability(
   return status !== VehicleCommerce.availabilityStatus.AVAILABLE;
 }
 
-export function shouldShowAvailabilityOnCard(): boolean {
-  return false;
+export function shouldShowAvailabilityOnCard(
+  status: ListingAvailabilityStatus | undefined,
+): boolean {
+  return shouldShowAvailability(status);
 }
 
 export function getUnavailableFavoritesDescription(schema: CategorySchema): string {

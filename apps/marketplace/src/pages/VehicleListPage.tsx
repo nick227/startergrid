@@ -27,6 +27,13 @@ import { EndOfFeedState, FeedCardSkeleton, LoadingMoreState } from '../component
 import { RecentlyViewedRail } from '../components/listings/RecentlyViewedRail.tsx';
 import { CompareBar } from '../components/listings/CompareBar.tsx';
 import { QuickDetailDrawer } from '../components/listings/QuickDetailDrawer.tsx';
+import { NewArrivalsRail } from '../components/listings/NewArrivalsRail.tsx';
+import {
+  defaultAvailabilityFilter,
+  isAvailabilityFilterEnabled,
+} from '../features/availability/listingAvailabilityFilter.ts';
+import { pickNewArrivalCards } from '../features/listings/listingNewArrivals.ts';
+import type { MarketplaceAvailabilityFilter } from '@auto-dealer/category-schemas';
 
 type Props = { initialQuery?: ListQuery };
 
@@ -49,6 +56,10 @@ export default function VehicleListPage({ initialQuery = {} }: Props) {
   const [sellerName, setSellerName] = useState(initial.sellerName ?? '');
   const [facetValues, setFacetValues] = useState<Record<string, string>>(initial.facets ?? {});
   const [sortBy, setSortBy] = useState<ListingSort | undefined>(initial.sortBy);
+  const [availability, setAvailability] = useState<MarketplaceAvailabilityFilter>(
+    () => initial.availability ?? defaultAvailabilityFilter(),
+  );
+  const showAvailabilityFilter = isAvailabilityFilterEnabled();
   const [focusToken, setFocusToken] = useState(0);
   const [viewMode, setViewMode] = useState<ViewMode>(() => {
     try { return (sessionStorage.getItem('mp:viewMode') as ViewMode) || 'grid'; } catch { return 'grid'; }
@@ -79,7 +90,8 @@ export default function VehicleListPage({ initialQuery = {} }: Props) {
     yearMax: parseNonNegative(maxYear),
     facets: sanitizeListingFacets(schema, facetValues),
     sortBy,
-  }, filterConfig), [brand, condition, facetValues, filterConfig, maxPrice, maxUsage, maxYear, minPrice, minYear, model, q, schema, sellerName, sortBy]);
+    availability,
+  }, filterConfig), [availability, brand, condition, facetValues, filterConfig, maxPrice, maxUsage, maxYear, minPrice, minYear, model, q, schema, sellerName, sortBy]);
 
   const feed = useInfiniteMarketplaceFeed(listingQuery);
 
@@ -128,6 +140,7 @@ export default function VehicleListPage({ initialQuery = {} }: Props) {
     setMinYear('');
     setMaxYear('');
     setFacetValues({});
+    setAvailability(defaultAvailabilityFilter());
     setFocusToken(t => t + 1);
   }
 
@@ -153,10 +166,18 @@ export default function VehicleListPage({ initialQuery = {} }: Props) {
     setMaxYear(formatNumberInput(query.yearMax));
     setFacetValues(query.facets ?? {});
     setSortBy(query.sortBy);
+    setAvailability(query.availability ?? defaultAvailabilityFilter());
   }
 
   const hasActiveFilters = hasListingFilters(listingQuery);
   const hasItems = feed.items.length > 0;
+  const newArrivalCards = useMemo(() => {
+    if (hasActiveFilters) return [];
+    const cards = feed.items
+      .filter((item): item is Extract<typeof feed.items[number], { type: 'vehicle' }> => item.type === 'vehicle')
+      .map(item => item.vehicle);
+    return pickNewArrivalCards(cards);
+  }, [feed.items, hasActiveFilters]);
   const initialError = feed.error && !hasItems;
   const appendError = feed.error && hasItems;
   const resolvedSort = sortOptions.some(option => option.value === sortBy)
@@ -201,6 +222,9 @@ export default function VehicleListPage({ initialQuery = {} }: Props) {
           onClear={resetFilters}
           hasActiveFilters={hasActiveFilters}
           focusToken={focusToken}
+          showAvailabilityFilter={showAvailabilityFilter}
+          availability={availability}
+          onAvailabilityChange={setAvailability}
         />
       </div>
       )}
@@ -250,6 +274,8 @@ export default function VehicleListPage({ initialQuery = {} }: Props) {
         )
       ) : (
         <>
+          <NewArrivalsRail slug={slug} cards={newArrivalCards} />
+
           <div className="mb-4 flex flex-wrap items-center justify-between gap-3 sm:mb-5">
             <p className="text-sm font-medium text-slate-600">
               {formatResultCount(feed.totalEstimate, schema.asset.singular)}

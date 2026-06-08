@@ -14,7 +14,9 @@ describe('listingAvailability helpers', () => {
   it('hides availability UI for missing or default AVAILABLE status', () => {
     expect(shouldShowAvailability(undefined)).toBe(false);
     expect(shouldShowAvailability(VehicleCommerce.availabilityStatus.AVAILABLE)).toBe(false);
-    expect(shouldShowAvailabilityOnCard()).toBe(false);
+    expect(shouldShowAvailabilityOnCard(undefined)).toBe(false);
+    expect(shouldShowAvailabilityOnCard(VehicleCommerce.availabilityStatus.AVAILABLE)).toBe(false);
+    expect(shouldShowAvailabilityOnCard(VehicleCommerce.availabilityStatus.SOLD)).toBe(true);
   });
 
   it('shows pending and sold statuses with schema lifecycle labels', () => {

@@ -17,6 +17,7 @@ import {
 import { ConditionBadge } from '../ui/ConditionBadge.tsx';
 import { FeedMediaCarousel } from '../ui/FeedMediaCarousel.tsx';
 import { FavoriteButton } from '../ui/FavoriteButton.tsx';
+import { AvailabilityBadge } from '../listings/AvailabilityBadge.tsx';
 import { NewArrivalBadge } from '../listings/NewArrivalBadge.tsx';
 import { FulfillmentBadge } from '../listings/FulfillmentBadge.tsx';
 import { PriceDropBadge } from '../listings/PriceDropBadge.tsx';
@@ -117,6 +118,7 @@ function VehicleFeedCard({
           />
         </a>
         <div className="absolute right-2 top-2 z-10 flex flex-col items-end gap-2">
+          <AvailabilityBadge schema={schema} status={card.availabilityStatus} />
           <NewArrivalBadge listedAt={card.listedAt} />
           <PriceDropBadge originalPriceCents={card.originalPriceCents} priceCents={card.priceCents} />
           <FavoriteButton listingId={card.listingId} />

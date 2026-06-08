@@ -1,11 +1,16 @@
 import { useEffect, useRef } from 'react';
 import type { MarketplaceFacetDef } from '@auto-dealer/category-schemas';
 import type { ListFilters } from '../../lib/api.ts';
+import type { MarketplaceAvailabilityFilter } from '@auto-dealer/category-schemas';
 import {
   isListingFilterEnabled,
   listingSearchAriaLabel,
   type ListingFilterConfig,
 } from '../../features/listings/listingFilterConfig.ts';
+import {
+  AVAILABILITY_FILTER_LABEL,
+  AVAILABILITY_FILTER_OPTIONS,
+} from '../../features/availability/listingAvailabilityFilter.ts';
 import { SectionCard } from '../ui/SectionCard.tsx';
 
 type Props = {
@@ -23,6 +28,9 @@ type Props = {
   minYear: string;
   maxYear: string;
   sellerName: string;
+  showAvailabilityFilter?: boolean;
+  availability?: MarketplaceAvailabilityFilter;
+  onAvailabilityChange?: (value: MarketplaceAvailabilityFilter) => void;
   onQChange: (value: string) => void;
   onBrandChange: (value: string) => void;
   onModelChange: (value: string) => void;
@@ -54,6 +62,9 @@ export function ListingFilterBar({
   minYear,
   maxYear,
   sellerName,
+  showAvailabilityFilter = false,
+  availability = 'available',
+  onAvailabilityChange,
   onQChange,
   onBrandChange,
   onModelChange,
@@ -142,6 +153,21 @@ export function ListingFilterBar({
               className="mp-input"
               autoComplete="off"
             />
+          </label>
+        )}
+
+        {showAvailabilityFilter && (
+          <label className="flex flex-col gap-1.5">
+            <span className="mp-label">{AVAILABILITY_FILTER_LABEL}</span>
+            <select
+              value={availability}
+              onChange={e => onAvailabilityChange?.(e.target.value as MarketplaceAvailabilityFilter)}
+              className="mp-input"
+            >
+              {AVAILABILITY_FILTER_OPTIONS.map(option => (
+                <option key={option.value} value={option.value}>{option.label}</option>
+              ))}
+            </select>
           </label>
         )}
 
