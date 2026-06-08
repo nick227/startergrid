@@ -1,7 +1,7 @@
 # GEO-00: Coordinate Source Audit
 
 **Date:** 2026-06-08  
-**Status:** Audit complete — GEO-01 through GEO-05 remain blocked pending decisions in this document  
+**Status:** Audit complete. GEO-01 backend radius filtering and `geo:verify` deploy check are shipped. Buyer location UI (GEO-03), distance display (GEO-04), distance sort, and geo empty-state recovery (GEO-05) remain future work.  
 **Scope:** Determine the safest, most honest source of truth for seller coordinates, buyer location, and distance sorting before any geo implementation begins
 
 ---

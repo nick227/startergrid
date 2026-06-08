@@ -5,6 +5,8 @@ Synced from `cursor_marketplace_mvp_backlog.csv`. Update the CSV first; this boa
 **Last sync:** 2026-06-08  
 **MPF coverage:** 96 features in `apps/marketplace/marketplace-features.csv` — this backlog covers the highest-impact open P0/P1 buyer gaps.
 
+**Geo status:** Geo foundation and GEO-01 backend radius filtering are complete. Geo verification (`npm run geo:verify`) is available as a read-only deploy check. Buyer location UI, distance display, distance sort, and geo empty-state recovery remain future work.
+
 ---
 
 ## Summary

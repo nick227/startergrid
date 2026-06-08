@@ -149,6 +149,44 @@ If `disabled category guard` fails locally, restart the API. The source gate is 
 
 ---
 
+## Marketplace release gates
+
+Run before shipping marketplace or geo changes:
+
+```bash
+npm test
+npm run build
+npm run openapi:validate:marketplace
+npm run client:generate:marketplace
+npm run smoke:marketplace
+npm run geo:verify
+```
+
+After `geo:backfill` (or when dealer coordinates should be populated), run strict geo verification:
+
+```powershell
+$env:GEO_VERIFY_STRICT="true"
+$env:GEO_VERIFY_MIN_PERCENT="80"
+npm run geo:verify
+```
+
+Strict mode exits non-zero when addressable dealers exist but none are geocoded, or when geocoded % of addressable profiles is below the threshold.
+
+---
+
+## Geo coordinate verification
+
+Read-only deploy check — no geocoding provider calls:
+
+```bash
+npm run geo:backfill   # populate rooftopLat/rooftopLng (requires OPENCAGE_API_KEY)
+npm run geo:verify     # report coordinate coverage
+```
+
+**Current geo status:** Geo foundation and GEO-01 backend radius filtering are complete. Geo verification is now available as a read-only deploy check. Buyer location UI, distance display, distance sort, and geo empty-state recovery remain future work.
+
+---
+
 ## Build
 
 Build TypeScript and both UIs before deploying:
@@ -178,6 +216,7 @@ npm run openapi:validate          # operator OpenAPI spec valid
 npm run openapi:validate:marketplace  # marketplace OpenAPI spec valid
 npm run smoke:test                # 9/9 system checks (DB, profiles, typecheck)
 npm run smoke:marketplace         # 11 HTTP checks (run after API deploy/restart)
+npm run geo:verify                # dealer coordinate coverage report (read-only)
 ```
 
 ---
