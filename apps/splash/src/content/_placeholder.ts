@@ -59,7 +59,7 @@ export const content: SplashContent = {
       },
       {
         icon: '🔌',
-        title: 'Tools that don't talk to each other',
+        title: "Tools that don't talk to each other",
         body: 'Your CRM, website, and sales platforms all live in silos. Nothing syncs automatically.',
       },
     ],

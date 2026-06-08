@@ -66,6 +66,8 @@
     "operator:boundary:check": "node scripts/check-operator-boundary.js",
     "dev:operator": "npm run ui:dev",
     "dev:marketplace": "npm run marketplace:dev",
+    "dev:server": "npm run -s build && cross-env NODE_ENV=development node dist/src/scripts/server.js",
+    "dev:all": "npm run client:generate && npm run client:generate:marketplace && concurrently -k -n api,operator,marketplace,splash,corporate -c blue,green,magenta,yellow,cyan \"npm run dev:server\" \"npm run dev -w auto-dealer-operator-ui\" \"npm run dev -w auto-dealer-marketplace-ui\" \"npm run dev -w auto-dealer-splash-ui\" \"npm run dev -w auto-dealer-corporate-ui\"",
     "build:all": "npm run build && npm run ui:build && npm run marketplace:build",
     "verify:all": "npm run openapi:validate && npm run openapi:validate:marketplace && npm run test && npm run marketplace:boundary:check && npm run operator:boundary:check",
     "openapi:validate": "redocly lint openapi/openapi.yaml",
@@ -86,6 +88,8 @@
     "zod": "latest"
   },
   "devDependencies": {
+    "concurrently": "^9.1.2",
+    "cross-env": "^7.0.3",
     "@redocly/cli": "^1.34.0",
     "@types/node": "latest",
     "@types/nodemailer": "latest",
