@@ -22,6 +22,7 @@ type Props = {
   maxUsage: string;
   minYear: string;
   maxYear: string;
+  sellerName: string;
   onQChange: (value: string) => void;
   onBrandChange: (value: string) => void;
   onModelChange: (value: string) => void;
@@ -31,6 +32,7 @@ type Props = {
   onMaxUsageChange: (value: string) => void;
   onMinYearChange: (value: string) => void;
   onMaxYearChange: (value: string) => void;
+  onSellerNameChange: (value: string) => void;
   onSubmit: () => void;
   onClear: () => void;
   hasActiveFilters: boolean;
@@ -51,6 +53,7 @@ export function ListingFilterBar({
   maxUsage,
   minYear,
   maxYear,
+  sellerName,
   onQChange,
   onBrandChange,
   onModelChange,
@@ -60,6 +63,7 @@ export function ListingFilterBar({
   onMaxUsageChange,
   onMinYearChange,
   onMaxYearChange,
+  onSellerNameChange,
   onSubmit,
   onClear,
   hasActiveFilters,
@@ -72,6 +76,7 @@ export function ListingFilterBar({
   const usageLabel = config.labels.usage ?? 'Usage';
   const conditionLabel = config.labels.condition ?? 'Condition';
   const yearLabel = config.labels.year ?? 'Year';
+  const sellerNameLabel = config.labels.sellerName ?? 'Seller';
 
   useEffect(() => {
     if (focusToken > 0) (searchRef.current ?? brandRef.current)?.focus();
@@ -120,6 +125,20 @@ export function ListingFilterBar({
               value={model}
               onChange={e => onModelChange(e.target.value)}
               placeholder={`Any ${modelLabel.toLowerCase()}`}
+              className="mp-input"
+              autoComplete="off"
+            />
+          </label>
+        )}
+
+        {isListingFilterEnabled(config, 'sellerName') && (
+          <label className="flex flex-col gap-1.5">
+            <span className="mp-label">{sellerNameLabel}</span>
+            <input
+              type="search"
+              value={sellerName}
+              onChange={e => onSellerNameChange(e.target.value)}
+              placeholder={`Any ${sellerNameLabel.toLowerCase()}`}
               className="mp-input"
               autoComplete="off"
             />

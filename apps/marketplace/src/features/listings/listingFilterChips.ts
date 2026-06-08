@@ -46,6 +46,10 @@ export function buildListingFilterChips(
   }
   if (query.yearMin != null) chips.push({ key: 'yearMin', label: `Min ${yearLabel.toLowerCase()}: ${query.yearMin}` });
   if (query.yearMax != null) chips.push({ key: 'yearMax', label: `Max ${yearLabel.toLowerCase()}: ${query.yearMax}` });
+  if (query.sellerName) {
+    const sellerLabel = config.labels.sellerName ?? 'Seller';
+    chips.push({ key: 'sellerName', label: `${sellerLabel}: ${query.sellerName}` });
+  }
   if (query.seller) chips.push({ key: 'seller', label: `Seller: ${query.seller}` });
   if (query.facets) {
     for (const [key, value] of Object.entries(query.facets).sort(([a], [b]) => a.localeCompare(b))) {

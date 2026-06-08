@@ -5,6 +5,7 @@ import type { ListingQuery, ListingQueryKey } from './listingQuery.ts';
 const RELAXATION_ORDER: ListingQueryKey[] = [
   'model',
   'brand',
+  'sellerName',
   'condition',
   'usageMax',
   'priceMin',

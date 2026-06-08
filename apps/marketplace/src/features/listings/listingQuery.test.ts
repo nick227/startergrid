@@ -74,4 +74,49 @@ describe('listingQuery adapter', () => {
   it('detects facet-only filters as active', () => {
     expect(hasListingQueryFilters({ facets: { bodyStyle: 'SUV' } })).toBe(true);
   });
+
+  it('maps sellerName to make in toListQuery for seller-role categories', () => {
+    const result = toListQuery({ sellerName: 'Coldwell Banker' });
+    expect(result.make).toBe('Coldwell Banker');
+    expect(result.sellerName).toBe('Coldwell Banker');
+  });
+
+  it('sellerName takes precedence over brand in toListQuery make field', () => {
+    const result = toListQuery({ sellerName: 'Coldwell', brand: 'SomeBrand' });
+    expect(result.make).toBe('Coldwell');
+  });
+
+  it('fromListQuery restores sellerName from URL and leaves brand undefined', () => {
+    const result = fromListQuery({ sellerName: 'Coldwell Banker', make: 'Coldwell Banker' });
+    expect(result.sellerName).toBe('Coldwell Banker');
+    expect(result.brand).toBeUndefined();
+  });
+
+  it('fromListQuery keeps brand when no sellerName is in URL', () => {
+    const result = fromListQuery({ make: 'Toyota' });
+    expect(result.brand).toBe('Toyota');
+    expect(result.sellerName).toBeUndefined();
+  });
+
+  it('round-trips sellerName through toListQuery and fromListQuery', () => {
+    const original = { sellerName: 'Coldwell Banker', model: 'Studio' };
+    const roundTripped = fromListQuery(toListQuery(original));
+    expect(roundTripped.sellerName).toBe('Coldwell Banker');
+    expect(roundTripped.model).toBe('Studio');
+    expect(roundTripped.brand).toBeUndefined();
+  });
+
+  it('detects sellerName as an active filter', () => {
+    expect(hasListingQueryFilters({ sellerName: 'Coldwell' })).toBe(true);
+    expect(hasListingQueryFilters({ sellerName: '' })).toBe(false);
+  });
+
+  it('includes sellerName in query signature for saved search dedupe', () => {
+    const a = listingQuerySignature({ sellerName: 'Coldwell' });
+    const b = listingQuerySignature({ sellerName: 'Coldwell' });
+    const c = listingQuerySignature({ sellerName: 'ReMax' });
+    expect(a).toBe(b);
+    expect(a).not.toBe(c);
+    expect(a).not.toBe(listingQuerySignature({ brand: 'Coldwell' }));
+  });
 });

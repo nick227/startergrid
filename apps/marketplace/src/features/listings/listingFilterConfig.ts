@@ -1,7 +1,7 @@
 import type { CategoryFieldDef, CategorySchema, MarketplaceFilterRole, MarketplaceFacetDef } from '@auto-dealer/category-schemas';
 import { buildListingFacetConfig } from './listingFacetConfig.ts';
 
-export type ListingFilterKey = 'brand' | 'model' | 'condition' | 'price' | 'usage' | 'year';
+export type ListingFilterKey = 'brand' | 'model' | 'condition' | 'price' | 'usage' | 'year' | 'sellerName';
 
 export type ListingFilterLabels = {
   brand?: string;
@@ -10,6 +10,7 @@ export type ListingFilterLabels = {
   condition?: string;
   price?: string;
   year?: string;
+  sellerName?: string;
 };
 
 export type ListingFilterConfig = {
@@ -33,6 +34,7 @@ const GENERIC_LABELS: Required<ListingFilterLabels> = {
   condition: 'Condition',
   price: 'Price',
   year: 'Year',
+  sellerName: 'Seller',
 };
 
 const FILTER_ROLE_FALLBACK_KEY: Partial<Record<MarketplaceFilterRole, string>> = {
@@ -51,6 +53,7 @@ const LISTING_FILTER_TO_ROLE: Record<ListingFilterKey, MarketplaceFilterRole> = 
   year: 'year',
   condition: 'condition',
   price: 'price',
+  sellerName: 'seller',
 };
 
 function fieldLabel(schema: CategorySchema, key: string): string | undefined {
@@ -114,6 +117,13 @@ export function buildListingFilterConfig(
     }
   }
 
+  // When a category declares an explicit seller role on make, suppress the brand
+  // fallback filter — both would filter the same column with no meaningful distinction.
+  if (enabledFilters.includes('sellerName')) {
+    const idx = enabledFilters.indexOf('brand');
+    if (idx >= 0) enabledFilters.splice(idx, 1);
+  }
+
   return {
     categorySlug,
     labels: {
@@ -123,6 +133,7 @@ export function buildListingFilterConfig(
       condition: resolveRoleLabel(schema, 'condition'),
       price: resolveRoleLabel(schema, 'price') ?? GENERIC_LABELS.price,
       year: resolveRoleLabel(schema, 'year'),
+      sellerName: resolveRoleLabel(schema, 'seller'),
     },
     enabledFilters,
     facets: buildListingFacetConfig(schema).facets,

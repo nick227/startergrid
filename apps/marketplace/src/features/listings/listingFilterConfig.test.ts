@@ -85,4 +85,28 @@ describe('buildListingFilterConfig', () => {
     expect(config.labels.brand).toBe('Brand');
     expect(config.labels.brand).not.toBe('Manufacturer');
   });
+
+  it('enables sellerName filter for apartments and uses schema-driven label', () => {
+    const schema = resolveCategorySchema('APARTMENTS');
+    const config = buildListingFilterConfig('apartments', schema);
+
+    expect(isListingFilterEnabled(config, 'sellerName')).toBe(true);
+    expect(config.labels.sellerName).toBe('Property manager');
+  });
+
+  it('suppresses brand filter when sellerName is enabled to avoid duplicate make filters', () => {
+    const schema = resolveCategorySchema('APARTMENTS');
+    const config = buildListingFilterConfig('apartments', schema);
+
+    expect(isListingFilterEnabled(config, 'sellerName')).toBe(true);
+    expect(isListingFilterEnabled(config, 'brand')).toBe(false);
+  });
+
+  it('does not enable sellerName filter for automotive', () => {
+    const schema = resolveCategorySchema('AUTOMOTIVE');
+    const config = buildListingFilterConfig('automotive', schema);
+
+    expect(isListingFilterEnabled(config, 'sellerName')).toBe(false);
+    expect(isListingFilterEnabled(config, 'brand')).toBe(true);
+  });
 });

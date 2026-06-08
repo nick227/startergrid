@@ -17,6 +17,7 @@ export type ListingQuery = {
   yearMax?: number;
   sortBy?: ListingSort;
   seller?: string;
+  sellerName?: string;
   q?: string;
   page?: number;
   facets?: Record<string, string>;
@@ -26,7 +27,10 @@ export type ListingQueryKey = keyof ListingQuery;
 
 export function toListQuery(query: ListingQuery): ListQuery {
   return {
-    make: query.brand,
+    // sellerName (seller-name text search) and brand both map to the make column.
+    // sellerName takes precedence; they are mutually exclusive by category schema.
+    make: query.sellerName ?? query.brand,
+    sellerName: query.sellerName,
     model: query.model,
     condition: query.condition,
     minPrice: query.priceMin,
@@ -45,7 +49,10 @@ export function toListQuery(query: ListingQuery): ListQuery {
 
 export function fromListQuery(query: ListQuery): ListingQuery {
   return {
-    brand: query.make,
+    // When sellerName is present in the URL, make belongs to the seller name —
+    // don't also populate brand from make to avoid ambiguity.
+    brand: query.sellerName ? undefined : query.make,
+    sellerName: query.sellerName,
     model: query.model,
     condition: query.condition,
     priceMin: query.minPrice,
@@ -68,6 +75,7 @@ export function listingQuerySignature(query: ListingQuery): string {
 
   return JSON.stringify({
     brand: query.brand ?? null,
+    sellerName: query.sellerName ?? null,
     model: query.model ?? null,
     condition: query.condition ?? null,
     priceMin: query.priceMin ?? null,
@@ -85,6 +93,7 @@ export function listingQuerySignature(query: ListingQuery): string {
 export function hasListingQueryFilters(query: ListingQuery): boolean {
   return Boolean(
     query.brand ||
+    query.sellerName ||
     query.model ||
     query.condition ||
     query.priceMin != null ||

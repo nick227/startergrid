@@ -45,6 +45,7 @@ export default function VehicleListPage({ initialQuery = {} }: Props) {
   const [maxUsage, setMaxUsage] = useState(formatNumberInput(initial.usageMax));
   const [minYear, setMinYear] = useState(formatNumberInput(initial.yearMin));
   const [maxYear, setMaxYear] = useState(formatNumberInput(initial.yearMax));
+  const [sellerName, setSellerName] = useState(initial.sellerName ?? '');
   const [facetValues, setFacetValues] = useState<Record<string, string>>(initial.facets ?? {});
   const [sortBy, setSortBy] = useState<ListingSort | undefined>(initial.sortBy);
   const [focusToken, setFocusToken] = useState(0);
@@ -65,6 +66,7 @@ export default function VehicleListPage({ initialQuery = {} }: Props) {
   const listingQuery = useMemo<ListingQuery>(() => ({
     q: q.trim() || undefined,
     brand: brand.trim() || undefined,
+    sellerName: sellerName.trim() || undefined,
     model: model.trim() || undefined,
     condition,
     priceMin: dollarsToCents(minPrice),
@@ -74,7 +76,7 @@ export default function VehicleListPage({ initialQuery = {} }: Props) {
     yearMax: parseNonNegative(maxYear),
     facets: sanitizeListingFacets(schema, facetValues),
     sortBy,
-  }), [brand, condition, facetValues, maxPrice, maxUsage, maxYear, minPrice, minYear, model, q, schema, sortBy]);
+  }), [brand, condition, facetValues, maxPrice, maxUsage, maxYear, minPrice, minYear, model, q, schema, sellerName, sortBy]);
 
   const feed = useInfiniteMarketplaceFeed(listingQuery);
 
@@ -114,6 +116,7 @@ export default function VehicleListPage({ initialQuery = {} }: Props) {
   function resetFilters() {
     setQ('');
     setBrand('');
+    setSellerName('');
     setModel('');
     setCondition(undefined);
     setMinPrice('');
@@ -137,6 +140,7 @@ export default function VehicleListPage({ initialQuery = {} }: Props) {
   function applyListingQuery(query: ListingQuery) {
     setQ(query.q ?? '');
     setBrand(query.brand ?? '');
+    setSellerName(query.sellerName ?? '');
     setModel(query.model ?? '');
     setCondition(query.condition);
     setMinPrice(formatMoneyInput(query.priceMin));
@@ -179,8 +183,10 @@ export default function VehicleListPage({ initialQuery = {} }: Props) {
           maxUsage={maxUsage}
           minYear={minYear}
           maxYear={maxYear}
+          sellerName={sellerName}
           onQChange={setQ}
           onBrandChange={setBrand}
+          onSellerNameChange={setSellerName}
           onModelChange={setModel}
           onConditionChange={setCondition}
           onMinPriceChange={setMinPrice}

@@ -28,9 +28,9 @@ export type MarketplaceRoute =
 export type SortBy = 'newest' | 'price-asc' | 'price-desc' | 'mileage-asc' | 'year-asc' | 'year-desc' | 'relevance';
 
 export type ListQuery = {
-  make?:      string;
-  model?:     string;
-  condition?: 'NEW' | 'USED' | 'CPO';
+  make?:       string;
+  model?:      string;
+  condition?:  'NEW' | 'USED' | 'CPO';
   minPrice?:   number;
   maxPrice?:   number;
   maxMileage?: number;
@@ -38,8 +38,9 @@ export type ListQuery = {
   maxYear?:    number;
   sortBy?:     SortBy;
   dealer?:     string;
+  sellerName?: string;
   q?:          string;
-  page?:      number;
+  page?:       number;
   facets?: Record<string, string>;
   /** Serialized facet filters for API requests (key:value pairs). */
   facetsParam?: string;
@@ -69,19 +70,20 @@ function parseHashQuery(search: string): ListQuery {
   }
 
   return {
-    make:      params.get('make') || undefined,
-    model:     params.get('model') || undefined,
-    condition: condition === 'NEW' || condition === 'USED' || condition === 'CPO' ? condition : undefined,
+    make:       params.get('make') || undefined,
+    model:      params.get('model') || undefined,
+    condition:  condition === 'NEW' || condition === 'USED' || condition === 'CPO' ? condition : undefined,
     minPrice,
     maxPrice,
     maxMileage,
     minYear,
     maxYear,
-    sortBy:    SORT_VALUES.includes(sortRaw as SortBy) ? (sortRaw as SortBy) : undefined,
-    dealer:    params.get('dealer') || undefined,
-    q:         params.get('q') || undefined,
-    page:      page && page > 0 ? page : undefined,
-    facets:    Object.keys(facets).length > 0 ? facets : undefined,
+    sortBy:     SORT_VALUES.includes(sortRaw as SortBy) ? (sortRaw as SortBy) : undefined,
+    dealer:     params.get('dealer') || undefined,
+    sellerName: params.get('sellerName') || undefined,
+    q:          params.get('q') || undefined,
+    page:       page && page > 0 ? page : undefined,
+    facets:     Object.keys(facets).length > 0 ? facets : undefined,
   };
 }
 
@@ -162,7 +164,8 @@ export function sitesHref(): string {
 
 export function listHref(slug: string, query: ListQuery = {}): string {
   const params = new URLSearchParams();
-  if (query.make) params.set('make', query.make);
+  if (query.sellerName) params.set('sellerName', query.sellerName);
+  else if (query.make) params.set('make', query.make);
   if (query.model) params.set('model', query.model);
   if (query.condition) params.set('condition', query.condition);
   if (query.minPrice != null) params.set('minPrice', String(query.minPrice));

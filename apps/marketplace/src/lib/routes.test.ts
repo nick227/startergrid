@@ -124,6 +124,35 @@ describe('href builders', () => {
       },
     });
   });
+
+  it('serializes sellerName as a distinct URL param, not make', () => {
+    const href = listHref('apartments', { sellerName: 'Coldwell Banker' });
+    expect(href).toBe('#/apartments/?sellerName=Coldwell+Banker');
+    expect(href).not.toContain('make=');
+  });
+
+  it('round-trips sellerName through URL serialization', () => {
+    const href = listHref('apartments', { sellerName: 'Coldwell Banker' });
+    expect(parseRouteFromHash(href)).toEqual({
+      page: 'list',
+      slug: 'apartments',
+      query: { sellerName: 'Coldwell Banker' },
+    });
+  });
+
+  it('make and sellerName are independent URL params', () => {
+    const hrefWithMake = listHref('automotive', { make: 'Toyota' });
+    const routeWithMake = parseRouteFromHash(hrefWithMake);
+    expect(routeWithMake).toMatchObject({ query: { make: 'Toyota' } });
+    if (routeWithMake.page === 'list') expect(routeWithMake.query.sellerName).toBeUndefined();
+
+    const hrefWithSeller = listHref('apartments', { sellerName: 'Coldwell' });
+    const routeWithSeller = parseRouteFromHash(hrefWithSeller);
+    if (routeWithSeller.page === 'list') {
+      expect(routeWithSeller.query.sellerName).toBe('Coldwell');
+      expect(routeWithSeller.query.make).toBeUndefined();
+    }
+  });
 });
 
 function parseRouteFromHash(hash: string) {
