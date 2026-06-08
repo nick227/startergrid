@@ -19,7 +19,7 @@ import { ListingFilterBar } from '../components/listings/ListingFilterBar.tsx';
 import { ActiveListingFilterChips } from '../components/listings/ActiveListingFilterChips.tsx';
 import { NoResultsRelaxation } from '../components/listings/NoResultsRelaxation.tsx';
 import { SavedSearchesPanel } from '../components/listings/SavedSearchesPanel.tsx';
-import { VehicleGrid, type ViewMode } from '../components/ui/VehicleGrid.tsx';
+import { ListingGrid, type ViewMode } from '../components/ui/ListingGrid.tsx';
 import { ErrorState } from '../components/ui/ErrorState.tsx';
 import { EmptyState } from '../components/ui/EmptyState.tsx';
 import { FeedItemCard } from '../components/feed/FeedCards.tsx';
@@ -42,7 +42,7 @@ import type { MarketplaceAvailabilityFilter } from '@auto-dealer/category-schema
 
 type Props = { initialQuery?: ListQuery };
 
-export default function VehicleListPage({ initialQuery = {} }: Props) {
+export default function ListingListPage({ initialQuery = {} }: Props) {
   const slug = useCategorySlug();
   const schema = useCategorySchema();
   const filterConfig = useMemo(() => buildListingFilterConfig(slug, schema), [slug, schema]);
@@ -334,7 +334,7 @@ export default function VehicleListPage({ initialQuery = {} }: Props) {
             </div>
           </div>
 
-          <VehicleGrid viewMode={viewMode}>
+          <ListingGrid viewMode={viewMode}>
             {feed.items.map((item, index) => (
               <FeedItemCard
                 key={item.id}
@@ -347,7 +347,7 @@ export default function VehicleListPage({ initialQuery = {} }: Props) {
                 }}
               />
             ))}
-          </VehicleGrid>
+          </ListingGrid>
 
           <div ref={sentinelRef} aria-hidden="true" className="h-1" />
 

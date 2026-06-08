@@ -7,7 +7,7 @@ import { CategoryProvider } from './contexts/CategoryContext.tsx';
 import { CategoryFavoritesSync } from './contexts/CategoryFavoritesSync.tsx';
 import { LoginModal } from './components/ui/LoginModal.tsx';
 import SitesIndexPage from './pages/SitesIndexPage.tsx';
-const VehicleListPage = lazy(() => import('./pages/VehicleListPage.tsx'));
+const ListingListPage = lazy(() => import('./pages/ListingListPage.tsx'));
 import VehicleDetailPage from './pages/VehicleDetailPage.tsx';
 import SellerDetailPage from './pages/SellerDetailPage.tsx';
 import FavoritesPage from './pages/FavoritesPage.tsx';
@@ -90,7 +90,7 @@ export default function App() {
         {route.page === 'favorites' && <FavoritesPage />}
         {route.page === 'list' && (
           <Suspense fallback={<PageShell><p className="p-6 text-sm text-ink-muted">Loading inventory…</p></PageShell>}>
-            <VehicleListPage initialQuery={route.query} />
+            <ListingListPage initialQuery={route.query} />
           </Suspense>
         )}
       </CategoryProvider>

@@ -16,7 +16,7 @@ const FALLBACK_ICON = (
   </svg>
 );
 
-export function VehicleImage({
+export function ListingImage({
   src,
   alt,
   className = '',

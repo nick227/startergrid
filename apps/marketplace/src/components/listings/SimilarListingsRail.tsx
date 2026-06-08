@@ -2,7 +2,7 @@ import type { BusinessCategoryId } from '@auto-dealer/category-schemas';
 import { useSimilarListings } from '../../hooks/useSimilarListings.ts';
 import { formatPrice } from '../../lib/display.ts';
 import { listingHref } from '../../lib/routes.ts';
-import { VehicleImage } from '../ui/VehicleImage.tsx';
+import { ListingImage } from '../ui/ListingImage.tsx';
 import { PriceDropBadge } from './PriceDropBadge.tsx';
 
 type Props = {
@@ -32,7 +32,7 @@ export function SimilarListingsRail({ listingId, categoryId, categorySlug, make 
             className="mp-card mp-focus flex gap-3 p-3 transition hover:border-navy-500/40 hover:shadow-elevation-2"
           >
             <div className="size-20 shrink-0 overflow-hidden rounded-lg bg-surface-inset">
-              <VehicleImage src={item.mediaUrls[0]} alt={`${item.year} ${item.make} ${item.model}`} imgClassName="h-full w-full object-cover" />
+              <ListingImage src={item.mediaUrls[0]} alt={`${item.year} ${item.make} ${item.model}`} imgClassName="h-full w-full object-cover" />
             </div>
             <div className="min-w-0 flex-1">
               <p className="truncate text-sm font-semibold text-ink-heading">

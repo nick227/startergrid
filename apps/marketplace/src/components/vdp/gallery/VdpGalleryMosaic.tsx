@@ -1,6 +1,6 @@
 import type { VdpMediaSlotMap } from '../../../lib/vdpMediaSlotMap.ts';
 import { kindBadge } from '../../../lib/vdpMediaLabels.ts';
-import { VehicleImage } from '../../ui/VehicleImage.tsx';
+import { ListingImage } from '../../ui/ListingImage.tsx';
 
 type Props = {
   map: VdpMediaSlotMap;
@@ -41,7 +41,7 @@ function MosaicCell({
       aria-label={`View ${label}`}
       onClick={onOpen}
     >
-      <VehicleImage src={item.posterUrl ?? item.url} alt={`${alt} — ${label}`} variant="thumb" className="h-full w-full rounded-xl" imgClassName="h-full w-full" />
+      <ListingImage src={item.posterUrl ?? item.url} alt={`${alt} — ${label}`} variant="thumb" className="h-full w-full rounded-xl" imgClassName="h-full w-full" />
       {badge && (
         <span className="absolute left-2 top-2 rounded-pill bg-black/70 px-2 py-0.5 text-[10px] font-semibold text-white">
           {badge}
@@ -81,7 +81,7 @@ export function VdpGalleryMosaic({ map, alt, onOpenItem }: Props) {
                 aria-label={`View additional ${kindBadge(item.kind) ?? 'media'}`}
                 onClick={() => onOpenItem(item.id)}
               >
-                <VehicleImage src={item.posterUrl ?? item.url} alt="" decorative variant="thumb" className="h-full w-full" imgClassName="h-full w-full" />
+                <ListingImage src={item.posterUrl ?? item.url} alt="" decorative variant="thumb" className="h-full w-full" imgClassName="h-full w-full" />
               </button>
             ))}
           </div>

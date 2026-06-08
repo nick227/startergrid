@@ -2,7 +2,7 @@ import type { MarketplaceVehicleCard } from '../../lib/api.ts';
 import { formatPrice, formatUsage, vehicleHeading } from '../../lib/display.ts';
 import { listingHref } from '../../lib/routes.ts';
 import { NEW_ARRIVAL_LABEL } from '../../features/listings/listingBadges.ts';
-import { VehicleImage } from '../ui/VehicleImage.tsx';
+import { ListingImage } from '../ui/ListingImage.tsx';
 
 type Props = {
   slug: string;
@@ -31,7 +31,7 @@ export function NewArrivalsRail({ slug, cards }: Props) {
               className="mp-card mp-focus w-56 shrink-0 overflow-hidden transition hover:border-navy-500/40 hover:shadow-elevation-2"
             >
               <div className="aspect-[4/3] bg-surface-inset">
-                <VehicleImage src={card.mediaUrls[0]} alt={title} imgClassName="h-full w-full object-cover" />
+                <ListingImage src={card.mediaUrls[0]} alt={title} imgClassName="h-full w-full object-cover" />
               </div>
               <div className="space-y-1 p-3">
                 <p className="truncate text-sm font-semibold text-ink-heading">{title}</p>

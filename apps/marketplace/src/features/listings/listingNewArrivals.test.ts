@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import type { MarketplaceVehicleCard } from '../../lib/api.ts';
+import { MarketplaceVehicleCard } from '@dealer-marketplace/client';
 import { NEW_ARRIVALS_RAIL_MIN, pickNewArrivalCards } from './listingNewArrivals.ts';
 
 function card(listingId: string, listedAt: string): MarketplaceVehicleCard {
@@ -10,7 +10,7 @@ function card(listingId: string, listedAt: string): MarketplaceVehicleCard {
     make: 'Toyota',
     model: 'Camry',
     trim: null,
-    condition: 'USED',
+    condition: MarketplaceVehicleCard.condition.USED,
     priceCents: 2_000_000,
     originalPriceCents: null,
     mileage: 10_000,

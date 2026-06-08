@@ -1,12 +1,12 @@
 import { useCallback, useState } from 'react';
-import { VehicleImage } from './VehicleImage.tsx';
+import { ListingImage } from './ListingImage.tsx';
 
 type Props = {
   images: string[];
   alt: string;
 };
 
-export function VehicleGallery({ images, alt }: Props) {
+export function ListingGallery({ images, alt }: Props) {
   const [active, setActive] = useState(0);
   const count = images.length;
   const activeSrc = count > 0 ? images[active] : null;
@@ -18,7 +18,7 @@ export function VehicleGallery({ images, alt }: Props) {
 
   return (
     <section aria-label="Photos">
-      <VehicleImage src={activeSrc} alt={alt} variant="hero" className="rounded-2xl" />
+      <ListingImage src={activeSrc} alt={alt} variant="hero" className="rounded-2xl" />
 
       {count > 1 && (
         <>
@@ -53,7 +53,7 @@ export function VehicleGallery({ images, alt }: Props) {
                   i === active ? 'border-blue-500' : 'border-transparent hover:border-slate-300'
                 }`}
               >
-                <VehicleImage src={url} alt="" variant="thumb" decorative className="h-full w-full" />
+                <ListingImage src={url} alt="" variant="thumb" decorative className="h-full w-full" />
               </button>
             ))}
           </div>

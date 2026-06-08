@@ -7,8 +7,8 @@ import { listHref } from '../lib/routes.ts';
 import { useCategoryId, useCategorySchema, useCategorySlug } from '../contexts/CategoryContext.tsx';
 import { PageShell } from '../components/layout/PageShell.tsx';
 import { PageHeader } from '../components/ui/PageHeader.tsx';
-import { VehicleCard } from '../components/VehicleCard.tsx';
-import { VehicleGrid } from '../components/ui/VehicleGrid.tsx';
+import { ListingCard } from '../components/ListingCard.tsx';
+import { ListingGrid } from '../components/ui/ListingGrid.tsx';
 import { EmptyState } from '../components/ui/EmptyState.tsx';
 import { ErrorState } from '../components/ui/ErrorState.tsx';
 import { SkeletonGrid } from '../components/ui/SkeletonGrid.tsx';
@@ -65,9 +65,9 @@ export default function FavoritesPage() {
       ) : (
         <>
           {visibleCards.length > 0 && (
-            <VehicleGrid>
+            <ListingGrid>
               {visibleCards.map(card => (
-                <VehicleCard
+                <ListingCard
                   key={card.listingId}
                   card={card}
                   onQuickView={(listingId) => {
@@ -76,7 +76,7 @@ export default function FavoritesPage() {
                   }}
                 />
               ))}
-            </VehicleGrid>
+            </ListingGrid>
           )}
 
           {unavailableFavorites.length > 0 && (

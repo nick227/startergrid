@@ -9,9 +9,9 @@ import { useTrackMarketplaceEvent } from '../hooks/useTrackMarketplaceEvent.ts';
 import { listHref } from '../lib/routes.ts';
 import { useCategoryId, useCategorySchema, useCategorySlug } from '../contexts/CategoryContext.tsx';
 import { PageShell } from '../components/layout/PageShell.tsx';
-import { VehicleCard } from '../components/VehicleCard.tsx';
+import { ListingCard } from '../components/ListingCard.tsx';
 import { DealerHero } from '../components/ui/DealerBlock.tsx';
-import { VehicleGrid } from '../components/ui/VehicleGrid.tsx';
+import { ListingGrid } from '../components/ui/ListingGrid.tsx';
 import { DealerHeaderSkeleton, SkeletonGrid } from '../components/ui/SkeletonGrid.tsx';
 import { ErrorState } from '../components/ui/ErrorState.tsx';
 import { EmptyState } from '../components/ui/EmptyState.tsx';
@@ -101,9 +101,9 @@ export default function SellerDetailPage({ sellerId }: Props) {
             }}
           />
         ) : (
-          <VehicleGrid>
+          <ListingGrid>
             {data.vehicles.map(card => (
-              <VehicleCard
+              <ListingCard
                 key={card.listingId}
                 card={card}
                 onQuickView={(listingId) => {
@@ -112,7 +112,7 @@ export default function SellerDetailPage({ sellerId }: Props) {
                 }}
               />
             ))}
-          </VehicleGrid>
+          </ListingGrid>
         )}
       </section>
       <QuickDetailDrawer

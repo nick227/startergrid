@@ -5,7 +5,7 @@ import {
 } from '../../features/listings/recentlyViewed.ts';
 import { formatPrice } from '../../lib/display.ts';
 import { listingHref } from '../../lib/routes.ts';
-import { VehicleImage } from '../ui/VehicleImage.tsx';
+import { ListingImage } from '../ui/ListingImage.tsx';
 
 type Props = {
   categorySlug: string;
@@ -49,7 +49,7 @@ export function RecentlyViewedRail({ categorySlug, excludeListingId, limit = 8 }
             className="mp-card mp-focus flex gap-3 p-3 transition hover:border-navy-500/40 hover:shadow-elevation-2"
           >
             <div className="size-20 shrink-0 overflow-hidden rounded-lg bg-surface-inset">
-              <VehicleImage src={item.imageUrl ?? undefined} alt={item.title} imgClassName="h-full w-full object-cover" />
+              <ListingImage src={item.imageUrl ?? undefined} alt={item.title} imgClassName="h-full w-full object-cover" />
             </div>
             <div className="min-w-0 flex-1">
               <p className="truncate text-sm font-semibold text-ink-heading">{item.title}</p>

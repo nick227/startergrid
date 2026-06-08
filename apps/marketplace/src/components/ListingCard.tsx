@@ -4,7 +4,7 @@ import { formatDistanceAway, formatPrice, formatUsage, formatLocation, vehicleHe
 import { listingHref, sellerHref } from '../lib/routes.ts';
 import { useCategoryId, useCategorySlug } from '../contexts/CategoryContext.tsx';
 import { trackMarketplaceEvent, MarketplaceEventType } from '../lib/events.ts';
-import { VehicleImage } from './ui/VehicleImage.tsx';
+import { ListingImage } from './ui/ListingImage.tsx';
 import { ConditionBadge } from './ui/ConditionBadge.tsx';
 import { FavoriteButton } from './ui/FavoriteButton.tsx';
 import { AvailabilityBadge } from './listings/AvailabilityBadge.tsx';
@@ -17,7 +17,7 @@ type Props = {
   onQuickView?: (listingId: string) => void;
 };
 
-export function VehicleCard({ card, onQuickView }: Props) {
+export function ListingCard({ card, onQuickView }: Props) {
   const slug = useCategorySlug();
   const categoryId = useCategoryId();
   const schema = useCategorySchema();
@@ -40,7 +40,7 @@ export function VehicleCard({ card, onQuickView }: Props) {
     <article className="group mp-card flex h-full flex-col overflow-hidden transition hover:border-navy-500/40 hover:shadow-elevation-3">
       <div className="relative">
         <a href={listingHref(slug, card.listingId)} className="mp-focus block rounded-t-2xl overflow-hidden">
-          <VehicleImage
+          <ListingImage
             src={card.mediaUrls[0]}
             alt={title}
             imgClassName="transition-transform duration-200 group-hover:scale-105"
