@@ -28,9 +28,8 @@ export function useInfiniteMarketplaceFeed(query: ListingQuery) {
 
   const filters = useMemo<FeedFilters>(() => ({
     category:   categoryId,
-    // sellerName (seller-role categories) and make (brand) both target the make column.
-    // Coalesce here so the API receives a single make param regardless of origin.
-    make:       listQuery.sellerName ?? listQuery.make,
+    make:       listQuery.make,
+    sellerName: listQuery.sellerName,
     model:      listQuery.model,
     condition:  listQuery.condition,
     minPrice:   listQuery.minPrice,

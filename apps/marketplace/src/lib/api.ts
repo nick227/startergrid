@@ -68,9 +68,10 @@ function toApiCategory(category?: BusinessCategoryId): MarketplaceBusinessCatego
 }
 
 export type ListFilters = CategoryScope & {
-  make?:      string;
-  model?:     string;
-  condition?: 'NEW' | 'USED' | 'CPO';
+  make?:       string;
+  sellerName?: string;
+  model?:      string;
+  condition?:  'NEW' | 'USED' | 'CPO';
   minPrice?:   number;
   maxPrice?:   number;
   maxMileage?: number;
@@ -80,8 +81,8 @@ export type ListFilters = CategoryScope & {
   dealer?:     string;
   q?:          string;
   facets?:     string;
-  page?:      number;
-  pageSize?:  number;
+  page?:       number;
+  pageSize?:   number;
 };
 
 export type FeedFilters = Omit<ListFilters, 'page' | 'pageSize'> & {
@@ -130,6 +131,7 @@ export function fetchFeed(filters: FeedFilters = {}): Promise<MarketplaceFeedRes
     cursor:     filters.cursor,
     limit:      filters.limit,
     make:       filters.make,
+    sellerName: filters.sellerName,
     model:      filters.model,
     condition:  filters.condition,
     minPrice:   filters.minPrice,
