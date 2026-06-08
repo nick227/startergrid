@@ -11,6 +11,8 @@ export const boatsDealerPayload: DealershipPayload = {
     postalCode: '33316',
     country: 'US',
   },
+  rooftopLat: 26.1224,
+  rooftopLng: -80.1373,
   websiteUrl: 'https://inventory.harborline.example.com',
   primaryContact: {
     name: 'Morgan Blake',

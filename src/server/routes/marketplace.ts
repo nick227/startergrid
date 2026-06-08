@@ -10,6 +10,7 @@ import {
 import { listMarketplaceSites } from '../../services/marketplace/marketplaceSitesService.js';
 import { resolveEnabledMarketplaceCategory } from '../../services/marketplace/marketplaceCategory.js';
 import {
+  parseMarketplaceAvailabilityFilter,
   parseMarketplaceFacetsParam,
   resolveCategorySchema,
   sanitizeMarketplaceFacets,
@@ -48,7 +49,12 @@ type ListQuery = {
   limit?:      string;
   page?:       string;
   pageSize?:   string;
-  facets?:     string;
+  facets?:       string;
+  availability?: string;
+  buyerLat?:     string;
+  buyerLng?:     string;
+  radiusMiles?:  string;
+  nationwide?:   string;
   [key: string]: string | undefined;
 };
 
@@ -61,6 +67,18 @@ function parseNonNegIntParam(value: string | undefined): number | undefined {
   if (!value) return undefined;
   const n = parseInt(value, 10);
   return Number.isFinite(n) && n >= 0 ? n : undefined;
+}
+
+function parseFloatParam(value: string | undefined): number | undefined {
+  if (!value) return undefined;
+  const n = parseFloat(value);
+  return Number.isFinite(n) ? n : undefined;
+}
+
+function parseBoolParam(value: string | undefined): boolean | undefined {
+  if (value === 'true')  return true;
+  if (value === 'false') return false;
+  return undefined;
 }
 
 function parseFacetFilters(
@@ -94,9 +112,14 @@ function listFiltersFromQuery(q: ListQuery, category: BusinessCategory): Marketp
     minYear:    parseNonNegIntParam(q.minYear),
     maxYear:    parseNonNegIntParam(q.maxYear),
     sortBy:     q.sortBy    || undefined,
-    q:          q.q         || undefined,
-    facets:     parseFacetFilters(q, category),
-    cursor:     q.cursor    || undefined,
+    q:            q.q           || undefined,
+    buyerLat:     parseFloatParam(q.buyerLat),
+    buyerLng:     parseFloatParam(q.buyerLng),
+    radiusMiles:  parseNonNegIntParam(q.radiusMiles),
+    nationwide:   parseBoolParam(q.nationwide),
+    facets:         parseFacetFilters(q, category),
+    availability:   parseMarketplaceAvailabilityFilter(q.availability),
+    cursor:       q.cursor    || undefined,
     limit:      parsePosIntParam(q.limit, 24),
     page:       parsePosIntParam(q.page, 1),
     pageSize:   parsePosIntParam(q.pageSize, 24),

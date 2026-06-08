@@ -62,6 +62,11 @@ export class MarketplaceService {
         dealer,
         q,
         facets,
+        buyerLat,
+        buyerLng,
+        radiusMiles = 50,
+        nationwide = true,
+        availability = 'available',
     }: {
         /**
          * Business category slug or enum. Defaults to AUTOMOTIVE.
@@ -117,6 +122,26 @@ export class MarketplaceService {
          *
          */
         facets?: string,
+        /**
+         * Buyer latitude for nearby radius filtering. Never echoed in responses.
+         */
+        buyerLat?: number,
+        /**
+         * Buyer longitude for nearby radius filtering. Never echoed in responses.
+         */
+        buyerLng?: number,
+        /**
+         * Search radius in miles when buyerLat and buyerLng are set. Clamped to 1–500; defaults to 50.
+         */
+        radiusMiles?: number,
+        /**
+         * When true, ignore buyer location and return nationwide results.
+         */
+        nationwide?: boolean,
+        /**
+         * Availability filter. MVP supports available-only (not sold or removed).
+         */
+        availability?: 'available',
     }): CancelablePromise<MarketplaceFeedResponse> {
         return __request(OpenAPI, {
             method: 'GET',
@@ -138,6 +163,11 @@ export class MarketplaceService {
                 'dealer': dealer,
                 'q': q,
                 'facets': facets,
+                'buyerLat': buyerLat,
+                'buyerLng': buyerLng,
+                'radiusMiles': radiusMiles,
+                'nationwide': nationwide,
+                'availability': availability,
             },
             errors: {
                 400: `Bad request — invalid query parameter value`,
@@ -168,8 +198,13 @@ export class MarketplaceService {
         dealer,
         q,
         facets,
+        availability = 'available',
         page = 1,
         pageSize = 24,
+        buyerLat,
+        buyerLng,
+        radiusMiles = 50,
+        nationwide = true,
     }: {
         /**
          * Business category slug or enum. Defaults to AUTOMOTIVE.
@@ -223,8 +258,28 @@ export class MarketplaceService {
          *
          */
         facets?: string,
+        /**
+         * Availability filter. MVP supports available-only (not sold or removed).
+         */
+        availability?: 'available',
         page?: number,
         pageSize?: number,
+        /**
+         * Buyer latitude for nearby radius filtering. Never echoed in responses.
+         */
+        buyerLat?: number,
+        /**
+         * Buyer longitude for nearby radius filtering. Never echoed in responses.
+         */
+        buyerLng?: number,
+        /**
+         * Search radius in miles when buyerLat and buyerLng are set. Clamped to 1–500; defaults to 50.
+         */
+        radiusMiles?: number,
+        /**
+         * When true, ignore buyer location and return nationwide results.
+         */
+        nationwide?: boolean,
     }): CancelablePromise<MarketplaceVehicleListResponse> {
         return __request(OpenAPI, {
             method: 'GET',
@@ -244,8 +299,13 @@ export class MarketplaceService {
                 'dealer': dealer,
                 'q': q,
                 'facets': facets,
+                'availability': availability,
                 'page': page,
                 'pageSize': pageSize,
+                'buyerLat': buyerLat,
+                'buyerLng': buyerLng,
+                'radiusMiles': radiusMiles,
+                'nationwide': nationwide,
             },
             errors: {
                 400: `Bad request — invalid query parameter value`,

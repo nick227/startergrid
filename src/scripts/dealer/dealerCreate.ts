@@ -28,6 +28,8 @@ async function upsertDealerWithVehicles(
       dbaName: dealership.dbaName,
       dealerLicense: dealership.dealerLicense,
       rooftopAddress: dealership.rooftopAddress as unknown as Prisma.InputJsonValue,
+      rooftopLat:  dealership.rooftopLat ?? undefined,
+      rooftopLng:  dealership.rooftopLng ?? undefined,
       websiteUrl: dealership.websiteUrl,
       primaryContact: dealership.primaryContact as unknown as Prisma.InputJsonValue,
       inventorySize: dealership.inventorySize,

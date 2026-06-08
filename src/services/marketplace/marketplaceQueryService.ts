@@ -18,12 +18,20 @@ import type { PrismaClient, Prisma, BusinessCategory } from '@prisma/client';
 import {
   buildMarketplaceFacets,
   categoryIdToSlug,
+  parseMarketplaceAvailabilityFilter,
   resolveCategorySchema,
   resolveMarketplaceMakeFilter,
   sanitizeMarketplaceFacets,
+  type MarketplaceAvailabilityFilter,
   type MarketplaceFacetDef,
 } from '../../../packages/category-schemas/src/index.js';
 import { parseCategoryPayload, usageUnitFromPayload } from '../../lib/categoryPayload.js';
+import {
+  clampRadiusMiles,
+  geoBoundingBox,
+  shouldApplyGeoRadiusFilter,
+} from '../../lib/geo/boundingBox.js';
+import { marketplaceCardAvailabilityStatus } from './marketplaceAvailability.js';
 import {
   shapeDetailResponse,
   type DbVehicleDetailRow,
@@ -64,8 +72,9 @@ export type MarketplaceVehicleCard = {
   dealerName:         string;        // dbaName ?? legalName
   dealerCity:         string | null;
   dealerState:        string | null;
-  listingUrl:         string;
-  listedAt:           string;        // ISO 8601
+  listingUrl:           string;
+  listedAt:             string;        // ISO 8601
+  availabilityStatus?:  'PENDING' | 'SOLD';
 };
 
 export type MarketplaceMediaItem = {
@@ -139,14 +148,15 @@ export type MarketplaceFeedItem =
   | MarketplaceNoticeItem;
 
 export type MarketplaceFeedAppliedFilters = {
-  make:       string | null;
-  model:      string | null;
-  condition:  string | null;
-  minPrice:   number | null;
-  maxPrice:   number | null;
-  maxMileage: number | null;
-  dealer:     string | null;
-  q:          string | null;
+  make:          string | null;
+  model:         string | null;
+  condition:     string | null;
+  minPrice:      number | null;
+  maxPrice:      number | null;
+  maxMileage:    number | null;
+  dealer:        string | null;
+  q:             string | null;
+  availability:  MarketplaceAvailabilityFilter;
 };
 
 export type MarketplaceFeedResponse = {
@@ -174,7 +184,12 @@ export type MarketplaceListFilters = {
   pageSize?:   number;
   cursor?:     string;
   limit?:      number;
-  facets?:     Record<string, string>;
+  facets?:        Record<string, string>;
+  availability?:  MarketplaceAvailabilityFilter;
+  buyerLat?:      number;
+  buyerLng?:      number;
+  radiusMiles?:   number;
+  nationwide?:    boolean;
 };
 
 // ── Internal DB row types ─────────────────────────────────────────────────────
@@ -209,6 +224,8 @@ type DbVehicleRow = {
   condition:          string;
   exteriorColor:      string;
   categoryPayload?:   unknown;
+  soldAt?:            Date | null;
+  removedAt?:         Date | null;
   createdAt:          Date;
   dealershipId:       string;
   media:              DbMedia[];
@@ -279,7 +296,13 @@ function shapeCard(row: DbVehicleRow): MarketplaceVehicleCard {
     dealerState:  addr.state,
     listingUrl:   buildListingUrl(row.dealershipId, row.stockNumber),
     listedAt:     row.createdAt.toISOString(),
+    ...availabilityField(row),
   };
+}
+
+function availabilityField(row: Pick<DbVehicleRow, 'soldAt' | 'removedAt'>): Pick<MarketplaceVehicleCard, 'availabilityStatus'> {
+  const availabilityStatus = marketplaceCardAvailabilityStatus(row);
+  return availabilityStatus ? { availabilityStatus } : {};
 }
 
 function shapeDetail(row: DbVehicleDetailRow): MarketplaceVehicleDetailResponse {
@@ -318,6 +341,8 @@ const VEHICLE_CARD_SELECT: Prisma.VehicleSelect = {
   mileage:            true,
   exteriorColor:      true,
   categoryPayload:    true,
+  soldAt:             true,
+  removedAt:          true,
   createdAt:          true,
   media: {
     select:  { url: true, kind: true, sortOrder: true, width: true, height: true, mimeType: true },
@@ -401,19 +426,41 @@ function facetWhereClause(facet: MarketplaceFacetDef, value: string): Prisma.Veh
   return { [column]: value } as Prisma.VehicleWhereInput;
 }
 
+function resolveAvailabilityFilter(
+  filters: MarketplaceListFilters,
+): MarketplaceAvailabilityFilter {
+  return parseMarketplaceAvailabilityFilter(filters.availability);
+}
+
 function buildMarketplaceWhere(filters: MarketplaceListFilters): Prisma.VehicleWhereInput {
   const priceFilter: Prisma.IntFilter<'Vehicle'> = { gt: 0 };
   if (filters.minPrice != null && filters.minPrice > 0) priceFilter.gte = filters.minPrice;
   if (filters.maxPrice != null) priceFilter.lte = filters.maxPrice;
 
+  resolveAvailabilityFilter(filters);
   const where: Prisma.VehicleWhereInput = {
-    soldAt:    null,
-    removedAt: null,
+    soldAt:     null,
+    removedAt:  null,
     priceCents: priceFilter,
   };
 
+  let dealershipWhere: Prisma.DealershipProfileWhereInput | undefined;
   if (filters.category) {
-    where.dealership = { businessCategory: filters.category };
+    dealershipWhere = { businessCategory: filters.category };
+  }
+  if (shouldApplyGeoRadiusFilter(filters)) {
+    const radius = clampRadiusMiles(filters.radiusMiles);
+    const box = geoBoundingBox(filters.buyerLat!, filters.buyerLng!, radius);
+    const geoClause: Prisma.DealershipProfileWhereInput = {
+      rooftopLat: { not: null, gte: box.minLat, lte: box.maxLat },
+      rooftopLng: { not: null, gte: box.minLng, lte: box.maxLng },
+    };
+    dealershipWhere = dealershipWhere
+      ? { AND: [dealershipWhere, geoClause] }
+      : geoClause;
+  }
+  if (dealershipWhere) {
+    where.dealership = dealershipWhere;
   }
   const make = filters.category
     ? resolveMarketplaceMakeFilter(resolveCategorySchema(filters.category), {
@@ -519,6 +566,7 @@ function appliedFilters(filters: MarketplaceListFilters): MarketplaceFeedApplied
     maxMileage: filters.maxMileage ?? null,
     dealer:     filters.dealer ?? null,
     q:          filters.q?.trim() || null,
+    availability: resolveAvailabilityFilter(filters),
   };
 }
 

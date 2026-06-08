@@ -26,6 +26,8 @@ export type DealershipPayload = {
   dbaName?: string | null;
   dealerLicense?: string | null;
   rooftopAddress: DealershipAddress;
+  rooftopLat?: number | null;
+  rooftopLng?: number | null;
   websiteUrl?: string | null;
   primaryContact: DealershipContact;
   inventorySize?: number | null;

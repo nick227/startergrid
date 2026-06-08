@@ -332,6 +332,43 @@ paths:
           schema:
             type: string
             maxLength: 500
+        - name: buyerLat
+          in: query
+          description: Buyer latitude for nearby radius filtering. Never echoed in responses.
+          schema:
+            type: number
+            format: double
+            minimum: -90
+            maximum: 90
+        - name: buyerLng
+          in: query
+          description: Buyer longitude for nearby radius filtering. Never echoed in responses.
+          schema:
+            type: number
+            format: double
+            minimum: -180
+            maximum: 180
+        - name: radiusMiles
+          in: query
+          description: Search radius in miles when buyerLat and buyerLng are set. Clamped to 1–500; defaults to 50.
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 500
+            default: 50
+        - name: nationwide
+          in: query
+          description: When true, ignore buyer location and return nationwide results.
+          schema:
+            type: boolean
+            default: true
+        - name: availability
+          in: query
+          description: Availability filter. MVP supports available-only (not sold or removed).
+          schema:
+            type: string
+            enum: [available]
+            default: available
       responses:
         '200':
           description: Mixed marketplace feed page
@@ -438,6 +475,13 @@ paths:
           schema:
             type: string
             maxLength: 500
+        - name: availability
+          in: query
+          description: Availability filter. MVP supports available-only (not sold or removed).
+          schema:
+            type: string
+            enum: [available]
+            default: available
         - name: page
           in: query
           schema:
@@ -451,6 +495,36 @@ paths:
             minimum: 1
             maximum: 100
             default: 24
+        - name: buyerLat
+          in: query
+          description: Buyer latitude for nearby radius filtering. Never echoed in responses.
+          schema:
+            type: number
+            format: double
+            minimum: -90
+            maximum: 90
+        - name: buyerLng
+          in: query
+          description: Buyer longitude for nearby radius filtering. Never echoed in responses.
+          schema:
+            type: number
+            format: double
+            minimum: -180
+            maximum: 180
+        - name: radiusMiles
+          in: query
+          description: Search radius in miles when buyerLat and buyerLng are set. Clamped to 1–500; defaults to 50.
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 500
+            default: 50
+        - name: nationwide
+          in: query
+          description: When true, ignore buyer location and return nationwide results.
+          schema:
+            type: boolean
+            default: true
       responses:
         '200':
           description: Vehicle listing page
@@ -994,6 +1068,10 @@ components:
           type: string
           format: date-time
           description: When the vehicle was first listed.
+        availabilityStatus:
+          type: string
+          enum: [PENDING, SOLD]
+          description: Omitted when the listing is available. Never faked on cards.
 
     MarketplaceVehicleListResponse:
       type: object
@@ -1579,7 +1657,7 @@ components:
 
     MarketplaceFeedAppliedFilters:
       type: object
-      required: [make, model, condition, minPrice, maxPrice, maxMileage, dealer]
+      required: [make, model, condition, minPrice, maxPrice, maxMileage, dealer, availability]
       properties:
         make:
           type: string
@@ -1606,6 +1684,12 @@ components:
         dealer:
           type: string
           nullable: true
+        q:
+          type: string
+          nullable: true
+        availability:
+          type: string
+          enum: [available]
 
     MarketplaceFeedItem:
       oneOf:

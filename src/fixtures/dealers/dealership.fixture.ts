@@ -11,6 +11,8 @@ export const mockDealership: DealershipPayload = {
     postalCode: '78701',
     country: 'US'
   },
+  rooftopLat: 30.2672,
+  rooftopLng: -97.7431,
   websiteUrl: 'https://lonestar-budget-auto.example.com',
   primaryContact: {
     name: 'Maria Sanchez',
