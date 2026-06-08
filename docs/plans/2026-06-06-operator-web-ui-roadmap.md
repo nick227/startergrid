@@ -1,7 +1,7 @@
 # Operator Web UI — Roadmap
 
 **Created:** 2026-06-06  
-**Updated:** 2026-06-06  
+**Updated:** 2026-06-08  
 **Goal:** Channel ops console shell — connectivity, queue, history, reporting. Cars-first; vertical-agnostic structure.  
 **Plans:** [design](./2026-06-06-operator-web-design.md) · [architecture](./2026-06-06-operator-channel-console-architecture.md) · [experience](./2026-06-06-operator-web-experience-design.md) · [UI status](../ui-status.md)
 
@@ -9,39 +9,46 @@
 
 ## Shipped (Sprints 1–4)
 
-- Layout primitives · Platforms home · Queue · History · platform drill-downs
-- Generic copy + vertical adapters (`genericVertical` default)
-- Inventory + Platforms + Queue + History on **`OpsRowCard`**
+- Layout primitives (`PageSituation`, `ControlBlock`, `OpsRowCard`, `RowDetailDrawer`)
+- **Platforms** home · **Queue** · **History** · platform drill-downs
+- **Reports** hub + 10 report detail pages on row-card layout
+- **Inventory** on `OpsRowCard` (table removed); `AssetDetailPanel`
+- **Auth** — login, session cookie, 401 → sign-in, scoped org picker, sign-out in header
+- **Token purge** — navy + orange semantic tokens; emerald/slate removed from operator UI
+- **Org-scoped category** — `CategoryProvider` + schema-driven copy per tenant
+- Generic copy + vertical adapters (`operator.ts`, `verticalFromSchema.ts`)
 - Legacy Sync / Accounts / Insights hash redirects
 - Unified row action labels (`operatorCopy.channels.rowActions`)
+- Asset-scoped Queue/History deep links (`?ref=` / `?assetId=` + search prefill)
 
 ---
 
-## Row action contract (important)
+## Row action contract
 
-Same four labels on asset and channel rows. **Navigation only — no asset prefilter yet.**
+Same four labels on asset and channel rows. See [UI status — Row actions](../ui-status.md#row-actions-opsrowcard).
 
-| Action | Now | Later |
-|--------|-----|-------|
-| **Details** | Local drawer on current page | Same |
-| **Queue** | Global or `{platformSlug}` queue route | + prefilter by asset/ref |
-| **History** | Global or `{platformSlug}` history route | + prefilter by asset/ref |
-| **Inventory** | Inventory tab | Asset drawer / search prefill |
+| Action | Behavior |
+|--------|----------|
+| **Details** | Local drawer on current page (no route change) |
+| **Queue** | Global or `{platformSlug}` queue route; `?ref=` / `?assetId=` prefills search |
+| **History** | Global or `{platformSlug}` history route; asset query prefills search |
+| **Inventory** | Inventory tab with `?ref=` search prefill |
 
-See [UI status — Row actions](../ui-status.md#row-actions-opsrowcard).
+Platform rows: Details · Queue · History (no Inventory).  
+Inventory rows: Details · Queue · History (no Inventory — already on page).
 
 ---
 
 ## Next priorities
 
-| # | Work |
-|---|------|
-| 1 | **Token / emerald purge** — navy + orange tokens; remove Sync-era emerald/slate |
-| 2 | **`docs/ui-status.md`** — keep in sync with shipped IA (ongoing) |
-| 3 | **Auth UI + route guards** — login, session, 401 → login, scoped org picker |
-| 4 | **Dealer/org-scoped category loading** — `activeVertical` per tenant |
-| 5 | **Reports row-card / reporting polish** |
-| 6 | **Asset-scoped Queue/History** — row actions pass context into queue/history filters |
+| # | Work | Notes |
+|---|------|-------|
+| 1 | **Copy pass (Phase 4)** | Plain labels on import/ingest panels — see [experience design](./2026-06-06-operator-web-experience-design.md) |
+| 2 | **Queue approve / retry** | Read-only queue today; wire API + sticky bulk bar |
+| 3 | **Inventory ops layer** | Financial fields, sold outcomes, aging board — see [design plan](./2026-06-06-operator-web-design.md) Phase G |
+| 4 | **List + detail split** | Platforms has `lg:grid` split; extend persistent pane to Queue/History/Inventory |
+| 5 | **`docs/ui-status.md`** | Keep in sync when shipping (ongoing) |
+| 6 | **Asset naming cleanup** | `Vehicle` → `Asset` presentation rename — [checklist](./2026-06-08-layered-category-naming-rename-inventory.md) |
 
 ---
 
@@ -51,14 +58,19 @@ See [UI status — Row actions](../ui-status.md#row-actions-opsrowcard).
 - [x] Queue + History work cross-platform; platform drill-downs
 - [x] Every core page: situation → controls → OpsRowCard → drawer
 - [x] Inventory on row-card layout; Sync/Accounts redirected
-- [ ] Token purge complete; nav/copy match design system doc
-- [ ] Auth pilot; asset-scoped row action deep links
+- [x] Token purge complete; navy/orange chrome
+- [x] Auth + scoped org picker
+- [x] Asset-scoped row action deep links
+- [x] Reports catalog (10 reports) on row-card layout
+- [x] Org-scoped category copy via `CategoryProvider`
+- [ ] Copy pass complete on all dealer-facing surfaces
+- [ ] Queue bulk approve / retry
 
 ---
 
 ## Reference — layout primitives
 
-- `PageSituation` · `ControlBlock` · `OpsRowCard` · `RowDetailDrawer` · `StickyActionBar` (Queue/Inventory bulk — partial)
+- `PageSituation` · `ControlBlock` · `OpsRowCard` · `RowDetailDrawer` · `BulkActionBar` (Inventory only — queue bulk not built)
 - Nav: **Platforms · Queue · History · Reports · Inventory · Help**
 - Default route: `#/{orgId}/platforms`
 
@@ -67,13 +79,14 @@ See [UI status — Row actions](../ui-status.md#row-actions-opsrowcard).
 ## Reference — copy
 
 - Shell: `apps/web/src/lib/copy/operator.ts`
-- Vertical: `apps/web/src/lib/copy/vertical.ts` + `index.ts` (`activeVertical`)
-- Automotive north star: car field labels on `automotiveVertical`; generic default for shell
+- Category schema: `verticalFromSchema.ts` → `activeCategoryCopy.ts` via `CategoryProvider`
+- Hooks: `useCategorySchema()`, `useInventoryLabels()`, `useVerticalCopy()`
+- Automotive north star: car field labels on `automotive.ts`; generic default for shell
 
 ---
 
 ## Later (not blocking)
 
-- Queue approve/retry API wiring
-- Inventory ops backlog (lifecycle, cost, aging board)
+- QuickBooks export, deal packet, audit timeline, support view (P3)
 - Full Storybook / component gallery
+- Doc reader accent alignment with shared design system

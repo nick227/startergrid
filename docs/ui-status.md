@@ -1,6 +1,6 @@
 # UI Status — Operator Console
 
-**Updated:** 2026-06-06  
+**Updated:** 2026-06-08  
 **Audience:** Project team (engineering, design, onboarding)  
 **Related:** [UI roadmap](./plans/2026-06-06-operator-web-ui-roadmap.md) · [channel console architecture](./plans/2026-06-06-operator-channel-console-architecture.md)
 
@@ -29,10 +29,10 @@ Legacy **Sync**, **Accounts**, and **Insights** hashes redirect to Platforms / R
 
 | Element | Current / target |
 |--------|------------------|
-| **Chrome** | Navy header (`navy-950`), orange CTAs — **token purge in progress** |
+| **Chrome** | Navy header (`navy-950`), orange CTAs — shipped |
 | **Surfaces** | `surface-card-operator`, silver borders |
 | **Layout** | Situation → control block → **OpsRowCard** list → drawer |
-| **Legacy** | Emerald/slate Sync-era styling still in some subcomponents — scheduled for purge |
+| **Legacy** | Emerald/slate removed from operator UI |
 
 ---
 
@@ -81,7 +81,7 @@ All core pages: **PageSituation** + **ControlBlock** (search, filters, sort, ref
 | Platforms | `PlatformChannelList` | `PlatformDetailDrawer` (+ account setup) |
 | Queue | `QueueListPanel` | `QueueDetailDrawer` |
 | History | `HistoryListPanel` | `HistoryEventDrawer` |
-| Inventory | `InventoryAssetList` | `VehicleDetailPanel` |
+| Inventory | `InventoryAssetList` | `AssetDetailPanel` |
 | Reports | `ReportAssetList` / `ReportPlatformList` | `RowDetailDrawer` (movement / platform metrics) |
 
 Search, filter, and sort logic unchanged from table era; only presentation is row-card.
@@ -120,7 +120,9 @@ Search, filter, and sort logic unchanged from table era; only presentation is ro
 
 ## Next priorities
 
-1. Token purge completion in remaining subcomponents
+1. Copy pass on import/ingest panels (plain-language labels)
+2. Queue approve / retry + sticky bulk bar
+3. Inventory ops layer (financial fields, sold outcomes, aging board)
 
 ---
 
