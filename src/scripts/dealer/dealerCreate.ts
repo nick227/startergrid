@@ -12,6 +12,8 @@ import { buildProofFolderManifest } from '../../services/commercial/proofFolderS
 import { upsertApplication } from '../../services/publishing/lifecyclePersistenceService.js';
 import { activateApplicationAfterCreate } from '../../services/publishing/applicationActivationService.js';
 import { upsertDefaultSyncPolicies, upsertDefaultPlatformAccounts } from '../../services/publishing/syncPolicyService.js';
+import { buildOpenCageGeocoder } from '../../lib/geo/geocodeAddress.js';
+import { geocodeDealerIfNeeded } from '../../services/geo/geocodeDealerService.js';
 
 async function upsertDealerWithVehicles(
   dealership: DealershipPayload,
@@ -102,6 +104,12 @@ async function main() {
 
   const dealershipId = await upsertDealerWithVehicles(dealershipPayload, vehiclesPayload);
   console.log(`Dealer ID: ${dealershipId}`);
+
+  const opencageKey = process.env['OPENCAGE_API_KEY'];
+  if (opencageKey) {
+    const geoResult = await geocodeDealerIfNeeded(prisma, dealershipId, buildOpenCageGeocoder(opencageKey));
+    console.log(`Geocoding: ${geoResult.status}${geoResult.status === 'updated' ? ` → (${geoResult.lat}, ${geoResult.lng})` : ''}`);
+  }
 
   await prisma.dealerSubscription.upsert({
     where: { dealershipId },
