@@ -10,7 +10,7 @@ import { SectionCard } from '../ui/SectionCard.tsx';
 
 type Props = {
   preference: BuyerLocationPreference | null;
-  onApply: (draft: { postalCode: string; radiusMiles: GeoRadiusMiles; nationwide: boolean }) => void;
+  onApply: (draft: { postalCode: string; radiusMiles: GeoRadiusMiles; nationwide: boolean }) => void | Promise<void>;
   onNationwideChange: (nationwide: boolean) => void;
   onClear: () => void;
 };
@@ -33,9 +33,14 @@ export function BuyerLocationControls({
     setRadiusMiles(preference?.radiusMiles ?? DEFAULT_GEO_RADIUS_MILES);
   }, [preference?.postalCode, preference?.radiusMiles]);
 
-  function handleApply(event: React.FormEvent) {
+  useEffect(() => {
+    void import('../../features/location/postalCoordinateLookup.ts')
+      .then(module => module.preloadPostalCentroids());
+  }, []);
+
+  async function handleApply(event: React.FormEvent) {
     event.preventDefault();
-    onApply({ postalCode, radiusMiles, nationwide: false });
+    await onApply({ postalCode, radiusMiles, nationwide: false });
   }
 
   return (

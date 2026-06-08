@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { lazy, Suspense, useEffect, useState } from 'react';
 import { categorySlugToId, isConsumerMarketplaceLive, resolveCategorySchema } from '@auto-dealer/category-schemas';
 import { parseRoute } from './lib/routes.ts';
 import { resetPageMeta } from './lib/pageMeta.ts';
@@ -7,7 +7,7 @@ import { CategoryProvider } from './contexts/CategoryContext.tsx';
 import { CategoryFavoritesSync } from './contexts/CategoryFavoritesSync.tsx';
 import { LoginModal } from './components/ui/LoginModal.tsx';
 import SitesIndexPage from './pages/SitesIndexPage.tsx';
-import VehicleListPage from './pages/VehicleListPage.tsx';
+const VehicleListPage = lazy(() => import('./pages/VehicleListPage.tsx'));
 import VehicleDetailPage from './pages/VehicleDetailPage.tsx';
 import SellerDetailPage from './pages/SellerDetailPage.tsx';
 import FavoritesPage from './pages/FavoritesPage.tsx';
@@ -88,7 +88,11 @@ export default function App() {
         {route.page === 'listing' && <VehicleDetailPage listingId={route.listingId} />}
         {route.page === 'seller' && <SellerDetailPage sellerId={route.sellerId} />}
         {route.page === 'favorites' && <FavoritesPage />}
-        {route.page === 'list' && <VehicleListPage initialQuery={route.query} />}
+        {route.page === 'list' && (
+          <Suspense fallback={<PageShell><p className="p-6 text-sm text-ink-muted">Loading inventory…</p></PageShell>}>
+            <VehicleListPage initialQuery={route.query} />
+          </Suspense>
+        )}
       </CategoryProvider>
       {shell}
     </AuthProvider>

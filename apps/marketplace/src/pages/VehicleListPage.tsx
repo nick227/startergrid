@@ -198,7 +198,7 @@ export default function VehicleListPage({ initialQuery = {} }: Props) {
       <div className="mb-6 sm:mb-8">
         <BuyerLocationControls
           preference={buyerLocation.preference}
-          onApply={draft => buyerLocation.applyDraft({ ...draft, nationwide: false })}
+          onApply={async draft => { await buyerLocation.applyDraft({ ...draft, nationwide: false }); }}
           onNationwideChange={buyerLocation.setNationwide}
           onClear={buyerLocation.clear}
         />

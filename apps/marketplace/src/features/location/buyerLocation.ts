@@ -1,5 +1,3 @@
-import { lookupPostalCoordinates } from './postalCoordinateLookup.ts';
-
 export const BUYER_LOCATION_STORAGE_KEY = 'mp:buyerLocation';
 
 export const GEO_RADIUS_OPTIONS = [25, 50, 100, 250, 500] as const;
@@ -107,9 +105,10 @@ export function clearBuyerLocationPreference(): void {
   notifyBuyerLocationListeners();
 }
 
-export function commitBuyerLocationDraft(draft: BuyerLocationDraft): BuyerLocationPreference {
+export async function commitBuyerLocationDraft(draft: BuyerLocationDraft): Promise<BuyerLocationPreference> {
   const postalCode = normalizePostalCode(draft.postalCode);
-  const coords = postalCode ? lookupPostalCoordinates(postalCode) : null;
+  const { lookupPostalCoordinates } = await import('./postalCoordinateLookup.ts');
+  const coords = postalCode ? await lookupPostalCoordinates(postalCode) : null;
   const preference: BuyerLocationPreference = {
     postalCode: postalCode || undefined,
     radiusMiles: draft.radiusMiles,

@@ -86,9 +86,9 @@ describe('buyer location preference', () => {
     expect(resolveBuyerGeoApiParams(readBuyerLocationPreference())).toEqual({});
   });
 
-  it('does not invent coordinates when postal lookup is unavailable', () => {
-    vi.spyOn(postalLookup, 'lookupPostalCoordinates').mockReturnValue(null);
-    const saved = commitBuyerLocationDraft({
+  it('does not invent coordinates when postal lookup is unavailable', async () => {
+    vi.spyOn(postalLookup, 'lookupPostalCoordinates').mockResolvedValue(null);
+    const saved = await commitBuyerLocationDraft({
       postalCode: '78701',
       radiusMiles: 50,
       nationwide: false,
@@ -98,12 +98,12 @@ describe('buyer location preference', () => {
     expect(resolveBuyerGeoApiParams(saved)).toEqual({});
   });
 
-  it('stores resolved coordinates when lookup succeeds', () => {
-    vi.spyOn(postalLookup, 'lookupPostalCoordinates').mockReturnValue({
+  it('stores resolved coordinates when lookup succeeds', async () => {
+    vi.spyOn(postalLookup, 'lookupPostalCoordinates').mockResolvedValue({
       lat: 30.2672,
       lng: -97.7431,
     });
-    const saved = commitBuyerLocationDraft({
+    const saved = await commitBuyerLocationDraft({
       postalCode: '78701',
       radiusMiles: 25,
       nationwide: false,
@@ -123,8 +123,8 @@ describe('buyer location preference', () => {
     });
   });
 
-  it('resolves bundled ZIP centroids for Austin 78701 without mocks', () => {
-    const saved = commitBuyerLocationDraft({
+  it('resolves bundled ZIP centroids for Austin 78701 without mocks', async () => {
+    const saved = await commitBuyerLocationDraft({
       postalCode: '78701',
       radiusMiles: 50,
       nationwide: false,
