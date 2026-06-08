@@ -172,3 +172,19 @@ export function removeSavedSearch(
 export function savedSearchMatchesQuery(saved: SavedSearch, query: ListingQuery): boolean {
   return listingQuerySignature(saved.query) === listingQuerySignature(query);
 }
+
+export function renameSavedSearch(
+  id: string,
+  newLabel: string,
+  config: ListingFilterConfig,
+  storage: StorageLike | null | undefined = getBrowserStorage(),
+): void {
+  const items = readStorage(storage);
+  const idx = items.findIndex(item => item.id === id);
+  if (idx === -1) return;
+  const trimmed = newLabel.trim();
+  const entry = items[idx]!;
+  const label = trimmed !== '' ? trimmed : formatSavedSearchLabel(entry.query, config);
+  writeStorage(storage, items.map((item, i) => i === idx ? { ...item, label } : item));
+  notifySavedSearches();
+}

@@ -5,6 +5,7 @@ import {
   formatSavedSearchLabel,
   readSavedSearches,
   removeSavedSearch,
+  renameSavedSearch,
   saveSearch,
   savedSearchMatchesQuery,
 } from './savedSearches.ts';
@@ -58,5 +59,38 @@ describe('saved searches', () => {
     }]));
     const items = readSavedSearches('automotive', storage());
     expect(items[0]?.query).toEqual({ brand: 'Ford' });
+  });
+
+  it('renames a saved search label', () => {
+    const s = storage();
+    const saved = saveSearch('automotive', { brand: 'Toyota' }, config, { storage: s })!;
+    renameSavedSearch(saved.id, 'My Toyota search', config, s);
+    const items = readSavedSearches('automotive', s);
+    expect(items[0]?.label).toBe('My Toyota search');
+  });
+
+  it('resets to generated label when rename is empty or whitespace-only', () => {
+    const s = storage();
+    const saved = saveSearch('automotive', { brand: 'Toyota' }, config, { storage: s })!;
+    renameSavedSearch(saved.id, '   ', config, s);
+    const items = readSavedSearches('automotive', s);
+    expect(items[0]?.label).toBe('Brand: Toyota');
+  });
+
+  it('renamed search still applies the original query', () => {
+    const s = storage();
+    const saved = saveSearch('automotive', { brand: 'Toyota' }, config, { storage: s })!;
+    renameSavedSearch(saved.id, 'Custom label', config, s);
+    const items = readSavedSearches('automotive', s);
+    expect(items[0]?.query).toEqual({ brand: 'Toyota' });
+    expect(savedSearchMatchesQuery(items[0]!, { brand: 'Toyota' })).toBe(true);
+  });
+
+  it('dedupe still works by query signature not by label after rename', () => {
+    const s = storage();
+    const saved = saveSearch('automotive', { brand: 'Toyota' }, config, { storage: s })!;
+    renameSavedSearch(saved.id, 'Custom label', config, s);
+    saveSearch('automotive', { brand: 'Toyota' }, config, { storage: s });
+    expect(readSavedSearches('automotive', s)).toHaveLength(1);
   });
 });
