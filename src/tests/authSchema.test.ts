@@ -31,7 +31,7 @@ type _OsShape  = Pick<OperatorSession,      'id' | 'tokenHash' | 'operatorAccoun
 type _MuShape  = Pick<MarketplaceUser,      'id' | 'email' | 'passwordHash' | 'displayName' | 'isActive' | 'lastLoginAt' | 'createdAt' | 'updatedAt'>;
 type _MsShape  = Pick<MarketplaceSession,   'id' | 'tokenHash' | 'marketplaceUserId' | 'createdAt' | 'expiresAt' | 'revokedAt' | 'ipAddress' | 'userAgent'>;
 type _MfShape  = Pick<MarketplaceFavorite,  'id' | 'marketplaceUserId' | 'vehicleId' | 'savedAt'>;
-type _DpShape  = Pick<DealershipProfile,     'id' | 'legalName' | 'businessCategory'>;
+type _DpShape  = Pick<DealershipProfile,     'id' | 'legalName' | 'businessCategory' | 'rooftopLat' | 'rooftopLng'>;
 
 // Suppress "unused" warnings without emitting any runtime code.
 void (null as unknown as _OaShape);
@@ -109,4 +109,5 @@ describe('auth model field shapes — compile-time only (runtime pass-through)',
   it('MarketplaceSession has expected fields (tokenHash, expiresAt, revokedAt, ipAddress, userAgent)', () => assert.ok(true));
   it('MarketplaceFavorite has expected fields (marketplaceUserId, vehicleId, savedAt)', () => assert.ok(true));
   it('DealershipProfile has businessCategory field', () => assert.ok(true));
+  it('DealershipProfile has nullable rooftopLat and rooftopLng fields', () => assert.ok(true));
 });

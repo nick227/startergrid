@@ -223,6 +223,8 @@ model DealershipProfile {
   businessCategory BusinessCategory @default(AUTOMOTIVE)
   dealerLicense    String?          @db.VarChar(80)
   rooftopAddress  Json
+  rooftopLat      Float?
+  rooftopLng      Float?
   websiteUrl      String?  @db.VarChar(255)
   primaryContact  Json
   inventorySize   Int?
