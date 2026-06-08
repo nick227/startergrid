@@ -12,6 +12,7 @@ import { VehicleGrid } from '../components/ui/VehicleGrid.tsx';
 import { EmptyState } from '../components/ui/EmptyState.tsx';
 import { ErrorState } from '../components/ui/ErrorState.tsx';
 import { SkeletonGrid } from '../components/ui/SkeletonGrid.tsx';
+import { getUnavailableFavoritesDescription } from '../features/availability/listingAvailability.ts';
 
 export default function FavoritesPage() {
   const { user, authReady, favoriteIds } = useAuth();
@@ -74,7 +75,7 @@ export default function FavoritesPage() {
                 No longer available
               </h2>
               <p className="mb-5 text-sm text-ink-muted">
-                These listings have sold or been removed. You can dismiss them from your saved list.
+                {getUnavailableFavoritesDescription(schema)}
               </p>
               <ul className="space-y-3">
                 {unavailableFavorites.map(item => (

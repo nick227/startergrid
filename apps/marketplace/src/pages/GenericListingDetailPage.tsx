@@ -24,7 +24,9 @@ import {
   useListingDetailEngagement,
 } from '../components/listings/ListingDetailEngagement.tsx';
 import { ListingActionSidebar } from '../components/listings/StickyListingActionPanel.tsx';
+import { AvailabilitySection } from '../components/vdp/AvailabilitySection.tsx';
 import { FulfillmentSection } from '../components/vdp/FulfillmentSection.tsx';
+import { getListingNotFoundDescription } from '../features/availability/listingAvailability.ts';
 import { SimilarListingsRail } from '../components/listings/SimilarListingsRail.tsx';
 
 type Props = { listingId: string };
@@ -69,7 +71,7 @@ export default function GenericListingDetailPage({ listingId }: Props) {
         {isNotFoundError(error) ? (
           <NotFoundState
             title={`${schema.asset.titleLabel} not found`}
-            description="This listing may have sold or is no longer on the marketplace."
+            description={getListingNotFoundDescription(schema)}
             backHref={backHref}
             backLabel="Back to results"
           />
@@ -235,6 +237,7 @@ function GenericListingDetailContent({
       </div>
 
       <div className="mt-10 space-y-6">
+        <AvailabilitySection commerce={vehicle.commerce} />
         <FulfillmentSection />
         <WarrantySection warranty={vehicle.warranty} />
         <ContentSection content={vehicle.content} />

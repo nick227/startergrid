@@ -16,6 +16,7 @@ import { ErrorState } from '../components/ui/ErrorState.tsx';
 import { NotFoundState } from '../components/ui/NotFoundState.tsx';
 import { LeadInquiryForm } from '../components/ui/LeadInquiryForm.tsx';
 import { CoreHeaderSection } from '../components/vdp/CoreHeaderSection.tsx';
+import { AvailabilitySection } from '../components/vdp/AvailabilitySection.tsx';
 import { CommerceSection } from '../components/vdp/CommerceSection.tsx';
 import { LocationSection } from '../components/vdp/LocationSection.tsx';
 import { ClassificationSection } from '../components/vdp/ClassificationSection.tsx';
@@ -166,6 +167,7 @@ function AutomotiveListingDetailContent({
           <div className="text-right">
             <ReportListingButton listingId={listingId} />
           </div>
+          <AvailabilitySection commerce={vehicle.commerce} />
           <CommerceSection commerce={vehicle.commerce} />
           <LocationSection location={vehicle.location} />
           <div id="inquiry">
