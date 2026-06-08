@@ -557,6 +557,22 @@ describe('MarketplaceVehicleDetailResponse — shape contract', () => {
     }
   });
 
+  it('detail response never includes soldAt or removedAt fields', async () => {
+    const v = fakeVehicle();
+    const prisma = makeMockPrisma([v]);
+    const detail = await getMarketplaceVehicle(prisma, v.id);
+    assert.ok(detail !== null);
+    const json = JSON.parse(JSON.stringify(detail)) as Record<string, unknown>;
+    assert.ok(!('soldAt' in json), 'soldAt must not appear at top level');
+    assert.ok(!('removedAt' in json), 'removedAt must not appear at top level');
+    assert.ok(!('soldAt' in (json.vehicle as Record<string, unknown>)), 'soldAt must not appear under vehicle');
+    assert.ok(!('removedAt' in (json.vehicle as Record<string, unknown>)), 'removedAt must not appear under vehicle');
+    assert.ok(!('soldAt' in (json.vehicle as any).core), 'soldAt must not appear under vehicle.core');
+    assert.ok(!('removedAt' in (json.vehicle as any).core), 'removedAt must not appear under vehicle.core');
+    assert.ok(!('soldAt' in (json.vehicle as any).commerce), 'soldAt must not appear under vehicle.commerce');
+    assert.ok(!('removedAt' in (json.vehicle as any).commerce), 'removedAt must not appear under vehicle.commerce');
+  });
+
   it('content.fullDescription is null (field not yet in Vehicle model)', async () => {
     const v = fakeVehicle();
     const prisma = makeMockPrisma([v]);
