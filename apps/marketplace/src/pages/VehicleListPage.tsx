@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef, useState, useCallback } from 'react';
 import { queryErrorMessage } from '../hooks/useQuery.ts';
 import { useInfiniteMarketplaceFeed } from '../hooks/useInfiniteMarketplaceFeed.ts';
 import { usePageMeta } from '../hooks/usePageMeta.ts';
@@ -17,13 +17,14 @@ import { ListingFilterBar } from '../components/listings/ListingFilterBar.tsx';
 import { ActiveListingFilterChips } from '../components/listings/ActiveListingFilterChips.tsx';
 import { NoResultsRelaxation } from '../components/listings/NoResultsRelaxation.tsx';
 import { SavedSearchesPanel } from '../components/listings/SavedSearchesPanel.tsx';
-import { VehicleGrid } from '../components/ui/VehicleGrid.tsx';
+import { VehicleGrid, type ViewMode } from '../components/ui/VehicleGrid.tsx';
 import { ErrorState } from '../components/ui/ErrorState.tsx';
 import { EmptyState } from '../components/ui/EmptyState.tsx';
 import { FeedItemCard } from '../components/feed/FeedCards.tsx';
 import { EndOfFeedState, FeedCardSkeleton, LoadingMoreState } from '../components/feed/FeedStates.tsx';
 import { RecentlyViewedRail } from '../components/listings/RecentlyViewedRail.tsx';
 import { CompareBar } from '../components/listings/CompareBar.tsx';
+import { QuickDetailDrawer } from '../components/listings/QuickDetailDrawer.tsx';
 
 type Props = { initialQuery?: ListQuery };
 
@@ -31,10 +32,10 @@ export default function VehicleListPage({ initialQuery = {} }: Props) {
   const slug = useCategorySlug();
   const schema = useCategorySchema();
   const filterConfig = useMemo(() => buildListingFilterConfig(slug, schema), [slug, schema]);
-  const sortOptions = useMemo(() => buildListingSortOptions(filterConfig), [filterConfig]);
   const consumerActive = schema.status === 'active';
   const initial = useMemo(() => fromListQuery(initialQuery), [initialQuery]);
 
+  const [q, setQ] = useState(initial.q ?? '');
   const [brand, setBrand] = useState(initial.brand ?? '');
   const [model, setModel] = useState(initial.model ?? '');
   const [condition, setCondition] = useState<ListingQuery['condition']>(initial.condition);
@@ -45,6 +46,13 @@ export default function VehicleListPage({ initialQuery = {} }: Props) {
   const [maxYear, setMaxYear] = useState(formatNumberInput(initial.yearMax));
   const [sortBy, setSortBy] = useState<ListingSort | undefined>(initial.sortBy);
   const [focusToken, setFocusToken] = useState(0);
+  const [viewMode, setViewMode] = useState<ViewMode>(() => {
+    try { return (sessionStorage.getItem('mp:viewMode') as ViewMode) || 'grid'; } catch { return 'grid'; }
+  });
+  const [quickViewListingId, setQuickViewListingId] = useState<string | null>(null);
+  const [quickViewOpen, setQuickViewOpen] = useState(false);
+
+  const sortOptions = useMemo(() => buildListingSortOptions(filterConfig, Boolean(q.trim())), [filterConfig, q]);
   const sentinelRef = useRef<HTMLDivElement | null>(null);
 
   usePageMeta(
@@ -53,6 +61,7 @@ export default function VehicleListPage({ initialQuery = {} }: Props) {
   );
 
   const listingQuery = useMemo<ListingQuery>(() => ({
+    q: q.trim() || undefined,
     brand: brand.trim() || undefined,
     model: model.trim() || undefined,
     condition,
@@ -62,7 +71,7 @@ export default function VehicleListPage({ initialQuery = {} }: Props) {
     yearMin: parseNonNegative(minYear),
     yearMax: parseNonNegative(maxYear),
     sortBy,
-  }), [brand, condition, maxPrice, maxUsage, maxYear, minPrice, minYear, model, sortBy]);
+  }), [brand, condition, maxPrice, maxUsage, maxYear, minPrice, minYear, model, q, sortBy]);
 
   const feed = useInfiniteMarketplaceFeed(listingQuery);
 
@@ -94,7 +103,13 @@ export default function VehicleListPage({ initialQuery = {} }: Props) {
     return () => observer.disconnect();
   }, [feed]);
 
+  const toggleViewMode = useCallback((mode: ViewMode) => {
+    setViewMode(mode);
+    try { sessionStorage.setItem('mp:viewMode', mode); } catch { /* ignore */ }
+  }, []);
+
   function resetFilters() {
+    setQ('');
     setBrand('');
     setModel('');
     setCondition(undefined);
@@ -107,6 +122,7 @@ export default function VehicleListPage({ initialQuery = {} }: Props) {
   }
 
   function applyListingQuery(query: ListingQuery) {
+    setQ(query.q ?? '');
     setBrand(query.brand ?? '');
     setModel(query.model ?? '');
     setCondition(query.condition);
@@ -137,6 +153,7 @@ export default function VehicleListPage({ initialQuery = {} }: Props) {
       <div className="mb-6 sm:mb-8">
         <ListingFilterBar
           config={filterConfig}
+          q={q}
           brand={brand}
           model={model}
           condition={condition}
@@ -145,6 +162,7 @@ export default function VehicleListPage({ initialQuery = {} }: Props) {
           maxUsage={maxUsage}
           minYear={minYear}
           maxYear={maxYear}
+          onQChange={setQ}
           onBrandChange={setBrand}
           onModelChange={setModel}
           onConditionChange={setCondition}
@@ -209,23 +227,54 @@ export default function VehicleListPage({ initialQuery = {} }: Props) {
             <p className="text-sm font-medium text-slate-600">
               {formatResultCount(feed.totalEstimate, schema.asset.singular)}
             </p>
-            <label className="flex items-center gap-2 text-sm">
-              <span className="mp-label">Sort</span>
-              <select
-                value={resolvedSort}
-                onChange={e => setSortBy((e.target.value as ListingSort) || undefined)}
-                className="mp-input py-1"
-              >
-                {sortOptions.map(option => (
-                  <option key={option.value} value={option.value}>{option.label}</option>
-                ))}
-              </select>
-            </label>
+            <div className="flex items-center gap-3">
+              <label className="flex items-center gap-2 text-sm">
+                <span className="mp-label">Sort</span>
+                <select
+                  value={resolvedSort}
+                  onChange={e => setSortBy((e.target.value as ListingSort) || undefined)}
+                  className="mp-input py-1"
+                >
+                  {sortOptions.map(option => (
+                    <option key={option.value} value={option.value}>{option.label}</option>
+                  ))}
+                </select>
+              </label>
+              <div className="flex rounded-lg border border-silver-200 overflow-hidden" role="group" aria-label="View mode">
+                <button
+                  type="button"
+                  onClick={() => toggleViewMode('grid')}
+                  aria-pressed={viewMode === 'grid'}
+                  className={['px-2.5 py-1.5 text-sm transition', viewMode === 'grid' ? 'bg-navy-700 text-white' : 'bg-white text-ink-muted hover:bg-surface-inset'].join(' ')}
+                  aria-label="Grid view"
+                >
+                  ⊞
+                </button>
+                <button
+                  type="button"
+                  onClick={() => toggleViewMode('list')}
+                  aria-pressed={viewMode === 'list'}
+                  className={['px-2.5 py-1.5 text-sm transition border-l border-silver-200', viewMode === 'list' ? 'bg-navy-700 text-white' : 'bg-white text-ink-muted hover:bg-surface-inset'].join(' ')}
+                  aria-label="List view"
+                >
+                  ☰
+                </button>
+              </div>
+            </div>
           </div>
 
-          <VehicleGrid>
+          <VehicleGrid viewMode={viewMode}>
             {feed.items.map((item, index) => (
-              <FeedItemCard key={item.id} item={item} index={index} />
+              <FeedItemCard
+                key={item.id}
+                item={item}
+                index={index}
+                compact={viewMode === 'list'}
+                onQuickView={(listingId) => {
+                  setQuickViewListingId(listingId);
+                  setQuickViewOpen(true);
+                }}
+              />
             ))}
           </VehicleGrid>
 
@@ -253,6 +302,12 @@ export default function VehicleListPage({ initialQuery = {} }: Props) {
       {consumerActive && isCompareEnabled(filterConfig) && (
         <CompareBar categorySlug={slug} config={filterConfig} />
       )}
+
+      <QuickDetailDrawer
+        open={quickViewOpen}
+        listingId={quickViewListingId}
+        onClose={() => setQuickViewOpen(false)}
+      />
     </PageShell>
   );
 }

@@ -30,10 +30,12 @@ import { isCompareEnabled } from '../../features/listings/listingCompareFields.t
 type FeedItemProps = {
   item: MarketplaceFeedItem;
   index: number;
+  compact?: boolean;
+  onQuickView?: (listingId: string) => void;
 };
 
-export function FeedItemCard({ item, index }: FeedItemProps) {
-  if (item.type === 'vehicle') return <VehicleFeedCard item={item} index={index} />;
+export function FeedItemCard({ item, index, compact = false, onQuickView }: FeedItemProps) {
+  if (item.type === 'vehicle') return <VehicleFeedCard item={item} index={index} compact={compact} onQuickView={onQuickView} />;
   if (item.type === 'dealerPromo') return <DealerPromoFeedCard item={item} />;
   return <MarketplaceNoticeFeedCard item={item} />;
 }
@@ -41,9 +43,13 @@ export function FeedItemCard({ item, index }: FeedItemProps) {
 function VehicleFeedCard({
   item,
   index,
+  compact,
+  onQuickView,
 }: {
   item: Extract<MarketplaceFeedItem, { type: 'vehicle' }>;
   index: number;
+  compact: boolean;
+  onQuickView?: (listingId: string) => void;
 }) {
   const card = item.vehicle;
   const slug = useCategorySlug();
@@ -66,6 +72,36 @@ function VehicleFeedCard({
   const compareItems = useSyncExternalStore(subscribeCompare, getCompareSnapshot, getCompareServerSnapshot);
   const inCompare = compareItems.some(i => i.listingId === card.listingId);
   const compareDisabled = !inCompare && compareItems.length >= MAX_COMPARE;
+  const canQuickView = Boolean(onQuickView);
+
+  if (compact) {
+    return (
+      <article ref={ref} className="group mp-card flex flex-row gap-3 p-3 transition hover:border-navy-500/40 hover:shadow-elevation-2 sm:gap-4 sm:p-4">
+        <a href={listingHref(slug, card.listingId)} className="mp-focus shrink-0 rounded-lg overflow-hidden w-24 h-20 sm:w-32 sm:h-24 bg-surface-inset">
+          {card.mediaUrls[0]
+            ? <img src={card.mediaUrls[0]} alt={title} className="h-full w-full object-cover" loading={index < 6 ? 'eager' : 'lazy'} decoding="async" />
+            : <div className="h-full w-full" />}
+        </a>
+        <div className="min-w-0 flex-1">
+          <div className="flex items-start justify-between gap-2">
+            <a href={listingHref(slug, card.listingId)} className="mp-focus min-w-0 text-sm font-semibold leading-snug text-ink-heading hover:text-cta line-clamp-2">
+              {title}
+            </a>
+            <FavoriteButton listingId={card.listingId} />
+          </div>
+          <p className="mt-1 text-base font-bold tabular-nums text-ink">{formatPrice(card.priceCents)}</p>
+          <div className="mt-1 flex flex-wrap gap-x-3 gap-y-0.5 text-xs text-ink-muted">
+            {card.mileage > 0 && <span>{formatUsage(card.mileage, card.usageUnit === 'hours' ? 'hours' : 'miles')}</span>}
+            <span>{card.condition}</span>
+            {location && <span>{location}</span>}
+          </div>
+          <a href={sellerHref(slug, card.dealerId)} className="mp-focus mt-1 block truncate text-xs text-ink-body hover:text-cta">
+            {card.dealerName}
+          </a>
+        </div>
+      </article>
+    );
+  }
 
   return (
     <article ref={ref} className="group mp-card flex h-full flex-col transition hover:border-navy-500/40 hover:shadow-elevation-3">
@@ -100,6 +136,15 @@ function VehicleFeedCard({
         >
           {inCompare ? '✓ Comparing' : compareDisabled ? 'Max reached' : '+ Compare'}
         </button>}
+        {canQuickView && (
+          <button
+            type="button"
+            onClick={() => onQuickView?.(card.listingId)}
+            className="absolute bottom-2 right-2 z-10 rounded-lg bg-white/90 px-2.5 py-1 text-xs font-semibold text-ink shadow hover:bg-white"
+          >
+            Quick view
+          </button>
+        )}
       </div>
 
       <div className="flex flex-1 flex-col gap-4 p-5">
