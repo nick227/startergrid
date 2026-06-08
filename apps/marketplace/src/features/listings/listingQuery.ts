@@ -1,3 +1,7 @@
+import {
+  parseMarketplaceFacetsParam,
+  serializeMarketplaceFacetsParam,
+} from '@auto-dealer/category-schemas';
 import type { ListQuery, SortBy } from '../../lib/routes.ts';
 
 export type ListingSort = SortBy;
@@ -15,6 +19,7 @@ export type ListingQuery = {
   seller?: string;
   q?: string;
   page?: number;
+  facets?: Record<string, string>;
 };
 
 export type ListingQueryKey = keyof ListingQuery;
@@ -33,6 +38,8 @@ export function toListQuery(query: ListingQuery): ListQuery {
     dealer: query.seller,
     q: query.q,
     page: query.page,
+    facets: query.facets,
+    facetsParam: serializeMarketplaceFacetsParam(query.facets),
   };
 }
 
@@ -50,10 +57,15 @@ export function fromListQuery(query: ListQuery): ListingQuery {
     seller: query.dealer,
     q: query.q,
     page: query.page,
+    facets: query.facets ?? parseMarketplaceFacetsParam(query.facetsParam),
   };
 }
 
 export function listingQuerySignature(query: ListingQuery): string {
+  const facetEntries = query.facets
+    ? Object.entries(query.facets).sort(([a], [b]) => a.localeCompare(b))
+    : [];
+
   return JSON.stringify({
     brand: query.brand ?? null,
     model: query.model ?? null,
@@ -66,6 +78,7 @@ export function listingQuerySignature(query: ListingQuery): string {
     sortBy: query.sortBy ?? null,
     seller: query.seller ?? null,
     q: query.q ?? null,
+    facets: facetEntries.length > 0 ? Object.fromEntries(facetEntries) : null,
   });
 }
 
@@ -80,6 +93,7 @@ export function hasListingQueryFilters(query: ListingQuery): boolean {
     query.yearMin != null ||
     query.yearMax != null ||
     query.seller ||
-    query.q,
+    query.q ||
+    (query.facets && Object.keys(query.facets).length > 0),
   );
 }

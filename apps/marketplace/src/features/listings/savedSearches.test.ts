@@ -93,4 +93,16 @@ describe('saved searches', () => {
     saveSearch('automotive', { brand: 'Toyota' }, config, { storage: s });
     expect(readSavedSearches('automotive', s)).toHaveLength(1);
   });
+
+  it('stores facet selections in saved searches', () => {
+    const s = storage();
+    const saved = saveSearch(
+      'automotive',
+      { facets: { bodyStyle: 'Sedan' } },
+      config,
+      { storage: s },
+    );
+    expect(saved?.label).toBe('Body style: Sedan');
+    expect(readSavedSearches('automotive', s)[0]?.query.facets).toEqual({ bodyStyle: 'Sedan' });
+  });
 });

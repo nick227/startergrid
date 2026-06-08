@@ -8,6 +8,7 @@ import { listHref, parseRoute, type ListQuery } from '../lib/routes.ts';
 import { fromListQuery, toListQuery, type ListingQuery, type ListingSort } from '../features/listings/listingQuery.ts';
 import { useCategorySchema, useCategorySlug } from '../contexts/CategoryContext.tsx';
 import { buildListingFilterConfig } from '../features/listings/listingFilterConfig.ts';
+import { sanitizeListingFacets } from '../features/listings/listingFacetConfig.ts';
 import { isCompareEnabled } from '../features/listings/listingCompareFields.ts';
 import { hasListingFilters } from '../features/listings/listingFilterChips.ts';
 import { buildListingSortOptions } from '../features/listings/listingSortOptions.ts';
@@ -44,6 +45,7 @@ export default function VehicleListPage({ initialQuery = {} }: Props) {
   const [maxUsage, setMaxUsage] = useState(formatNumberInput(initial.usageMax));
   const [minYear, setMinYear] = useState(formatNumberInput(initial.yearMin));
   const [maxYear, setMaxYear] = useState(formatNumberInput(initial.yearMax));
+  const [facetValues, setFacetValues] = useState<Record<string, string>>(initial.facets ?? {});
   const [sortBy, setSortBy] = useState<ListingSort | undefined>(initial.sortBy);
   const [focusToken, setFocusToken] = useState(0);
   const [viewMode, setViewMode] = useState<ViewMode>(() => {
@@ -70,8 +72,9 @@ export default function VehicleListPage({ initialQuery = {} }: Props) {
     usageMax: parseNonNegative(maxUsage),
     yearMin: parseNonNegative(minYear),
     yearMax: parseNonNegative(maxYear),
+    facets: sanitizeListingFacets(schema, facetValues),
     sortBy,
-  }), [brand, condition, maxPrice, maxUsage, maxYear, minPrice, minYear, model, q, sortBy]);
+  }), [brand, condition, facetValues, maxPrice, maxUsage, maxYear, minPrice, minYear, model, q, schema, sortBy]);
 
   const feed = useInfiniteMarketplaceFeed(listingQuery);
 
@@ -118,7 +121,17 @@ export default function VehicleListPage({ initialQuery = {} }: Props) {
     setMaxUsage('');
     setMinYear('');
     setMaxYear('');
+    setFacetValues({});
     setFocusToken(t => t + 1);
+  }
+
+  function handleFacetChange(key: string, value: string | undefined) {
+    setFacetValues(prev => {
+      const next = { ...prev };
+      if (!value) delete next[key];
+      else next[key] = value;
+      return next;
+    });
   }
 
   function applyListingQuery(query: ListingQuery) {
@@ -131,6 +144,7 @@ export default function VehicleListPage({ initialQuery = {} }: Props) {
     setMaxUsage(formatNumberInput(query.usageMax));
     setMinYear(formatNumberInput(query.yearMin));
     setMaxYear(formatNumberInput(query.yearMax));
+    setFacetValues(query.facets ?? {});
     setSortBy(query.sortBy);
   }
 
@@ -153,6 +167,9 @@ export default function VehicleListPage({ initialQuery = {} }: Props) {
       <div className="mb-6 sm:mb-8">
         <ListingFilterBar
           config={filterConfig}
+          facets={filterConfig.facets}
+          facetValues={facetValues}
+          onFacetChange={handleFacetChange}
           q={q}
           brand={brand}
           model={model}
@@ -183,6 +200,7 @@ export default function VehicleListPage({ initialQuery = {} }: Props) {
       <ActiveListingFilterChips
         query={listingQuery}
         config={filterConfig}
+        facets={filterConfig.facets}
         onChange={applyListingQuery}
         onClearAll={resetFilters}
       />

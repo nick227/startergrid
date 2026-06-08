@@ -38,6 +38,8 @@ export function useInfiniteMarketplaceFeed(query: ListingQuery) {
     maxYear:    listQuery.maxYear,
     sortBy:     listQuery.sortBy,
     dealer:     listQuery.dealer,
+    q:          listQuery.q,
+    facets:     listQuery.facetsParam,
     limit:      FEED_LIMIT,
   }), [categoryId, listQuery]);
 

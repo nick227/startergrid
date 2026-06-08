@@ -311,6 +311,14 @@ paths:
           schema:
             type: string
             maxLength: 120
+        - name: facets
+          in: query
+          description: |
+            Comma-separated schema-backed facet filters encoded as fieldKey:value.
+            Only enum/boolean facets declared for the active category are applied.
+          schema:
+            type: string
+            maxLength: 500
       responses:
         '200':
           description: Mixed marketplace feed page
@@ -400,6 +408,14 @@ paths:
           schema:
             type: string
             maxLength: 120
+        - name: facets
+          in: query
+          description: |
+            Comma-separated schema-backed facet filters encoded as fieldKey:value.
+            Only enum/boolean facets declared for the active category are applied.
+          schema:
+            type: string
+            maxLength: 500
         - name: page
           in: query
           schema:

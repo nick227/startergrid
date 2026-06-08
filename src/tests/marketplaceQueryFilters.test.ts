@@ -652,6 +652,53 @@ describe('keyword q search — WHERE clause structure', () => {
   });
 });
 
+// ── schema-backed facet filters ───────────────────────────────────────────────
+
+describe('facet filters — WHERE clause structure', () => {
+  function extractAndClauses(captured: CapturedArgs): Array<Record<string, unknown>> {
+    const w = where(captured);
+    const and = w['AND'];
+    if (!and) return [];
+    return Array.isArray(and) ? and : [and as Record<string, unknown>];
+  }
+
+  it('applies automotive column facets as exact-match AND clauses', async () => {
+    const { prisma, captured } = makeCaptureMock([fakeVehicle()]);
+    await listMarketplaceVehicles(prisma, {
+      category: 'AUTOMOTIVE',
+      facets: { bodyStyle: 'Sedan', drivetrain: 'AWD' },
+    });
+    const clauses = extractAndClauses(captured);
+    assert.ok(clauses.some(c => c['bodyStyle'] === 'Sedan'), 'bodyStyle facet must apply');
+    assert.ok(clauses.some(c => c['drivetrain'] === 'AWD'), 'drivetrain facet must apply');
+  });
+
+  it('applies boats vesselType facet against categoryPayload', async () => {
+    const { prisma, captured } = makeCaptureMock([fakeVehicle()]);
+    await listMarketplaceVehicles(prisma, {
+      category: 'BOATS',
+      facets: { vesselType: 'Center Console' },
+    });
+    const clauses = extractAndClauses(captured);
+    const payloadClause = clauses.find(c => 'categoryPayload' in c) as Record<string, unknown> | undefined;
+    assert.ok(payloadClause, 'boats facet must add a categoryPayload clause');
+    const payload = payloadClause!['categoryPayload'] as Record<string, unknown>;
+    assert.deepEqual(payload['path'], ['vesselType']);
+    assert.equal(payload['equals'], 'Center Console');
+  });
+
+  it('ignores invalid facet values fail-closed', async () => {
+    const { prisma, captured } = makeCaptureMock([fakeVehicle()]);
+    await listMarketplaceVehicles(prisma, {
+      category: 'AUTOMOTIVE',
+      facets: { bodyStyle: 'Hovercraft', drivetrain: 'AWD' },
+    });
+    const clauses = extractAndClauses(captured);
+    assert.ok(!clauses.some(c => c['bodyStyle'] === 'Hovercraft'), 'invalid bodyStyle must be dropped');
+    assert.ok(clauses.some(c => c['drivetrain'] === 'AWD'), 'valid drivetrain must still apply');
+  });
+});
+
 // ── getMarketplaceVehicle eligibility ─────────────────────────────────────────
 
 describe('getMarketplaceVehicle WHERE clause', () => {

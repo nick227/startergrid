@@ -29,4 +29,13 @@ describe('listing filter chips', () => {
     expect(chips[0]).toEqual({ key: 'q', label: 'Search: "camry"' });
     expect(chips[1]).toEqual({ key: 'brand', label: 'Brand: Toyota' });
   });
+
+  it('builds facet chips with schema labels', () => {
+    const chips = buildListingFilterChips(
+      { facets: { bodyStyle: 'Sedan' } },
+      automotiveConfig,
+      automotiveConfig.facets,
+    );
+    expect(chips).toEqual([{ key: 'facet:bodyStyle', label: 'Body style: Sedan' }]);
+  });
 });

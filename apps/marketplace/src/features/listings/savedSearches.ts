@@ -119,7 +119,7 @@ export function formatSavedSearchLabel(
   query: ListingQuery,
   config: ListingFilterConfig,
 ): string {
-  const chips = buildListingFilterChips(query, config);
+  const chips = buildListingFilterChips(query, config, config.facets);
   if (chips.length === 0) return 'All listings';
   if (chips.length <= 2) return chips.map(chip => chip.label).join(' · ');
   return `${chips.slice(0, 2).map(chip => chip.label).join(' · ')} +${chips.length - 2} more`;

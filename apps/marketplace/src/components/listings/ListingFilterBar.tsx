@@ -1,4 +1,5 @@
 import { useEffect, useRef } from 'react';
+import type { MarketplaceFacetDef } from '@auto-dealer/category-schemas';
 import type { ListFilters } from '../../lib/api.ts';
 import {
   isListingFilterEnabled,
@@ -9,6 +10,9 @@ import { SectionCard } from '../ui/SectionCard.tsx';
 
 type Props = {
   config: ListingFilterConfig;
+  facets?: MarketplaceFacetDef[];
+  facetValues?: Record<string, string>;
+  onFacetChange?: (key: string, value: string | undefined) => void;
   q: string;
   brand: string;
   model: string;
@@ -35,6 +39,9 @@ type Props = {
 
 export function ListingFilterBar({
   config,
+  facets = [],
+  facetValues = {},
+  onFacetChange,
   q,
   brand,
   model,
@@ -179,6 +186,22 @@ export function ListingFilterBar({
             />
           </label>
         )}
+
+        {facets.map(facet => (
+          <label key={facet.key} className="flex flex-col gap-1.5">
+            <span className="mp-label">{facet.label}</span>
+            <select
+              value={facetValues[facet.key] ?? ''}
+              onChange={e => onFacetChange?.(facet.key, e.target.value || undefined)}
+              className="mp-input"
+            >
+              <option value="">Any {facet.label.toLowerCase()}</option>
+              {facet.options.map(option => (
+                <option key={option.value} value={option.value}>{option.label}</option>
+              ))}
+            </select>
+          </label>
+        ))}
 
         {isListingFilterEnabled(config, 'year') && (
           <>

@@ -59,4 +59,19 @@ describe('listingQuery adapter', () => {
     expect(a).toBe(b);
     expect(a).not.toBe(c);
   });
+
+  it('round-trips facet selections through list query params', () => {
+    const semantic = {
+      brand: 'Toyota',
+      facets: { bodyStyle: 'Sedan', drivetrain: 'AWD' },
+    };
+    const legacy = toListQuery(semantic);
+    expect(legacy.facets).toEqual({ bodyStyle: 'Sedan', drivetrain: 'AWD' });
+    expect(legacy.facetsParam).toBe('bodyStyle:Sedan,drivetrain:AWD');
+    expect(fromListQuery(legacy)).toEqual(semantic);
+  });
+
+  it('detects facet-only filters as active', () => {
+    expect(hasListingQueryFilters({ facets: { bodyStyle: 'SUV' } })).toBe(true);
+  });
 });

@@ -108,6 +108,22 @@ describe('href builders', () => {
     expect(sellerHref('ebooks', 'seller-9')).toBe('#/ebooks/seller/seller-9');
     expect(favoritesHref('automotive')).toBe('#/automotive/favorites');
   });
+
+  it('round-trips facet params in list hrefs', () => {
+    const href = listHref('automotive', {
+      make: 'Toyota',
+      facets: { bodyStyle: 'Sedan', drivetrain: 'AWD' },
+    });
+    expect(href).toBe('#/automotive/?make=Toyota&facet.bodyStyle=Sedan&facet.drivetrain=AWD');
+    expect(parseRouteFromHash(href)).toEqual({
+      page: 'list',
+      slug: 'automotive',
+      query: {
+        make: 'Toyota',
+        facets: { bodyStyle: 'Sedan', drivetrain: 'AWD' },
+      },
+    });
+  });
 });
 
 function parseRouteFromHash(hash: string) {

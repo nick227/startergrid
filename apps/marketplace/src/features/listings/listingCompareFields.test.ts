@@ -76,6 +76,7 @@ describe('isCompareEnabled', () => {
       categorySlug: 'minimal',
       labels: { price: 'Price' },
       enabledFilters: ['price'],
+      facets: [],
     };
     expect(isCompareEnabled(priceOnly)).toBe(false);
   });

@@ -1,4 +1,5 @@
-import type { CategoryFieldDef, CategorySchema, MarketplaceFilterRole } from '@auto-dealer/category-schemas';
+import type { CategoryFieldDef, CategorySchema, MarketplaceFilterRole, MarketplaceFacetDef } from '@auto-dealer/category-schemas';
+import { buildListingFacetConfig } from './listingFacetConfig.ts';
 
 export type ListingFilterKey = 'brand' | 'model' | 'condition' | 'price' | 'usage' | 'year';
 
@@ -15,6 +16,7 @@ export type ListingFilterConfig = {
   categorySlug: string;
   labels: ListingFilterLabels;
   enabledFilters: ListingFilterKey[];
+  facets: MarketplaceFacetDef[];
 };
 
 export type ListingCardMetaLabels = {
@@ -123,6 +125,7 @@ export function buildListingFilterConfig(
       year: resolveRoleLabel(schema, 'year'),
     },
     enabledFilters,
+    facets: buildListingFacetConfig(schema).facets,
   };
 }
 

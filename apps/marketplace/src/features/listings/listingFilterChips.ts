@@ -1,8 +1,11 @@
+import type { MarketplaceFacetDef } from '@auto-dealer/category-schemas';
 import type { ListingFilterConfig } from './listingFilterConfig.ts';
 import { hasListingQueryFilters, type ListingQuery, type ListingQueryKey } from './listingQuery.ts';
 
+export type ListingFilterChipKey = ListingQueryKey | `facet:${string}`;
+
 export type ListingFilterChip = {
-  key: ListingQueryKey;
+  key: ListingFilterChipKey;
   label: string;
 };
 
@@ -14,9 +17,16 @@ export function hasListingFilters(query: ListingQuery): boolean {
   return hasListingQueryFilters(query);
 }
 
+function facetValueLabel(facets: MarketplaceFacetDef[], key: string, value: string): string {
+  const facet = facets.find(item => item.key === key);
+  const option = facet?.options.find(item => item.value === value);
+  return option?.label ?? value;
+}
+
 export function buildListingFilterChips(
   query: ListingQuery,
   config: ListingFilterConfig,
+  facets: MarketplaceFacetDef[] = [],
 ): ListingFilterChip[] {
   const chips: ListingFilterChip[] = [];
   const brandLabel = config.labels.brand ?? 'Brand';
@@ -37,6 +47,16 @@ export function buildListingFilterChips(
   if (query.yearMin != null) chips.push({ key: 'yearMin', label: `Min ${yearLabel.toLowerCase()}: ${query.yearMin}` });
   if (query.yearMax != null) chips.push({ key: 'yearMax', label: `Max ${yearLabel.toLowerCase()}: ${query.yearMax}` });
   if (query.seller) chips.push({ key: 'seller', label: `Seller: ${query.seller}` });
+  if (query.facets) {
+    for (const [key, value] of Object.entries(query.facets).sort(([a], [b]) => a.localeCompare(b))) {
+      const facet = facets.find(item => item.key === key);
+      const label = facet?.label ?? key;
+      chips.push({
+        key: `facet:${key}`,
+        label: `${label}: ${facetValueLabel(facets, key, value)}`,
+      });
+    }
+  }
 
   return chips;
 }

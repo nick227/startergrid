@@ -40,7 +40,12 @@ export type ListQuery = {
   dealer?:     string;
   q?:          string;
   page?:      number;
+  facets?: Record<string, string>;
+  /** Serialized facet filters for API requests (key:value pairs). */
+  facetsParam?: string;
 };
+
+const FACET_PARAM_PREFIX = 'facet.';
 
 const SORT_VALUES: SortBy[] = ['newest', 'price-asc', 'price-desc', 'mileage-asc', 'year-asc', 'year-desc', 'relevance'];
 
@@ -56,6 +61,13 @@ function parseHashQuery(search: string): ListQuery {
   const minYear = parseNonNegative(params.get('minYear'));
   const maxYear = parseNonNegative(params.get('maxYear'));
 
+  const facets: Record<string, string> = {};
+  for (const [key, value] of params.entries()) {
+    if (key.startsWith(FACET_PARAM_PREFIX) && value) {
+      facets[key.slice(FACET_PARAM_PREFIX.length)] = value;
+    }
+  }
+
   return {
     make:      params.get('make') || undefined,
     model:     params.get('model') || undefined,
@@ -69,6 +81,7 @@ function parseHashQuery(search: string): ListQuery {
     dealer:    params.get('dealer') || undefined,
     q:         params.get('q') || undefined,
     page:      page && page > 0 ? page : undefined,
+    facets:    Object.keys(facets).length > 0 ? facets : undefined,
   };
 }
 
@@ -161,6 +174,11 @@ export function listHref(slug: string, query: ListQuery = {}): string {
   if (query.dealer) params.set('dealer', query.dealer);
   if (query.q) params.set('q', query.q);
   if (query.page && query.page > 1) params.set('page', String(query.page));
+  if (query.facets) {
+    for (const [key, value] of Object.entries(query.facets).sort(([a], [b]) => a.localeCompare(b))) {
+      if (value) params.set(`${FACET_PARAM_PREFIX}${key}`, value);
+    }
+  }
 
   const qs = params.toString();
   return qs ? `#/${slug}/?${qs}` : `#/${slug}/`;

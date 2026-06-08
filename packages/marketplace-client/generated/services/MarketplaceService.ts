@@ -57,6 +57,7 @@ export class MarketplaceService {
         sortBy,
         dealer,
         q,
+        facets,
     }: {
         /**
          * Business category slug or enum. Defaults to AUTOMOTIVE.
@@ -99,6 +100,12 @@ export class MarketplaceService {
          * Keyword search across make, model, and trim.
          */
         q?: string,
+        /**
+         * Comma-separated schema-backed facet filters encoded as fieldKey:value.
+         * Only enum/boolean facets declared for the active category are applied.
+         *
+         */
+        facets?: string,
     }): CancelablePromise<MarketplaceFeedResponse> {
         return __request(OpenAPI, {
             method: 'GET',
@@ -118,6 +125,7 @@ export class MarketplaceService {
                 'sortBy': sortBy,
                 'dealer': dealer,
                 'q': q,
+                'facets': facets,
             },
             errors: {
                 400: `Bad request — invalid query parameter value`,
@@ -146,6 +154,7 @@ export class MarketplaceService {
         sortBy,
         dealer,
         q,
+        facets,
         page = 1,
         pageSize = 24,
     }: {
@@ -188,6 +197,12 @@ export class MarketplaceService {
          * Keyword search across make, model, and trim.
          */
         q?: string,
+        /**
+         * Comma-separated schema-backed facet filters encoded as fieldKey:value.
+         * Only enum/boolean facets declared for the active category are applied.
+         *
+         */
+        facets?: string,
         page?: number,
         pageSize?: number,
     }): CancelablePromise<MarketplaceVehicleListResponse> {
@@ -207,6 +222,7 @@ export class MarketplaceService {
                 'sortBy': sortBy,
                 'dealer': dealer,
                 'q': q,
+                'facets': facets,
                 'page': page,
                 'pageSize': pageSize,
             },

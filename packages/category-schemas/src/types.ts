@@ -35,12 +35,25 @@ export type MarketplaceFilterRole =
   | 'seller'
   | 'price';
 
+export type CategoryFieldOption = {
+  value: string;
+  label: string;
+};
+
+export type CategoryFieldFilterStorage =
+  | { storage: 'column' }
+  | { storage: 'categoryPayload'; payloadKey: string };
+
 export type CategoryFieldDef = {
   key: string;
   label: string;
-  kind: 'text' | 'number' | 'currency' | 'identifier';
+  kind: 'text' | 'number' | 'currency' | 'identifier' | 'enum' | 'boolean';
   /** Maps this inventory field to a generic marketplace filter or card label slot. */
   marketplaceFilter?: MarketplaceFilterRole;
+  /** Known values for enum facets and boolean filters. Required for enum kind. */
+  options?: readonly CategoryFieldOption[];
+  /** Where the marketplace applies an exact-match facet filter. Defaults to column key. */
+  filterStorage?: CategoryFieldFilterStorage;
 };
 
 export type CategoryCopyBundle = {

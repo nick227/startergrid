@@ -4,6 +4,8 @@ export type {
   CategoryChannelLabels,
   CategoryCopyBundle,
   CategoryFieldDef,
+  CategoryFieldFilterStorage,
+  CategoryFieldOption,
   MarketplaceFilterRole,
   CategoryFormatters,
   CategoryLifecycleLabels,
@@ -28,6 +30,14 @@ export {
   categorySlugToId,
   listMarketplaceCategories,
 } from './marketplace/helpers.js';
+export {
+  buildMarketplaceFacets,
+  isValidMarketplaceFacetValue,
+  parseMarketplaceFacetsParam,
+  sanitizeMarketplaceFacets,
+  serializeMarketplaceFacetsParam,
+} from './marketplace/facets.js';
+export type { MarketplaceFacetDef, MarketplaceFacetKind } from './marketplace/facets.js';
 export { automotiveSchema } from './automotive/schema.js';
 export { createPlaceholderSchema, createUnknownFallbackSchema, genericOperatorFallback } from './generic/schema.js';
 export {

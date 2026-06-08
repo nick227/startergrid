@@ -79,6 +79,7 @@ export type ListFilters = CategoryScope & {
   sortBy?:     SortBy;
   dealer?:     string;
   q?:          string;
+  facets?:     string;
   page?:      number;
   pageSize?:  number;
 };
@@ -139,6 +140,7 @@ export function fetchFeed(filters: FeedFilters = {}): Promise<MarketplaceFeedRes
     sortBy:     filters.sortBy,
     dealer:     filters.dealer,
     q:          filters.q,
+    facets:     filters.facets,
   }));
 }
 

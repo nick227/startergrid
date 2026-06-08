@@ -15,7 +15,13 @@
 // src/tests/marketplaceQueryFilters.test.ts enforce shape and WHERE correctness.
 
 import type { PrismaClient, Prisma, BusinessCategory } from '@prisma/client';
-import { categoryIdToSlug } from '../../../packages/category-schemas/src/index.js';
+import {
+  buildMarketplaceFacets,
+  categoryIdToSlug,
+  resolveCategorySchema,
+  sanitizeMarketplaceFacets,
+  type MarketplaceFacetDef,
+} from '../../../packages/category-schemas/src/index.js';
 import { usageUnitFromPayload } from '../../lib/categoryPayload.js';
 import {
   shapeDetailResponse,
@@ -164,6 +170,7 @@ export type MarketplaceListFilters = {
   pageSize?:   number;
   cursor?:     string;
   limit?:      number;
+  facets?:     Record<string, string>;
 };
 
 // ── Internal DB row types ─────────────────────────────────────────────────────
@@ -365,6 +372,24 @@ function decodeFeedCursor(cursor: string | undefined): FeedCursor | null {
   }
 }
 
+function facetWhereClause(facet: MarketplaceFacetDef, value: string): Prisma.VehicleWhereInput {
+  if (facet.filterStorage.storage === 'categoryPayload') {
+    return {
+      categoryPayload: {
+        path: [facet.filterStorage.payloadKey],
+        equals: value,
+      } as Prisma.JsonNullableFilter,
+    };
+  }
+
+  const column = facet.filterStorage.column;
+  if (column === 'bodyStyle') return { bodyStyle: value };
+  if (column === 'drivetrain') return { drivetrain: value };
+  if (column === 'fuelType') return { fuelType: value };
+  if (column === 'transmission') return { transmission: value };
+  return { [column]: value } as Prisma.VehicleWhereInput;
+}
+
 function buildMarketplaceWhere(filters: MarketplaceListFilters): Prisma.VehicleWhereInput {
   const priceFilter: Prisma.IntFilter<'Vehicle'> = { gt: 0 };
   if (filters.minPrice != null && filters.minPrice > 0) priceFilter.gte = filters.minPrice;
@@ -390,6 +415,24 @@ function buildMarketplaceWhere(filters: MarketplaceListFilters): Prisma.VehicleW
     if (filters.minYear != null) yearFilter.gte = filters.minYear;
     if (filters.maxYear != null) yearFilter.lte = filters.maxYear;
     where.year = yearFilter;
+  }
+
+  if (filters.category && filters.facets) {
+    const schema = resolveCategorySchema(filters.category);
+    const allowed = sanitizeMarketplaceFacets(schema, filters.facets);
+    if (allowed) {
+      const facetDefs = new Map(buildMarketplaceFacets(schema).map(facet => [facet.key, facet]));
+      const clauses = Object.entries(allowed)
+        .map(([key, value]) => {
+          const facet = facetDefs.get(key);
+          return facet ? facetWhereClause(facet, value) : null;
+        })
+        .filter((clause): clause is Prisma.VehicleWhereInput => clause != null);
+      if (clauses.length > 0) {
+        const existing = where.AND ? (Array.isArray(where.AND) ? where.AND : [where.AND]) : [];
+        where.AND = [...existing, ...clauses];
+      }
+    }
   }
 
   const q = filters.q?.trim();

@@ -9,6 +9,11 @@ import {
 } from '../../services/marketplace/marketplaceQueryService.js';
 import { listMarketplaceSites } from '../../services/marketplace/marketplaceSitesService.js';
 import { parseMarketplaceCategoryParam } from '../../services/marketplace/marketplaceCategory.js';
+import {
+  parseMarketplaceFacetsParam,
+  resolveCategorySchema,
+  sanitizeMarketplaceFacets,
+} from '../../../packages/category-schemas/src/index.js';
 import { captureMarketplaceLead } from '../../services/marketplace/marketplaceLeadService.js';
 import { submitListingReport } from '../../services/marketplace/marketplaceReportService.js';
 import {
@@ -42,6 +47,8 @@ type ListQuery = {
   limit?:      string;
   page?:       string;
   pageSize?:   string;
+  facets?:     string;
+  [key: string]: string | undefined;
 };
 
 function parsePosIntParam(value: string | undefined, fallback: number): number {
@@ -67,6 +74,23 @@ function resolveCategory(
   return parsed.category;
 }
 
+function parseFacetFilters(
+  q: ListQuery,
+  category: BusinessCategory,
+): Record<string, string> | undefined {
+  const raw: Record<string, string> = {};
+  const serialized = parseMarketplaceFacetsParam(q.facets);
+  if (serialized) Object.assign(raw, serialized);
+
+  for (const [key, value] of Object.entries(q)) {
+    if (key.startsWith('facet.') && typeof value === 'string' && value) {
+      raw[key.slice('facet.'.length)] = value;
+    }
+  }
+
+  return sanitizeMarketplaceFacets(resolveCategorySchema(category), raw);
+}
+
 function listFiltersFromQuery(q: ListQuery, category: BusinessCategory): MarketplaceListFilters {
   return {
     category,
@@ -81,6 +105,7 @@ function listFiltersFromQuery(q: ListQuery, category: BusinessCategory): Marketp
     maxYear:    parseNonNegIntParam(q.maxYear),
     sortBy:     q.sortBy    || undefined,
     q:          q.q         || undefined,
+    facets:     parseFacetFilters(q, category),
     cursor:     q.cursor    || undefined,
     limit:      parsePosIntParam(q.limit, 24),
     page:       parsePosIntParam(q.page, 1),
