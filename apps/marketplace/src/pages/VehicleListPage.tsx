@@ -4,16 +4,18 @@ import { useInfiniteMarketplaceFeed } from '../hooks/useInfiniteMarketplaceFeed.
 import { usePageMeta } from '../hooks/usePageMeta.ts';
 import { formatResultCount } from '../lib/display.ts';
 import { saveListReturn } from '../lib/listReturn.ts';
-import { isAutomotiveSlug, listHref, parseRoute, type ListQuery } from '../lib/routes.ts';
+import { listHref, parseRoute, type ListQuery } from '../lib/routes.ts';
 import { useCategorySchema, useCategorySlug } from '../contexts/CategoryContext.tsx';
+import { buildListingFilterConfig } from '../features/listings/listingFilterConfig.ts';
+import { hasListingFilters } from '../features/listings/listingFilterChips.ts';
 import { PageShell } from '../components/layout/PageShell.tsx';
 import { PageHeader } from '../components/ui/PageHeader.tsx';
-import { FilterBar } from '../components/ui/FilterBar.tsx';
+import { ListingFilterBar } from '../components/listings/ListingFilterBar.tsx';
+import { ActiveListingFilterChips } from '../components/listings/ActiveListingFilterChips.tsx';
 import { VehicleGrid } from '../components/ui/VehicleGrid.tsx';
 import { ErrorState } from '../components/ui/ErrorState.tsx';
 import { EmptyState } from '../components/ui/EmptyState.tsx';
 import { FeedItemCard } from '../components/feed/FeedCards.tsx';
-import { ActiveFilterChips, hasFeedFilters } from '../components/feed/ActiveFilterChips.tsx';
 import { EndOfFeedState, FeedCardSkeleton, LoadingMoreState } from '../components/feed/FeedStates.tsx';
 import { RecentlyViewedRail } from '../components/listings/RecentlyViewedRail.tsx';
 
@@ -22,7 +24,7 @@ type Props = { initialQuery?: ListQuery };
 export default function VehicleListPage({ initialQuery = {} }: Props) {
   const slug = useCategorySlug();
   const schema = useCategorySchema();
-  const automotive = isAutomotiveSlug(slug);
+  const filterConfig = useMemo(() => buildListingFilterConfig(slug, schema), [slug, schema]);
   const consumerActive = schema.status === 'active';
   const [make,      setMake]      = useState(initialQuery.make ?? '');
   const [model,     setModel]     = useState(initialQuery.model ?? '');
@@ -102,7 +104,7 @@ export default function VehicleListPage({ initialQuery = {} }: Props) {
     setMaxMileage(formatNumberInput(query.maxMileage));
   }
 
-  const hasActiveFilters = hasFeedFilters(listQuery);
+  const hasActiveFilters = hasListingFilters(listQuery);
   const hasItems = feed.items.length > 0;
   const initialError = feed.error && !hasItems;
   const appendError = feed.error && hasItems;
@@ -114,21 +116,22 @@ export default function VehicleListPage({ initialQuery = {} }: Props) {
         subtitle={schema.marketplace.tagline}
       />
 
-      {automotive && (
+      {consumerActive && (
       <div className="mb-6 sm:mb-8">
-        <FilterBar
-          make={make}
+        <ListingFilterBar
+          config={filterConfig}
+          brand={make}
           model={model}
           condition={condition}
           minPrice={minPrice}
           maxPrice={maxPrice}
-          maxMileage={maxMileage}
-          onMakeChange={setMake}
+          maxUsage={maxMileage}
+          onBrandChange={setMake}
           onModelChange={setModel}
           onConditionChange={setCondition}
           onMinPriceChange={setMinPrice}
           onMaxPriceChange={setMaxPrice}
-          onMaxMileageChange={setMaxMileage}
+          onMaxUsageChange={setMaxMileage}
           onSubmit={feed.reload}
           onClear={resetFilters}
           hasActiveFilters={hasActiveFilters}
@@ -137,8 +140,13 @@ export default function VehicleListPage({ initialQuery = {} }: Props) {
       </div>
       )}
 
-      {automotive && (
-      <ActiveFilterChips query={listQuery} onChange={applyChipQuery} onClearAll={resetFilters} />
+      {consumerActive && (
+      <ActiveListingFilterChips
+        query={listQuery}
+        config={filterConfig}
+        onChange={applyChipQuery}
+        onClearAll={resetFilters}
+      />
       )}
 
       {feed.loadingInitial ? (
@@ -148,12 +156,10 @@ export default function VehicleListPage({ initialQuery = {} }: Props) {
       ) : !hasItems ? (
         <EmptyState
           title={consumerActive
-            ? `No ${schema.asset.plural} match your search`
+            ? 'No listings match your search'
             : `${schema.label} marketplace coming soon`}
           description={consumerActive
-            ? automotive
-              ? 'Try different make or model keywords, or reset filters to browse everything available.'
-              : `Try adjusting your search or check back soon for new ${schema.asset.plural}.`
+            ? 'Try different brand or model keywords, or reset filters to browse everything available.'
             : `Listings for ${schema.label.toLowerCase()} will appear here when sellers join this marketplace.`}
           actionLabel={hasActiveFilters ? 'Reset filters' : undefined}
           onAction={hasActiveFilters ? resetFilters : undefined}
