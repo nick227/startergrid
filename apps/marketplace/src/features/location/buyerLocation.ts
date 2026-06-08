@@ -153,3 +153,11 @@ export function isPostalOnlyPreference(
     && !hasResolvableBuyerCoordinates(preference),
   );
 }
+
+export function saveBuyerLocationRadius(radiusMiles: GeoRadiusMiles): BuyerLocationPreference | null {
+  const current = readBuyerLocationPreference();
+  if (!current || !hasResolvableBuyerCoordinates(current)) return null;
+  const next: BuyerLocationPreference = { ...current, radiusMiles, nationwide: false };
+  saveBuyerLocationPreference(next);
+  return next;
+}

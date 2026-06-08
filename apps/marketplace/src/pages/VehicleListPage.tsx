@@ -29,6 +29,9 @@ import { CompareBar } from '../components/listings/CompareBar.tsx';
 import { QuickDetailDrawer } from '../components/listings/QuickDetailDrawer.tsx';
 import { NewArrivalsRail } from '../components/listings/NewArrivalsRail.tsx';
 import { BuyerLocationControls } from '../components/listings/BuyerLocationControls.tsx';
+import { GeoNoResultsRelaxation } from '../components/listings/GeoNoResultsRelaxation.tsx';
+import { isGeoRadiusSearchActive } from '../features/location/listingGeoRelaxation.ts';
+import { saveBuyerLocationRadius } from '../features/location/buyerLocation.ts';
 import { useBuyerLocation } from '../features/location/useBuyerLocation.ts';
 import {
   defaultAvailabilityFilter,
@@ -262,7 +265,13 @@ export default function VehicleListPage({ initialQuery = {} }: Props) {
       ) : initialError ? (
         <ErrorState message={queryErrorMessage(feed.error)} onRetry={feed.retry} />
       ) : !hasItems ? (
-        consumerLive && hasActiveFilters ? (
+        consumerLive && isGeoRadiusSearchActive(buyerLocation.preference) && buyerLocation.preference ? (
+          <GeoNoResultsRelaxation
+            preference={buyerLocation.preference}
+            onExpandRadius={action => { saveBuyerLocationRadius(action.radiusMiles); }}
+            onNationwide={() => { buyerLocation.setNationwide(true); }}
+          />
+        ) : consumerLive && hasActiveFilters ? (
           <NoResultsRelaxation
             query={listingQuery}
             config={filterConfig}

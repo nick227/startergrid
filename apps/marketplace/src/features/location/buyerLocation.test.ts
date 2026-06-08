@@ -6,6 +6,7 @@ import {
   readBuyerLocationPreference,
   resolveBuyerGeoApiParams,
   saveBuyerLocationPreference,
+  saveBuyerLocationRadius,
   setBuyerLocationNationwide,
 } from './buyerLocation.ts';
 import * as postalLookup from './postalCoordinateLookup.ts';
@@ -133,6 +134,24 @@ describe('buyer location preference', () => {
     expect(saved.lng).toBeTypeOf('number');
     expect(resolveBuyerGeoApiParams(saved).buyerLat).toBe(saved.lat);
     expect(resolveBuyerGeoApiParams(saved).radiusMiles).toBe(50);
+  });
+
+  it('saveBuyerLocationRadius updates radius without clearing coordinates', () => {
+    saveBuyerLocationPreference({
+      postalCode: '78701',
+      lat: 30.27,
+      lng: -97.74,
+      radiusMiles: 50,
+      nationwide: false,
+    });
+    const updated = saveBuyerLocationRadius(100);
+    expect(updated?.radiusMiles).toBe(100);
+    expect(resolveBuyerGeoApiParams(readBuyerLocationPreference())).toEqual({
+      buyerLat: 30.27,
+      buyerLng: -97.74,
+      radiusMiles: 100,
+      nationwide: false,
+    });
   });
 
   it('setBuyerLocationNationwide stores nationwide-only preference', () => {
