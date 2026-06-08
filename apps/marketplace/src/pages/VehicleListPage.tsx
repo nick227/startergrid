@@ -28,6 +28,8 @@ import { RecentlyViewedRail } from '../components/listings/RecentlyViewedRail.ts
 import { CompareBar } from '../components/listings/CompareBar.tsx';
 import { QuickDetailDrawer } from '../components/listings/QuickDetailDrawer.tsx';
 import { NewArrivalsRail } from '../components/listings/NewArrivalsRail.tsx';
+import { BuyerLocationControls } from '../components/listings/BuyerLocationControls.tsx';
+import { useBuyerLocation } from '../features/location/useBuyerLocation.ts';
 import {
   defaultAvailabilityFilter,
   isAvailabilityFilterEnabled,
@@ -93,7 +95,8 @@ export default function VehicleListPage({ initialQuery = {} }: Props) {
     availability,
   }, filterConfig), [availability, brand, condition, facetValues, filterConfig, maxPrice, maxUsage, maxYear, minPrice, minYear, model, q, schema, sellerName, sortBy]);
 
-  const feed = useInfiniteMarketplaceFeed(listingQuery);
+  const buyerLocation = useBuyerLocation();
+  const feed = useInfiniteMarketplaceFeed(listingQuery, buyerLocation.geoApiParams);
 
   useEffect(() => {
     saveListReturn(slug, listingQuery);
@@ -193,6 +196,12 @@ export default function VehicleListPage({ initialQuery = {} }: Props) {
 
       {consumerLive && (
       <div className="mb-6 sm:mb-8">
+        <BuyerLocationControls
+          preference={buyerLocation.preference}
+          onApply={draft => buyerLocation.applyDraft({ ...draft, nationwide: false })}
+          onNationwideChange={buyerLocation.setNationwide}
+          onClear={buyerLocation.clear}
+        />
         <ListingFilterBar
           config={filterConfig}
           facets={filterConfig.facets}

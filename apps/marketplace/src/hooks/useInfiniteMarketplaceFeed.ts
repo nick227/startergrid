@@ -8,6 +8,7 @@ import {
 import { useCategoryId, useCategorySlug } from '../contexts/CategoryContext.tsx';
 import { feedFilterKey, getSavedFeedState, saveFeedState } from '../lib/feedState.ts';
 import { toListQuery, type ListingQuery } from '../features/listings/listingQuery.ts';
+import type { BuyerGeoApiParams } from '../features/location/buyerLocation.ts';
 
 const FEED_LIMIT = 24;
 
@@ -21,7 +22,10 @@ type FeedStatus = {
   restoredScrollY: number | null;
 };
 
-export function useInfiniteMarketplaceFeed(query: ListingQuery) {
+export function useInfiniteMarketplaceFeed(
+  query: ListingQuery,
+  buyerGeo: BuyerGeoApiParams = {},
+) {
   const categoryId = useCategoryId();
   const slug = useCategorySlug();
   const listQuery = useMemo(() => toListQuery(query), [query]);
@@ -41,10 +45,15 @@ export function useInfiniteMarketplaceFeed(query: ListingQuery) {
     dealer:     listQuery.dealer,
     q:          listQuery.q,
     facets:     listQuery.facetsParam,
+    availability: listQuery.availability,
+    buyerLat:   buyerGeo.buyerLat,
+    buyerLng:   buyerGeo.buyerLng,
+    radiusMiles: buyerGeo.radiusMiles,
+    nationwide: buyerGeo.nationwide,
     limit:      FEED_LIMIT,
-  }), [categoryId, listQuery]);
+  }), [buyerGeo, categoryId, listQuery]);
 
-  const filterKey = useMemo(() => feedFilterKey(slug, query), [slug, query]);
+  const filterKey = useMemo(() => feedFilterKey(slug, query, buyerGeo), [slug, query, buyerGeo]);
   const requestId = useRef(0);
   const loadingRef = useRef(false);
   const [state, setState] = useState<FeedStatus>(() => {

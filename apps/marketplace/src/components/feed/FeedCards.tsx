@@ -3,7 +3,7 @@ import type {
   MarketplaceFeedItem,
   MarketplaceVehicleCard,
 } from '../../lib/api.ts';
-import { formatLocation, formatPrice, formatUsage, vehicleHeading } from '../../lib/display.ts';
+import { formatDistanceAway, formatLocation, formatPrice, formatUsage, vehicleHeading } from '../../lib/display.ts';
 import { listingHref, sellerHref } from '../../lib/routes.ts';
 import { useCategoryId, useCategorySchema, useCategorySlug } from '../../contexts/CategoryContext.tsx';
 import { useTrackVisibleMarketplaceItem } from '../../hooks/useTrackVisibleMarketplaceItem.ts';
@@ -96,6 +96,9 @@ function VehicleFeedCard({
             {card.unitType && <span>{card.unitType}</span>}
             {card.lengthFt != null && <span>{card.lengthFt} ft</span>}
             <span>{card.condition}</span>
+            {card.distanceMiles != null && (
+              <span data-testid="card-distance">{formatDistanceAway(card.distanceMiles)}</span>
+            )}
             {location && <span>{location}</span>}
           </div>
           <a href={sellerHref(slug, card.dealerId)} className="mp-focus mt-1 block truncate text-xs text-ink-body hover:text-cta">
@@ -170,6 +173,11 @@ function VehicleFeedCard({
           <a href={sellerHref(slug, card.dealerId)} className="mp-focus mt-1 block text-sm font-semibold text-ink-body hover:text-cta">
             {card.dealerName}
           </a>
+          {card.distanceMiles != null && (
+            <p className="mt-1 text-xs text-ink-muted" data-testid="card-distance">
+              {formatDistanceAway(card.distanceMiles)}
+            </p>
+          )}
           {location && <p className="mt-1 text-xs text-ink-muted">{location}</p>}
         </div>
       </div>

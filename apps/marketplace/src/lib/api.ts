@@ -82,6 +82,10 @@ export type ListFilters = CategoryScope & {
   q?:             string;
   facets?:        string;
   availability?:  'available';
+  buyerLat?:      number;
+  buyerLng?:      number;
+  radiusMiles?:   number;
+  nationwide?:    boolean;
   page?:          number;
   pageSize?:      number;
 };
@@ -145,6 +149,10 @@ export function fetchFeed(filters: FeedFilters = {}): Promise<MarketplaceFeedRes
     q:            filters.q,
     facets:       filters.facets,
     availability: filters.availability ?? 'available',
+    buyerLat:     filters.buyerLat,
+    buyerLng:     filters.buyerLng,
+    radiusMiles:  filters.radiusMiles,
+    nationwide:   filters.nationwide,
   }));
 }
 

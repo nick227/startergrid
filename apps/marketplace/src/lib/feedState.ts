@@ -1,5 +1,7 @@
 import type { MarketplaceFeedItem } from './api.ts';
 import { listingQuerySignature, type ListingQuery } from '../features/listings/listingQuery.ts';
+import type { BuyerGeoApiParams } from '../features/location/buyerLocation.ts';
+import { buyerGeoApiSignature } from '../features/location/buyerLocation.ts';
 
 const KEY = 'marketplace:feedState';
 
@@ -11,8 +13,16 @@ export type SavedFeedState = {
   scrollY: number;
 };
 
-export function feedFilterKey(slug: string, query: ListingQuery): string {
-  return JSON.stringify({ slug, ...JSON.parse(listingQuerySignature(query)) });
+export function feedFilterKey(
+  slug: string,
+  query: ListingQuery,
+  buyerGeo: BuyerGeoApiParams = {},
+): string {
+  return JSON.stringify({
+    slug,
+    ...JSON.parse(listingQuerySignature(query)),
+    buyerGeo: JSON.parse(buyerGeoApiSignature(buyerGeo)),
+  });
 }
 
 export function saveFeedState(state: SavedFeedState): void {

@@ -1,6 +1,6 @@
 import { useEffect, useRef } from 'react';
 import type { MarketplaceVehicleCard } from '../lib/api.ts';
-import { formatPrice, formatUsage, formatLocation, vehicleHeading } from '../lib/display.ts';
+import { formatDistanceAway, formatPrice, formatUsage, formatLocation, vehicleHeading } from '../lib/display.ts';
 import { listingHref, sellerHref } from '../lib/routes.ts';
 import { useCategoryId, useCategorySlug } from '../contexts/CategoryContext.tsx';
 import { trackMarketplaceEvent, MarketplaceEventType } from '../lib/events.ts';
@@ -90,6 +90,11 @@ export function VehicleCard({ card, onQuickView }: Props) {
         >
           {card.dealerName}
         </a>
+        {card.distanceMiles != null && (
+          <p className="mt-0.5 text-xs text-ink-muted" data-testid="card-distance">
+            {formatDistanceAway(card.distanceMiles)}
+          </p>
+        )}
         {location && <p className="mt-0.5 text-xs text-ink-muted">{location}</p>}
       </div>
     </article>

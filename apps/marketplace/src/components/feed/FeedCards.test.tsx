@@ -109,3 +109,20 @@ describe('FeedItemCard quick view gating', () => {
     expect(el.textContent).toContain('Marketplace notice');
   });
 });
+
+describe('FeedItemCard distance label', () => {
+  it('renders distance when distanceMiles is present', () => {
+    const item: Extract<MarketplaceFeedItem, { type: 'vehicle' }> = {
+      ...vehicleItem,
+      vehicle: { ...vehicleCard, distanceMiles: 18 },
+    };
+    const el = renderCard(item);
+    expect(el.querySelector('[data-testid="card-distance"]')?.textContent).toBe('18 mi away');
+  });
+
+  it('omits distance when distanceMiles is absent', () => {
+    const el = renderCard(vehicleItem);
+    expect(el.querySelector('[data-testid="card-distance"]')).toBeNull();
+    expect(el.textContent).not.toContain('mi away');
+  });
+});

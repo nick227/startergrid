@@ -62,6 +62,10 @@ export function formatLocation(city: string | null, state: string | null): strin
   return parts.length > 0 ? parts.join(', ') : null;
 }
 
+export function formatDistanceAway(distanceMiles: number): string {
+  return `${new Intl.NumberFormat('en-US').format(distanceMiles)} mi away`;
+}
+
 export function conditionLabel(condition: MarketplaceVehicleCard['condition']): string {
   return CONDITION_LABEL[condition];
 }
