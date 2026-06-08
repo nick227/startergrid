@@ -23,6 +23,8 @@ import {
   buildListingCardMetaLabels,
   buildListingFilterConfig,
 } from '../../features/listings/listingFilterConfig.ts';
+import { buildCompareItemFromCard } from '../../features/listings/listingCompareItem.ts';
+import { isCompareEnabled } from '../../features/listings/listingCompareFields.ts';
 
 type FeedItemProps = {
   item: MarketplaceFeedItem;
@@ -46,10 +48,11 @@ function VehicleFeedCard({
   const slug = useCategorySlug();
   const categoryId = useCategoryId();
   const schema = useCategorySchema();
-  const metaLabels = useMemo(() => {
-    const config = buildListingFilterConfig(slug, schema);
-    return buildListingCardMetaLabels(schema, config);
-  }, [slug, schema]);
+  const filterConfig = useMemo(() => buildListingFilterConfig(slug, schema), [slug, schema]);
+  const metaLabels = useMemo(
+    () => buildListingCardMetaLabels(schema, filterConfig),
+    [schema, filterConfig],
+  );
   const ref = useTrackVisibleMarketplaceItem<HTMLElement>({
     type: item.type,
     impressionKey: item.impressionKey,
@@ -58,7 +61,7 @@ function VehicleFeedCard({
   });
   const title = vehicleHeading(card);
   const location = formatLocation(card.dealerCity, card.dealerState);
-  const showCompare = schema.status === 'active';
+  const showCompare = isCompareEnabled(filterConfig);
   const compareItems = useSyncExternalStore(subscribeCompare, getCompareSnapshot, getCompareServerSnapshot);
   const inCompare = compareItems.some(i => i.listingId === card.listingId);
   const compareDisabled = !inCompare && compareItems.length >= MAX_COMPARE;
@@ -82,15 +85,7 @@ function VehicleFeedCard({
         {showCompare && <button
           type="button"
           disabled={compareDisabled}
-          onClick={() => toggleCompare({
-            listingId:  card.listingId,
-            title,
-            priceCents: card.priceCents,
-            year:       card.year,
-            mileage:    card.mileage,
-            imageUrl:   card.mediaUrls[0] ?? null,
-            slug,
-          })}
+          onClick={() => toggleCompare(buildCompareItemFromCard(card, slug, title))}
           className={[
             'absolute bottom-2 left-2 z-10 rounded-lg px-2.5 py-1 text-xs font-semibold shadow',
             inCompare

@@ -1,11 +1,21 @@
+import type { MarketplaceVehicleCard } from '../../lib/api.ts';
+
+export type CompareCondition = MarketplaceVehicleCard['condition'];
+
 export type CompareItem = {
-  listingId:  string;
-  title:      string;
+  listingId: string;
+  title: string;
   priceCents: number;
-  year:       number;
-  mileage:    number;
-  imageUrl:   string | null;
-  slug:       string;
+  slug: string;
+  imageUrl?: string | null;
+  year?: number;
+  mileage?: number;
+  usageUnit?: 'miles' | 'hours' | null;
+  brand?: string;
+  model?: string;
+  condition?: CompareCondition;
+  sellerName?: string;
+  locationLabel?: string;
 };
 
 export const MAX_COMPARE = 4;

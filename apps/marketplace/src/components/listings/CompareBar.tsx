@@ -1,6 +1,6 @@
 import { useMemo, useSyncExternalStore, useState } from 'react';
 import { listingHref } from '../../lib/routes.ts';
-import { buildCompareRows } from '../../features/listings/listingCompareFields.ts';
+import { buildCompareRows, isCompareEnabled } from '../../features/listings/listingCompareFields.ts';
 import type { ListingFilterConfig } from '../../features/listings/listingFilterConfig.ts';
 import {
   clearCompare,
@@ -21,7 +21,7 @@ export function CompareBar({ categorySlug, config }: Props) {
   const items = useSyncExternalStore(subscribeCompare, getCompareSnapshot, getCompareServerSnapshot);
   const [open, setOpen] = useState(false);
 
-  if (items.length === 0) return null;
+  if (!isCompareEnabled(config) || items.length === 0) return null;
 
   return (
     <div className="fixed inset-x-0 bottom-0 z-40 border-t border-navy-200 bg-navy-900 text-white shadow-elevation-3">

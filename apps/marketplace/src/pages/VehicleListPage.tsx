@@ -8,6 +8,7 @@ import { listHref, parseRoute, type ListQuery } from '../lib/routes.ts';
 import { fromListQuery, toListQuery, type ListingQuery, type ListingSort } from '../features/listings/listingQuery.ts';
 import { useCategorySchema, useCategorySlug } from '../contexts/CategoryContext.tsx';
 import { buildListingFilterConfig } from '../features/listings/listingFilterConfig.ts';
+import { isCompareEnabled } from '../features/listings/listingCompareFields.ts';
 import { hasListingFilters } from '../features/listings/listingFilterChips.ts';
 import { buildListingSortOptions } from '../features/listings/listingSortOptions.ts';
 import { PageShell } from '../components/layout/PageShell.tsx';
@@ -249,7 +250,9 @@ export default function VehicleListPage({ initialQuery = {} }: Props) {
           <RecentlyViewedRail categorySlug={slug} />
         </>
       )}
-      {consumerActive && <CompareBar categorySlug={slug} config={filterConfig} />}
+      {consumerActive && isCompareEnabled(filterConfig) && (
+        <CompareBar categorySlug={slug} config={filterConfig} />
+      )}
     </PageShell>
   );
 }
