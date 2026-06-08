@@ -120,6 +120,35 @@ Checks:
 
 ---
 
+## Marketplace deploy smoke
+
+Run after API restart/deploy (HTTP-only; no browser):
+
+```bash
+npm run smoke:marketplace
+```
+
+Against a deployed API (set `BASE_URL` to the public API origin):
+
+```bash
+# Linux / macOS
+BASE_URL=https://your-api.example.com npm run smoke:marketplace
+```
+
+```powershell
+# Windows (PowerShell)
+$env:BASE_URL="https://your-api.example.com"
+npm run smoke:marketplace
+```
+
+Expected: **11** `PASS` lines, then `Smoke result: PASS`.
+
+Checks: health, sites, automotive feed, listing detail, keyword search, facet filter, seller filter, invalid report validation, disabled category guard (`category=SONGS` → 404), live second category (`BOATS` or `TRAILERS_POWERSPORTS_RV`), cross-category detail guard.
+
+If `disabled category guard` fails locally, restart the API. The source gate is covered by `marketplaceEnablement` tests; a 200 for `category=SONGS` usually means the server is stale.
+
+---
+
 ## Build
 
 Build TypeScript and both UIs before deploying:
@@ -148,6 +177,7 @@ npm run marketplace:boundary:check  # 0 forbidden imports in apps/marketplace/sr
 npm run openapi:validate          # operator OpenAPI spec valid
 npm run openapi:validate:marketplace  # marketplace OpenAPI spec valid
 npm run smoke:test                # 9/9 system checks (DB, profiles, typecheck)
+npm run smoke:marketplace         # 11 HTTP checks (run after API deploy/restart)
 ```
 
 ---
@@ -184,6 +214,9 @@ pm2 restart ecosystem.config.js --env production
 
 # 9. Post-restart health check
 curl http://localhost:3000/health
+
+# 10. Marketplace deploy smoke (11 PASS lines)
+npm run smoke:marketplace
 ```
 
 ### Rollback gate
