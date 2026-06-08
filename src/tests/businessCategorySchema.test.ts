@@ -111,6 +111,37 @@ describe('resolveCategorySchema — known categories', () => {
     assert.match(meta, /450 hrs/);
     assert.match(meta, /28 ft/);
   });
+
+  it('WATCHES is placeholder with watch labels and reference # field', () => {
+    const schema = resolveCategorySchema('WATCHES');
+    assert.equal(schema.status, 'placeholder');
+    assert.equal(schema.asset.singular, 'watch');
+    assert.equal(schema.asset.idLabel, 'Reference #');
+    assert.equal(schema.fields.find(f => f.key === 'make')?.label, 'Brand');
+    assert.ok(schema.fields.length > 0);
+  });
+
+  it('APARTMENTS assetMeta formatter shows beds, baths, and monthly rent', () => {
+    const schema = resolveCategorySchema('APARTMENTS');
+    const meta = schema.formatters.assetMeta({
+      priceCents: 289900,
+      categoryPayload: { beds: 2, baths: 2, sqft: 980 },
+    });
+    assert.match(meta, /2 bed \/ 2 bath/);
+    assert.match(meta, /980 sqft/);
+    assert.match(meta, /\/mo/);
+  });
+
+  it('HEAVY_EQUIPMENT assetMeta formatter shows hours from mileage and equipment type', () => {
+    const schema = resolveCategorySchema('HEAVY_EQUIPMENT');
+    const meta = schema.formatters.assetMeta({
+      mileage: 4200,
+      priceCents: 18500000,
+      categoryPayload: { usageUnit: 'hours', equipmentType: 'Excavator' },
+    });
+    assert.match(meta, /Excavator/);
+    assert.match(meta, /4,200 hrs/);
+  });
 });
 
 describe('resolveCategorySchema — placeholders', () => {
@@ -122,11 +153,19 @@ describe('resolveCategorySchema — placeholders', () => {
 
   /** Minimal placeholders built via createPlaceholderSchema — generic shell labels only. */
   const genericPlaceholderIds = BUSINESS_CATEGORY_IDS.filter(
-    id => !activeIds.has(id) && !['SONGS', 'EBOOKS', 'APPAREL', 'SNEAKERS', 'PAWN', 'DIGITAL_ART', 'VIDEO_DISTRIBUTION'].includes(id),
+    id => !activeIds.has(id) && ![
+      'SONGS', 'EBOOKS', 'APPAREL', 'SNEAKERS', 'PAWN', 'DIGITAL_ART', 'VIDEO_DISTRIBUTION',
+      'WATCHES', 'COLLECTIBLES', 'FURNITURE', 'VACATION_RENTALS',
+      'APARTMENTS', 'HOMES', 'COMMERCIAL_PROPERTY', 'HEAVY_EQUIPMENT',
+    ].includes(id),
   );
 
   /** Rich placeholder schemas with category-specific field labels but not yet active. */
-  const richPlaceholderIds = ['SONGS', 'EBOOKS', 'APPAREL', 'SNEAKERS', 'PAWN', 'DIGITAL_ART', 'VIDEO_DISTRIBUTION'] as const;
+  const richPlaceholderIds = [
+    'SONGS', 'EBOOKS', 'APPAREL', 'SNEAKERS', 'PAWN', 'DIGITAL_ART', 'VIDEO_DISTRIBUTION',
+    'WATCHES', 'COLLECTIBLES', 'FURNITURE', 'VACATION_RENTALS',
+    'APARTMENTS', 'HOMES', 'COMMERCIAL_PROPERTY', 'HEAVY_EQUIPMENT',
+  ] as const;
 
   for (const id of genericPlaceholderIds) {
     it(`${id} resolves as placeholder with generic asset/channel labels`, () => {
