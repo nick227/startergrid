@@ -8,7 +8,7 @@ import { listHref, parseRoute, type ListQuery } from '../lib/routes.ts';
 import { fromListQuery, toListQuery, type ListingQuery, type ListingSort } from '../features/listings/listingQuery.ts';
 import { isConsumerMarketplaceLive } from '@auto-dealer/category-schemas';
 import { useCategorySchema, useCategorySlug } from '../contexts/CategoryContext.tsx';
-import { buildListingFilterConfig, sanitizeListingQuery } from '../features/listings/listingFilterConfig.ts';
+import { buildListingFilterConfig, isListingFilterEnabled, sanitizeListingQuery } from '../features/listings/listingFilterConfig.ts';
 import { sanitizeListingFacets } from '../features/listings/listingFacetConfig.ts';
 import { isCompareEnabled } from '../features/listings/listingCompareFields.ts';
 import { hasListingFilters } from '../features/listings/listingFilterChips.ts';
