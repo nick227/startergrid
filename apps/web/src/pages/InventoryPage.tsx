@@ -20,7 +20,7 @@ import {
   type InventorySortKey,
   type MovementFilter,
   type SortDirection,
-} from '@/lib/inventoryVehicleOps.ts';
+} from '@/lib/inventoryAssetOps.ts';
 import { Banner, EmptyState } from '@/components/ui';
 import { InfoButton } from '@/components/docs';
 import { SearchField } from '@/components/ui/SearchField.tsx';

@@ -20,7 +20,7 @@ function formatWhen(iso: string): string {
   });
 }
 
-export function VehicleLifecycleHistory({ dealerId, stockNumber }: Props) {
+export function AssetLifecycleHistory({ dealerId, stockNumber }: Props) {
   const { data, loading, error } = useAsyncQuery(
     () => fetchVehicleLifecycleEvents(dealerId, { stockNumber, limit: 20 }),
     [dealerId, stockNumber],

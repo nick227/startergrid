@@ -12,7 +12,7 @@ import { EMPTY_STATE_COPY } from '@/lib/statusRegistry.ts';
 import { ReadinessBadge, MovementSignalBadge, LifecycleStateBadge } from './inventoryConfig.tsx';
 import { PlatformMovementCompare } from './PlatformMovementCompare.tsx';
 import { MarketplacePreviewCard } from './MarketplacePreviewCard.tsx';
-import { VehicleLifecycleHistory } from './VehicleLifecycleHistory.tsx';
+import { AssetLifecycleHistory } from './AssetLifecycleHistory.tsx';
 import { isActiveLifecycleScope } from '@/lib/lifecycleDisplay.ts';
 import type { LifecycleScope } from '@/lib/types.ts';
 
@@ -29,7 +29,7 @@ function formatPrice(cents: number): string {
   return cents > 0 ? `$${(cents / 100).toLocaleString(undefined, { maximumFractionDigits: 0 })}` : '—';
 }
 
-export function VehicleDetailPanel({
+export function AssetDetailPanel({
   vehicle,
   perf,
   platformPerfBySlug,
@@ -108,7 +108,7 @@ export function VehicleDetailPanel({
             </section>
           )}
 
-          <VehicleLifecycleHistory dealerId={dealerId} stockNumber={vehicle.stockNumber} />
+          <AssetLifecycleHistory dealerId={dealerId} stockNumber={vehicle.stockNumber} />
         </div>
 
         {showMarketplace ? (

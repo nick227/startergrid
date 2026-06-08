@@ -1,5 +1,5 @@
-import type { MovementFilter } from '@/lib/inventoryVehicleOps.ts';
-import { movementFilterLabel } from '@/lib/inventoryVehicleOps.ts';
+import type { MovementFilter } from '@/lib/inventoryAssetOps.ts';
+import { movementFilterLabel } from '@/lib/inventoryAssetOps.ts';
 import type { MovementSignal } from '@/lib/types.ts';
 import { movementSignalVisual } from '@/lib/statusRegistry.ts';
 

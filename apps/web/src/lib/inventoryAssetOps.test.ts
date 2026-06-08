@@ -4,7 +4,7 @@ import {
   matchesInventorySearch,
   movementFilterCountsScoped,
   type InventoryListQuery,
-} from './inventoryVehicleOps.ts';
+} from './inventoryAssetOps.ts';
 import type { VehicleListItem, VehiclePerformanceItem } from './types.ts';
 
 const applyCleanup = (v: VehicleListItem, filter: string) => {

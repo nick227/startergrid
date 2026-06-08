@@ -4,7 +4,7 @@ import type { OperatorNavHandlers } from '@/lib/operatorNav.ts';
 import { OpsRowCard } from '@/components/layout/OpsRowCard.tsx';
 import { RowDetailDrawer } from '@/components/layout';
 import { PanelSkeleton } from '@/components/operator';
-import { VehicleDetailPanel } from './VehicleDetailPanel.tsx';
+import { AssetDetailPanel } from './AssetDetailPanel.tsx';
 import { vehicleReadinessRowBg } from './inventoryConfig.tsx';
 import {
   assetTitle,
@@ -109,7 +109,7 @@ export function InventoryAssetList({
 
       {detailVehicle && (
         <RowDetailDrawer open title={assetTitle(detailVehicle)} onClose={() => setDetailId(null)}>
-          <VehicleDetailPanel
+          <AssetDetailPanel
             vehicle={{ ...detailVehicle, issues: detailVehicle.issues }}
             perf={perfMap.get(detailVehicle.stockNumber)}
             platformPerfBySlug={platformPerfBySlug}

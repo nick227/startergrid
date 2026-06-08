@@ -1,4 +1,4 @@
-import type { InventorySortKey, SortDirection } from '@/lib/inventoryVehicleOps.ts';
+import type { InventorySortKey, SortDirection } from '@/lib/inventoryAssetOps.ts';
 import { inventoryLabels } from '@/lib/copy/index.ts';
 
 function sortOptions() {

@@ -1,5 +1,5 @@
 import type { VehicleIssue, VehicleListItem, VehiclePerformanceItem, PlatformPerformanceItem, LifecycleScope } from '../../lib/types.ts';
-import { VehicleDetailPanel } from './VehicleDetailPanel.tsx';
+import { AssetDetailPanel } from './AssetDetailPanel.tsx';
 
 type Props = {
   vehicle: VehicleListItem;
@@ -11,8 +11,8 @@ type Props = {
   lifecycleScope?: LifecycleScope;
 };
 
-/** @deprecated Use VehicleDetailPanel — kept for table expand wiring. */
-export function VehicleRowExpand({
+/** @deprecated Use AssetDetailPanel — kept for table expand wiring. */
+export function AssetRowExpand({
   vehicle,
   issues,
   perf,
@@ -22,7 +22,7 @@ export function VehicleRowExpand({
   lifecycleScope,
 }: Props) {
   return (
-    <VehicleDetailPanel
+    <AssetDetailPanel
       vehicle={{ ...vehicle, issues }}
       perf={perf}
       platformPerfBySlug={platformPerfBySlug}
