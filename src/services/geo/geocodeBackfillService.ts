@@ -1,5 +1,6 @@
 import type { PrismaClient } from '@prisma/client';
-import type { GeocodeFn, GeocodeInput } from '../../lib/geo/geocodeAddress.js';
+import type { GeocodeFn } from '../../lib/geo/geocodeAddress.js';
+import { parseRooftopAddress } from '../../lib/geo/rooftopAddress.js';
 
 export type BackfillOptions = {
   dryRun:        boolean;
@@ -14,26 +15,6 @@ export type BackfillSummary = {
   skipped:   number; // no result or confidence below threshold
   failed:    number; // geocoder threw
 };
-
-type RooftopAddress = {
-  street?:     string;
-  city?:       string;
-  state?:      string;
-  postalCode?: string;
-  country?:    string;
-};
-
-function parseAddress(raw: unknown): GeocodeInput | null {
-  if (!raw || typeof raw !== 'object') return null;
-  const addr = raw as Record<string, unknown>;
-  const street     = typeof addr['street']     === 'string' ? addr['street']     : undefined;
-  const city       = typeof addr['city']       === 'string' ? addr['city']       : undefined;
-  const state      = typeof addr['state']      === 'string' ? addr['state']      : undefined;
-  const postalCode = typeof addr['postalCode'] === 'string' ? addr['postalCode'] : undefined;
-  const country    = typeof addr['country']    === 'string' ? addr['country']    : undefined;
-  if (!city && !postalCode) return null;
-  return { street, city, state, postalCode, country };
-}
 
 export async function runGeocodeBackfill(
   prisma: PrismaClient,
@@ -58,7 +39,7 @@ export async function runGeocodeBackfill(
     const batch = dealers.slice(i, i + batchSize);
 
     for (const dealer of batch) {
-      const addr = parseAddress(dealer.rooftopAddress);
+      const addr = parseRooftopAddress(dealer.rooftopAddress);
       if (!addr) {
         log(`  SKIP  ${dealer.legalName} — unparseable rooftopAddress`);
         summary.skipped++;

@@ -33,6 +33,7 @@
     "validate:pristine:db": "npm run -s build && node dist/src/scripts/dev/validatePristine.js --db",
     "smoke:test": "npm run -s build && node dist/src/scripts/dev/smokeTest.js",
     "smoke:marketplace": "node scripts/smoke-marketplace.mjs",
+    "geo:verify": "npm run -s build && node dist/src/scripts/geo/geoVerify.js",
     "geo:backfill": "npm run -s build && node dist/src/scripts/geo/geocodeBackfill.js",
     "performance:compute": "npm run -s build && node dist/src/scripts/performance/computePerformance.js",
     "demo:reset": "npm run -s build && node dist/src/scripts/dev/demoReset.js",
