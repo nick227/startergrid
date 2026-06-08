@@ -123,6 +123,18 @@ describe('buyer location preference', () => {
     });
   });
 
+  it('resolves bundled ZIP centroids for Austin 78701 without mocks', () => {
+    const saved = commitBuyerLocationDraft({
+      postalCode: '78701',
+      radiusMiles: 50,
+      nationwide: false,
+    });
+    expect(saved.lat).toBeTypeOf('number');
+    expect(saved.lng).toBeTypeOf('number');
+    expect(resolveBuyerGeoApiParams(saved).buyerLat).toBe(saved.lat);
+    expect(resolveBuyerGeoApiParams(saved).radiusMiles).toBe(50);
+  });
+
   it('setBuyerLocationNationwide stores nationwide-only preference', () => {
     setBuyerLocationNationwide(true);
     expect(resolveBuyerGeoApiParams(readBuyerLocationPreference())).toEqual({

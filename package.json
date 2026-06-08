@@ -35,6 +35,7 @@
     "smoke:marketplace": "node scripts/smoke-marketplace.mjs",
     "geo:verify": "npm run -s build && node dist/src/scripts/geo/geoVerify.js",
     "geo:backfill": "npm run -s build && node dist/src/scripts/geo/geocodeBackfill.js",
+    "geo:download-zips": "node scripts/geo/downloadZipCentroids.mjs",
     "performance:compute": "npm run -s build && node dist/src/scripts/performance/computePerformance.js",
     "demo:reset": "npm run -s build && node dist/src/scripts/dev/demoReset.js",
     "demo:connected-inventory": "npm run -s build && node dist/src/scripts/dev/connectedInventoryDemo.js",
