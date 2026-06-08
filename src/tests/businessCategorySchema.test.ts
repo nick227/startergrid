@@ -122,11 +122,11 @@ describe('resolveCategorySchema — placeholders', () => {
 
   /** Minimal placeholders built via createPlaceholderSchema — generic shell labels only. */
   const genericPlaceholderIds = BUSINESS_CATEGORY_IDS.filter(
-    id => !activeIds.has(id) && !['SONGS', 'EBOOKS', 'APPAREL', 'PAWN', 'DIGITAL_ART', 'VIDEO_DISTRIBUTION'].includes(id),
+    id => !activeIds.has(id) && !['SONGS', 'EBOOKS', 'APPAREL', 'SNEAKERS', 'PAWN', 'DIGITAL_ART', 'VIDEO_DISTRIBUTION'].includes(id),
   );
 
   /** Rich placeholder schemas with category-specific field labels but not yet active. */
-  const richPlaceholderIds = ['SONGS', 'EBOOKS', 'APPAREL', 'PAWN', 'DIGITAL_ART', 'VIDEO_DISTRIBUTION'] as const;
+  const richPlaceholderIds = ['SONGS', 'EBOOKS', 'APPAREL', 'SNEAKERS', 'PAWN', 'DIGITAL_ART', 'VIDEO_DISTRIBUTION'] as const;
 
   for (const id of genericPlaceholderIds) {
     it(`${id} resolves as placeholder with generic asset/channel labels`, () => {
