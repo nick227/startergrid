@@ -12,6 +12,8 @@ import { PageShell } from '../components/layout/PageShell.tsx';
 import { PageHeader } from '../components/ui/PageHeader.tsx';
 import { ListingFilterBar } from '../components/listings/ListingFilterBar.tsx';
 import { ActiveListingFilterChips } from '../components/listings/ActiveListingFilterChips.tsx';
+import { NoResultsRelaxation } from '../components/listings/NoResultsRelaxation.tsx';
+import { SavedSearchesPanel } from '../components/listings/SavedSearchesPanel.tsx';
 import { VehicleGrid } from '../components/ui/VehicleGrid.tsx';
 import { ErrorState } from '../components/ui/ErrorState.tsx';
 import { EmptyState } from '../components/ui/EmptyState.tsx';
@@ -149,11 +151,28 @@ export default function VehicleListPage({ initialQuery = {} }: Props) {
       />
       )}
 
+      {consumerActive && (
+      <SavedSearchesPanel
+        categorySlug={slug}
+        config={filterConfig}
+        currentQuery={listQuery}
+        onApply={applyChipQuery}
+      />
+      )}
+
       {feed.loadingInitial ? (
         <FeedCardSkeleton />
       ) : initialError ? (
         <ErrorState message={queryErrorMessage(feed.error)} onRetry={feed.retry} />
       ) : !hasItems ? (
+        consumerActive && hasActiveFilters ? (
+          <NoResultsRelaxation
+            query={listQuery}
+            config={filterConfig}
+            onApplyQuery={applyChipQuery}
+            onClearAll={resetFilters}
+          />
+        ) : (
         <EmptyState
           title={consumerActive
             ? 'No listings match your search'
@@ -164,6 +183,7 @@ export default function VehicleListPage({ initialQuery = {} }: Props) {
           actionLabel={hasActiveFilters ? 'Reset filters' : undefined}
           onAction={hasActiveFilters ? resetFilters : undefined}
         />
+        )
       ) : (
         <>
           <p className="mb-4 text-sm font-medium text-slate-600 sm:mb-5">
