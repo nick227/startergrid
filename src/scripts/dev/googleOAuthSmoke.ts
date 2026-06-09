@@ -88,29 +88,31 @@ function preview(token: string | null, chars = 12): string {
 // ── Main ──────────────────────────────────────────────────────────────────────
 
 async function run() {
+  const resumeMode = !!argValue('resume');
   const rl = createInterface({ input, output });
 
   console.log('\n══════════════════════════════════════════════════════════');
   console.log('  Google OAuth Smoke Test');
+  if (resumeMode) console.log('  (resuming — skipping phases 1–2)');
   console.log('══════════════════════════════════════════════════════════');
-
-  // ── Pre-flight ──────────────────────────────────────────────────────────────
-
-  section('PHASE 1 · Pre-flight');
 
   const clientId     = process.env['GOOGLE_CLIENT_ID']    ?? '';
   const clientSecret = process.env['GOOGLE_CLIENT_SECRET'] ?? '';
   const redirectBase = process.env['OAUTH_REDIRECT_BASE_URL'] ?? process.env['APP_BASE_URL'] ?? '';
 
-  assert(!!clientId,     'GOOGLE_CLIENT_ID set',    'GOOGLE_CLIENT_ID missing',    clientId ? `${preview(clientId, 8)}…` : '');
-  assert(!!clientSecret, 'GOOGLE_CLIENT_SECRET set', 'GOOGLE_CLIENT_SECRET missing', '');
-  assert(!!redirectBase, 'OAUTH_REDIRECT_BASE_URL set', 'OAUTH_REDIRECT_BASE_URL missing', redirectBase);
+  // ── Pre-flight ──────────────────────────────────────────────────────────────
 
-  if (!clientId || !clientSecret) {
-    console.log('\n  Set GOOGLE_CLIENT_ID and GOOGLE_CLIENT_SECRET in .env to proceed.\n');
-    await prisma.$disconnect();
-    rl.close();
-    process.exit(1);
+  if (!resumeMode) {
+    section('PHASE 1 · Pre-flight');
+
+    assert(!!clientId,     'GOOGLE_CLIENT_ID set',    'GOOGLE_CLIENT_ID missing',    clientId ? `${preview(clientId, 8)}…` : '');
+    assert(!!clientSecret, 'GOOGLE_CLIENT_SECRET set', 'GOOGLE_CLIENT_SECRET missing', '');
+    assert(!!redirectBase, 'OAUTH_REDIRECT_BASE_URL set', 'OAUTH_REDIRECT_BASE_URL missing', redirectBase);
+
+    if (!clientId || !clientSecret) {
+      console.log('\n  Set GOOGLE_CLIENT_ID and GOOGLE_CLIENT_SECRET in .env to proceed.\n');
+      await prisma.$disconnect(); rl.close(); process.exit(1);
+    }
   }
 
   let dealerId = argValue('dealer-id');
@@ -121,62 +123,76 @@ async function run() {
       await prisma.$disconnect(); rl.close(); process.exit(1);
     }
     dealerId = row.id;
-    pass('Dealer found', `${row.legalName} (${dealerId})`);
+    if (!resumeMode) pass('Dealer found', `${row.legalName} (${dealerId})`);
   } else {
-    const row = await prisma.dealershipProfile.findUnique({ where: { id: dealerId }, select: { legalName: true } });
-    assert(!!row, 'Dealer found', 'Dealer not found', row?.legalName ?? dealerId);
-    if (!row) { await prisma.$disconnect(); rl.close(); process.exit(1); }
+    if (!resumeMode) {
+      const row = await prisma.dealershipProfile.findUnique({ where: { id: dealerId }, select: { legalName: true } });
+      assert(!!row, 'Dealer found', 'Dealer not found', row?.legalName ?? dealerId);
+      if (!row) { await prisma.$disconnect(); rl.close(); process.exit(1); }
+    }
   }
 
-  info(`Callback URL: ${redirectBase}/api/oauth/callback`);
-  info('Ensure this URI is registered in your Google Cloud Console OAuth app.');
+  if (!resumeMode) {
+    info(`Callback URL: ${redirectBase}/api/oauth/callback`);
+    info('Ensure this URI is registered in your Google Cloud Console OAuth app.');
+  }
+
+  const app = buildApp(prisma);
 
   // ── Get authorization URL ───────────────────────────────────────────────────
 
-  section('PHASE 2 · Get authorization URL');
+  if (!resumeMode) {
+    section('PHASE 2 · Get authorization URL');
 
-  const app = buildApp(prisma);
-  const connectRes = await app.inject({
-    method: 'GET',
-    url: `/api/dealers/${dealerId}/platforms/google-vehicle-ads/connect-url`,
-    headers: { 'x-operator-id': DEV_OP },
-  });
+    const connectRes = await app.inject({
+      method: 'GET',
+      url: `/api/dealers/${dealerId}/platforms/google-vehicle-ads/connect-url`,
+      headers: { 'x-operator-id': DEV_OP },
+    });
 
-  if (connectRes.statusCode !== 200) {
-    fail('connect-url returned 200', `got ${connectRes.statusCode}: ${connectRes.body}`);
-    await prisma.$disconnect(); rl.close(); process.exit(1);
-  }
+    if (connectRes.statusCode !== 200) {
+      fail('connect-url returned 200', `got ${connectRes.statusCode}: ${connectRes.body}`);
+      await prisma.$disconnect(); rl.close(); process.exit(1);
+    }
 
-  const { authUrl } = connectRes.json() as { authUrl: string; state: string };
-  pass('connect-url returned 200', 'authUrl received');
+    const { authUrl } = connectRes.json() as { authUrl: string; state: string };
+    pass('connect-url returned 200', 'authUrl received');
 
-  // Fail fast if the redirect_uri baked into the authUrl doesn't match what we
-  // told the user to register in Google Console. A mismatch here causes a
-  // redirect_uri_mismatch error from Google before any token exchange happens.
-  const redirectUriInUrl = new URL(authUrl).searchParams.get('redirect_uri') ?? '';
-  const expectedCallbackUrl = `${redirectBase}/api/oauth/callback`;
-  if (redirectUriInUrl !== expectedCallbackUrl) {
-    fail(
-      'redirect_uri matches expected callback',
-      `\n       authUrl has:  ${redirectUriInUrl}\n       expected:     ${expectedCallbackUrl}\n       Fix OAUTH_REDIRECT_BASE_URL in .env — they must be identical.`
-    );
-    await prisma.$disconnect(); rl.close(); process.exit(1);
-  }
-  pass('redirect_uri matches expected callback', expectedCallbackUrl);
+    // Fail fast if the redirect_uri baked into the authUrl doesn't match what we
+    // told the user to register in Google Console. A mismatch here causes a
+    // redirect_uri_mismatch error from Google before any token exchange happens.
+    const redirectUriInUrl = new URL(authUrl).searchParams.get('redirect_uri') ?? '';
+    const expectedCallbackUrl = `${redirectBase}/api/oauth/callback`;
+    if (redirectUriInUrl !== expectedCallbackUrl) {
+      fail(
+        'redirect_uri matches expected callback',
+        `\n       authUrl has:  ${redirectUriInUrl}\n       expected:     ${expectedCallbackUrl}\n       Fix OAUTH_REDIRECT_BASE_URL in .env — they must be identical.`
+      );
+      await prisma.$disconnect(); rl.close(); process.exit(1);
+    }
+    pass('redirect_uri matches expected callback', expectedCallbackUrl);
 
-  console.log('\n  ┌──────────────────────────────────────────────────────────┐');
-  console.log('  │  ACTION REQUIRED                                           │');
-  console.log('  │                                                             │');
-  console.log('  │  1. Start your dev server (if not already running):        │');
-  console.log('  │       npm run dev:server                                   │');
-  console.log('  │                                                             │');
-  console.log('  │  2. Open the following URL in your browser and authorize:  │');
-  console.log('  └──────────────────────────────────────────────────────────┘');
-  console.log(`\n  ${authUrl}\n`);
-  console.log('  The callback will save your token automatically.');
-  console.log('  (Authorization state expires in 10 minutes)\n');
+    console.log('\n  ┌──────────────────────────────────────────────────────────┐');
+    console.log('  │  ACTION REQUIRED                                           │');
+    console.log('  │                                                             │');
+    console.log('  │  1. Start your dev server (if not already running):        │');
+    console.log('  │       npm run dev:server                                   │');
+    console.log('  │                                                             │');
+    console.log('  │  2. Open the following URL in your browser and authorize:  │');
+    console.log('  └──────────────────────────────────────────────────────────┘');
+    console.log(`\n  ${authUrl}\n`);
+    console.log('  The callback will save your token automatically.');
+    console.log('  (Authorization state expires in 10 minutes)\n');
 
-  await rl.question('  Press ENTER after completing authorization in the browser…');
+    // In a non-TTY environment readline.question throws. Exit cleanly with
+    // instructions — the user re-runs with --resume after completing the auth.
+    try {
+      await rl.question('  Press ENTER after completing authorization in the browser…');
+    } catch {
+      console.log('  (non-TTY — re-run with --resume once browser auth is done)\n');
+      await prisma.$disconnect(); rl.close(); process.exit(0);
+    }
+  } // end !resumeMode phase 2
 
   // ── Poll for token ──────────────────────────────────────────────────────────
 
