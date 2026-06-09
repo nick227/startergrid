@@ -1,13 +1,13 @@
 {
   "name": "auto-dealer-onboarding-poc-v1",
-  "version": "4.8.0",
+  "version": "4.9.0",
   "private": true,
   "workspaces": [
     "apps/*",
     "packages/*"
   ],
   "type": "module",
-  "description": "V4.8: Meta Automotive Catalog — CatalogSyncBridge pattern, PlatformCatalogSync schema, smoke:meta-catalog.",
+  "description": "V4.9: Google Vehicle Ads catalog sync — Content API batch product bridge, smoke:google-catalog.",
   "scripts": {
     "build": "tsc",
     "typecheck": "tsc --noEmit",
