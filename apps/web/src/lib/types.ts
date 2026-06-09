@@ -729,3 +729,24 @@ export type QueueView = {
     failed: number;
   };
 };
+
+// ── Catalog Sync ──────────────────────────────────────────────────────────────
+
+export type CatalogConfig = {
+  id: string;
+  dealershipId: string;
+  platformSlug: string;
+  catalogId: string;
+  lastSyncAt: string | null;
+  lastSyncCount: number | null;
+  createdAt: string;
+  updatedAt: string;
+};
+
+export type CatalogConfigResponse = { config: CatalogConfig };
+
+export type CatalogSyncResponse = {
+  synced: number;
+  rejected: number;
+  handles?: string[];
+};

@@ -6,6 +6,7 @@ import { timeAgo } from '@/lib/timeAgo.ts';
 import type { OperatorNavHandlers } from '@/lib/operatorNav.ts';
 import { AccountEditForm } from './AccountEditForm.tsx';
 import { PlatformLogo } from './PlatformLogo.tsx';
+import { CatalogSyncPanel } from './CatalogSyncPanel.tsx';
 import { operatorCopy } from '@/lib/copy/operator.ts';
 import { RowDetailDrawer } from '@/components/layout';
 import { fetchPublishHistory, updateAccount } from '@/lib/api/sdk.ts';
@@ -13,8 +14,13 @@ import { useAsyncQuery } from '@/hooks/useAsyncQuery.ts';
 import { SocialPageSelector, SocialPostsTab } from '@/components/social/index.ts';
 
 const SOCIAL_SLUGS = new Set(['facebook-business-page', 'google-business-profile']);
+const CATALOG_SLUGS = new Set([
+  'meta-automotive-ads', 'google-vehicle-ads', 'tiktok-automotive-ads',
+  'microsoft-automotive-ads', 'pinterest-shopping-ads',
+  'snapchat-dynamic-product-ads', 'reddit-dynamic-product-ads',
+]);
 
-type Tab = 'setup' | 'feed' | 'activity' | 'notes' | 'social';
+type Tab = 'setup' | 'feed' | 'activity' | 'notes' | 'social' | 'catalog';
 
 type Props = {
   platform: PlatformPublishResult;
@@ -187,6 +193,9 @@ function buildTabs(platformSlug: string): Array<{ key: Tab; label: string }> {
   if (SOCIAL_SLUGS.has(platformSlug)) {
     tabs.splice(1, 0, { key: 'social', label: 'Social' });
   }
+  if (CATALOG_SLUGS.has(platformSlug)) {
+    tabs.splice(tabs.length - 1, 0, { key: 'catalog', label: 'Catalog' });
+  }
   return tabs;
 }
 
@@ -283,6 +292,10 @@ export function PlatformDetailDrawer({
               <SocialPostsTab dealerId={dealerId} platformSlug={platform.platformSlug} />
             </div>
           </div>
+        )}
+
+        {activeTab === 'catalog' && (
+          <CatalogSyncPanel dealerId={dealerId} platformSlug={platform.platformSlug} />
         )}
 
       </div>

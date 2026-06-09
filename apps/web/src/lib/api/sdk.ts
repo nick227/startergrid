@@ -523,3 +523,53 @@ export async function fetchChannelVelocityReport(
 ): Promise<ChannelVelocityReport> {
   return fromSdk(ReportsService.getChannelVelocityReport({ dealershipId, range }));
 }
+
+// ── Catalog Sync ──────────────────────────────────────────────────────────────
+
+import type { CatalogConfigResponse, CatalogSyncResponse } from '../types.ts';
+
+async function catalogFetch<T>(url: string, opts?: RequestInit): Promise<T> {
+  const res = await fetch(url, { credentials: 'include', ...opts });
+  if (!res.ok) {
+    const body = await res.json().catch(() => ({})) as { error?: string };
+    throw new Error(body.error ?? `HTTP ${res.status}`);
+  }
+  return res.json() as Promise<T>;
+}
+
+export async function fetchCatalogConfig(
+  dealershipId: string,
+  platformSlug: string,
+): Promise<CatalogConfigResponse | null> {
+  const res = await fetch(
+    `/api/dealers/${dealershipId}/platforms/${platformSlug}/catalog-config`,
+    { credentials: 'include' },
+  );
+  if (res.status === 404) return null;
+  if (!res.ok) {
+    const body = await res.json().catch(() => ({})) as { error?: string };
+    throw new Error(body.error ?? `HTTP ${res.status}`);
+  }
+  return res.json() as Promise<CatalogConfigResponse>;
+}
+
+export async function saveCatalogConfig(
+  dealershipId: string,
+  platformSlug: string,
+  catalogId: string,
+): Promise<CatalogConfigResponse> {
+  return catalogFetch<CatalogConfigResponse>(
+    `/api/dealers/${dealershipId}/platforms/${platformSlug}/catalog-config`,
+    { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ catalogId }) },
+  );
+}
+
+export async function triggerCatalogSync(
+  dealershipId: string,
+  platformSlug: string,
+): Promise<CatalogSyncResponse> {
+  return catalogFetch<CatalogSyncResponse>(
+    `/api/dealers/${dealershipId}/platforms/${platformSlug}/catalog-sync`,
+    { method: 'POST' },
+  );
+}
