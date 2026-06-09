@@ -2,7 +2,7 @@ import type { PlatformPublishResult, PlatformAccountDetail } from './types.ts';
 import { friendlyPlatformDetail, platformOutcomeMeta, sortPlatformsForSync } from './syncPresentation.ts';
 import { operatorCopy } from './copy/operator.ts';
 
-export type PlatformConnection = 'inactive' | 'connected' | 'blocked' | 'updating' | 'needs_oauth';
+export type PlatformConnection = 'inactive' | 'connected' | 'blocked' | 'updating' | 'needs_oauth' | 'partner_pending';
 
 const OAUTH_PROVIDER_NAMES: Record<string, string> = {
   meta: 'Meta',
@@ -34,6 +34,7 @@ const CONNECTION_PILL: Record<PlatformConnection, string> = {
   blocked: 'bg-status-error-bg text-status-error-text border-status-error-border',
   inactive: 'bg-silver-100 text-ink-muted border-silver-200',
   needs_oauth: 'bg-amber-50 text-amber-700 border-amber-200',
+  partner_pending: 'bg-blue-50 text-blue-700 border-blue-200',
   updating: 'bg-status-info-bg text-status-info-text border-status-info-border',
   connected: 'bg-status-success-bg text-status-success-text border-status-success-border',
 };
@@ -66,12 +67,18 @@ export function platformConnectionWithAccount(
   account: PlatformAccountDetail | null | undefined
 ): PlatformConnectionMeta {
   const base = platformConnection(p);
-  if (base.connection === 'inactive' && account?.oauthProvider && !account.oauthConnected) {
-    const displayName = oauthProviderDisplayName(account.oauthProvider);
-    const label = account.oauthExpired
-      ? `Re-connect ${displayName}`
-      : `Connect ${displayName}`;
-    return { connection: 'needs_oauth', label, sort: 0, pill: CONNECTION_PILL.needs_oauth };
+  if (base.connection === 'inactive') {
+    if (account?.oauthProvider && !account.oauthConnected) {
+      const displayName = oauthProviderDisplayName(account.oauthProvider);
+      const label = account.oauthExpired
+        ? `Re-connect ${displayName}`
+        : `Connect ${displayName}`;
+      return { connection: 'needs_oauth', label, sort: 0, pill: CONNECTION_PILL.needs_oauth };
+    }
+    if (account?.state === 'PENDING_REVIEW' && account.partnerSignup) {
+      const label = `Applied · ${account.partnerSignup.estimatedDays}`;
+      return { connection: 'partner_pending', label, sort: 1, pill: CONNECTION_PILL.partner_pending };
+    }
   }
   return base;
 }
@@ -102,7 +109,7 @@ export function platformSituationSummary(platforms: PlatformPublishResult[]): st
   for (const p of platforms) {
     const c = platformConnection(p).connection;
     if (c === 'connected') connected++;
-    else if (c === 'inactive' || c === 'needs_oauth') setup++;
+    else if (c === 'inactive' || c === 'needs_oauth' || c === 'partner_pending') setup++;
     else if (c === 'blocked') blocked++;
     else if (c === 'updating') updating++;
   }

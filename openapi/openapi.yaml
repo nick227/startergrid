@@ -1958,6 +1958,8 @@ components:
         - updatedAt
         - oauthConnected
         - oauthExpired
+        - tier
+        - partnerSignup
       properties:
         id:
           type: string
@@ -2010,6 +2012,25 @@ components:
         oauthExpired:
           type: boolean
           description: Whether a token row exists but has passed its expiry (re-auth needed)
+        tier:
+          type: integer
+          nullable: true
+          description: Priority tier (1=highest) for onboarding urgency; null for infrastructure channels
+        partnerSignup:
+          nullable: true
+          description: Partner application details for channels requiring an external signup
+          type: object
+          required: [applyUrl, estimatedDays, requirements, contactType]
+          properties:
+            applyUrl:
+              type: string
+            estimatedDays:
+              type: string
+            requirements:
+              type: string
+            contactType:
+              type: string
+              enum: [self-serve, rep-assisted]
 
     AccountStateSummary:
       type: object

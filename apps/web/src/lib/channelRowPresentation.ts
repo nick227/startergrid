@@ -13,6 +13,7 @@ export function channelRowSurface(connection: PlatformConnection): string {
   if (connection === 'blocked') return 'bg-status-error-bg/25';
   if (connection === 'inactive') return 'bg-silver-50/80';
   if (connection === 'needs_oauth') return 'bg-amber-50/40';
+  if (connection === 'partner_pending') return 'bg-blue-50/40';
   return '';
 }
 

@@ -175,6 +175,14 @@ export type ConnectionField = {
   label: string;
   hint?: string;
   placeholder?: string;
+  helpUrl?: string;
+};
+
+export type PartnerSignupInfo = {
+  applyUrl: string;
+  estimatedDays: string;
+  requirements: string;
+  contactType: 'self-serve' | 'rep-assisted';
 };
 
 export type PlatformProfileSeed = {
@@ -199,6 +207,8 @@ export type PlatformProfileSeed = {
   testFixtures: JsonRecord;
   connectionFields?: ConnectionField[];
   oauthProvider?: OAuthProvider;
+  tier?: 1 | 2 | 3;
+  partnerSignup?: PartnerSignupInfo;
 };
 
 export type IssueCode =

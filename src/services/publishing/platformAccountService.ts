@@ -1,6 +1,6 @@
 import type { PrismaClient, PlatformAccountState, Prisma } from '@prisma/client';
 import { platformProfiles } from '../../data/platformProfiles.js';
-import type { PlatformProfileSeed, ConnectionField } from '../../lib/types.js';
+import type { PlatformProfileSeed, ConnectionField, PartnerSignupInfo } from '../../lib/types.js';
 
 // ── State classification helpers ─────────────────────────────────────────────
 
@@ -136,6 +136,8 @@ export type PlatformAccountDetail = {
   oauthProvider: string | null;
   oauthConnected: boolean;
   oauthExpired: boolean;
+  tier: number | null;
+  partnerSignup: PartnerSignupInfo | null;
 };
 
 // ── DB functions ─────────────────────────────────────────────────────────────
@@ -211,6 +213,8 @@ export async function listPlatformAccounts(
       oauthExpired:      p.oauthProvider
         ? anyProviders.has(p.oauthProvider) && !liveProviders.has(p.oauthProvider)
         : false,
+      tier:              p.tier ?? null,
+      partnerSignup:     p.partnerSignup ?? null,
     };
     return { ...base, readinessScore: computeReadinessScore(base).score };
   });
@@ -326,6 +330,8 @@ export async function updatePlatformAccount(
     oauthProvider:    platform?.oauthProvider ?? null,
     oauthConnected:   tokenRow !== null && !tokenExpired,
     oauthExpired:     tokenRow !== null && tokenExpired,
+    tier:             platform?.tier ?? null,
+    partnerSignup:    platform?.partnerSignup ?? null,
   };
   return { ...base, readinessScore: computeReadinessScore(base).score };
 }

@@ -355,6 +355,14 @@ export type ConnectionField = {
   label: string;
   hint?: string;
   placeholder?: string;
+  helpUrl?: string;
+};
+
+export type PartnerSignupInfo = {
+  applyUrl: string;
+  estimatedDays: string;
+  requirements: string;
+  contactType: 'self-serve' | 'rep-assisted';
 };
 
 export type PlatformAccountDetail = {
@@ -378,6 +386,8 @@ export type PlatformAccountDetail = {
   oauthProvider: string | null;
   oauthConnected: boolean;
   oauthExpired: boolean;
+  tier: number | null;
+  partnerSignup: PartnerSignupInfo | null;
 };
 
 export type AccountStateSummary = {

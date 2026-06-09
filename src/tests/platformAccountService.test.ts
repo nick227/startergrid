@@ -210,6 +210,8 @@ describe('PlatformAccountDetail shape', () => {
     oauthProvider:    null,
     oauthConnected:   false,
     oauthExpired:     false,
+    tier:             null,
+    partnerSignup:    null,
   };
 
   it('has all required fields', () => {

@@ -32,7 +32,7 @@ function fieldMeta(
   connectionFields: ConnectionField[] | undefined,
   key: ConnectionField['field'],
   defaultLabel: string
-): { label: string; hint?: string; placeholder?: string } {
+): { label: string; hint?: string; placeholder?: string; helpUrl?: string } {
   return connectionFields?.find(f => f.field === key) ?? { label: defaultLabel };
 }
 
@@ -51,6 +51,7 @@ export function AccountEditForm({ account, dealerId, onSaved, onCancel }: Props)
   const [err, setErr] = useState<string | null>(null);
   const { connecting, connected: justConnected, connect: handleConnect } = useOAuthConnect(dealerId, account.platformSlug, onSaved);
   const [disconnecting, setDisconnecting] = useState(false);
+  const [marking, setMarking] = useState(false);
 
   const set = (field: keyof AccountUpdatePayload) => (
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>
@@ -86,6 +87,18 @@ export function AccountEditForm({ account, dealerId, onSaved, onCancel }: Props)
     } catch (e: unknown) {
       setErr(e instanceof Error ? e.message : 'Disconnect failed');
       setDisconnecting(false);
+    }
+  };
+
+  const handleMarkApplied = async () => {
+    setMarking(true);
+    setErr(null);
+    try {
+      await updateAccount(dealerId, account.platformSlug, { state: 'PENDING_REVIEW' });
+      onSaved();
+    } catch (e: unknown) {
+      setErr(e instanceof Error ? e.message : 'Save failed');
+      setMarking(false);
     }
   };
 
@@ -142,7 +155,45 @@ export function AccountEditForm({ account, dealerId, onSaved, onCancel }: Props)
           <p className="text-xs text-ink-faint italic">Owned channel — no external account setup required.</p>
         ) : (
           <>
-            <FormField label={accountIdMeta.label} hint={accountIdMeta.hint}>
+            {account.partnerSignup && account.state === 'ACCOUNT_NEEDED' && (
+              <div className="rounded-md border border-blue-200 bg-blue-50 px-3 py-2.5 space-y-2">
+                <p className="text-xs font-semibold text-blue-800">Partner signup required</p>
+                <p className="text-xs text-blue-700">{account.partnerSignup.requirements}</p>
+                <p className="text-xs text-blue-600">Estimated approval: {account.partnerSignup.estimatedDays}</p>
+                <div className="flex items-center gap-3 pt-0.5">
+                  <a
+                    href={account.partnerSignup.applyUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="px-2.5 py-1 text-xs font-bold rounded-md text-white bg-blue-500 hover:bg-blue-600 transition-colors"
+                  >
+                    Apply →
+                  </a>
+                  <button
+                    type="button"
+                    disabled={marking}
+                    onClick={() => void handleMarkApplied()}
+                    className="text-xs text-blue-700 underline underline-offset-2 hover:text-blue-900 disabled:opacity-50"
+                  >
+                    {marking ? 'Saving…' : 'Mark as applied'}
+                  </button>
+                </div>
+              </div>
+            )}
+
+            {account.partnerSignup && account.state === 'PENDING_REVIEW' && (
+              <div className="rounded-md border border-blue-200 bg-blue-50 px-3 py-2">
+                <p className="text-xs text-blue-700">
+                  Application submitted · waiting for approval ({account.partnerSignup.estimatedDays})
+                </p>
+              </div>
+            )}
+
+            <FormField
+              label={accountIdMeta.label}
+              hint={accountIdMeta.hint}
+              helpUrl={accountIdMeta.helpUrl}
+            >
               <input
                 type="text"
                 value={form.accountId ?? ''}
@@ -210,15 +261,29 @@ export function AccountEditForm({ account, dealerId, onSaved, onCancel }: Props)
 function FormField({
   label,
   hint,
+  helpUrl,
   children,
 }: {
   label: string;
   hint?: string;
+  helpUrl?: string;
   children: React.ReactNode;
 }) {
   return (
     <div>
-      <label className="block text-xs font-semibold text-ink-muted mb-1">{label}</label>
+      <div className="flex items-center justify-between mb-1">
+        <label className="block text-xs font-semibold text-ink-muted">{label}</label>
+        {helpUrl && (
+          <a
+            href={helpUrl}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-[11px] text-ink-faint hover:text-ink underline underline-offset-2"
+          >
+            Where do I find this? →
+          </a>
+        )}
+      </div>
       {hint && <p className="text-xs text-ink-faint mb-1">{hint}</p>}
       {children}
     </div>

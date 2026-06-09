@@ -116,12 +116,13 @@ export const platformProfiles: PlatformProfileSeed[] = [
     },
     testFixtures: { validatesFeed: true, supportsReferralCredit: false, requiresDealerAccount: true },
     connectionFields: [
-      { field: 'accountId', label: 'Merchant Center ID', hint: '10-digit ID from merchants.google.com', placeholder: '1234567890' },
+      { field: 'accountId', label: 'Merchant Center ID', hint: '10-digit ID from merchants.google.com', placeholder: '1234567890', helpUrl: 'https://merchants.google.com/' },
       { field: 'membershipStatus', label: 'Merchant Center Status', placeholder: 'Approved / Pending / Suspended' },
       { field: 'platformRepName', label: 'Google Account Manager' },
       { field: 'platformRepEmail', label: 'Account Manager Email' },
     ],
     oauthProvider: 'google',
+    tier: 1,
   },
   {
     slug: 'meta-automotive-ads',
@@ -158,12 +159,13 @@ export const platformProfiles: PlatformProfileSeed[] = [
     requiredMediaRules: { minImages: 1, notes: 'POC validates catalog-ready image URL exists.' },
     testFixtures: { validatesFeed: true, supportsReferralCredit: false, requiresDealerAccount: true },
     connectionFields: [
-      { field: 'accountId', label: 'Meta Business Manager ID', hint: 'Found in Business Settings → Business Info', placeholder: '1234567890' },
+      { field: 'accountId', label: 'Meta Business Manager ID', hint: 'Found in Business Settings → Business Info', placeholder: '1234567890', helpUrl: 'https://business.facebook.com/' },
       { field: 'membershipStatus', label: 'Ad Account Status', placeholder: 'Active / Pending / Flagged' },
       { field: 'platformRepName', label: 'Meta Business Rep' },
       { field: 'platformRepEmail', label: 'Rep Email' },
     ],
     oauthProvider: 'meta',
+    tier: 1,
   },
   {
     slug: 'tiktok-automotive-ads',
@@ -201,12 +203,13 @@ export const platformProfiles: PlatformProfileSeed[] = [
     requiredMediaRules: { minImages: 1, minWidth: 450, minHeight: 450, preferredWidth: 800, preferredHeight: 600 },
     testFixtures: { validatesFeed: true, supportsReferralCredit: false, requiresDealerAccount: true },
     connectionFields: [
-      { field: 'accountId', label: 'TikTok Advertiser ID', hint: 'From TikTok Ads Manager → Account Info', placeholder: '7012345678901234567' },
+      { field: 'accountId', label: 'TikTok Advertiser ID', hint: 'From TikTok Ads Manager → Account Info', placeholder: '7012345678901234567', helpUrl: 'https://ads.tiktok.com/' },
       { field: 'membershipStatus', label: 'Account Status', placeholder: 'Active / Under Review / Suspended' },
       { field: 'platformRepName', label: 'TikTok Account Manager' },
       { field: 'platformRepEmail', label: 'Manager Email' },
     ],
     oauthProvider: 'tiktok',
+    tier: 2,
   },
   {
     slug: 'microsoft-automotive-ads',
@@ -242,12 +245,13 @@ export const platformProfiles: PlatformProfileSeed[] = [
     requiredMediaRules: { minImages: 1, notes: 'Automotive Ads showcase vehicle photos, prices, and landing URLs through feed attributes.' },
     testFixtures: { validatesFeed: true, supportsReferralCredit: false, requiresDealerAccount: true, publicApi: true },
     connectionFields: [
-      { field: 'accountId', label: 'Microsoft Ads Customer ID', hint: 'From Microsoft Advertising → My Account', placeholder: '123456789' },
+      { field: 'accountId', label: 'Microsoft Ads Customer ID', hint: 'From Microsoft Advertising → My Account', placeholder: '123456789', helpUrl: 'https://ads.microsoft.com/' },
       { field: 'membershipStatus', label: 'Account Access Level', placeholder: 'Standard / Pilot Access' },
       { field: 'platformRepName', label: 'Microsoft Ads Rep' },
       { field: 'platformRepEmail', label: 'Rep Email' },
     ],
     oauthProvider: 'microsoft',
+    tier: 2,
   },
   {
     slug: 'pinterest-shopping-ads',
@@ -284,12 +288,13 @@ export const platformProfiles: PlatformProfileSeed[] = [
     requiredMediaRules: { minImages: 1, notes: 'Pinterest shopping catalogs need product identity, title, image, price, availability, and landing URL; automotive mapping should be policy-reviewed.' },
     testFixtures: { validatesFeed: true, supportsReferralCredit: false, requiresDealerAccount: true, publicApi: true, genericCatalog: true },
     connectionFields: [
-      { field: 'accountId', label: 'Pinterest Advertiser ID', hint: 'From Pinterest Ads Manager → Account Info', placeholder: '549764523' },
+      { field: 'accountId', label: 'Pinterest Advertiser ID', hint: 'From Pinterest Ads Manager → Account Info', placeholder: '549764523', helpUrl: 'https://ads.pinterest.com/' },
       { field: 'membershipStatus', label: 'Catalog Approval Status', placeholder: 'Approved / Pending Review' },
       { field: 'platformRepName', label: 'Pinterest Business Rep' },
       { field: 'platformRepEmail', label: 'Rep Email' },
     ],
     oauthProvider: 'pinterest',
+    tier: 3,
   },
   {
     slug: 'reddit-dynamic-product-ads',
@@ -326,12 +331,13 @@ export const platformProfiles: PlatformProfileSeed[] = [
     requiredMediaRules: { minImages: 1, notes: 'Reddit Dynamic Product Ads require a clean catalog and matching Pixel/CAPI product identifiers.' },
     testFixtures: { validatesFeed: true, supportsReferralCredit: false, requiresDealerAccount: true, publicApi: true, genericCatalog: true },
     connectionFields: [
-      { field: 'accountId', label: 'Reddit Ads Account ID', hint: 'From Reddit Ads dashboard → Account Settings', placeholder: 't2_abc123' },
+      { field: 'accountId', label: 'Reddit Ads Account ID', hint: 'From Reddit Ads dashboard → Account Settings', placeholder: 't2_abc123', helpUrl: 'https://ads.reddit.com/' },
       { field: 'membershipStatus', label: 'DPA Catalog Status', placeholder: 'Active / Under Review' },
       { field: 'platformRepName', label: 'Reddit Ads Rep' },
       { field: 'platformRepEmail', label: 'Rep Email' },
     ],
     oauthProvider: 'reddit',
+    tier: 3,
   },
   {
     // ── Assisted — email/manual handoff required ──────────────────────────────
@@ -368,11 +374,18 @@ export const platformProfiles: PlatformProfileSeed[] = [
     requiredMediaRules: { minImages: 3, notes: 'Assisted marketplace packet should include feed sample with image URLs.' },
     testFixtures: { validatesFeed: true, supportsReferralCredit: 'partner-dependent', requiresDealerAccount: false },
     connectionFields: [
-      { field: 'accountId', label: 'CarGurus Dealer ID', hint: 'From CarGurus Dealer Center dashboard', placeholder: '12345' },
+      { field: 'accountId', label: 'CarGurus Dealer ID', hint: 'From CarGurus Dealer Center dashboard', placeholder: '12345', helpUrl: 'https://dealer.cargurus.com/' },
       { field: 'membershipStatus', label: 'CarGurus Package', placeholder: 'Featured / Enhanced / Standard' },
       { field: 'platformRepName', label: 'CarGurus Account Rep' },
       { field: 'platformRepEmail', label: 'Rep Email' },
     ],
+    tier: 1,
+    partnerSignup: {
+      applyUrl: 'https://www.cargurus.com/Cars/enterprisedealer/',
+      estimatedDays: '1–2 weeks',
+      requirements: 'Active dealer license and valid inventory feed',
+      contactType: 'rep-assisted',
+    },
   },
   {
     // ── Partner-dependent — commercial agreement required ─────────────────────
@@ -409,11 +422,18 @@ export const platformProfiles: PlatformProfileSeed[] = [
     requiredMediaRules: { minImages: 3 },
     testFixtures: { validatesFeed: true, supportsReferralCredit: 'consultant-or-partner-dependent', requiresDealerAccount: false },
     connectionFields: [
-      { field: 'accountId', label: 'Cox Dealer Code', hint: 'Your Cox Automotive-assigned dealer code', placeholder: 'COX-XXXXXX' },
+      { field: 'accountId', label: 'Cox Dealer Code', hint: 'Your Cox Automotive-assigned dealer code', placeholder: 'COX-XXXXXX', helpUrl: 'https://b2b.autotrader.com/' },
       { field: 'membershipStatus', label: 'AutoTrader Subscription Tier', placeholder: 'Featured / Standard / Basic' },
       { field: 'platformRepName', label: 'Cox / AutoTrader Account Rep' },
       { field: 'platformRepEmail', label: 'Rep Email' },
     ],
+    tier: 1,
+    partnerSignup: {
+      applyUrl: 'https://b2b.autotrader.com/',
+      estimatedDays: '2–4 weeks',
+      requirements: 'Active dealer license and Cox Automotive dealer code',
+      contactType: 'rep-assisted',
+    },
   },
   {
     // ── Feedable (continued) ──────────────────────────────────────────────────
@@ -455,12 +475,13 @@ export const platformProfiles: PlatformProfileSeed[] = [
     requiredMediaRules: { minImages: 1, notes: 'Vehicle listings should include VIN/year/make/model/mileage and enough images/details for buyer confidence.' },
     testFixtures: { validatesListingApi: true, supportsReferralCredit: false, requiresDealerAccount: true, publicApi: true },
     connectionFields: [
-      { field: 'accountId', label: 'eBay Seller Username', hint: 'Your eBay dealer account username', placeholder: 'prairieridgemotors' },
+      { field: 'accountId', label: 'eBay Seller Username', hint: 'Your eBay dealer account username', placeholder: 'prairieridgemotors', helpUrl: 'https://www.ebay.com/sh/ovw' },
       { field: 'membershipStatus', label: 'eBay Seller Level', placeholder: 'Top Rated Plus / PowerSeller / Standard' },
       { field: 'platformRepName', label: 'eBay Partner Manager' },
       { field: 'platformRepEmail', label: 'Partner Manager Email' },
     ],
     oauthProvider: 'ebay',
+    tier: 1,
   },
   {
     slug: 'x-dynamic-product-ads',
@@ -497,12 +518,13 @@ export const platformProfiles: PlatformProfileSeed[] = [
     requiredMediaRules: { minImages: 1, notes: 'X DPA needs a product catalog plus website event parameters that match catalog product IDs.' },
     testFixtures: { validatesFeed: true, supportsReferralCredit: false, requiresDealerAccount: true, publicApi: 'ads-api', genericCatalog: true },
     connectionFields: [
-      { field: 'accountId', label: 'X Ads Account ID', hint: 'From X Ads Manager → Account Settings', placeholder: '18ce54u0jnk' },
+      { field: 'accountId', label: 'X Ads Account ID', hint: 'From X Ads Manager → Account Settings', placeholder: '18ce54u0jnk', helpUrl: 'https://ads.x.com/' },
       { field: 'membershipStatus', label: 'DPA Catalog Status', placeholder: 'Active / Pending Setup' },
       { field: 'platformRepName', label: 'X Ads Account Manager' },
       { field: 'platformRepEmail', label: 'Manager Email' },
     ],
     oauthProvider: 'x',
+    tier: 3,
   },
   {
     // ── Assisted (continued) ──────────────────────────────────────────────────
@@ -539,11 +561,18 @@ export const platformProfiles: PlatformProfileSeed[] = [
     requiredMediaRules: { minImages: 3 },
     testFixtures: { validatesFeed: true, supportsReferralCredit: 'partner-dependent', requiresDealerAccount: false },
     connectionFields: [
-      { field: 'accountId', label: 'Cars.com Dealer ID', hint: 'From your Cars.com or DealerRater account portal', placeholder: '456789' },
+      { field: 'accountId', label: 'Cars.com Dealer ID', hint: 'From your Cars.com or DealerRater account portal', placeholder: '456789', helpUrl: 'https://dealer.cars.com/' },
       { field: 'membershipStatus', label: 'Package Tier', placeholder: 'Platinum / Gold / Standard' },
       { field: 'platformRepName', label: 'Cars.com Account Manager' },
       { field: 'platformRepEmail', label: 'Manager Email' },
     ],
+    tier: 2,
+    partnerSignup: {
+      applyUrl: 'https://www.carscommerce.inc/marketplace/',
+      estimatedDays: '1–3 weeks',
+      requirements: 'Active dealer license and compliant inventory feed',
+      contactType: 'rep-assisted',
+    },
   },
   {
     // ── Feedable (continued) ──────────────────────────────────────────────────
@@ -580,12 +609,13 @@ export const platformProfiles: PlatformProfileSeed[] = [
     requiredMediaRules: { minImages: 1, notes: 'Snap product catalogs require product identity, image, price, and landing URL attributes; vehicle-specific enrichment remains our mapping responsibility.' },
     testFixtures: { validatesFeed: true, supportsReferralCredit: false, requiresDealerAccount: true, publicApi: true, genericCatalog: true },
     connectionFields: [
-      { field: 'accountId', label: 'Snap Ads Account ID', hint: 'From Snapchat Ads Manager → Business Details', placeholder: '22c78a00-...' },
+      { field: 'accountId', label: 'Snap Ads Account ID', hint: 'From Snapchat Ads Manager → Business Details', placeholder: '22c78a00-...', helpUrl: 'https://ads.snapchat.com/' },
       { field: 'membershipStatus', label: 'Catalog Approval Status', placeholder: 'Active / Pending / Rejected' },
       { field: 'platformRepName', label: 'Snap Business Rep' },
       { field: 'platformRepEmail', label: 'Rep Email' },
     ],
     oauthProvider: 'snapchat',
+    tier: 3,
   },
   {
     // ── Assisted (continued) ──────────────────────────────────────────────────
@@ -619,12 +649,13 @@ export const platformProfiles: PlatformProfileSeed[] = [
     requiredMediaRules: { minImages: 0, notes: 'Lead Gen Forms do not require inventory images, but vehicle context can be used in hidden fields or creative payloads.' },
     testFixtures: { validatesLeadShape: true, supportsReferralCredit: false, requiresDealerAccount: true, privateApiApproval: true },
     connectionFields: [
-      { field: 'accountId', label: 'LinkedIn Company Page ID', hint: 'From your LinkedIn Company Page URL or Analytics', placeholder: '12345678' },
+      { field: 'accountId', label: 'LinkedIn Company Page ID', hint: 'From your LinkedIn Company Page URL or Analytics', placeholder: '12345678', helpUrl: 'https://www.linkedin.com/campaignmanager/' },
       { field: 'membershipStatus', label: 'Campaign Manager Access', placeholder: 'Active / Pending Approval' },
       { field: 'platformRepName', label: 'LinkedIn Business Rep' },
       { field: 'platformRepEmail', label: 'Rep Email' },
     ],
     oauthProvider: 'microsoft',
+    tier: 3,
   },
   {
     // ── Partner-dependent (continued) ────────────────────────────────────────
@@ -661,11 +692,18 @@ export const platformProfiles: PlatformProfileSeed[] = [
     requiredMediaRules: { minImages: 3 },
     testFixtures: { validatesFeed: true, supportsReferralCredit: 'partner-dependent', requiresDealerAccount: false },
     connectionFields: [
-      { field: 'accountId', label: 'TrueCar Dealer ID', hint: 'From TrueCar Dealer Portal → Account Settings', placeholder: 'TC-12345' },
+      { field: 'accountId', label: 'TrueCar Dealer ID', hint: 'From TrueCar Dealer Portal → Account Settings', placeholder: 'TC-12345', helpUrl: 'https://dealerportal.truecar.com/' },
       { field: 'membershipStatus', label: 'Network Enrollment Status', placeholder: 'Enrolled / Pending / Waitlisted' },
       { field: 'platformRepName', label: 'TrueCar Dealer Support Rep' },
       { field: 'platformRepEmail', label: 'Rep Email' },
     ],
+    tier: 2,
+    partnerSignup: {
+      applyUrl: 'https://dealerportal.truecar.com/',
+      estimatedDays: '2–4 weeks',
+      requirements: 'Active dealer license; minimum inventory volume may apply',
+      contactType: 'self-serve',
+    },
   },
   {
     // ── Feedable (continued) ──────────────────────────────────────────────────
@@ -733,12 +771,13 @@ export const platformProfiles: PlatformProfileSeed[] = [
     requiredMediaRules: { minImages: 1, notes: 'Nextdoor local ads need localized copy and creative; use vehicle images for inventory/trade-in campaigns.' },
     testFixtures: { validatesLocalAdPacket: true, supportsReferralCredit: false, requiresDealerAccount: true, publicApi: 'program-access' },
     connectionFields: [
-      { field: 'accountId', label: 'Nextdoor Ads Account ID', hint: 'From Nextdoor Business → Ads Manager account settings', placeholder: 'nd-12345678' },
+      { field: 'accountId', label: 'Nextdoor Ads Account ID', hint: 'From Nextdoor Business → Ads Manager account settings', placeholder: 'nd-12345678', helpUrl: 'https://ads.nextdoor.com/' },
       { field: 'membershipStatus', label: 'Account Status', placeholder: 'Active / Pending / API Program Access' },
       { field: 'platformRepName', label: 'Nextdoor Business Rep' },
       { field: 'platformRepEmail', label: 'Rep Email' },
     ],
     oauthProvider: 'nextdoor',
+    tier: 3,
   },
   {
     // ── Assisted (continued) ──────────────────────────────────────────────────
@@ -781,6 +820,7 @@ export const platformProfiles: PlatformProfileSeed[] = [
       { field: 'platformRepEmail', label: 'Rep Email' },
     ],
     // oauthProvider: 'apple', -- stub until jose JWT library ships (AppleOAuthClient throws NOT_IMPLEMENTED)
+    tier: 3,
   },
   // ── Trailers / powersports / RV channel stubs (Phase 3A pilot) ───────────
   {
