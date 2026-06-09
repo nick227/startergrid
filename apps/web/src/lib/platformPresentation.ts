@@ -1,8 +1,87 @@
-import type { PlatformPublishResult, PlatformAccountDetail } from './types.ts';
+import type { PlatformPublishResult, PlatformAccountDetail, PlatformPerformanceItem } from './types.ts';
 import { friendlyPlatformDetail, platformOutcomeMeta, sortPlatformsForSync } from './syncPresentation.ts';
 import { operatorCopy } from './copy/operator.ts';
+import { timeAgo } from './timeAgo.ts';
 
 export type PlatformConnection = 'inactive' | 'connected' | 'blocked' | 'updating' | 'needs_oauth' | 'partner_pending';
+
+// ── Static benefit copy ──────────────────────────────────────────────────────
+
+const PLATFORM_BENEFIT_LINES: Record<string, string> = {
+  'google-vehicle-ads':          'In-market buyers searching on Google & Shopping',
+  'meta-automotive-ads':         'Retarget browsing shoppers across Meta & Instagram',
+  'facebook-marketplace-general':'Reach local resale buyers on Facebook Marketplace',
+  'youtube-creator':             'Video walk-arounds and inventory showcases',
+  'tiktok-automotive-ads':       'Video inventory ads for younger, mobile-first buyers',
+  'microsoft-automotive-ads':    'Bing & Edge in-market buyers at lower CPCs',
+  'linkedin-lead-gen-forms':     'Business buyers and fleet decision-makers',
+  'pinterest-shopping-ads':      'Discovery-stage shoppers planning their next vehicle',
+  'reddit-dynamic-product-ads':  'Enthusiast communities and active researchers',
+  'snapchat-dynamic-product-ads':'High mobile-engagement younger demographic',
+  'x-dynamic-product-ads':       'Current-event-driven buyers and brand awareness',
+  'nextdoor-ads':                'Hyper-local neighborhood buyers near your lot',
+  'ebay-motors':                 '50M+ active buyers on the leading resale marketplace',
+  'ebay-resale':                 'Reach collectors and resale buyers on eBay',
+  'cargurus-dealer':             'High-intent shoppers on the #1 automotive marketplace',
+  'autotrader-cox':              'Largest dealer marketplace — 30M monthly visitors',
+  'cars-com':                    'Shoppers comparing vehicles with real verified reviews',
+  'truecar-dealer-network':      'Price-certain buyers ready to transact today',
+  'dealer-storefront':           'Your own branded inventory website',
+  'consumer-marketplace':        'First-party discovery across your full inventory',
+  'apple-business-connect':      'Apple Maps location presence and local discovery',
+  'adf-xml-lead-routing':        'Route every platform lead directly into your CRM',
+};
+
+export function platformBenefitLine(slug: string): string | null {
+  return PLATFORM_BENEFIT_LINES[slug] ?? null;
+}
+
+// ── Effort badge ─────────────────────────────────────────────────────────────
+
+export type EffortBadge = { label: string; pill: string };
+
+export function effortBadge(
+  account: PlatformAccountDetail | null | undefined
+): EffortBadge | null {
+  if (!account) return null;
+  if (account.integrationClass === 'OWNED') return null;
+  if (account.state === 'ACTIVE') return null;
+  if (account.oauthExpired) {
+    return { label: 'token expired', pill: 'bg-red-50 text-red-700 border-red-200' };
+  }
+  if (account.oauthProvider && !account.oauthConnected) {
+    return { label: '~5 min', pill: 'bg-amber-50 text-amber-700 border-amber-200' };
+  }
+  if (account.state === 'PENDING_REVIEW') {
+    if (account.partnerSignup) {
+      return { label: `partner · awaiting`, pill: 'bg-blue-50 text-blue-700 border-blue-200' };
+    }
+    return { label: 'pending review', pill: 'bg-blue-50 text-blue-700 border-blue-200' };
+  }
+  if (account.partnerSignup && (account.state === 'ACCOUNT_NEEDED' || account.state === 'PARTNER_REQUIRED')) {
+    return { label: `partner · ${account.partnerSignup.estimatedDays}`, pill: 'bg-blue-50 text-blue-700 border-blue-200' };
+  }
+  if (account.state === 'CREDENTIALS_NEEDED') {
+    return { label: 'needs credentials', pill: 'bg-silver-100 text-ink-muted border-silver-200' };
+  }
+  return null;
+}
+
+// ── Feed health line ─────────────────────────────────────────────────────────
+
+export function feedHealthLine(
+  perf: PlatformPerformanceItem | null | undefined,
+  connection: PlatformConnection
+): string | null {
+  if (connection !== 'connected') return null;
+  if (!perf) return null;
+  const parts: string[] = [];
+  if (perf.vehiclesListed > 0) parts.push(`${perf.vehiclesListed} listings`);
+  if (perf.totalLeads > 0) parts.push(`${perf.totalLeads} leads`);
+  if (perf.computedAt) parts.push(timeAgo(perf.computedAt));
+  if (!parts.length) return null;
+  return parts.join(' · ');
+}
 
 const OAUTH_PROVIDER_NAMES: Record<string, string> = {
   meta: 'Meta',

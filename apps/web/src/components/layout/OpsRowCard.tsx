@@ -19,6 +19,10 @@ type Props = {
   actions: OpsRowAction[];
   surfaceClassName?: string;
   ctaNode?: React.ReactNode;
+  logoNode?: React.ReactNode;
+  subtitleLine?: string | null;
+  effortNode?: React.ReactNode;
+  healthLine?: string | null;
 };
 
 export function OpsRowCard({
@@ -34,6 +38,10 @@ export function OpsRowCard({
   actions,
   surfaceClassName,
   ctaNode,
+  logoNode,
+  subtitleLine,
+  effortNode,
+  healthLine,
 }: Props) {
   return (
     <article
@@ -55,16 +63,27 @@ export function OpsRowCard({
           </div>
         )}
 
-        <div className="min-w-0 flex-1 space-y-2">
+        {logoNode && <div className="pt-0.5 shrink-0">{logoNode}</div>}
+
+        <div className="min-w-0 flex-1 space-y-1.5">
           <div className="flex flex-wrap items-center gap-2">
             <h3 className="text-sm font-semibold text-ink-heading min-w-0">{title}</h3>
             <span className={`shrink-0 px-2 py-0.5 rounded-md text-[11px] font-bold border ${statusClassName}`}>
               {statusLabel}
             </span>
+            {effortNode}
             {ctaNode}
           </div>
 
+          {subtitleLine && (
+            <p className="text-xs text-ink-body leading-snug">{subtitleLine}</p>
+          )}
+
           <p className="text-xs text-ink-muted leading-snug">{secondaryMeta}</p>
+
+          {healthLine && (
+            <p className="text-xs text-green-700 font-medium">{healthLine}</p>
+          )}
 
           {desktopFields && desktopFields.length > 0 && (
             <dl className="hidden lg:grid lg:grid-cols-2 xl:grid-cols-4 gap-x-4 gap-y-1.5 pt-1 border-t border-silver-100">
@@ -77,7 +96,7 @@ export function OpsRowCard({
             </dl>
           )}
 
-          <div className="flex flex-wrap gap-x-4 gap-y-1 pt-1">
+          <div className="flex flex-wrap gap-x-4 gap-y-1 pt-0.5">
             {actions.map(action => (
               <button
                 key={action.label}
