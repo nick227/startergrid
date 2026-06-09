@@ -35,6 +35,7 @@
     "smoke:marketplace": "node scripts/smoke-marketplace.mjs",
     "smoke:google-oauth": "npm run -s build && node dist/src/scripts/dev/googleOAuthSmoke.js",
     "smoke:meta-oauth": "npm run -s build && node dist/src/scripts/dev/metaOAuthSmoke.js",
+    "smoke:meta-catalog": "npm run -s build && node dist/src/scripts/dev/metaCatalogSmoke.js",
     "smoke:ebay-oauth": "npm run -s build && node dist/src/scripts/dev/ebayOAuthSmoke.js",
     "smoke:ebay-listing": "npm run -s build && node dist/src/scripts/dev/ebayListingSmoke.js",
     "geo:verify": "npm run -s build && node dist/src/scripts/geo/geoVerify.js",

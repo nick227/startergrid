@@ -259,6 +259,7 @@ model DealershipProfile {
   socialPageAccounts           SocialPageAccount[]
   socialPosts                  SocialPost[]
   marketplaceListings          MarketplaceListing[]
+  platformCatalogSyncs         PlatformCatalogSync[]
 }
 
 model Vehicle {
@@ -1092,4 +1093,25 @@ model MarketplaceListing {
   @@index([dealershipId, platformSlug])
   @@index([dealershipId, platformSlug, status])
   @@index([vehicleId])
+}
+
+// ── Platform Catalog Sync ─────────────────────────────────────────────────────
+// One row per (dealershipId, platformSlug). Stores the external catalog ID and
+// tracks the last full sync for Meta Automotive Ads (and future catalog platforms).
+
+model PlatformCatalogSync {
+  id            String    @id @default(cuid())
+  dealershipId  String
+  platformSlug  String    @db.VarChar(80)
+  catalogId     String    @db.VarChar(120)
+  metadataJson  Json?
+  lastSyncAt    DateTime?
+  lastSyncCount Int?
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  dealership DealershipProfile @relation(fields: [dealershipId], references: [id], onDelete: Cascade)
+
+  @@unique([dealershipId, platformSlug])
+  @@index([dealershipId])
 }
