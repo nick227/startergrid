@@ -2,28 +2,33 @@ import { OAuthClient } from '../OAuthClient.js';
 import type { OAuthTokenPayload, AuthUrlParams } from '../types.js';
 import type { OAuthProvider } from '../../../../lib/types.js';
 
-export class MetaOAuthClient extends OAuthClient {
-  readonly provider: OAuthProvider = 'meta-catalog-ads';
-  readonly authorizationEndpoint = 'https://www.facebook.com/v20.0/dialog/oauth';
-  readonly tokenEndpoint = 'https://graph.facebook.com/v20.0/oauth/access_token';
-  readonly defaultScopes = ['catalog_management', 'ads_management', 'business_management'];
+export class GoogleBusinessProfileOAuthClient extends OAuthClient {
+  readonly provider: OAuthProvider = 'google-business-profile';
+  readonly authorizationEndpoint = 'https://accounts.google.com/o/oauth2/v2/auth';
+  readonly tokenEndpoint = 'https://oauth2.googleapis.com/token';
+  readonly defaultScopes = [
+    'https://www.googleapis.com/auth/business.manage',
+  ];
 
-  protected readonly clientId = process.env['META_APP_ID'] ?? process.env['META_CLIENT_ID'] ?? '';
-  protected readonly clientSecret = process.env['META_APP_SECRET'] ?? process.env['META_CLIENT_SECRET'] ?? '';
+  protected readonly clientId = process.env['GOOGLE_CLIENT_ID'] ?? '';
+  protected readonly clientSecret = process.env['GOOGLE_CLIENT_SECRET'] ?? '';
 
   buildAuthorizationUrl({ state, redirectUri, scopes }: AuthUrlParams): string {
     const params = new URLSearchParams({
       client_id: this.clientId,
       redirect_uri: redirectUri,
       state,
-      scope: (scopes ?? this.defaultScopes).join(','),
+      scope: (scopes ?? this.defaultScopes).join(' '),
       response_type: 'code',
+      access_type: 'offline',
+      prompt: 'consent',
     });
     return `${this.authorizationEndpoint}?${params.toString()}`;
   }
 
   async exchangeCode(code: string, redirectUri: string): Promise<OAuthTokenPayload> {
     const raw = await this.postTokenRequest({
+      grant_type: 'authorization_code',
       client_id: this.clientId,
       client_secret: this.clientSecret,
       redirect_uri: redirectUri,
@@ -33,14 +38,15 @@ export class MetaOAuthClient extends OAuthClient {
   }
 
   async refreshAccessToken(refreshToken: string): Promise<OAuthTokenPayload> {
-    // Meta short-lived tokens are exchanged for long-lived tokens via a separate endpoint,
-    // but the standard refresh_token grant is not supported; re-auth is required.
     const raw = await this.postTokenRequest({
-      grant_type: 'fb_exchange_token',
+      grant_type: 'refresh_token',
       client_id: this.clientId,
       client_secret: this.clientSecret,
-      fb_exchange_token: refreshToken,
+      refresh_token: refreshToken,
     });
-    return this.parseStandardTokenResponse(raw);
+    // Google does not return a new refresh_token on refresh — preserve the existing one
+    const token = this.parseStandardTokenResponse(raw);
+    if (!token.refreshToken) token.refreshToken = refreshToken;
+    return token;
   }
 }

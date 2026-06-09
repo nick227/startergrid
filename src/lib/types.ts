@@ -90,18 +90,20 @@ export type PlatformIntegrationUrls = {
 export type IntegrationClass = 'OWNED' | 'FEEDABLE' | 'ASSISTED' | 'PARTNER_DEPENDENT';
 
 export type OAuthProvider =
-  | 'meta'       // meta-automotive-ads, facebook-marketplace-general, facebook-marketplace-resale
-  | 'google'     // google-vehicle-ads, youtube-creator
-  | 'microsoft'  // microsoft-automotive-ads, linkedin-lead-gen-forms (same Azure AD app)
-  | 'ebay'       // ebay-motors, ebay-resale
-  | 'tiktok'     // tiktok-automotive-ads, tiktok-creator
-  | 'apple'      // apple-business-connect, apple-books (JWT-based, not standard OAuth2)
-  | 'pinterest'  // pinterest-shopping-ads
-  | 'reddit'     // reddit-dynamic-product-ads
-  | 'snapchat'   // snapchat-dynamic-product-ads
-  | 'x'          // x-dynamic-product-ads
-  | 'nextdoor'   // nextdoor-ads
-  | 'shopify';   // shopify-catalog (APPAREL — activate when category goes live)
+  | 'facebook-business-page'    // facebook-business-page (page posting, page management)
+  | 'meta-catalog-ads'          // meta-automotive-ads, facebook-marketplace-general (catalog + ads API)
+  | 'google'                    // google-vehicle-ads
+  | 'google-business-profile'   // google-business-profile (GBP local posts)
+  | 'microsoft'                 // microsoft-automotive-ads, linkedin-lead-gen-forms (same Azure AD app)
+  | 'ebay'                      // ebay-motors, ebay-resale
+  | 'tiktok'                    // tiktok-automotive-ads, tiktok-creator
+  | 'apple'                     // apple-business-connect, apple-books (JWT-based, not standard OAuth2)
+  | 'pinterest'                 // pinterest-shopping-ads
+  | 'reddit'                    // reddit-dynamic-product-ads
+  | 'snapchat'                  // snapchat-dynamic-product-ads
+  | 'x'                         // x-dynamic-product-ads
+  | 'nextdoor'                  // nextdoor-ads
+  | 'shopify';                  // shopify-catalog (APPAREL — activate when category goes live)
 
 export type VehicleUpdateKind = 'PRICE_CHANGE' | 'PHOTO_CHANGE' | 'SOLD' | 'REMOVED' | 'RELISTED' | 'DETAILS_CHANGE';
 

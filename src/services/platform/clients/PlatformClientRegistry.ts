@@ -1,6 +1,8 @@
 import type { OAuthClient } from './OAuthClient.js';
+import { FacebookBusinessPageOAuthClient } from './providers/FacebookBusinessPageOAuthClient.js';
 import { MetaOAuthClient } from './providers/MetaOAuthClient.js';
 import { GoogleOAuthClient } from './providers/GoogleOAuthClient.js';
+import { GoogleBusinessProfileOAuthClient } from './providers/GoogleBusinessProfileOAuthClient.js';
 import { MicrosoftOAuthClient } from './providers/MicrosoftOAuthClient.js';
 import { LinkedInOAuthClient } from './providers/LinkedInOAuthClient.js';
 import { EbayOAuthClient } from './providers/EbayOAuthClient.js';
@@ -14,8 +16,10 @@ import { NextdoorOAuthClient } from './providers/NextdoorOAuthClient.js';
 
 // Singleton instances — safe because each client reads env vars at construction time
 // and holds no mutable state between requests.
-const meta = new MetaOAuthClient();
+const facebookBusinessPage = new FacebookBusinessPageOAuthClient();
+const metaCatalogAds = new MetaOAuthClient();
 const google = new GoogleOAuthClient();
+const googleBusinessProfile = new GoogleBusinessProfileOAuthClient();
 const microsoft = new MicrosoftOAuthClient();
 const linkedin = new LinkedInOAuthClient();
 const ebay = new EbayOAuthClient();
@@ -29,9 +33,11 @@ const nextdoor = new NextdoorOAuthClient();
 
 // Maps every platform slug that has an oauthProvider to its OAuthClient instance.
 const SLUG_TO_CLIENT: Record<string, OAuthClient> = {
+  'facebook-business-page':       facebookBusinessPage,
+  'google-business-profile':      googleBusinessProfile,
   'google-vehicle-ads':           google,
-  'meta-automotive-ads':          meta,
-  'facebook-marketplace-general': meta,
+  'meta-automotive-ads':          metaCatalogAds,
+  'facebook-marketplace-general': metaCatalogAds,
   'tiktok-automotive-ads':        tiktok,
   'microsoft-automotive-ads':     microsoft,
   'linkedin-lead-gen-forms':      linkedin,

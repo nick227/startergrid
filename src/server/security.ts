@@ -95,6 +95,11 @@ export const routeClassifications = {
     'GET /api/dealers/:dealershipId/ingress/runs',
     'GET /api/dealers/:dealershipId/platforms/:platformSlug/connect-url',
     'DELETE /api/dealers/:dealershipId/platforms/:platformSlug/oauth-token',
+    'GET /api/dealers/:dealershipId/platforms/:platformSlug/pages',
+    'PUT /api/dealers/:dealershipId/platforms/:platformSlug/pages/:pageId/select',
+    'POST /api/dealers/:dealershipId/platforms/:platformSlug/posts/preview',
+    'POST /api/dealers/:dealershipId/platforms/:platformSlug/posts',
+    'GET /api/dealers/:dealershipId/platforms/:platformSlug/posts',
   ],
   publicWrite: [
     'POST /api/dealers/:dealershipId/leads',

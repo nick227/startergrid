@@ -20,6 +20,8 @@ const PLATFORM_BENEFIT_LINES: Record<string, string> = {
   'snapchat-dynamic-product-ads':'High mobile-engagement younger demographic',
   'x-dynamic-product-ads':       'Current-event-driven buyers and brand awareness',
   'nextdoor-ads':                'Hyper-local neighborhood buyers near your lot',
+  'facebook-business-page':      'Publish vehicle posts directly to your Facebook Page',
+  'google-business-profile':     'Share vehicle updates to your Google Business listing',
   'ebay-motors':                 '50M+ active buyers on the leading resale marketplace',
   'ebay-resale':                 'Reach collectors and resale buyers on eBay',
   'cargurus-dealer':             'High-intent shoppers on the #1 automotive marketplace',

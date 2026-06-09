@@ -14,6 +14,8 @@ import { registerMarketplaceRoutes }  from './routes/marketplace.js';
 import { registerMarketplaceAuthRoutes }     from './routes/marketplaceAuth.js';
 import { registerMarketplaceFavoritesRoutes } from './routes/marketplaceFavorites.js';
 import { registerPlatformConnectRoutes }     from './routes/platformConnect.js';
+import { registerSocialPageRoutes }          from './routes/socialPages.js';
+import { registerMarketplaceListingRoutes }  from './routes/marketplaceListings.js';
 import { demoFeedPayload }          from '../fixtures/scenarios/connectedInventoryDemo.fixture.js';
 
 export function buildApp(prisma: PrismaClient): FastifyInstance {
@@ -50,6 +52,8 @@ export function buildApp(prisma: PrismaClient): FastifyInstance {
   registerMarketplaceAuthRoutes(app, prisma);
   registerMarketplaceFavoritesRoutes(app, prisma);
   registerPlatformConnectRoutes(app, prisma);
+  registerSocialPageRoutes(app, prisma);
+  registerMarketplaceListingRoutes(app, prisma);
 
   return app;
 }

@@ -10,8 +10,11 @@ import { operatorCopy } from '@/lib/copy/operator.ts';
 import { RowDetailDrawer } from '@/components/layout';
 import { fetchPublishHistory, updateAccount } from '@/lib/api/sdk.ts';
 import { useAsyncQuery } from '@/hooks/useAsyncQuery.ts';
+import { SocialPageSelector, SocialPostsTab } from '@/components/social/index.ts';
 
-type Tab = 'setup' | 'feed' | 'activity' | 'notes';
+const SOCIAL_SLUGS = new Set(['facebook-business-page', 'google-business-profile']);
+
+type Tab = 'setup' | 'feed' | 'activity' | 'notes' | 'social';
 
 type Props = {
   platform: PlatformPublishResult;
@@ -174,12 +177,18 @@ function NotesTab({ account, dealerId, onSaved }: { account: PlatformAccountDeta
   );
 }
 
-const TABS: Array<{ key: Tab; label: string }> = [
-  { key: 'setup', label: 'Setup' },
-  { key: 'feed', label: 'Feed' },
-  { key: 'activity', label: 'Activity' },
-  { key: 'notes', label: 'Notes' },
-];
+function buildTabs(platformSlug: string): Array<{ key: Tab; label: string }> {
+  const tabs: Array<{ key: Tab; label: string }> = [
+    { key: 'setup', label: 'Setup' },
+    { key: 'feed', label: 'Feed' },
+    { key: 'activity', label: 'Activity' },
+    { key: 'notes', label: 'Notes' },
+  ];
+  if (SOCIAL_SLUGS.has(platformSlug)) {
+    tabs.splice(1, 0, { key: 'social', label: 'Social' });
+  }
+  return tabs;
+}
 
 export function PlatformDetailDrawer({
   platform,
@@ -192,6 +201,7 @@ export function PlatformDetailDrawer({
   onSaved,
 }: Props) {
   const [activeTab, setActiveTab] = useState<Tab>('setup');
+  const tabs = buildTabs(platform.platformSlug);
   const conn = platformConnectionWithAccount(platform, account);
   const publish = platformOutcomeMeta(platform);
   const detail = friendlyPlatformDetail(platform);
@@ -216,7 +226,7 @@ export function PlatformDetailDrawer({
 
         {/* Tab strip */}
         <div className="flex border-b border-silver-200">
-          {TABS.map(tab => (
+          {tabs.map(tab => (
             <button
               key={tab.key}
               type="button"
@@ -258,6 +268,21 @@ export function PlatformDetailDrawer({
         )}
         {activeTab === 'notes' && !account && (
           <p className="text-xs text-ink-muted">{operatorCopy.drawer.accountLoading}</p>
+        )}
+
+        {activeTab === 'social' && (
+          <div className="space-y-6">
+            <SocialPageSelector
+              dealerId={dealerId}
+              platformSlug={platform.platformSlug}
+              platformName={platform.platformName}
+              onPageSelected={onSaved}
+            />
+            <div>
+              <p className="text-[10px] font-bold uppercase tracking-wide text-ink-faint mb-3">Post history</p>
+              <SocialPostsTab dealerId={dealerId} platformSlug={platform.platformSlug} />
+            </div>
+          </div>
         )}
 
       </div>

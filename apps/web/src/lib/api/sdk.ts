@@ -23,6 +23,11 @@ import type {
 import type {
   AutoSyncStatus,
   PublishStatusResponse,
+  SocialPagesResponse,
+  SocialPreviewResponse,
+  SocialPostsResponse,
+  SocialPublishResponse,
+  SelectedSocialPagesResponse,
   PrepareResult,
   HistoryResponse,
   AccountsResponse,
@@ -369,6 +374,108 @@ export async function fetchCachedPerformanceSnapshot(
     platforms: platformsBody.platforms,
     totalObservedAssists,
   };
+}
+
+// ── Social Pages / Posts ───────────────────────────────────────────────────────
+
+export async function fetchSocialPages(
+  dealershipId: string,
+  platformSlug: string,
+): Promise<SocialPagesResponse> {
+  const res = await fetch(`/api/dealers/${dealershipId}/platforms/${encodeURIComponent(platformSlug)}/pages`, {
+    credentials: 'include',
+  });
+  if (!res.ok) {
+    const body = await res.json().catch(() => ({})) as { error?: string };
+    throw new Error(body.error ?? `HTTP ${res.status}`);
+  }
+  return res.json() as Promise<SocialPagesResponse>;
+}
+
+export async function selectSocialPage(
+  dealershipId: string,
+  platformSlug: string,
+  pageId: string,
+): Promise<SocialPagesResponse> {
+  const res = await fetch(
+    `/api/dealers/${dealershipId}/platforms/${encodeURIComponent(platformSlug)}/pages/${encodeURIComponent(pageId)}/select`,
+    { method: 'PUT', credentials: 'include' },
+  );
+  if (!res.ok) {
+    const body = await res.json().catch(() => ({})) as { error?: string };
+    throw new Error(body.error ?? `HTTP ${res.status}`);
+  }
+  return res.json() as Promise<SocialPagesResponse>;
+}
+
+export async function previewSocialPost(
+  dealershipId: string,
+  platformSlug: string,
+  vehicleId: string,
+): Promise<SocialPreviewResponse> {
+  const res = await fetch(
+    `/api/dealers/${dealershipId}/platforms/${encodeURIComponent(platformSlug)}/posts/preview`,
+    {
+      method: 'POST',
+      credentials: 'include',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ vehicleId }),
+    },
+  );
+  if (!res.ok) {
+    const body = await res.json().catch(() => ({})) as { error?: string };
+    throw new Error(body.error ?? `HTTP ${res.status}`);
+  }
+  return res.json() as Promise<SocialPreviewResponse>;
+}
+
+export async function publishSocialPost(
+  dealershipId: string,
+  platformSlug: string,
+  vehicleId: string,
+): Promise<SocialPublishResponse> {
+  const res = await fetch(
+    `/api/dealers/${dealershipId}/platforms/${encodeURIComponent(platformSlug)}/posts`,
+    {
+      method: 'POST',
+      credentials: 'include',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ vehicleId, trigger: 'MANUAL', source: 'operator-web' }),
+    },
+  );
+  if (!res.ok) {
+    const body = await res.json().catch(() => ({})) as { error?: string };
+    throw new Error(body.error ?? `HTTP ${res.status}`);
+  }
+  return res.json() as Promise<SocialPublishResponse>;
+}
+
+export async function fetchSocialPosts(
+  dealershipId: string,
+  platformSlug: string,
+): Promise<SocialPostsResponse> {
+  const res = await fetch(
+    `/api/dealers/${dealershipId}/platforms/${encodeURIComponent(platformSlug)}/posts`,
+    { credentials: 'include' },
+  );
+  if (!res.ok) {
+    const body = await res.json().catch(() => ({})) as { error?: string };
+    throw new Error(body.error ?? `HTTP ${res.status}`);
+  }
+  return res.json() as Promise<SocialPostsResponse>;
+}
+
+export async function fetchSelectedSocialPages(
+  dealershipId: string,
+): Promise<SelectedSocialPagesResponse> {
+  const res = await fetch(`/api/dealers/${dealershipId}/social/pages/selected`, {
+    credentials: 'include',
+  });
+  if (!res.ok) {
+    const body = await res.json().catch(() => ({})) as { error?: string };
+    throw new Error(body.error ?? `HTTP ${res.status}`);
+  }
+  return res.json() as Promise<SelectedSocialPagesResponse>;
 }
 
 export type ReportRangeParam = '7d' | '30d' | '90d';

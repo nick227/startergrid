@@ -38,7 +38,9 @@ export const pristineApiDealership: DealershipPayload = {
     'truecar-dealer-network',
     'adf-xml-lead-routing',
     'nextdoor-ads',
-    'apple-business-connect'
+    'apple-business-connect',
+    'facebook-business-page',
+    'google-business-profile'
   ],
   documents: {
     dealerLicensePdfUrl: 'https://docs.prairieridge.example.com/compliance/tx-dealer-license.pdf',

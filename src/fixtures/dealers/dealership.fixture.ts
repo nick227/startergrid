@@ -24,12 +24,15 @@ export const mockDealership: DealershipPayload = {
   desiredChannels: [
     'google-vehicle-ads',
     'meta-automotive-ads',
+    'facebook-business-page',
     'tiktok-automotive-ads',
     'cargurus-dealer',
     'autotrader-cox',
     'cars-com',
     'truecar-dealer-network',
-    'adf-xml-lead-routing'
+    'adf-xml-lead-routing',
+    'facebook-business-page',
+    'google-business-profile'
   ],
   documents: {
     dealerLicensePdfUrl: 'https://docs.example.com/mock/dealer-license.pdf',

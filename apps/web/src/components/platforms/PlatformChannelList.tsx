@@ -1,4 +1,4 @@
-import type { PlatformPublishResult, PlatformAccountDetail, PlatformPerformanceItem } from '@/lib/types.ts';
+import type { PlatformPublishResult, PlatformAccountDetail, PlatformPerformanceItem, SelectedSocialPage } from '@/lib/types.ts';
 import type { OperatorNavHandlers } from '@/lib/operatorNav.ts';
 import { OpsRowCard } from '@/components/layout/OpsRowCard.tsx';
 import { PanelSkeleton } from '@/components/operator';
@@ -20,10 +20,13 @@ import {
 } from '@/lib/channelRowPresentation.ts';
 import { operatorCopy } from '@/lib/copy/operator.ts';
 
+const SOCIAL_SLUGS = new Set(['facebook-business-page', 'google-business-profile']);
+
 type Props = {
   platforms: PlatformPublishResult[];
   perfBySlug: Map<string, PlatformPerformanceItem>;
   accountBySlug: Map<string, PlatformAccountDetail>;
+  socialPageBySlug?: Map<string, SelectedSocialPage>;
   dealerId: string;
   nav: OperatorNavHandlers;
   selectedSlug: string | null;
@@ -81,6 +84,7 @@ export function PlatformChannelList({
   platforms,
   perfBySlug,
   accountBySlug,
+  socialPageBySlug,
   dealerId,
   nav,
   selectedSlug,
@@ -107,6 +111,13 @@ export function PlatformChannelList({
     const perf = perfBySlug.get(platform.platformSlug);
     const badge = effortBadge(account);
 
+    const isSocial = SOCIAL_SLUGS.has(platform.platformSlug);
+    const socialSubtitle = isSocial && conn.connection === 'connected'
+      ? (socialPageBySlug?.get(platform.platformSlug)
+          ? `Page selected: ${socialPageBySlug.get(platform.platformSlug)!.name}`
+          : 'No page selected — open details to choose one')
+      : null;
+
     return (
       <OpsRowCard
         key={platform.platformSlug}
@@ -118,7 +129,7 @@ export function PlatformChannelList({
         detailOpen={selectedSlug === platform.platformSlug}
         surfaceClassName={channelRowSurface(conn.connection)}
         logoNode={<PlatformLogo slug={platform.platformSlug} name={platform.platformName} />}
-        subtitleLine={platformBenefitLine(platform.platformSlug)}
+        subtitleLine={socialSubtitle ?? platformBenefitLine(platform.platformSlug)}
         effortNode={badge ? (
           <span className={`shrink-0 px-1.5 py-0.5 rounded text-[10px] font-semibold border ${badge.pill}`}>
             {badge.label}

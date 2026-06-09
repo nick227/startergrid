@@ -653,6 +653,57 @@ export type PerformanceInsightsResponse = {
   platforms: PlatformPerformanceInsight[];
 };
 
+// ── Social Pages / Posts ──────────────────────────────────────────────────────
+
+export type SocialPageSummary = {
+  id: string;
+  pageId: string;
+  name: string;
+  pictureUrl: string | null;
+  category: string | null;
+  isSelected: boolean;
+};
+
+export type SocialPagesResponse = { pages: SocialPageSummary[] };
+
+export type PostPreview = {
+  postText: string;
+  imageUrl: string | null;
+  listingUrl: string;
+};
+
+export type SocialPreviewResponse = {
+  preview: PostPreview;
+  selectedPage: { pageId: string; name: string; pictureUrl: string | null } | null;
+};
+
+export type SocialPost = {
+  id: string;
+  vehicleId: string;
+  externalPostId: string | null;
+  externalUrl: string | null;
+  postText: string;
+  status: 'DRAFT' | 'PUBLISHED' | 'FAILED';
+  trigger: 'MANUAL' | 'AUTO';
+  source: string | null;
+  publishedAt: string | null;
+  errorMessage: string | null;
+  createdAt: string;
+  pageAccount: { pageId: string; name: string; pictureUrl: string | null } | null;
+};
+
+export type SocialPostsResponse = { posts: SocialPost[] };
+export type SocialPublishResponse = { post: SocialPost };
+
+export type SelectedSocialPage = {
+  platformSlug: string;
+  pageId: string;
+  name: string;
+  pictureUrl: string | null;
+};
+
+export type SelectedSocialPagesResponse = { selections: SelectedSocialPage[] };
+
 // ── Queue ─────────────────────────────────────────────────────────────────────
 
 export type QueueView = {

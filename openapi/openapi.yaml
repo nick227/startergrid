@@ -358,6 +358,179 @@ paths:
         '400':
           $ref: '#/components/responses/BadRequest'
 
+  /api/dealers/{dealershipId}/platforms/{platformSlug}/pages:
+    get:
+      tags: [Social]
+      security:
+        - OperatorAuth: []
+      x-route-classification: operator
+      operationId: getSocialPages
+      summary: Sync and list connected social pages for a platform
+      parameters:
+        - $ref: '#/components/parameters/dealershipId'
+        - $ref: '#/components/parameters/platformSlug'
+      responses:
+        '200':
+          description: List of connected pages (no access tokens exposed)
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [pages]
+                properties:
+                  pages:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/SocialPageSummary'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '402':
+          description: OAuth not connected — reconnect first
+        '502':
+          description: Upstream Graph API error
+
+  /api/dealers/{dealershipId}/platforms/{platformSlug}/pages/{pageId}/select:
+    put:
+      tags: [Social]
+      security:
+        - OperatorAuth: []
+      x-route-classification: operator
+      operationId: selectSocialPage
+      summary: Select a social page for this dealer
+      parameters:
+        - $ref: '#/components/parameters/dealershipId'
+        - $ref: '#/components/parameters/platformSlug'
+        - name: pageId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Updated page list with new selection reflected
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [pages]
+                properties:
+                  pages:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/SocialPageSummary'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /api/dealers/{dealershipId}/platforms/{platformSlug}/posts/preview:
+    post:
+      tags: [Social]
+      security:
+        - OperatorAuth: []
+      x-route-classification: operator
+      operationId: previewSocialPost
+      summary: Preview generated post copy for a vehicle (no publish, no DB write)
+      parameters:
+        - $ref: '#/components/parameters/dealershipId'
+        - $ref: '#/components/parameters/platformSlug'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [vehicleId]
+              properties:
+                vehicleId:
+                  type: string
+      responses:
+        '200':
+          description: Preview of post text, image, listing URL, and selected page
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [preview]
+                properties:
+                  preview:
+                    $ref: '#/components/schemas/PostPreview'
+                  selectedPage:
+                    nullable: true
+                    $ref: '#/components/schemas/SocialPageSummary'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /api/dealers/{dealershipId}/platforms/{platformSlug}/posts:
+    post:
+      tags: [Social]
+      security:
+        - OperatorAuth: []
+      x-route-classification: operator
+      operationId: publishSocialPost
+      summary: Publish a vehicle post to the selected social page
+      parameters:
+        - $ref: '#/components/parameters/dealershipId'
+        - $ref: '#/components/parameters/platformSlug'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [vehicleId]
+              properties:
+                vehicleId:
+                  type: string
+                trigger:
+                  type: string
+                  enum: [MANUAL, AUTO]
+                  default: MANUAL
+                source:
+                  type: string
+      responses:
+        '201':
+          description: Post published and stored
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [post]
+                properties:
+                  post:
+                    $ref: '#/components/schemas/SocialPost'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '409':
+          description: No page selected — choose a page first
+        '502':
+          description: Upstream Graph API publish error
+    get:
+      tags: [Social]
+      security:
+        - OperatorAuth: []
+      x-route-classification: operator
+      operationId: listSocialPosts
+      summary: List recent social posts for a dealer platform
+      parameters:
+        - $ref: '#/components/parameters/dealershipId'
+        - $ref: '#/components/parameters/platformSlug'
+      responses:
+        '200':
+          description: List of recent posts, newest first
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [posts]
+                properties:
+                  posts:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/SocialPost'
+
   /api/oauth/callback:
     get:
       tags: [Accounts]
@@ -1315,6 +1488,85 @@ components:
             $ref: '#/components/schemas/ErrorResponse'
 
   schemas:
+    SocialPageSummary:
+      type: object
+      required: [id, pageId, name, isSelected]
+      properties:
+        id:
+          type: string
+        pageId:
+          type: string
+        name:
+          type: string
+        pictureUrl:
+          type: string
+          nullable: true
+        category:
+          type: string
+          nullable: true
+        isSelected:
+          type: boolean
+
+    PostPreview:
+      type: object
+      required: [postText, listingUrl]
+      properties:
+        postText:
+          type: string
+        imageUrl:
+          type: string
+          nullable: true
+        listingUrl:
+          type: string
+
+    SocialPost:
+      type: object
+      required: [id, platformSlug, postText, status, trigger, createdAt]
+      properties:
+        id:
+          type: string
+        vehicleId:
+          type: string
+          nullable: true
+        externalPostId:
+          type: string
+          nullable: true
+        externalUrl:
+          type: string
+          nullable: true
+        postText:
+          type: string
+        status:
+          type: string
+          enum: [DRAFT, PUBLISHED, FAILED, DELETED]
+        trigger:
+          type: string
+          enum: [MANUAL, AUTO, PREVIEW]
+        source:
+          type: string
+          nullable: true
+        publishedAt:
+          type: string
+          format: date-time
+          nullable: true
+        errorMessage:
+          type: string
+          nullable: true
+        createdAt:
+          type: string
+          format: date-time
+        pageAccount:
+          nullable: true
+          type: object
+          properties:
+            pageId:
+              type: string
+            name:
+              type: string
+            pictureUrl:
+              type: string
+              nullable: true
+
     OkResponse:
       type: object
       required: [ok]

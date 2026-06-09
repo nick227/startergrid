@@ -1,19 +1,30 @@
 /**
- * Google OAuth end-to-end smoke test.
+ * Facebook Business Page OAuth end-to-end smoke test.
  *
- * Walks through the full connect → verify → expire → refresh → disconnect cycle
- * against a real dealer record and a real Google OAuth app.
+ * Walks through the full connect → verify → expire → token-exchange → disconnect cycle
+ * against a real dealer record and a real Facebook App.
+ *
+ * This tests the facebook-business-page provider (page posting scopes).
+ * For the catalog/ads provider (meta-catalog-ads) a separate smoke test will be added
+ * once the Facebook App has catalog_management + ads_management approved.
+ *
+ * Facebook does not issue standard refresh_tokens. Instead it supports exchanging a
+ * short-lived access token for a long-lived one (60-day) via the fb_exchange_token grant.
+ * The platform stores the short-lived token and uses fb_exchange_token on first refresh.
  *
  * Prerequisites:
- *   - GOOGLE_CLIENT_ID + GOOGLE_CLIENT_SECRET set in .env
+ *   - META_APP_ID + META_APP_SECRET set in .env
  *   - OAUTH_REDIRECT_BASE_URL set (e.g. http://localhost:3000)
- *   - http://localhost:3000/api/oauth/callback registered in Google Console
+ *   - http://localhost:3000/api/oauth/callback in Facebook App → Valid OAuth Redirect URIs
+ *   - Facebook App has permissions: pages_show_list, pages_read_engagement, pages_manage_posts
+ *   - Your account added as App Tester (App Roles) if App is in Development mode
  *   - At least one dealer row in the DB (or pass --dealer-id=<id>)
  *   - Dev server running at OAUTH_REDIRECT_BASE_URL before you open the auth URL
  *
  * Usage:
- *   npm run smoke:google-oauth
- *   npm run smoke:google-oauth -- --dealer-id=<uuid>
+ *   npm run smoke:meta-oauth
+ *   npm run smoke:meta-oauth -- --dealer-id=<uuid>
+ *   npm run smoke:meta-oauth -- --resume          (skip phases 1–2 after browser auth done)
  */
 
 import 'dotenv/config';
@@ -22,12 +33,14 @@ import { stdin as input, stdout as output } from 'node:process';
 import { prisma } from '../../lib/prisma.js';
 import { buildApp } from '../../server/app.js';
 import { CredentialStore } from '../../services/platform/clients/CredentialStore.js';
-import { GoogleOAuthClient } from '../../services/platform/clients/providers/GoogleOAuthClient.js';
+import { FacebookBusinessPageOAuthClient } from '../../services/platform/clients/providers/FacebookBusinessPageOAuthClient.js';
 import type { PlatformAccountDetail } from '../../services/publishing/platformAccountService.js';
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
 
-const DEV_OP = process.env['DEV_OPERATOR_ID'] ?? 'smoke-google-oauth';
+const PLATFORM_SLUG = 'facebook-business-page';
+const PROVIDER      = 'facebook-business-page' as const;
+const DEV_OP        = process.env['DEV_OPERATOR_ID'] ?? 'smoke-meta-oauth';
 const POLL_INTERVAL_MS = 2_000;
 const POLL_TIMEOUT_MS  = 5 * 60 * 1_000; // 5 minutes
 
@@ -96,12 +109,12 @@ async function run() {
   const rl = createInterface({ input, output });
 
   console.log('\n══════════════════════════════════════════════════════════');
-  console.log('  Google OAuth Smoke Test');
+  console.log('  Facebook Business Page OAuth Smoke Test');
   if (resumeMode) console.log('  (resuming — skipping phases 1–2)');
   console.log('══════════════════════════════════════════════════════════');
 
-  const clientId     = process.env['GOOGLE_CLIENT_ID']    ?? '';
-  const clientSecret = process.env['GOOGLE_CLIENT_SECRET'] ?? '';
+  const appId     = process.env['META_APP_ID']     ?? process.env['META_CLIENT_ID']     ?? '';
+  const appSecret = process.env['META_APP_SECRET'] ?? process.env['META_CLIENT_SECRET'] ?? '';
   const redirectBase = process.env['OAUTH_REDIRECT_BASE_URL'] ?? process.env['APP_BASE_URL'] ?? '';
 
   // ── Pre-flight ──────────────────────────────────────────────────────────────
@@ -109,12 +122,16 @@ async function run() {
   if (!resumeMode) {
     section('PHASE 1 · Pre-flight');
 
-    assert(!!clientId,     'GOOGLE_CLIENT_ID set',    'GOOGLE_CLIENT_ID missing',    clientId ? `${preview(clientId, 8)}…` : '');
-    assert(!!clientSecret, 'GOOGLE_CLIENT_SECRET set', 'GOOGLE_CLIENT_SECRET missing', '');
+    assert(!!appId,     'META_APP_ID set',     'META_APP_ID missing',     appId ? `${preview(appId, 8)}…` : '');
+    assert(!!appSecret, 'META_APP_SECRET set',  'META_APP_SECRET missing',  '');
     assert(!!redirectBase, 'OAUTH_REDIRECT_BASE_URL set', 'OAUTH_REDIRECT_BASE_URL missing', redirectBase);
 
-    if (!clientId || !clientSecret) {
-      console.log('\n  Set GOOGLE_CLIENT_ID and GOOGLE_CLIENT_SECRET in .env to proceed.\n');
+    info('Facebook App must have these permissions (no approval needed in Dev mode):');
+    info('  pages_show_list  pages_read_engagement  pages_manage_posts');
+    info('Your account must be listed under App Roles → Testers (if app is in Development mode).');
+
+    if (!appId || !appSecret) {
+      console.log('\n  Set META_APP_ID and META_APP_SECRET in .env to proceed.\n');
       await prisma.$disconnect(); rl.close(); process.exit(1);
     }
   }
@@ -138,20 +155,18 @@ async function run() {
 
   if (!resumeMode) {
     info(`Callback URL: ${redirectBase}/api/oauth/callback`);
-    info('Ensure this URI is registered in your Google Cloud Console OAuth app.');
-  }
+    info('Ensure this URI is in Facebook App → Facebook Login → Valid OAuth Redirect URIs.');
 
-  if (!resumeMode) {
-    // Reset account state and clear any leftover token so the test is
-    // repeatable regardless of what state prior runs left behind.
-    // Upsert so the row exists even if the dealer was onboarded before this platform was added.
+    // Reset to a known state so the test is repeatable.
+    // Upsert so the row exists even for newly-added platform profiles the dealer
+    // was onboarded before — the callback's updateMany requires an existing row.
     await prisma.platformAccount.upsert({
-      where: { dealershipId_platformSlug: { dealershipId: dealerId, platformSlug: 'google-vehicle-ads' } },
+      where: { dealershipId_platformSlug: { dealershipId: dealerId, platformSlug: PLATFORM_SLUG } },
       update: { state: 'ACCOUNT_NEEDED' },
-      create: { dealershipId: dealerId, platformSlug: 'google-vehicle-ads', state: 'ACCOUNT_NEEDED' },
+      create: { dealershipId: dealerId, platformSlug: PLATFORM_SLUG, state: 'ACCOUNT_NEEDED' },
     });
     await prisma.platformOAuthToken.deleteMany({
-      where: { dealershipId: dealerId, provider: 'google' },
+      where: { dealershipId: dealerId, provider: PROVIDER },
     });
   }
 
@@ -164,7 +179,7 @@ async function run() {
 
     const connectRes = await app.inject({
       method: 'GET',
-      url: `/api/dealers/${dealerId}/platforms/google-vehicle-ads/connect-url`,
+      url: `/api/dealers/${dealerId}/platforms/${PLATFORM_SLUG}/connect-url`,
       headers: { 'x-operator-id': DEV_OP },
     });
 
@@ -176,9 +191,6 @@ async function run() {
     const { authUrl } = connectRes.json() as { authUrl: string; state: string };
     pass('connect-url returned 200', 'authUrl received');
 
-    // Fail fast if the redirect_uri baked into the authUrl doesn't match what we
-    // told the user to register in Google Console. A mismatch here causes a
-    // redirect_uri_mismatch error from Google before any token exchange happens.
     const redirectUriInUrl = new URL(authUrl).searchParams.get('redirect_uri') ?? '';
     const expectedCallbackUrl = `${redirectBase}/api/oauth/callback`;
     if (redirectUriInUrl !== expectedCallbackUrl) {
@@ -189,6 +201,9 @@ async function run() {
       await prisma.$disconnect(); rl.close(); process.exit(1);
     }
     pass('redirect_uri matches expected callback', expectedCallbackUrl);
+
+    const scopeInUrl = new URL(authUrl).searchParams.get('scope') ?? '';
+    info(`Requested scopes: ${scopeInUrl}`);
 
     console.log('\n  ┌──────────────────────────────────────────────────────────┐');
     console.log('  │  ACTION REQUIRED                                           │');
@@ -201,9 +216,10 @@ async function run() {
     console.log(`\n  ${authUrl}\n`);
     console.log('  The callback will save your token automatically.');
     console.log('  (Authorization state expires in 10 minutes)\n');
+    console.log('  NOTE: Facebook issues short-lived user tokens (~1hr). Phase 6 will');
+    console.log('  attempt to exchange it for a long-lived token (60d) via fb_exchange_token.');
+    console.log('  This exchange only works after you authorize and a token is saved.\n');
 
-    // In a non-TTY environment readline.question throws. Exit cleanly with
-    // instructions — the user re-runs with --resume after completing the auth.
     try {
       await rl.question('  Press ENTER after completing authorization in the browser…');
     } catch {
@@ -217,16 +233,18 @@ async function run() {
   section('PHASE 3 · Verify token saved');
 
   const tokenRow = await pollUntil(
-    'PlatformOAuthToken (provider=google)',
+    `PlatformOAuthToken (provider=${PROVIDER})`,
     () => prisma.platformOAuthToken.findUnique({
-      where: { dealershipId_provider: { dealershipId: dealerId!, provider: 'google' } },
+      where: { dealershipId_provider: { dealershipId: dealerId!, provider: PROVIDER } },
     }),
   );
 
   pass('Token row exists in DB');
   info(`access_token:  ${preview(tokenRow.accessToken, 16)}`);
-  info(`refresh_token: ${tokenRow.refreshToken ? `${preview(tokenRow.refreshToken, 16)} ✓` : '(none — Google may not have returned one)'}`);
-  info(`expires_at:    ${tokenRow.expiresAt?.toISOString() ?? 'null (no expiry)'}`);
+  info(`refresh_token: ${tokenRow.refreshToken
+    ? `${preview(tokenRow.refreshToken, 16)} ✓`
+    : '(none — Facebook short-lived token, refresh via fb_exchange_token using the access_token)'}`);
+  info(`expires_at:    ${tokenRow.expiresAt?.toISOString() ?? 'null (no expiry in Facebook response)'}`);
 
   // ── Verify connected state ──────────────────────────────────────────────────
 
@@ -239,20 +257,20 @@ async function run() {
   });
 
   const accounts1 = (accountsRes1.json() as { accounts: PlatformAccountDetail[] }).accounts;
-  const gva1 = accounts1.find(a => a.platformSlug === 'google-vehicle-ads');
+  const acct1 = accounts1.find(a => a.platformSlug === PLATFORM_SLUG);
 
-  assert(!!gva1, 'google-vehicle-ads found in accounts', 'google-vehicle-ads not in accounts response');
-  assert(gva1?.oauthConnected === true,  'oauthConnected = true',  'oauthConnected is NOT true',  `got: ${String(gva1?.oauthConnected)}`);
-  assert(gva1?.oauthExpired  === false,  'oauthExpired = false',   'oauthExpired is unexpectedly true');
-  assert(gva1?.state === 'ACTIVE', 'state = ACTIVE', `state = ${gva1?.state} (not ACTIVE — callback may have failed)`);
+  assert(!!acct1, `${PLATFORM_SLUG} found in accounts`, `${PLATFORM_SLUG} not in accounts response`);
+  assert(acct1?.oauthConnected === true,  'oauthConnected = true',  'oauthConnected is NOT true',  `got: ${String(acct1?.oauthConnected)}`);
+  assert(acct1?.oauthExpired  === false,  'oauthExpired = false',   'oauthExpired is unexpectedly true');
+  assert(acct1?.state === 'ACTIVE', 'state = ACTIVE', `state = ${acct1?.state} (not ACTIVE — callback may have failed)`);
 
   // ── Force expiry + verify expired ──────────────────────────────────────────
 
   section('PHASE 5 · Force expiry, then verify oauthExpired flag');
 
   await prisma.platformOAuthToken.updateMany({
-    where: { dealershipId: dealerId, provider: 'google' },
-    data:  { expiresAt: new Date(Date.now() - 10_000) }, // 10 s in the past
+    where: { dealershipId: dealerId, provider: PROVIDER },
+    data:  { expiresAt: new Date(Date.now() - 10_000) },
   });
   pass('expiresAt forced to past in DB');
 
@@ -263,25 +281,44 @@ async function run() {
   });
 
   const accounts2 = (accountsRes2.json() as { accounts: PlatformAccountDetail[] }).accounts;
-  const gva2 = accounts2.find(a => a.platformSlug === 'google-vehicle-ads');
+  const acct2 = accounts2.find(a => a.platformSlug === PLATFORM_SLUG);
 
-  assert(gva2?.oauthExpired   === true,  'oauthExpired = true after force-expiry', 'oauthExpired not flipped to true');
-  assert(gva2?.oauthConnected === false, 'oauthConnected = false (expired ≠ connected)', 'oauthConnected still true after expiry');
+  assert(acct2?.oauthExpired   === true,  'oauthExpired = true after force-expiry', 'oauthExpired not flipped to true');
+  assert(acct2?.oauthConnected === false, 'oauthConnected = false (expired ≠ connected)', 'oauthConnected still true after expiry');
 
-  // ── Refresh token ───────────────────────────────────────────────────────────
+  // ── Long-lived token exchange ───────────────────────────────────────────────
 
-  section('PHASE 6 · Refresh expired token via CredentialStore.withFreshToken');
+  section('PHASE 6 · Long-lived token exchange via CredentialStore.withFreshToken');
 
-  const googleClient = new GoogleOAuthClient();
+  info('Facebook does not issue a refresh_token. Instead, withFreshToken calls');
+  info('refreshAccessToken which uses fb_exchange_token to get a 60-day token.');
+  info('CredentialStore.withFreshToken will use the stored accessToken as the fb_exchange_token.');
 
-  if (!tokenRow.refreshToken) {
-    info('Google did not return a refresh_token — skipping refresh phase.');
-    info('Re-authorize with prompt=consent (already set) to obtain a refresh_token.');
-    fail('refresh_token available', 'no refresh_token — cannot test refresh path');
+  // To use withFreshToken on a Facebook token we need a refreshToken in the row.
+  // Facebook's token exchange works differently: the "refresh" input is the short-lived
+  // access token itself. Temporarily copy accessToken → refreshToken so withFreshToken
+  // can drive the exchange through the standard path.
+  const currentToken = await prisma.platformOAuthToken.findUnique({
+    where: { dealershipId_provider: { dealershipId: dealerId!, provider: PROVIDER } },
+  });
+
+  if (!currentToken) {
+    fail('Token row still present for exchange test', 'token disappeared unexpectedly');
   } else {
+    // Seed refreshToken with the original access token if it's absent (Facebook flow).
+    if (!currentToken.refreshToken) {
+      await prisma.platformOAuthToken.update({
+        where: { dealershipId_provider: { dealershipId: dealerId!, provider: PROVIDER } },
+        data: { refreshToken: currentToken.accessToken },
+      });
+      info('Seeded refreshToken ← accessToken for fb_exchange_token call');
+    }
+
+    const fbClient = new FacebookBusinessPageOAuthClient();
     let newAccessToken: string | undefined;
+
     try {
-      newAccessToken = await CredentialStore.withFreshToken(prisma, dealerId, 'google', googleClient);
+      newAccessToken = await CredentialStore.withFreshToken(prisma, dealerId!, PROVIDER, fbClient);
       pass('withFreshToken returned a new access token', `${preview(newAccessToken, 16)}`);
     } catch (err: unknown) {
       fail('withFreshToken succeeded', err instanceof Error ? err.message : String(err));
@@ -289,10 +326,10 @@ async function run() {
 
     if (newAccessToken) {
       const refreshed = await prisma.platformOAuthToken.findUnique({
-        where: { dealershipId_provider: { dealershipId: dealerId, provider: 'google' } },
+        where: { dealershipId_provider: { dealershipId: dealerId!, provider: PROVIDER } },
       });
       const isNowFuture = !!refreshed?.expiresAt && refreshed.expiresAt.getTime() > Date.now();
-      assert(isNowFuture, 'expiresAt updated to future after refresh', 'expiresAt still in past after refresh',
+      assert(isNowFuture, 'expiresAt updated to future after long-lived exchange', 'expiresAt still in past after exchange',
         refreshed?.expiresAt?.toISOString() ?? 'null');
 
       const accountsRes3 = await app.inject({
@@ -300,10 +337,10 @@ async function run() {
         url: `/api/dealers/${dealerId}/accounts`,
         headers: { 'x-operator-id': DEV_OP },
       });
-      const gva3 = (accountsRes3.json() as { accounts: PlatformAccountDetail[] }).accounts
-        .find(a => a.platformSlug === 'google-vehicle-ads');
-      assert(gva3?.oauthConnected === true,  'oauthConnected = true after refresh', 'oauthConnected still false after refresh');
-      assert(gva3?.oauthExpired   === false, 'oauthExpired = false after refresh',  'oauthExpired still true after refresh');
+      const acct3 = (accountsRes3.json() as { accounts: PlatformAccountDetail[] }).accounts
+        .find(a => a.platformSlug === PLATFORM_SLUG);
+      assert(acct3?.oauthConnected === true,  'oauthConnected = true after exchange', 'oauthConnected still false after exchange');
+      assert(acct3?.oauthExpired   === false, 'oauthExpired = false after exchange',  'oauthExpired still true after exchange');
     }
   }
 
@@ -313,14 +350,14 @@ async function run() {
 
   const deleteRes = await app.inject({
     method: 'DELETE',
-    url:    `/api/dealers/${dealerId}/platforms/google-vehicle-ads/oauth-token`,
+    url:    `/api/dealers/${dealerId}/platforms/${PLATFORM_SLUG}/oauth-token`,
     headers: { 'x-operator-id': DEV_OP },
   });
 
   assert(deleteRes.statusCode === 204, `DELETE returned 204`, `DELETE returned ${deleteRes.statusCode}`, deleteRes.body || '');
 
   const deletedRow = await prisma.platformOAuthToken.findUnique({
-    where: { dealershipId_provider: { dealershipId: dealerId, provider: 'google' } },
+    where: { dealershipId_provider: { dealershipId: dealerId!, provider: PROVIDER } },
   });
   assert(deletedRow === null, 'Token row deleted from DB', 'Token row still exists after DELETE');
 
@@ -329,18 +366,17 @@ async function run() {
     url: `/api/dealers/${dealerId}/accounts`,
     headers: { 'x-operator-id': DEV_OP },
   });
-  const gva4 = (accountsRes4.json() as { accounts: PlatformAccountDetail[] }).accounts
-    .find(a => a.platformSlug === 'google-vehicle-ads');
+  const acct4 = (accountsRes4.json() as { accounts: PlatformAccountDetail[] }).accounts
+    .find(a => a.platformSlug === PLATFORM_SLUG);
 
-  assert(gva4?.oauthConnected === false, 'oauthConnected = false after disconnect', 'oauthConnected still true after disconnect');
-  assert(gva4?.oauthExpired   === false, 'oauthExpired = false after disconnect',   'oauthExpired still true after disconnect');
+  assert(acct4?.oauthConnected === false, 'oauthConnected = false after disconnect', 'oauthConnected still true after disconnect');
+  assert(acct4?.oauthExpired   === false, 'oauthExpired = false after disconnect',   'oauthExpired still true after disconnect');
 
   // ── Summary ─────────────────────────────────────────────────────────────────
 
-  const totalChecks = /* count assertions */ 15 + (tokenRow.refreshToken ? 4 : 0);
   console.log(`\n${'═'.repeat(60)}`);
   if (failures === 0) {
-    console.log('  ✅  All checks passed — Google OAuth end-to-end is healthy');
+    console.log('  ✅  All checks passed — Facebook Business Page OAuth is healthy');
   } else {
     console.log(`  ❌  ${failures} check(s) failed — see above for details`);
   }

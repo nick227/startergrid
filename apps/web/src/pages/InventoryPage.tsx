@@ -41,6 +41,7 @@ import {
   bulkEditFieldDefs,
   applyCleanupFilter,
 } from '@/components/inventory';
+import { CreatePostModal } from '@/components/social/index.ts';
 import type { CleanupFilter } from '@/components/inventory';
 import { operatorCopy } from '@/lib/copy/index.ts';
 import { useCategorySchema, useInventoryLabels } from '@/contexts/CategoryContext.tsx';
@@ -64,6 +65,7 @@ export default function InventoryPage({ dealerId, nav, activeTab }: Props) {
   const [sortDirection, setSortDirection] = useState<SortDirection>('asc');
   const [search, setSearch] = useState(route.assetRef ?? '');
   const [showImport, setShowImport] = useState(false);
+  const [createPostTarget, setCreatePostTarget] = useState<{ vehicleId: string; vehicleTitle: string } | null>(null);
 
   useEffect(() => {
     if (route.assetRef) setSearch(route.assetRef);
@@ -441,6 +443,7 @@ export default function InventoryPage({ dealerId, nav, activeTab }: Props) {
                   allSelected={allVisibleSelected}
                   loading={loading && !data}
                   showLifecycle={lifecycleScope !== 'active'}
+                  onCreatePost={(vehicleId, vehicleTitle) => setCreatePostTarget({ vehicleId, vehicleTitle })}
                   emptyState={
                     <EmptyState icon="🔍" title={EMPTY_STATE_COPY.noInventoryFilter.title} subtitle={EMPTY_STATE_COPY.noInventoryFilter.subtitle} />
                   }
@@ -481,6 +484,15 @@ export default function InventoryPage({ dealerId, nav, activeTab }: Props) {
 
       {showImport && (
         <ImportModal dealerId={dealerId} onClose={() => setShowImport(false)} onCommitted={handleImportCommitted} />
+      )}
+
+      {createPostTarget && (
+        <CreatePostModal
+          dealerId={dealerId}
+          vehicleId={createPostTarget.vehicleId}
+          vehicleTitle={createPostTarget.vehicleTitle}
+          onClose={() => setCreatePostTarget(null)}
+        />
       )}
     </OperatorPage>
   );

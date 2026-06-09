@@ -31,6 +31,7 @@ type Props = {
   loading?: boolean;
   emptyState: React.ReactNode;
   showLifecycle?: boolean;
+  onCreatePost?: (vehicleId: string, vehicleTitle: string) => void;
 };
 
 export function InventoryAssetList({
@@ -49,6 +50,7 @@ export function InventoryAssetList({
   loading,
   emptyState,
   showLifecycle,
+  onCreatePost,
 }: Props) {
   const [detailId, setDetailId] = useState<string | null>(null);
 
@@ -101,6 +103,10 @@ export function InventoryAssetList({
                   label: operatorCopy.channels.rowActions.history,
                   onClick: () => nav.goToHistory(assetRowScope(vehicle)),
                 },
+                ...(onCreatePost ? [{
+                  label: 'Create Post',
+                  onClick: () => onCreatePost(vehicle.id, assetTitle(vehicle)),
+                }] : []),
               ]}
             />
           );

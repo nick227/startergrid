@@ -121,8 +121,8 @@ describe('parseStandardTokenResponse', () => {
 
 describe('OAuthError', () => {
   it('preserves provider and code', () => {
-    const err = new OAuthError('meta', 'RATE_LIMITED', 'Too many requests');
-    assert.equal(err.provider, 'meta');
+    const err = new OAuthError('facebook-business-page', 'RATE_LIMITED', 'Too many requests');
+    assert.equal(err.provider, 'facebook-business-page');
     assert.equal(err.code, 'RATE_LIMITED');
     assert.equal(err.message, 'Too many requests');
     assert.equal(err.name, 'OAuthError');
@@ -135,6 +135,7 @@ describe('OAuthError', () => {
 describe('PlatformClientRegistry.forSlug', () => {
   const oauthSlugs = [
     'google-vehicle-ads',
+    'google-business-profile',
     'meta-automotive-ads',
     'facebook-marketplace-general',
     'tiktok-automotive-ads',

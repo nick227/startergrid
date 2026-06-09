@@ -256,6 +256,9 @@ model DealershipProfile {
   channelEvents                ChannelEvent[]
   operatorAccess               OperatorDealerAccess[]
   platformOAuthTokens          PlatformOAuthToken[]
+  socialPageAccounts           SocialPageAccount[]
+  socialPosts                  SocialPost[]
+  marketplaceListings          MarketplaceListing[]
 }
 
 model Vehicle {
@@ -298,6 +301,8 @@ model Vehicle {
   channelEvents     ChannelEvent[]
   favorites         MarketplaceFavorite[]
   listingReports    ListingReport[]
+  socialPosts           SocialPost[]
+  marketplaceListings   MarketplaceListing[]
 
   @@index([dealershipId])
   @@unique([dealershipId, stockNumber])
@@ -978,4 +983,113 @@ model ChannelEvent {
   @@index([dealershipId, platformSlug, eventType])
   @@index([vehicleId])
   @@index([occurredAt])
+}
+
+// ─── Social page accounts + posts ─────────────────────────────────────────────
+//
+// SocialPageAccount: a connected social-media page (e.g. a Facebook Business Page)
+//   chosen by the operator for a dealer. One page is selected at a time per
+//   dealership+platformSlug. Page access tokens are stored here following the same
+//   plain-text-at-rest pattern as PlatformOAuthToken; access is always through
+//   SocialPageStore methods — never raw field access in route handlers.
+//
+// SocialPost: a published (or attempted) post to a social page, with trigger/source
+//   metadata so both manual and future auto-posting flows share one record type.
+
+enum SocialPostStatus {
+  DRAFT
+  PUBLISHED
+  FAILED
+  DELETED
+}
+
+enum SocialPostTrigger {
+  MANUAL   // operator clicked Publish
+  AUTO     // scheduled / auto-inventory flow
+  PREVIEW  // preview-only, never actually published
+}
+
+model SocialPageAccount {
+  id                 String    @id @default(cuid())
+  dealershipId       String
+  platformSlug       String    @db.VarChar(80)
+  pageId             String    @db.VarChar(40)
+  name               String    @db.VarChar(200)
+  pictureUrl         String?   @db.VarChar(500)
+  category           String?   @db.VarChar(120)
+  pageAccessToken    String    @db.Text
+  pageTokenExpiresAt DateTime?
+  isSelected         Boolean   @default(false)
+  metadataJson       Json?
+  createdAt          DateTime  @default(now())
+  updatedAt          DateTime  @updatedAt
+
+  dealership  DealershipProfile @relation(fields: [dealershipId], references: [id], onDelete: Cascade)
+  posts       SocialPost[]
+
+  @@unique([dealershipId, platformSlug, pageId])
+  @@index([dealershipId, platformSlug])
+  @@index([dealershipId, platformSlug, isSelected])
+}
+
+model SocialPost {
+  id             String            @id @default(cuid())
+  dealershipId   String
+  platformSlug   String            @db.VarChar(80)
+  pageAccountId  String
+  vehicleId      String?
+  externalPostId String?           @db.VarChar(120)
+  externalUrl    String?           @db.VarChar(500)
+  postText       String            @db.Text
+  status         SocialPostStatus  @default(DRAFT)
+  trigger        SocialPostTrigger @default(MANUAL)
+  source         String?           @db.VarChar(80)
+  metadataJson   Json?
+  publishedAt    DateTime?
+  errorMessage   String?           @db.Text
+  createdAt      DateTime          @default(now())
+  updatedAt      DateTime          @updatedAt
+
+  dealership   DealershipProfile @relation(fields: [dealershipId], references: [id], onDelete: Cascade)
+  pageAccount  SocialPageAccount @relation(fields: [pageAccountId], references: [id], onDelete: Cascade)
+  vehicle      Vehicle?          @relation(fields: [vehicleId], references: [id], onDelete: SetNull)
+
+  @@index([dealershipId, platformSlug])
+  @@index([dealershipId, platformSlug, status])
+  @@index([pageAccountId])
+  @@index([vehicleId])
+}
+
+// ── Marketplace Listings ─────────────────────────────────────────────────────
+// One row per (vehicleId, platformSlug). Tracks eBay (and future marketplace)
+// listing lifecycle: inventory item upsert → offer create/publish → withdraw.
+
+enum MarketplaceListingStatus {
+  DRAFT
+  ACTIVE
+  ENDED
+  FAILED
+}
+
+model MarketplaceListing {
+  id                String                   @id @default(cuid())
+  dealershipId      String
+  vehicleId         String
+  platformSlug      String                   @db.VarChar(80)
+  externalListingId String?                  @db.VarChar(120)
+  externalOfferId   String?                  @db.VarChar(120)
+  status            MarketplaceListingStatus @default(DRAFT)
+  errorMessage      String?                  @db.VarChar(500)
+  listedAt          DateTime?
+  endedAt           DateTime?
+  createdAt         DateTime                 @default(now())
+  updatedAt         DateTime                 @updatedAt
+
+  dealership  DealershipProfile @relation(fields: [dealershipId], references: [id], onDelete: Cascade)
+  vehicle     Vehicle           @relation(fields: [vehicleId], references: [id], onDelete: Cascade)
+
+  @@unique([vehicleId, platformSlug])
+  @@index([dealershipId, platformSlug])
+  @@index([dealershipId, platformSlug, status])
+  @@index([vehicleId])
 }

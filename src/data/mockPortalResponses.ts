@@ -758,6 +758,64 @@ const rvTrader = assistedMarketplaceStub('rv-trader', 'RV Trader');
 const cycleTrader = assistedMarketplaceStub('cycle-trader', 'Cycle Trader');
 const atvTrader = assistedMarketplaceStub('atv-trader', 'ATV Trader');
 const trailerTrader = assistedMarketplaceStub('trailer-trader', 'Trailer Trader');
+const facebookBusinessPage: PlatformResponses = {
+  PORTAL_ACCEPTED: r(
+    'facebook-business-page', 'PORTAL_ACCEPTED', 200,
+    { pageId: 'page_mock_111', name: 'Prairie Ridge Motors — Facebook Page', status: 'connected', accessGranted: true },
+    'ACTIVE', null,
+    'Facebook Business Page connected via OAuth. Page access token saved; ready to post inventory.',
+  ),
+  PORTAL_REJECTED: r(
+    'facebook-business-page', 'PORTAL_REJECTED', 403,
+    { error: { message: 'Insufficient permissions: pages_manage_posts not granted', code: 10 } },
+    'REJECTED',
+    'Re-authorize the Facebook app and grant all required page permissions, then reconnect.',
+    'OAuth completed but pages_manage_posts permission was not granted — page posting is unavailable.',
+  ),
+  PORTAL_NEEDS_INFO: r(
+    'facebook-business-page', 'PORTAL_NEEDS_INFO', 200,
+    { status: 'awaiting_page_selection', message: 'OAuth authorized but no page selected yet. Operator must choose a Facebook Page.' },
+    'DEALER_ACTION_NEEDED',
+    'OAuth is connected — visit the Accounts page to select which Facebook Business Page to use.',
+    'Page posting is ready but no page has been selected for this dealer.',
+  ),
+  PORTAL_ERROR: r(
+    'facebook-business-page', 'PORTAL_ERROR', 500,
+    { error: { message: 'Facebook Graph API temporarily unavailable', code: 2 } },
+    'SUBMITTED', null,
+    'Transient Facebook Graph API error. Retry after brief backoff.',
+  ),
+};
+
+const googleBusinessProfile: PlatformResponses = {
+  PORTAL_ACCEPTED: r(
+    'google-business-profile', 'PORTAL_ACCEPTED', 200,
+    { locationName: 'accounts/mock-123/locations/mock-456', title: 'Prairie Ridge Motors', status: 'connected', accessGranted: true },
+    'ACTIVE', null,
+    'Google Business Profile location connected via OAuth. Location resource name saved; ready to post inventory updates as local posts.',
+  ),
+  PORTAL_REJECTED: r(
+    'google-business-profile', 'PORTAL_REJECTED', 403,
+    { error: { code: 403, message: 'Request had insufficient authentication scopes', status: 'PERMISSION_DENIED' } },
+    'REJECTED',
+    'Re-authorize the Google app and grant the business.manage scope, then reconnect.',
+    'OAuth completed but business.manage permission was not granted — GBP local posting is unavailable.',
+  ),
+  PORTAL_NEEDS_INFO: r(
+    'google-business-profile', 'PORTAL_NEEDS_INFO', 200,
+    { status: 'awaiting_location_selection', message: 'OAuth authorized but no GBP location selected yet. Operator must choose a location.' },
+    'DEALER_ACTION_NEEDED',
+    'OAuth is connected — visit the Accounts page to select which Google Business Profile location to use.',
+    'GBP posting is ready but no location has been selected for this dealer.',
+  ),
+  PORTAL_ERROR: r(
+    'google-business-profile', 'PORTAL_ERROR', 503,
+    { error: { code: 503, message: 'Google Business Profile API temporarily unavailable', status: 'UNAVAILABLE' } },
+    'SUBMITTED', null,
+    'Transient Google Business Profile API error. Retry after brief backoff.',
+  ),
+};
+
 const facebookMarketplaceGeneral = assistedMarketplaceStub('facebook-marketplace-general', 'Facebook Marketplace');
 
 const boatTrader = assistedMarketplaceStub('boat-trader', 'Boat Trader');
@@ -833,6 +891,8 @@ export const mockPortalResponses: Record<string, PlatformResponses> = {
   'cycle-trader': cycleTrader,
   'atv-trader': atvTrader,
   'trailer-trader': trailerTrader,
+  'facebook-business-page': facebookBusinessPage,
+  'google-business-profile': googleBusinessProfile,
   'facebook-marketplace-general': facebookMarketplaceGeneral,
   'boat-trader': boatTrader,
   'yachtworld': yachtWorld,

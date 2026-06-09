@@ -1,6 +1,6 @@
 import { useMemo, useState, useEffect } from 'react';
-import { fetchPublishStatus, fetchAccounts, fetchPlatformPerformance } from '@/lib/api/sdk.ts';
-import type { PlatformAccountDetail, PlatformPerformanceItem } from '@/lib/types.ts';
+import { fetchPublishStatus, fetchAccounts, fetchPlatformPerformance, fetchSelectedSocialPages } from '@/lib/api/sdk.ts';
+import type { PlatformAccountDetail, PlatformPerformanceItem, SelectedSocialPage } from '@/lib/types.ts';
 import type { OperatorPageBaseProps } from '@/lib/operatorPage.ts';
 import { useAsyncQuery } from '@/hooks/useAsyncQuery.ts';
 import { OperatorPage, ErrorState } from '@/components/operator';
@@ -36,6 +36,7 @@ export default function PlatformsPage({ dealerId, nav, activeTab, initialPlatfor
   );
   const accountsQuery = useAsyncQuery(() => fetchAccounts(dealerId), [dealerId]);
   const perfQuery = useAsyncQuery(() => fetchPlatformPerformance(dealerId), [dealerId]);
+  const socialPagesQuery = useAsyncQuery(() => fetchSelectedSocialPages(dealerId), [dealerId]);
 
   const [search, setSearch] = useState('');
   const [filter, setFilter] = useState<PlatformConnectionFilter>('ALL');
@@ -57,6 +58,12 @@ export default function PlatformsPage({ dealerId, nav, activeTab, initialPlatfor
     for (const p of perfQuery.data?.platforms ?? []) m.set(p.platformSlug, p);
     return m;
   }, [perfQuery.data]);
+
+  const socialPageBySlug = useMemo(() => {
+    const m = new Map<string, SelectedSocialPage>();
+    for (const s of socialPagesQuery.data?.selections ?? []) m.set(s.platformSlug, s);
+    return m;
+  }, [socialPagesQuery.data]);
 
   const platforms = useMemo(
     () => (data?.platforms ?? []).filter(p => p.supportedCategories.includes(categorySchema.id)),
@@ -80,6 +87,7 @@ export default function PlatformsPage({ dealerId, nav, activeTab, initialPlatfor
     reload();
     accountsQuery.reload();
     perfQuery.reload();
+    socialPagesQuery.reload();
   };
 
   if (error && !data) {
@@ -154,12 +162,14 @@ export default function PlatformsPage({ dealerId, nav, activeTab, initialPlatfor
         platforms={visible}
         perfBySlug={perfBySlug}
         accountBySlug={accountBySlug}
+        socialPageBySlug={socialPageBySlug}
         dealerId={dealerId}
         nav={nav}
         selectedSlug={selectedSlug}
         onSelectSlug={setSelectedSlug}
         onAccountSaved={() => {
           accountsQuery.reload();
+          socialPagesQuery.reload();
           reload();
         }}
         loading={loading && !data}
