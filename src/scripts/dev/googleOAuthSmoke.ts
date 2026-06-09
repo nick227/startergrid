@@ -150,6 +150,20 @@ async function run() {
   const { authUrl } = connectRes.json() as { authUrl: string; state: string };
   pass('connect-url returned 200', 'authUrl received');
 
+  // Fail fast if the redirect_uri baked into the authUrl doesn't match what we
+  // told the user to register in Google Console. A mismatch here causes a
+  // redirect_uri_mismatch error from Google before any token exchange happens.
+  const redirectUriInUrl = new URL(authUrl).searchParams.get('redirect_uri') ?? '';
+  const expectedCallbackUrl = `${redirectBase}/api/oauth/callback`;
+  if (redirectUriInUrl !== expectedCallbackUrl) {
+    fail(
+      'redirect_uri matches expected callback',
+      `\n       authUrl has:  ${redirectUriInUrl}\n       expected:     ${expectedCallbackUrl}\n       Fix OAUTH_REDIRECT_BASE_URL in .env — they must be identical.`
+    );
+    await prisma.$disconnect(); rl.close(); process.exit(1);
+  }
+  pass('redirect_uri matches expected callback', expectedCallbackUrl);
+
   console.log('\n  ┌──────────────────────────────────────────────────────────┐');
   console.log('  │  ACTION REQUIRED                                           │');
   console.log('  │                                                             │');
