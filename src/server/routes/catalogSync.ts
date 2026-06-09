@@ -7,9 +7,19 @@ import { CatalogSyncStore } from '../../services/catalog/CatalogSyncStore.js';
 import { ContentPackageBuilder } from '../../services/distribution/ContentPackageBuilder.js';
 import { MetaCatalogBridge } from '../../services/catalog/bridges/MetaCatalogBridge.js';
 import { GoogleVehicleAdsBridge } from '../../services/catalog/bridges/GoogleVehicleAdsBridge.js';
+import { TikTokCatalogBridge } from '../../services/catalog/bridges/TikTokCatalogBridge.js';
+import { MicrosoftAutomotiveBridge } from '../../services/catalog/bridges/MicrosoftAutomotiveBridge.js';
+import { PinterestCatalogBridge } from '../../services/catalog/bridges/PinterestCatalogBridge.js';
+import { SnapchatCatalogBridge } from '../../services/catalog/bridges/SnapchatCatalogBridge.js';
+import { RedditCatalogBridge } from '../../services/catalog/bridges/RedditCatalogBridge.js';
 import type { CatalogSyncBridge } from '../../services/catalog/catalogTypes.js';
 import { MetaOAuthClient } from '../../services/platform/clients/providers/MetaOAuthClient.js';
 import { GoogleOAuthClient } from '../../services/platform/clients/providers/GoogleOAuthClient.js';
+import { TikTokOAuthClient } from '../../services/platform/clients/providers/TikTokOAuthClient.js';
+import { MicrosoftOAuthClient } from '../../services/platform/clients/providers/MicrosoftOAuthClient.js';
+import { PinterestOAuthClient } from '../../services/platform/clients/providers/PinterestOAuthClient.js';
+import { SnapchatOAuthClient } from '../../services/platform/clients/providers/SnapchatOAuthClient.js';
+import { RedditOAuthClient } from '../../services/platform/clients/providers/RedditOAuthClient.js';
 
 type DealerSlugParams = { dealershipId: string; platformSlug: string };
 type DealerSlugItemParams = DealerSlugParams & { itemId: string };
@@ -19,13 +29,23 @@ function listingBaseUrl(): string {
 }
 
 const BRIDGE_REGISTRY: Record<string, CatalogSyncBridge> = {
-  'meta-automotive-ads': new MetaCatalogBridge(),
-  'google-vehicle-ads':  new GoogleVehicleAdsBridge(),
+  'meta-automotive-ads':         new MetaCatalogBridge(),
+  'google-vehicle-ads':          new GoogleVehicleAdsBridge(),
+  'tiktok-automotive-ads':       new TikTokCatalogBridge(),
+  'microsoft-automotive-ads':    new MicrosoftAutomotiveBridge(),
+  'pinterest-shopping-ads':      new PinterestCatalogBridge(),
+  'snapchat-dynamic-product-ads': new SnapchatCatalogBridge(),
+  'reddit-dynamic-product-ads':  new RedditCatalogBridge(),
 };
 
 const OAUTH_CLIENT_REGISTRY: Record<string, OAuthClient> = {
   'meta-catalog-ads': new MetaOAuthClient(),
   'google':           new GoogleOAuthClient(),
+  'tiktok':           new TikTokOAuthClient(),
+  'microsoft':        new MicrosoftOAuthClient(),
+  'pinterest':        new PinterestOAuthClient(),
+  'snapchat':         new SnapchatOAuthClient(),
+  'reddit':           new RedditOAuthClient(),
 };
 
 export function registerCatalogSyncRoutes(app: FastifyInstance, prisma: PrismaClient): void {
