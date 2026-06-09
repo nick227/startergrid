@@ -1,6 +1,8 @@
 import type { PrismaClient } from '@prisma/client';
 import type { OAuthProvider } from '../../../lib/types.js';
 import type { OAuthTokenPayload } from './types.js';
+import { OAuthError } from './types.js';
+import type { OAuthClient } from './OAuthClient.js';
 
 // Buffer to treat tokens as expired 60 s before their stated expiry, avoiding
 // races between check and use.
@@ -69,5 +71,33 @@ export const CredentialStore = {
   isTokenExpired(token: OAuthTokenPayload): boolean {
     if (!token.expiresAt) return false;
     return token.expiresAt.getTime() - EXPIRY_BUFFER_MS <= Date.now();
+  },
+
+  // Returns a live access token for the provider, refreshing automatically if expired.
+  // Throws OAuthError('NO_TOKEN') if no token exists, or ('REFRESH_TOKEN_MISSING') if
+  // the token is expired but has no refresh token — caller should prompt re-auth.
+  async withFreshToken(
+    prisma: PrismaClient,
+    dealershipId: string,
+    provider: OAuthProvider,
+    client: OAuthClient,
+  ): Promise<string> {
+    const token = await this.getToken(prisma, dealershipId, provider);
+    if (!token) {
+      throw new OAuthError(provider, 'NO_TOKEN', `No OAuth token for ${provider} — reconnect required`);
+    }
+    if (!this.isTokenExpired(token)) {
+      return token.accessToken;
+    }
+    if (!token.refreshToken) {
+      throw new OAuthError(
+        provider,
+        'REFRESH_TOKEN_MISSING',
+        `Token expired and no refresh token available for ${provider} — reconnect required`,
+      );
+    }
+    const refreshed = await client.refreshAccessToken(token.refreshToken);
+    await this.saveToken(prisma, dealershipId, provider, refreshed);
+    return refreshed.accessToken;
   },
 };

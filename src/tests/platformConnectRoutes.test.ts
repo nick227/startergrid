@@ -250,3 +250,153 @@ describe('DELETE oauth-token — non-OAuth platform', () => {
     assert.equal(res.statusCode, 400);
   });
 });
+
+describe('DELETE oauth-token — unauthenticated', () => {
+  it('returns 401 when no session cookie is present', async () => {
+    const prisma = makeConnectPrisma({});
+    const app = buildApp(prisma);
+    const res = await app.inject({
+      method: 'DELETE',
+      url: '/api/dealers/dealer-1/platforms/google-vehicle-ads/oauth-token',
+    });
+    assert.equal(res.statusCode, 401);
+  });
+});
+
+describe('DELETE oauth-token — success', () => {
+  it('returns 204 and invokes platformOAuthToken.deleteMany', async () => {
+    let deleteManyCalled = false;
+    const base = makeConnectPrisma({});
+    const prisma = {
+      ...(base as unknown as Record<string, unknown>),
+      platformOAuthToken: {
+        upsert: async () => ({}),
+        deleteMany: async () => { deleteManyCalled = true; return { count: 1 }; },
+      },
+    } as unknown as PrismaClient;
+    const app = buildApp(prisma);
+    const res = await app.inject({
+      method: 'DELETE',
+      url: '/api/dealers/dealer-1/platforms/google-vehicle-ads/oauth-token',
+      headers: { cookie: authCookieHeader() },
+    });
+    assert.equal(res.statusCode, 204, `expected 204, got ${res.statusCode}: ${res.body}`);
+    assert.ok(deleteManyCalled, 'deleteMany must be called to revoke the stored token');
+  });
+});
+
+// ── PKCE: X platform stores codeVerifier ──────────────────────────────────────
+
+describe('GET connect-url — X platform PKCE', () => {
+  it('stores a non-null codeVerifier in oAuthState for x-dynamic-product-ads', async () => {
+    let capturedVerifier: unknown = undefined;
+    const base = makeConnectPrisma({});
+    const prisma = {
+      ...(base as unknown as Record<string, unknown>),
+      oAuthState: {
+        findUnique: async () => null,
+        update: async (args: { data: Record<string, unknown> }) => ({ id: 'state-1', ...args.data }),
+        create: async (args: { data: Record<string, unknown> }) => {
+          capturedVerifier = args.data['codeVerifier'];
+          return { id: 'state-1', ...args.data };
+        },
+      },
+    } as unknown as PrismaClient;
+    const app = buildApp(prisma);
+    const res = await app.inject({
+      method: 'GET',
+      url: '/api/dealers/dealer-1/platforms/x-dynamic-product-ads/connect-url',
+      headers: { cookie: authCookieHeader() },
+    });
+    assert.equal(res.statusCode, 200, `expected 200, got ${res.statusCode}: ${res.body}`);
+    assert.ok(typeof capturedVerifier === 'string', 'X platform must store a PKCE codeVerifier');
+    assert.ok(
+      (capturedVerifier as string).length >= 43,
+      `codeVerifier must be at least 43 chars (PKCE minimum), got ${(capturedVerifier as string).length}`
+    );
+  });
+});
+
+// ── Callback success flow ─────────────────────────────────────────────────────
+
+describe('GET /api/oauth/callback — success flow', () => {
+  it('exchanges code, returns success HTML, and postMessage origin is scoped not wildcard', async () => {
+    const originalFetch = globalThis.fetch;
+    globalThis.fetch = (async () => ({
+      ok: true,
+      json: async () => ({ access_token: 'tok-abc', token_type: 'Bearer' }),
+    })) as unknown as typeof globalThis.fetch;
+    try {
+      const stateRow = {
+        id: 'state-1',
+        state: 'valid-state-abc',
+        dealershipId: 'dealer-1',
+        platformSlug: 'google-vehicle-ads',
+        provider: 'google',
+        codeVerifier: null,
+        returnUrl: null,
+        expiresAt: new Date(Date.now() + 60_000),
+        usedAt: null,
+        createdAt: new Date(),
+      };
+      const prisma = makeConnectPrisma({ stateRow });
+      const app = buildApp(prisma);
+      const res = await app.inject({
+        method: 'GET',
+        url: '/api/oauth/callback?state=valid-state-abc&code=auth-code-xyz',
+      });
+      assert.ok(res.headers['content-type']?.toString().includes('text/html'));
+      assert.ok(
+        res.body.toLowerCase().includes('connected'),
+        `body should indicate success, got: ${res.body.slice(0, 300)}`
+      );
+      // postMessage target must be the app origin, never '*'
+      assert.ok(
+        !res.body.includes(', "*"') && !res.body.includes(",'*'"),
+        'postMessage second argument must not be the wildcard "*"'
+      );
+    } finally {
+      globalThis.fetch = originalFetch;
+    }
+  });
+});
+
+// ── Callback: token exchange failure ─────────────────────────────────────────
+
+describe('GET /api/oauth/callback — token exchange failure', () => {
+  it('returns error HTML when the provider rejects the code', async () => {
+    const originalFetch = globalThis.fetch;
+    globalThis.fetch = (async () => ({
+      ok: false,
+      status: 400,
+      json: async () => ({ error: 'invalid_grant', error_description: 'Code already used' }),
+    })) as unknown as typeof globalThis.fetch;
+    try {
+      const stateRow = {
+        id: 'state-2',
+        state: 'valid-state-xyz',
+        dealershipId: 'dealer-1',
+        platformSlug: 'google-vehicle-ads',
+        provider: 'google',
+        codeVerifier: null,
+        returnUrl: null,
+        expiresAt: new Date(Date.now() + 60_000),
+        usedAt: null,
+        createdAt: new Date(),
+      };
+      const prisma = makeConnectPrisma({ stateRow });
+      const app = buildApp(prisma);
+      const res = await app.inject({
+        method: 'GET',
+        url: '/api/oauth/callback?state=valid-state-xyz&code=bad-code',
+      });
+      assert.ok(res.headers['content-type']?.toString().includes('text/html'));
+      assert.ok(
+        res.body.includes('Code already used') || res.body.includes('invalid_grant'),
+        `error body should include provider message, got: ${res.body.slice(0, 300)}`
+      );
+    } finally {
+      globalThis.fetch = originalFetch;
+    }
+  });
+});

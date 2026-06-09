@@ -19,9 +19,10 @@ function redirectBase(): string {
 // can detect completion via window.closed polling or a postMessage.
 function popupClosePage(success: boolean, message: string): string {
   const payload = JSON.stringify({ success, message });
+  const origin = JSON.stringify(redirectBase());
   return `<!DOCTYPE html><html><head><title>Connecting…</title></head><body>
 <script>
-try { window.opener && window.opener.postMessage(${payload}, '*'); } catch(_) {}
+try { window.opener && window.opener.postMessage(${payload}, ${origin}); } catch(_) {}
 window.close();
 </script>
 <p>${success ? 'Connected!' : 'Error: ' + message} — you may close this window.</p>

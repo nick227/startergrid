@@ -1,5 +1,6 @@
 import assert from 'node:assert/strict';
 import { describe, it } from 'node:test';
+import type { PrismaClient } from '@prisma/client';
 import { OAuthClient } from '../services/platform/clients/OAuthClient.js';
 import type { OAuthTokenPayload, AuthUrlParams } from '../services/platform/clients/types.js';
 import { OAuthError } from '../services/platform/clients/types.js';
@@ -215,5 +216,101 @@ describe('CredentialStore.isTokenExpired', () => {
   it('returns false for a token expiring just outside the 60s buffer', () => {
     const safeExpiry = new Date(Date.now() + 90_000); // 90 seconds — outside buffer
     assert.equal(CredentialStore.isTokenExpired(makeToken(safeExpiry)), false);
+  });
+});
+
+// ── CredentialStore.withFreshToken ────────────────────────────────────────────
+
+describe('CredentialStore.withFreshToken', () => {
+  function makeDbRow(token: OAuthTokenPayload) {
+    return {
+      accessToken: token.accessToken,
+      refreshToken: token.refreshToken ?? null,
+      tokenType: token.tokenType,
+      scope: token.scope ?? null,
+      expiresAt: token.expiresAt ?? null,
+      rawPayload: token.rawPayload ?? {},
+    };
+  }
+
+  function makeFreshTokenPrisma(token: OAuthTokenPayload | null): PrismaClient {
+    const row = token ? makeDbRow(token) : null;
+    return {
+      platformOAuthToken: {
+        findUnique: async () => row,
+        upsert: async () => ({}),
+      },
+    } as unknown as PrismaClient;
+  }
+
+  function makeToken(overrides: Partial<OAuthTokenPayload> = {}): OAuthTokenPayload {
+    return {
+      accessToken: 'live-token',
+      refreshToken: 'refresh-token',
+      tokenType: 'Bearer',
+      scope: null,
+      expiresAt: null,
+      rawPayload: {},
+      ...overrides,
+    };
+  }
+
+  // Client that returns a known refreshed token
+  const refreshClient = new (class extends OAuthClient {
+    readonly provider: OAuthProvider = 'google';
+    readonly authorizationEndpoint = 'https://x/auth';
+    readonly tokenEndpoint = 'https://x/token';
+    readonly defaultScopes: string[] = [];
+    protected readonly clientId = 'id';
+    protected readonly clientSecret = 'secret';
+    buildAuthorizationUrl(_p: AuthUrlParams): string { return ''; }
+    async exchangeCode(): Promise<OAuthTokenPayload> {
+      throw new OAuthError(this.provider, 'NOT_IMPL', 'stub');
+    }
+    async refreshAccessToken(_rt: string): Promise<OAuthTokenPayload> {
+      return makeToken({ accessToken: 'refreshed-token', expiresAt: new Date(Date.now() + 3_600_000) });
+    }
+  })();
+
+  it('returns the live accessToken when token is not expired', async () => {
+    const token = makeToken({ expiresAt: new Date(Date.now() + 3_600_000) });
+    const result = await CredentialStore.withFreshToken(
+      makeFreshTokenPrisma(token), 'dealer-1', 'google', refreshClient
+    );
+    assert.equal(result, 'live-token');
+  });
+
+  it('returns the accessToken when expiresAt is null (no expiry info)', async () => {
+    const token = makeToken({ expiresAt: null });
+    const result = await CredentialStore.withFreshToken(
+      makeFreshTokenPrisma(token), 'dealer-1', 'google', refreshClient
+    );
+    assert.equal(result, 'live-token');
+  });
+
+  it('throws OAuthError(NO_TOKEN) when no token row exists', async () => {
+    await assert.rejects(
+      () => CredentialStore.withFreshToken(makeFreshTokenPrisma(null), 'dealer-1', 'google', refreshClient),
+      (err: unknown) => err instanceof OAuthError && err.code === 'NO_TOKEN'
+    );
+  });
+
+  it('throws OAuthError(REFRESH_TOKEN_MISSING) when token is expired but has no refresh token', async () => {
+    const token = makeToken({ refreshToken: null, expiresAt: new Date(Date.now() - 1_000) });
+    await assert.rejects(
+      () => CredentialStore.withFreshToken(makeFreshTokenPrisma(token), 'dealer-1', 'google', refreshClient),
+      (err: unknown) => err instanceof OAuthError && err.code === 'REFRESH_TOKEN_MISSING'
+    );
+  });
+
+  it('refreshes an expired token and returns the new accessToken', async () => {
+    const token = makeToken({
+      refreshToken: 'valid-refresh',
+      expiresAt: new Date(Date.now() - 1_000), // expired
+    });
+    const result = await CredentialStore.withFreshToken(
+      makeFreshTokenPrisma(token), 'dealer-1', 'google', refreshClient
+    );
+    assert.equal(result, 'refreshed-token');
   });
 });
