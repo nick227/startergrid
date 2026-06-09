@@ -80,6 +80,10 @@ function argValue(flag: string): string | undefined {
   return arg?.split('=').slice(1).join('=');
 }
 
+function hasFlag(flag: string): boolean {
+  return process.argv.includes(`--${flag}`);
+}
+
 function preview(token: string | null, chars = 12): string {
   if (!token) return '(none)';
   return token.length > chars ? `${token.slice(0, chars)}…` : token;
@@ -88,7 +92,7 @@ function preview(token: string | null, chars = 12): string {
 // ── Main ──────────────────────────────────────────────────────────────────────
 
 async function run() {
-  const resumeMode = !!argValue('resume');
+  const resumeMode = hasFlag('resume');
   const rl = createInterface({ input, output });
 
   console.log('\n══════════════════════════════════════════════════════════');
@@ -135,6 +139,18 @@ async function run() {
   if (!resumeMode) {
     info(`Callback URL: ${redirectBase}/api/oauth/callback`);
     info('Ensure this URI is registered in your Google Cloud Console OAuth app.');
+  }
+
+  if (!resumeMode) {
+    // Reset account state and clear any leftover token so the test is
+    // repeatable regardless of what state prior runs left behind.
+    await prisma.platformAccount.updateMany({
+      where: { dealershipId: dealerId, platformSlug: 'google-vehicle-ads' },
+      data: { state: 'ACCOUNT_NEEDED' },
+    });
+    await prisma.platformOAuthToken.deleteMany({
+      where: { dealershipId: dealerId, provider: 'google' },
+    });
   }
 
   const app = buildApp(prisma);

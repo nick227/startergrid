@@ -136,7 +136,7 @@ export function registerPlatformConnectRoutes(app: FastifyInstance, prisma: Pris
         where: {
           dealershipId: stateRow.dealershipId,
           platformSlug: stateRow.platformSlug,
-          state: { in: ['ACCOUNT_NEEDED', 'CREDENTIALS_NEEDED'] },
+          state: { in: ['ACCOUNT_NEEDED', 'CREDENTIALS_NEEDED', 'PENDING_REVIEW'] },
         },
         data: { state: 'ACTIVE' },
       });

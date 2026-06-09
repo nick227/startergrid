@@ -236,6 +236,56 @@ describe('GET /api/oauth/callback — expired state', () => {
   });
 });
 
+// ── Callback advances PENDING_REVIEW to ACTIVE ───────────────────────────────
+
+describe('GET /api/oauth/callback — advances PENDING_REVIEW to ACTIVE', () => {
+  it('platformAccount.updateMany is called with PENDING_REVIEW in the state list', async () => {
+    let capturedWhere: Record<string, unknown> | null = null;
+    const originalFetch = globalThis.fetch;
+    globalThis.fetch = (async () => ({
+      ok: true,
+      json: async () => ({ access_token: 'tok-pending', token_type: 'Bearer' }),
+    })) as unknown as typeof globalThis.fetch;
+    try {
+      const stateRow = {
+        id: 'state-pr',
+        state: 'pending-review-state',
+        dealershipId: 'dealer-1',
+        platformSlug: 'google-vehicle-ads',
+        provider: 'google',
+        codeVerifier: null,
+        returnUrl: null,
+        expiresAt: new Date(Date.now() + 60_000),
+        usedAt: null,
+        createdAt: new Date(),
+      };
+      const base = makeConnectPrisma({ stateRow });
+      const prisma = {
+        ...(base as unknown as Record<string, unknown>),
+        platformAccount: {
+          updateMany: async (args: { where: Record<string, unknown> }) => {
+            capturedWhere = args.where;
+            return { count: 1 };
+          },
+        },
+      } as unknown as PrismaClient;
+      const app = buildApp(prisma);
+      await app.inject({
+        method: 'GET',
+        url: '/api/oauth/callback?state=pending-review-state&code=pr-code',
+      });
+      assert.ok(capturedWhere !== null, 'updateMany should have been called');
+      const stateFilter = (capturedWhere as { state?: { in?: string[] } }).state?.in ?? [];
+      assert.ok(
+        stateFilter.includes('PENDING_REVIEW'),
+        `PENDING_REVIEW must be in updateMany state filter, got: ${JSON.stringify(stateFilter)}`
+      );
+    } finally {
+      globalThis.fetch = originalFetch;
+    }
+  });
+});
+
 // ── DELETE oauth-token ────────────────────────────────────────────────────────
 
 describe('DELETE oauth-token — non-OAuth platform', () => {
