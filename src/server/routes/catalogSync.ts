@@ -2,11 +2,14 @@ import type { FastifyInstance } from 'fastify';
 import type { PrismaClient } from '@prisma/client';
 import { requireDealerAccess } from '../security.js';
 import { CredentialStore } from '../../services/platform/clients/CredentialStore.js';
+import type { OAuthClient } from '../../services/platform/clients/OAuthClient.js';
 import { CatalogSyncStore } from '../../services/catalog/CatalogSyncStore.js';
 import { ContentPackageBuilder } from '../../services/distribution/ContentPackageBuilder.js';
 import { MetaCatalogBridge } from '../../services/catalog/bridges/MetaCatalogBridge.js';
+import { GoogleVehicleAdsBridge } from '../../services/catalog/bridges/GoogleVehicleAdsBridge.js';
 import type { CatalogSyncBridge } from '../../services/catalog/catalogTypes.js';
 import { MetaOAuthClient } from '../../services/platform/clients/providers/MetaOAuthClient.js';
+import { GoogleOAuthClient } from '../../services/platform/clients/providers/GoogleOAuthClient.js';
 
 type DealerSlugParams = { dealershipId: string; platformSlug: string };
 type DealerSlugItemParams = DealerSlugParams & { itemId: string };
@@ -17,10 +20,12 @@ function listingBaseUrl(): string {
 
 const BRIDGE_REGISTRY: Record<string, CatalogSyncBridge> = {
   'meta-automotive-ads': new MetaCatalogBridge(),
+  'google-vehicle-ads':  new GoogleVehicleAdsBridge(),
 };
 
-const OAUTH_CLIENT_REGISTRY: Record<string, MetaOAuthClient> = {
+const OAUTH_CLIENT_REGISTRY: Record<string, OAuthClient> = {
   'meta-catalog-ads': new MetaOAuthClient(),
+  'google':           new GoogleOAuthClient(),
 };
 
 export function registerCatalogSyncRoutes(app: FastifyInstance, prisma: PrismaClient): void {

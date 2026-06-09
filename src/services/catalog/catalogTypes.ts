@@ -10,6 +10,7 @@ export type CatalogSyncResult = {
   accepted: number;
   rejected: number;
   handles?: string[];
+  rejectedItems?: Array<{ itemId: string; errors: string[] }>;
 };
 
 export interface CatalogSyncBridge {
