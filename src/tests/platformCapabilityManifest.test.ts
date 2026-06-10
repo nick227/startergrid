@@ -8,6 +8,7 @@ import {
   OAUTH_PROFILE_SLUGS,
 } from '../lib/platformCapabilityManifest.js';
 import { CATALOG_BRIDGE_SLUGS } from '../server/routes/catalogSync.js';
+import { LISTING_BRIDGE_SLUGS } from '../server/routes/marketplaceListings.js';
 import { platformProfiles } from '../data/platformProfiles.js';
 import { PlatformClientRegistry } from '../services/platform/clients/PlatformClientRegistry.js';
 
@@ -206,5 +207,26 @@ describe('capability field coverage', () => {
         assert.equal(p.connectionType, 'PARTNER_FEED', `${p.slug} has partnerFeed:true but connectionType is ${p.connectionType}`);
       }
     }
+  });
+});
+
+// ── LISTING_BRIDGE_SLUGS vs MARKETPLACE_LISTING_SLUGS ────────────────────────
+
+describe('LISTING_BRIDGE_SLUGS is a strict subset of MARKETPLACE_LISTING_SLUGS', () => {
+  it('every listing bridge slug has marketplaceListing:true', () => {
+    for (const slug of LISTING_BRIDGE_SLUGS) {
+      assert.ok(MARKETPLACE_LISTING_SLUGS.has(slug), `${slug} is a listing bridge but not in MARKETPLACE_LISTING_SLUGS`);
+    }
+  });
+
+  it('LISTING_BRIDGE_SLUGS is a proper subset (fewer than MARKETPLACE_LISTING_SLUGS)', () => {
+    assert.ok(
+      LISTING_BRIDGE_SLUGS.size < MARKETPLACE_LISTING_SLUGS.size,
+      'LISTING_BRIDGE_SLUGS should be a proper subset of MARKETPLACE_LISTING_SLUGS',
+    );
+  });
+
+  it('ebay-motors is the current registered listing bridge', () => {
+    assert.deepEqual(new Set(LISTING_BRIDGE_SLUGS), new Set(['ebay-motors']));
   });
 });

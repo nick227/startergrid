@@ -18,6 +18,8 @@ const BRIDGE_REGISTRY: Record<string, MarketplaceListingBridge> = {
   'ebay-motors': new EbayListingBridge(),
 };
 
+export const LISTING_BRIDGE_SLUGS = Object.freeze(new Set(Object.keys(BRIDGE_REGISTRY)));
+
 export function registerMarketplaceListingRoutes(app: FastifyInstance, prisma: PrismaClient): void {
 
   // POST /api/dealers/:dealershipId/platforms/:platformSlug/listings

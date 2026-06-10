@@ -6,6 +6,9 @@ import { EbayListingClient } from '../services/marketplace/EbayListingClient.js'
 import { EbayListingBridge } from '../services/marketplace/bridges/EbayListingBridge.js';
 import { MarketplaceListingStore } from '../services/marketplace/MarketplaceListingStore.js';
 import { ContentPackageBuilder, type VehicleInput } from '../services/distribution/ContentPackageBuilder.js';
+import { LISTING_BRIDGE_SLUGS } from '../server/routes/marketplaceListings.js';
+import { MARKETPLACE_LISTING_SLUGS } from '../lib/platformCapabilityManifest.js';
+import { platformProfiles } from '../data/platformProfiles.js';
 
 // ── Fixtures ──────────────────────────────────────────────────────────────────
 
@@ -685,5 +688,38 @@ describe('GET /listings/:vehicleId — returns single listing', () => {
       headers: authCookie(),
     });
     assert.equal(res.statusCode, 404);
+  });
+});
+
+// ── Manifest consistency ──────────────────────────────────────────────────────
+
+describe('LISTING_BRIDGE_SLUGS manifest consistency', () => {
+  it('contains ebay-motors', () => {
+    assert.ok(LISTING_BRIDGE_SLUGS.has('ebay-motors'), 'ebay-motors missing from LISTING_BRIDGE_SLUGS');
+  });
+
+  it('every bridge slug has marketplaceListing:true on its profile', () => {
+    for (const slug of LISTING_BRIDGE_SLUGS) {
+      const profile = platformProfiles.find(p => p.slug === slug);
+      assert.ok(profile?.marketplaceListing, `${slug} is in LISTING_BRIDGE_SLUGS but missing marketplaceListing:true`);
+    }
+  });
+
+  it('every bridge slug is in MARKETPLACE_LISTING_SLUGS', () => {
+    for (const slug of LISTING_BRIDGE_SLUGS) {
+      assert.ok(MARKETPLACE_LISTING_SLUGS.has(slug), `${slug} in LISTING_BRIDGE_SLUGS but not in MARKETPLACE_LISTING_SLUGS`);
+    }
+  });
+
+  it('EbayListingBridge.platformSlug matches registry key', () => {
+    const bridge = new EbayListingBridge();
+    assert.equal(bridge.platformSlug, 'ebay-motors');
+  });
+
+  it('EbayListingBridge.oauthProvider matches profile oauthProvider', () => {
+    const bridge = new EbayListingBridge();
+    const profile = platformProfiles.find(p => p.slug === 'ebay-motors');
+    assert.ok(profile, 'ebay-motors profile not found');
+    assert.equal(bridge.oauthProvider, profile.oauthProvider);
   });
 });
