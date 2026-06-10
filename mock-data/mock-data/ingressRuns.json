@@ -1,0 +1,152 @@
+[
+  {
+    "id": "ingress_dealer_austin_auto",
+    "dealershipId": "dealer_austin_auto",
+    "sourceId": "src_csv_dealer_austin_auto",
+    "sourceKind": "CSV",
+    "status": "COMMITTED",
+    "receivedAt": "2026-06-09T11:00:00Z",
+    "completedAt": "2026-06-09T12:00:00Z",
+    "vehicleCount": 32,
+    "createdCount": 32,
+    "updatedCount": 0,
+    "skippedCount": 0,
+    "blockedCount": 0,
+    "errorCount": 0,
+    "mappingJson": {
+      "vin": "VIN",
+      "stockNumber": "Stock #",
+      "priceCents": "Price"
+    },
+    "summaryJson": {
+      "message": "Mock import committed"
+    },
+    "platformImpactJson": {
+      "queuedPlatforms": [
+        "owned-storefront",
+        "meta-automotive-ads"
+      ]
+    },
+    "createdAt": "2026-06-09T11:00:00Z"
+  },
+  {
+    "id": "ingress_dealer_lone_star_rv",
+    "dealershipId": "dealer_lone_star_rv",
+    "sourceId": "src_csv_dealer_lone_star_rv",
+    "sourceKind": "CSV",
+    "status": "COMMITTED",
+    "receivedAt": "2026-06-09T11:00:00Z",
+    "completedAt": "2026-06-09T12:00:00Z",
+    "vehicleCount": 12,
+    "createdCount": 12,
+    "updatedCount": 0,
+    "skippedCount": 0,
+    "blockedCount": 0,
+    "errorCount": 0,
+    "mappingJson": {
+      "vin": "VIN",
+      "stockNumber": "Stock #",
+      "priceCents": "Price"
+    },
+    "summaryJson": {
+      "message": "Mock import committed"
+    },
+    "platformImpactJson": {
+      "queuedPlatforms": [
+        "owned-storefront",
+        "meta-automotive-ads"
+      ]
+    },
+    "createdAt": "2026-06-09T11:00:00Z"
+  },
+  {
+    "id": "ingress_dealer_coastal_boats",
+    "dealershipId": "dealer_coastal_boats",
+    "sourceId": "src_csv_dealer_coastal_boats",
+    "sourceKind": "CSV",
+    "status": "COMMITTED",
+    "receivedAt": "2026-06-09T11:00:00Z",
+    "completedAt": "2026-06-09T12:00:00Z",
+    "vehicleCount": 12,
+    "createdCount": 12,
+    "updatedCount": 0,
+    "skippedCount": 0,
+    "blockedCount": 0,
+    "errorCount": 0,
+    "mappingJson": {
+      "vin": "VIN",
+      "stockNumber": "Stock #",
+      "priceCents": "Price"
+    },
+    "summaryJson": {
+      "message": "Mock import committed"
+    },
+    "platformImpactJson": {
+      "queuedPlatforms": [
+        "owned-storefront",
+        "meta-automotive-ads"
+      ]
+    },
+    "createdAt": "2026-06-09T11:00:00Z"
+  },
+  {
+    "id": "ingress_dealer_messy_motors",
+    "dealershipId": "dealer_messy_motors",
+    "sourceId": "src_csv_dealer_messy_motors",
+    "sourceKind": "CSV",
+    "status": "COMMITTED",
+    "receivedAt": "2026-06-09T11:00:00Z",
+    "completedAt": "2026-06-09T12:00:00Z",
+    "vehicleCount": 28,
+    "createdCount": 28,
+    "updatedCount": 0,
+    "skippedCount": 0,
+    "blockedCount": 0,
+    "errorCount": 0,
+    "mappingJson": {
+      "vin": "VIN",
+      "stockNumber": "Stock #",
+      "priceCents": "Price"
+    },
+    "summaryJson": {
+      "message": "Mock import committed"
+    },
+    "platformImpactJson": {
+      "queuedPlatforms": [
+        "owned-storefront",
+        "meta-automotive-ads"
+      ]
+    },
+    "createdAt": "2026-06-09T11:00:00Z"
+  },
+  {
+    "id": "ingress_dealer_premium_imports",
+    "dealershipId": "dealer_premium_imports",
+    "sourceId": "src_csv_dealer_premium_imports",
+    "sourceKind": "CSV",
+    "status": "COMMITTED",
+    "receivedAt": "2026-06-09T11:00:00Z",
+    "completedAt": "2026-06-09T12:00:00Z",
+    "vehicleCount": 32,
+    "createdCount": 32,
+    "updatedCount": 0,
+    "skippedCount": 0,
+    "blockedCount": 0,
+    "errorCount": 0,
+    "mappingJson": {
+      "vin": "VIN",
+      "stockNumber": "Stock #",
+      "priceCents": "Price"
+    },
+    "summaryJson": {
+      "message": "Mock import committed"
+    },
+    "platformImpactJson": {
+      "queuedPlatforms": [
+        "owned-storefront",
+        "meta-automotive-ads"
+      ]
+    },
+    "createdAt": "2026-06-09T11:00:00Z"
+  }
+]

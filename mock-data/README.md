@@ -1,47 +1,54 @@
-# Dealer Distribution Mock Seed Pack
+# Dealer Schema Mock Seed Pack
 
-Generated mock data for a dealer inventory distribution platform.
+Generated for the Prisma schema pasted on 2026-06-10.
 
-## Contents
+## What this contains
 
-- `mock-data/dealers.json`
-- `mock-data/platformProfiles.json`
-- `mock-data/vehicles.json`
-- `mock-data/vehiclePhotos.json`
-- `mock-data/categoryItems.json`
-- `mock-data/oauthAccounts.json`
-- `mock-data/socialDestinations.json`
-- `mock-data/catalogAccounts.json`
-- `mock-data/partnerFeedSetups.json`
-- `mock-data/syncRuns.json`
-- `mock-data/syncEvents.json`
-- `mock-data/validationErrors.json`
-- `mock-data/marketplaceListings.json`
-- `mock-data/queueItems.json`
-- `mock-data/performanceMetrics.json`
-- `mock-data/leadEvents.json`
-- `mock-data/priceChanges.json`
-- `mock-data/soldEvents.json`
-- `mock-data/notifications.json`
-- `mock-data/users.json`
-- `scripts/seed-mock-data.mjs`
+This pack is aligned to your actual models/enums, including:
 
-## Dataset size
+- `DealershipProfile`
+- `Vehicle`
+- `VehicleMedia`
+- `PlatformProfile`
+- `PlatformApplication`
+- `PlatformAccount`
+- `PlatformOAuthToken`
+- `SocialPageAccount`
+- `SocialPost`
+- `PlatformCatalogSync`
+- `MarketplaceListing`
+- `SyncPolicy`
+- `PublishQueueItem`
+- `SyncRun`
+- `SyncEvent`
+- `Lead`
+- `ChannelEvent`
+- `VehiclePerformanceCache`
+- `PlatformPerformanceSummary`
+- `InventorySource`
+- `IngressRun`
+- `DealerNotification`
+- `OperatorAccount`
+- `OperatorDealerAccess`
 
-- Dealers: 5
-- Vehicles: 160
-- Vehicle photos: 1020
-- Cross-category units: 50
-- Platform profiles: 12
-- OAuth accounts: 40
-- Sync runs: 80
-- Sync events: 768
-- Performance rows: 3150
-- Lead events: 350
+## Mock scenario coverage
 
-## Usage
+- 5 dealers / rooftops
+- 116 inventory records
+- 842 media records
+- 12 platform profiles
+- OAuth-ready, blocked, partner-dependent, active, and messy setup states
+- Social posting examples
+- Catalog sync examples
+- eBay marketplace listing lifecycle examples
+- Queue/history/sync/performance/lead/channel event data
+- Messy dealer with missing VINs, missing prices, and missing photos
 
-Copy this folder into your repo root, then run:
+## Install
+
+Copy `mock-data/` and `scripts/seed-mock-data.mjs` into your repo root.
+
+Then run:
 
 ```bash
 node scripts/seed-mock-data.mjs
@@ -53,19 +60,16 @@ Dry run:
 DRY_RUN=1 node scripts/seed-mock-data.mjs
 ```
 
-Custom data dir:
+Clear and reseed mock rows:
 
 ```bash
-MOCK_DATA_DIR=./mock-data node scripts/seed-mock-data.mjs
+CLEAR_MOCK=1 node scripts/seed-mock-data.mjs
 ```
 
 ## Notes
 
-The seed script is schema-tolerant and tries common Prisma model names for each file. If your project uses different model names or field names, edit `MODEL_MAP` in `scripts/seed-mock-data.mjs`.
+The script expects `@prisma/client` and `DATABASE_URL` to already work in your repo.
 
-The data is intentionally mixed:
-- one clean happy-path dealer
-- one messy dealer with missing VINs/prices/photos
-- several externally blocked platform examples
-- OAuth connected/expired/revoked states
-- catalog sync, marketplace listing, social destination, partner feed, and performance scenarios
+The seed is ID-based and upsert-heavy, so it can be run repeatedly.
+
+The clear mode deletes rows with mock ID prefixes only.

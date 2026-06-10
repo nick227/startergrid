@@ -768,6 +768,8 @@ export const platformProfiles: PlatformProfileSeed[] = [
     connectionType: 'OAUTH',
     integrationMaturity: 'OAUTH_READY',
     requirementsConfidence: 'LIKELY',
+    leadSync: true,
+    liveValidationNote: 'Live validation blocked — requires MICROSOFT_CLIENT_ID, MICROSOFT_CLIENT_SECRET, and approved LinkedIn Marketing API access with r_organization_leadgen_forms scope.',
   },
   {
     // ── Partner-dependent (continued) ────────────────────────────────────────

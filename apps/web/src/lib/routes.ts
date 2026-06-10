@@ -77,9 +77,12 @@ export function parseOperatorRoute(hash = window.location.hash): OperatorRoute {
   const assetId = scope.assetId ?? null;
 
   // Site administration (SUPER_ADMIN only) — standalone, no dealer context.
-  if (path === '/admin' || path === 'admin') {
+  if (path.startsWith('/admin') || path.startsWith('admin')) {
+    const cleanPath = path.replace(/^\//, ''); // remove leading slash
+    const parts = cleanPath.split('/');
+    const platformSlug = parts[1] || null;
     return routeWithReports(
-      { dealerId: null, page: 'admin', platformSlug: null, platformView: null, assetRef, assetId },
+      { dealerId: null, page: 'admin', platformSlug, platformView: null, assetRef, assetId },
       hash,
     );
   }

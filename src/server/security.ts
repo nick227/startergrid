@@ -106,8 +106,10 @@ export const routeClassifications = {
   ],
   // Site-management routes — SUPER_ADMIN only (in-house operators).
   admin: [
+    'GET /api/admin/dashboard',
     'GET /api/admin/platform-credentials',
     'POST /api/admin/platform-credentials/validate',
+    'GET /api/admin/blocked-dealers',
   ],
 } as const;
 

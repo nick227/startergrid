@@ -4,11 +4,6 @@ import { fetchAccounts, previewSocialPost, publishSocialPost } from '@/lib/api/s
 import { Modal } from '@/components/ui/Modal.tsx';
 
 
-const PLATFORM_LABELS: Record<string, string> = {
-  'facebook-business-page': 'Facebook Business Page',
-  'google-business-profile': 'Google Business Profile',
-};
-
 type Step = 'platform' | 'preview' | 'result';
 
 type Props = {
@@ -122,9 +117,10 @@ export function CreatePostModal({ dealerId, vehicleId, vehicleTitle, onClose }: 
     }
   };
 
-  const platformName = selectedSlug
-    ? (PLATFORM_LABELS[selectedSlug] ?? selectedSlug)
-    : '';
+  const selectedPlatform = selectedSlug
+    ? socialPlatforms.find(p => p.platformSlug === selectedSlug) ?? null
+    : null;
+  const platformName = selectedPlatform?.platformName ?? selectedSlug ?? '';
 
   return (
     <Modal maxWidth="max-w-lg">
@@ -160,7 +156,7 @@ export function CreatePostModal({ dealerId, vehicleId, vehicleTitle, onClose }: 
           <div className="text-center py-6">
             <p className="text-sm font-semibold text-ink-heading mb-2">No social platforms connected</p>
             <p className="text-xs text-ink-muted">
-              Connect Facebook Business Page or Google Business Profile in the Platforms tab.
+              Connect a social platform in the Platforms tab to enable posting.
             </p>
           </div>
         )}
@@ -186,7 +182,7 @@ export function CreatePostModal({ dealerId, vehicleId, vehicleTitle, onClose }: 
                   >
                     <div className="min-w-0 flex-1">
                       <p className="text-sm font-semibold text-ink-heading">
-                        {PLATFORM_LABELS[platform.platformSlug] ?? platform.platformName}
+                        {platform.platformName}
                       </p>
                     </div>
                     <span className="text-ink-faint text-sm">→</span>

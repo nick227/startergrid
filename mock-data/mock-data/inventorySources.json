@@ -1,0 +1,82 @@
+[
+  {
+    "id": "src_csv_dealer_austin_auto",
+    "dealershipId": "dealer_austin_auto",
+    "slug": "mock-csv-import",
+    "label": "Mock CSV Import",
+    "kind": "CSV",
+    "status": "ACTIVE",
+    "lastReceivedAt": "2026-06-09T12:00:00Z",
+    "lastCheckedAt": "2026-06-10T04:00:00Z",
+    "configJson": {
+      "delimiter": ",",
+      "mapping": "default-vehicle-csv"
+    },
+    "createdAt": "2026-05-01T12:00:00Z",
+    "updatedAt": "2026-06-09T12:00:00Z"
+  },
+  {
+    "id": "src_csv_dealer_lone_star_rv",
+    "dealershipId": "dealer_lone_star_rv",
+    "slug": "mock-csv-import",
+    "label": "Mock CSV Import",
+    "kind": "CSV",
+    "status": "ACTIVE",
+    "lastReceivedAt": "2026-06-09T12:00:00Z",
+    "lastCheckedAt": "2026-06-10T04:00:00Z",
+    "configJson": {
+      "delimiter": ",",
+      "mapping": "default-vehicle-csv"
+    },
+    "createdAt": "2026-05-01T12:00:00Z",
+    "updatedAt": "2026-06-09T12:00:00Z"
+  },
+  {
+    "id": "src_csv_dealer_coastal_boats",
+    "dealershipId": "dealer_coastal_boats",
+    "slug": "mock-csv-import",
+    "label": "Mock CSV Import",
+    "kind": "CSV",
+    "status": "ACTIVE",
+    "lastReceivedAt": "2026-06-09T12:00:00Z",
+    "lastCheckedAt": "2026-06-10T04:00:00Z",
+    "configJson": {
+      "delimiter": ",",
+      "mapping": "default-vehicle-csv"
+    },
+    "createdAt": "2026-05-01T12:00:00Z",
+    "updatedAt": "2026-06-09T12:00:00Z"
+  },
+  {
+    "id": "src_csv_dealer_messy_motors",
+    "dealershipId": "dealer_messy_motors",
+    "slug": "mock-csv-import",
+    "label": "Mock CSV Import",
+    "kind": "CSV",
+    "status": "ACTIVE",
+    "lastReceivedAt": "2026-06-09T12:00:00Z",
+    "lastCheckedAt": "2026-06-10T04:00:00Z",
+    "configJson": {
+      "delimiter": ",",
+      "mapping": "default-vehicle-csv"
+    },
+    "createdAt": "2026-05-01T12:00:00Z",
+    "updatedAt": "2026-06-09T12:00:00Z"
+  },
+  {
+    "id": "src_csv_dealer_premium_imports",
+    "dealershipId": "dealer_premium_imports",
+    "slug": "mock-csv-import",
+    "label": "Mock CSV Import",
+    "kind": "CSV",
+    "status": "ACTIVE",
+    "lastReceivedAt": "2026-06-09T12:00:00Z",
+    "lastCheckedAt": "2026-06-10T04:00:00Z",
+    "configJson": {
+      "delimiter": ",",
+      "mapping": "default-vehicle-csv"
+    },
+    "createdAt": "2026-05-01T12:00:00Z",
+    "updatedAt": "2026-06-09T12:00:00Z"
+  }
+]

@@ -183,6 +183,7 @@ export type PlatformPublishResult = {
   socialPosting: boolean;
   marketplaceListing: boolean;
   partnerFeed: boolean;
+  leadSync: boolean;
   connectionType: string | null;
   integrationMaturity: string | null;
   regions: string[];
@@ -381,6 +382,7 @@ export async function runPrepareAndPublish(
       socialPosting: platform.socialPosting ?? false,
       marketplaceListing: platform.marketplaceListing ?? false,
       partnerFeed: platform.partnerFeed ?? false,
+      leadSync: platform.leadSync ?? false,
       connectionType: platform.connectionType ?? null,
       integrationMaturity: platform.integrationMaturity ?? null,
       regions: platform.regions ?? [],

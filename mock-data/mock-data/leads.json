@@ -1,0 +1,1582 @@
+[
+  {
+    "id": "lead_dealer_austin_auto_0",
+    "dealershipId": "dealer_austin_auto",
+    "vehicleId": "veh_0007",
+    "source": "PLATFORM_FORM",
+    "platformSlug": "owned-storefront",
+    "contactName": "Sam Patel",
+    "contactEmail": "buyer0.dealer_austin_auto@example.invalid",
+    "contactPhone": "+1-555-0100",
+    "message": "Mock inquiry about 2020 Subaru Outback",
+    "vehicleInterest": {
+      "stockNumber": "AUSTIN1006",
+      "priceCents": 5840100
+    },
+    "adfPayload": {
+      "mock": true
+    },
+    "createdAt": "2026-03-31T11:00:00Z"
+  },
+  {
+    "id": "lead_dealer_austin_auto_1",
+    "dealershipId": "dealer_austin_auto",
+    "vehicleId": "veh_0014",
+    "source": "ADF_XML",
+    "platformSlug": "cars-com-us",
+    "contactName": "Sam Patel",
+    "contactEmail": "buyer1.dealer_austin_auto@example.invalid",
+    "contactPhone": "+1-555-0101",
+    "message": "Mock inquiry about 2021 BMW X5",
+    "vehicleInterest": {
+      "stockNumber": "AUSTIN1013",
+      "priceCents": 1639300
+    },
+    "adfPayload": null,
+    "createdAt": "2026-06-01T21:00:00Z"
+  },
+  {
+    "id": "lead_dealer_austin_auto_2",
+    "dealershipId": "dealer_austin_auto",
+    "vehicleId": "veh_0009",
+    "source": "ADF_XML",
+    "platformSlug": "owned-storefront",
+    "contactName": "Riley Chen",
+    "contactEmail": "buyer2.dealer_austin_auto@example.invalid",
+    "contactPhone": "+1-555-0102",
+    "message": "Mock inquiry about 2023 Tesla Model 3",
+    "vehicleInterest": {
+      "stockNumber": "AUSTIN1008",
+      "priceCents": 6209300
+    },
+    "adfPayload": null,
+    "createdAt": "2026-06-02T18:00:00Z"
+  },
+  {
+    "id": "lead_dealer_austin_auto_3",
+    "dealershipId": "dealer_austin_auto",
+    "vehicleId": "veh_0012",
+    "source": "DEALER_STOREFRONT",
+    "platformSlug": "owned-storefront",
+    "contactName": "Jordan Lee",
+    "contactEmail": "buyer3.dealer_austin_auto@example.invalid",
+    "contactPhone": "+1-555-0103",
+    "message": "Mock inquiry about 2017 Ford F-150",
+    "vehicleInterest": {
+      "stockNumber": "AUSTIN1011",
+      "priceCents": 5588400
+    },
+    "adfPayload": null,
+    "createdAt": "2026-05-01T17:00:00Z"
+  },
+  {
+    "id": "lead_dealer_austin_auto_4",
+    "dealershipId": "dealer_austin_auto",
+    "vehicleId": "veh_0027",
+    "source": "MANUAL",
+    "platformSlug": "facebook-business-page",
+    "contactName": "Alex Morgan",
+    "contactEmail": "buyer4.dealer_austin_auto@example.invalid",
+    "contactPhone": "+1-555-0104",
+    "message": "Mock inquiry about 2022 Mercedes-Benz C-Class",
+    "vehicleInterest": {
+      "stockNumber": "AUSTIN1026",
+      "priceCents": 3567700
+    },
+    "adfPayload": {
+      "mock": true
+    },
+    "createdAt": "2026-04-17T14:00:00Z"
+  },
+  {
+    "id": "lead_dealer_austin_auto_5",
+    "dealershipId": "dealer_austin_auto",
+    "vehicleId": "veh_0001",
+    "source": "PLATFORM_FORM",
+    "platformSlug": "cars-com-us",
+    "contactName": "Chris Walker",
+    "contactEmail": "buyer5.dealer_austin_auto@example.invalid",
+    "contactPhone": "+1-555-0105",
+    "message": "Mock inquiry about 2017 Chevrolet Silverado 1500",
+    "vehicleInterest": {
+      "stockNumber": "AUSTIN1000",
+      "priceCents": 4632000
+    },
+    "adfPayload": null,
+    "createdAt": "2026-03-31T05:00:00Z"
+  },
+  {
+    "id": "lead_dealer_austin_auto_6",
+    "dealershipId": "dealer_austin_auto",
+    "vehicleId": "veh_0017",
+    "source": "DEALER_STOREFRONT",
+    "platformSlug": "owned-storefront",
+    "contactName": "Chris Walker",
+    "contactEmail": "buyer6.dealer_austin_auto@example.invalid",
+    "contactPhone": "+1-555-0106",
+    "message": "Mock inquiry about 2025 Jeep Wrangler",
+    "vehicleInterest": {
+      "stockNumber": "AUSTIN1016",
+      "priceCents": 3630200
+    },
+    "adfPayload": null,
+    "createdAt": "2026-05-05T01:00:00Z"
+  },
+  {
+    "id": "lead_dealer_austin_auto_7",
+    "dealershipId": "dealer_austin_auto",
+    "vehicleId": "veh_0008",
+    "source": "DEALER_STOREFRONT",
+    "platformSlug": "owned-storefront",
+    "contactName": "Alex Morgan",
+    "contactEmail": "buyer7.dealer_austin_auto@example.invalid",
+    "contactPhone": "+1-555-0107",
+    "message": "Mock inquiry about 2017 Tesla Model 3",
+    "vehicleInterest": {
+      "stockNumber": "AUSTIN1007",
+      "priceCents": 3319900
+    },
+    "adfPayload": null,
+    "createdAt": "2026-04-09T10:00:00Z"
+  },
+  {
+    "id": "lead_dealer_austin_auto_8",
+    "dealershipId": "dealer_austin_auto",
+    "vehicleId": "veh_0021",
+    "source": "DEALER_STOREFRONT",
+    "platformSlug": "cars-com-us",
+    "contactName": "Sam Patel",
+    "contactEmail": "buyer8.dealer_austin_auto@example.invalid",
+    "contactPhone": "+1-555-0108",
+    "message": "Mock inquiry about 2017 Toyota Camry",
+    "vehicleInterest": {
+      "stockNumber": "AUSTIN1020",
+      "priceCents": 2101000
+    },
+    "adfPayload": {
+      "mock": true
+    },
+    "createdAt": "2026-04-15T17:00:00Z"
+  },
+  {
+    "id": "lead_dealer_austin_auto_9",
+    "dealershipId": "dealer_austin_auto",
+    "vehicleId": "veh_0030",
+    "source": "ADF_XML",
+    "platformSlug": "owned-storefront",
+    "contactName": "Riley Chen",
+    "contactEmail": "buyer9.dealer_austin_auto@example.invalid",
+    "contactPhone": "+1-555-0109",
+    "message": "Mock inquiry about 2025 Toyota Camry",
+    "vehicleInterest": {
+      "stockNumber": "AUSTIN1029",
+      "priceCents": 7595100
+    },
+    "adfPayload": null,
+    "createdAt": "2026-03-17T16:00:00Z"
+  },
+  {
+    "id": "lead_dealer_austin_auto_10",
+    "dealershipId": "dealer_austin_auto",
+    "vehicleId": "veh_0017",
+    "source": "PLATFORM_FORM",
+    "platformSlug": "owned-storefront",
+    "contactName": "Jordan Lee",
+    "contactEmail": "buyer10.dealer_austin_auto@example.invalid",
+    "contactPhone": "+1-555-0110",
+    "message": "Mock inquiry about 2025 Jeep Wrangler",
+    "vehicleInterest": {
+      "stockNumber": "AUSTIN1016",
+      "priceCents": 3630200
+    },
+    "adfPayload": null,
+    "createdAt": "2026-03-13T04:00:00Z"
+  },
+  {
+    "id": "lead_dealer_austin_auto_11",
+    "dealershipId": "dealer_austin_auto",
+    "vehicleId": "veh_0016",
+    "source": "PLATFORM_FORM",
+    "platformSlug": "cars-com-us",
+    "contactName": "Alex Morgan",
+    "contactEmail": "buyer11.dealer_austin_auto@example.invalid",
+    "contactPhone": "+1-555-0111",
+    "message": "Mock inquiry about 2021 Nissan Altima",
+    "vehicleInterest": {
+      "stockNumber": "AUSTIN1015",
+      "priceCents": 2251400
+    },
+    "adfPayload": null,
+    "createdAt": "2026-03-12T02:00:00Z"
+  },
+  {
+    "id": "lead_dealer_austin_auto_12",
+    "dealershipId": "dealer_austin_auto",
+    "vehicleId": "veh_0026",
+    "source": "MANUAL",
+    "platformSlug": "owned-storefront",
+    "contactName": "Jordan Lee",
+    "contactEmail": "buyer12.dealer_austin_auto@example.invalid",
+    "contactPhone": "+1-555-0112",
+    "message": "Mock inquiry about 2020 Chevrolet Silverado 1500",
+    "vehicleInterest": {
+      "stockNumber": "AUSTIN1025",
+      "priceCents": 2258000
+    },
+    "adfPayload": {
+      "mock": true
+    },
+    "createdAt": "2026-06-03T09:00:00Z"
+  },
+  {
+    "id": "lead_dealer_austin_auto_13",
+    "dealershipId": "dealer_austin_auto",
+    "vehicleId": "veh_0028",
+    "source": "ADF_XML",
+    "platformSlug": "cars-com-us",
+    "contactName": "Alex Morgan",
+    "contactEmail": "buyer13.dealer_austin_auto@example.invalid",
+    "contactPhone": "+1-555-0113",
+    "message": "Mock inquiry about 2024 Chevrolet Silverado 1500",
+    "vehicleInterest": {
+      "stockNumber": "AUSTIN1027",
+      "priceCents": 5241100
+    },
+    "adfPayload": null,
+    "createdAt": "2026-04-01T04:00:00Z"
+  },
+  {
+    "id": "lead_dealer_austin_auto_14",
+    "dealershipId": "dealer_austin_auto",
+    "vehicleId": "veh_0024",
+    "source": "DEALER_STOREFRONT",
+    "platformSlug": "google-business-profile",
+    "contactName": "Riley Chen",
+    "contactEmail": "buyer14.dealer_austin_auto@example.invalid",
+    "contactPhone": "+1-555-0114",
+    "message": "Mock inquiry about 2018 BMW X5",
+    "vehicleInterest": {
+      "stockNumber": "AUSTIN1023",
+      "priceCents": 4363000
+    },
+    "adfPayload": null,
+    "createdAt": "2026-03-20T17:00:00Z"
+  },
+  {
+    "id": "lead_dealer_austin_auto_15",
+    "dealershipId": "dealer_austin_auto",
+    "vehicleId": "veh_0032",
+    "source": "MANUAL",
+    "platformSlug": "owned-storefront",
+    "contactName": "Chris Walker",
+    "contactEmail": "buyer15.dealer_austin_auto@example.invalid",
+    "contactPhone": "+1-555-0115",
+    "message": "Mock inquiry about 2023 Subaru Outback",
+    "vehicleInterest": {
+      "stockNumber": "AUSTIN1031",
+      "priceCents": 1741700
+    },
+    "adfPayload": null,
+    "createdAt": "2026-04-23T14:00:00Z"
+  },
+  {
+    "id": "lead_dealer_austin_auto_16",
+    "dealershipId": "dealer_austin_auto",
+    "vehicleId": "veh_0002",
+    "source": "ADF_XML",
+    "platformSlug": "owned-storefront",
+    "contactName": "Sam Patel",
+    "contactEmail": "buyer16.dealer_austin_auto@example.invalid",
+    "contactPhone": "+1-555-0116",
+    "message": "Mock inquiry about 2025 Chevrolet Silverado 1500",
+    "vehicleInterest": {
+      "stockNumber": "AUSTIN1001",
+      "priceCents": 3636300
+    },
+    "adfPayload": {
+      "mock": true
+    },
+    "createdAt": "2026-05-05T11:00:00Z"
+  },
+  {
+    "id": "lead_dealer_austin_auto_17",
+    "dealershipId": "dealer_austin_auto",
+    "vehicleId": "veh_0026",
+    "source": "MANUAL",
+    "platformSlug": "autotrader-us",
+    "contactName": "Jordan Lee",
+    "contactEmail": "buyer17.dealer_austin_auto@example.invalid",
+    "contactPhone": "+1-555-0117",
+    "message": "Mock inquiry about 2020 Chevrolet Silverado 1500",
+    "vehicleInterest": {
+      "stockNumber": "AUSTIN1025",
+      "priceCents": 2258000
+    },
+    "adfPayload": null,
+    "createdAt": "2026-06-04T22:00:00Z"
+  },
+  {
+    "id": "lead_dealer_lone_star_rv_0",
+    "dealershipId": "dealer_lone_star_rv",
+    "vehicleId": "veh_0041",
+    "source": "PLATFORM_FORM",
+    "platformSlug": "google-business-profile",
+    "contactName": "Jordan Lee",
+    "contactEmail": "buyer0.dealer_lone_star_rv@example.invalid",
+    "contactPhone": "+1-555-0100",
+    "message": "Mock inquiry about 2022 Airstream Basecamp",
+    "vehicleInterest": {
+      "stockNumber": "LONE1008",
+      "priceCents": 5797800
+    },
+    "adfPayload": {
+      "mock": true
+    },
+    "createdAt": "2026-03-24T07:00:00Z"
+  },
+  {
+    "id": "lead_dealer_lone_star_rv_1",
+    "dealershipId": "dealer_lone_star_rv",
+    "vehicleId": "veh_0034",
+    "source": "PLATFORM_FORM",
+    "platformSlug": "facebook-business-page",
+    "contactName": "Chris Walker",
+    "contactEmail": "buyer1.dealer_lone_star_rv@example.invalid",
+    "contactPhone": "+1-555-0101",
+    "message": "Mock inquiry about 2023 Forest River Rockwood",
+    "vehicleInterest": {
+      "stockNumber": "LONE1001",
+      "priceCents": 4986000
+    },
+    "adfPayload": null,
+    "createdAt": "2026-04-01T09:00:00Z"
+  },
+  {
+    "id": "lead_dealer_lone_star_rv_2",
+    "dealershipId": "dealer_lone_star_rv",
+    "vehicleId": "veh_0044",
+    "source": "DEALER_STOREFRONT",
+    "platformSlug": "owned-storefront",
+    "contactName": "Alex Morgan",
+    "contactEmail": "buyer2.dealer_lone_star_rv@example.invalid",
+    "contactPhone": "+1-555-0102",
+    "message": "Mock inquiry about 2022 Forest River Rockwood",
+    "vehicleInterest": {
+      "stockNumber": "LONE1011",
+      "priceCents": 5622600
+    },
+    "adfPayload": null,
+    "createdAt": "2026-03-14T16:00:00Z"
+  },
+  {
+    "id": "lead_dealer_lone_star_rv_3",
+    "dealershipId": "dealer_lone_star_rv",
+    "vehicleId": "veh_0034",
+    "source": "ADF_XML",
+    "platformSlug": "cars-com-us",
+    "contactName": "Riley Chen",
+    "contactEmail": "buyer3.dealer_lone_star_rv@example.invalid",
+    "contactPhone": "+1-555-0103",
+    "message": "Mock inquiry about 2023 Forest River Rockwood",
+    "vehicleInterest": {
+      "stockNumber": "LONE1001",
+      "priceCents": 4986000
+    },
+    "adfPayload": null,
+    "createdAt": "2026-06-07T12:00:00Z"
+  },
+  {
+    "id": "lead_dealer_lone_star_rv_4",
+    "dealershipId": "dealer_lone_star_rv",
+    "vehicleId": "veh_0035",
+    "source": "DEALER_STOREFRONT",
+    "platformSlug": "facebook-business-page",
+    "contactName": "Chris Walker",
+    "contactEmail": "buyer4.dealer_lone_star_rv@example.invalid",
+    "contactPhone": "+1-555-0104",
+    "message": "Mock inquiry about 2023 Polaris Ranger",
+    "vehicleInterest": {
+      "stockNumber": "LONE1002",
+      "priceCents": 3966300
+    },
+    "adfPayload": {
+      "mock": true
+    },
+    "createdAt": "2026-03-31T00:00:00Z"
+  },
+  {
+    "id": "lead_dealer_lone_star_rv_5",
+    "dealershipId": "dealer_lone_star_rv",
+    "vehicleId": "veh_0042",
+    "source": "ADF_XML",
+    "platformSlug": "facebook-business-page",
+    "contactName": "Jordan Lee",
+    "contactEmail": "buyer5.dealer_lone_star_rv@example.invalid",
+    "contactPhone": "+1-555-0105",
+    "message": "Mock inquiry about 2019 Forest River Rockwood",
+    "vehicleInterest": {
+      "stockNumber": "LONE1009",
+      "priceCents": 2000400
+    },
+    "adfPayload": null,
+    "createdAt": "2026-05-29T23:00:00Z"
+  },
+  {
+    "id": "lead_dealer_lone_star_rv_6",
+    "dealershipId": "dealer_lone_star_rv",
+    "vehicleId": "veh_0039",
+    "source": "DEALER_STOREFRONT",
+    "platformSlug": "facebook-business-page",
+    "contactName": "Alex Morgan",
+    "contactEmail": "buyer6.dealer_lone_star_rv@example.invalid",
+    "contactPhone": "+1-555-0106",
+    "message": "Mock inquiry about 2022 Airstream Basecamp",
+    "vehicleInterest": {
+      "stockNumber": "LONE1006",
+      "priceCents": 2734100
+    },
+    "adfPayload": null,
+    "createdAt": "2026-03-16T21:00:00Z"
+  },
+  {
+    "id": "lead_dealer_lone_star_rv_7",
+    "dealershipId": "dealer_lone_star_rv",
+    "vehicleId": "veh_0033",
+    "source": "MANUAL",
+    "platformSlug": "autotrader-us",
+    "contactName": "Jordan Lee",
+    "contactEmail": "buyer7.dealer_lone_star_rv@example.invalid",
+    "contactPhone": "+1-555-0107",
+    "message": "Mock inquiry about 2026 Polaris Ranger",
+    "vehicleInterest": {
+      "stockNumber": "LONE1000",
+      "priceCents": 3488400
+    },
+    "adfPayload": null,
+    "createdAt": "2026-05-29T03:00:00Z"
+  },
+  {
+    "id": "lead_dealer_lone_star_rv_8",
+    "dealershipId": "dealer_lone_star_rv",
+    "vehicleId": "veh_0033",
+    "source": "PLATFORM_FORM",
+    "platformSlug": "cars-com-us",
+    "contactName": "Sam Patel",
+    "contactEmail": "buyer8.dealer_lone_star_rv@example.invalid",
+    "contactPhone": "+1-555-0108",
+    "message": "Mock inquiry about 2026 Polaris Ranger",
+    "vehicleInterest": {
+      "stockNumber": "LONE1000",
+      "priceCents": 3488400
+    },
+    "adfPayload": {
+      "mock": true
+    },
+    "createdAt": "2026-04-09T15:00:00Z"
+  },
+  {
+    "id": "lead_dealer_lone_star_rv_9",
+    "dealershipId": "dealer_lone_star_rv",
+    "vehicleId": "veh_0039",
+    "source": "DEALER_STOREFRONT",
+    "platformSlug": "cars-com-us",
+    "contactName": "Chris Walker",
+    "contactEmail": "buyer9.dealer_lone_star_rv@example.invalid",
+    "contactPhone": "+1-555-0109",
+    "message": "Mock inquiry about 2022 Airstream Basecamp",
+    "vehicleInterest": {
+      "stockNumber": "LONE1006",
+      "priceCents": 2734100
+    },
+    "adfPayload": null,
+    "createdAt": "2026-03-23T22:00:00Z"
+  },
+  {
+    "id": "lead_dealer_lone_star_rv_10",
+    "dealershipId": "dealer_lone_star_rv",
+    "vehicleId": "veh_0043",
+    "source": "PLATFORM_FORM",
+    "platformSlug": "owned-storefront",
+    "contactName": "Chris Walker",
+    "contactEmail": "buyer10.dealer_lone_star_rv@example.invalid",
+    "contactPhone": "+1-555-0110",
+    "message": "Mock inquiry about 2023 Forest River Rockwood",
+    "vehicleInterest": {
+      "stockNumber": "LONE1010",
+      "priceCents": 5975300
+    },
+    "adfPayload": null,
+    "createdAt": "2026-06-08T08:00:00Z"
+  },
+  {
+    "id": "lead_dealer_lone_star_rv_11",
+    "dealershipId": "dealer_lone_star_rv",
+    "vehicleId": "veh_0040",
+    "source": "DEALER_STOREFRONT",
+    "platformSlug": "facebook-business-page",
+    "contactName": "Alex Morgan",
+    "contactEmail": "buyer11.dealer_lone_star_rv@example.invalid",
+    "contactPhone": "+1-555-0111",
+    "message": "Mock inquiry about 2020 Airstream Basecamp",
+    "vehicleInterest": {
+      "stockNumber": "LONE1007",
+      "priceCents": 2888900
+    },
+    "adfPayload": null,
+    "createdAt": "2026-05-28T11:00:00Z"
+  },
+  {
+    "id": "lead_dealer_lone_star_rv_12",
+    "dealershipId": "dealer_lone_star_rv",
+    "vehicleId": "veh_0036",
+    "source": "ADF_XML",
+    "platformSlug": "cars-com-us",
+    "contactName": "Chris Walker",
+    "contactEmail": "buyer12.dealer_lone_star_rv@example.invalid",
+    "contactPhone": "+1-555-0112",
+    "message": "Mock inquiry about 2023 Forest River Rockwood",
+    "vehicleInterest": {
+      "stockNumber": "LONE1003",
+      "priceCents": 2993700
+    },
+    "adfPayload": {
+      "mock": true
+    },
+    "createdAt": "2026-05-27T14:00:00Z"
+  },
+  {
+    "id": "lead_dealer_lone_star_rv_13",
+    "dealershipId": "dealer_lone_star_rv",
+    "vehicleId": "veh_0044",
+    "source": "MANUAL",
+    "platformSlug": "google-business-profile",
+    "contactName": "Alex Morgan",
+    "contactEmail": "buyer13.dealer_lone_star_rv@example.invalid",
+    "contactPhone": "+1-555-0113",
+    "message": "Mock inquiry about 2022 Forest River Rockwood",
+    "vehicleInterest": {
+      "stockNumber": "LONE1011",
+      "priceCents": 5622600
+    },
+    "adfPayload": null,
+    "createdAt": "2026-05-30T22:00:00Z"
+  },
+  {
+    "id": "lead_dealer_lone_star_rv_14",
+    "dealershipId": "dealer_lone_star_rv",
+    "vehicleId": "veh_0043",
+    "source": "DEALER_STOREFRONT",
+    "platformSlug": "owned-storefront",
+    "contactName": "Riley Chen",
+    "contactEmail": "buyer14.dealer_lone_star_rv@example.invalid",
+    "contactPhone": "+1-555-0114",
+    "message": "Mock inquiry about 2023 Forest River Rockwood",
+    "vehicleInterest": {
+      "stockNumber": "LONE1010",
+      "priceCents": 5975300
+    },
+    "adfPayload": null,
+    "createdAt": "2026-05-17T06:00:00Z"
+  },
+  {
+    "id": "lead_dealer_lone_star_rv_15",
+    "dealershipId": "dealer_lone_star_rv",
+    "vehicleId": "veh_0038",
+    "source": "MANUAL",
+    "platformSlug": "cars-com-us",
+    "contactName": "Chris Walker",
+    "contactEmail": "buyer15.dealer_lone_star_rv@example.invalid",
+    "contactPhone": "+1-555-0115",
+    "message": "Mock inquiry about 2025 Polaris Ranger",
+    "vehicleInterest": {
+      "stockNumber": "LONE1005",
+      "priceCents": 2040800
+    },
+    "adfPayload": null,
+    "createdAt": "2026-05-18T14:00:00Z"
+  },
+  {
+    "id": "lead_dealer_lone_star_rv_16",
+    "dealershipId": "dealer_lone_star_rv",
+    "vehicleId": "veh_0043",
+    "source": "PLATFORM_FORM",
+    "platformSlug": "autotrader-us",
+    "contactName": "Jordan Lee",
+    "contactEmail": "buyer16.dealer_lone_star_rv@example.invalid",
+    "contactPhone": "+1-555-0116",
+    "message": "Mock inquiry about 2023 Forest River Rockwood",
+    "vehicleInterest": {
+      "stockNumber": "LONE1010",
+      "priceCents": 5975300
+    },
+    "adfPayload": {
+      "mock": true
+    },
+    "createdAt": "2026-05-27T22:00:00Z"
+  },
+  {
+    "id": "lead_dealer_lone_star_rv_17",
+    "dealershipId": "dealer_lone_star_rv",
+    "vehicleId": "veh_0035",
+    "source": "ADF_XML",
+    "platformSlug": "google-business-profile",
+    "contactName": "Sam Patel",
+    "contactEmail": "buyer17.dealer_lone_star_rv@example.invalid",
+    "contactPhone": "+1-555-0117",
+    "message": "Mock inquiry about 2023 Polaris Ranger",
+    "vehicleInterest": {
+      "stockNumber": "LONE1002",
+      "priceCents": 3966300
+    },
+    "adfPayload": null,
+    "createdAt": "2026-03-20T02:00:00Z"
+  },
+  {
+    "id": "lead_dealer_coastal_boats_0",
+    "dealershipId": "dealer_coastal_boats",
+    "vehicleId": "veh_0050",
+    "source": "MANUAL",
+    "platformSlug": "google-business-profile",
+    "contactName": "Chris Walker",
+    "contactEmail": "buyer0.dealer_coastal_boats@example.invalid",
+    "contactPhone": "+1-555-0100",
+    "message": "Mock inquiry about 2018 Sea Ray SPX 190",
+    "vehicleInterest": {
+      "stockNumber": "COASTAL1005",
+      "priceCents": 5744200
+    },
+    "adfPayload": {
+      "mock": true
+    },
+    "createdAt": "2026-03-20T00:00:00Z"
+  },
+  {
+    "id": "lead_dealer_coastal_boats_1",
+    "dealershipId": "dealer_coastal_boats",
+    "vehicleId": "veh_0056",
+    "source": "PLATFORM_FORM",
+    "platformSlug": "cars-com-us",
+    "contactName": "Alex Morgan",
+    "contactEmail": "buyer1.dealer_coastal_boats@example.invalid",
+    "contactPhone": "+1-555-0101",
+    "message": "Mock inquiry about 2022 Sea Ray SPX 190",
+    "vehicleInterest": {
+      "stockNumber": "COASTAL1011",
+      "priceCents": 3735000
+    },
+    "adfPayload": null,
+    "createdAt": "2026-04-30T04:00:00Z"
+  },
+  {
+    "id": "lead_dealer_coastal_boats_2",
+    "dealershipId": "dealer_coastal_boats",
+    "vehicleId": "veh_0049",
+    "source": "DEALER_STOREFRONT",
+    "platformSlug": "cars-com-us",
+    "contactName": "Riley Chen",
+    "contactEmail": "buyer2.dealer_coastal_boats@example.invalid",
+    "contactPhone": "+1-555-0102",
+    "message": "Mock inquiry about 2023 Yamaha AR195",
+    "vehicleInterest": {
+      "stockNumber": "COASTAL1004",
+      "priceCents": 3806000
+    },
+    "adfPayload": null,
+    "createdAt": "2026-03-18T14:00:00Z"
+  },
+  {
+    "id": "lead_dealer_coastal_boats_3",
+    "dealershipId": "dealer_coastal_boats",
+    "vehicleId": "veh_0046",
+    "source": "ADF_XML",
+    "platformSlug": "cars-com-us",
+    "contactName": "Sam Patel",
+    "contactEmail": "buyer3.dealer_coastal_boats@example.invalid",
+    "contactPhone": "+1-555-0103",
+    "message": "Mock inquiry about 2026 Sea Ray SPX 190",
+    "vehicleInterest": {
+      "stockNumber": "COASTAL1001",
+      "priceCents": 4728800
+    },
+    "adfPayload": null,
+    "createdAt": "2026-04-18T21:00:00Z"
+  },
+  {
+    "id": "lead_dealer_coastal_boats_4",
+    "dealershipId": "dealer_coastal_boats",
+    "vehicleId": "veh_0051",
+    "source": "DEALER_STOREFRONT",
+    "platformSlug": "google-business-profile",
+    "contactName": "Jordan Lee",
+    "contactEmail": "buyer4.dealer_coastal_boats@example.invalid",
+    "contactPhone": "+1-555-0104",
+    "message": "Mock inquiry about 2022 Yamaha AR195",
+    "vehicleInterest": {
+      "stockNumber": "COASTAL1006",
+      "priceCents": 5233600
+    },
+    "adfPayload": {
+      "mock": true
+    },
+    "createdAt": "2026-04-01T15:00:00Z"
+  },
+  {
+    "id": "lead_dealer_coastal_boats_5",
+    "dealershipId": "dealer_coastal_boats",
+    "vehicleId": "veh_0047",
+    "source": "ADF_XML",
+    "platformSlug": "autotrader-us",
+    "contactName": "Alex Morgan",
+    "contactEmail": "buyer5.dealer_coastal_boats@example.invalid",
+    "contactPhone": "+1-555-0105",
+    "message": "Mock inquiry about 2025 Sea Ray SPX 190",
+    "vehicleInterest": {
+      "stockNumber": "COASTAL1002",
+      "priceCents": 8997400
+    },
+    "adfPayload": null,
+    "createdAt": "2026-05-26T00:00:00Z"
+  },
+  {
+    "id": "lead_dealer_coastal_boats_6",
+    "dealershipId": "dealer_coastal_boats",
+    "vehicleId": "veh_0048",
+    "source": "MANUAL",
+    "platformSlug": "google-business-profile",
+    "contactName": "Riley Chen",
+    "contactEmail": "buyer6.dealer_coastal_boats@example.invalid",
+    "contactPhone": "+1-555-0106",
+    "message": "Mock inquiry about 2021 Sea Ray SPX 190",
+    "vehicleInterest": {
+      "stockNumber": "COASTAL1003",
+      "priceCents": 4453200
+    },
+    "adfPayload": null,
+    "createdAt": "2026-06-03T15:00:00Z"
+  },
+  {
+    "id": "lead_dealer_coastal_boats_7",
+    "dealershipId": "dealer_coastal_boats",
+    "vehicleId": "veh_0049",
+    "source": "PLATFORM_FORM",
+    "platformSlug": "cars-com-us",
+    "contactName": "Jordan Lee",
+    "contactEmail": "buyer7.dealer_coastal_boats@example.invalid",
+    "contactPhone": "+1-555-0107",
+    "message": "Mock inquiry about 2023 Yamaha AR195",
+    "vehicleInterest": {
+      "stockNumber": "COASTAL1004",
+      "priceCents": 3806000
+    },
+    "adfPayload": null,
+    "createdAt": "2026-05-03T02:00:00Z"
+  },
+  {
+    "id": "lead_dealer_coastal_boats_8",
+    "dealershipId": "dealer_coastal_boats",
+    "vehicleId": "veh_0053",
+    "source": "PLATFORM_FORM",
+    "platformSlug": "autotrader-us",
+    "contactName": "Jordan Lee",
+    "contactEmail": "buyer8.dealer_coastal_boats@example.invalid",
+    "contactPhone": "+1-555-0108",
+    "message": "Mock inquiry about 2022 Bayliner VR5",
+    "vehicleInterest": {
+      "stockNumber": "COASTAL1008",
+      "priceCents": 4636200
+    },
+    "adfPayload": {
+      "mock": true
+    },
+    "createdAt": "2026-05-16T07:00:00Z"
+  },
+  {
+    "id": "lead_dealer_coastal_boats_9",
+    "dealershipId": "dealer_coastal_boats",
+    "vehicleId": "veh_0048",
+    "source": "ADF_XML",
+    "platformSlug": "cars-com-us",
+    "contactName": "Riley Chen",
+    "contactEmail": "buyer9.dealer_coastal_boats@example.invalid",
+    "contactPhone": "+1-555-0109",
+    "message": "Mock inquiry about 2021 Sea Ray SPX 190",
+    "vehicleInterest": {
+      "stockNumber": "COASTAL1003",
+      "priceCents": 4453200
+    },
+    "adfPayload": null,
+    "createdAt": "2026-04-17T21:00:00Z"
+  },
+  {
+    "id": "lead_dealer_coastal_boats_10",
+    "dealershipId": "dealer_coastal_boats",
+    "vehicleId": "veh_0056",
+    "source": "DEALER_STOREFRONT",
+    "platformSlug": "owned-storefront",
+    "contactName": "Alex Morgan",
+    "contactEmail": "buyer10.dealer_coastal_boats@example.invalid",
+    "contactPhone": "+1-555-0110",
+    "message": "Mock inquiry about 2022 Sea Ray SPX 190",
+    "vehicleInterest": {
+      "stockNumber": "COASTAL1011",
+      "priceCents": 3735000
+    },
+    "adfPayload": null,
+    "createdAt": "2026-04-28T15:00:00Z"
+  },
+  {
+    "id": "lead_dealer_coastal_boats_11",
+    "dealershipId": "dealer_coastal_boats",
+    "vehicleId": "veh_0050",
+    "source": "MANUAL",
+    "platformSlug": "autotrader-us",
+    "contactName": "Chris Walker",
+    "contactEmail": "buyer11.dealer_coastal_boats@example.invalid",
+    "contactPhone": "+1-555-0111",
+    "message": "Mock inquiry about 2018 Sea Ray SPX 190",
+    "vehicleInterest": {
+      "stockNumber": "COASTAL1005",
+      "priceCents": 5744200
+    },
+    "adfPayload": null,
+    "createdAt": "2026-05-14T18:00:00Z"
+  },
+  {
+    "id": "lead_dealer_coastal_boats_12",
+    "dealershipId": "dealer_coastal_boats",
+    "vehicleId": "veh_0055",
+    "source": "DEALER_STOREFRONT",
+    "platformSlug": "google-business-profile",
+    "contactName": "Alex Morgan",
+    "contactEmail": "buyer12.dealer_coastal_boats@example.invalid",
+    "contactPhone": "+1-555-0112",
+    "message": "Mock inquiry about 2024 Yamaha AR195",
+    "vehicleInterest": {
+      "stockNumber": "COASTAL1010",
+      "priceCents": 5064700
+    },
+    "adfPayload": {
+      "mock": true
+    },
+    "createdAt": "2026-05-31T03:00:00Z"
+  },
+  {
+    "id": "lead_dealer_coastal_boats_13",
+    "dealershipId": "dealer_coastal_boats",
+    "vehicleId": "veh_0051",
+    "source": "PLATFORM_FORM",
+    "platformSlug": "facebook-business-page",
+    "contactName": "Sam Patel",
+    "contactEmail": "buyer13.dealer_coastal_boats@example.invalid",
+    "contactPhone": "+1-555-0113",
+    "message": "Mock inquiry about 2022 Yamaha AR195",
+    "vehicleInterest": {
+      "stockNumber": "COASTAL1006",
+      "priceCents": 5233600
+    },
+    "adfPayload": null,
+    "createdAt": "2026-05-28T07:00:00Z"
+  },
+  {
+    "id": "lead_dealer_coastal_boats_14",
+    "dealershipId": "dealer_coastal_boats",
+    "vehicleId": "veh_0056",
+    "source": "DEALER_STOREFRONT",
+    "platformSlug": "cars-com-us",
+    "contactName": "Jordan Lee",
+    "contactEmail": "buyer14.dealer_coastal_boats@example.invalid",
+    "contactPhone": "+1-555-0114",
+    "message": "Mock inquiry about 2022 Sea Ray SPX 190",
+    "vehicleInterest": {
+      "stockNumber": "COASTAL1011",
+      "priceCents": 3735000
+    },
+    "adfPayload": null,
+    "createdAt": "2026-04-14T23:00:00Z"
+  },
+  {
+    "id": "lead_dealer_coastal_boats_15",
+    "dealershipId": "dealer_coastal_boats",
+    "vehicleId": "veh_0053",
+    "source": "ADF_XML",
+    "platformSlug": "google-business-profile",
+    "contactName": "Sam Patel",
+    "contactEmail": "buyer15.dealer_coastal_boats@example.invalid",
+    "contactPhone": "+1-555-0115",
+    "message": "Mock inquiry about 2022 Bayliner VR5",
+    "vehicleInterest": {
+      "stockNumber": "COASTAL1008",
+      "priceCents": 4636200
+    },
+    "adfPayload": null,
+    "createdAt": "2026-03-27T08:00:00Z"
+  },
+  {
+    "id": "lead_dealer_coastal_boats_16",
+    "dealershipId": "dealer_coastal_boats",
+    "vehicleId": "veh_0055",
+    "source": "PLATFORM_FORM",
+    "platformSlug": "owned-storefront",
+    "contactName": "Alex Morgan",
+    "contactEmail": "buyer16.dealer_coastal_boats@example.invalid",
+    "contactPhone": "+1-555-0116",
+    "message": "Mock inquiry about 2024 Yamaha AR195",
+    "vehicleInterest": {
+      "stockNumber": "COASTAL1010",
+      "priceCents": 5064700
+    },
+    "adfPayload": {
+      "mock": true
+    },
+    "createdAt": "2026-05-15T19:00:00Z"
+  },
+  {
+    "id": "lead_dealer_coastal_boats_17",
+    "dealershipId": "dealer_coastal_boats",
+    "vehicleId": "veh_0056",
+    "source": "DEALER_STOREFRONT",
+    "platformSlug": "google-business-profile",
+    "contactName": "Sam Patel",
+    "contactEmail": "buyer17.dealer_coastal_boats@example.invalid",
+    "contactPhone": "+1-555-0117",
+    "message": "Mock inquiry about 2022 Sea Ray SPX 190",
+    "vehicleInterest": {
+      "stockNumber": "COASTAL1011",
+      "priceCents": 3735000
+    },
+    "adfPayload": null,
+    "createdAt": "2026-03-30T10:00:00Z"
+  },
+  {
+    "id": "lead_dealer_messy_motors_0",
+    "dealershipId": "dealer_messy_motors",
+    "vehicleId": "veh_0079",
+    "source": "ADF_XML",
+    "platformSlug": "cars-com-us",
+    "contactName": "Alex Morgan",
+    "contactEmail": "buyer0.dealer_messy_motors@example.invalid",
+    "contactPhone": "+1-555-0100",
+    "message": "Mock inquiry about 2020 Toyota Camry",
+    "vehicleInterest": {
+      "stockNumber": "MESSY1022",
+      "priceCents": 1826600
+    },
+    "adfPayload": {
+      "mock": true
+    },
+    "createdAt": "2026-04-10T14:00:00Z"
+  },
+  {
+    "id": "lead_dealer_messy_motors_1",
+    "dealershipId": "dealer_messy_motors",
+    "vehicleId": "veh_0068",
+    "source": "PLATFORM_FORM",
+    "platformSlug": "autotrader-us",
+    "contactName": "Sam Patel",
+    "contactEmail": "buyer1.dealer_messy_motors@example.invalid",
+    "contactPhone": "+1-555-0101",
+    "message": "Mock inquiry about 2018 Mercedes-Benz C-Class",
+    "vehicleInterest": {
+      "stockNumber": "MESSY1011",
+      "priceCents": 4065400
+    },
+    "adfPayload": null,
+    "createdAt": "2026-04-13T01:00:00Z"
+  },
+  {
+    "id": "lead_dealer_messy_motors_2",
+    "dealershipId": "dealer_messy_motors",
+    "vehicleId": "veh_0069",
+    "source": "DEALER_STOREFRONT",
+    "platformSlug": "owned-storefront",
+    "contactName": "Jordan Lee",
+    "contactEmail": "buyer2.dealer_messy_motors@example.invalid",
+    "contactPhone": "+1-555-0102",
+    "message": "Mock inquiry about 2022 Chevrolet Silverado 1500",
+    "vehicleInterest": {
+      "stockNumber": "MESSY1012",
+      "priceCents": 5143900
+    },
+    "adfPayload": null,
+    "createdAt": "2026-05-23T21:00:00Z"
+  },
+  {
+    "id": "lead_dealer_messy_motors_3",
+    "dealershipId": "dealer_messy_motors",
+    "vehicleId": "veh_0080",
+    "source": "PLATFORM_FORM",
+    "platformSlug": "owned-storefront",
+    "contactName": "Riley Chen",
+    "contactEmail": "buyer3.dealer_messy_motors@example.invalid",
+    "contactPhone": "+1-555-0103",
+    "message": "Mock inquiry about 2022 Jeep Wrangler",
+    "vehicleInterest": {
+      "stockNumber": "MESSY1023",
+      "priceCents": 1631400
+    },
+    "adfPayload": null,
+    "createdAt": "2026-03-27T23:00:00Z"
+  },
+  {
+    "id": "lead_dealer_messy_motors_4",
+    "dealershipId": "dealer_messy_motors",
+    "vehicleId": "veh_0071",
+    "source": "PLATFORM_FORM",
+    "platformSlug": "cars-com-us",
+    "contactName": "Chris Walker",
+    "contactEmail": "buyer4.dealer_messy_motors@example.invalid",
+    "contactPhone": "+1-555-0104",
+    "message": "Mock inquiry about 2021 Honda CR-V",
+    "vehicleInterest": {
+      "stockNumber": "MESSY1014",
+      "priceCents": 4170400
+    },
+    "adfPayload": {
+      "mock": true
+    },
+    "createdAt": "2026-05-30T18:00:00Z"
+  },
+  {
+    "id": "lead_dealer_messy_motors_5",
+    "dealershipId": "dealer_messy_motors",
+    "vehicleId": "veh_0063",
+    "source": "PLATFORM_FORM",
+    "platformSlug": "owned-storefront",
+    "contactName": "Jordan Lee",
+    "contactEmail": "buyer5.dealer_messy_motors@example.invalid",
+    "contactPhone": "+1-555-0105",
+    "message": "Mock inquiry about 2021 Jeep Wrangler",
+    "vehicleInterest": {
+      "stockNumber": "MESSY1006",
+      "priceCents": 3793100
+    },
+    "adfPayload": null,
+    "createdAt": "2026-04-30T03:00:00Z"
+  },
+  {
+    "id": "lead_dealer_messy_motors_6",
+    "dealershipId": "dealer_messy_motors",
+    "vehicleId": "veh_0081",
+    "source": "MANUAL",
+    "platformSlug": "owned-storefront",
+    "contactName": "Chris Walker",
+    "contactEmail": "buyer6.dealer_messy_motors@example.invalid",
+    "contactPhone": "+1-555-0106",
+    "message": "Mock inquiry about 2016 Nissan Altima",
+    "vehicleInterest": {
+      "stockNumber": "MESSY1024",
+      "priceCents": 0
+    },
+    "adfPayload": null,
+    "createdAt": "2026-04-10T00:00:00Z"
+  },
+  {
+    "id": "lead_dealer_messy_motors_7",
+    "dealershipId": "dealer_messy_motors",
+    "vehicleId": "veh_0072",
+    "source": "ADF_XML",
+    "platformSlug": "owned-storefront",
+    "contactName": "Sam Patel",
+    "contactEmail": "buyer7.dealer_messy_motors@example.invalid",
+    "contactPhone": "+1-555-0107",
+    "message": "Mock inquiry about 2016 BMW X5",
+    "vehicleInterest": {
+      "stockNumber": "MESSY1015",
+      "priceCents": 3118400
+    },
+    "adfPayload": null,
+    "createdAt": "2026-05-22T07:00:00Z"
+  },
+  {
+    "id": "lead_dealer_messy_motors_8",
+    "dealershipId": "dealer_messy_motors",
+    "vehicleId": "veh_0073",
+    "source": "PLATFORM_FORM",
+    "platformSlug": "cars-com-us",
+    "contactName": "Riley Chen",
+    "contactEmail": "buyer8.dealer_messy_motors@example.invalid",
+    "contactPhone": "+1-555-0108",
+    "message": "Mock inquiry about 2022 Ford F-150",
+    "vehicleInterest": {
+      "stockNumber": "MESSY1016",
+      "priceCents": 0
+    },
+    "adfPayload": {
+      "mock": true
+    },
+    "createdAt": "2026-04-11T19:00:00Z"
+  },
+  {
+    "id": "lead_dealer_messy_motors_9",
+    "dealershipId": "dealer_messy_motors",
+    "vehicleId": "veh_0084",
+    "source": "ADF_XML",
+    "platformSlug": "owned-storefront",
+    "contactName": "Sam Patel",
+    "contactEmail": "buyer9.dealer_messy_motors@example.invalid",
+    "contactPhone": "+1-555-0109",
+    "message": "Mock inquiry about 2024 Jeep Wrangler",
+    "vehicleInterest": {
+      "stockNumber": "MESSY1027",
+      "priceCents": 4776300
+    },
+    "adfPayload": null,
+    "createdAt": "2026-03-12T10:00:00Z"
+  },
+  {
+    "id": "lead_dealer_messy_motors_10",
+    "dealershipId": "dealer_messy_motors",
+    "vehicleId": "veh_0061",
+    "source": "PLATFORM_FORM",
+    "platformSlug": "cars-com-us",
+    "contactName": "Riley Chen",
+    "contactEmail": "buyer10.dealer_messy_motors@example.invalid",
+    "contactPhone": "+1-555-0110",
+    "message": "Mock inquiry about 2019 Chevrolet Silverado 1500",
+    "vehicleInterest": {
+      "stockNumber": "MESSY1004",
+      "priceCents": 5965900
+    },
+    "adfPayload": null,
+    "createdAt": "2026-05-18T14:00:00Z"
+  },
+  {
+    "id": "lead_dealer_messy_motors_11",
+    "dealershipId": "dealer_messy_motors",
+    "vehicleId": "veh_0075",
+    "source": "PLATFORM_FORM",
+    "platformSlug": "google-business-profile",
+    "contactName": "Sam Patel",
+    "contactEmail": "buyer11.dealer_messy_motors@example.invalid",
+    "contactPhone": "+1-555-0111",
+    "message": "Mock inquiry about 2016 Subaru Outback",
+    "vehicleInterest": {
+      "stockNumber": "MESSY1018",
+      "priceCents": 6976900
+    },
+    "adfPayload": null,
+    "createdAt": "2026-03-19T14:00:00Z"
+  },
+  {
+    "id": "lead_dealer_messy_motors_12",
+    "dealershipId": "dealer_messy_motors",
+    "vehicleId": "veh_0064",
+    "source": "DEALER_STOREFRONT",
+    "platformSlug": "google-business-profile",
+    "contactName": "Alex Morgan",
+    "contactEmail": "buyer12.dealer_messy_motors@example.invalid",
+    "contactPhone": "+1-555-0112",
+    "message": "Mock inquiry about 2018 Ford F-150",
+    "vehicleInterest": {
+      "stockNumber": "MESSY1007",
+      "priceCents": 1806000
+    },
+    "adfPayload": {
+      "mock": true
+    },
+    "createdAt": "2026-03-31T05:00:00Z"
+  },
+  {
+    "id": "lead_dealer_messy_motors_13",
+    "dealershipId": "dealer_messy_motors",
+    "vehicleId": "veh_0066",
+    "source": "ADF_XML",
+    "platformSlug": "autotrader-us",
+    "contactName": "Chris Walker",
+    "contactEmail": "buyer13.dealer_messy_motors@example.invalid",
+    "contactPhone": "+1-555-0113",
+    "message": "Mock inquiry about 2023 Mercedes-Benz C-Class",
+    "vehicleInterest": {
+      "stockNumber": "MESSY1009",
+      "priceCents": 2491300
+    },
+    "adfPayload": null,
+    "createdAt": "2026-04-28T18:00:00Z"
+  },
+  {
+    "id": "lead_dealer_messy_motors_14",
+    "dealershipId": "dealer_messy_motors",
+    "vehicleId": "veh_0060",
+    "source": "ADF_XML",
+    "platformSlug": "autotrader-us",
+    "contactName": "Chris Walker",
+    "contactEmail": "buyer14.dealer_messy_motors@example.invalid",
+    "contactPhone": "+1-555-0114",
+    "message": "Mock inquiry about 2017 Chevrolet Silverado 1500",
+    "vehicleInterest": {
+      "stockNumber": "MESSY1003",
+      "priceCents": 2532400
+    },
+    "adfPayload": null,
+    "createdAt": "2026-04-05T20:00:00Z"
+  },
+  {
+    "id": "lead_dealer_messy_motors_15",
+    "dealershipId": "dealer_messy_motors",
+    "vehicleId": "veh_0059",
+    "source": "DEALER_STOREFRONT",
+    "platformSlug": "google-business-profile",
+    "contactName": "Riley Chen",
+    "contactEmail": "buyer15.dealer_messy_motors@example.invalid",
+    "contactPhone": "+1-555-0115",
+    "message": "Mock inquiry about 2023 Tesla Model 3",
+    "vehicleInterest": {
+      "stockNumber": "MESSY1002",
+      "priceCents": 6337400
+    },
+    "adfPayload": null,
+    "createdAt": "2026-04-12T02:00:00Z"
+  },
+  {
+    "id": "lead_dealer_messy_motors_16",
+    "dealershipId": "dealer_messy_motors",
+    "vehicleId": "veh_0081",
+    "source": "ADF_XML",
+    "platformSlug": "autotrader-us",
+    "contactName": "Alex Morgan",
+    "contactEmail": "buyer16.dealer_messy_motors@example.invalid",
+    "contactPhone": "+1-555-0116",
+    "message": "Mock inquiry about 2016 Nissan Altima",
+    "vehicleInterest": {
+      "stockNumber": "MESSY1024",
+      "priceCents": 0
+    },
+    "adfPayload": {
+      "mock": true
+    },
+    "createdAt": "2026-03-21T04:00:00Z"
+  },
+  {
+    "id": "lead_dealer_messy_motors_17",
+    "dealershipId": "dealer_messy_motors",
+    "vehicleId": "veh_0067",
+    "source": "MANUAL",
+    "platformSlug": "autotrader-us",
+    "contactName": "Chris Walker",
+    "contactEmail": "buyer17.dealer_messy_motors@example.invalid",
+    "contactPhone": "+1-555-0117",
+    "message": "Mock inquiry about 2016 Mercedes-Benz C-Class",
+    "vehicleInterest": {
+      "stockNumber": "MESSY1010",
+      "priceCents": 5070700
+    },
+    "adfPayload": null,
+    "createdAt": "2026-04-26T18:00:00Z"
+  },
+  {
+    "id": "lead_dealer_premium_imports_0",
+    "dealershipId": "dealer_premium_imports",
+    "vehicleId": "veh_0113",
+    "source": "DEALER_STOREFRONT",
+    "platformSlug": "owned-storefront",
+    "contactName": "Riley Chen",
+    "contactEmail": "buyer0.dealer_premium_imports@example.invalid",
+    "contactPhone": "+1-555-0100",
+    "message": "Mock inquiry about 2020 Mercedes-Benz C-Class",
+    "vehicleInterest": {
+      "stockNumber": "PREMIUM1028",
+      "priceCents": 4221800
+    },
+    "adfPayload": {
+      "mock": true
+    },
+    "createdAt": "2026-05-14T13:00:00Z"
+  },
+  {
+    "id": "lead_dealer_premium_imports_1",
+    "dealershipId": "dealer_premium_imports",
+    "vehicleId": "veh_0109",
+    "source": "MANUAL",
+    "platformSlug": "google-business-profile",
+    "contactName": "Chris Walker",
+    "contactEmail": "buyer1.dealer_premium_imports@example.invalid",
+    "contactPhone": "+1-555-0101",
+    "message": "Mock inquiry about 2026 Tesla Model 3",
+    "vehicleInterest": {
+      "stockNumber": "PREMIUM1024",
+      "priceCents": 4128600
+    },
+    "adfPayload": null,
+    "createdAt": "2026-03-31T09:00:00Z"
+  },
+  {
+    "id": "lead_dealer_premium_imports_2",
+    "dealershipId": "dealer_premium_imports",
+    "vehicleId": "veh_0093",
+    "source": "ADF_XML",
+    "platformSlug": "owned-storefront",
+    "contactName": "Sam Patel",
+    "contactEmail": "buyer2.dealer_premium_imports@example.invalid",
+    "contactPhone": "+1-555-0102",
+    "message": "Mock inquiry about 2021 Mercedes-Benz C-Class",
+    "vehicleInterest": {
+      "stockNumber": "PREMIUM1008",
+      "priceCents": 6334500
+    },
+    "adfPayload": null,
+    "createdAt": "2026-04-04T01:00:00Z"
+  },
+  {
+    "id": "lead_dealer_premium_imports_3",
+    "dealershipId": "dealer_premium_imports",
+    "vehicleId": "veh_0102",
+    "source": "DEALER_STOREFRONT",
+    "platformSlug": "facebook-business-page",
+    "contactName": "Riley Chen",
+    "contactEmail": "buyer3.dealer_premium_imports@example.invalid",
+    "contactPhone": "+1-555-0103",
+    "message": "Mock inquiry about 2016 Honda CR-V",
+    "vehicleInterest": {
+      "stockNumber": "PREMIUM1017",
+      "priceCents": 6208100
+    },
+    "adfPayload": null,
+    "createdAt": "2026-04-20T20:00:00Z"
+  },
+  {
+    "id": "lead_dealer_premium_imports_4",
+    "dealershipId": "dealer_premium_imports",
+    "vehicleId": "veh_0093",
+    "source": "MANUAL",
+    "platformSlug": "cars-com-us",
+    "contactName": "Riley Chen",
+    "contactEmail": "buyer4.dealer_premium_imports@example.invalid",
+    "contactPhone": "+1-555-0104",
+    "message": "Mock inquiry about 2021 Mercedes-Benz C-Class",
+    "vehicleInterest": {
+      "stockNumber": "PREMIUM1008",
+      "priceCents": 6334500
+    },
+    "adfPayload": {
+      "mock": true
+    },
+    "createdAt": "2026-05-21T20:00:00Z"
+  },
+  {
+    "id": "lead_dealer_premium_imports_5",
+    "dealershipId": "dealer_premium_imports",
+    "vehicleId": "veh_0112",
+    "source": "PLATFORM_FORM",
+    "platformSlug": "cars-com-us",
+    "contactName": "Chris Walker",
+    "contactEmail": "buyer5.dealer_premium_imports@example.invalid",
+    "contactPhone": "+1-555-0105",
+    "message": "Mock inquiry about 2020 Ford F-150",
+    "vehicleInterest": {
+      "stockNumber": "PREMIUM1027",
+      "priceCents": 3258200
+    },
+    "adfPayload": null,
+    "createdAt": "2026-05-20T03:00:00Z"
+  },
+  {
+    "id": "lead_dealer_premium_imports_6",
+    "dealershipId": "dealer_premium_imports",
+    "vehicleId": "veh_0086",
+    "source": "ADF_XML",
+    "platformSlug": "owned-storefront",
+    "contactName": "Alex Morgan",
+    "contactEmail": "buyer6.dealer_premium_imports@example.invalid",
+    "contactPhone": "+1-555-0106",
+    "message": "Mock inquiry about 2022 Mercedes-Benz C-Class",
+    "vehicleInterest": {
+      "stockNumber": "PREMIUM1001",
+      "priceCents": 4136900
+    },
+    "adfPayload": null,
+    "createdAt": "2026-06-02T21:00:00Z"
+  },
+  {
+    "id": "lead_dealer_premium_imports_7",
+    "dealershipId": "dealer_premium_imports",
+    "vehicleId": "veh_0106",
+    "source": "PLATFORM_FORM",
+    "platformSlug": "autotrader-us",
+    "contactName": "Jordan Lee",
+    "contactEmail": "buyer7.dealer_premium_imports@example.invalid",
+    "contactPhone": "+1-555-0107",
+    "message": "Mock inquiry about 2018 Honda CR-V",
+    "vehicleInterest": {
+      "stockNumber": "PREMIUM1021",
+      "priceCents": 1962100
+    },
+    "adfPayload": null,
+    "createdAt": "2026-04-23T13:00:00Z"
+  },
+  {
+    "id": "lead_dealer_premium_imports_8",
+    "dealershipId": "dealer_premium_imports",
+    "vehicleId": "veh_0099",
+    "source": "DEALER_STOREFRONT",
+    "platformSlug": "cars-com-us",
+    "contactName": "Sam Patel",
+    "contactEmail": "buyer8.dealer_premium_imports@example.invalid",
+    "contactPhone": "+1-555-0108",
+    "message": "Mock inquiry about 2016 Ford F-150",
+    "vehicleInterest": {
+      "stockNumber": "PREMIUM1014",
+      "priceCents": 2641900
+    },
+    "adfPayload": {
+      "mock": true
+    },
+    "createdAt": "2026-04-26T11:00:00Z"
+  },
+  {
+    "id": "lead_dealer_premium_imports_9",
+    "dealershipId": "dealer_premium_imports",
+    "vehicleId": "veh_0091",
+    "source": "ADF_XML",
+    "platformSlug": "autotrader-us",
+    "contactName": "Alex Morgan",
+    "contactEmail": "buyer9.dealer_premium_imports@example.invalid",
+    "contactPhone": "+1-555-0109",
+    "message": "Mock inquiry about 2020 Honda CR-V",
+    "vehicleInterest": {
+      "stockNumber": "PREMIUM1006",
+      "priceCents": 5059500
+    },
+    "adfPayload": null,
+    "createdAt": "2026-04-08T03:00:00Z"
+  },
+  {
+    "id": "lead_dealer_premium_imports_10",
+    "dealershipId": "dealer_premium_imports",
+    "vehicleId": "veh_0107",
+    "source": "DEALER_STOREFRONT",
+    "platformSlug": "owned-storefront",
+    "contactName": "Jordan Lee",
+    "contactEmail": "buyer10.dealer_premium_imports@example.invalid",
+    "contactPhone": "+1-555-0110",
+    "message": "Mock inquiry about 2016 Tesla Model 3",
+    "vehicleInterest": {
+      "stockNumber": "PREMIUM1022",
+      "priceCents": 3670200
+    },
+    "adfPayload": null,
+    "createdAt": "2026-06-04T20:00:00Z"
+  },
+  {
+    "id": "lead_dealer_premium_imports_11",
+    "dealershipId": "dealer_premium_imports",
+    "vehicleId": "veh_0107",
+    "source": "PLATFORM_FORM",
+    "platformSlug": "owned-storefront",
+    "contactName": "Chris Walker",
+    "contactEmail": "buyer11.dealer_premium_imports@example.invalid",
+    "contactPhone": "+1-555-0111",
+    "message": "Mock inquiry about 2016 Tesla Model 3",
+    "vehicleInterest": {
+      "stockNumber": "PREMIUM1022",
+      "priceCents": 3670200
+    },
+    "adfPayload": null,
+    "createdAt": "2026-04-16T22:00:00Z"
+  },
+  {
+    "id": "lead_dealer_premium_imports_12",
+    "dealershipId": "dealer_premium_imports",
+    "vehicleId": "veh_0086",
+    "source": "DEALER_STOREFRONT",
+    "platformSlug": "cars-com-us",
+    "contactName": "Chris Walker",
+    "contactEmail": "buyer12.dealer_premium_imports@example.invalid",
+    "contactPhone": "+1-555-0112",
+    "message": "Mock inquiry about 2022 Mercedes-Benz C-Class",
+    "vehicleInterest": {
+      "stockNumber": "PREMIUM1001",
+      "priceCents": 4136900
+    },
+    "adfPayload": {
+      "mock": true
+    },
+    "createdAt": "2026-03-17T19:00:00Z"
+  },
+  {
+    "id": "lead_dealer_premium_imports_13",
+    "dealershipId": "dealer_premium_imports",
+    "vehicleId": "veh_0103",
+    "source": "MANUAL",
+    "platformSlug": "autotrader-us",
+    "contactName": "Chris Walker",
+    "contactEmail": "buyer13.dealer_premium_imports@example.invalid",
+    "contactPhone": "+1-555-0113",
+    "message": "Mock inquiry about 2025 Toyota Camry",
+    "vehicleInterest": {
+      "stockNumber": "PREMIUM1018",
+      "priceCents": 3055200
+    },
+    "adfPayload": null,
+    "createdAt": "2026-04-11T18:00:00Z"
+  },
+  {
+    "id": "lead_dealer_premium_imports_14",
+    "dealershipId": "dealer_premium_imports",
+    "vehicleId": "veh_0099",
+    "source": "DEALER_STOREFRONT",
+    "platformSlug": "owned-storefront",
+    "contactName": "Sam Patel",
+    "contactEmail": "buyer14.dealer_premium_imports@example.invalid",
+    "contactPhone": "+1-555-0114",
+    "message": "Mock inquiry about 2016 Ford F-150",
+    "vehicleInterest": {
+      "stockNumber": "PREMIUM1014",
+      "priceCents": 2641900
+    },
+    "adfPayload": null,
+    "createdAt": "2026-04-15T09:00:00Z"
+  },
+  {
+    "id": "lead_dealer_premium_imports_15",
+    "dealershipId": "dealer_premium_imports",
+    "vehicleId": "veh_0086",
+    "source": "ADF_XML",
+    "platformSlug": "autotrader-us",
+    "contactName": "Sam Patel",
+    "contactEmail": "buyer15.dealer_premium_imports@example.invalid",
+    "contactPhone": "+1-555-0115",
+    "message": "Mock inquiry about 2022 Mercedes-Benz C-Class",
+    "vehicleInterest": {
+      "stockNumber": "PREMIUM1001",
+      "priceCents": 4136900
+    },
+    "adfPayload": null,
+    "createdAt": "2026-04-22T16:00:00Z"
+  },
+  {
+    "id": "lead_dealer_premium_imports_16",
+    "dealershipId": "dealer_premium_imports",
+    "vehicleId": "veh_0105",
+    "source": "ADF_XML",
+    "platformSlug": "autotrader-us",
+    "contactName": "Chris Walker",
+    "contactEmail": "buyer16.dealer_premium_imports@example.invalid",
+    "contactPhone": "+1-555-0116",
+    "message": "Mock inquiry about 2024 Mercedes-Benz C-Class",
+    "vehicleInterest": {
+      "stockNumber": "PREMIUM1020",
+      "priceCents": 2403800
+    },
+    "adfPayload": {
+      "mock": true
+    },
+    "createdAt": "2026-05-12T13:00:00Z"
+  },
+  {
+    "id": "lead_dealer_premium_imports_17",
+    "dealershipId": "dealer_premium_imports",
+    "vehicleId": "veh_0095",
+    "source": "DEALER_STOREFRONT",
+    "platformSlug": "facebook-business-page",
+    "contactName": "Sam Patel",
+    "contactEmail": "buyer17.dealer_premium_imports@example.invalid",
+    "contactPhone": "+1-555-0117",
+    "message": "Mock inquiry about 2019 Honda CR-V",
+    "vehicleInterest": {
+      "stockNumber": "PREMIUM1010",
+      "priceCents": 1684000
+    },
+    "adfPayload": null,
+    "createdAt": "2026-05-13T15:00:00Z"
+  }
+]

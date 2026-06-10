@@ -1,0 +1,502 @@
+[
+  {
+    "id": "oauth_dealer_austin_auto_meta",
+    "dealershipId": "dealer_austin_auto",
+    "provider": "meta",
+    "accessToken": "mock_meta_access_token_dealer_austin_auto",
+    "refreshToken": "mock_meta_refresh_token_dealer_austin_auto",
+    "tokenType": "Bearer",
+    "scope": "mock.scope",
+    "expiresAt": "2026-07-10T12:00:00Z",
+    "rawPayload": {
+      "mock": true,
+      "provider": "meta"
+    },
+    "createdAt": "2026-05-31T12:00:00Z",
+    "updatedAt": "2026-06-09T12:00:00Z"
+  },
+  {
+    "id": "oauth_dealer_austin_auto_google",
+    "dealershipId": "dealer_austin_auto",
+    "provider": "google",
+    "accessToken": "mock_google_access_token_dealer_austin_auto",
+    "refreshToken": "mock_google_refresh_token_dealer_austin_auto",
+    "tokenType": "Bearer",
+    "scope": "mock.scope",
+    "expiresAt": "2026-07-10T12:00:00Z",
+    "rawPayload": {
+      "mock": true,
+      "provider": "google"
+    },
+    "createdAt": "2026-05-31T12:00:00Z",
+    "updatedAt": "2026-06-09T12:00:00Z"
+  },
+  {
+    "id": "oauth_dealer_austin_auto_microsoft_expired",
+    "dealershipId": "dealer_austin_auto",
+    "provider": "microsoft",
+    "accessToken": "expired_mock_microsoft",
+    "refreshToken": null,
+    "tokenType": "Bearer",
+    "scope": "mock.scope",
+    "expiresAt": "2026-06-09T12:00:00Z",
+    "rawPayload": {
+      "mock": true,
+      "expired": true,
+      "provider": "microsoft"
+    },
+    "createdAt": "2026-05-21T12:00:00Z",
+    "updatedAt": "2026-06-08T12:00:00Z"
+  },
+  {
+    "id": "oauth_dealer_austin_auto_x_expired",
+    "dealershipId": "dealer_austin_auto",
+    "provider": "x",
+    "accessToken": "expired_mock_x",
+    "refreshToken": null,
+    "tokenType": "Bearer",
+    "scope": "mock.scope",
+    "expiresAt": "2026-06-09T12:00:00Z",
+    "rawPayload": {
+      "mock": true,
+      "expired": true,
+      "provider": "x"
+    },
+    "createdAt": "2026-05-21T12:00:00Z",
+    "updatedAt": "2026-06-08T12:00:00Z"
+  },
+  {
+    "id": "oauth_dealer_austin_auto_nextdoor_expired",
+    "dealershipId": "dealer_austin_auto",
+    "provider": "nextdoor",
+    "accessToken": "expired_mock_nextdoor",
+    "refreshToken": null,
+    "tokenType": "Bearer",
+    "scope": "mock.scope",
+    "expiresAt": "2026-06-09T12:00:00Z",
+    "rawPayload": {
+      "mock": true,
+      "expired": true,
+      "provider": "nextdoor"
+    },
+    "createdAt": "2026-05-21T12:00:00Z",
+    "updatedAt": "2026-06-08T12:00:00Z"
+  },
+  {
+    "id": "oauth_dealer_austin_auto_ebay_expired",
+    "dealershipId": "dealer_austin_auto",
+    "provider": "ebay",
+    "accessToken": "expired_mock_ebay",
+    "refreshToken": null,
+    "tokenType": "Bearer",
+    "scope": "mock.scope",
+    "expiresAt": "2026-06-09T12:00:00Z",
+    "rawPayload": {
+      "mock": true,
+      "expired": true,
+      "provider": "ebay"
+    },
+    "createdAt": "2026-05-21T12:00:00Z",
+    "updatedAt": "2026-06-08T12:00:00Z"
+  },
+  {
+    "id": "oauth_dealer_lone_star_rv_meta",
+    "dealershipId": "dealer_lone_star_rv",
+    "provider": "meta",
+    "accessToken": "mock_meta_access_token_dealer_lone_star_rv",
+    "refreshToken": "mock_meta_refresh_token_dealer_lone_star_rv",
+    "tokenType": "Bearer",
+    "scope": "mock.scope",
+    "expiresAt": "2026-07-10T12:00:00Z",
+    "rawPayload": {
+      "mock": true,
+      "provider": "meta"
+    },
+    "createdAt": "2026-05-31T12:00:00Z",
+    "updatedAt": "2026-06-09T12:00:00Z"
+  },
+  {
+    "id": "oauth_dealer_lone_star_rv_google",
+    "dealershipId": "dealer_lone_star_rv",
+    "provider": "google",
+    "accessToken": "mock_google_access_token_dealer_lone_star_rv",
+    "refreshToken": "mock_google_refresh_token_dealer_lone_star_rv",
+    "tokenType": "Bearer",
+    "scope": "mock.scope",
+    "expiresAt": "2026-07-10T12:00:00Z",
+    "rawPayload": {
+      "mock": true,
+      "provider": "google"
+    },
+    "createdAt": "2026-05-31T12:00:00Z",
+    "updatedAt": "2026-06-09T12:00:00Z"
+  },
+  {
+    "id": "oauth_dealer_lone_star_rv_microsoft_expired",
+    "dealershipId": "dealer_lone_star_rv",
+    "provider": "microsoft",
+    "accessToken": "expired_mock_microsoft",
+    "refreshToken": null,
+    "tokenType": "Bearer",
+    "scope": "mock.scope",
+    "expiresAt": "2026-06-09T12:00:00Z",
+    "rawPayload": {
+      "mock": true,
+      "expired": true,
+      "provider": "microsoft"
+    },
+    "createdAt": "2026-05-21T12:00:00Z",
+    "updatedAt": "2026-06-08T12:00:00Z"
+  },
+  {
+    "id": "oauth_dealer_lone_star_rv_x_expired",
+    "dealershipId": "dealer_lone_star_rv",
+    "provider": "x",
+    "accessToken": "expired_mock_x",
+    "refreshToken": null,
+    "tokenType": "Bearer",
+    "scope": "mock.scope",
+    "expiresAt": "2026-06-09T12:00:00Z",
+    "rawPayload": {
+      "mock": true,
+      "expired": true,
+      "provider": "x"
+    },
+    "createdAt": "2026-05-21T12:00:00Z",
+    "updatedAt": "2026-06-08T12:00:00Z"
+  },
+  {
+    "id": "oauth_dealer_lone_star_rv_nextdoor_expired",
+    "dealershipId": "dealer_lone_star_rv",
+    "provider": "nextdoor",
+    "accessToken": "expired_mock_nextdoor",
+    "refreshToken": null,
+    "tokenType": "Bearer",
+    "scope": "mock.scope",
+    "expiresAt": "2026-06-09T12:00:00Z",
+    "rawPayload": {
+      "mock": true,
+      "expired": true,
+      "provider": "nextdoor"
+    },
+    "createdAt": "2026-05-21T12:00:00Z",
+    "updatedAt": "2026-06-08T12:00:00Z"
+  },
+  {
+    "id": "oauth_dealer_lone_star_rv_ebay_expired",
+    "dealershipId": "dealer_lone_star_rv",
+    "provider": "ebay",
+    "accessToken": "expired_mock_ebay",
+    "refreshToken": null,
+    "tokenType": "Bearer",
+    "scope": "mock.scope",
+    "expiresAt": "2026-06-09T12:00:00Z",
+    "rawPayload": {
+      "mock": true,
+      "expired": true,
+      "provider": "ebay"
+    },
+    "createdAt": "2026-05-21T12:00:00Z",
+    "updatedAt": "2026-06-08T12:00:00Z"
+  },
+  {
+    "id": "oauth_dealer_coastal_boats_meta",
+    "dealershipId": "dealer_coastal_boats",
+    "provider": "meta",
+    "accessToken": "mock_meta_access_token_dealer_coastal_boats",
+    "refreshToken": "mock_meta_refresh_token_dealer_coastal_boats",
+    "tokenType": "Bearer",
+    "scope": "mock.scope",
+    "expiresAt": "2026-07-10T12:00:00Z",
+    "rawPayload": {
+      "mock": true,
+      "provider": "meta"
+    },
+    "createdAt": "2026-05-31T12:00:00Z",
+    "updatedAt": "2026-06-09T12:00:00Z"
+  },
+  {
+    "id": "oauth_dealer_coastal_boats_google",
+    "dealershipId": "dealer_coastal_boats",
+    "provider": "google",
+    "accessToken": "mock_google_access_token_dealer_coastal_boats",
+    "refreshToken": "mock_google_refresh_token_dealer_coastal_boats",
+    "tokenType": "Bearer",
+    "scope": "mock.scope",
+    "expiresAt": "2026-07-10T12:00:00Z",
+    "rawPayload": {
+      "mock": true,
+      "provider": "google"
+    },
+    "createdAt": "2026-05-31T12:00:00Z",
+    "updatedAt": "2026-06-09T12:00:00Z"
+  },
+  {
+    "id": "oauth_dealer_coastal_boats_microsoft_expired",
+    "dealershipId": "dealer_coastal_boats",
+    "provider": "microsoft",
+    "accessToken": "expired_mock_microsoft",
+    "refreshToken": null,
+    "tokenType": "Bearer",
+    "scope": "mock.scope",
+    "expiresAt": "2026-06-09T12:00:00Z",
+    "rawPayload": {
+      "mock": true,
+      "expired": true,
+      "provider": "microsoft"
+    },
+    "createdAt": "2026-05-21T12:00:00Z",
+    "updatedAt": "2026-06-08T12:00:00Z"
+  },
+  {
+    "id": "oauth_dealer_coastal_boats_x_expired",
+    "dealershipId": "dealer_coastal_boats",
+    "provider": "x",
+    "accessToken": "expired_mock_x",
+    "refreshToken": null,
+    "tokenType": "Bearer",
+    "scope": "mock.scope",
+    "expiresAt": "2026-06-09T12:00:00Z",
+    "rawPayload": {
+      "mock": true,
+      "expired": true,
+      "provider": "x"
+    },
+    "createdAt": "2026-05-21T12:00:00Z",
+    "updatedAt": "2026-06-08T12:00:00Z"
+  },
+  {
+    "id": "oauth_dealer_coastal_boats_nextdoor_expired",
+    "dealershipId": "dealer_coastal_boats",
+    "provider": "nextdoor",
+    "accessToken": "expired_mock_nextdoor",
+    "refreshToken": null,
+    "tokenType": "Bearer",
+    "scope": "mock.scope",
+    "expiresAt": "2026-06-09T12:00:00Z",
+    "rawPayload": {
+      "mock": true,
+      "expired": true,
+      "provider": "nextdoor"
+    },
+    "createdAt": "2026-05-21T12:00:00Z",
+    "updatedAt": "2026-06-08T12:00:00Z"
+  },
+  {
+    "id": "oauth_dealer_coastal_boats_ebay_expired",
+    "dealershipId": "dealer_coastal_boats",
+    "provider": "ebay",
+    "accessToken": "expired_mock_ebay",
+    "refreshToken": null,
+    "tokenType": "Bearer",
+    "scope": "mock.scope",
+    "expiresAt": "2026-06-09T12:00:00Z",
+    "rawPayload": {
+      "mock": true,
+      "expired": true,
+      "provider": "ebay"
+    },
+    "createdAt": "2026-05-21T12:00:00Z",
+    "updatedAt": "2026-06-08T12:00:00Z"
+  },
+  {
+    "id": "oauth_dealer_messy_motors_meta",
+    "dealershipId": "dealer_messy_motors",
+    "provider": "meta",
+    "accessToken": "mock_meta_access_token_dealer_messy_motors",
+    "refreshToken": "mock_meta_refresh_token_dealer_messy_motors",
+    "tokenType": "Bearer",
+    "scope": "mock.scope",
+    "expiresAt": "2026-07-10T12:00:00Z",
+    "rawPayload": {
+      "mock": true,
+      "provider": "meta"
+    },
+    "createdAt": "2026-05-31T12:00:00Z",
+    "updatedAt": "2026-06-09T12:00:00Z"
+  },
+  {
+    "id": "oauth_dealer_messy_motors_google",
+    "dealershipId": "dealer_messy_motors",
+    "provider": "google",
+    "accessToken": "mock_google_access_token_dealer_messy_motors",
+    "refreshToken": "mock_google_refresh_token_dealer_messy_motors",
+    "tokenType": "Bearer",
+    "scope": "mock.scope",
+    "expiresAt": "2026-07-10T12:00:00Z",
+    "rawPayload": {
+      "mock": true,
+      "provider": "google"
+    },
+    "createdAt": "2026-05-31T12:00:00Z",
+    "updatedAt": "2026-06-09T12:00:00Z"
+  },
+  {
+    "id": "oauth_dealer_messy_motors_microsoft_expired",
+    "dealershipId": "dealer_messy_motors",
+    "provider": "microsoft",
+    "accessToken": "expired_mock_microsoft",
+    "refreshToken": null,
+    "tokenType": "Bearer",
+    "scope": "mock.scope",
+    "expiresAt": "2026-06-09T12:00:00Z",
+    "rawPayload": {
+      "mock": true,
+      "expired": true,
+      "provider": "microsoft"
+    },
+    "createdAt": "2026-05-21T12:00:00Z",
+    "updatedAt": "2026-06-08T12:00:00Z"
+  },
+  {
+    "id": "oauth_dealer_messy_motors_x_expired",
+    "dealershipId": "dealer_messy_motors",
+    "provider": "x",
+    "accessToken": "expired_mock_x",
+    "refreshToken": null,
+    "tokenType": "Bearer",
+    "scope": "mock.scope",
+    "expiresAt": "2026-06-09T12:00:00Z",
+    "rawPayload": {
+      "mock": true,
+      "expired": true,
+      "provider": "x"
+    },
+    "createdAt": "2026-05-21T12:00:00Z",
+    "updatedAt": "2026-06-08T12:00:00Z"
+  },
+  {
+    "id": "oauth_dealer_messy_motors_nextdoor_expired",
+    "dealershipId": "dealer_messy_motors",
+    "provider": "nextdoor",
+    "accessToken": "expired_mock_nextdoor",
+    "refreshToken": null,
+    "tokenType": "Bearer",
+    "scope": "mock.scope",
+    "expiresAt": "2026-06-09T12:00:00Z",
+    "rawPayload": {
+      "mock": true,
+      "expired": true,
+      "provider": "nextdoor"
+    },
+    "createdAt": "2026-05-21T12:00:00Z",
+    "updatedAt": "2026-06-08T12:00:00Z"
+  },
+  {
+    "id": "oauth_dealer_messy_motors_ebay_expired",
+    "dealershipId": "dealer_messy_motors",
+    "provider": "ebay",
+    "accessToken": "expired_mock_ebay",
+    "refreshToken": null,
+    "tokenType": "Bearer",
+    "scope": "mock.scope",
+    "expiresAt": "2026-06-09T12:00:00Z",
+    "rawPayload": {
+      "mock": true,
+      "expired": true,
+      "provider": "ebay"
+    },
+    "createdAt": "2026-05-21T12:00:00Z",
+    "updatedAt": "2026-06-08T12:00:00Z"
+  },
+  {
+    "id": "oauth_dealer_premium_imports_meta",
+    "dealershipId": "dealer_premium_imports",
+    "provider": "meta",
+    "accessToken": "mock_meta_access_token_dealer_premium_imports",
+    "refreshToken": "mock_meta_refresh_token_dealer_premium_imports",
+    "tokenType": "Bearer",
+    "scope": "mock.scope",
+    "expiresAt": "2026-07-10T12:00:00Z",
+    "rawPayload": {
+      "mock": true,
+      "provider": "meta"
+    },
+    "createdAt": "2026-05-31T12:00:00Z",
+    "updatedAt": "2026-06-09T12:00:00Z"
+  },
+  {
+    "id": "oauth_dealer_premium_imports_google",
+    "dealershipId": "dealer_premium_imports",
+    "provider": "google",
+    "accessToken": "mock_google_access_token_dealer_premium_imports",
+    "refreshToken": "mock_google_refresh_token_dealer_premium_imports",
+    "tokenType": "Bearer",
+    "scope": "mock.scope",
+    "expiresAt": "2026-07-10T12:00:00Z",
+    "rawPayload": {
+      "mock": true,
+      "provider": "google"
+    },
+    "createdAt": "2026-05-31T12:00:00Z",
+    "updatedAt": "2026-06-09T12:00:00Z"
+  },
+  {
+    "id": "oauth_dealer_premium_imports_microsoft_expired",
+    "dealershipId": "dealer_premium_imports",
+    "provider": "microsoft",
+    "accessToken": "expired_mock_microsoft",
+    "refreshToken": null,
+    "tokenType": "Bearer",
+    "scope": "mock.scope",
+    "expiresAt": "2026-06-09T12:00:00Z",
+    "rawPayload": {
+      "mock": true,
+      "expired": true,
+      "provider": "microsoft"
+    },
+    "createdAt": "2026-05-21T12:00:00Z",
+    "updatedAt": "2026-06-08T12:00:00Z"
+  },
+  {
+    "id": "oauth_dealer_premium_imports_x_expired",
+    "dealershipId": "dealer_premium_imports",
+    "provider": "x",
+    "accessToken": "expired_mock_x",
+    "refreshToken": null,
+    "tokenType": "Bearer",
+    "scope": "mock.scope",
+    "expiresAt": "2026-06-09T12:00:00Z",
+    "rawPayload": {
+      "mock": true,
+      "expired": true,
+      "provider": "x"
+    },
+    "createdAt": "2026-05-21T12:00:00Z",
+    "updatedAt": "2026-06-08T12:00:00Z"
+  },
+  {
+    "id": "oauth_dealer_premium_imports_nextdoor_expired",
+    "dealershipId": "dealer_premium_imports",
+    "provider": "nextdoor",
+    "accessToken": "expired_mock_nextdoor",
+    "refreshToken": null,
+    "tokenType": "Bearer",
+    "scope": "mock.scope",
+    "expiresAt": "2026-06-09T12:00:00Z",
+    "rawPayload": {
+      "mock": true,
+      "expired": true,
+      "provider": "nextdoor"
+    },
+    "createdAt": "2026-05-21T12:00:00Z",
+    "updatedAt": "2026-06-08T12:00:00Z"
+  },
+  {
+    "id": "oauth_dealer_premium_imports_ebay_expired",
+    "dealershipId": "dealer_premium_imports",
+    "provider": "ebay",
+    "accessToken": "expired_mock_ebay",
+    "refreshToken": null,
+    "tokenType": "Bearer",
+    "scope": "mock.scope",
+    "expiresAt": "2026-06-09T12:00:00Z",
+    "rawPayload": {
+      "mock": true,
+      "expired": true,
+      "provider": "ebay"
+    },
+    "createdAt": "2026-05-21T12:00:00Z",
+    "updatedAt": "2026-06-08T12:00:00Z"
+  }
+]

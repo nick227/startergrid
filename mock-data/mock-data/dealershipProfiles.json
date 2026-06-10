@@ -1,0 +1,177 @@
+[
+  {
+    "id": "dealer_austin_auto",
+    "legalName": "Austin Metro Auto Group LLC",
+    "dbaName": "Austin Metro Auto",
+    "businessCategory": "AUTOMOTIVE",
+    "dealerLicense": "TX-MOCK-18422",
+    "rooftopAddress": {
+      "line1": "7211 N Lamar Blvd",
+      "city": "Austin",
+      "region": "TX",
+      "postalCode": "78752",
+      "country": "US"
+    },
+    "rooftopLat": 30.3421,
+    "rooftopLng": -97.7132,
+    "websiteUrl": "https://austinmetroauto.example",
+    "primaryContact": {
+      "name": "Maya Hernandez",
+      "email": "maya@austinmetroauto.example",
+      "phone": "+1-512-555-0148"
+    },
+    "inventorySize": 64,
+    "desiredChannels": [
+      "google-business-profile",
+      "facebook-business-page",
+      "meta-automotive-ads",
+      "microsoft-automotive-ads",
+      "ebay-motors",
+      "autotrader-us",
+      "cars-com-us"
+    ],
+    "documents": {
+      "w9": "mock://documents/austin/w9.pdf",
+      "dealerLicense": "mock://documents/austin/license.pdf"
+    },
+    "createdAt": "2026-02-10T12:00:00Z",
+    "updatedAt": "2026-06-09T12:00:00Z"
+  },
+  {
+    "id": "dealer_lone_star_rv",
+    "legalName": "Lone Star Trail & RV LLC",
+    "dbaName": "Lone Star Trail & RV",
+    "businessCategory": "TRAILERS_POWERSPORTS_RV",
+    "dealerLicense": "TX-RV-MOCK-92711",
+    "rooftopAddress": {
+      "line1": "4900 I-35 Frontage Rd",
+      "city": "Round Rock",
+      "region": "TX",
+      "postalCode": "78681",
+      "country": "US"
+    },
+    "rooftopLat": 30.5082,
+    "rooftopLng": -97.6789,
+    "websiteUrl": "https://lonestartrailrv.example",
+    "primaryContact": {
+      "name": "Cal Brooks",
+      "email": "cal@lonestartrailrv.example",
+      "phone": "+1-512-555-0192"
+    },
+    "inventorySize": 38,
+    "desiredChannels": [
+      "google-business-profile",
+      "facebook-business-page",
+      "meta-automotive-ads",
+      "nextdoor-ads",
+      "facebook-marketplace"
+    ],
+    "documents": {},
+    "createdAt": "2026-03-12T12:00:00Z",
+    "updatedAt": "2026-06-10T06:00:00Z"
+  },
+  {
+    "id": "dealer_coastal_boats",
+    "legalName": "Coastal Bend Boats Inc",
+    "dbaName": "Coastal Bend Boats",
+    "businessCategory": "BOATS",
+    "dealerLicense": "TX-BOAT-MOCK-44021",
+    "rooftopAddress": {
+      "line1": "155 Marina Way",
+      "city": "Corpus Christi",
+      "region": "TX",
+      "postalCode": "78401",
+      "country": "US"
+    },
+    "rooftopLat": 27.7921,
+    "rooftopLng": -97.3944,
+    "websiteUrl": "https://coastalbendboats.example",
+    "primaryContact": {
+      "name": "Renee Watts",
+      "email": "renee@coastalbendboats.example",
+      "phone": "+1-361-555-0181"
+    },
+    "inventorySize": 22,
+    "desiredChannels": [
+      "google-business-profile",
+      "facebook-business-page",
+      "nextdoor-ads",
+      "boats-com"
+    ],
+    "documents": {},
+    "createdAt": "2026-03-27T12:00:00Z",
+    "updatedAt": "2026-06-08T12:00:00Z"
+  },
+  {
+    "id": "dealer_messy_motors",
+    "legalName": "Messy Motors LLC",
+    "dbaName": "Messy Motors",
+    "businessCategory": "AUTOMOTIVE",
+    "dealerLicense": null,
+    "rooftopAddress": {
+      "line1": "1200 Industrial Rd",
+      "city": "San Marcos",
+      "region": "TX",
+      "postalCode": "78666",
+      "country": "US"
+    },
+    "rooftopLat": 29.8833,
+    "rooftopLng": -97.9414,
+    "websiteUrl": null,
+    "primaryContact": {
+      "name": "Tom Iverson",
+      "email": "tom@messymotors.example",
+      "phone": "+1-512-555-0121"
+    },
+    "inventorySize": 41,
+    "desiredChannels": [
+      "facebook-business-page",
+      "google-business-profile",
+      "autotrader-us",
+      "cars-com-us"
+    ],
+    "documents": {
+      "missing": [
+        "dealerLicense",
+        "insurance"
+      ]
+    },
+    "createdAt": "2026-04-11T12:00:00Z",
+    "updatedAt": "2026-06-10T10:00:00Z"
+  },
+  {
+    "id": "dealer_premium_imports",
+    "legalName": "Premium Imports of Dallas LLC",
+    "dbaName": "Premium Imports",
+    "businessCategory": "AUTOMOTIVE",
+    "dealerLicense": "TX-MOCK-90422",
+    "rooftopAddress": {
+      "line1": "8800 Plano Rd",
+      "city": "Dallas",
+      "region": "TX",
+      "postalCode": "75238",
+      "country": "US"
+    },
+    "rooftopLat": 32.873,
+    "rooftopLng": -96.713,
+    "websiteUrl": "https://premiumimports.example",
+    "primaryContact": {
+      "name": "Nina Shah",
+      "email": "nina@premiumimports.example",
+      "phone": "+1-214-555-0117"
+    },
+    "inventorySize": 82,
+    "desiredChannels": [
+      "google-business-profile",
+      "facebook-business-page",
+      "meta-automotive-ads",
+      "microsoft-automotive-ads",
+      "x-dynamic-product-ads",
+      "nextdoor-ads",
+      "ebay-motors"
+    ],
+    "documents": {},
+    "createdAt": "2025-12-12T12:00:00Z",
+    "updatedAt": "2026-06-10T11:15:00Z"
+  }
+]

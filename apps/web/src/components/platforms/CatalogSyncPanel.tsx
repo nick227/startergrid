@@ -49,6 +49,16 @@ const CATALOG_FIELD_META: Record<string, CatalogFieldMeta> = {
     placeholder: '7300000000000000001',
     hint: 'TikTok Seller Center → Shop Management → Shop ID',
   },
+  'x-dynamic-product-ads': {
+    label: 'Catalog ID',
+    placeholder: 'xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx',
+    hint: 'X Ads Manager → Tools → Catalog Manager → select catalog',
+  },
+  'nextdoor-ads': {
+    label: 'Catalog ID',
+    placeholder: 'xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx',
+    hint: 'Nextdoor Ads Manager → Assets → Catalogs → select catalog',
+  },
 };
 
 const DEFAULT_META: CatalogFieldMeta = {

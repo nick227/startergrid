@@ -216,8 +216,10 @@ describe('PlatformAccountDetail shape', () => {
     catalogSync:      false,
     marketplaceListing: false,
     partnerFeed:      false,
+    leadSync:         false,
     connectionType:   null,
     integrationMaturity: null,
+    liveValidationNote: null,
   };
 
   it('has all required fields', () => {

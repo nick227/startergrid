@@ -1,0 +1,37 @@
+[
+  {
+    "id": "access_operator_dealer_austin_auto",
+    "operatorAccountId": "op_operator",
+    "dealershipId": "dealer_austin_auto",
+    "grantedAt": "2026-05-11T12:00:00Z",
+    "grantedBy": "op_super_admin"
+  },
+  {
+    "id": "access_operator_dealer_lone_star_rv",
+    "operatorAccountId": "op_operator",
+    "dealershipId": "dealer_lone_star_rv",
+    "grantedAt": "2026-05-11T12:00:00Z",
+    "grantedBy": "op_super_admin"
+  },
+  {
+    "id": "access_operator_dealer_coastal_boats",
+    "operatorAccountId": "op_operator",
+    "dealershipId": "dealer_coastal_boats",
+    "grantedAt": "2026-05-11T12:00:00Z",
+    "grantedBy": "op_super_admin"
+  },
+  {
+    "id": "access_operator_dealer_messy_motors",
+    "operatorAccountId": "op_operator",
+    "dealershipId": "dealer_messy_motors",
+    "grantedAt": "2026-05-11T12:00:00Z",
+    "grantedBy": "op_super_admin"
+  },
+  {
+    "id": "access_operator_dealer_premium_imports",
+    "operatorAccountId": "op_operator",
+    "dealershipId": "dealer_premium_imports",
+    "grantedAt": "2026-05-11T12:00:00Z",
+    "grantedBy": "op_super_admin"
+  }
+]

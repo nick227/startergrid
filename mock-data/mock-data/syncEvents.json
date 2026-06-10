@@ -1,0 +1,4482 @@
+[
+  {
+    "id": "syncev_dealer_austin_auto_0_0",
+    "dealershipId": "dealer_austin_auto",
+    "vehicleId": "veh_0031",
+    "platformSlug": "meta-automotive-ads",
+    "kind": "ARTIFACT_GENERATED",
+    "payload": {
+      "stockNumber": "AUSTIN1030",
+      "mock": true,
+      "message": "auth expired"
+    },
+    "syncRunId": "sync_run_dealer_austin_auto_0",
+    "createdAt": "2026-06-10T12:00:00Z"
+  },
+  {
+    "id": "syncev_dealer_austin_auto_0_1",
+    "dealershipId": "dealer_austin_auto",
+    "vehicleId": "veh_0028",
+    "platformSlug": "microsoft-automotive-ads",
+    "kind": "DISPATCH_FAILED",
+    "payload": {
+      "stockNumber": "AUSTIN1027",
+      "mock": true,
+      "message": "validation warning"
+    },
+    "syncRunId": "sync_run_dealer_austin_auto_0",
+    "createdAt": "2026-06-10T11:53:00Z"
+  },
+  {
+    "id": "syncev_dealer_austin_auto_0_2",
+    "dealershipId": "dealer_austin_auto",
+    "vehicleId": "veh_0008",
+    "platformSlug": "meta-automotive-ads",
+    "kind": "DISPATCH_RETRY",
+    "payload": {
+      "stockNumber": "AUSTIN1007",
+      "mock": true,
+      "message": "skipped"
+    },
+    "syncRunId": "sync_run_dealer_austin_auto_0",
+    "createdAt": "2026-06-10T11:46:00Z"
+  },
+  {
+    "id": "syncev_dealer_austin_auto_0_3",
+    "dealershipId": "dealer_austin_auto",
+    "vehicleId": "veh_0031",
+    "platformSlug": "autotrader-us",
+    "kind": "DISPATCH_FAILED",
+    "payload": {
+      "stockNumber": "AUSTIN1030",
+      "mock": true,
+      "message": "upserted"
+    },
+    "syncRunId": "sync_run_dealer_austin_auto_0",
+    "createdAt": "2026-06-10T11:39:00Z"
+  },
+  {
+    "id": "syncev_dealer_austin_auto_0_4",
+    "dealershipId": "dealer_austin_auto",
+    "vehicleId": "veh_0019",
+    "platformSlug": "autotrader-us",
+    "kind": "ARTIFACT_GENERATED",
+    "payload": {
+      "stockNumber": "AUSTIN1018",
+      "mock": true,
+      "message": "auth expired"
+    },
+    "syncRunId": "sync_run_dealer_austin_auto_0",
+    "createdAt": "2026-06-10T11:32:00Z"
+  },
+  {
+    "id": "syncev_dealer_austin_auto_0_5",
+    "dealershipId": "dealer_austin_auto",
+    "vehicleId": "veh_0022",
+    "platformSlug": "meta-automotive-ads",
+    "kind": "SUBMISSION_SENT",
+    "payload": {
+      "stockNumber": "AUSTIN1021",
+      "mock": true,
+      "message": "auth expired"
+    },
+    "syncRunId": "sync_run_dealer_austin_auto_0",
+    "createdAt": "2026-06-10T11:25:00Z"
+  },
+  {
+    "id": "syncev_dealer_austin_auto_0_6",
+    "dealershipId": "dealer_austin_auto",
+    "vehicleId": "veh_0029",
+    "platformSlug": "autotrader-us",
+    "kind": "DISPATCH_RETRY",
+    "payload": {
+      "stockNumber": "AUSTIN1028",
+      "mock": true,
+      "message": "auth expired"
+    },
+    "syncRunId": "sync_run_dealer_austin_auto_0",
+    "createdAt": "2026-06-10T11:18:00Z"
+  },
+  {
+    "id": "syncev_dealer_austin_auto_0_7",
+    "dealershipId": "dealer_austin_auto",
+    "vehicleId": "veh_0021",
+    "platformSlug": "owned-storefront",
+    "kind": "INVENTORY_CHANGE",
+    "payload": {
+      "stockNumber": "AUSTIN1020",
+      "mock": true,
+      "message": "skipped"
+    },
+    "syncRunId": "sync_run_dealer_austin_auto_0",
+    "createdAt": "2026-06-10T11:11:00Z"
+  },
+  {
+    "id": "syncev_dealer_austin_auto_1_0",
+    "dealershipId": "dealer_austin_auto",
+    "vehicleId": "veh_0012",
+    "platformSlug": "autotrader-us",
+    "kind": "INVENTORY_IMPORT",
+    "payload": {
+      "stockNumber": "AUSTIN1011",
+      "mock": true,
+      "message": "upserted"
+    },
+    "syncRunId": "sync_run_dealer_austin_auto_1",
+    "createdAt": "2026-06-09T12:00:00Z"
+  },
+  {
+    "id": "syncev_dealer_austin_auto_1_1",
+    "dealershipId": "dealer_austin_auto",
+    "vehicleId": "veh_0029",
+    "platformSlug": "microsoft-automotive-ads",
+    "kind": "SUBMISSION_SENT",
+    "payload": {
+      "stockNumber": "AUSTIN1028",
+      "mock": true,
+      "message": "validation warning"
+    },
+    "syncRunId": "sync_run_dealer_austin_auto_1",
+    "createdAt": "2026-06-09T11:53:00Z"
+  },
+  {
+    "id": "syncev_dealer_austin_auto_1_2",
+    "dealershipId": "dealer_austin_auto",
+    "vehicleId": "veh_0019",
+    "platformSlug": "microsoft-automotive-ads",
+    "kind": "DISPATCH_FAILED",
+    "payload": {
+      "stockNumber": "AUSTIN1018",
+      "mock": true,
+      "message": "auth expired"
+    },
+    "syncRunId": "sync_run_dealer_austin_auto_1",
+    "createdAt": "2026-06-09T11:46:00Z"
+  },
+  {
+    "id": "syncev_dealer_austin_auto_1_3",
+    "dealershipId": "dealer_austin_auto",
+    "vehicleId": "veh_0030",
+    "platformSlug": "meta-automotive-ads",
+    "kind": "ARTIFACT_GENERATED",
+    "payload": {
+      "stockNumber": "AUSTIN1029",
+      "mock": true,
+      "message": "auth expired"
+    },
+    "syncRunId": "sync_run_dealer_austin_auto_1",
+    "createdAt": "2026-06-09T11:39:00Z"
+  },
+  {
+    "id": "syncev_dealer_austin_auto_1_4",
+    "dealershipId": "dealer_austin_auto",
+    "vehicleId": "veh_0021",
+    "platformSlug": "ebay-motors",
+    "kind": "ACCOUNT_UPDATED",
+    "payload": {
+      "stockNumber": "AUSTIN1020",
+      "mock": true,
+      "message": "upserted"
+    },
+    "syncRunId": "sync_run_dealer_austin_auto_1",
+    "createdAt": "2026-06-09T11:32:00Z"
+  },
+  {
+    "id": "syncev_dealer_austin_auto_1_5",
+    "dealershipId": "dealer_austin_auto",
+    "vehicleId": "veh_0002",
+    "platformSlug": "autotrader-us",
+    "kind": "INVENTORY_IMPORT",
+    "payload": {
+      "stockNumber": "AUSTIN1001",
+      "mock": true,
+      "message": "skipped"
+    },
+    "syncRunId": "sync_run_dealer_austin_auto_1",
+    "createdAt": "2026-06-09T11:25:00Z"
+  },
+  {
+    "id": "syncev_dealer_austin_auto_1_6",
+    "dealershipId": "dealer_austin_auto",
+    "vehicleId": "veh_0005",
+    "platformSlug": "meta-automotive-ads",
+    "kind": "ARTIFACT_GENERATED",
+    "payload": {
+      "stockNumber": "AUSTIN1004",
+      "mock": true,
+      "message": "validation warning"
+    },
+    "syncRunId": "sync_run_dealer_austin_auto_1",
+    "createdAt": "2026-06-09T11:18:00Z"
+  },
+  {
+    "id": "syncev_dealer_austin_auto_1_7",
+    "dealershipId": "dealer_austin_auto",
+    "vehicleId": "veh_0012",
+    "platformSlug": "microsoft-automotive-ads",
+    "kind": "ARTIFACT_GENERATED",
+    "payload": {
+      "stockNumber": "AUSTIN1011",
+      "mock": true,
+      "message": "auth expired"
+    },
+    "syncRunId": "sync_run_dealer_austin_auto_1",
+    "createdAt": "2026-06-09T11:11:00Z"
+  },
+  {
+    "id": "syncev_dealer_austin_auto_2_0",
+    "dealershipId": "dealer_austin_auto",
+    "vehicleId": "veh_0002",
+    "platformSlug": "ebay-motors",
+    "kind": "ARTIFACT_GENERATED",
+    "payload": {
+      "stockNumber": "AUSTIN1001",
+      "mock": true,
+      "message": "rate limited"
+    },
+    "syncRunId": "sync_run_dealer_austin_auto_2",
+    "createdAt": "2026-06-08T12:00:00Z"
+  },
+  {
+    "id": "syncev_dealer_austin_auto_2_1",
+    "dealershipId": "dealer_austin_auto",
+    "vehicleId": "veh_0021",
+    "platformSlug": "meta-automotive-ads",
+    "kind": "INVENTORY_IMPORT",
+    "payload": {
+      "stockNumber": "AUSTIN1020",
+      "mock": true,
+      "message": "auth expired"
+    },
+    "syncRunId": "sync_run_dealer_austin_auto_2",
+    "createdAt": "2026-06-08T11:53:00Z"
+  },
+  {
+    "id": "syncev_dealer_austin_auto_2_2",
+    "dealershipId": "dealer_austin_auto",
+    "vehicleId": "veh_0023",
+    "platformSlug": "autotrader-us",
+    "kind": "SUBMISSION_SENT",
+    "payload": {
+      "stockNumber": "AUSTIN1022",
+      "mock": true,
+      "message": "validation warning"
+    },
+    "syncRunId": "sync_run_dealer_austin_auto_2",
+    "createdAt": "2026-06-08T11:46:00Z"
+  },
+  {
+    "id": "syncev_dealer_austin_auto_2_3",
+    "dealershipId": "dealer_austin_auto",
+    "vehicleId": "veh_0006",
+    "platformSlug": "ebay-motors",
+    "kind": "ACCOUNT_UPDATED",
+    "payload": {
+      "stockNumber": "AUSTIN1005",
+      "mock": true,
+      "message": "upserted"
+    },
+    "syncRunId": "sync_run_dealer_austin_auto_2",
+    "createdAt": "2026-06-08T11:39:00Z"
+  },
+  {
+    "id": "syncev_dealer_austin_auto_2_4",
+    "dealershipId": "dealer_austin_auto",
+    "vehicleId": "veh_0013",
+    "platformSlug": "microsoft-automotive-ads",
+    "kind": "ARTIFACT_GENERATED",
+    "payload": {
+      "stockNumber": "AUSTIN1012",
+      "mock": true,
+      "message": "upserted"
+    },
+    "syncRunId": "sync_run_dealer_austin_auto_2",
+    "createdAt": "2026-06-08T11:32:00Z"
+  },
+  {
+    "id": "syncev_dealer_austin_auto_2_5",
+    "dealershipId": "dealer_austin_auto",
+    "vehicleId": "veh_0019",
+    "platformSlug": "microsoft-automotive-ads",
+    "kind": "DISPATCH_RETRY",
+    "payload": {
+      "stockNumber": "AUSTIN1018",
+      "mock": true,
+      "message": "rate limited"
+    },
+    "syncRunId": "sync_run_dealer_austin_auto_2",
+    "createdAt": "2026-06-08T11:25:00Z"
+  },
+  {
+    "id": "syncev_dealer_austin_auto_2_6",
+    "dealershipId": "dealer_austin_auto",
+    "vehicleId": "veh_0009",
+    "platformSlug": "ebay-motors",
+    "kind": "SUBMISSION_SENT",
+    "payload": {
+      "stockNumber": "AUSTIN1008",
+      "mock": true,
+      "message": "auth expired"
+    },
+    "syncRunId": "sync_run_dealer_austin_auto_2",
+    "createdAt": "2026-06-08T11:18:00Z"
+  },
+  {
+    "id": "syncev_dealer_austin_auto_2_7",
+    "dealershipId": "dealer_austin_auto",
+    "vehicleId": "veh_0012",
+    "platformSlug": "owned-storefront",
+    "kind": "INVENTORY_IMPORT",
+    "payload": {
+      "stockNumber": "AUSTIN1011",
+      "mock": true,
+      "message": "validation warning"
+    },
+    "syncRunId": "sync_run_dealer_austin_auto_2",
+    "createdAt": "2026-06-08T11:11:00Z"
+  },
+  {
+    "id": "syncev_dealer_austin_auto_3_0",
+    "dealershipId": "dealer_austin_auto",
+    "vehicleId": "veh_0031",
+    "platformSlug": "owned-storefront",
+    "kind": "ACCOUNT_UPDATED",
+    "payload": {
+      "stockNumber": "AUSTIN1030",
+      "mock": true,
+      "message": "skipped"
+    },
+    "syncRunId": "sync_run_dealer_austin_auto_3",
+    "createdAt": "2026-06-07T12:00:00Z"
+  },
+  {
+    "id": "syncev_dealer_austin_auto_3_1",
+    "dealershipId": "dealer_austin_auto",
+    "vehicleId": "veh_0005",
+    "platformSlug": "meta-automotive-ads",
+    "kind": "SUBMISSION_SENT",
+    "payload": {
+      "stockNumber": "AUSTIN1004",
+      "mock": true,
+      "message": "upserted"
+    },
+    "syncRunId": "sync_run_dealer_austin_auto_3",
+    "createdAt": "2026-06-07T11:53:00Z"
+  },
+  {
+    "id": "syncev_dealer_austin_auto_3_2",
+    "dealershipId": "dealer_austin_auto",
+    "vehicleId": "veh_0001",
+    "platformSlug": "meta-automotive-ads",
+    "kind": "INVENTORY_CHANGE",
+    "payload": {
+      "stockNumber": "AUSTIN1000",
+      "mock": true,
+      "message": "validation warning"
+    },
+    "syncRunId": "sync_run_dealer_austin_auto_3",
+    "createdAt": "2026-06-07T11:46:00Z"
+  },
+  {
+    "id": "syncev_dealer_austin_auto_3_3",
+    "dealershipId": "dealer_austin_auto",
+    "vehicleId": "veh_0030",
+    "platformSlug": "owned-storefront",
+    "kind": "INVENTORY_CHANGE",
+    "payload": {
+      "stockNumber": "AUSTIN1029",
+      "mock": true,
+      "message": "rate limited"
+    },
+    "syncRunId": "sync_run_dealer_austin_auto_3",
+    "createdAt": "2026-06-07T11:39:00Z"
+  },
+  {
+    "id": "syncev_dealer_austin_auto_3_4",
+    "dealershipId": "dealer_austin_auto",
+    "vehicleId": "veh_0023",
+    "platformSlug": "autotrader-us",
+    "kind": "ACCOUNT_UPDATED",
+    "payload": {
+      "stockNumber": "AUSTIN1022",
+      "mock": true,
+      "message": "auth expired"
+    },
+    "syncRunId": "sync_run_dealer_austin_auto_3",
+    "createdAt": "2026-06-07T11:32:00Z"
+  },
+  {
+    "id": "syncev_dealer_austin_auto_3_5",
+    "dealershipId": "dealer_austin_auto",
+    "vehicleId": "veh_0007",
+    "platformSlug": "meta-automotive-ads",
+    "kind": "DISPATCH_RETRY",
+    "payload": {
+      "stockNumber": "AUSTIN1006",
+      "mock": true,
+      "message": "upserted"
+    },
+    "syncRunId": "sync_run_dealer_austin_auto_3",
+    "createdAt": "2026-06-07T11:25:00Z"
+  },
+  {
+    "id": "syncev_dealer_austin_auto_3_6",
+    "dealershipId": "dealer_austin_auto",
+    "vehicleId": "veh_0022",
+    "platformSlug": "meta-automotive-ads",
+    "kind": "ACCOUNT_UPDATED",
+    "payload": {
+      "stockNumber": "AUSTIN1021",
+      "mock": true,
+      "message": "skipped"
+    },
+    "syncRunId": "sync_run_dealer_austin_auto_3",
+    "createdAt": "2026-06-07T11:18:00Z"
+  },
+  {
+    "id": "syncev_dealer_austin_auto_3_7",
+    "dealershipId": "dealer_austin_auto",
+    "vehicleId": "veh_0032",
+    "platformSlug": "meta-automotive-ads",
+    "kind": "DISPATCH_FAILED",
+    "payload": {
+      "stockNumber": "AUSTIN1031",
+      "mock": true,
+      "message": "rate limited"
+    },
+    "syncRunId": "sync_run_dealer_austin_auto_3",
+    "createdAt": "2026-06-07T11:11:00Z"
+  },
+  {
+    "id": "syncev_dealer_austin_auto_4_0",
+    "dealershipId": "dealer_austin_auto",
+    "vehicleId": "veh_0013",
+    "platformSlug": "owned-storefront",
+    "kind": "SUBMISSION_SENT",
+    "payload": {
+      "stockNumber": "AUSTIN1012",
+      "mock": true,
+      "message": "rate limited"
+    },
+    "syncRunId": "sync_run_dealer_austin_auto_4",
+    "createdAt": "2026-06-06T12:00:00Z"
+  },
+  {
+    "id": "syncev_dealer_austin_auto_4_1",
+    "dealershipId": "dealer_austin_auto",
+    "vehicleId": "veh_0032",
+    "platformSlug": "ebay-motors",
+    "kind": "SUBMISSION_SENT",
+    "payload": {
+      "stockNumber": "AUSTIN1031",
+      "mock": true,
+      "message": "skipped"
+    },
+    "syncRunId": "sync_run_dealer_austin_auto_4",
+    "createdAt": "2026-06-06T11:53:00Z"
+  },
+  {
+    "id": "syncev_dealer_austin_auto_4_2",
+    "dealershipId": "dealer_austin_auto",
+    "vehicleId": "veh_0006",
+    "platformSlug": "ebay-motors",
+    "kind": "SUBMISSION_SENT",
+    "payload": {
+      "stockNumber": "AUSTIN1005",
+      "mock": true,
+      "message": "validation warning"
+    },
+    "syncRunId": "sync_run_dealer_austin_auto_4",
+    "createdAt": "2026-06-06T11:46:00Z"
+  },
+  {
+    "id": "syncev_dealer_austin_auto_4_3",
+    "dealershipId": "dealer_austin_auto",
+    "vehicleId": "veh_0009",
+    "platformSlug": "ebay-motors",
+    "kind": "DISPATCH_FAILED",
+    "payload": {
+      "stockNumber": "AUSTIN1008",
+      "mock": true,
+      "message": "upserted"
+    },
+    "syncRunId": "sync_run_dealer_austin_auto_4",
+    "createdAt": "2026-06-06T11:39:00Z"
+  },
+  {
+    "id": "syncev_dealer_austin_auto_4_4",
+    "dealershipId": "dealer_austin_auto",
+    "vehicleId": "veh_0031",
+    "platformSlug": "meta-automotive-ads",
+    "kind": "DISPATCH_RETRY",
+    "payload": {
+      "stockNumber": "AUSTIN1030",
+      "mock": true,
+      "message": "validation warning"
+    },
+    "syncRunId": "sync_run_dealer_austin_auto_4",
+    "createdAt": "2026-06-06T11:32:00Z"
+  },
+  {
+    "id": "syncev_dealer_austin_auto_4_5",
+    "dealershipId": "dealer_austin_auto",
+    "vehicleId": "veh_0029",
+    "platformSlug": "microsoft-automotive-ads",
+    "kind": "ARTIFACT_GENERATED",
+    "payload": {
+      "stockNumber": "AUSTIN1028",
+      "mock": true,
+      "message": "auth expired"
+    },
+    "syncRunId": "sync_run_dealer_austin_auto_4",
+    "createdAt": "2026-06-06T11:25:00Z"
+  },
+  {
+    "id": "syncev_dealer_austin_auto_4_6",
+    "dealershipId": "dealer_austin_auto",
+    "vehicleId": "veh_0018",
+    "platformSlug": "microsoft-automotive-ads",
+    "kind": "ACCOUNT_UPDATED",
+    "payload": {
+      "stockNumber": "AUSTIN1017",
+      "mock": true,
+      "message": "validation warning"
+    },
+    "syncRunId": "sync_run_dealer_austin_auto_4",
+    "createdAt": "2026-06-06T11:18:00Z"
+  },
+  {
+    "id": "syncev_dealer_austin_auto_4_7",
+    "dealershipId": "dealer_austin_auto",
+    "vehicleId": "veh_0024",
+    "platformSlug": "autotrader-us",
+    "kind": "DISPATCH_RETRY",
+    "payload": {
+      "stockNumber": "AUSTIN1023",
+      "mock": true,
+      "message": "validation warning"
+    },
+    "syncRunId": "sync_run_dealer_austin_auto_4",
+    "createdAt": "2026-06-06T11:11:00Z"
+  },
+  {
+    "id": "syncev_dealer_austin_auto_5_0",
+    "dealershipId": "dealer_austin_auto",
+    "vehicleId": "veh_0013",
+    "platformSlug": "meta-automotive-ads",
+    "kind": "INVENTORY_IMPORT",
+    "payload": {
+      "stockNumber": "AUSTIN1012",
+      "mock": true,
+      "message": "rate limited"
+    },
+    "syncRunId": "sync_run_dealer_austin_auto_5",
+    "createdAt": "2026-06-05T12:00:00Z"
+  },
+  {
+    "id": "syncev_dealer_austin_auto_5_1",
+    "dealershipId": "dealer_austin_auto",
+    "vehicleId": "veh_0032",
+    "platformSlug": "microsoft-automotive-ads",
+    "kind": "ACCOUNT_UPDATED",
+    "payload": {
+      "stockNumber": "AUSTIN1031",
+      "mock": true,
+      "message": "upserted"
+    },
+    "syncRunId": "sync_run_dealer_austin_auto_5",
+    "createdAt": "2026-06-05T11:53:00Z"
+  },
+  {
+    "id": "syncev_dealer_austin_auto_5_2",
+    "dealershipId": "dealer_austin_auto",
+    "vehicleId": "veh_0017",
+    "platformSlug": "autotrader-us",
+    "kind": "ACCOUNT_UPDATED",
+    "payload": {
+      "stockNumber": "AUSTIN1016",
+      "mock": true,
+      "message": "skipped"
+    },
+    "syncRunId": "sync_run_dealer_austin_auto_5",
+    "createdAt": "2026-06-05T11:46:00Z"
+  },
+  {
+    "id": "syncev_dealer_austin_auto_5_3",
+    "dealershipId": "dealer_austin_auto",
+    "vehicleId": "veh_0008",
+    "platformSlug": "autotrader-us",
+    "kind": "DISPATCH_FAILED",
+    "payload": {
+      "stockNumber": "AUSTIN1007",
+      "mock": true,
+      "message": "validation warning"
+    },
+    "syncRunId": "sync_run_dealer_austin_auto_5",
+    "createdAt": "2026-06-05T11:39:00Z"
+  },
+  {
+    "id": "syncev_dealer_austin_auto_5_4",
+    "dealershipId": "dealer_austin_auto",
+    "vehicleId": "veh_0010",
+    "platformSlug": "owned-storefront",
+    "kind": "DISPATCH_FAILED",
+    "payload": {
+      "stockNumber": "AUSTIN1009",
+      "mock": true,
+      "message": "validation warning"
+    },
+    "syncRunId": "sync_run_dealer_austin_auto_5",
+    "createdAt": "2026-06-05T11:32:00Z"
+  },
+  {
+    "id": "syncev_dealer_austin_auto_5_5",
+    "dealershipId": "dealer_austin_auto",
+    "vehicleId": "veh_0010",
+    "platformSlug": "ebay-motors",
+    "kind": "DISPATCH_RETRY",
+    "payload": {
+      "stockNumber": "AUSTIN1009",
+      "mock": true,
+      "message": "auth expired"
+    },
+    "syncRunId": "sync_run_dealer_austin_auto_5",
+    "createdAt": "2026-06-05T11:25:00Z"
+  },
+  {
+    "id": "syncev_dealer_austin_auto_5_6",
+    "dealershipId": "dealer_austin_auto",
+    "vehicleId": "veh_0015",
+    "platformSlug": "meta-automotive-ads",
+    "kind": "INVENTORY_IMPORT",
+    "payload": {
+      "stockNumber": "AUSTIN1014",
+      "mock": true,
+      "message": "rate limited"
+    },
+    "syncRunId": "sync_run_dealer_austin_auto_5",
+    "createdAt": "2026-06-05T11:18:00Z"
+  },
+  {
+    "id": "syncev_dealer_austin_auto_5_7",
+    "dealershipId": "dealer_austin_auto",
+    "vehicleId": "veh_0023",
+    "platformSlug": "microsoft-automotive-ads",
+    "kind": "INVENTORY_IMPORT",
+    "payload": {
+      "stockNumber": "AUSTIN1022",
+      "mock": true,
+      "message": "validation warning"
+    },
+    "syncRunId": "sync_run_dealer_austin_auto_5",
+    "createdAt": "2026-06-05T11:11:00Z"
+  },
+  {
+    "id": "syncev_dealer_austin_auto_6_0",
+    "dealershipId": "dealer_austin_auto",
+    "vehicleId": "veh_0030",
+    "platformSlug": "microsoft-automotive-ads",
+    "kind": "DISPATCH_RETRY",
+    "payload": {
+      "stockNumber": "AUSTIN1029",
+      "mock": true,
+      "message": "upserted"
+    },
+    "syncRunId": "sync_run_dealer_austin_auto_6",
+    "createdAt": "2026-06-04T12:00:00Z"
+  },
+  {
+    "id": "syncev_dealer_austin_auto_6_1",
+    "dealershipId": "dealer_austin_auto",
+    "vehicleId": "veh_0027",
+    "platformSlug": "microsoft-automotive-ads",
+    "kind": "DISPATCH_FAILED",
+    "payload": {
+      "stockNumber": "AUSTIN1026",
+      "mock": true,
+      "message": "auth expired"
+    },
+    "syncRunId": "sync_run_dealer_austin_auto_6",
+    "createdAt": "2026-06-04T11:53:00Z"
+  },
+  {
+    "id": "syncev_dealer_austin_auto_6_2",
+    "dealershipId": "dealer_austin_auto",
+    "vehicleId": "veh_0029",
+    "platformSlug": "microsoft-automotive-ads",
+    "kind": "DISPATCH_RETRY",
+    "payload": {
+      "stockNumber": "AUSTIN1028",
+      "mock": true,
+      "message": "rate limited"
+    },
+    "syncRunId": "sync_run_dealer_austin_auto_6",
+    "createdAt": "2026-06-04T11:46:00Z"
+  },
+  {
+    "id": "syncev_dealer_austin_auto_6_3",
+    "dealershipId": "dealer_austin_auto",
+    "vehicleId": "veh_0032",
+    "platformSlug": "meta-automotive-ads",
+    "kind": "DISPATCH_FAILED",
+    "payload": {
+      "stockNumber": "AUSTIN1031",
+      "mock": true,
+      "message": "rate limited"
+    },
+    "syncRunId": "sync_run_dealer_austin_auto_6",
+    "createdAt": "2026-06-04T11:39:00Z"
+  },
+  {
+    "id": "syncev_dealer_austin_auto_6_4",
+    "dealershipId": "dealer_austin_auto",
+    "vehicleId": "veh_0002",
+    "platformSlug": "autotrader-us",
+    "kind": "DISPATCH_FAILED",
+    "payload": {
+      "stockNumber": "AUSTIN1001",
+      "mock": true,
+      "message": "rate limited"
+    },
+    "syncRunId": "sync_run_dealer_austin_auto_6",
+    "createdAt": "2026-06-04T11:32:00Z"
+  },
+  {
+    "id": "syncev_dealer_austin_auto_6_5",
+    "dealershipId": "dealer_austin_auto",
+    "vehicleId": "veh_0002",
+    "platformSlug": "meta-automotive-ads",
+    "kind": "DISPATCH_RETRY",
+    "payload": {
+      "stockNumber": "AUSTIN1001",
+      "mock": true,
+      "message": "auth expired"
+    },
+    "syncRunId": "sync_run_dealer_austin_auto_6",
+    "createdAt": "2026-06-04T11:25:00Z"
+  },
+  {
+    "id": "syncev_dealer_austin_auto_6_6",
+    "dealershipId": "dealer_austin_auto",
+    "vehicleId": "veh_0011",
+    "platformSlug": "autotrader-us",
+    "kind": "INVENTORY_CHANGE",
+    "payload": {
+      "stockNumber": "AUSTIN1010",
+      "mock": true,
+      "message": "upserted"
+    },
+    "syncRunId": "sync_run_dealer_austin_auto_6",
+    "createdAt": "2026-06-04T11:18:00Z"
+  },
+  {
+    "id": "syncev_dealer_austin_auto_6_7",
+    "dealershipId": "dealer_austin_auto",
+    "vehicleId": "veh_0005",
+    "platformSlug": "ebay-motors",
+    "kind": "ARTIFACT_GENERATED",
+    "payload": {
+      "stockNumber": "AUSTIN1004",
+      "mock": true,
+      "message": "auth expired"
+    },
+    "syncRunId": "sync_run_dealer_austin_auto_6",
+    "createdAt": "2026-06-04T11:11:00Z"
+  },
+  {
+    "id": "syncev_dealer_austin_auto_7_0",
+    "dealershipId": "dealer_austin_auto",
+    "vehicleId": "veh_0005",
+    "platformSlug": "meta-automotive-ads",
+    "kind": "DISPATCH_RETRY",
+    "payload": {
+      "stockNumber": "AUSTIN1004",
+      "mock": true,
+      "message": "validation warning"
+    },
+    "syncRunId": "sync_run_dealer_austin_auto_7",
+    "createdAt": "2026-06-03T12:00:00Z"
+  },
+  {
+    "id": "syncev_dealer_austin_auto_7_1",
+    "dealershipId": "dealer_austin_auto",
+    "vehicleId": "veh_0030",
+    "platformSlug": "microsoft-automotive-ads",
+    "kind": "DISPATCH_FAILED",
+    "payload": {
+      "stockNumber": "AUSTIN1029",
+      "mock": true,
+      "message": "auth expired"
+    },
+    "syncRunId": "sync_run_dealer_austin_auto_7",
+    "createdAt": "2026-06-03T11:53:00Z"
+  },
+  {
+    "id": "syncev_dealer_austin_auto_7_2",
+    "dealershipId": "dealer_austin_auto",
+    "vehicleId": "veh_0017",
+    "platformSlug": "owned-storefront",
+    "kind": "ACCOUNT_UPDATED",
+    "payload": {
+      "stockNumber": "AUSTIN1016",
+      "mock": true,
+      "message": "auth expired"
+    },
+    "syncRunId": "sync_run_dealer_austin_auto_7",
+    "createdAt": "2026-06-03T11:46:00Z"
+  },
+  {
+    "id": "syncev_dealer_austin_auto_7_3",
+    "dealershipId": "dealer_austin_auto",
+    "vehicleId": "veh_0030",
+    "platformSlug": "owned-storefront",
+    "kind": "SUBMISSION_SENT",
+    "payload": {
+      "stockNumber": "AUSTIN1029",
+      "mock": true,
+      "message": "auth expired"
+    },
+    "syncRunId": "sync_run_dealer_austin_auto_7",
+    "createdAt": "2026-06-03T11:39:00Z"
+  },
+  {
+    "id": "syncev_dealer_austin_auto_7_4",
+    "dealershipId": "dealer_austin_auto",
+    "vehicleId": "veh_0007",
+    "platformSlug": "owned-storefront",
+    "kind": "INVENTORY_CHANGE",
+    "payload": {
+      "stockNumber": "AUSTIN1006",
+      "mock": true,
+      "message": "validation warning"
+    },
+    "syncRunId": "sync_run_dealer_austin_auto_7",
+    "createdAt": "2026-06-03T11:32:00Z"
+  },
+  {
+    "id": "syncev_dealer_austin_auto_7_5",
+    "dealershipId": "dealer_austin_auto",
+    "vehicleId": "veh_0026",
+    "platformSlug": "autotrader-us",
+    "kind": "ARTIFACT_GENERATED",
+    "payload": {
+      "stockNumber": "AUSTIN1025",
+      "mock": true,
+      "message": "rate limited"
+    },
+    "syncRunId": "sync_run_dealer_austin_auto_7",
+    "createdAt": "2026-06-03T11:25:00Z"
+  },
+  {
+    "id": "syncev_dealer_austin_auto_7_6",
+    "dealershipId": "dealer_austin_auto",
+    "vehicleId": "veh_0023",
+    "platformSlug": "autotrader-us",
+    "kind": "SUBMISSION_SENT",
+    "payload": {
+      "stockNumber": "AUSTIN1022",
+      "mock": true,
+      "message": "rate limited"
+    },
+    "syncRunId": "sync_run_dealer_austin_auto_7",
+    "createdAt": "2026-06-03T11:18:00Z"
+  },
+  {
+    "id": "syncev_dealer_austin_auto_7_7",
+    "dealershipId": "dealer_austin_auto",
+    "vehicleId": "veh_0003",
+    "platformSlug": "ebay-motors",
+    "kind": "SUBMISSION_SENT",
+    "payload": {
+      "stockNumber": "AUSTIN1002",
+      "mock": true,
+      "message": "rate limited"
+    },
+    "syncRunId": "sync_run_dealer_austin_auto_7",
+    "createdAt": "2026-06-03T11:11:00Z"
+  },
+  {
+    "id": "syncev_dealer_lone_star_rv_0_0",
+    "dealershipId": "dealer_lone_star_rv",
+    "vehicleId": "veh_0035",
+    "platformSlug": "microsoft-automotive-ads",
+    "kind": "DISPATCH_RETRY",
+    "payload": {
+      "stockNumber": "LONE1002",
+      "mock": true,
+      "message": "validation warning"
+    },
+    "syncRunId": "sync_run_dealer_lone_star_rv_0",
+    "createdAt": "2026-06-10T12:00:00Z"
+  },
+  {
+    "id": "syncev_dealer_lone_star_rv_0_1",
+    "dealershipId": "dealer_lone_star_rv",
+    "vehicleId": "veh_0039",
+    "platformSlug": "autotrader-us",
+    "kind": "DISPATCH_FAILED",
+    "payload": {
+      "stockNumber": "LONE1006",
+      "mock": true,
+      "message": "skipped"
+    },
+    "syncRunId": "sync_run_dealer_lone_star_rv_0",
+    "createdAt": "2026-06-10T11:53:00Z"
+  },
+  {
+    "id": "syncev_dealer_lone_star_rv_0_2",
+    "dealershipId": "dealer_lone_star_rv",
+    "vehicleId": "veh_0035",
+    "platformSlug": "meta-automotive-ads",
+    "kind": "INVENTORY_IMPORT",
+    "payload": {
+      "stockNumber": "LONE1002",
+      "mock": true,
+      "message": "skipped"
+    },
+    "syncRunId": "sync_run_dealer_lone_star_rv_0",
+    "createdAt": "2026-06-10T11:46:00Z"
+  },
+  {
+    "id": "syncev_dealer_lone_star_rv_0_3",
+    "dealershipId": "dealer_lone_star_rv",
+    "vehicleId": "veh_0039",
+    "platformSlug": "meta-automotive-ads",
+    "kind": "INVENTORY_CHANGE",
+    "payload": {
+      "stockNumber": "LONE1006",
+      "mock": true,
+      "message": "upserted"
+    },
+    "syncRunId": "sync_run_dealer_lone_star_rv_0",
+    "createdAt": "2026-06-10T11:39:00Z"
+  },
+  {
+    "id": "syncev_dealer_lone_star_rv_0_4",
+    "dealershipId": "dealer_lone_star_rv",
+    "vehicleId": "veh_0041",
+    "platformSlug": "microsoft-automotive-ads",
+    "kind": "ACCOUNT_UPDATED",
+    "payload": {
+      "stockNumber": "LONE1008",
+      "mock": true,
+      "message": "skipped"
+    },
+    "syncRunId": "sync_run_dealer_lone_star_rv_0",
+    "createdAt": "2026-06-10T11:32:00Z"
+  },
+  {
+    "id": "syncev_dealer_lone_star_rv_0_5",
+    "dealershipId": "dealer_lone_star_rv",
+    "vehicleId": "veh_0034",
+    "platformSlug": "autotrader-us",
+    "kind": "INVENTORY_CHANGE",
+    "payload": {
+      "stockNumber": "LONE1001",
+      "mock": true,
+      "message": "rate limited"
+    },
+    "syncRunId": "sync_run_dealer_lone_star_rv_0",
+    "createdAt": "2026-06-10T11:25:00Z"
+  },
+  {
+    "id": "syncev_dealer_lone_star_rv_0_6",
+    "dealershipId": "dealer_lone_star_rv",
+    "vehicleId": "veh_0036",
+    "platformSlug": "ebay-motors",
+    "kind": "DISPATCH_FAILED",
+    "payload": {
+      "stockNumber": "LONE1003",
+      "mock": true,
+      "message": "auth expired"
+    },
+    "syncRunId": "sync_run_dealer_lone_star_rv_0",
+    "createdAt": "2026-06-10T11:18:00Z"
+  },
+  {
+    "id": "syncev_dealer_lone_star_rv_0_7",
+    "dealershipId": "dealer_lone_star_rv",
+    "vehicleId": "veh_0043",
+    "platformSlug": "meta-automotive-ads",
+    "kind": "ARTIFACT_GENERATED",
+    "payload": {
+      "stockNumber": "LONE1010",
+      "mock": true,
+      "message": "upserted"
+    },
+    "syncRunId": "sync_run_dealer_lone_star_rv_0",
+    "createdAt": "2026-06-10T11:11:00Z"
+  },
+  {
+    "id": "syncev_dealer_lone_star_rv_1_0",
+    "dealershipId": "dealer_lone_star_rv",
+    "vehicleId": "veh_0039",
+    "platformSlug": "autotrader-us",
+    "kind": "INVENTORY_CHANGE",
+    "payload": {
+      "stockNumber": "LONE1006",
+      "mock": true,
+      "message": "rate limited"
+    },
+    "syncRunId": "sync_run_dealer_lone_star_rv_1",
+    "createdAt": "2026-06-09T12:00:00Z"
+  },
+  {
+    "id": "syncev_dealer_lone_star_rv_1_1",
+    "dealershipId": "dealer_lone_star_rv",
+    "vehicleId": "veh_0044",
+    "platformSlug": "autotrader-us",
+    "kind": "ARTIFACT_GENERATED",
+    "payload": {
+      "stockNumber": "LONE1011",
+      "mock": true,
+      "message": "rate limited"
+    },
+    "syncRunId": "sync_run_dealer_lone_star_rv_1",
+    "createdAt": "2026-06-09T11:53:00Z"
+  },
+  {
+    "id": "syncev_dealer_lone_star_rv_1_2",
+    "dealershipId": "dealer_lone_star_rv",
+    "vehicleId": "veh_0036",
+    "platformSlug": "meta-automotive-ads",
+    "kind": "SUBMISSION_SENT",
+    "payload": {
+      "stockNumber": "LONE1003",
+      "mock": true,
+      "message": "rate limited"
+    },
+    "syncRunId": "sync_run_dealer_lone_star_rv_1",
+    "createdAt": "2026-06-09T11:46:00Z"
+  },
+  {
+    "id": "syncev_dealer_lone_star_rv_1_3",
+    "dealershipId": "dealer_lone_star_rv",
+    "vehicleId": "veh_0040",
+    "platformSlug": "ebay-motors",
+    "kind": "DISPATCH_FAILED",
+    "payload": {
+      "stockNumber": "LONE1007",
+      "mock": true,
+      "message": "auth expired"
+    },
+    "syncRunId": "sync_run_dealer_lone_star_rv_1",
+    "createdAt": "2026-06-09T11:39:00Z"
+  },
+  {
+    "id": "syncev_dealer_lone_star_rv_1_4",
+    "dealershipId": "dealer_lone_star_rv",
+    "vehicleId": "veh_0035",
+    "platformSlug": "ebay-motors",
+    "kind": "INVENTORY_IMPORT",
+    "payload": {
+      "stockNumber": "LONE1002",
+      "mock": true,
+      "message": "validation warning"
+    },
+    "syncRunId": "sync_run_dealer_lone_star_rv_1",
+    "createdAt": "2026-06-09T11:32:00Z"
+  },
+  {
+    "id": "syncev_dealer_lone_star_rv_1_5",
+    "dealershipId": "dealer_lone_star_rv",
+    "vehicleId": "veh_0043",
+    "platformSlug": "autotrader-us",
+    "kind": "INVENTORY_IMPORT",
+    "payload": {
+      "stockNumber": "LONE1010",
+      "mock": true,
+      "message": "rate limited"
+    },
+    "syncRunId": "sync_run_dealer_lone_star_rv_1",
+    "createdAt": "2026-06-09T11:25:00Z"
+  },
+  {
+    "id": "syncev_dealer_lone_star_rv_1_6",
+    "dealershipId": "dealer_lone_star_rv",
+    "vehicleId": "veh_0035",
+    "platformSlug": "autotrader-us",
+    "kind": "INVENTORY_IMPORT",
+    "payload": {
+      "stockNumber": "LONE1002",
+      "mock": true,
+      "message": "rate limited"
+    },
+    "syncRunId": "sync_run_dealer_lone_star_rv_1",
+    "createdAt": "2026-06-09T11:18:00Z"
+  },
+  {
+    "id": "syncev_dealer_lone_star_rv_1_7",
+    "dealershipId": "dealer_lone_star_rv",
+    "vehicleId": "veh_0038",
+    "platformSlug": "autotrader-us",
+    "kind": "SUBMISSION_SENT",
+    "payload": {
+      "stockNumber": "LONE1005",
+      "mock": true,
+      "message": "upserted"
+    },
+    "syncRunId": "sync_run_dealer_lone_star_rv_1",
+    "createdAt": "2026-06-09T11:11:00Z"
+  },
+  {
+    "id": "syncev_dealer_lone_star_rv_2_0",
+    "dealershipId": "dealer_lone_star_rv",
+    "vehicleId": "veh_0040",
+    "platformSlug": "ebay-motors",
+    "kind": "DISPATCH_RETRY",
+    "payload": {
+      "stockNumber": "LONE1007",
+      "mock": true,
+      "message": "validation warning"
+    },
+    "syncRunId": "sync_run_dealer_lone_star_rv_2",
+    "createdAt": "2026-06-08T12:00:00Z"
+  },
+  {
+    "id": "syncev_dealer_lone_star_rv_2_1",
+    "dealershipId": "dealer_lone_star_rv",
+    "vehicleId": "veh_0039",
+    "platformSlug": "microsoft-automotive-ads",
+    "kind": "ACCOUNT_UPDATED",
+    "payload": {
+      "stockNumber": "LONE1006",
+      "mock": true,
+      "message": "skipped"
+    },
+    "syncRunId": "sync_run_dealer_lone_star_rv_2",
+    "createdAt": "2026-06-08T11:53:00Z"
+  },
+  {
+    "id": "syncev_dealer_lone_star_rv_2_2",
+    "dealershipId": "dealer_lone_star_rv",
+    "vehicleId": "veh_0038",
+    "platformSlug": "meta-automotive-ads",
+    "kind": "INVENTORY_CHANGE",
+    "payload": {
+      "stockNumber": "LONE1005",
+      "mock": true,
+      "message": "skipped"
+    },
+    "syncRunId": "sync_run_dealer_lone_star_rv_2",
+    "createdAt": "2026-06-08T11:46:00Z"
+  },
+  {
+    "id": "syncev_dealer_lone_star_rv_2_3",
+    "dealershipId": "dealer_lone_star_rv",
+    "vehicleId": "veh_0036",
+    "platformSlug": "ebay-motors",
+    "kind": "ARTIFACT_GENERATED",
+    "payload": {
+      "stockNumber": "LONE1003",
+      "mock": true,
+      "message": "auth expired"
+    },
+    "syncRunId": "sync_run_dealer_lone_star_rv_2",
+    "createdAt": "2026-06-08T11:39:00Z"
+  },
+  {
+    "id": "syncev_dealer_lone_star_rv_2_4",
+    "dealershipId": "dealer_lone_star_rv",
+    "vehicleId": "veh_0042",
+    "platformSlug": "meta-automotive-ads",
+    "kind": "DISPATCH_RETRY",
+    "payload": {
+      "stockNumber": "LONE1009",
+      "mock": true,
+      "message": "skipped"
+    },
+    "syncRunId": "sync_run_dealer_lone_star_rv_2",
+    "createdAt": "2026-06-08T11:32:00Z"
+  },
+  {
+    "id": "syncev_dealer_lone_star_rv_2_5",
+    "dealershipId": "dealer_lone_star_rv",
+    "vehicleId": "veh_0042",
+    "platformSlug": "microsoft-automotive-ads",
+    "kind": "INVENTORY_CHANGE",
+    "payload": {
+      "stockNumber": "LONE1009",
+      "mock": true,
+      "message": "upserted"
+    },
+    "syncRunId": "sync_run_dealer_lone_star_rv_2",
+    "createdAt": "2026-06-08T11:25:00Z"
+  },
+  {
+    "id": "syncev_dealer_lone_star_rv_2_6",
+    "dealershipId": "dealer_lone_star_rv",
+    "vehicleId": "veh_0041",
+    "platformSlug": "ebay-motors",
+    "kind": "DISPATCH_FAILED",
+    "payload": {
+      "stockNumber": "LONE1008",
+      "mock": true,
+      "message": "validation warning"
+    },
+    "syncRunId": "sync_run_dealer_lone_star_rv_2",
+    "createdAt": "2026-06-08T11:18:00Z"
+  },
+  {
+    "id": "syncev_dealer_lone_star_rv_2_7",
+    "dealershipId": "dealer_lone_star_rv",
+    "vehicleId": "veh_0044",
+    "platformSlug": "meta-automotive-ads",
+    "kind": "DISPATCH_FAILED",
+    "payload": {
+      "stockNumber": "LONE1011",
+      "mock": true,
+      "message": "auth expired"
+    },
+    "syncRunId": "sync_run_dealer_lone_star_rv_2",
+    "createdAt": "2026-06-08T11:11:00Z"
+  },
+  {
+    "id": "syncev_dealer_lone_star_rv_3_0",
+    "dealershipId": "dealer_lone_star_rv",
+    "vehicleId": "veh_0033",
+    "platformSlug": "owned-storefront",
+    "kind": "INVENTORY_CHANGE",
+    "payload": {
+      "stockNumber": "LONE1000",
+      "mock": true,
+      "message": "skipped"
+    },
+    "syncRunId": "sync_run_dealer_lone_star_rv_3",
+    "createdAt": "2026-06-07T12:00:00Z"
+  },
+  {
+    "id": "syncev_dealer_lone_star_rv_3_1",
+    "dealershipId": "dealer_lone_star_rv",
+    "vehicleId": "veh_0042",
+    "platformSlug": "microsoft-automotive-ads",
+    "kind": "ARTIFACT_GENERATED",
+    "payload": {
+      "stockNumber": "LONE1009",
+      "mock": true,
+      "message": "skipped"
+    },
+    "syncRunId": "sync_run_dealer_lone_star_rv_3",
+    "createdAt": "2026-06-07T11:53:00Z"
+  },
+  {
+    "id": "syncev_dealer_lone_star_rv_3_2",
+    "dealershipId": "dealer_lone_star_rv",
+    "vehicleId": "veh_0040",
+    "platformSlug": "owned-storefront",
+    "kind": "ACCOUNT_UPDATED",
+    "payload": {
+      "stockNumber": "LONE1007",
+      "mock": true,
+      "message": "upserted"
+    },
+    "syncRunId": "sync_run_dealer_lone_star_rv_3",
+    "createdAt": "2026-06-07T11:46:00Z"
+  },
+  {
+    "id": "syncev_dealer_lone_star_rv_3_3",
+    "dealershipId": "dealer_lone_star_rv",
+    "vehicleId": "veh_0043",
+    "platformSlug": "owned-storefront",
+    "kind": "INVENTORY_IMPORT",
+    "payload": {
+      "stockNumber": "LONE1010",
+      "mock": true,
+      "message": "auth expired"
+    },
+    "syncRunId": "sync_run_dealer_lone_star_rv_3",
+    "createdAt": "2026-06-07T11:39:00Z"
+  },
+  {
+    "id": "syncev_dealer_lone_star_rv_3_4",
+    "dealershipId": "dealer_lone_star_rv",
+    "vehicleId": "veh_0035",
+    "platformSlug": "meta-automotive-ads",
+    "kind": "DISPATCH_RETRY",
+    "payload": {
+      "stockNumber": "LONE1002",
+      "mock": true,
+      "message": "validation warning"
+    },
+    "syncRunId": "sync_run_dealer_lone_star_rv_3",
+    "createdAt": "2026-06-07T11:32:00Z"
+  },
+  {
+    "id": "syncev_dealer_lone_star_rv_3_5",
+    "dealershipId": "dealer_lone_star_rv",
+    "vehicleId": "veh_0037",
+    "platformSlug": "autotrader-us",
+    "kind": "DISPATCH_RETRY",
+    "payload": {
+      "stockNumber": "LONE1004",
+      "mock": true,
+      "message": "skipped"
+    },
+    "syncRunId": "sync_run_dealer_lone_star_rv_3",
+    "createdAt": "2026-06-07T11:25:00Z"
+  },
+  {
+    "id": "syncev_dealer_lone_star_rv_3_6",
+    "dealershipId": "dealer_lone_star_rv",
+    "vehicleId": "veh_0040",
+    "platformSlug": "autotrader-us",
+    "kind": "INVENTORY_CHANGE",
+    "payload": {
+      "stockNumber": "LONE1007",
+      "mock": true,
+      "message": "skipped"
+    },
+    "syncRunId": "sync_run_dealer_lone_star_rv_3",
+    "createdAt": "2026-06-07T11:18:00Z"
+  },
+  {
+    "id": "syncev_dealer_lone_star_rv_3_7",
+    "dealershipId": "dealer_lone_star_rv",
+    "vehicleId": "veh_0039",
+    "platformSlug": "owned-storefront",
+    "kind": "SUBMISSION_SENT",
+    "payload": {
+      "stockNumber": "LONE1006",
+      "mock": true,
+      "message": "skipped"
+    },
+    "syncRunId": "sync_run_dealer_lone_star_rv_3",
+    "createdAt": "2026-06-07T11:11:00Z"
+  },
+  {
+    "id": "syncev_dealer_lone_star_rv_4_0",
+    "dealershipId": "dealer_lone_star_rv",
+    "vehicleId": "veh_0033",
+    "platformSlug": "owned-storefront",
+    "kind": "ARTIFACT_GENERATED",
+    "payload": {
+      "stockNumber": "LONE1000",
+      "mock": true,
+      "message": "upserted"
+    },
+    "syncRunId": "sync_run_dealer_lone_star_rv_4",
+    "createdAt": "2026-06-06T12:00:00Z"
+  },
+  {
+    "id": "syncev_dealer_lone_star_rv_4_1",
+    "dealershipId": "dealer_lone_star_rv",
+    "vehicleId": "veh_0044",
+    "platformSlug": "autotrader-us",
+    "kind": "INVENTORY_IMPORT",
+    "payload": {
+      "stockNumber": "LONE1011",
+      "mock": true,
+      "message": "upserted"
+    },
+    "syncRunId": "sync_run_dealer_lone_star_rv_4",
+    "createdAt": "2026-06-06T11:53:00Z"
+  },
+  {
+    "id": "syncev_dealer_lone_star_rv_4_2",
+    "dealershipId": "dealer_lone_star_rv",
+    "vehicleId": "veh_0035",
+    "platformSlug": "ebay-motors",
+    "kind": "INVENTORY_CHANGE",
+    "payload": {
+      "stockNumber": "LONE1002",
+      "mock": true,
+      "message": "auth expired"
+    },
+    "syncRunId": "sync_run_dealer_lone_star_rv_4",
+    "createdAt": "2026-06-06T11:46:00Z"
+  },
+  {
+    "id": "syncev_dealer_lone_star_rv_4_3",
+    "dealershipId": "dealer_lone_star_rv",
+    "vehicleId": "veh_0041",
+    "platformSlug": "microsoft-automotive-ads",
+    "kind": "SUBMISSION_SENT",
+    "payload": {
+      "stockNumber": "LONE1008",
+      "mock": true,
+      "message": "validation warning"
+    },
+    "syncRunId": "sync_run_dealer_lone_star_rv_4",
+    "createdAt": "2026-06-06T11:39:00Z"
+  },
+  {
+    "id": "syncev_dealer_lone_star_rv_4_4",
+    "dealershipId": "dealer_lone_star_rv",
+    "vehicleId": "veh_0040",
+    "platformSlug": "meta-automotive-ads",
+    "kind": "DISPATCH_RETRY",
+    "payload": {
+      "stockNumber": "LONE1007",
+      "mock": true,
+      "message": "rate limited"
+    },
+    "syncRunId": "sync_run_dealer_lone_star_rv_4",
+    "createdAt": "2026-06-06T11:32:00Z"
+  },
+  {
+    "id": "syncev_dealer_lone_star_rv_4_5",
+    "dealershipId": "dealer_lone_star_rv",
+    "vehicleId": "veh_0044",
+    "platformSlug": "ebay-motors",
+    "kind": "DISPATCH_FAILED",
+    "payload": {
+      "stockNumber": "LONE1011",
+      "mock": true,
+      "message": "rate limited"
+    },
+    "syncRunId": "sync_run_dealer_lone_star_rv_4",
+    "createdAt": "2026-06-06T11:25:00Z"
+  },
+  {
+    "id": "syncev_dealer_lone_star_rv_4_6",
+    "dealershipId": "dealer_lone_star_rv",
+    "vehicleId": "veh_0043",
+    "platformSlug": "microsoft-automotive-ads",
+    "kind": "INVENTORY_CHANGE",
+    "payload": {
+      "stockNumber": "LONE1010",
+      "mock": true,
+      "message": "validation warning"
+    },
+    "syncRunId": "sync_run_dealer_lone_star_rv_4",
+    "createdAt": "2026-06-06T11:18:00Z"
+  },
+  {
+    "id": "syncev_dealer_lone_star_rv_4_7",
+    "dealershipId": "dealer_lone_star_rv",
+    "vehicleId": "veh_0034",
+    "platformSlug": "ebay-motors",
+    "kind": "INVENTORY_IMPORT",
+    "payload": {
+      "stockNumber": "LONE1001",
+      "mock": true,
+      "message": "auth expired"
+    },
+    "syncRunId": "sync_run_dealer_lone_star_rv_4",
+    "createdAt": "2026-06-06T11:11:00Z"
+  },
+  {
+    "id": "syncev_dealer_lone_star_rv_5_0",
+    "dealershipId": "dealer_lone_star_rv",
+    "vehicleId": "veh_0043",
+    "platformSlug": "ebay-motors",
+    "kind": "ACCOUNT_UPDATED",
+    "payload": {
+      "stockNumber": "LONE1010",
+      "mock": true,
+      "message": "skipped"
+    },
+    "syncRunId": "sync_run_dealer_lone_star_rv_5",
+    "createdAt": "2026-06-05T12:00:00Z"
+  },
+  {
+    "id": "syncev_dealer_lone_star_rv_5_1",
+    "dealershipId": "dealer_lone_star_rv",
+    "vehicleId": "veh_0038",
+    "platformSlug": "owned-storefront",
+    "kind": "SUBMISSION_SENT",
+    "payload": {
+      "stockNumber": "LONE1005",
+      "mock": true,
+      "message": "validation warning"
+    },
+    "syncRunId": "sync_run_dealer_lone_star_rv_5",
+    "createdAt": "2026-06-05T11:53:00Z"
+  },
+  {
+    "id": "syncev_dealer_lone_star_rv_5_2",
+    "dealershipId": "dealer_lone_star_rv",
+    "vehicleId": "veh_0043",
+    "platformSlug": "owned-storefront",
+    "kind": "ARTIFACT_GENERATED",
+    "payload": {
+      "stockNumber": "LONE1010",
+      "mock": true,
+      "message": "auth expired"
+    },
+    "syncRunId": "sync_run_dealer_lone_star_rv_5",
+    "createdAt": "2026-06-05T11:46:00Z"
+  },
+  {
+    "id": "syncev_dealer_lone_star_rv_5_3",
+    "dealershipId": "dealer_lone_star_rv",
+    "vehicleId": "veh_0042",
+    "platformSlug": "owned-storefront",
+    "kind": "INVENTORY_IMPORT",
+    "payload": {
+      "stockNumber": "LONE1009",
+      "mock": true,
+      "message": "upserted"
+    },
+    "syncRunId": "sync_run_dealer_lone_star_rv_5",
+    "createdAt": "2026-06-05T11:39:00Z"
+  },
+  {
+    "id": "syncev_dealer_lone_star_rv_5_4",
+    "dealershipId": "dealer_lone_star_rv",
+    "vehicleId": "veh_0033",
+    "platformSlug": "meta-automotive-ads",
+    "kind": "INVENTORY_CHANGE",
+    "payload": {
+      "stockNumber": "LONE1000",
+      "mock": true,
+      "message": "rate limited"
+    },
+    "syncRunId": "sync_run_dealer_lone_star_rv_5",
+    "createdAt": "2026-06-05T11:32:00Z"
+  },
+  {
+    "id": "syncev_dealer_lone_star_rv_5_5",
+    "dealershipId": "dealer_lone_star_rv",
+    "vehicleId": "veh_0037",
+    "platformSlug": "owned-storefront",
+    "kind": "DISPATCH_FAILED",
+    "payload": {
+      "stockNumber": "LONE1004",
+      "mock": true,
+      "message": "auth expired"
+    },
+    "syncRunId": "sync_run_dealer_lone_star_rv_5",
+    "createdAt": "2026-06-05T11:25:00Z"
+  },
+  {
+    "id": "syncev_dealer_lone_star_rv_5_6",
+    "dealershipId": "dealer_lone_star_rv",
+    "vehicleId": "veh_0037",
+    "platformSlug": "ebay-motors",
+    "kind": "INVENTORY_IMPORT",
+    "payload": {
+      "stockNumber": "LONE1004",
+      "mock": true,
+      "message": "validation warning"
+    },
+    "syncRunId": "sync_run_dealer_lone_star_rv_5",
+    "createdAt": "2026-06-05T11:18:00Z"
+  },
+  {
+    "id": "syncev_dealer_lone_star_rv_5_7",
+    "dealershipId": "dealer_lone_star_rv",
+    "vehicleId": "veh_0043",
+    "platformSlug": "meta-automotive-ads",
+    "kind": "DISPATCH_RETRY",
+    "payload": {
+      "stockNumber": "LONE1010",
+      "mock": true,
+      "message": "rate limited"
+    },
+    "syncRunId": "sync_run_dealer_lone_star_rv_5",
+    "createdAt": "2026-06-05T11:11:00Z"
+  },
+  {
+    "id": "syncev_dealer_lone_star_rv_6_0",
+    "dealershipId": "dealer_lone_star_rv",
+    "vehicleId": "veh_0041",
+    "platformSlug": "microsoft-automotive-ads",
+    "kind": "ACCOUNT_UPDATED",
+    "payload": {
+      "stockNumber": "LONE1008",
+      "mock": true,
+      "message": "rate limited"
+    },
+    "syncRunId": "sync_run_dealer_lone_star_rv_6",
+    "createdAt": "2026-06-04T12:00:00Z"
+  },
+  {
+    "id": "syncev_dealer_lone_star_rv_6_1",
+    "dealershipId": "dealer_lone_star_rv",
+    "vehicleId": "veh_0037",
+    "platformSlug": "autotrader-us",
+    "kind": "DISPATCH_FAILED",
+    "payload": {
+      "stockNumber": "LONE1004",
+      "mock": true,
+      "message": "rate limited"
+    },
+    "syncRunId": "sync_run_dealer_lone_star_rv_6",
+    "createdAt": "2026-06-04T11:53:00Z"
+  },
+  {
+    "id": "syncev_dealer_lone_star_rv_6_2",
+    "dealershipId": "dealer_lone_star_rv",
+    "vehicleId": "veh_0033",
+    "platformSlug": "microsoft-automotive-ads",
+    "kind": "DISPATCH_RETRY",
+    "payload": {
+      "stockNumber": "LONE1000",
+      "mock": true,
+      "message": "upserted"
+    },
+    "syncRunId": "sync_run_dealer_lone_star_rv_6",
+    "createdAt": "2026-06-04T11:46:00Z"
+  },
+  {
+    "id": "syncev_dealer_lone_star_rv_6_3",
+    "dealershipId": "dealer_lone_star_rv",
+    "vehicleId": "veh_0039",
+    "platformSlug": "owned-storefront",
+    "kind": "INVENTORY_IMPORT",
+    "payload": {
+      "stockNumber": "LONE1006",
+      "mock": true,
+      "message": "upserted"
+    },
+    "syncRunId": "sync_run_dealer_lone_star_rv_6",
+    "createdAt": "2026-06-04T11:39:00Z"
+  },
+  {
+    "id": "syncev_dealer_lone_star_rv_6_4",
+    "dealershipId": "dealer_lone_star_rv",
+    "vehicleId": "veh_0043",
+    "platformSlug": "autotrader-us",
+    "kind": "ACCOUNT_UPDATED",
+    "payload": {
+      "stockNumber": "LONE1010",
+      "mock": true,
+      "message": "auth expired"
+    },
+    "syncRunId": "sync_run_dealer_lone_star_rv_6",
+    "createdAt": "2026-06-04T11:32:00Z"
+  },
+  {
+    "id": "syncev_dealer_lone_star_rv_6_5",
+    "dealershipId": "dealer_lone_star_rv",
+    "vehicleId": "veh_0044",
+    "platformSlug": "autotrader-us",
+    "kind": "ACCOUNT_UPDATED",
+    "payload": {
+      "stockNumber": "LONE1011",
+      "mock": true,
+      "message": "upserted"
+    },
+    "syncRunId": "sync_run_dealer_lone_star_rv_6",
+    "createdAt": "2026-06-04T11:25:00Z"
+  },
+  {
+    "id": "syncev_dealer_lone_star_rv_6_6",
+    "dealershipId": "dealer_lone_star_rv",
+    "vehicleId": "veh_0038",
+    "platformSlug": "autotrader-us",
+    "kind": "ACCOUNT_UPDATED",
+    "payload": {
+      "stockNumber": "LONE1005",
+      "mock": true,
+      "message": "validation warning"
+    },
+    "syncRunId": "sync_run_dealer_lone_star_rv_6",
+    "createdAt": "2026-06-04T11:18:00Z"
+  },
+  {
+    "id": "syncev_dealer_lone_star_rv_6_7",
+    "dealershipId": "dealer_lone_star_rv",
+    "vehicleId": "veh_0034",
+    "platformSlug": "autotrader-us",
+    "kind": "ARTIFACT_GENERATED",
+    "payload": {
+      "stockNumber": "LONE1001",
+      "mock": true,
+      "message": "rate limited"
+    },
+    "syncRunId": "sync_run_dealer_lone_star_rv_6",
+    "createdAt": "2026-06-04T11:11:00Z"
+  },
+  {
+    "id": "syncev_dealer_lone_star_rv_7_0",
+    "dealershipId": "dealer_lone_star_rv",
+    "vehicleId": "veh_0035",
+    "platformSlug": "autotrader-us",
+    "kind": "INVENTORY_IMPORT",
+    "payload": {
+      "stockNumber": "LONE1002",
+      "mock": true,
+      "message": "auth expired"
+    },
+    "syncRunId": "sync_run_dealer_lone_star_rv_7",
+    "createdAt": "2026-06-03T12:00:00Z"
+  },
+  {
+    "id": "syncev_dealer_lone_star_rv_7_1",
+    "dealershipId": "dealer_lone_star_rv",
+    "vehicleId": "veh_0042",
+    "platformSlug": "meta-automotive-ads",
+    "kind": "DISPATCH_RETRY",
+    "payload": {
+      "stockNumber": "LONE1009",
+      "mock": true,
+      "message": "rate limited"
+    },
+    "syncRunId": "sync_run_dealer_lone_star_rv_7",
+    "createdAt": "2026-06-03T11:53:00Z"
+  },
+  {
+    "id": "syncev_dealer_lone_star_rv_7_2",
+    "dealershipId": "dealer_lone_star_rv",
+    "vehicleId": "veh_0041",
+    "platformSlug": "microsoft-automotive-ads",
+    "kind": "ACCOUNT_UPDATED",
+    "payload": {
+      "stockNumber": "LONE1008",
+      "mock": true,
+      "message": "skipped"
+    },
+    "syncRunId": "sync_run_dealer_lone_star_rv_7",
+    "createdAt": "2026-06-03T11:46:00Z"
+  },
+  {
+    "id": "syncev_dealer_lone_star_rv_7_3",
+    "dealershipId": "dealer_lone_star_rv",
+    "vehicleId": "veh_0040",
+    "platformSlug": "owned-storefront",
+    "kind": "SUBMISSION_SENT",
+    "payload": {
+      "stockNumber": "LONE1007",
+      "mock": true,
+      "message": "upserted"
+    },
+    "syncRunId": "sync_run_dealer_lone_star_rv_7",
+    "createdAt": "2026-06-03T11:39:00Z"
+  },
+  {
+    "id": "syncev_dealer_lone_star_rv_7_4",
+    "dealershipId": "dealer_lone_star_rv",
+    "vehicleId": "veh_0044",
+    "platformSlug": "microsoft-automotive-ads",
+    "kind": "DISPATCH_FAILED",
+    "payload": {
+      "stockNumber": "LONE1011",
+      "mock": true,
+      "message": "skipped"
+    },
+    "syncRunId": "sync_run_dealer_lone_star_rv_7",
+    "createdAt": "2026-06-03T11:32:00Z"
+  },
+  {
+    "id": "syncev_dealer_lone_star_rv_7_5",
+    "dealershipId": "dealer_lone_star_rv",
+    "vehicleId": "veh_0038",
+    "platformSlug": "autotrader-us",
+    "kind": "SUBMISSION_SENT",
+    "payload": {
+      "stockNumber": "LONE1005",
+      "mock": true,
+      "message": "auth expired"
+    },
+    "syncRunId": "sync_run_dealer_lone_star_rv_7",
+    "createdAt": "2026-06-03T11:25:00Z"
+  },
+  {
+    "id": "syncev_dealer_lone_star_rv_7_6",
+    "dealershipId": "dealer_lone_star_rv",
+    "vehicleId": "veh_0043",
+    "platformSlug": "meta-automotive-ads",
+    "kind": "ACCOUNT_UPDATED",
+    "payload": {
+      "stockNumber": "LONE1010",
+      "mock": true,
+      "message": "validation warning"
+    },
+    "syncRunId": "sync_run_dealer_lone_star_rv_7",
+    "createdAt": "2026-06-03T11:18:00Z"
+  },
+  {
+    "id": "syncev_dealer_lone_star_rv_7_7",
+    "dealershipId": "dealer_lone_star_rv",
+    "vehicleId": "veh_0042",
+    "platformSlug": "autotrader-us",
+    "kind": "DISPATCH_FAILED",
+    "payload": {
+      "stockNumber": "LONE1009",
+      "mock": true,
+      "message": "skipped"
+    },
+    "syncRunId": "sync_run_dealer_lone_star_rv_7",
+    "createdAt": "2026-06-03T11:11:00Z"
+  },
+  {
+    "id": "syncev_dealer_coastal_boats_0_0",
+    "dealershipId": "dealer_coastal_boats",
+    "vehicleId": "veh_0046",
+    "platformSlug": "owned-storefront",
+    "kind": "ACCOUNT_UPDATED",
+    "payload": {
+      "stockNumber": "COASTAL1001",
+      "mock": true,
+      "message": "upserted"
+    },
+    "syncRunId": "sync_run_dealer_coastal_boats_0",
+    "createdAt": "2026-06-10T12:00:00Z"
+  },
+  {
+    "id": "syncev_dealer_coastal_boats_0_1",
+    "dealershipId": "dealer_coastal_boats",
+    "vehicleId": "veh_0051",
+    "platformSlug": "ebay-motors",
+    "kind": "ARTIFACT_GENERATED",
+    "payload": {
+      "stockNumber": "COASTAL1006",
+      "mock": true,
+      "message": "upserted"
+    },
+    "syncRunId": "sync_run_dealer_coastal_boats_0",
+    "createdAt": "2026-06-10T11:53:00Z"
+  },
+  {
+    "id": "syncev_dealer_coastal_boats_0_2",
+    "dealershipId": "dealer_coastal_boats",
+    "vehicleId": "veh_0047",
+    "platformSlug": "autotrader-us",
+    "kind": "SUBMISSION_SENT",
+    "payload": {
+      "stockNumber": "COASTAL1002",
+      "mock": true,
+      "message": "upserted"
+    },
+    "syncRunId": "sync_run_dealer_coastal_boats_0",
+    "createdAt": "2026-06-10T11:46:00Z"
+  },
+  {
+    "id": "syncev_dealer_coastal_boats_0_3",
+    "dealershipId": "dealer_coastal_boats",
+    "vehicleId": "veh_0045",
+    "platformSlug": "meta-automotive-ads",
+    "kind": "SUBMISSION_SENT",
+    "payload": {
+      "stockNumber": "COASTAL1000",
+      "mock": true,
+      "message": "upserted"
+    },
+    "syncRunId": "sync_run_dealer_coastal_boats_0",
+    "createdAt": "2026-06-10T11:39:00Z"
+  },
+  {
+    "id": "syncev_dealer_coastal_boats_0_4",
+    "dealershipId": "dealer_coastal_boats",
+    "vehicleId": "veh_0055",
+    "platformSlug": "autotrader-us",
+    "kind": "DISPATCH_RETRY",
+    "payload": {
+      "stockNumber": "COASTAL1010",
+      "mock": true,
+      "message": "skipped"
+    },
+    "syncRunId": "sync_run_dealer_coastal_boats_0",
+    "createdAt": "2026-06-10T11:32:00Z"
+  },
+  {
+    "id": "syncev_dealer_coastal_boats_0_5",
+    "dealershipId": "dealer_coastal_boats",
+    "vehicleId": "veh_0046",
+    "platformSlug": "microsoft-automotive-ads",
+    "kind": "SUBMISSION_SENT",
+    "payload": {
+      "stockNumber": "COASTAL1001",
+      "mock": true,
+      "message": "validation warning"
+    },
+    "syncRunId": "sync_run_dealer_coastal_boats_0",
+    "createdAt": "2026-06-10T11:25:00Z"
+  },
+  {
+    "id": "syncev_dealer_coastal_boats_0_6",
+    "dealershipId": "dealer_coastal_boats",
+    "vehicleId": "veh_0053",
+    "platformSlug": "owned-storefront",
+    "kind": "ACCOUNT_UPDATED",
+    "payload": {
+      "stockNumber": "COASTAL1008",
+      "mock": true,
+      "message": "skipped"
+    },
+    "syncRunId": "sync_run_dealer_coastal_boats_0",
+    "createdAt": "2026-06-10T11:18:00Z"
+  },
+  {
+    "id": "syncev_dealer_coastal_boats_0_7",
+    "dealershipId": "dealer_coastal_boats",
+    "vehicleId": "veh_0050",
+    "platformSlug": "microsoft-automotive-ads",
+    "kind": "ACCOUNT_UPDATED",
+    "payload": {
+      "stockNumber": "COASTAL1005",
+      "mock": true,
+      "message": "validation warning"
+    },
+    "syncRunId": "sync_run_dealer_coastal_boats_0",
+    "createdAt": "2026-06-10T11:11:00Z"
+  },
+  {
+    "id": "syncev_dealer_coastal_boats_1_0",
+    "dealershipId": "dealer_coastal_boats",
+    "vehicleId": "veh_0048",
+    "platformSlug": "microsoft-automotive-ads",
+    "kind": "SUBMISSION_SENT",
+    "payload": {
+      "stockNumber": "COASTAL1003",
+      "mock": true,
+      "message": "validation warning"
+    },
+    "syncRunId": "sync_run_dealer_coastal_boats_1",
+    "createdAt": "2026-06-09T12:00:00Z"
+  },
+  {
+    "id": "syncev_dealer_coastal_boats_1_1",
+    "dealershipId": "dealer_coastal_boats",
+    "vehicleId": "veh_0052",
+    "platformSlug": "microsoft-automotive-ads",
+    "kind": "ARTIFACT_GENERATED",
+    "payload": {
+      "stockNumber": "COASTAL1007",
+      "mock": true,
+      "message": "rate limited"
+    },
+    "syncRunId": "sync_run_dealer_coastal_boats_1",
+    "createdAt": "2026-06-09T11:53:00Z"
+  },
+  {
+    "id": "syncev_dealer_coastal_boats_1_2",
+    "dealershipId": "dealer_coastal_boats",
+    "vehicleId": "veh_0051",
+    "platformSlug": "autotrader-us",
+    "kind": "ACCOUNT_UPDATED",
+    "payload": {
+      "stockNumber": "COASTAL1006",
+      "mock": true,
+      "message": "rate limited"
+    },
+    "syncRunId": "sync_run_dealer_coastal_boats_1",
+    "createdAt": "2026-06-09T11:46:00Z"
+  },
+  {
+    "id": "syncev_dealer_coastal_boats_1_3",
+    "dealershipId": "dealer_coastal_boats",
+    "vehicleId": "veh_0056",
+    "platformSlug": "owned-storefront",
+    "kind": "SUBMISSION_SENT",
+    "payload": {
+      "stockNumber": "COASTAL1011",
+      "mock": true,
+      "message": "validation warning"
+    },
+    "syncRunId": "sync_run_dealer_coastal_boats_1",
+    "createdAt": "2026-06-09T11:39:00Z"
+  },
+  {
+    "id": "syncev_dealer_coastal_boats_1_4",
+    "dealershipId": "dealer_coastal_boats",
+    "vehicleId": "veh_0049",
+    "platformSlug": "ebay-motors",
+    "kind": "SUBMISSION_SENT",
+    "payload": {
+      "stockNumber": "COASTAL1004",
+      "mock": true,
+      "message": "validation warning"
+    },
+    "syncRunId": "sync_run_dealer_coastal_boats_1",
+    "createdAt": "2026-06-09T11:32:00Z"
+  },
+  {
+    "id": "syncev_dealer_coastal_boats_1_5",
+    "dealershipId": "dealer_coastal_boats",
+    "vehicleId": "veh_0046",
+    "platformSlug": "ebay-motors",
+    "kind": "SUBMISSION_SENT",
+    "payload": {
+      "stockNumber": "COASTAL1001",
+      "mock": true,
+      "message": "skipped"
+    },
+    "syncRunId": "sync_run_dealer_coastal_boats_1",
+    "createdAt": "2026-06-09T11:25:00Z"
+  },
+  {
+    "id": "syncev_dealer_coastal_boats_1_6",
+    "dealershipId": "dealer_coastal_boats",
+    "vehicleId": "veh_0054",
+    "platformSlug": "microsoft-automotive-ads",
+    "kind": "DISPATCH_FAILED",
+    "payload": {
+      "stockNumber": "COASTAL1009",
+      "mock": true,
+      "message": "rate limited"
+    },
+    "syncRunId": "sync_run_dealer_coastal_boats_1",
+    "createdAt": "2026-06-09T11:18:00Z"
+  },
+  {
+    "id": "syncev_dealer_coastal_boats_1_7",
+    "dealershipId": "dealer_coastal_boats",
+    "vehicleId": "veh_0045",
+    "platformSlug": "autotrader-us",
+    "kind": "DISPATCH_RETRY",
+    "payload": {
+      "stockNumber": "COASTAL1000",
+      "mock": true,
+      "message": "rate limited"
+    },
+    "syncRunId": "sync_run_dealer_coastal_boats_1",
+    "createdAt": "2026-06-09T11:11:00Z"
+  },
+  {
+    "id": "syncev_dealer_coastal_boats_2_0",
+    "dealershipId": "dealer_coastal_boats",
+    "vehicleId": "veh_0053",
+    "platformSlug": "microsoft-automotive-ads",
+    "kind": "DISPATCH_FAILED",
+    "payload": {
+      "stockNumber": "COASTAL1008",
+      "mock": true,
+      "message": "upserted"
+    },
+    "syncRunId": "sync_run_dealer_coastal_boats_2",
+    "createdAt": "2026-06-08T12:00:00Z"
+  },
+  {
+    "id": "syncev_dealer_coastal_boats_2_1",
+    "dealershipId": "dealer_coastal_boats",
+    "vehicleId": "veh_0053",
+    "platformSlug": "ebay-motors",
+    "kind": "ARTIFACT_GENERATED",
+    "payload": {
+      "stockNumber": "COASTAL1008",
+      "mock": true,
+      "message": "validation warning"
+    },
+    "syncRunId": "sync_run_dealer_coastal_boats_2",
+    "createdAt": "2026-06-08T11:53:00Z"
+  },
+  {
+    "id": "syncev_dealer_coastal_boats_2_2",
+    "dealershipId": "dealer_coastal_boats",
+    "vehicleId": "veh_0053",
+    "platformSlug": "ebay-motors",
+    "kind": "ACCOUNT_UPDATED",
+    "payload": {
+      "stockNumber": "COASTAL1008",
+      "mock": true,
+      "message": "auth expired"
+    },
+    "syncRunId": "sync_run_dealer_coastal_boats_2",
+    "createdAt": "2026-06-08T11:46:00Z"
+  },
+  {
+    "id": "syncev_dealer_coastal_boats_2_3",
+    "dealershipId": "dealer_coastal_boats",
+    "vehicleId": "veh_0056",
+    "platformSlug": "ebay-motors",
+    "kind": "ARTIFACT_GENERATED",
+    "payload": {
+      "stockNumber": "COASTAL1011",
+      "mock": true,
+      "message": "skipped"
+    },
+    "syncRunId": "sync_run_dealer_coastal_boats_2",
+    "createdAt": "2026-06-08T11:39:00Z"
+  },
+  {
+    "id": "syncev_dealer_coastal_boats_2_4",
+    "dealershipId": "dealer_coastal_boats",
+    "vehicleId": "veh_0052",
+    "platformSlug": "meta-automotive-ads",
+    "kind": "SUBMISSION_SENT",
+    "payload": {
+      "stockNumber": "COASTAL1007",
+      "mock": true,
+      "message": "validation warning"
+    },
+    "syncRunId": "sync_run_dealer_coastal_boats_2",
+    "createdAt": "2026-06-08T11:32:00Z"
+  },
+  {
+    "id": "syncev_dealer_coastal_boats_2_5",
+    "dealershipId": "dealer_coastal_boats",
+    "vehicleId": "veh_0047",
+    "platformSlug": "microsoft-automotive-ads",
+    "kind": "ACCOUNT_UPDATED",
+    "payload": {
+      "stockNumber": "COASTAL1002",
+      "mock": true,
+      "message": "skipped"
+    },
+    "syncRunId": "sync_run_dealer_coastal_boats_2",
+    "createdAt": "2026-06-08T11:25:00Z"
+  },
+  {
+    "id": "syncev_dealer_coastal_boats_2_6",
+    "dealershipId": "dealer_coastal_boats",
+    "vehicleId": "veh_0052",
+    "platformSlug": "microsoft-automotive-ads",
+    "kind": "INVENTORY_IMPORT",
+    "payload": {
+      "stockNumber": "COASTAL1007",
+      "mock": true,
+      "message": "rate limited"
+    },
+    "syncRunId": "sync_run_dealer_coastal_boats_2",
+    "createdAt": "2026-06-08T11:18:00Z"
+  },
+  {
+    "id": "syncev_dealer_coastal_boats_2_7",
+    "dealershipId": "dealer_coastal_boats",
+    "vehicleId": "veh_0048",
+    "platformSlug": "meta-automotive-ads",
+    "kind": "SUBMISSION_SENT",
+    "payload": {
+      "stockNumber": "COASTAL1003",
+      "mock": true,
+      "message": "validation warning"
+    },
+    "syncRunId": "sync_run_dealer_coastal_boats_2",
+    "createdAt": "2026-06-08T11:11:00Z"
+  },
+  {
+    "id": "syncev_dealer_coastal_boats_3_0",
+    "dealershipId": "dealer_coastal_boats",
+    "vehicleId": "veh_0055",
+    "platformSlug": "microsoft-automotive-ads",
+    "kind": "INVENTORY_CHANGE",
+    "payload": {
+      "stockNumber": "COASTAL1010",
+      "mock": true,
+      "message": "auth expired"
+    },
+    "syncRunId": "sync_run_dealer_coastal_boats_3",
+    "createdAt": "2026-06-07T12:00:00Z"
+  },
+  {
+    "id": "syncev_dealer_coastal_boats_3_1",
+    "dealershipId": "dealer_coastal_boats",
+    "vehicleId": "veh_0056",
+    "platformSlug": "meta-automotive-ads",
+    "kind": "INVENTORY_IMPORT",
+    "payload": {
+      "stockNumber": "COASTAL1011",
+      "mock": true,
+      "message": "upserted"
+    },
+    "syncRunId": "sync_run_dealer_coastal_boats_3",
+    "createdAt": "2026-06-07T11:53:00Z"
+  },
+  {
+    "id": "syncev_dealer_coastal_boats_3_2",
+    "dealershipId": "dealer_coastal_boats",
+    "vehicleId": "veh_0049",
+    "platformSlug": "ebay-motors",
+    "kind": "DISPATCH_FAILED",
+    "payload": {
+      "stockNumber": "COASTAL1004",
+      "mock": true,
+      "message": "skipped"
+    },
+    "syncRunId": "sync_run_dealer_coastal_boats_3",
+    "createdAt": "2026-06-07T11:46:00Z"
+  },
+  {
+    "id": "syncev_dealer_coastal_boats_3_3",
+    "dealershipId": "dealer_coastal_boats",
+    "vehicleId": "veh_0049",
+    "platformSlug": "owned-storefront",
+    "kind": "SUBMISSION_SENT",
+    "payload": {
+      "stockNumber": "COASTAL1004",
+      "mock": true,
+      "message": "validation warning"
+    },
+    "syncRunId": "sync_run_dealer_coastal_boats_3",
+    "createdAt": "2026-06-07T11:39:00Z"
+  },
+  {
+    "id": "syncev_dealer_coastal_boats_3_4",
+    "dealershipId": "dealer_coastal_boats",
+    "vehicleId": "veh_0046",
+    "platformSlug": "autotrader-us",
+    "kind": "ARTIFACT_GENERATED",
+    "payload": {
+      "stockNumber": "COASTAL1001",
+      "mock": true,
+      "message": "auth expired"
+    },
+    "syncRunId": "sync_run_dealer_coastal_boats_3",
+    "createdAt": "2026-06-07T11:32:00Z"
+  },
+  {
+    "id": "syncev_dealer_coastal_boats_3_5",
+    "dealershipId": "dealer_coastal_boats",
+    "vehicleId": "veh_0053",
+    "platformSlug": "meta-automotive-ads",
+    "kind": "INVENTORY_IMPORT",
+    "payload": {
+      "stockNumber": "COASTAL1008",
+      "mock": true,
+      "message": "auth expired"
+    },
+    "syncRunId": "sync_run_dealer_coastal_boats_3",
+    "createdAt": "2026-06-07T11:25:00Z"
+  },
+  {
+    "id": "syncev_dealer_coastal_boats_3_6",
+    "dealershipId": "dealer_coastal_boats",
+    "vehicleId": "veh_0049",
+    "platformSlug": "meta-automotive-ads",
+    "kind": "ARTIFACT_GENERATED",
+    "payload": {
+      "stockNumber": "COASTAL1004",
+      "mock": true,
+      "message": "skipped"
+    },
+    "syncRunId": "sync_run_dealer_coastal_boats_3",
+    "createdAt": "2026-06-07T11:18:00Z"
+  },
+  {
+    "id": "syncev_dealer_coastal_boats_3_7",
+    "dealershipId": "dealer_coastal_boats",
+    "vehicleId": "veh_0048",
+    "platformSlug": "ebay-motors",
+    "kind": "ACCOUNT_UPDATED",
+    "payload": {
+      "stockNumber": "COASTAL1003",
+      "mock": true,
+      "message": "upserted"
+    },
+    "syncRunId": "sync_run_dealer_coastal_boats_3",
+    "createdAt": "2026-06-07T11:11:00Z"
+  },
+  {
+    "id": "syncev_dealer_coastal_boats_4_0",
+    "dealershipId": "dealer_coastal_boats",
+    "vehicleId": "veh_0045",
+    "platformSlug": "autotrader-us",
+    "kind": "ACCOUNT_UPDATED",
+    "payload": {
+      "stockNumber": "COASTAL1000",
+      "mock": true,
+      "message": "auth expired"
+    },
+    "syncRunId": "sync_run_dealer_coastal_boats_4",
+    "createdAt": "2026-06-06T12:00:00Z"
+  },
+  {
+    "id": "syncev_dealer_coastal_boats_4_1",
+    "dealershipId": "dealer_coastal_boats",
+    "vehicleId": "veh_0054",
+    "platformSlug": "autotrader-us",
+    "kind": "ARTIFACT_GENERATED",
+    "payload": {
+      "stockNumber": "COASTAL1009",
+      "mock": true,
+      "message": "auth expired"
+    },
+    "syncRunId": "sync_run_dealer_coastal_boats_4",
+    "createdAt": "2026-06-06T11:53:00Z"
+  },
+  {
+    "id": "syncev_dealer_coastal_boats_4_2",
+    "dealershipId": "dealer_coastal_boats",
+    "vehicleId": "veh_0056",
+    "platformSlug": "autotrader-us",
+    "kind": "INVENTORY_IMPORT",
+    "payload": {
+      "stockNumber": "COASTAL1011",
+      "mock": true,
+      "message": "rate limited"
+    },
+    "syncRunId": "sync_run_dealer_coastal_boats_4",
+    "createdAt": "2026-06-06T11:46:00Z"
+  },
+  {
+    "id": "syncev_dealer_coastal_boats_4_3",
+    "dealershipId": "dealer_coastal_boats",
+    "vehicleId": "veh_0054",
+    "platformSlug": "microsoft-automotive-ads",
+    "kind": "INVENTORY_IMPORT",
+    "payload": {
+      "stockNumber": "COASTAL1009",
+      "mock": true,
+      "message": "validation warning"
+    },
+    "syncRunId": "sync_run_dealer_coastal_boats_4",
+    "createdAt": "2026-06-06T11:39:00Z"
+  },
+  {
+    "id": "syncev_dealer_coastal_boats_4_4",
+    "dealershipId": "dealer_coastal_boats",
+    "vehicleId": "veh_0052",
+    "platformSlug": "meta-automotive-ads",
+    "kind": "DISPATCH_RETRY",
+    "payload": {
+      "stockNumber": "COASTAL1007",
+      "mock": true,
+      "message": "upserted"
+    },
+    "syncRunId": "sync_run_dealer_coastal_boats_4",
+    "createdAt": "2026-06-06T11:32:00Z"
+  },
+  {
+    "id": "syncev_dealer_coastal_boats_4_5",
+    "dealershipId": "dealer_coastal_boats",
+    "vehicleId": "veh_0045",
+    "platformSlug": "owned-storefront",
+    "kind": "SUBMISSION_SENT",
+    "payload": {
+      "stockNumber": "COASTAL1000",
+      "mock": true,
+      "message": "validation warning"
+    },
+    "syncRunId": "sync_run_dealer_coastal_boats_4",
+    "createdAt": "2026-06-06T11:25:00Z"
+  },
+  {
+    "id": "syncev_dealer_coastal_boats_4_6",
+    "dealershipId": "dealer_coastal_boats",
+    "vehicleId": "veh_0055",
+    "platformSlug": "ebay-motors",
+    "kind": "DISPATCH_FAILED",
+    "payload": {
+      "stockNumber": "COASTAL1010",
+      "mock": true,
+      "message": "upserted"
+    },
+    "syncRunId": "sync_run_dealer_coastal_boats_4",
+    "createdAt": "2026-06-06T11:18:00Z"
+  },
+  {
+    "id": "syncev_dealer_coastal_boats_4_7",
+    "dealershipId": "dealer_coastal_boats",
+    "vehicleId": "veh_0047",
+    "platformSlug": "owned-storefront",
+    "kind": "SUBMISSION_SENT",
+    "payload": {
+      "stockNumber": "COASTAL1002",
+      "mock": true,
+      "message": "skipped"
+    },
+    "syncRunId": "sync_run_dealer_coastal_boats_4",
+    "createdAt": "2026-06-06T11:11:00Z"
+  },
+  {
+    "id": "syncev_dealer_coastal_boats_5_0",
+    "dealershipId": "dealer_coastal_boats",
+    "vehicleId": "veh_0049",
+    "platformSlug": "owned-storefront",
+    "kind": "DISPATCH_RETRY",
+    "payload": {
+      "stockNumber": "COASTAL1004",
+      "mock": true,
+      "message": "auth expired"
+    },
+    "syncRunId": "sync_run_dealer_coastal_boats_5",
+    "createdAt": "2026-06-05T12:00:00Z"
+  },
+  {
+    "id": "syncev_dealer_coastal_boats_5_1",
+    "dealershipId": "dealer_coastal_boats",
+    "vehicleId": "veh_0051",
+    "platformSlug": "meta-automotive-ads",
+    "kind": "INVENTORY_CHANGE",
+    "payload": {
+      "stockNumber": "COASTAL1006",
+      "mock": true,
+      "message": "validation warning"
+    },
+    "syncRunId": "sync_run_dealer_coastal_boats_5",
+    "createdAt": "2026-06-05T11:53:00Z"
+  },
+  {
+    "id": "syncev_dealer_coastal_boats_5_2",
+    "dealershipId": "dealer_coastal_boats",
+    "vehicleId": "veh_0046",
+    "platformSlug": "autotrader-us",
+    "kind": "SUBMISSION_SENT",
+    "payload": {
+      "stockNumber": "COASTAL1001",
+      "mock": true,
+      "message": "rate limited"
+    },
+    "syncRunId": "sync_run_dealer_coastal_boats_5",
+    "createdAt": "2026-06-05T11:46:00Z"
+  },
+  {
+    "id": "syncev_dealer_coastal_boats_5_3",
+    "dealershipId": "dealer_coastal_boats",
+    "vehicleId": "veh_0050",
+    "platformSlug": "owned-storefront",
+    "kind": "DISPATCH_RETRY",
+    "payload": {
+      "stockNumber": "COASTAL1005",
+      "mock": true,
+      "message": "validation warning"
+    },
+    "syncRunId": "sync_run_dealer_coastal_boats_5",
+    "createdAt": "2026-06-05T11:39:00Z"
+  },
+  {
+    "id": "syncev_dealer_coastal_boats_5_4",
+    "dealershipId": "dealer_coastal_boats",
+    "vehicleId": "veh_0048",
+    "platformSlug": "ebay-motors",
+    "kind": "DISPATCH_FAILED",
+    "payload": {
+      "stockNumber": "COASTAL1003",
+      "mock": true,
+      "message": "skipped"
+    },
+    "syncRunId": "sync_run_dealer_coastal_boats_5",
+    "createdAt": "2026-06-05T11:32:00Z"
+  },
+  {
+    "id": "syncev_dealer_coastal_boats_5_5",
+    "dealershipId": "dealer_coastal_boats",
+    "vehicleId": "veh_0050",
+    "platformSlug": "autotrader-us",
+    "kind": "INVENTORY_CHANGE",
+    "payload": {
+      "stockNumber": "COASTAL1005",
+      "mock": true,
+      "message": "auth expired"
+    },
+    "syncRunId": "sync_run_dealer_coastal_boats_5",
+    "createdAt": "2026-06-05T11:25:00Z"
+  },
+  {
+    "id": "syncev_dealer_coastal_boats_5_6",
+    "dealershipId": "dealer_coastal_boats",
+    "vehicleId": "veh_0055",
+    "platformSlug": "ebay-motors",
+    "kind": "ACCOUNT_UPDATED",
+    "payload": {
+      "stockNumber": "COASTAL1010",
+      "mock": true,
+      "message": "validation warning"
+    },
+    "syncRunId": "sync_run_dealer_coastal_boats_5",
+    "createdAt": "2026-06-05T11:18:00Z"
+  },
+  {
+    "id": "syncev_dealer_coastal_boats_5_7",
+    "dealershipId": "dealer_coastal_boats",
+    "vehicleId": "veh_0050",
+    "platformSlug": "meta-automotive-ads",
+    "kind": "INVENTORY_CHANGE",
+    "payload": {
+      "stockNumber": "COASTAL1005",
+      "mock": true,
+      "message": "validation warning"
+    },
+    "syncRunId": "sync_run_dealer_coastal_boats_5",
+    "createdAt": "2026-06-05T11:11:00Z"
+  },
+  {
+    "id": "syncev_dealer_coastal_boats_6_0",
+    "dealershipId": "dealer_coastal_boats",
+    "vehicleId": "veh_0048",
+    "platformSlug": "microsoft-automotive-ads",
+    "kind": "DISPATCH_RETRY",
+    "payload": {
+      "stockNumber": "COASTAL1003",
+      "mock": true,
+      "message": "upserted"
+    },
+    "syncRunId": "sync_run_dealer_coastal_boats_6",
+    "createdAt": "2026-06-04T12:00:00Z"
+  },
+  {
+    "id": "syncev_dealer_coastal_boats_6_1",
+    "dealershipId": "dealer_coastal_boats",
+    "vehicleId": "veh_0056",
+    "platformSlug": "meta-automotive-ads",
+    "kind": "INVENTORY_CHANGE",
+    "payload": {
+      "stockNumber": "COASTAL1011",
+      "mock": true,
+      "message": "rate limited"
+    },
+    "syncRunId": "sync_run_dealer_coastal_boats_6",
+    "createdAt": "2026-06-04T11:53:00Z"
+  },
+  {
+    "id": "syncev_dealer_coastal_boats_6_2",
+    "dealershipId": "dealer_coastal_boats",
+    "vehicleId": "veh_0050",
+    "platformSlug": "owned-storefront",
+    "kind": "INVENTORY_IMPORT",
+    "payload": {
+      "stockNumber": "COASTAL1005",
+      "mock": true,
+      "message": "skipped"
+    },
+    "syncRunId": "sync_run_dealer_coastal_boats_6",
+    "createdAt": "2026-06-04T11:46:00Z"
+  },
+  {
+    "id": "syncev_dealer_coastal_boats_6_3",
+    "dealershipId": "dealer_coastal_boats",
+    "vehicleId": "veh_0055",
+    "platformSlug": "ebay-motors",
+    "kind": "INVENTORY_IMPORT",
+    "payload": {
+      "stockNumber": "COASTAL1010",
+      "mock": true,
+      "message": "auth expired"
+    },
+    "syncRunId": "sync_run_dealer_coastal_boats_6",
+    "createdAt": "2026-06-04T11:39:00Z"
+  },
+  {
+    "id": "syncev_dealer_coastal_boats_6_4",
+    "dealershipId": "dealer_coastal_boats",
+    "vehicleId": "veh_0045",
+    "platformSlug": "microsoft-automotive-ads",
+    "kind": "INVENTORY_IMPORT",
+    "payload": {
+      "stockNumber": "COASTAL1000",
+      "mock": true,
+      "message": "rate limited"
+    },
+    "syncRunId": "sync_run_dealer_coastal_boats_6",
+    "createdAt": "2026-06-04T11:32:00Z"
+  },
+  {
+    "id": "syncev_dealer_coastal_boats_6_5",
+    "dealershipId": "dealer_coastal_boats",
+    "vehicleId": "veh_0047",
+    "platformSlug": "ebay-motors",
+    "kind": "ARTIFACT_GENERATED",
+    "payload": {
+      "stockNumber": "COASTAL1002",
+      "mock": true,
+      "message": "validation warning"
+    },
+    "syncRunId": "sync_run_dealer_coastal_boats_6",
+    "createdAt": "2026-06-04T11:25:00Z"
+  },
+  {
+    "id": "syncev_dealer_coastal_boats_6_6",
+    "dealershipId": "dealer_coastal_boats",
+    "vehicleId": "veh_0056",
+    "platformSlug": "ebay-motors",
+    "kind": "ACCOUNT_UPDATED",
+    "payload": {
+      "stockNumber": "COASTAL1011",
+      "mock": true,
+      "message": "upserted"
+    },
+    "syncRunId": "sync_run_dealer_coastal_boats_6",
+    "createdAt": "2026-06-04T11:18:00Z"
+  },
+  {
+    "id": "syncev_dealer_coastal_boats_6_7",
+    "dealershipId": "dealer_coastal_boats",
+    "vehicleId": "veh_0050",
+    "platformSlug": "autotrader-us",
+    "kind": "SUBMISSION_SENT",
+    "payload": {
+      "stockNumber": "COASTAL1005",
+      "mock": true,
+      "message": "skipped"
+    },
+    "syncRunId": "sync_run_dealer_coastal_boats_6",
+    "createdAt": "2026-06-04T11:11:00Z"
+  },
+  {
+    "id": "syncev_dealer_coastal_boats_7_0",
+    "dealershipId": "dealer_coastal_boats",
+    "vehicleId": "veh_0046",
+    "platformSlug": "meta-automotive-ads",
+    "kind": "ACCOUNT_UPDATED",
+    "payload": {
+      "stockNumber": "COASTAL1001",
+      "mock": true,
+      "message": "rate limited"
+    },
+    "syncRunId": "sync_run_dealer_coastal_boats_7",
+    "createdAt": "2026-06-03T12:00:00Z"
+  },
+  {
+    "id": "syncev_dealer_coastal_boats_7_1",
+    "dealershipId": "dealer_coastal_boats",
+    "vehicleId": "veh_0053",
+    "platformSlug": "owned-storefront",
+    "kind": "INVENTORY_IMPORT",
+    "payload": {
+      "stockNumber": "COASTAL1008",
+      "mock": true,
+      "message": "rate limited"
+    },
+    "syncRunId": "sync_run_dealer_coastal_boats_7",
+    "createdAt": "2026-06-03T11:53:00Z"
+  },
+  {
+    "id": "syncev_dealer_coastal_boats_7_2",
+    "dealershipId": "dealer_coastal_boats",
+    "vehicleId": "veh_0054",
+    "platformSlug": "autotrader-us",
+    "kind": "INVENTORY_CHANGE",
+    "payload": {
+      "stockNumber": "COASTAL1009",
+      "mock": true,
+      "message": "skipped"
+    },
+    "syncRunId": "sync_run_dealer_coastal_boats_7",
+    "createdAt": "2026-06-03T11:46:00Z"
+  },
+  {
+    "id": "syncev_dealer_coastal_boats_7_3",
+    "dealershipId": "dealer_coastal_boats",
+    "vehicleId": "veh_0052",
+    "platformSlug": "autotrader-us",
+    "kind": "SUBMISSION_SENT",
+    "payload": {
+      "stockNumber": "COASTAL1007",
+      "mock": true,
+      "message": "auth expired"
+    },
+    "syncRunId": "sync_run_dealer_coastal_boats_7",
+    "createdAt": "2026-06-03T11:39:00Z"
+  },
+  {
+    "id": "syncev_dealer_coastal_boats_7_4",
+    "dealershipId": "dealer_coastal_boats",
+    "vehicleId": "veh_0053",
+    "platformSlug": "ebay-motors",
+    "kind": "INVENTORY_CHANGE",
+    "payload": {
+      "stockNumber": "COASTAL1008",
+      "mock": true,
+      "message": "rate limited"
+    },
+    "syncRunId": "sync_run_dealer_coastal_boats_7",
+    "createdAt": "2026-06-03T11:32:00Z"
+  },
+  {
+    "id": "syncev_dealer_coastal_boats_7_5",
+    "dealershipId": "dealer_coastal_boats",
+    "vehicleId": "veh_0048",
+    "platformSlug": "autotrader-us",
+    "kind": "ACCOUNT_UPDATED",
+    "payload": {
+      "stockNumber": "COASTAL1003",
+      "mock": true,
+      "message": "upserted"
+    },
+    "syncRunId": "sync_run_dealer_coastal_boats_7",
+    "createdAt": "2026-06-03T11:25:00Z"
+  },
+  {
+    "id": "syncev_dealer_coastal_boats_7_6",
+    "dealershipId": "dealer_coastal_boats",
+    "vehicleId": "veh_0048",
+    "platformSlug": "owned-storefront",
+    "kind": "ARTIFACT_GENERATED",
+    "payload": {
+      "stockNumber": "COASTAL1003",
+      "mock": true,
+      "message": "validation warning"
+    },
+    "syncRunId": "sync_run_dealer_coastal_boats_7",
+    "createdAt": "2026-06-03T11:18:00Z"
+  },
+  {
+    "id": "syncev_dealer_coastal_boats_7_7",
+    "dealershipId": "dealer_coastal_boats",
+    "vehicleId": "veh_0053",
+    "platformSlug": "ebay-motors",
+    "kind": "ARTIFACT_GENERATED",
+    "payload": {
+      "stockNumber": "COASTAL1008",
+      "mock": true,
+      "message": "upserted"
+    },
+    "syncRunId": "sync_run_dealer_coastal_boats_7",
+    "createdAt": "2026-06-03T11:11:00Z"
+  },
+  {
+    "id": "syncev_dealer_messy_motors_0_0",
+    "dealershipId": "dealer_messy_motors",
+    "vehicleId": "veh_0068",
+    "platformSlug": "microsoft-automotive-ads",
+    "kind": "ACCOUNT_UPDATED",
+    "payload": {
+      "stockNumber": "MESSY1011",
+      "mock": true,
+      "message": "skipped"
+    },
+    "syncRunId": "sync_run_dealer_messy_motors_0",
+    "createdAt": "2026-06-10T12:00:00Z"
+  },
+  {
+    "id": "syncev_dealer_messy_motors_0_1",
+    "dealershipId": "dealer_messy_motors",
+    "vehicleId": "veh_0065",
+    "platformSlug": "owned-storefront",
+    "kind": "INVENTORY_IMPORT",
+    "payload": {
+      "stockNumber": "MESSY1008",
+      "mock": true,
+      "message": "rate limited"
+    },
+    "syncRunId": "sync_run_dealer_messy_motors_0",
+    "createdAt": "2026-06-10T11:53:00Z"
+  },
+  {
+    "id": "syncev_dealer_messy_motors_0_2",
+    "dealershipId": "dealer_messy_motors",
+    "vehicleId": "veh_0077",
+    "platformSlug": "owned-storefront",
+    "kind": "SUBMISSION_SENT",
+    "payload": {
+      "stockNumber": "MESSY1020",
+      "mock": true,
+      "message": "validation warning"
+    },
+    "syncRunId": "sync_run_dealer_messy_motors_0",
+    "createdAt": "2026-06-10T11:46:00Z"
+  },
+  {
+    "id": "syncev_dealer_messy_motors_0_3",
+    "dealershipId": "dealer_messy_motors",
+    "vehicleId": "veh_0064",
+    "platformSlug": "autotrader-us",
+    "kind": "ARTIFACT_GENERATED",
+    "payload": {
+      "stockNumber": "MESSY1007",
+      "mock": true,
+      "message": "rate limited"
+    },
+    "syncRunId": "sync_run_dealer_messy_motors_0",
+    "createdAt": "2026-06-10T11:39:00Z"
+  },
+  {
+    "id": "syncev_dealer_messy_motors_0_4",
+    "dealershipId": "dealer_messy_motors",
+    "vehicleId": "veh_0057",
+    "platformSlug": "ebay-motors",
+    "kind": "SUBMISSION_SENT",
+    "payload": {
+      "stockNumber": "MESSY1000",
+      "mock": true,
+      "message": "upserted"
+    },
+    "syncRunId": "sync_run_dealer_messy_motors_0",
+    "createdAt": "2026-06-10T11:32:00Z"
+  },
+  {
+    "id": "syncev_dealer_messy_motors_0_5",
+    "dealershipId": "dealer_messy_motors",
+    "vehicleId": "veh_0061",
+    "platformSlug": "owned-storefront",
+    "kind": "DISPATCH_FAILED",
+    "payload": {
+      "stockNumber": "MESSY1004",
+      "mock": true,
+      "message": "auth expired"
+    },
+    "syncRunId": "sync_run_dealer_messy_motors_0",
+    "createdAt": "2026-06-10T11:25:00Z"
+  },
+  {
+    "id": "syncev_dealer_messy_motors_0_6",
+    "dealershipId": "dealer_messy_motors",
+    "vehicleId": "veh_0079",
+    "platformSlug": "ebay-motors",
+    "kind": "DISPATCH_FAILED",
+    "payload": {
+      "stockNumber": "MESSY1022",
+      "mock": true,
+      "message": "upserted"
+    },
+    "syncRunId": "sync_run_dealer_messy_motors_0",
+    "createdAt": "2026-06-10T11:18:00Z"
+  },
+  {
+    "id": "syncev_dealer_messy_motors_0_7",
+    "dealershipId": "dealer_messy_motors",
+    "vehicleId": "veh_0079",
+    "platformSlug": "autotrader-us",
+    "kind": "SUBMISSION_SENT",
+    "payload": {
+      "stockNumber": "MESSY1022",
+      "mock": true,
+      "message": "auth expired"
+    },
+    "syncRunId": "sync_run_dealer_messy_motors_0",
+    "createdAt": "2026-06-10T11:11:00Z"
+  },
+  {
+    "id": "syncev_dealer_messy_motors_1_0",
+    "dealershipId": "dealer_messy_motors",
+    "vehicleId": "veh_0072",
+    "platformSlug": "autotrader-us",
+    "kind": "INVENTORY_CHANGE",
+    "payload": {
+      "stockNumber": "MESSY1015",
+      "mock": true,
+      "message": "upserted"
+    },
+    "syncRunId": "sync_run_dealer_messy_motors_1",
+    "createdAt": "2026-06-09T12:00:00Z"
+  },
+  {
+    "id": "syncev_dealer_messy_motors_1_1",
+    "dealershipId": "dealer_messy_motors",
+    "vehicleId": "veh_0069",
+    "platformSlug": "owned-storefront",
+    "kind": "SUBMISSION_SENT",
+    "payload": {
+      "stockNumber": "MESSY1012",
+      "mock": true,
+      "message": "upserted"
+    },
+    "syncRunId": "sync_run_dealer_messy_motors_1",
+    "createdAt": "2026-06-09T11:53:00Z"
+  },
+  {
+    "id": "syncev_dealer_messy_motors_1_2",
+    "dealershipId": "dealer_messy_motors",
+    "vehicleId": "veh_0058",
+    "platformSlug": "meta-automotive-ads",
+    "kind": "SUBMISSION_SENT",
+    "payload": {
+      "stockNumber": "MESSY1001",
+      "mock": true,
+      "message": "skipped"
+    },
+    "syncRunId": "sync_run_dealer_messy_motors_1",
+    "createdAt": "2026-06-09T11:46:00Z"
+  },
+  {
+    "id": "syncev_dealer_messy_motors_1_3",
+    "dealershipId": "dealer_messy_motors",
+    "vehicleId": "veh_0076",
+    "platformSlug": "owned-storefront",
+    "kind": "INVENTORY_IMPORT",
+    "payload": {
+      "stockNumber": "MESSY1019",
+      "mock": true,
+      "message": "validation warning"
+    },
+    "syncRunId": "sync_run_dealer_messy_motors_1",
+    "createdAt": "2026-06-09T11:39:00Z"
+  },
+  {
+    "id": "syncev_dealer_messy_motors_1_4",
+    "dealershipId": "dealer_messy_motors",
+    "vehicleId": "veh_0081",
+    "platformSlug": "ebay-motors",
+    "kind": "DISPATCH_RETRY",
+    "payload": {
+      "stockNumber": "MESSY1024",
+      "mock": true,
+      "message": "upserted"
+    },
+    "syncRunId": "sync_run_dealer_messy_motors_1",
+    "createdAt": "2026-06-09T11:32:00Z"
+  },
+  {
+    "id": "syncev_dealer_messy_motors_1_5",
+    "dealershipId": "dealer_messy_motors",
+    "vehicleId": "veh_0059",
+    "platformSlug": "ebay-motors",
+    "kind": "INVENTORY_CHANGE",
+    "payload": {
+      "stockNumber": "MESSY1002",
+      "mock": true,
+      "message": "skipped"
+    },
+    "syncRunId": "sync_run_dealer_messy_motors_1",
+    "createdAt": "2026-06-09T11:25:00Z"
+  },
+  {
+    "id": "syncev_dealer_messy_motors_1_6",
+    "dealershipId": "dealer_messy_motors",
+    "vehicleId": "veh_0062",
+    "platformSlug": "meta-automotive-ads",
+    "kind": "DISPATCH_FAILED",
+    "payload": {
+      "stockNumber": "MESSY1005",
+      "mock": true,
+      "message": "rate limited"
+    },
+    "syncRunId": "sync_run_dealer_messy_motors_1",
+    "createdAt": "2026-06-09T11:18:00Z"
+  },
+  {
+    "id": "syncev_dealer_messy_motors_1_7",
+    "dealershipId": "dealer_messy_motors",
+    "vehicleId": "veh_0065",
+    "platformSlug": "owned-storefront",
+    "kind": "DISPATCH_RETRY",
+    "payload": {
+      "stockNumber": "MESSY1008",
+      "mock": true,
+      "message": "rate limited"
+    },
+    "syncRunId": "sync_run_dealer_messy_motors_1",
+    "createdAt": "2026-06-09T11:11:00Z"
+  },
+  {
+    "id": "syncev_dealer_messy_motors_2_0",
+    "dealershipId": "dealer_messy_motors",
+    "vehicleId": "veh_0071",
+    "platformSlug": "meta-automotive-ads",
+    "kind": "DISPATCH_RETRY",
+    "payload": {
+      "stockNumber": "MESSY1014",
+      "mock": true,
+      "message": "validation warning"
+    },
+    "syncRunId": "sync_run_dealer_messy_motors_2",
+    "createdAt": "2026-06-08T12:00:00Z"
+  },
+  {
+    "id": "syncev_dealer_messy_motors_2_1",
+    "dealershipId": "dealer_messy_motors",
+    "vehicleId": "veh_0067",
+    "platformSlug": "ebay-motors",
+    "kind": "ACCOUNT_UPDATED",
+    "payload": {
+      "stockNumber": "MESSY1010",
+      "mock": true,
+      "message": "validation warning"
+    },
+    "syncRunId": "sync_run_dealer_messy_motors_2",
+    "createdAt": "2026-06-08T11:53:00Z"
+  },
+  {
+    "id": "syncev_dealer_messy_motors_2_2",
+    "dealershipId": "dealer_messy_motors",
+    "vehicleId": "veh_0070",
+    "platformSlug": "meta-automotive-ads",
+    "kind": "DISPATCH_RETRY",
+    "payload": {
+      "stockNumber": "MESSY1013",
+      "mock": true,
+      "message": "upserted"
+    },
+    "syncRunId": "sync_run_dealer_messy_motors_2",
+    "createdAt": "2026-06-08T11:46:00Z"
+  },
+  {
+    "id": "syncev_dealer_messy_motors_2_3",
+    "dealershipId": "dealer_messy_motors",
+    "vehicleId": "veh_0083",
+    "platformSlug": "owned-storefront",
+    "kind": "INVENTORY_IMPORT",
+    "payload": {
+      "stockNumber": "MESSY1026",
+      "mock": true,
+      "message": "upserted"
+    },
+    "syncRunId": "sync_run_dealer_messy_motors_2",
+    "createdAt": "2026-06-08T11:39:00Z"
+  },
+  {
+    "id": "syncev_dealer_messy_motors_2_4",
+    "dealershipId": "dealer_messy_motors",
+    "vehicleId": "veh_0068",
+    "platformSlug": "owned-storefront",
+    "kind": "SUBMISSION_SENT",
+    "payload": {
+      "stockNumber": "MESSY1011",
+      "mock": true,
+      "message": "validation warning"
+    },
+    "syncRunId": "sync_run_dealer_messy_motors_2",
+    "createdAt": "2026-06-08T11:32:00Z"
+  },
+  {
+    "id": "syncev_dealer_messy_motors_2_5",
+    "dealershipId": "dealer_messy_motors",
+    "vehicleId": "veh_0083",
+    "platformSlug": "owned-storefront",
+    "kind": "INVENTORY_CHANGE",
+    "payload": {
+      "stockNumber": "MESSY1026",
+      "mock": true,
+      "message": "skipped"
+    },
+    "syncRunId": "sync_run_dealer_messy_motors_2",
+    "createdAt": "2026-06-08T11:25:00Z"
+  },
+  {
+    "id": "syncev_dealer_messy_motors_2_6",
+    "dealershipId": "dealer_messy_motors",
+    "vehicleId": "veh_0078",
+    "platformSlug": "owned-storefront",
+    "kind": "SUBMISSION_SENT",
+    "payload": {
+      "stockNumber": "MESSY1021",
+      "mock": true,
+      "message": "auth expired"
+    },
+    "syncRunId": "sync_run_dealer_messy_motors_2",
+    "createdAt": "2026-06-08T11:18:00Z"
+  },
+  {
+    "id": "syncev_dealer_messy_motors_2_7",
+    "dealershipId": "dealer_messy_motors",
+    "vehicleId": "veh_0071",
+    "platformSlug": "owned-storefront",
+    "kind": "ARTIFACT_GENERATED",
+    "payload": {
+      "stockNumber": "MESSY1014",
+      "mock": true,
+      "message": "rate limited"
+    },
+    "syncRunId": "sync_run_dealer_messy_motors_2",
+    "createdAt": "2026-06-08T11:11:00Z"
+  },
+  {
+    "id": "syncev_dealer_messy_motors_3_0",
+    "dealershipId": "dealer_messy_motors",
+    "vehicleId": "veh_0057",
+    "platformSlug": "autotrader-us",
+    "kind": "DISPATCH_FAILED",
+    "payload": {
+      "stockNumber": "MESSY1000",
+      "mock": true,
+      "message": "upserted"
+    },
+    "syncRunId": "sync_run_dealer_messy_motors_3",
+    "createdAt": "2026-06-07T12:00:00Z"
+  },
+  {
+    "id": "syncev_dealer_messy_motors_3_1",
+    "dealershipId": "dealer_messy_motors",
+    "vehicleId": "veh_0081",
+    "platformSlug": "microsoft-automotive-ads",
+    "kind": "INVENTORY_CHANGE",
+    "payload": {
+      "stockNumber": "MESSY1024",
+      "mock": true,
+      "message": "validation warning"
+    },
+    "syncRunId": "sync_run_dealer_messy_motors_3",
+    "createdAt": "2026-06-07T11:53:00Z"
+  },
+  {
+    "id": "syncev_dealer_messy_motors_3_2",
+    "dealershipId": "dealer_messy_motors",
+    "vehicleId": "veh_0060",
+    "platformSlug": "owned-storefront",
+    "kind": "ARTIFACT_GENERATED",
+    "payload": {
+      "stockNumber": "MESSY1003",
+      "mock": true,
+      "message": "rate limited"
+    },
+    "syncRunId": "sync_run_dealer_messy_motors_3",
+    "createdAt": "2026-06-07T11:46:00Z"
+  },
+  {
+    "id": "syncev_dealer_messy_motors_3_3",
+    "dealershipId": "dealer_messy_motors",
+    "vehicleId": "veh_0066",
+    "platformSlug": "microsoft-automotive-ads",
+    "kind": "DISPATCH_RETRY",
+    "payload": {
+      "stockNumber": "MESSY1009",
+      "mock": true,
+      "message": "upserted"
+    },
+    "syncRunId": "sync_run_dealer_messy_motors_3",
+    "createdAt": "2026-06-07T11:39:00Z"
+  },
+  {
+    "id": "syncev_dealer_messy_motors_3_4",
+    "dealershipId": "dealer_messy_motors",
+    "vehicleId": "veh_0069",
+    "platformSlug": "meta-automotive-ads",
+    "kind": "INVENTORY_IMPORT",
+    "payload": {
+      "stockNumber": "MESSY1012",
+      "mock": true,
+      "message": "auth expired"
+    },
+    "syncRunId": "sync_run_dealer_messy_motors_3",
+    "createdAt": "2026-06-07T11:32:00Z"
+  },
+  {
+    "id": "syncev_dealer_messy_motors_3_5",
+    "dealershipId": "dealer_messy_motors",
+    "vehicleId": "veh_0063",
+    "platformSlug": "meta-automotive-ads",
+    "kind": "SUBMISSION_SENT",
+    "payload": {
+      "stockNumber": "MESSY1006",
+      "mock": true,
+      "message": "auth expired"
+    },
+    "syncRunId": "sync_run_dealer_messy_motors_3",
+    "createdAt": "2026-06-07T11:25:00Z"
+  },
+  {
+    "id": "syncev_dealer_messy_motors_3_6",
+    "dealershipId": "dealer_messy_motors",
+    "vehicleId": "veh_0076",
+    "platformSlug": "owned-storefront",
+    "kind": "ACCOUNT_UPDATED",
+    "payload": {
+      "stockNumber": "MESSY1019",
+      "mock": true,
+      "message": "rate limited"
+    },
+    "syncRunId": "sync_run_dealer_messy_motors_3",
+    "createdAt": "2026-06-07T11:18:00Z"
+  },
+  {
+    "id": "syncev_dealer_messy_motors_3_7",
+    "dealershipId": "dealer_messy_motors",
+    "vehicleId": "veh_0065",
+    "platformSlug": "meta-automotive-ads",
+    "kind": "SUBMISSION_SENT",
+    "payload": {
+      "stockNumber": "MESSY1008",
+      "mock": true,
+      "message": "upserted"
+    },
+    "syncRunId": "sync_run_dealer_messy_motors_3",
+    "createdAt": "2026-06-07T11:11:00Z"
+  },
+  {
+    "id": "syncev_dealer_messy_motors_4_0",
+    "dealershipId": "dealer_messy_motors",
+    "vehicleId": "veh_0072",
+    "platformSlug": "microsoft-automotive-ads",
+    "kind": "DISPATCH_FAILED",
+    "payload": {
+      "stockNumber": "MESSY1015",
+      "mock": true,
+      "message": "validation warning"
+    },
+    "syncRunId": "sync_run_dealer_messy_motors_4",
+    "createdAt": "2026-06-06T12:00:00Z"
+  },
+  {
+    "id": "syncev_dealer_messy_motors_4_1",
+    "dealershipId": "dealer_messy_motors",
+    "vehicleId": "veh_0071",
+    "platformSlug": "meta-automotive-ads",
+    "kind": "INVENTORY_IMPORT",
+    "payload": {
+      "stockNumber": "MESSY1014",
+      "mock": true,
+      "message": "rate limited"
+    },
+    "syncRunId": "sync_run_dealer_messy_motors_4",
+    "createdAt": "2026-06-06T11:53:00Z"
+  },
+  {
+    "id": "syncev_dealer_messy_motors_4_2",
+    "dealershipId": "dealer_messy_motors",
+    "vehicleId": "veh_0072",
+    "platformSlug": "ebay-motors",
+    "kind": "DISPATCH_FAILED",
+    "payload": {
+      "stockNumber": "MESSY1015",
+      "mock": true,
+      "message": "rate limited"
+    },
+    "syncRunId": "sync_run_dealer_messy_motors_4",
+    "createdAt": "2026-06-06T11:46:00Z"
+  },
+  {
+    "id": "syncev_dealer_messy_motors_4_3",
+    "dealershipId": "dealer_messy_motors",
+    "vehicleId": "veh_0065",
+    "platformSlug": "microsoft-automotive-ads",
+    "kind": "ACCOUNT_UPDATED",
+    "payload": {
+      "stockNumber": "MESSY1008",
+      "mock": true,
+      "message": "rate limited"
+    },
+    "syncRunId": "sync_run_dealer_messy_motors_4",
+    "createdAt": "2026-06-06T11:39:00Z"
+  },
+  {
+    "id": "syncev_dealer_messy_motors_4_4",
+    "dealershipId": "dealer_messy_motors",
+    "vehicleId": "veh_0059",
+    "platformSlug": "meta-automotive-ads",
+    "kind": "INVENTORY_CHANGE",
+    "payload": {
+      "stockNumber": "MESSY1002",
+      "mock": true,
+      "message": "upserted"
+    },
+    "syncRunId": "sync_run_dealer_messy_motors_4",
+    "createdAt": "2026-06-06T11:32:00Z"
+  },
+  {
+    "id": "syncev_dealer_messy_motors_4_5",
+    "dealershipId": "dealer_messy_motors",
+    "vehicleId": "veh_0060",
+    "platformSlug": "microsoft-automotive-ads",
+    "kind": "ACCOUNT_UPDATED",
+    "payload": {
+      "stockNumber": "MESSY1003",
+      "mock": true,
+      "message": "skipped"
+    },
+    "syncRunId": "sync_run_dealer_messy_motors_4",
+    "createdAt": "2026-06-06T11:25:00Z"
+  },
+  {
+    "id": "syncev_dealer_messy_motors_4_6",
+    "dealershipId": "dealer_messy_motors",
+    "vehicleId": "veh_0057",
+    "platformSlug": "microsoft-automotive-ads",
+    "kind": "SUBMISSION_SENT",
+    "payload": {
+      "stockNumber": "MESSY1000",
+      "mock": true,
+      "message": "auth expired"
+    },
+    "syncRunId": "sync_run_dealer_messy_motors_4",
+    "createdAt": "2026-06-06T11:18:00Z"
+  },
+  {
+    "id": "syncev_dealer_messy_motors_4_7",
+    "dealershipId": "dealer_messy_motors",
+    "vehicleId": "veh_0065",
+    "platformSlug": "autotrader-us",
+    "kind": "ACCOUNT_UPDATED",
+    "payload": {
+      "stockNumber": "MESSY1008",
+      "mock": true,
+      "message": "auth expired"
+    },
+    "syncRunId": "sync_run_dealer_messy_motors_4",
+    "createdAt": "2026-06-06T11:11:00Z"
+  },
+  {
+    "id": "syncev_dealer_messy_motors_5_0",
+    "dealershipId": "dealer_messy_motors",
+    "vehicleId": "veh_0058",
+    "platformSlug": "meta-automotive-ads",
+    "kind": "DISPATCH_RETRY",
+    "payload": {
+      "stockNumber": "MESSY1001",
+      "mock": true,
+      "message": "validation warning"
+    },
+    "syncRunId": "sync_run_dealer_messy_motors_5",
+    "createdAt": "2026-06-05T12:00:00Z"
+  },
+  {
+    "id": "syncev_dealer_messy_motors_5_1",
+    "dealershipId": "dealer_messy_motors",
+    "vehicleId": "veh_0064",
+    "platformSlug": "meta-automotive-ads",
+    "kind": "SUBMISSION_SENT",
+    "payload": {
+      "stockNumber": "MESSY1007",
+      "mock": true,
+      "message": "rate limited"
+    },
+    "syncRunId": "sync_run_dealer_messy_motors_5",
+    "createdAt": "2026-06-05T11:53:00Z"
+  },
+  {
+    "id": "syncev_dealer_messy_motors_5_2",
+    "dealershipId": "dealer_messy_motors",
+    "vehicleId": "veh_0078",
+    "platformSlug": "owned-storefront",
+    "kind": "ARTIFACT_GENERATED",
+    "payload": {
+      "stockNumber": "MESSY1021",
+      "mock": true,
+      "message": "validation warning"
+    },
+    "syncRunId": "sync_run_dealer_messy_motors_5",
+    "createdAt": "2026-06-05T11:46:00Z"
+  },
+  {
+    "id": "syncev_dealer_messy_motors_5_3",
+    "dealershipId": "dealer_messy_motors",
+    "vehicleId": "veh_0081",
+    "platformSlug": "meta-automotive-ads",
+    "kind": "DISPATCH_RETRY",
+    "payload": {
+      "stockNumber": "MESSY1024",
+      "mock": true,
+      "message": "validation warning"
+    },
+    "syncRunId": "sync_run_dealer_messy_motors_5",
+    "createdAt": "2026-06-05T11:39:00Z"
+  },
+  {
+    "id": "syncev_dealer_messy_motors_5_4",
+    "dealershipId": "dealer_messy_motors",
+    "vehicleId": "veh_0077",
+    "platformSlug": "meta-automotive-ads",
+    "kind": "INVENTORY_IMPORT",
+    "payload": {
+      "stockNumber": "MESSY1020",
+      "mock": true,
+      "message": "upserted"
+    },
+    "syncRunId": "sync_run_dealer_messy_motors_5",
+    "createdAt": "2026-06-05T11:32:00Z"
+  },
+  {
+    "id": "syncev_dealer_messy_motors_5_5",
+    "dealershipId": "dealer_messy_motors",
+    "vehicleId": "veh_0066",
+    "platformSlug": "owned-storefront",
+    "kind": "ACCOUNT_UPDATED",
+    "payload": {
+      "stockNumber": "MESSY1009",
+      "mock": true,
+      "message": "rate limited"
+    },
+    "syncRunId": "sync_run_dealer_messy_motors_5",
+    "createdAt": "2026-06-05T11:25:00Z"
+  },
+  {
+    "id": "syncev_dealer_messy_motors_5_6",
+    "dealershipId": "dealer_messy_motors",
+    "vehicleId": "veh_0071",
+    "platformSlug": "ebay-motors",
+    "kind": "DISPATCH_FAILED",
+    "payload": {
+      "stockNumber": "MESSY1014",
+      "mock": true,
+      "message": "auth expired"
+    },
+    "syncRunId": "sync_run_dealer_messy_motors_5",
+    "createdAt": "2026-06-05T11:18:00Z"
+  },
+  {
+    "id": "syncev_dealer_messy_motors_5_7",
+    "dealershipId": "dealer_messy_motors",
+    "vehicleId": "veh_0078",
+    "platformSlug": "autotrader-us",
+    "kind": "DISPATCH_RETRY",
+    "payload": {
+      "stockNumber": "MESSY1021",
+      "mock": true,
+      "message": "validation warning"
+    },
+    "syncRunId": "sync_run_dealer_messy_motors_5",
+    "createdAt": "2026-06-05T11:11:00Z"
+  },
+  {
+    "id": "syncev_dealer_messy_motors_6_0",
+    "dealershipId": "dealer_messy_motors",
+    "vehicleId": "veh_0067",
+    "platformSlug": "owned-storefront",
+    "kind": "INVENTORY_CHANGE",
+    "payload": {
+      "stockNumber": "MESSY1010",
+      "mock": true,
+      "message": "upserted"
+    },
+    "syncRunId": "sync_run_dealer_messy_motors_6",
+    "createdAt": "2026-06-04T12:00:00Z"
+  },
+  {
+    "id": "syncev_dealer_messy_motors_6_1",
+    "dealershipId": "dealer_messy_motors",
+    "vehicleId": "veh_0084",
+    "platformSlug": "autotrader-us",
+    "kind": "DISPATCH_RETRY",
+    "payload": {
+      "stockNumber": "MESSY1027",
+      "mock": true,
+      "message": "auth expired"
+    },
+    "syncRunId": "sync_run_dealer_messy_motors_6",
+    "createdAt": "2026-06-04T11:53:00Z"
+  },
+  {
+    "id": "syncev_dealer_messy_motors_6_2",
+    "dealershipId": "dealer_messy_motors",
+    "vehicleId": "veh_0060",
+    "platformSlug": "microsoft-automotive-ads",
+    "kind": "INVENTORY_CHANGE",
+    "payload": {
+      "stockNumber": "MESSY1003",
+      "mock": true,
+      "message": "rate limited"
+    },
+    "syncRunId": "sync_run_dealer_messy_motors_6",
+    "createdAt": "2026-06-04T11:46:00Z"
+  },
+  {
+    "id": "syncev_dealer_messy_motors_6_3",
+    "dealershipId": "dealer_messy_motors",
+    "vehicleId": "veh_0067",
+    "platformSlug": "microsoft-automotive-ads",
+    "kind": "ACCOUNT_UPDATED",
+    "payload": {
+      "stockNumber": "MESSY1010",
+      "mock": true,
+      "message": "validation warning"
+    },
+    "syncRunId": "sync_run_dealer_messy_motors_6",
+    "createdAt": "2026-06-04T11:39:00Z"
+  },
+  {
+    "id": "syncev_dealer_messy_motors_6_4",
+    "dealershipId": "dealer_messy_motors",
+    "vehicleId": "veh_0060",
+    "platformSlug": "ebay-motors",
+    "kind": "INVENTORY_CHANGE",
+    "payload": {
+      "stockNumber": "MESSY1003",
+      "mock": true,
+      "message": "rate limited"
+    },
+    "syncRunId": "sync_run_dealer_messy_motors_6",
+    "createdAt": "2026-06-04T11:32:00Z"
+  },
+  {
+    "id": "syncev_dealer_messy_motors_6_5",
+    "dealershipId": "dealer_messy_motors",
+    "vehicleId": "veh_0057",
+    "platformSlug": "ebay-motors",
+    "kind": "ACCOUNT_UPDATED",
+    "payload": {
+      "stockNumber": "MESSY1000",
+      "mock": true,
+      "message": "upserted"
+    },
+    "syncRunId": "sync_run_dealer_messy_motors_6",
+    "createdAt": "2026-06-04T11:25:00Z"
+  },
+  {
+    "id": "syncev_dealer_messy_motors_6_6",
+    "dealershipId": "dealer_messy_motors",
+    "vehicleId": "veh_0073",
+    "platformSlug": "owned-storefront",
+    "kind": "INVENTORY_CHANGE",
+    "payload": {
+      "stockNumber": "MESSY1016",
+      "mock": true,
+      "message": "skipped"
+    },
+    "syncRunId": "sync_run_dealer_messy_motors_6",
+    "createdAt": "2026-06-04T11:18:00Z"
+  },
+  {
+    "id": "syncev_dealer_messy_motors_6_7",
+    "dealershipId": "dealer_messy_motors",
+    "vehicleId": "veh_0063",
+    "platformSlug": "microsoft-automotive-ads",
+    "kind": "DISPATCH_FAILED",
+    "payload": {
+      "stockNumber": "MESSY1006",
+      "mock": true,
+      "message": "rate limited"
+    },
+    "syncRunId": "sync_run_dealer_messy_motors_6",
+    "createdAt": "2026-06-04T11:11:00Z"
+  },
+  {
+    "id": "syncev_dealer_messy_motors_7_0",
+    "dealershipId": "dealer_messy_motors",
+    "vehicleId": "veh_0067",
+    "platformSlug": "autotrader-us",
+    "kind": "DISPATCH_FAILED",
+    "payload": {
+      "stockNumber": "MESSY1010",
+      "mock": true,
+      "message": "validation warning"
+    },
+    "syncRunId": "sync_run_dealer_messy_motors_7",
+    "createdAt": "2026-06-03T12:00:00Z"
+  },
+  {
+    "id": "syncev_dealer_messy_motors_7_1",
+    "dealershipId": "dealer_messy_motors",
+    "vehicleId": "veh_0069",
+    "platformSlug": "autotrader-us",
+    "kind": "INVENTORY_CHANGE",
+    "payload": {
+      "stockNumber": "MESSY1012",
+      "mock": true,
+      "message": "skipped"
+    },
+    "syncRunId": "sync_run_dealer_messy_motors_7",
+    "createdAt": "2026-06-03T11:53:00Z"
+  },
+  {
+    "id": "syncev_dealer_messy_motors_7_2",
+    "dealershipId": "dealer_messy_motors",
+    "vehicleId": "veh_0060",
+    "platformSlug": "owned-storefront",
+    "kind": "INVENTORY_CHANGE",
+    "payload": {
+      "stockNumber": "MESSY1003",
+      "mock": true,
+      "message": "skipped"
+    },
+    "syncRunId": "sync_run_dealer_messy_motors_7",
+    "createdAt": "2026-06-03T11:46:00Z"
+  },
+  {
+    "id": "syncev_dealer_messy_motors_7_3",
+    "dealershipId": "dealer_messy_motors",
+    "vehicleId": "veh_0084",
+    "platformSlug": "microsoft-automotive-ads",
+    "kind": "SUBMISSION_SENT",
+    "payload": {
+      "stockNumber": "MESSY1027",
+      "mock": true,
+      "message": "auth expired"
+    },
+    "syncRunId": "sync_run_dealer_messy_motors_7",
+    "createdAt": "2026-06-03T11:39:00Z"
+  },
+  {
+    "id": "syncev_dealer_messy_motors_7_4",
+    "dealershipId": "dealer_messy_motors",
+    "vehicleId": "veh_0063",
+    "platformSlug": "ebay-motors",
+    "kind": "INVENTORY_IMPORT",
+    "payload": {
+      "stockNumber": "MESSY1006",
+      "mock": true,
+      "message": "upserted"
+    },
+    "syncRunId": "sync_run_dealer_messy_motors_7",
+    "createdAt": "2026-06-03T11:32:00Z"
+  },
+  {
+    "id": "syncev_dealer_messy_motors_7_5",
+    "dealershipId": "dealer_messy_motors",
+    "vehicleId": "veh_0065",
+    "platformSlug": "ebay-motors",
+    "kind": "DISPATCH_RETRY",
+    "payload": {
+      "stockNumber": "MESSY1008",
+      "mock": true,
+      "message": "skipped"
+    },
+    "syncRunId": "sync_run_dealer_messy_motors_7",
+    "createdAt": "2026-06-03T11:25:00Z"
+  },
+  {
+    "id": "syncev_dealer_messy_motors_7_6",
+    "dealershipId": "dealer_messy_motors",
+    "vehicleId": "veh_0068",
+    "platformSlug": "meta-automotive-ads",
+    "kind": "ARTIFACT_GENERATED",
+    "payload": {
+      "stockNumber": "MESSY1011",
+      "mock": true,
+      "message": "skipped"
+    },
+    "syncRunId": "sync_run_dealer_messy_motors_7",
+    "createdAt": "2026-06-03T11:18:00Z"
+  },
+  {
+    "id": "syncev_dealer_messy_motors_7_7",
+    "dealershipId": "dealer_messy_motors",
+    "vehicleId": "veh_0070",
+    "platformSlug": "autotrader-us",
+    "kind": "DISPATCH_RETRY",
+    "payload": {
+      "stockNumber": "MESSY1013",
+      "mock": true,
+      "message": "validation warning"
+    },
+    "syncRunId": "sync_run_dealer_messy_motors_7",
+    "createdAt": "2026-06-03T11:11:00Z"
+  },
+  {
+    "id": "syncev_dealer_premium_imports_0_0",
+    "dealershipId": "dealer_premium_imports",
+    "vehicleId": "veh_0099",
+    "platformSlug": "meta-automotive-ads",
+    "kind": "DISPATCH_RETRY",
+    "payload": {
+      "stockNumber": "PREMIUM1014",
+      "mock": true,
+      "message": "rate limited"
+    },
+    "syncRunId": "sync_run_dealer_premium_imports_0",
+    "createdAt": "2026-06-10T12:00:00Z"
+  },
+  {
+    "id": "syncev_dealer_premium_imports_0_1",
+    "dealershipId": "dealer_premium_imports",
+    "vehicleId": "veh_0106",
+    "platformSlug": "autotrader-us",
+    "kind": "ARTIFACT_GENERATED",
+    "payload": {
+      "stockNumber": "PREMIUM1021",
+      "mock": true,
+      "message": "skipped"
+    },
+    "syncRunId": "sync_run_dealer_premium_imports_0",
+    "createdAt": "2026-06-10T11:53:00Z"
+  },
+  {
+    "id": "syncev_dealer_premium_imports_0_2",
+    "dealershipId": "dealer_premium_imports",
+    "vehicleId": "veh_0108",
+    "platformSlug": "autotrader-us",
+    "kind": "DISPATCH_RETRY",
+    "payload": {
+      "stockNumber": "PREMIUM1023",
+      "mock": true,
+      "message": "auth expired"
+    },
+    "syncRunId": "sync_run_dealer_premium_imports_0",
+    "createdAt": "2026-06-10T11:46:00Z"
+  },
+  {
+    "id": "syncev_dealer_premium_imports_0_3",
+    "dealershipId": "dealer_premium_imports",
+    "vehicleId": "veh_0090",
+    "platformSlug": "ebay-motors",
+    "kind": "INVENTORY_IMPORT",
+    "payload": {
+      "stockNumber": "PREMIUM1005",
+      "mock": true,
+      "message": "auth expired"
+    },
+    "syncRunId": "sync_run_dealer_premium_imports_0",
+    "createdAt": "2026-06-10T11:39:00Z"
+  },
+  {
+    "id": "syncev_dealer_premium_imports_0_4",
+    "dealershipId": "dealer_premium_imports",
+    "vehicleId": "veh_0092",
+    "platformSlug": "microsoft-automotive-ads",
+    "kind": "DISPATCH_FAILED",
+    "payload": {
+      "stockNumber": "PREMIUM1007",
+      "mock": true,
+      "message": "upserted"
+    },
+    "syncRunId": "sync_run_dealer_premium_imports_0",
+    "createdAt": "2026-06-10T11:32:00Z"
+  },
+  {
+    "id": "syncev_dealer_premium_imports_0_5",
+    "dealershipId": "dealer_premium_imports",
+    "vehicleId": "veh_0109",
+    "platformSlug": "ebay-motors",
+    "kind": "SUBMISSION_SENT",
+    "payload": {
+      "stockNumber": "PREMIUM1024",
+      "mock": true,
+      "message": "validation warning"
+    },
+    "syncRunId": "sync_run_dealer_premium_imports_0",
+    "createdAt": "2026-06-10T11:25:00Z"
+  },
+  {
+    "id": "syncev_dealer_premium_imports_0_6",
+    "dealershipId": "dealer_premium_imports",
+    "vehicleId": "veh_0101",
+    "platformSlug": "autotrader-us",
+    "kind": "SUBMISSION_SENT",
+    "payload": {
+      "stockNumber": "PREMIUM1016",
+      "mock": true,
+      "message": "rate limited"
+    },
+    "syncRunId": "sync_run_dealer_premium_imports_0",
+    "createdAt": "2026-06-10T11:18:00Z"
+  },
+  {
+    "id": "syncev_dealer_premium_imports_0_7",
+    "dealershipId": "dealer_premium_imports",
+    "vehicleId": "veh_0105",
+    "platformSlug": "owned-storefront",
+    "kind": "DISPATCH_RETRY",
+    "payload": {
+      "stockNumber": "PREMIUM1020",
+      "mock": true,
+      "message": "auth expired"
+    },
+    "syncRunId": "sync_run_dealer_premium_imports_0",
+    "createdAt": "2026-06-10T11:11:00Z"
+  },
+  {
+    "id": "syncev_dealer_premium_imports_1_0",
+    "dealershipId": "dealer_premium_imports",
+    "vehicleId": "veh_0113",
+    "platformSlug": "ebay-motors",
+    "kind": "DISPATCH_RETRY",
+    "payload": {
+      "stockNumber": "PREMIUM1028",
+      "mock": true,
+      "message": "rate limited"
+    },
+    "syncRunId": "sync_run_dealer_premium_imports_1",
+    "createdAt": "2026-06-09T12:00:00Z"
+  },
+  {
+    "id": "syncev_dealer_premium_imports_1_1",
+    "dealershipId": "dealer_premium_imports",
+    "vehicleId": "veh_0109",
+    "platformSlug": "microsoft-automotive-ads",
+    "kind": "ACCOUNT_UPDATED",
+    "payload": {
+      "stockNumber": "PREMIUM1024",
+      "mock": true,
+      "message": "validation warning"
+    },
+    "syncRunId": "sync_run_dealer_premium_imports_1",
+    "createdAt": "2026-06-09T11:53:00Z"
+  },
+  {
+    "id": "syncev_dealer_premium_imports_1_2",
+    "dealershipId": "dealer_premium_imports",
+    "vehicleId": "veh_0096",
+    "platformSlug": "ebay-motors",
+    "kind": "ACCOUNT_UPDATED",
+    "payload": {
+      "stockNumber": "PREMIUM1011",
+      "mock": true,
+      "message": "auth expired"
+    },
+    "syncRunId": "sync_run_dealer_premium_imports_1",
+    "createdAt": "2026-06-09T11:46:00Z"
+  },
+  {
+    "id": "syncev_dealer_premium_imports_1_3",
+    "dealershipId": "dealer_premium_imports",
+    "vehicleId": "veh_0091",
+    "platformSlug": "microsoft-automotive-ads",
+    "kind": "DISPATCH_FAILED",
+    "payload": {
+      "stockNumber": "PREMIUM1006",
+      "mock": true,
+      "message": "upserted"
+    },
+    "syncRunId": "sync_run_dealer_premium_imports_1",
+    "createdAt": "2026-06-09T11:39:00Z"
+  },
+  {
+    "id": "syncev_dealer_premium_imports_1_4",
+    "dealershipId": "dealer_premium_imports",
+    "vehicleId": "veh_0098",
+    "platformSlug": "ebay-motors",
+    "kind": "DISPATCH_FAILED",
+    "payload": {
+      "stockNumber": "PREMIUM1013",
+      "mock": true,
+      "message": "rate limited"
+    },
+    "syncRunId": "sync_run_dealer_premium_imports_1",
+    "createdAt": "2026-06-09T11:32:00Z"
+  },
+  {
+    "id": "syncev_dealer_premium_imports_1_5",
+    "dealershipId": "dealer_premium_imports",
+    "vehicleId": "veh_0101",
+    "platformSlug": "ebay-motors",
+    "kind": "INVENTORY_IMPORT",
+    "payload": {
+      "stockNumber": "PREMIUM1016",
+      "mock": true,
+      "message": "auth expired"
+    },
+    "syncRunId": "sync_run_dealer_premium_imports_1",
+    "createdAt": "2026-06-09T11:25:00Z"
+  },
+  {
+    "id": "syncev_dealer_premium_imports_1_6",
+    "dealershipId": "dealer_premium_imports",
+    "vehicleId": "veh_0114",
+    "platformSlug": "owned-storefront",
+    "kind": "INVENTORY_IMPORT",
+    "payload": {
+      "stockNumber": "PREMIUM1029",
+      "mock": true,
+      "message": "skipped"
+    },
+    "syncRunId": "sync_run_dealer_premium_imports_1",
+    "createdAt": "2026-06-09T11:18:00Z"
+  },
+  {
+    "id": "syncev_dealer_premium_imports_1_7",
+    "dealershipId": "dealer_premium_imports",
+    "vehicleId": "veh_0113",
+    "platformSlug": "ebay-motors",
+    "kind": "SUBMISSION_SENT",
+    "payload": {
+      "stockNumber": "PREMIUM1028",
+      "mock": true,
+      "message": "auth expired"
+    },
+    "syncRunId": "sync_run_dealer_premium_imports_1",
+    "createdAt": "2026-06-09T11:11:00Z"
+  },
+  {
+    "id": "syncev_dealer_premium_imports_2_0",
+    "dealershipId": "dealer_premium_imports",
+    "vehicleId": "veh_0090",
+    "platformSlug": "autotrader-us",
+    "kind": "INVENTORY_CHANGE",
+    "payload": {
+      "stockNumber": "PREMIUM1005",
+      "mock": true,
+      "message": "rate limited"
+    },
+    "syncRunId": "sync_run_dealer_premium_imports_2",
+    "createdAt": "2026-06-08T12:00:00Z"
+  },
+  {
+    "id": "syncev_dealer_premium_imports_2_1",
+    "dealershipId": "dealer_premium_imports",
+    "vehicleId": "veh_0099",
+    "platformSlug": "ebay-motors",
+    "kind": "INVENTORY_IMPORT",
+    "payload": {
+      "stockNumber": "PREMIUM1014",
+      "mock": true,
+      "message": "validation warning"
+    },
+    "syncRunId": "sync_run_dealer_premium_imports_2",
+    "createdAt": "2026-06-08T11:53:00Z"
+  },
+  {
+    "id": "syncev_dealer_premium_imports_2_2",
+    "dealershipId": "dealer_premium_imports",
+    "vehicleId": "veh_0085",
+    "platformSlug": "microsoft-automotive-ads",
+    "kind": "DISPATCH_RETRY",
+    "payload": {
+      "stockNumber": "PREMIUM1000",
+      "mock": true,
+      "message": "validation warning"
+    },
+    "syncRunId": "sync_run_dealer_premium_imports_2",
+    "createdAt": "2026-06-08T11:46:00Z"
+  },
+  {
+    "id": "syncev_dealer_premium_imports_2_3",
+    "dealershipId": "dealer_premium_imports",
+    "vehicleId": "veh_0093",
+    "platformSlug": "ebay-motors",
+    "kind": "SUBMISSION_SENT",
+    "payload": {
+      "stockNumber": "PREMIUM1008",
+      "mock": true,
+      "message": "rate limited"
+    },
+    "syncRunId": "sync_run_dealer_premium_imports_2",
+    "createdAt": "2026-06-08T11:39:00Z"
+  },
+  {
+    "id": "syncev_dealer_premium_imports_2_4",
+    "dealershipId": "dealer_premium_imports",
+    "vehicleId": "veh_0102",
+    "platformSlug": "owned-storefront",
+    "kind": "DISPATCH_FAILED",
+    "payload": {
+      "stockNumber": "PREMIUM1017",
+      "mock": true,
+      "message": "validation warning"
+    },
+    "syncRunId": "sync_run_dealer_premium_imports_2",
+    "createdAt": "2026-06-08T11:32:00Z"
+  },
+  {
+    "id": "syncev_dealer_premium_imports_2_5",
+    "dealershipId": "dealer_premium_imports",
+    "vehicleId": "veh_0087",
+    "platformSlug": "owned-storefront",
+    "kind": "SUBMISSION_SENT",
+    "payload": {
+      "stockNumber": "PREMIUM1002",
+      "mock": true,
+      "message": "rate limited"
+    },
+    "syncRunId": "sync_run_dealer_premium_imports_2",
+    "createdAt": "2026-06-08T11:25:00Z"
+  },
+  {
+    "id": "syncev_dealer_premium_imports_2_6",
+    "dealershipId": "dealer_premium_imports",
+    "vehicleId": "veh_0098",
+    "platformSlug": "autotrader-us",
+    "kind": "DISPATCH_RETRY",
+    "payload": {
+      "stockNumber": "PREMIUM1013",
+      "mock": true,
+      "message": "upserted"
+    },
+    "syncRunId": "sync_run_dealer_premium_imports_2",
+    "createdAt": "2026-06-08T11:18:00Z"
+  },
+  {
+    "id": "syncev_dealer_premium_imports_2_7",
+    "dealershipId": "dealer_premium_imports",
+    "vehicleId": "veh_0107",
+    "platformSlug": "microsoft-automotive-ads",
+    "kind": "ARTIFACT_GENERATED",
+    "payload": {
+      "stockNumber": "PREMIUM1022",
+      "mock": true,
+      "message": "upserted"
+    },
+    "syncRunId": "sync_run_dealer_premium_imports_2",
+    "createdAt": "2026-06-08T11:11:00Z"
+  },
+  {
+    "id": "syncev_dealer_premium_imports_3_0",
+    "dealershipId": "dealer_premium_imports",
+    "vehicleId": "veh_0114",
+    "platformSlug": "owned-storefront",
+    "kind": "INVENTORY_CHANGE",
+    "payload": {
+      "stockNumber": "PREMIUM1029",
+      "mock": true,
+      "message": "skipped"
+    },
+    "syncRunId": "sync_run_dealer_premium_imports_3",
+    "createdAt": "2026-06-07T12:00:00Z"
+  },
+  {
+    "id": "syncev_dealer_premium_imports_3_1",
+    "dealershipId": "dealer_premium_imports",
+    "vehicleId": "veh_0114",
+    "platformSlug": "meta-automotive-ads",
+    "kind": "SUBMISSION_SENT",
+    "payload": {
+      "stockNumber": "PREMIUM1029",
+      "mock": true,
+      "message": "rate limited"
+    },
+    "syncRunId": "sync_run_dealer_premium_imports_3",
+    "createdAt": "2026-06-07T11:53:00Z"
+  },
+  {
+    "id": "syncev_dealer_premium_imports_3_2",
+    "dealershipId": "dealer_premium_imports",
+    "vehicleId": "veh_0093",
+    "platformSlug": "meta-automotive-ads",
+    "kind": "INVENTORY_IMPORT",
+    "payload": {
+      "stockNumber": "PREMIUM1008",
+      "mock": true,
+      "message": "rate limited"
+    },
+    "syncRunId": "sync_run_dealer_premium_imports_3",
+    "createdAt": "2026-06-07T11:46:00Z"
+  },
+  {
+    "id": "syncev_dealer_premium_imports_3_3",
+    "dealershipId": "dealer_premium_imports",
+    "vehicleId": "veh_0101",
+    "platformSlug": "autotrader-us",
+    "kind": "ARTIFACT_GENERATED",
+    "payload": {
+      "stockNumber": "PREMIUM1016",
+      "mock": true,
+      "message": "auth expired"
+    },
+    "syncRunId": "sync_run_dealer_premium_imports_3",
+    "createdAt": "2026-06-07T11:39:00Z"
+  },
+  {
+    "id": "syncev_dealer_premium_imports_3_4",
+    "dealershipId": "dealer_premium_imports",
+    "vehicleId": "veh_0088",
+    "platformSlug": "autotrader-us",
+    "kind": "ACCOUNT_UPDATED",
+    "payload": {
+      "stockNumber": "PREMIUM1003",
+      "mock": true,
+      "message": "auth expired"
+    },
+    "syncRunId": "sync_run_dealer_premium_imports_3",
+    "createdAt": "2026-06-07T11:32:00Z"
+  },
+  {
+    "id": "syncev_dealer_premium_imports_3_5",
+    "dealershipId": "dealer_premium_imports",
+    "vehicleId": "veh_0086",
+    "platformSlug": "meta-automotive-ads",
+    "kind": "ARTIFACT_GENERATED",
+    "payload": {
+      "stockNumber": "PREMIUM1001",
+      "mock": true,
+      "message": "auth expired"
+    },
+    "syncRunId": "sync_run_dealer_premium_imports_3",
+    "createdAt": "2026-06-07T11:25:00Z"
+  },
+  {
+    "id": "syncev_dealer_premium_imports_3_6",
+    "dealershipId": "dealer_premium_imports",
+    "vehicleId": "veh_0089",
+    "platformSlug": "owned-storefront",
+    "kind": "SUBMISSION_SENT",
+    "payload": {
+      "stockNumber": "PREMIUM1004",
+      "mock": true,
+      "message": "upserted"
+    },
+    "syncRunId": "sync_run_dealer_premium_imports_3",
+    "createdAt": "2026-06-07T11:18:00Z"
+  },
+  {
+    "id": "syncev_dealer_premium_imports_3_7",
+    "dealershipId": "dealer_premium_imports",
+    "vehicleId": "veh_0104",
+    "platformSlug": "meta-automotive-ads",
+    "kind": "SUBMISSION_SENT",
+    "payload": {
+      "stockNumber": "PREMIUM1019",
+      "mock": true,
+      "message": "rate limited"
+    },
+    "syncRunId": "sync_run_dealer_premium_imports_3",
+    "createdAt": "2026-06-07T11:11:00Z"
+  },
+  {
+    "id": "syncev_dealer_premium_imports_4_0",
+    "dealershipId": "dealer_premium_imports",
+    "vehicleId": "veh_0093",
+    "platformSlug": "microsoft-automotive-ads",
+    "kind": "DISPATCH_FAILED",
+    "payload": {
+      "stockNumber": "PREMIUM1008",
+      "mock": true,
+      "message": "rate limited"
+    },
+    "syncRunId": "sync_run_dealer_premium_imports_4",
+    "createdAt": "2026-06-06T12:00:00Z"
+  },
+  {
+    "id": "syncev_dealer_premium_imports_4_1",
+    "dealershipId": "dealer_premium_imports",
+    "vehicleId": "veh_0092",
+    "platformSlug": "owned-storefront",
+    "kind": "DISPATCH_RETRY",
+    "payload": {
+      "stockNumber": "PREMIUM1007",
+      "mock": true,
+      "message": "auth expired"
+    },
+    "syncRunId": "sync_run_dealer_premium_imports_4",
+    "createdAt": "2026-06-06T11:53:00Z"
+  },
+  {
+    "id": "syncev_dealer_premium_imports_4_2",
+    "dealershipId": "dealer_premium_imports",
+    "vehicleId": "veh_0087",
+    "platformSlug": "owned-storefront",
+    "kind": "SUBMISSION_SENT",
+    "payload": {
+      "stockNumber": "PREMIUM1002",
+      "mock": true,
+      "message": "auth expired"
+    },
+    "syncRunId": "sync_run_dealer_premium_imports_4",
+    "createdAt": "2026-06-06T11:46:00Z"
+  },
+  {
+    "id": "syncev_dealer_premium_imports_4_3",
+    "dealershipId": "dealer_premium_imports",
+    "vehicleId": "veh_0104",
+    "platformSlug": "meta-automotive-ads",
+    "kind": "ARTIFACT_GENERATED",
+    "payload": {
+      "stockNumber": "PREMIUM1019",
+      "mock": true,
+      "message": "validation warning"
+    },
+    "syncRunId": "sync_run_dealer_premium_imports_4",
+    "createdAt": "2026-06-06T11:39:00Z"
+  },
+  {
+    "id": "syncev_dealer_premium_imports_4_4",
+    "dealershipId": "dealer_premium_imports",
+    "vehicleId": "veh_0085",
+    "platformSlug": "ebay-motors",
+    "kind": "ARTIFACT_GENERATED",
+    "payload": {
+      "stockNumber": "PREMIUM1000",
+      "mock": true,
+      "message": "validation warning"
+    },
+    "syncRunId": "sync_run_dealer_premium_imports_4",
+    "createdAt": "2026-06-06T11:32:00Z"
+  },
+  {
+    "id": "syncev_dealer_premium_imports_4_5",
+    "dealershipId": "dealer_premium_imports",
+    "vehicleId": "veh_0098",
+    "platformSlug": "ebay-motors",
+    "kind": "SUBMISSION_SENT",
+    "payload": {
+      "stockNumber": "PREMIUM1013",
+      "mock": true,
+      "message": "auth expired"
+    },
+    "syncRunId": "sync_run_dealer_premium_imports_4",
+    "createdAt": "2026-06-06T11:25:00Z"
+  },
+  {
+    "id": "syncev_dealer_premium_imports_4_6",
+    "dealershipId": "dealer_premium_imports",
+    "vehicleId": "veh_0096",
+    "platformSlug": "meta-automotive-ads",
+    "kind": "INVENTORY_IMPORT",
+    "payload": {
+      "stockNumber": "PREMIUM1011",
+      "mock": true,
+      "message": "validation warning"
+    },
+    "syncRunId": "sync_run_dealer_premium_imports_4",
+    "createdAt": "2026-06-06T11:18:00Z"
+  },
+  {
+    "id": "syncev_dealer_premium_imports_4_7",
+    "dealershipId": "dealer_premium_imports",
+    "vehicleId": "veh_0114",
+    "platformSlug": "owned-storefront",
+    "kind": "DISPATCH_RETRY",
+    "payload": {
+      "stockNumber": "PREMIUM1029",
+      "mock": true,
+      "message": "validation warning"
+    },
+    "syncRunId": "sync_run_dealer_premium_imports_4",
+    "createdAt": "2026-06-06T11:11:00Z"
+  },
+  {
+    "id": "syncev_dealer_premium_imports_5_0",
+    "dealershipId": "dealer_premium_imports",
+    "vehicleId": "veh_0090",
+    "platformSlug": "meta-automotive-ads",
+    "kind": "INVENTORY_IMPORT",
+    "payload": {
+      "stockNumber": "PREMIUM1005",
+      "mock": true,
+      "message": "validation warning"
+    },
+    "syncRunId": "sync_run_dealer_premium_imports_5",
+    "createdAt": "2026-06-05T12:00:00Z"
+  },
+  {
+    "id": "syncev_dealer_premium_imports_5_1",
+    "dealershipId": "dealer_premium_imports",
+    "vehicleId": "veh_0109",
+    "platformSlug": "microsoft-automotive-ads",
+    "kind": "INVENTORY_CHANGE",
+    "payload": {
+      "stockNumber": "PREMIUM1024",
+      "mock": true,
+      "message": "auth expired"
+    },
+    "syncRunId": "sync_run_dealer_premium_imports_5",
+    "createdAt": "2026-06-05T11:53:00Z"
+  },
+  {
+    "id": "syncev_dealer_premium_imports_5_2",
+    "dealershipId": "dealer_premium_imports",
+    "vehicleId": "veh_0090",
+    "platformSlug": "ebay-motors",
+    "kind": "DISPATCH_RETRY",
+    "payload": {
+      "stockNumber": "PREMIUM1005",
+      "mock": true,
+      "message": "validation warning"
+    },
+    "syncRunId": "sync_run_dealer_premium_imports_5",
+    "createdAt": "2026-06-05T11:46:00Z"
+  },
+  {
+    "id": "syncev_dealer_premium_imports_5_3",
+    "dealershipId": "dealer_premium_imports",
+    "vehicleId": "veh_0106",
+    "platformSlug": "microsoft-automotive-ads",
+    "kind": "SUBMISSION_SENT",
+    "payload": {
+      "stockNumber": "PREMIUM1021",
+      "mock": true,
+      "message": "upserted"
+    },
+    "syncRunId": "sync_run_dealer_premium_imports_5",
+    "createdAt": "2026-06-05T11:39:00Z"
+  },
+  {
+    "id": "syncev_dealer_premium_imports_5_4",
+    "dealershipId": "dealer_premium_imports",
+    "vehicleId": "veh_0116",
+    "platformSlug": "owned-storefront",
+    "kind": "INVENTORY_CHANGE",
+    "payload": {
+      "stockNumber": "PREMIUM1031",
+      "mock": true,
+      "message": "upserted"
+    },
+    "syncRunId": "sync_run_dealer_premium_imports_5",
+    "createdAt": "2026-06-05T11:32:00Z"
+  },
+  {
+    "id": "syncev_dealer_premium_imports_5_5",
+    "dealershipId": "dealer_premium_imports",
+    "vehicleId": "veh_0113",
+    "platformSlug": "microsoft-automotive-ads",
+    "kind": "DISPATCH_RETRY",
+    "payload": {
+      "stockNumber": "PREMIUM1028",
+      "mock": true,
+      "message": "auth expired"
+    },
+    "syncRunId": "sync_run_dealer_premium_imports_5",
+    "createdAt": "2026-06-05T11:25:00Z"
+  },
+  {
+    "id": "syncev_dealer_premium_imports_5_6",
+    "dealershipId": "dealer_premium_imports",
+    "vehicleId": "veh_0102",
+    "platformSlug": "owned-storefront",
+    "kind": "INVENTORY_IMPORT",
+    "payload": {
+      "stockNumber": "PREMIUM1017",
+      "mock": true,
+      "message": "validation warning"
+    },
+    "syncRunId": "sync_run_dealer_premium_imports_5",
+    "createdAt": "2026-06-05T11:18:00Z"
+  },
+  {
+    "id": "syncev_dealer_premium_imports_5_7",
+    "dealershipId": "dealer_premium_imports",
+    "vehicleId": "veh_0088",
+    "platformSlug": "microsoft-automotive-ads",
+    "kind": "DISPATCH_RETRY",
+    "payload": {
+      "stockNumber": "PREMIUM1003",
+      "mock": true,
+      "message": "upserted"
+    },
+    "syncRunId": "sync_run_dealer_premium_imports_5",
+    "createdAt": "2026-06-05T11:11:00Z"
+  },
+  {
+    "id": "syncev_dealer_premium_imports_6_0",
+    "dealershipId": "dealer_premium_imports",
+    "vehicleId": "veh_0101",
+    "platformSlug": "microsoft-automotive-ads",
+    "kind": "ACCOUNT_UPDATED",
+    "payload": {
+      "stockNumber": "PREMIUM1016",
+      "mock": true,
+      "message": "auth expired"
+    },
+    "syncRunId": "sync_run_dealer_premium_imports_6",
+    "createdAt": "2026-06-04T12:00:00Z"
+  },
+  {
+    "id": "syncev_dealer_premium_imports_6_1",
+    "dealershipId": "dealer_premium_imports",
+    "vehicleId": "veh_0096",
+    "platformSlug": "microsoft-automotive-ads",
+    "kind": "DISPATCH_RETRY",
+    "payload": {
+      "stockNumber": "PREMIUM1011",
+      "mock": true,
+      "message": "upserted"
+    },
+    "syncRunId": "sync_run_dealer_premium_imports_6",
+    "createdAt": "2026-06-04T11:53:00Z"
+  },
+  {
+    "id": "syncev_dealer_premium_imports_6_2",
+    "dealershipId": "dealer_premium_imports",
+    "vehicleId": "veh_0105",
+    "platformSlug": "microsoft-automotive-ads",
+    "kind": "ACCOUNT_UPDATED",
+    "payload": {
+      "stockNumber": "PREMIUM1020",
+      "mock": true,
+      "message": "skipped"
+    },
+    "syncRunId": "sync_run_dealer_premium_imports_6",
+    "createdAt": "2026-06-04T11:46:00Z"
+  },
+  {
+    "id": "syncev_dealer_premium_imports_6_3",
+    "dealershipId": "dealer_premium_imports",
+    "vehicleId": "veh_0086",
+    "platformSlug": "owned-storefront",
+    "kind": "INVENTORY_IMPORT",
+    "payload": {
+      "stockNumber": "PREMIUM1001",
+      "mock": true,
+      "message": "upserted"
+    },
+    "syncRunId": "sync_run_dealer_premium_imports_6",
+    "createdAt": "2026-06-04T11:39:00Z"
+  },
+  {
+    "id": "syncev_dealer_premium_imports_6_4",
+    "dealershipId": "dealer_premium_imports",
+    "vehicleId": "veh_0085",
+    "platformSlug": "owned-storefront",
+    "kind": "DISPATCH_FAILED",
+    "payload": {
+      "stockNumber": "PREMIUM1000",
+      "mock": true,
+      "message": "upserted"
+    },
+    "syncRunId": "sync_run_dealer_premium_imports_6",
+    "createdAt": "2026-06-04T11:32:00Z"
+  },
+  {
+    "id": "syncev_dealer_premium_imports_6_5",
+    "dealershipId": "dealer_premium_imports",
+    "vehicleId": "veh_0100",
+    "platformSlug": "owned-storefront",
+    "kind": "ACCOUNT_UPDATED",
+    "payload": {
+      "stockNumber": "PREMIUM1015",
+      "mock": true,
+      "message": "auth expired"
+    },
+    "syncRunId": "sync_run_dealer_premium_imports_6",
+    "createdAt": "2026-06-04T11:25:00Z"
+  },
+  {
+    "id": "syncev_dealer_premium_imports_6_6",
+    "dealershipId": "dealer_premium_imports",
+    "vehicleId": "veh_0093",
+    "platformSlug": "owned-storefront",
+    "kind": "ARTIFACT_GENERATED",
+    "payload": {
+      "stockNumber": "PREMIUM1008",
+      "mock": true,
+      "message": "validation warning"
+    },
+    "syncRunId": "sync_run_dealer_premium_imports_6",
+    "createdAt": "2026-06-04T11:18:00Z"
+  },
+  {
+    "id": "syncev_dealer_premium_imports_6_7",
+    "dealershipId": "dealer_premium_imports",
+    "vehicleId": "veh_0112",
+    "platformSlug": "ebay-motors",
+    "kind": "SUBMISSION_SENT",
+    "payload": {
+      "stockNumber": "PREMIUM1027",
+      "mock": true,
+      "message": "auth expired"
+    },
+    "syncRunId": "sync_run_dealer_premium_imports_6",
+    "createdAt": "2026-06-04T11:11:00Z"
+  },
+  {
+    "id": "syncev_dealer_premium_imports_7_0",
+    "dealershipId": "dealer_premium_imports",
+    "vehicleId": "veh_0092",
+    "platformSlug": "autotrader-us",
+    "kind": "ARTIFACT_GENERATED",
+    "payload": {
+      "stockNumber": "PREMIUM1007",
+      "mock": true,
+      "message": "validation warning"
+    },
+    "syncRunId": "sync_run_dealer_premium_imports_7",
+    "createdAt": "2026-06-03T12:00:00Z"
+  },
+  {
+    "id": "syncev_dealer_premium_imports_7_1",
+    "dealershipId": "dealer_premium_imports",
+    "vehicleId": "veh_0087",
+    "platformSlug": "autotrader-us",
+    "kind": "ARTIFACT_GENERATED",
+    "payload": {
+      "stockNumber": "PREMIUM1002",
+      "mock": true,
+      "message": "upserted"
+    },
+    "syncRunId": "sync_run_dealer_premium_imports_7",
+    "createdAt": "2026-06-03T11:53:00Z"
+  },
+  {
+    "id": "syncev_dealer_premium_imports_7_2",
+    "dealershipId": "dealer_premium_imports",
+    "vehicleId": "veh_0103",
+    "platformSlug": "meta-automotive-ads",
+    "kind": "INVENTORY_IMPORT",
+    "payload": {
+      "stockNumber": "PREMIUM1018",
+      "mock": true,
+      "message": "rate limited"
+    },
+    "syncRunId": "sync_run_dealer_premium_imports_7",
+    "createdAt": "2026-06-03T11:46:00Z"
+  },
+  {
+    "id": "syncev_dealer_premium_imports_7_3",
+    "dealershipId": "dealer_premium_imports",
+    "vehicleId": "veh_0086",
+    "platformSlug": "ebay-motors",
+    "kind": "DISPATCH_RETRY",
+    "payload": {
+      "stockNumber": "PREMIUM1001",
+      "mock": true,
+      "message": "skipped"
+    },
+    "syncRunId": "sync_run_dealer_premium_imports_7",
+    "createdAt": "2026-06-03T11:39:00Z"
+  },
+  {
+    "id": "syncev_dealer_premium_imports_7_4",
+    "dealershipId": "dealer_premium_imports",
+    "vehicleId": "veh_0088",
+    "platformSlug": "microsoft-automotive-ads",
+    "kind": "DISPATCH_RETRY",
+    "payload": {
+      "stockNumber": "PREMIUM1003",
+      "mock": true,
+      "message": "validation warning"
+    },
+    "syncRunId": "sync_run_dealer_premium_imports_7",
+    "createdAt": "2026-06-03T11:32:00Z"
+  },
+  {
+    "id": "syncev_dealer_premium_imports_7_5",
+    "dealershipId": "dealer_premium_imports",
+    "vehicleId": "veh_0116",
+    "platformSlug": "autotrader-us",
+    "kind": "DISPATCH_FAILED",
+    "payload": {
+      "stockNumber": "PREMIUM1031",
+      "mock": true,
+      "message": "auth expired"
+    },
+    "syncRunId": "sync_run_dealer_premium_imports_7",
+    "createdAt": "2026-06-03T11:25:00Z"
+  },
+  {
+    "id": "syncev_dealer_premium_imports_7_6",
+    "dealershipId": "dealer_premium_imports",
+    "vehicleId": "veh_0102",
+    "platformSlug": "autotrader-us",
+    "kind": "ARTIFACT_GENERATED",
+    "payload": {
+      "stockNumber": "PREMIUM1017",
+      "mock": true,
+      "message": "upserted"
+    },
+    "syncRunId": "sync_run_dealer_premium_imports_7",
+    "createdAt": "2026-06-03T11:18:00Z"
+  },
+  {
+    "id": "syncev_dealer_premium_imports_7_7",
+    "dealershipId": "dealer_premium_imports",
+    "vehicleId": "veh_0111",
+    "platformSlug": "microsoft-automotive-ads",
+    "kind": "SUBMISSION_SENT",
+    "payload": {
+      "stockNumber": "PREMIUM1026",
+      "mock": true,
+      "message": "auth expired"
+    },
+    "syncRunId": "sync_run_dealer_premium_imports_7",
+    "createdAt": "2026-06-03T11:11:00Z"
+  }
+]

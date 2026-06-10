@@ -142,8 +142,10 @@ export type PlatformAccountDetail = {
   catalogSync: boolean;
   marketplaceListing: boolean;
   partnerFeed: boolean;
+  leadSync: boolean;
   connectionType: string | null;
   integrationMaturity: string | null;
+  liveValidationNote: string | null;
 };
 
 // ── DB functions ─────────────────────────────────────────────────────────────
@@ -225,8 +227,10 @@ export async function listPlatformAccounts(
       catalogSync:       p.catalogSync ?? false,
       marketplaceListing: p.marketplaceListing ?? false,
       partnerFeed:       p.partnerFeed ?? false,
+      leadSync:          p.leadSync ?? false,
       connectionType:    p.connectionType ?? null,
       integrationMaturity: p.integrationMaturity ?? null,
+      liveValidationNote: p.liveValidationNote ?? null,
     };
     return { ...base, readinessScore: computeReadinessScore(base).score };
   });
@@ -348,8 +352,10 @@ export async function updatePlatformAccount(
     catalogSync:      platform?.catalogSync ?? false,
     marketplaceListing: platform?.marketplaceListing ?? false,
     partnerFeed:      platform?.partnerFeed ?? false,
+    leadSync:         platform?.leadSync ?? false,
     connectionType:   platform?.connectionType ?? null,
     integrationMaturity: platform?.integrationMaturity ?? null,
+    liveValidationNote: platform?.liveValidationNote ?? null,
   };
   return { ...base, readinessScore: computeReadinessScore(base).score };
 }

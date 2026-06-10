@@ -60,6 +60,24 @@ describe('parseOperatorRoute', () => {
       reportRange: 'now',
     });
   });
+
+  it('parses admin overview route', () => {
+    const route = parseOperatorRoute('#/admin');
+    expect(route).toMatchObject({
+      dealerId: null,
+      page: 'admin',
+      platformSlug: null,
+    });
+  });
+
+  it('parses admin credentials route', () => {
+    const route = parseOperatorRoute('#/admin/platform-credentials');
+    expect(route).toMatchObject({
+      dealerId: null,
+      page: 'admin',
+      platformSlug: 'platform-credentials',
+    });
+  });
 });
 
 describe('hash builders', () => {

@@ -1,0 +1,302 @@
+[
+  {
+    "id": "notif_dealer_austin_auto_0",
+    "dealershipId": "dealer_austin_auto",
+    "type": "TOKEN_EXPIRED",
+    "payload": {
+      "message": "Mock token expired for Austin Metro Auto",
+      "platformSlug": "linkedin-lead-gen-forms"
+    },
+    "deliveryStatus": "PENDING",
+    "deliveredAt": "2026-06-10T12:00:00Z",
+    "createdAt": "2026-06-10T11:00:00Z"
+  },
+  {
+    "id": "notif_dealer_austin_auto_1",
+    "dealershipId": "dealer_austin_auto",
+    "type": "SYNC_FAILED",
+    "payload": {
+      "message": "Mock sync failed for Austin Metro Auto",
+      "platformSlug": "cars-com-us"
+    },
+    "deliveryStatus": "PENDING",
+    "deliveredAt": null,
+    "createdAt": "2026-06-10T10:00:00Z"
+  },
+  {
+    "id": "notif_dealer_austin_auto_2",
+    "dealershipId": "dealer_austin_auto",
+    "type": "FEED_PENDING",
+    "payload": {
+      "message": "Mock feed pending for Austin Metro Auto",
+      "platformSlug": "google-business-profile"
+    },
+    "deliveryStatus": "DELIVERED",
+    "deliveredAt": "2026-06-10T10:00:00Z",
+    "createdAt": "2026-06-10T09:00:00Z"
+  },
+  {
+    "id": "notif_dealer_austin_auto_3",
+    "dealershipId": "dealer_austin_auto",
+    "type": "LISTING_BLOCKED",
+    "payload": {
+      "message": "Mock listing blocked for Austin Metro Auto",
+      "platformSlug": "facebook-business-page"
+    },
+    "deliveryStatus": "DELIVERED",
+    "deliveredAt": null,
+    "createdAt": "2026-06-10T08:00:00Z"
+  },
+  {
+    "id": "notif_dealer_austin_auto_4",
+    "dealershipId": "dealer_austin_auto",
+    "type": "CATALOG_READY",
+    "payload": {
+      "message": "Mock catalog ready for Austin Metro Auto",
+      "platformSlug": "x-dynamic-product-ads"
+    },
+    "deliveryStatus": "PENDING",
+    "deliveredAt": "2026-06-10T08:00:00Z",
+    "createdAt": "2026-06-10T07:00:00Z"
+  },
+  {
+    "id": "notif_dealer_lone_star_rv_0",
+    "dealershipId": "dealer_lone_star_rv",
+    "type": "TOKEN_EXPIRED",
+    "payload": {
+      "message": "Mock token expired for Lone Star Trail & RV",
+      "platformSlug": "microsoft-automotive-ads"
+    },
+    "deliveryStatus": "PENDING",
+    "deliveredAt": "2026-06-10T12:00:00Z",
+    "createdAt": "2026-06-10T11:00:00Z"
+  },
+  {
+    "id": "notif_dealer_lone_star_rv_1",
+    "dealershipId": "dealer_lone_star_rv",
+    "type": "SYNC_FAILED",
+    "payload": {
+      "message": "Mock sync failed for Lone Star Trail & RV",
+      "platformSlug": "facebook-business-page"
+    },
+    "deliveryStatus": "DELIVERED",
+    "deliveredAt": null,
+    "createdAt": "2026-06-10T10:00:00Z"
+  },
+  {
+    "id": "notif_dealer_lone_star_rv_2",
+    "dealershipId": "dealer_lone_star_rv",
+    "type": "FEED_PENDING",
+    "payload": {
+      "message": "Mock feed pending for Lone Star Trail & RV",
+      "platformSlug": "google-business-profile"
+    },
+    "deliveryStatus": "DELIVERED",
+    "deliveredAt": "2026-06-10T10:00:00Z",
+    "createdAt": "2026-06-10T09:00:00Z"
+  },
+  {
+    "id": "notif_dealer_lone_star_rv_3",
+    "dealershipId": "dealer_lone_star_rv",
+    "type": "LISTING_BLOCKED",
+    "payload": {
+      "message": "Mock listing blocked for Lone Star Trail & RV",
+      "platformSlug": "owned-storefront"
+    },
+    "deliveryStatus": "PENDING",
+    "deliveredAt": null,
+    "createdAt": "2026-06-10T08:00:00Z"
+  },
+  {
+    "id": "notif_dealer_lone_star_rv_4",
+    "dealershipId": "dealer_lone_star_rv",
+    "type": "CATALOG_READY",
+    "payload": {
+      "message": "Mock catalog ready for Lone Star Trail & RV",
+      "platformSlug": "facebook-business-page"
+    },
+    "deliveryStatus": "PENDING",
+    "deliveredAt": "2026-06-10T08:00:00Z",
+    "createdAt": "2026-06-10T07:00:00Z"
+  },
+  {
+    "id": "notif_dealer_coastal_boats_0",
+    "dealershipId": "dealer_coastal_boats",
+    "type": "TOKEN_EXPIRED",
+    "payload": {
+      "message": "Mock token expired for Coastal Bend Boats",
+      "platformSlug": "linkedin-lead-gen-forms"
+    },
+    "deliveryStatus": "PENDING",
+    "deliveredAt": "2026-06-10T12:00:00Z",
+    "createdAt": "2026-06-10T11:00:00Z"
+  },
+  {
+    "id": "notif_dealer_coastal_boats_1",
+    "dealershipId": "dealer_coastal_boats",
+    "type": "SYNC_FAILED",
+    "payload": {
+      "message": "Mock sync failed for Coastal Bend Boats",
+      "platformSlug": "facebook-business-page"
+    },
+    "deliveryStatus": "PENDING",
+    "deliveredAt": null,
+    "createdAt": "2026-06-10T10:00:00Z"
+  },
+  {
+    "id": "notif_dealer_coastal_boats_2",
+    "dealershipId": "dealer_coastal_boats",
+    "type": "FEED_PENDING",
+    "payload": {
+      "message": "Mock feed pending for Coastal Bend Boats",
+      "platformSlug": "linkedin-lead-gen-forms"
+    },
+    "deliveryStatus": "PENDING",
+    "deliveredAt": "2026-06-10T10:00:00Z",
+    "createdAt": "2026-06-10T09:00:00Z"
+  },
+  {
+    "id": "notif_dealer_coastal_boats_3",
+    "dealershipId": "dealer_coastal_boats",
+    "type": "LISTING_BLOCKED",
+    "payload": {
+      "message": "Mock listing blocked for Coastal Bend Boats",
+      "platformSlug": "linkedin-lead-gen-forms"
+    },
+    "deliveryStatus": "DELIVERED",
+    "deliveredAt": null,
+    "createdAt": "2026-06-10T08:00:00Z"
+  },
+  {
+    "id": "notif_dealer_coastal_boats_4",
+    "dealershipId": "dealer_coastal_boats",
+    "type": "CATALOG_READY",
+    "payload": {
+      "message": "Mock catalog ready for Coastal Bend Boats",
+      "platformSlug": "linkedin-lead-gen-forms"
+    },
+    "deliveryStatus": "DELIVERED",
+    "deliveredAt": "2026-06-10T08:00:00Z",
+    "createdAt": "2026-06-10T07:00:00Z"
+  },
+  {
+    "id": "notif_dealer_messy_motors_0",
+    "dealershipId": "dealer_messy_motors",
+    "type": "TOKEN_EXPIRED",
+    "payload": {
+      "message": "Mock token expired for Messy Motors",
+      "platformSlug": "microsoft-automotive-ads"
+    },
+    "deliveryStatus": "PENDING",
+    "deliveredAt": "2026-06-10T12:00:00Z",
+    "createdAt": "2026-06-10T11:00:00Z"
+  },
+  {
+    "id": "notif_dealer_messy_motors_1",
+    "dealershipId": "dealer_messy_motors",
+    "type": "SYNC_FAILED",
+    "payload": {
+      "message": "Mock sync failed for Messy Motors",
+      "platformSlug": "microsoft-automotive-ads"
+    },
+    "deliveryStatus": "DELIVERED",
+    "deliveredAt": null,
+    "createdAt": "2026-06-10T10:00:00Z"
+  },
+  {
+    "id": "notif_dealer_messy_motors_2",
+    "dealershipId": "dealer_messy_motors",
+    "type": "FEED_PENDING",
+    "payload": {
+      "message": "Mock feed pending for Messy Motors",
+      "platformSlug": "meta-automotive-ads"
+    },
+    "deliveryStatus": "DELIVERED",
+    "deliveredAt": "2026-06-10T10:00:00Z",
+    "createdAt": "2026-06-10T09:00:00Z"
+  },
+  {
+    "id": "notif_dealer_messy_motors_3",
+    "dealershipId": "dealer_messy_motors",
+    "type": "LISTING_BLOCKED",
+    "payload": {
+      "message": "Mock listing blocked for Messy Motors",
+      "platformSlug": "facebook-business-page"
+    },
+    "deliveryStatus": "PENDING",
+    "deliveredAt": null,
+    "createdAt": "2026-06-10T08:00:00Z"
+  },
+  {
+    "id": "notif_dealer_messy_motors_4",
+    "dealershipId": "dealer_messy_motors",
+    "type": "CATALOG_READY",
+    "payload": {
+      "message": "Mock catalog ready for Messy Motors",
+      "platformSlug": "cars-com-us"
+    },
+    "deliveryStatus": "PENDING",
+    "deliveredAt": "2026-06-10T08:00:00Z",
+    "createdAt": "2026-06-10T07:00:00Z"
+  },
+  {
+    "id": "notif_dealer_premium_imports_0",
+    "dealershipId": "dealer_premium_imports",
+    "type": "TOKEN_EXPIRED",
+    "payload": {
+      "message": "Mock token expired for Premium Imports",
+      "platformSlug": "x-dynamic-product-ads"
+    },
+    "deliveryStatus": "PENDING",
+    "deliveredAt": "2026-06-10T12:00:00Z",
+    "createdAt": "2026-06-10T11:00:00Z"
+  },
+  {
+    "id": "notif_dealer_premium_imports_1",
+    "dealershipId": "dealer_premium_imports",
+    "type": "SYNC_FAILED",
+    "payload": {
+      "message": "Mock sync failed for Premium Imports",
+      "platformSlug": "owned-storefront"
+    },
+    "deliveryStatus": "PENDING",
+    "deliveredAt": null,
+    "createdAt": "2026-06-10T10:00:00Z"
+  },
+  {
+    "id": "notif_dealer_premium_imports_2",
+    "dealershipId": "dealer_premium_imports",
+    "type": "FEED_PENDING",
+    "payload": {
+      "message": "Mock feed pending for Premium Imports",
+      "platformSlug": "microsoft-automotive-ads"
+    },
+    "deliveryStatus": "PENDING",
+    "deliveredAt": "2026-06-10T10:00:00Z",
+    "createdAt": "2026-06-10T09:00:00Z"
+  },
+  {
+    "id": "notif_dealer_premium_imports_3",
+    "dealershipId": "dealer_premium_imports",
+    "type": "LISTING_BLOCKED",
+    "payload": {
+      "message": "Mock listing blocked for Premium Imports",
+      "platformSlug": "owned-storefront"
+    },
+    "deliveryStatus": "PENDING",
+    "deliveredAt": null,
+    "createdAt": "2026-06-10T08:00:00Z"
+  },
+  {
+    "id": "notif_dealer_premium_imports_4",
+    "dealershipId": "dealer_premium_imports",
+    "type": "CATALOG_READY",
+    "payload": {
+      "message": "Mock catalog ready for Premium Imports",
+      "platformSlug": "meta-automotive-ads"
+    },
+    "deliveryStatus": "DELIVERED",
+    "deliveredAt": "2026-06-10T08:00:00Z",
+    "createdAt": "2026-06-10T07:00:00Z"
+  }
+]

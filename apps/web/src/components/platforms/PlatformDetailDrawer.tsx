@@ -1,20 +1,20 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import type { PlatformPublishResult, PlatformAccountDetail, PlatformPerformanceItem, SyncEvent } from '@/lib/types.ts';
 import { friendlyPlatformDetail, platformOutcomeMeta } from '@/lib/syncPresentation.ts';
 import { platformConnectionWithAccount } from '@/lib/platformPresentation.ts';
 import { timeAgo } from '@/lib/timeAgo.ts';
 import type { OperatorNavHandlers } from '@/lib/operatorNav.ts';
+import { buildTabs, type Tab } from '@/lib/platformDrawerTabs.ts';
 import { AccountEditForm } from './AccountEditForm.tsx';
 import { PlatformLogo } from './PlatformLogo.tsx';
 import { CatalogSyncPanel } from './CatalogSyncPanel.tsx';
+import { LeadSyncPanel } from './LeadSyncPanel.tsx';
+import { MarketplaceListingPanel } from './MarketplaceListingPanel.tsx';
 import { operatorCopy } from '@/lib/copy/operator.ts';
 import { RowDetailDrawer } from '@/components/layout';
 import { fetchPublishHistory, updateAccount } from '@/lib/api/sdk.ts';
 import { useAsyncQuery } from '@/hooks/useAsyncQuery.ts';
 import { SocialPageSelector, SocialPostsTab } from '@/components/social/index.ts';
-
-
-type Tab = 'setup' | 'feed' | 'activity' | 'notes' | 'social' | 'catalog';
 
 type Props = {
   platform: PlatformPublishResult;
@@ -177,22 +177,6 @@ function NotesTab({ account, dealerId, onSaved }: { account: PlatformAccountDeta
   );
 }
 
-function buildTabs(platform: PlatformPublishResult): Array<{ key: Tab; label: string }> {
-  const tabs: Array<{ key: Tab; label: string }> = [
-    { key: 'setup', label: 'Setup' },
-    { key: 'feed', label: 'Feed' },
-    { key: 'activity', label: 'Activity' },
-    { key: 'notes', label: 'Notes' },
-  ];
-  if (platform.socialPosting) {
-    tabs.splice(1, 0, { key: 'social', label: 'Social' });
-  }
-  if (platform.catalogSync) {
-    tabs.splice(tabs.length - 1, 0, { key: 'catalog', label: 'Catalog' });
-  }
-  return tabs;
-}
-
 export function PlatformDetailDrawer({
   platform,
   account,
@@ -204,6 +188,8 @@ export function PlatformDetailDrawer({
   onSaved,
 }: Props) {
   const [activeTab, setActiveTab] = useState<Tab>('setup');
+  // Reset to Setup whenever the operator opens a different platform.
+  useEffect(() => { setActiveTab('setup'); }, [platform.platformSlug]);
   const tabs = buildTabs(platform);
   const conn = platformConnectionWithAccount(platform, account);
   const publish = platformOutcomeMeta(platform);
@@ -227,14 +213,14 @@ export function PlatformDetailDrawer({
           </div>
         </div>
 
-        {/* Tab strip */}
-        <div className="flex border-b border-silver-200">
+        {/* Tab strip — scrollable on narrow viewports */}
+        <div className="flex border-b border-silver-200 overflow-x-auto gap-0 no-scrollbar">
           {tabs.map(tab => (
             <button
               key={tab.key}
               type="button"
               onClick={() => setActiveTab(tab.key)}
-              className={`px-3 py-2 text-xs font-semibold border-b-2 -mb-px transition-colors ${
+              className={`shrink-0 px-3 py-2 text-xs font-semibold border-b-2 -mb-px transition-colors ${
                 activeTab === tab.key
                   ? 'border-navy-600 text-navy-700'
                   : 'border-transparent text-ink-muted hover:text-ink-body'
@@ -247,15 +233,26 @@ export function PlatformDetailDrawer({
 
         {/* Tab content */}
         {activeTab === 'setup' && (
-          account ? (
-            <AccountEditForm
-              account={account}
-              dealerId={dealerId}
-              onSaved={onSaved}
-            />
-          ) : (
-            <p className="text-xs text-ink-muted">{operatorCopy.drawer.accountLoading}</p>
-          )
+          <div className="space-y-3">
+            {/* liveValidationNote — shown when external validation is blocked */}
+            {account?.liveValidationNote && (
+              <div className="rounded-md border border-amber-200 bg-amber-50 px-3 py-2.5">
+                <p className="text-[10px] font-bold uppercase tracking-wide text-amber-700 mb-0.5">
+                  Live validation blocked
+                </p>
+                <p className="text-xs text-amber-800">{account.liveValidationNote}</p>
+              </div>
+            )}
+            {account ? (
+              <AccountEditForm
+                account={account}
+                dealerId={dealerId}
+                onSaved={onSaved}
+              />
+            ) : (
+              <p className="text-xs text-ink-muted">{operatorCopy.drawer.accountLoading}</p>
+            )}
+          </div>
         )}
 
         {activeTab === 'feed' && (
@@ -290,6 +287,14 @@ export function PlatformDetailDrawer({
 
         {activeTab === 'catalog' && (
           <CatalogSyncPanel dealerId={dealerId} platformSlug={platform.platformSlug} />
+        )}
+
+        {activeTab === 'listing' && (
+          <MarketplaceListingPanel platformSlug={platform.platformSlug} account={account} />
+        )}
+
+        {activeTab === 'leads' && (
+          <LeadSyncPanel dealerId={dealerId} platformSlug={platform.platformSlug} account={account} />
         )}
 
       </div>

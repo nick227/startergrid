@@ -573,3 +573,40 @@ export async function triggerCatalogSync(
     { method: 'POST' },
   );
 }
+
+// ── Lead Sync ─────────────────────────────────────────────────────────────────
+
+export type LeadFormInfo = {
+  urn: string;
+  name: string;
+  status: string;
+};
+
+export type LeadSyncResponse = {
+  fetched: number;
+  saved: number;
+  skipped: number;
+};
+
+export type LeadFormsResponse = {
+  forms: LeadFormInfo[];
+};
+
+export async function fetchLeadForms(
+  dealershipId: string,
+  platformSlug: string,
+): Promise<LeadFormsResponse> {
+  return catalogFetch<LeadFormsResponse>(
+    `/api/dealers/${dealershipId}/platforms/${platformSlug}/lead-forms`,
+  );
+}
+
+export async function triggerLeadSync(
+  dealershipId: string,
+  platformSlug: string,
+): Promise<LeadSyncResponse> {
+  return catalogFetch<LeadSyncResponse>(
+    `/api/dealers/${dealershipId}/platforms/${platformSlug}/lead-sync`,
+    { method: 'POST' },
+  );
+}

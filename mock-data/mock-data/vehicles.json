@@ -1,0 +1,4576 @@
+[
+  {
+    "id": "veh_0001",
+    "dealershipId": "dealer_austin_auto",
+    "vin": "MOCKVIN000000001",
+    "stockNumber": "AUSTIN1000",
+    "year": 2017,
+    "make": "Chevrolet",
+    "model": "Silverado 1500",
+    "trim": "LT",
+    "mileage": 33674,
+    "priceCents": 4632000,
+    "originalPriceCents": 4632000,
+    "priceLastChangedAt": "2026-05-18T12:00:00Z",
+    "condition": "new",
+    "exteriorColor": "Green",
+    "interiorColor": "Gray",
+    "bodyStyle": "Truck",
+    "drivetrain": "FWD",
+    "fuelType": "Diesel",
+    "transmission": "CVT",
+    "options": {
+      "features": [
+        "Leather",
+        "Backup Camera",
+        "Sunroof"
+      ]
+    },
+    "starCore": {
+      "title": "2017 Chevrolet Silverado 1500 Custom",
+      "score": 78
+    },
+    "categoryPayload": null,
+    "soldAt": null,
+    "removedAt": null,
+    "reactivatedAt": null,
+    "createdAt": "2026-06-05T12:00:00Z",
+    "updatedAt": "2026-06-08T12:00:00Z"
+  },
+  {
+    "id": "veh_0002",
+    "dealershipId": "dealer_austin_auto",
+    "vin": "MOCKVIN000000002",
+    "stockNumber": "AUSTIN1001",
+    "year": 2025,
+    "make": "Chevrolet",
+    "model": "Silverado 1500",
+    "trim": "Custom",
+    "mileage": 35830,
+    "priceCents": 3636300,
+    "originalPriceCents": 3686300,
+    "priceLastChangedAt": "2026-05-25T12:00:00Z",
+    "condition": "used",
+    "exteriorColor": "Green",
+    "interiorColor": "Brown",
+    "bodyStyle": "Truck",
+    "drivetrain": "RWD",
+    "fuelType": "Gasoline",
+    "transmission": "CVT",
+    "options": {
+      "features": [
+        "Bluetooth",
+        "Navigation",
+        "Apple CarPlay",
+        "Backup Camera",
+        "Sunroof"
+      ]
+    },
+    "starCore": {
+      "title": "2025 Chevrolet Silverado 1500 RST",
+      "score": 66
+    },
+    "categoryPayload": null,
+    "soldAt": null,
+    "removedAt": null,
+    "reactivatedAt": null,
+    "createdAt": "2026-05-22T12:00:00Z",
+    "updatedAt": "2026-06-05T12:00:00Z"
+  },
+  {
+    "id": "veh_0003",
+    "dealershipId": "dealer_austin_auto",
+    "vin": "MOCKVIN000000003",
+    "stockNumber": "AUSTIN1002",
+    "year": 2018,
+    "make": "Nissan",
+    "model": "Altima",
+    "trim": "SR",
+    "mileage": 114700,
+    "priceCents": 4064800,
+    "originalPriceCents": 4064800,
+    "priceLastChangedAt": "2026-06-07T12:00:00Z",
+    "condition": "used",
+    "exteriorColor": "Red",
+    "interiorColor": "Black",
+    "bodyStyle": "Sedan",
+    "drivetrain": "4WD",
+    "fuelType": "Hybrid",
+    "transmission": "CVT",
+    "options": {
+      "features": [
+        "Tow Package",
+        "Apple CarPlay",
+        "Backup Camera",
+        "Leather",
+        "Heated Seats"
+      ]
+    },
+    "starCore": {
+      "title": "2018 Nissan Altima SR",
+      "score": 85
+    },
+    "categoryPayload": null,
+    "soldAt": null,
+    "removedAt": null,
+    "reactivatedAt": null,
+    "createdAt": "2026-04-20T12:00:00Z",
+    "updatedAt": "2026-06-01T12:00:00Z"
+  },
+  {
+    "id": "veh_0004",
+    "dealershipId": "dealer_austin_auto",
+    "vin": "MOCKVIN000000004",
+    "stockNumber": "AUSTIN1003",
+    "year": 2026,
+    "make": "Ford",
+    "model": "F-150",
+    "trim": "Lariat",
+    "mileage": 118879,
+    "priceCents": 1848600,
+    "originalPriceCents": 1898600,
+    "priceLastChangedAt": "2026-05-13T12:00:00Z",
+    "condition": "cpo",
+    "exteriorColor": "Blue",
+    "interiorColor": "Gray",
+    "bodyStyle": "Truck",
+    "drivetrain": "FWD",
+    "fuelType": "Electric",
+    "transmission": "CVT",
+    "options": {
+      "features": [
+        "Leather",
+        "Backup Camera",
+        "Sunroof",
+        "Apple CarPlay",
+        "Tow Package"
+      ]
+    },
+    "starCore": {
+      "title": "2026 Ford F-150 XL",
+      "score": 69
+    },
+    "categoryPayload": null,
+    "soldAt": null,
+    "removedAt": null,
+    "reactivatedAt": null,
+    "createdAt": "2026-02-13T12:00:00Z",
+    "updatedAt": "2026-06-04T12:00:00Z"
+  },
+  {
+    "id": "veh_0005",
+    "dealershipId": "dealer_austin_auto",
+    "vin": "MOCKVIN000000005",
+    "stockNumber": "AUSTIN1004",
+    "year": 2023,
+    "make": "Mercedes-Benz",
+    "model": "C-Class",
+    "trim": "AMG Line",
+    "mileage": 91651,
+    "priceCents": 1276800,
+    "originalPriceCents": 1276800,
+    "priceLastChangedAt": "2026-05-19T12:00:00Z",
+    "condition": "used",
+    "exteriorColor": "Blue",
+    "interiorColor": "Gray",
+    "bodyStyle": "Sedan",
+    "drivetrain": "RWD",
+    "fuelType": "Gasoline",
+    "transmission": "Automatic",
+    "options": {
+      "features": [
+        "Sunroof",
+        "Navigation"
+      ]
+    },
+    "starCore": {
+      "title": "2023 Mercedes-Benz C-Class AMG Line",
+      "score": 70
+    },
+    "categoryPayload": null,
+    "soldAt": "2026-06-07T12:00:00Z",
+    "removedAt": null,
+    "reactivatedAt": null,
+    "createdAt": "2026-02-22T12:00:00Z",
+    "updatedAt": "2026-06-08T12:00:00Z"
+  },
+  {
+    "id": "veh_0006",
+    "dealershipId": "dealer_austin_auto",
+    "vin": "MOCKVIN000000006",
+    "stockNumber": "AUSTIN1005",
+    "year": 2017,
+    "make": "Honda",
+    "model": "CR-V",
+    "trim": "Touring",
+    "mileage": 14658,
+    "priceCents": 3298700,
+    "originalPriceCents": 3348700,
+    "priceLastChangedAt": "2026-05-25T12:00:00Z",
+    "condition": "used",
+    "exteriorColor": "Silver",
+    "interiorColor": "Black",
+    "bodyStyle": "SUV",
+    "drivetrain": "4WD",
+    "fuelType": "Electric",
+    "transmission": "CVT",
+    "options": {
+      "features": [
+        "Tow Package",
+        "Navigation",
+        "Leather",
+        "Apple CarPlay"
+      ]
+    },
+    "starCore": {
+      "title": "2017 Honda CR-V LX",
+      "score": 72
+    },
+    "categoryPayload": null,
+    "soldAt": null,
+    "removedAt": null,
+    "reactivatedAt": null,
+    "createdAt": "2026-01-16T12:00:00Z",
+    "updatedAt": "2026-06-10T12:00:00Z"
+  },
+  {
+    "id": "veh_0007",
+    "dealershipId": "dealer_austin_auto",
+    "vin": "MOCKVIN000000007",
+    "stockNumber": "AUSTIN1006",
+    "year": 2020,
+    "make": "Subaru",
+    "model": "Outback",
+    "trim": "Limited",
+    "mileage": 105047,
+    "priceCents": 5840100,
+    "originalPriceCents": 5840100,
+    "priceLastChangedAt": "2026-05-15T12:00:00Z",
+    "condition": "new",
+    "exteriorColor": "White",
+    "interiorColor": "Tan",
+    "bodyStyle": "Wagon",
+    "drivetrain": "AWD",
+    "fuelType": "Gasoline",
+    "transmission": "CVT",
+    "options": {
+      "features": [
+        "Bluetooth",
+        "Tow Package",
+        "Sunroof"
+      ]
+    },
+    "starCore": {
+      "title": "2020 Subaru Outback Limited",
+      "score": 86
+    },
+    "categoryPayload": null,
+    "soldAt": "2026-05-30T12:00:00Z",
+    "removedAt": null,
+    "reactivatedAt": null,
+    "createdAt": "2026-05-13T12:00:00Z",
+    "updatedAt": "2026-06-07T12:00:00Z"
+  },
+  {
+    "id": "veh_0008",
+    "dealershipId": "dealer_austin_auto",
+    "vin": "MOCKVIN000000008",
+    "stockNumber": "AUSTIN1007",
+    "year": 2017,
+    "make": "Tesla",
+    "model": "Model 3",
+    "trim": "Long Range",
+    "mileage": 115839,
+    "priceCents": 3319900,
+    "originalPriceCents": 3319900,
+    "priceLastChangedAt": "2026-05-11T12:00:00Z",
+    "condition": "cpo",
+    "exteriorColor": "Blue",
+    "interiorColor": "Tan",
+    "bodyStyle": "Sedan",
+    "drivetrain": "FWD",
+    "fuelType": "Electric",
+    "transmission": "Manual",
+    "options": {
+      "features": [
+        "Sunroof",
+        "Tow Package",
+        "Bluetooth",
+        "Heated Seats"
+      ]
+    },
+    "starCore": {
+      "title": "2017 Tesla Model 3 Performance",
+      "score": 78
+    },
+    "categoryPayload": null,
+    "soldAt": null,
+    "removedAt": null,
+    "reactivatedAt": null,
+    "createdAt": "2025-12-21T12:00:00Z",
+    "updatedAt": "2026-06-09T12:00:00Z"
+  },
+  {
+    "id": "veh_0009",
+    "dealershipId": "dealer_austin_auto",
+    "vin": "MOCKVIN000000009",
+    "stockNumber": "AUSTIN1008",
+    "year": 2023,
+    "make": "Tesla",
+    "model": "Model 3",
+    "trim": "Long Range",
+    "mileage": 76166,
+    "priceCents": 6209300,
+    "originalPriceCents": 6209300,
+    "priceLastChangedAt": "2026-05-20T12:00:00Z",
+    "condition": "new",
+    "exteriorColor": "Gray",
+    "interiorColor": "Tan",
+    "bodyStyle": "Sedan",
+    "drivetrain": "FWD",
+    "fuelType": "Hybrid",
+    "transmission": "Automatic",
+    "options": {
+      "features": [
+        "Tow Package",
+        "Sunroof",
+        "Apple CarPlay",
+        "Leather",
+        "Heated Seats"
+      ]
+    },
+    "starCore": {
+      "title": "2023 Tesla Model 3 Performance",
+      "score": 65
+    },
+    "categoryPayload": null,
+    "soldAt": null,
+    "removedAt": null,
+    "reactivatedAt": null,
+    "createdAt": "2025-12-18T12:00:00Z",
+    "updatedAt": "2026-06-08T12:00:00Z"
+  },
+  {
+    "id": "veh_0010",
+    "dealershipId": "dealer_austin_auto",
+    "vin": "MOCKVIN000000010",
+    "stockNumber": "AUSTIN1009",
+    "year": 2019,
+    "make": "Tesla",
+    "model": "Model 3",
+    "trim": "Performance",
+    "mileage": 33405,
+    "priceCents": 7458800,
+    "originalPriceCents": 7608800,
+    "priceLastChangedAt": "2026-05-26T12:00:00Z",
+    "condition": "cpo",
+    "exteriorColor": "Red",
+    "interiorColor": "Brown",
+    "bodyStyle": "Sedan",
+    "drivetrain": "FWD",
+    "fuelType": "Diesel",
+    "transmission": "CVT",
+    "options": {
+      "features": [
+        "Backup Camera",
+        "Leather"
+      ]
+    },
+    "starCore": {
+      "title": "2019 Tesla Model 3 Long Range",
+      "score": 72
+    },
+    "categoryPayload": null,
+    "soldAt": null,
+    "removedAt": null,
+    "reactivatedAt": null,
+    "createdAt": "2026-02-06T12:00:00Z",
+    "updatedAt": "2026-06-01T12:00:00Z"
+  },
+  {
+    "id": "veh_0011",
+    "dealershipId": "dealer_austin_auto",
+    "vin": "MOCKVIN000000011",
+    "stockNumber": "AUSTIN1010",
+    "year": 2016,
+    "make": "Nissan",
+    "model": "Altima",
+    "trim": "SV",
+    "mileage": 28682,
+    "priceCents": 3094600,
+    "originalPriceCents": 3244600,
+    "priceLastChangedAt": "2026-05-19T12:00:00Z",
+    "condition": "certified",
+    "exteriorColor": "Black",
+    "interiorColor": "Black",
+    "bodyStyle": "Sedan",
+    "drivetrain": "RWD",
+    "fuelType": "Hybrid",
+    "transmission": "Automatic",
+    "options": {
+      "features": [
+        "Leather",
+        "Apple CarPlay",
+        "Navigation",
+        "Backup Camera"
+      ]
+    },
+    "starCore": {
+      "title": "2016 Nissan Altima SR",
+      "score": 68
+    },
+    "categoryPayload": null,
+    "soldAt": "2026-04-27T12:00:00Z",
+    "removedAt": null,
+    "reactivatedAt": null,
+    "createdAt": "2026-04-02T12:00:00Z",
+    "updatedAt": "2026-06-06T12:00:00Z"
+  },
+  {
+    "id": "veh_0012",
+    "dealershipId": "dealer_austin_auto",
+    "vin": "MOCKVIN000000012",
+    "stockNumber": "AUSTIN1011",
+    "year": 2017,
+    "make": "Ford",
+    "model": "F-150",
+    "trim": "Lariat",
+    "mileage": 1333,
+    "priceCents": 5588400,
+    "originalPriceCents": 5688400,
+    "priceLastChangedAt": "2026-06-03T12:00:00Z",
+    "condition": "new",
+    "exteriorColor": "White",
+    "interiorColor": "Tan",
+    "bodyStyle": "Truck",
+    "drivetrain": "4WD",
+    "fuelType": "Electric",
+    "transmission": "CVT",
+    "options": {
+      "features": [
+        "Leather",
+        "Backup Camera",
+        "Heated Seats",
+        "Navigation"
+      ]
+    },
+    "starCore": {
+      "title": "2017 Ford F-150 XLT",
+      "score": 65
+    },
+    "categoryPayload": null,
+    "soldAt": "2026-05-04T12:00:00Z",
+    "removedAt": null,
+    "reactivatedAt": null,
+    "createdAt": "2026-03-13T12:00:00Z",
+    "updatedAt": "2026-06-06T12:00:00Z"
+  },
+  {
+    "id": "veh_0013",
+    "dealershipId": "dealer_austin_auto",
+    "vin": "MOCKVIN000000013",
+    "stockNumber": "AUSTIN1012",
+    "year": 2024,
+    "make": "Ford",
+    "model": "F-150",
+    "trim": "Lariat",
+    "mileage": 101704,
+    "priceCents": 5900300,
+    "originalPriceCents": 6000300,
+    "priceLastChangedAt": "2026-05-15T12:00:00Z",
+    "condition": "used",
+    "exteriorColor": "Red",
+    "interiorColor": "Brown",
+    "bodyStyle": "Truck",
+    "drivetrain": "AWD",
+    "fuelType": "Gasoline",
+    "transmission": "Manual",
+    "options": {
+      "features": [
+        "Backup Camera",
+        "Apple CarPlay",
+        "Tow Package",
+        "Sunroof"
+      ]
+    },
+    "starCore": {
+      "title": "2024 Ford F-150 Lariat",
+      "score": 91
+    },
+    "categoryPayload": null,
+    "soldAt": null,
+    "removedAt": null,
+    "reactivatedAt": null,
+    "createdAt": "2026-03-07T12:00:00Z",
+    "updatedAt": "2026-06-10T12:00:00Z"
+  },
+  {
+    "id": "veh_0014",
+    "dealershipId": "dealer_austin_auto",
+    "vin": "MOCKVIN000000014",
+    "stockNumber": "AUSTIN1013",
+    "year": 2021,
+    "make": "BMW",
+    "model": "X5",
+    "trim": "xDrive40i",
+    "mileage": 75382,
+    "priceCents": 1639300,
+    "originalPriceCents": 1639300,
+    "priceLastChangedAt": "2026-05-18T12:00:00Z",
+    "condition": "used",
+    "exteriorColor": "Gray",
+    "interiorColor": "Tan",
+    "bodyStyle": "SUV",
+    "drivetrain": "AWD",
+    "fuelType": "Gasoline",
+    "transmission": "Automatic",
+    "options": {
+      "features": [
+        "Leather",
+        "Navigation",
+        "Tow Package"
+      ]
+    },
+    "starCore": {
+      "title": "2021 BMW X5 xDrive40i",
+      "score": 96
+    },
+    "categoryPayload": null,
+    "soldAt": null,
+    "removedAt": null,
+    "reactivatedAt": null,
+    "createdAt": "2026-02-22T12:00:00Z",
+    "updatedAt": "2026-06-04T12:00:00Z"
+  },
+  {
+    "id": "veh_0015",
+    "dealershipId": "dealer_austin_auto",
+    "vin": "MOCKVIN000000015",
+    "stockNumber": "AUSTIN1014",
+    "year": 2019,
+    "make": "Chevrolet",
+    "model": "Silverado 1500",
+    "trim": "LT",
+    "mileage": 46829,
+    "priceCents": 2872500,
+    "originalPriceCents": 3022500,
+    "priceLastChangedAt": "2026-06-09T12:00:00Z",
+    "condition": "cpo",
+    "exteriorColor": "Silver",
+    "interiorColor": "Tan",
+    "bodyStyle": "Truck",
+    "drivetrain": "AWD",
+    "fuelType": "Diesel",
+    "transmission": "Manual",
+    "options": {
+      "features": [
+        "Navigation",
+        "Heated Seats",
+        "Bluetooth",
+        "Leather",
+        "Sunroof"
+      ]
+    },
+    "starCore": {
+      "title": "2019 Chevrolet Silverado 1500 RST",
+      "score": 76
+    },
+    "categoryPayload": null,
+    "soldAt": null,
+    "removedAt": null,
+    "reactivatedAt": null,
+    "createdAt": "2026-01-18T12:00:00Z",
+    "updatedAt": "2026-06-03T12:00:00Z"
+  },
+  {
+    "id": "veh_0016",
+    "dealershipId": "dealer_austin_auto",
+    "vin": "MOCKVIN000000016",
+    "stockNumber": "AUSTIN1015",
+    "year": 2021,
+    "make": "Nissan",
+    "model": "Altima",
+    "trim": "SV",
+    "mileage": 41554,
+    "priceCents": 2251400,
+    "originalPriceCents": 2301400,
+    "priceLastChangedAt": "2026-05-22T12:00:00Z",
+    "condition": "certified",
+    "exteriorColor": "Green",
+    "interiorColor": "Gray",
+    "bodyStyle": "Sedan",
+    "drivetrain": "RWD",
+    "fuelType": "Diesel",
+    "transmission": "CVT",
+    "options": {
+      "features": [
+        "Sunroof",
+        "Apple CarPlay",
+        "Backup Camera",
+        "Heated Seats",
+        "Leather"
+      ]
+    },
+    "starCore": {
+      "title": "2021 Nissan Altima SR",
+      "score": 74
+    },
+    "categoryPayload": null,
+    "soldAt": null,
+    "removedAt": null,
+    "reactivatedAt": null,
+    "createdAt": "2025-12-29T12:00:00Z",
+    "updatedAt": "2026-06-08T12:00:00Z"
+  },
+  {
+    "id": "veh_0017",
+    "dealershipId": "dealer_austin_auto",
+    "vin": "MOCKVIN000000017",
+    "stockNumber": "AUSTIN1016",
+    "year": 2025,
+    "make": "Jeep",
+    "model": "Wrangler",
+    "trim": "Sahara",
+    "mileage": 85210,
+    "priceCents": 3630200,
+    "originalPriceCents": 3730200,
+    "priceLastChangedAt": "2026-05-24T12:00:00Z",
+    "condition": "used",
+    "exteriorColor": "Gray",
+    "interiorColor": "Tan",
+    "bodyStyle": "SUV",
+    "drivetrain": "4WD",
+    "fuelType": "Gasoline",
+    "transmission": "Manual",
+    "options": {
+      "features": [
+        "Backup Camera",
+        "Sunroof"
+      ]
+    },
+    "starCore": {
+      "title": "2025 Jeep Wrangler Sahara",
+      "score": 65
+    },
+    "categoryPayload": null,
+    "soldAt": null,
+    "removedAt": null,
+    "reactivatedAt": null,
+    "createdAt": "2026-01-19T12:00:00Z",
+    "updatedAt": "2026-06-09T12:00:00Z"
+  },
+  {
+    "id": "veh_0018",
+    "dealershipId": "dealer_austin_auto",
+    "vin": "MOCKVIN000000018",
+    "stockNumber": "AUSTIN1017",
+    "year": 2020,
+    "make": "Honda",
+    "model": "CR-V",
+    "trim": "EX",
+    "mileage": 96877,
+    "priceCents": 5898400,
+    "originalPriceCents": 5898400,
+    "priceLastChangedAt": "2026-05-20T12:00:00Z",
+    "condition": "used",
+    "exteriorColor": "Green",
+    "interiorColor": "Tan",
+    "bodyStyle": "SUV",
+    "drivetrain": "AWD",
+    "fuelType": "Hybrid",
+    "transmission": "Manual",
+    "options": {
+      "features": [
+        "Backup Camera",
+        "Bluetooth",
+        "Heated Seats"
+      ]
+    },
+    "starCore": {
+      "title": "2020 Honda CR-V EX",
+      "score": 93
+    },
+    "categoryPayload": null,
+    "soldAt": null,
+    "removedAt": null,
+    "reactivatedAt": null,
+    "createdAt": "2026-01-26T12:00:00Z",
+    "updatedAt": "2026-06-09T12:00:00Z"
+  },
+  {
+    "id": "veh_0019",
+    "dealershipId": "dealer_austin_auto",
+    "vin": "MOCKVIN000000019",
+    "stockNumber": "AUSTIN1018",
+    "year": 2026,
+    "make": "Ford",
+    "model": "F-150",
+    "trim": "XLT",
+    "mileage": 113136,
+    "priceCents": 3527000,
+    "originalPriceCents": 3577000,
+    "priceLastChangedAt": "2026-06-01T12:00:00Z",
+    "condition": "new",
+    "exteriorColor": "Black",
+    "interiorColor": "Black",
+    "bodyStyle": "Truck",
+    "drivetrain": "FWD",
+    "fuelType": "Diesel",
+    "transmission": "CVT",
+    "options": {
+      "features": [
+        "Sunroof",
+        "Leather",
+        "Apple CarPlay",
+        "Tow Package",
+        "Navigation"
+      ]
+    },
+    "starCore": {
+      "title": "2026 Ford F-150 XL",
+      "score": 76
+    },
+    "categoryPayload": null,
+    "soldAt": null,
+    "removedAt": null,
+    "reactivatedAt": null,
+    "createdAt": "2026-04-20T12:00:00Z",
+    "updatedAt": "2026-06-02T12:00:00Z"
+  },
+  {
+    "id": "veh_0020",
+    "dealershipId": "dealer_austin_auto",
+    "vin": "MOCKVIN000000020",
+    "stockNumber": "AUSTIN1019",
+    "year": 2025,
+    "make": "Jeep",
+    "model": "Wrangler",
+    "trim": "Sahara",
+    "mileage": 50078,
+    "priceCents": 3672600,
+    "originalPriceCents": 3672600,
+    "priceLastChangedAt": "2026-06-03T12:00:00Z",
+    "condition": "certified",
+    "exteriorColor": "White",
+    "interiorColor": "Brown",
+    "bodyStyle": "SUV",
+    "drivetrain": "4WD",
+    "fuelType": "Gasoline",
+    "transmission": "CVT",
+    "options": {
+      "features": [
+        "Navigation",
+        "Heated Seats",
+        "Sunroof",
+        "Bluetooth",
+        "Leather"
+      ]
+    },
+    "starCore": {
+      "title": "2025 Jeep Wrangler Sport",
+      "score": 85
+    },
+    "categoryPayload": null,
+    "soldAt": null,
+    "removedAt": null,
+    "reactivatedAt": null,
+    "createdAt": "2026-05-22T12:00:00Z",
+    "updatedAt": "2026-06-05T12:00:00Z"
+  },
+  {
+    "id": "veh_0021",
+    "dealershipId": "dealer_austin_auto",
+    "vin": "MOCKVIN000000021",
+    "stockNumber": "AUSTIN1020",
+    "year": 2017,
+    "make": "Toyota",
+    "model": "Camry",
+    "trim": "XLE",
+    "mileage": 80418,
+    "priceCents": 2101000,
+    "originalPriceCents": 2201000,
+    "priceLastChangedAt": "2026-06-06T12:00:00Z",
+    "condition": "cpo",
+    "exteriorColor": "Green",
+    "interiorColor": "Brown",
+    "bodyStyle": "Sedan",
+    "drivetrain": "FWD",
+    "fuelType": "Gasoline",
+    "transmission": "Automatic",
+    "options": {
+      "features": [
+        "Tow Package",
+        "Apple CarPlay",
+        "Bluetooth",
+        "Leather"
+      ]
+    },
+    "starCore": {
+      "title": "2017 Toyota Camry SE",
+      "score": 89
+    },
+    "categoryPayload": null,
+    "soldAt": null,
+    "removedAt": null,
+    "reactivatedAt": null,
+    "createdAt": "2026-03-18T12:00:00Z",
+    "updatedAt": "2026-06-04T12:00:00Z"
+  },
+  {
+    "id": "veh_0022",
+    "dealershipId": "dealer_austin_auto",
+    "vin": "MOCKVIN000000022",
+    "stockNumber": "AUSTIN1021",
+    "year": 2022,
+    "make": "Subaru",
+    "model": "Outback",
+    "trim": "Limited",
+    "mileage": 30677,
+    "priceCents": 6193200,
+    "originalPriceCents": 6243200,
+    "priceLastChangedAt": "2026-05-11T12:00:00Z",
+    "condition": "cpo",
+    "exteriorColor": "Silver",
+    "interiorColor": "Gray",
+    "bodyStyle": "Wagon",
+    "drivetrain": "4WD",
+    "fuelType": "Hybrid",
+    "transmission": "CVT",
+    "options": {
+      "features": [
+        "Leather",
+        "Heated Seats",
+        "Apple CarPlay"
+      ]
+    },
+    "starCore": {
+      "title": "2022 Subaru Outback Limited",
+      "score": 85
+    },
+    "categoryPayload": null,
+    "soldAt": null,
+    "removedAt": null,
+    "reactivatedAt": null,
+    "createdAt": "2026-03-28T12:00:00Z",
+    "updatedAt": "2026-06-02T12:00:00Z"
+  },
+  {
+    "id": "veh_0023",
+    "dealershipId": "dealer_austin_auto",
+    "vin": "MOCKVIN000000023",
+    "stockNumber": "AUSTIN1022",
+    "year": 2016,
+    "make": "Jeep",
+    "model": "Wrangler",
+    "trim": "Sport",
+    "mileage": 18137,
+    "priceCents": 4664100,
+    "originalPriceCents": 4664100,
+    "priceLastChangedAt": "2026-05-25T12:00:00Z",
+    "condition": "new",
+    "exteriorColor": "Gray",
+    "interiorColor": "Tan",
+    "bodyStyle": "SUV",
+    "drivetrain": "4WD",
+    "fuelType": "Gasoline",
+    "transmission": "Manual",
+    "options": {
+      "features": [
+        "Leather",
+        "Sunroof",
+        "Apple CarPlay",
+        "Heated Seats",
+        "Tow Package"
+      ]
+    },
+    "starCore": {
+      "title": "2016 Jeep Wrangler Sport",
+      "score": 92
+    },
+    "categoryPayload": null,
+    "soldAt": null,
+    "removedAt": null,
+    "reactivatedAt": null,
+    "createdAt": "2026-05-23T12:00:00Z",
+    "updatedAt": "2026-06-08T12:00:00Z"
+  },
+  {
+    "id": "veh_0024",
+    "dealershipId": "dealer_austin_auto",
+    "vin": "MOCKVIN000000024",
+    "stockNumber": "AUSTIN1023",
+    "year": 2018,
+    "make": "BMW",
+    "model": "X5",
+    "trim": "xDrive40i",
+    "mileage": 119960,
+    "priceCents": 4363000,
+    "originalPriceCents": 4463000,
+    "priceLastChangedAt": "2026-05-24T12:00:00Z",
+    "condition": "cpo",
+    "exteriorColor": "Black",
+    "interiorColor": "Black",
+    "bodyStyle": "SUV",
+    "drivetrain": "RWD",
+    "fuelType": "Gasoline",
+    "transmission": "CVT",
+    "options": {
+      "features": [
+        "Navigation",
+        "Leather"
+      ]
+    },
+    "starCore": {
+      "title": "2018 BMW X5 xDrive40i",
+      "score": 67
+    },
+    "categoryPayload": null,
+    "soldAt": null,
+    "removedAt": null,
+    "reactivatedAt": null,
+    "createdAt": "2026-01-17T12:00:00Z",
+    "updatedAt": "2026-06-08T12:00:00Z"
+  },
+  {
+    "id": "veh_0025",
+    "dealershipId": "dealer_austin_auto",
+    "vin": "MOCKVIN000000025",
+    "stockNumber": "AUSTIN1024",
+    "year": 2019,
+    "make": "Tesla",
+    "model": "Model 3",
+    "trim": "Long Range",
+    "mileage": 31360,
+    "priceCents": 4398800,
+    "originalPriceCents": 4548800,
+    "priceLastChangedAt": "2026-05-31T12:00:00Z",
+    "condition": "new",
+    "exteriorColor": "White",
+    "interiorColor": "Tan",
+    "bodyStyle": "Sedan",
+    "drivetrain": "FWD",
+    "fuelType": "Hybrid",
+    "transmission": "Automatic",
+    "options": {
+      "features": [
+        "Leather",
+        "Sunroof",
+        "Backup Camera",
+        "Bluetooth",
+        "Tow Package"
+      ]
+    },
+    "starCore": {
+      "title": "2019 Tesla Model 3 Performance",
+      "score": 82
+    },
+    "categoryPayload": null,
+    "soldAt": null,
+    "removedAt": null,
+    "reactivatedAt": null,
+    "createdAt": "2026-02-28T12:00:00Z",
+    "updatedAt": "2026-06-08T12:00:00Z"
+  },
+  {
+    "id": "veh_0026",
+    "dealershipId": "dealer_austin_auto",
+    "vin": "MOCKVIN000000026",
+    "stockNumber": "AUSTIN1025",
+    "year": 2020,
+    "make": "Chevrolet",
+    "model": "Silverado 1500",
+    "trim": "RST",
+    "mileage": 8380,
+    "priceCents": 2258000,
+    "originalPriceCents": 2258000,
+    "priceLastChangedAt": "2026-05-23T12:00:00Z",
+    "condition": "cpo",
+    "exteriorColor": "Gray",
+    "interiorColor": "Brown",
+    "bodyStyle": "Truck",
+    "drivetrain": "AWD",
+    "fuelType": "Hybrid",
+    "transmission": "Manual",
+    "options": {
+      "features": [
+        "Heated Seats",
+        "Apple CarPlay"
+      ]
+    },
+    "starCore": {
+      "title": "2020 Chevrolet Silverado 1500 Custom",
+      "score": 68
+    },
+    "categoryPayload": null,
+    "soldAt": null,
+    "removedAt": null,
+    "reactivatedAt": null,
+    "createdAt": "2026-03-20T12:00:00Z",
+    "updatedAt": "2026-06-05T12:00:00Z"
+  },
+  {
+    "id": "veh_0027",
+    "dealershipId": "dealer_austin_auto",
+    "vin": "MOCKVIN000000027",
+    "stockNumber": "AUSTIN1026",
+    "year": 2022,
+    "make": "Mercedes-Benz",
+    "model": "C-Class",
+    "trim": "AMG Line",
+    "mileage": 114213,
+    "priceCents": 3567700,
+    "originalPriceCents": 3667700,
+    "priceLastChangedAt": "2026-05-27T12:00:00Z",
+    "condition": "used",
+    "exteriorColor": "Red",
+    "interiorColor": "Tan",
+    "bodyStyle": "Sedan",
+    "drivetrain": "RWD",
+    "fuelType": "Electric",
+    "transmission": "CVT",
+    "options": {
+      "features": [
+        "Tow Package",
+        "Navigation",
+        "Sunroof",
+        "Apple CarPlay",
+        "Bluetooth"
+      ]
+    },
+    "starCore": {
+      "title": "2022 Mercedes-Benz C-Class C300",
+      "score": 97
+    },
+    "categoryPayload": null,
+    "soldAt": null,
+    "removedAt": null,
+    "reactivatedAt": null,
+    "createdAt": "2026-05-15T12:00:00Z",
+    "updatedAt": "2026-06-01T12:00:00Z"
+  },
+  {
+    "id": "veh_0028",
+    "dealershipId": "dealer_austin_auto",
+    "vin": "MOCKVIN000000028",
+    "stockNumber": "AUSTIN1027",
+    "year": 2024,
+    "make": "Chevrolet",
+    "model": "Silverado 1500",
+    "trim": "LT",
+    "mileage": 18018,
+    "priceCents": 5241100,
+    "originalPriceCents": 5391100,
+    "priceLastChangedAt": "2026-05-18T12:00:00Z",
+    "condition": "used",
+    "exteriorColor": "Green",
+    "interiorColor": "Gray",
+    "bodyStyle": "Truck",
+    "drivetrain": "FWD",
+    "fuelType": "Hybrid",
+    "transmission": "Automatic",
+    "options": {
+      "features": [
+        "Sunroof",
+        "Backup Camera",
+        "Apple CarPlay",
+        "Bluetooth"
+      ]
+    },
+    "starCore": {
+      "title": "2024 Chevrolet Silverado 1500 Custom",
+      "score": 65
+    },
+    "categoryPayload": null,
+    "soldAt": null,
+    "removedAt": null,
+    "reactivatedAt": null,
+    "createdAt": "2025-12-17T12:00:00Z",
+    "updatedAt": "2026-06-04T12:00:00Z"
+  },
+  {
+    "id": "veh_0029",
+    "dealershipId": "dealer_austin_auto",
+    "vin": "MOCKVIN000000029",
+    "stockNumber": "AUSTIN1028",
+    "year": 2019,
+    "make": "Tesla",
+    "model": "Model 3",
+    "trim": "Long Range",
+    "mileage": 2938,
+    "priceCents": 7060200,
+    "originalPriceCents": 7110200,
+    "priceLastChangedAt": "2026-05-17T12:00:00Z",
+    "condition": "new",
+    "exteriorColor": "Silver",
+    "interiorColor": "Brown",
+    "bodyStyle": "Sedan",
+    "drivetrain": "AWD",
+    "fuelType": "Hybrid",
+    "transmission": "Manual",
+    "options": {
+      "features": [
+        "Sunroof",
+        "Navigation"
+      ]
+    },
+    "starCore": {
+      "title": "2019 Tesla Model 3 Long Range",
+      "score": 96
+    },
+    "categoryPayload": null,
+    "soldAt": "2026-04-15T12:00:00Z",
+    "removedAt": null,
+    "reactivatedAt": null,
+    "createdAt": "2026-03-18T12:00:00Z",
+    "updatedAt": "2026-06-02T12:00:00Z"
+  },
+  {
+    "id": "veh_0030",
+    "dealershipId": "dealer_austin_auto",
+    "vin": "MOCKVIN000000030",
+    "stockNumber": "AUSTIN1029",
+    "year": 2025,
+    "make": "Toyota",
+    "model": "Camry",
+    "trim": "SE",
+    "mileage": 28820,
+    "priceCents": 7595100,
+    "originalPriceCents": 7745100,
+    "priceLastChangedAt": "2026-05-13T12:00:00Z",
+    "condition": "cpo",
+    "exteriorColor": "Gray",
+    "interiorColor": "Tan",
+    "bodyStyle": "Sedan",
+    "drivetrain": "AWD",
+    "fuelType": "Diesel",
+    "transmission": "Automatic",
+    "options": {
+      "features": [
+        "Leather",
+        "Heated Seats",
+        "Backup Camera",
+        "Navigation",
+        "Apple CarPlay"
+      ]
+    },
+    "starCore": {
+      "title": "2025 Toyota Camry SE",
+      "score": 81
+    },
+    "categoryPayload": null,
+    "soldAt": "2026-04-29T12:00:00Z",
+    "removedAt": null,
+    "reactivatedAt": null,
+    "createdAt": "2026-03-12T12:00:00Z",
+    "updatedAt": "2026-06-07T12:00:00Z"
+  },
+  {
+    "id": "veh_0031",
+    "dealershipId": "dealer_austin_auto",
+    "vin": "MOCKVIN000000031",
+    "stockNumber": "AUSTIN1030",
+    "year": 2016,
+    "make": "Chevrolet",
+    "model": "Silverado 1500",
+    "trim": "LT",
+    "mileage": 27974,
+    "priceCents": 7278700,
+    "originalPriceCents": 7328700,
+    "priceLastChangedAt": "2026-05-18T12:00:00Z",
+    "condition": "used",
+    "exteriorColor": "White",
+    "interiorColor": "Black",
+    "bodyStyle": "Truck",
+    "drivetrain": "AWD",
+    "fuelType": "Hybrid",
+    "transmission": "CVT",
+    "options": {
+      "features": [
+        "Backup Camera",
+        "Leather",
+        "Heated Seats"
+      ]
+    },
+    "starCore": {
+      "title": "2016 Chevrolet Silverado 1500 Custom",
+      "score": 71
+    },
+    "categoryPayload": null,
+    "soldAt": null,
+    "removedAt": null,
+    "reactivatedAt": null,
+    "createdAt": "2026-04-17T12:00:00Z",
+    "updatedAt": "2026-06-08T12:00:00Z"
+  },
+  {
+    "id": "veh_0032",
+    "dealershipId": "dealer_austin_auto",
+    "vin": "MOCKVIN000000032",
+    "stockNumber": "AUSTIN1031",
+    "year": 2023,
+    "make": "Subaru",
+    "model": "Outback",
+    "trim": "Limited",
+    "mileage": 83905,
+    "priceCents": 1741700,
+    "originalPriceCents": 1891700,
+    "priceLastChangedAt": "2026-06-06T12:00:00Z",
+    "condition": "certified",
+    "exteriorColor": "Red",
+    "interiorColor": "Tan",
+    "bodyStyle": "Wagon",
+    "drivetrain": "AWD",
+    "fuelType": "Gasoline",
+    "transmission": "Automatic",
+    "options": {
+      "features": [
+        "Navigation",
+        "Heated Seats",
+        "Sunroof",
+        "Bluetooth",
+        "Tow Package"
+      ]
+    },
+    "starCore": {
+      "title": "2023 Subaru Outback Limited",
+      "score": 77
+    },
+    "categoryPayload": null,
+    "soldAt": null,
+    "removedAt": null,
+    "reactivatedAt": null,
+    "createdAt": "2026-04-25T12:00:00Z",
+    "updatedAt": "2026-06-04T12:00:00Z"
+  },
+  {
+    "id": "veh_0033",
+    "dealershipId": "dealer_lone_star_rv",
+    "vin": "MOCKVIN000000033",
+    "stockNumber": "LONE1000",
+    "year": 2026,
+    "make": "Polaris",
+    "model": "Ranger",
+    "trim": "XP 1000",
+    "mileage": 831,
+    "priceCents": 3488400,
+    "originalPriceCents": 3538400,
+    "priceLastChangedAt": "2026-05-15T12:00:00Z",
+    "condition": "certified",
+    "exteriorColor": "White",
+    "interiorColor": "Black",
+    "bodyStyle": "UTV",
+    "drivetrain": "4WD",
+    "fuelType": "Electric",
+    "transmission": "CVT",
+    "options": {
+      "features": [
+        "Bluetooth",
+        "Backup Camera",
+        "Leather"
+      ]
+    },
+    "starCore": {
+      "title": "2026 Polaris Ranger XP 1000",
+      "score": 87
+    },
+    "categoryPayload": {
+      "usageUnit": "miles",
+      "usageValue": 831,
+      "unitType": "utv"
+    },
+    "soldAt": null,
+    "removedAt": null,
+    "reactivatedAt": null,
+    "createdAt": "2026-05-24T12:00:00Z",
+    "updatedAt": "2026-06-03T12:00:00Z"
+  },
+  {
+    "id": "veh_0034",
+    "dealershipId": "dealer_lone_star_rv",
+    "vin": "MOCKVIN000000034",
+    "stockNumber": "LONE1001",
+    "year": 2023,
+    "make": "Forest River",
+    "model": "Rockwood",
+    "trim": "Mini Lite",
+    "mileage": 635,
+    "priceCents": 4986000,
+    "originalPriceCents": 5086000,
+    "priceLastChangedAt": "2026-06-09T12:00:00Z",
+    "condition": "used",
+    "exteriorColor": "Gray",
+    "interiorColor": "Brown",
+    "bodyStyle": "Travel Trailer",
+    "drivetrain": "FWD",
+    "fuelType": "Electric",
+    "transmission": "Manual",
+    "options": {
+      "features": [
+        "Navigation",
+        "Backup Camera",
+        "Leather",
+        "Tow Package"
+      ]
+    },
+    "starCore": {
+      "title": "2023 Forest River Rockwood Mini Lite",
+      "score": 77
+    },
+    "categoryPayload": {
+      "usageUnit": "hours",
+      "usageValue": 635,
+      "unitType": "travel_trailer"
+    },
+    "soldAt": null,
+    "removedAt": null,
+    "reactivatedAt": null,
+    "createdAt": "2026-05-05T12:00:00Z",
+    "updatedAt": "2026-06-04T12:00:00Z"
+  },
+  {
+    "id": "veh_0035",
+    "dealershipId": "dealer_lone_star_rv",
+    "vin": "MOCKVIN000000035",
+    "stockNumber": "LONE1002",
+    "year": 2023,
+    "make": "Polaris",
+    "model": "Ranger",
+    "trim": "XP 1000",
+    "mileage": 678,
+    "priceCents": 3966300,
+    "originalPriceCents": 4016300,
+    "priceLastChangedAt": "2026-06-01T12:00:00Z",
+    "condition": "used",
+    "exteriorColor": "Red",
+    "interiorColor": "Brown",
+    "bodyStyle": "UTV",
+    "drivetrain": "AWD",
+    "fuelType": "Diesel",
+    "transmission": "Automatic",
+    "options": {
+      "features": [
+        "Heated Seats",
+        "Sunroof"
+      ]
+    },
+    "starCore": {
+      "title": "2023 Polaris Ranger XP 1000",
+      "score": 81
+    },
+    "categoryPayload": {
+      "usageUnit": "miles",
+      "usageValue": 678,
+      "unitType": "utv"
+    },
+    "soldAt": null,
+    "removedAt": null,
+    "reactivatedAt": null,
+    "createdAt": "2026-03-27T12:00:00Z",
+    "updatedAt": "2026-06-06T12:00:00Z"
+  },
+  {
+    "id": "veh_0036",
+    "dealershipId": "dealer_lone_star_rv",
+    "vin": "MOCKVIN000000036",
+    "stockNumber": "LONE1003",
+    "year": 2023,
+    "make": "Forest River",
+    "model": "Rockwood",
+    "trim": "Mini Lite",
+    "mileage": 352,
+    "priceCents": 2993700,
+    "originalPriceCents": 2993700,
+    "priceLastChangedAt": "2026-05-25T12:00:00Z",
+    "condition": "cpo",
+    "exteriorColor": "Black",
+    "interiorColor": "Tan",
+    "bodyStyle": "Travel Trailer",
+    "drivetrain": "FWD",
+    "fuelType": "Hybrid",
+    "transmission": "CVT",
+    "options": {
+      "features": [
+        "Apple CarPlay",
+        "Heated Seats"
+      ]
+    },
+    "starCore": {
+      "title": "2023 Forest River Rockwood Mini Lite",
+      "score": 73
+    },
+    "categoryPayload": {
+      "usageUnit": "hours",
+      "usageValue": 352,
+      "unitType": "travel_trailer"
+    },
+    "soldAt": null,
+    "removedAt": null,
+    "reactivatedAt": null,
+    "createdAt": "2026-04-20T12:00:00Z",
+    "updatedAt": "2026-06-09T12:00:00Z"
+  },
+  {
+    "id": "veh_0037",
+    "dealershipId": "dealer_lone_star_rv",
+    "vin": "MOCKVIN000000037",
+    "stockNumber": "LONE1004",
+    "year": 2026,
+    "make": "Polaris",
+    "model": "Ranger",
+    "trim": "XP 1000",
+    "mileage": 863,
+    "priceCents": 4267400,
+    "originalPriceCents": 4267400,
+    "priceLastChangedAt": "2026-05-25T12:00:00Z",
+    "condition": "used",
+    "exteriorColor": "Red",
+    "interiorColor": "Gray",
+    "bodyStyle": "UTV",
+    "drivetrain": "FWD",
+    "fuelType": "Gasoline",
+    "transmission": "CVT",
+    "options": {
+      "features": [
+        "Tow Package",
+        "Navigation",
+        "Heated Seats"
+      ]
+    },
+    "starCore": {
+      "title": "2026 Polaris Ranger XP 1000",
+      "score": 82
+    },
+    "categoryPayload": {
+      "usageUnit": "miles",
+      "usageValue": 863,
+      "unitType": "utv"
+    },
+    "soldAt": null,
+    "removedAt": null,
+    "reactivatedAt": null,
+    "createdAt": "2026-02-24T12:00:00Z",
+    "updatedAt": "2026-06-08T12:00:00Z"
+  },
+  {
+    "id": "veh_0038",
+    "dealershipId": "dealer_lone_star_rv",
+    "vin": "MOCKVIN000000038",
+    "stockNumber": "LONE1005",
+    "year": 2025,
+    "make": "Polaris",
+    "model": "Ranger",
+    "trim": "XP 1000",
+    "mileage": 238,
+    "priceCents": 2040800,
+    "originalPriceCents": 2090800,
+    "priceLastChangedAt": "2026-06-03T12:00:00Z",
+    "condition": "certified",
+    "exteriorColor": "Red",
+    "interiorColor": "Gray",
+    "bodyStyle": "UTV",
+    "drivetrain": "4WD",
+    "fuelType": "Diesel",
+    "transmission": "CVT",
+    "options": {
+      "features": [
+        "Tow Package",
+        "Leather",
+        "Bluetooth",
+        "Apple CarPlay"
+      ]
+    },
+    "starCore": {
+      "title": "2025 Polaris Ranger XP 1000",
+      "score": 95
+    },
+    "categoryPayload": {
+      "usageUnit": "miles",
+      "usageValue": 238,
+      "unitType": "utv"
+    },
+    "soldAt": null,
+    "removedAt": null,
+    "reactivatedAt": null,
+    "createdAt": "2026-02-06T12:00:00Z",
+    "updatedAt": "2026-06-01T12:00:00Z"
+  },
+  {
+    "id": "veh_0039",
+    "dealershipId": "dealer_lone_star_rv",
+    "vin": "MOCKVIN000000039",
+    "stockNumber": "LONE1006",
+    "year": 2022,
+    "make": "Airstream",
+    "model": "Basecamp",
+    "trim": "16X",
+    "mileage": 259,
+    "priceCents": 2734100,
+    "originalPriceCents": 2734100,
+    "priceLastChangedAt": "2026-06-10T12:00:00Z",
+    "condition": "certified",
+    "exteriorColor": "Red",
+    "interiorColor": "Brown",
+    "bodyStyle": "Travel Trailer",
+    "drivetrain": "4WD",
+    "fuelType": "Diesel",
+    "transmission": "CVT",
+    "options": {
+      "features": [
+        "Apple CarPlay",
+        "Heated Seats",
+        "Navigation"
+      ]
+    },
+    "starCore": {
+      "title": "2022 Airstream Basecamp 16X",
+      "score": 74
+    },
+    "categoryPayload": {
+      "usageUnit": "hours",
+      "usageValue": 259,
+      "unitType": "travel_trailer"
+    },
+    "soldAt": null,
+    "removedAt": null,
+    "reactivatedAt": null,
+    "createdAt": "2025-12-21T12:00:00Z",
+    "updatedAt": "2026-06-02T12:00:00Z"
+  },
+  {
+    "id": "veh_0040",
+    "dealershipId": "dealer_lone_star_rv",
+    "vin": "MOCKVIN000000040",
+    "stockNumber": "LONE1007",
+    "year": 2020,
+    "make": "Airstream",
+    "model": "Basecamp",
+    "trim": "16X",
+    "mileage": 539,
+    "priceCents": 2888900,
+    "originalPriceCents": 2938900,
+    "priceLastChangedAt": "2026-06-04T12:00:00Z",
+    "condition": "certified",
+    "exteriorColor": "Blue",
+    "interiorColor": "Tan",
+    "bodyStyle": "Travel Trailer",
+    "drivetrain": "FWD",
+    "fuelType": "Hybrid",
+    "transmission": "Automatic",
+    "options": {
+      "features": [
+        "Apple CarPlay",
+        "Bluetooth",
+        "Heated Seats",
+        "Navigation"
+      ]
+    },
+    "starCore": {
+      "title": "2020 Airstream Basecamp 16X",
+      "score": 71
+    },
+    "categoryPayload": {
+      "usageUnit": "hours",
+      "usageValue": 539,
+      "unitType": "travel_trailer"
+    },
+    "soldAt": null,
+    "removedAt": null,
+    "reactivatedAt": null,
+    "createdAt": "2026-06-02T12:00:00Z",
+    "updatedAt": "2026-06-04T12:00:00Z"
+  },
+  {
+    "id": "veh_0041",
+    "dealershipId": "dealer_lone_star_rv",
+    "vin": "MOCKVIN000000041",
+    "stockNumber": "LONE1008",
+    "year": 2022,
+    "make": "Airstream",
+    "model": "Basecamp",
+    "trim": "16X",
+    "mileage": 393,
+    "priceCents": 5797800,
+    "originalPriceCents": 5897800,
+    "priceLastChangedAt": "2026-05-27T12:00:00Z",
+    "condition": "certified",
+    "exteriorColor": "Black",
+    "interiorColor": "Tan",
+    "bodyStyle": "Travel Trailer",
+    "drivetrain": "AWD",
+    "fuelType": "Electric",
+    "transmission": "Automatic",
+    "options": {
+      "features": [
+        "Heated Seats",
+        "Tow Package",
+        "Backup Camera"
+      ]
+    },
+    "starCore": {
+      "title": "2022 Airstream Basecamp 16X",
+      "score": 93
+    },
+    "categoryPayload": {
+      "usageUnit": "hours",
+      "usageValue": 393,
+      "unitType": "travel_trailer"
+    },
+    "soldAt": null,
+    "removedAt": "2026-06-04T12:00:00Z",
+    "reactivatedAt": null,
+    "createdAt": "2026-01-26T12:00:00Z",
+    "updatedAt": "2026-06-07T12:00:00Z"
+  },
+  {
+    "id": "veh_0042",
+    "dealershipId": "dealer_lone_star_rv",
+    "vin": "MOCKVIN000000042",
+    "stockNumber": "LONE1009",
+    "year": 2019,
+    "make": "Forest River",
+    "model": "Rockwood",
+    "trim": "Mini Lite",
+    "mileage": 861,
+    "priceCents": 2000400,
+    "originalPriceCents": 2000400,
+    "priceLastChangedAt": "2026-06-06T12:00:00Z",
+    "condition": "certified",
+    "exteriorColor": "Red",
+    "interiorColor": "Gray",
+    "bodyStyle": "Travel Trailer",
+    "drivetrain": "RWD",
+    "fuelType": "Electric",
+    "transmission": "Manual",
+    "options": {
+      "features": [
+        "Heated Seats",
+        "Bluetooth",
+        "Leather"
+      ]
+    },
+    "starCore": {
+      "title": "2019 Forest River Rockwood Mini Lite",
+      "score": 89
+    },
+    "categoryPayload": {
+      "usageUnit": "hours",
+      "usageValue": 861,
+      "unitType": "travel_trailer"
+    },
+    "soldAt": null,
+    "removedAt": null,
+    "reactivatedAt": null,
+    "createdAt": "2026-02-23T12:00:00Z",
+    "updatedAt": "2026-06-09T12:00:00Z"
+  },
+  {
+    "id": "veh_0043",
+    "dealershipId": "dealer_lone_star_rv",
+    "vin": "MOCKVIN000000043",
+    "stockNumber": "LONE1010",
+    "year": 2023,
+    "make": "Forest River",
+    "model": "Rockwood",
+    "trim": "Mini Lite",
+    "mileage": 422,
+    "priceCents": 5975300,
+    "originalPriceCents": 6075300,
+    "priceLastChangedAt": "2026-05-12T12:00:00Z",
+    "condition": "certified",
+    "exteriorColor": "White",
+    "interiorColor": "Brown",
+    "bodyStyle": "Travel Trailer",
+    "drivetrain": "FWD",
+    "fuelType": "Hybrid",
+    "transmission": "CVT",
+    "options": {
+      "features": [
+        "Backup Camera",
+        "Heated Seats",
+        "Bluetooth",
+        "Tow Package"
+      ]
+    },
+    "starCore": {
+      "title": "2023 Forest River Rockwood Mini Lite",
+      "score": 85
+    },
+    "categoryPayload": {
+      "usageUnit": "hours",
+      "usageValue": 422,
+      "unitType": "travel_trailer"
+    },
+    "soldAt": "2026-06-07T12:00:00Z",
+    "removedAt": null,
+    "reactivatedAt": null,
+    "createdAt": "2026-05-12T12:00:00Z",
+    "updatedAt": "2026-06-06T12:00:00Z"
+  },
+  {
+    "id": "veh_0044",
+    "dealershipId": "dealer_lone_star_rv",
+    "vin": "MOCKVIN000000044",
+    "stockNumber": "LONE1011",
+    "year": 2022,
+    "make": "Forest River",
+    "model": "Rockwood",
+    "trim": "Mini Lite",
+    "mileage": 257,
+    "priceCents": 5622600,
+    "originalPriceCents": 5622600,
+    "priceLastChangedAt": "2026-06-05T12:00:00Z",
+    "condition": "used",
+    "exteriorColor": "Black",
+    "interiorColor": "Black",
+    "bodyStyle": "Travel Trailer",
+    "drivetrain": "RWD",
+    "fuelType": "Gasoline",
+    "transmission": "Automatic",
+    "options": {
+      "features": [
+        "Apple CarPlay",
+        "Heated Seats",
+        "Bluetooth"
+      ]
+    },
+    "starCore": {
+      "title": "2022 Forest River Rockwood Mini Lite",
+      "score": 96
+    },
+    "categoryPayload": {
+      "usageUnit": "hours",
+      "usageValue": 257,
+      "unitType": "travel_trailer"
+    },
+    "soldAt": null,
+    "removedAt": null,
+    "reactivatedAt": null,
+    "createdAt": "2026-05-05T12:00:00Z",
+    "updatedAt": "2026-06-01T12:00:00Z"
+  },
+  {
+    "id": "veh_0045",
+    "dealershipId": "dealer_coastal_boats",
+    "vin": "MOCKVIN000000045",
+    "stockNumber": "COASTAL1000",
+    "year": 2025,
+    "make": "Yamaha",
+    "model": "AR195",
+    "trim": "Jet Boat",
+    "mileage": 431,
+    "priceCents": 8247400,
+    "originalPriceCents": 8297400,
+    "priceLastChangedAt": "2026-06-09T12:00:00Z",
+    "condition": "certified",
+    "exteriorColor": "White",
+    "interiorColor": "Tan",
+    "bodyStyle": "Boat",
+    "drivetrain": "4WD",
+    "fuelType": "Gasoline",
+    "transmission": "Manual",
+    "options": {
+      "features": [
+        "Leather",
+        "Apple CarPlay",
+        "Heated Seats",
+        "Bluetooth"
+      ]
+    },
+    "starCore": {
+      "title": "2025 Yamaha AR195 Jet Boat",
+      "score": 95
+    },
+    "categoryPayload": {
+      "usageUnit": "hours",
+      "usageValue": 431,
+      "unitType": "boat",
+      "hullMaterial": "fiberglass"
+    },
+    "soldAt": null,
+    "removedAt": null,
+    "reactivatedAt": null,
+    "createdAt": "2026-03-20T12:00:00Z",
+    "updatedAt": "2026-06-02T12:00:00Z"
+  },
+  {
+    "id": "veh_0046",
+    "dealershipId": "dealer_coastal_boats",
+    "vin": "MOCKVIN000000046",
+    "stockNumber": "COASTAL1001",
+    "year": 2026,
+    "make": "Sea Ray",
+    "model": "SPX 190",
+    "trim": "Outboard",
+    "mileage": 341,
+    "priceCents": 4728800,
+    "originalPriceCents": 4878800,
+    "priceLastChangedAt": "2026-06-03T12:00:00Z",
+    "condition": "cpo",
+    "exteriorColor": "Blue",
+    "interiorColor": "Gray",
+    "bodyStyle": "Boat",
+    "drivetrain": "AWD",
+    "fuelType": "Hybrid",
+    "transmission": "Automatic",
+    "options": {
+      "features": [
+        "Backup Camera",
+        "Heated Seats",
+        "Leather"
+      ]
+    },
+    "starCore": {
+      "title": "2026 Sea Ray SPX 190 Outboard",
+      "score": 81
+    },
+    "categoryPayload": {
+      "usageUnit": "hours",
+      "usageValue": 341,
+      "unitType": "boat",
+      "hullMaterial": "fiberglass"
+    },
+    "soldAt": null,
+    "removedAt": null,
+    "reactivatedAt": null,
+    "createdAt": "2026-02-14T12:00:00Z",
+    "updatedAt": "2026-06-03T12:00:00Z"
+  },
+  {
+    "id": "veh_0047",
+    "dealershipId": "dealer_coastal_boats",
+    "vin": "MOCKVIN000000047",
+    "stockNumber": "COASTAL1002",
+    "year": 2025,
+    "make": "Sea Ray",
+    "model": "SPX 190",
+    "trim": "Outboard",
+    "mileage": 370,
+    "priceCents": 8997400,
+    "originalPriceCents": 9097400,
+    "priceLastChangedAt": "2026-06-06T12:00:00Z",
+    "condition": "cpo",
+    "exteriorColor": "Green",
+    "interiorColor": "Tan",
+    "bodyStyle": "Boat",
+    "drivetrain": "RWD",
+    "fuelType": "Gasoline",
+    "transmission": "CVT",
+    "options": {
+      "features": [
+        "Sunroof",
+        "Leather",
+        "Tow Package"
+      ]
+    },
+    "starCore": {
+      "title": "2025 Sea Ray SPX 190 Outboard",
+      "score": 68
+    },
+    "categoryPayload": {
+      "usageUnit": "hours",
+      "usageValue": 370,
+      "unitType": "boat",
+      "hullMaterial": "fiberglass"
+    },
+    "soldAt": null,
+    "removedAt": null,
+    "reactivatedAt": null,
+    "createdAt": "2026-05-12T12:00:00Z",
+    "updatedAt": "2026-06-10T12:00:00Z"
+  },
+  {
+    "id": "veh_0048",
+    "dealershipId": "dealer_coastal_boats",
+    "vin": "MOCKVIN000000048",
+    "stockNumber": "COASTAL1003",
+    "year": 2021,
+    "make": "Sea Ray",
+    "model": "SPX 190",
+    "trim": "Outboard",
+    "mileage": 18,
+    "priceCents": 4453200,
+    "originalPriceCents": 4503200,
+    "priceLastChangedAt": "2026-05-16T12:00:00Z",
+    "condition": "cpo",
+    "exteriorColor": "Red",
+    "interiorColor": "Brown",
+    "bodyStyle": "Boat",
+    "drivetrain": "4WD",
+    "fuelType": "Gasoline",
+    "transmission": "CVT",
+    "options": {
+      "features": [
+        "Backup Camera",
+        "Navigation",
+        "Bluetooth",
+        "Apple CarPlay",
+        "Sunroof"
+      ]
+    },
+    "starCore": {
+      "title": "2021 Sea Ray SPX 190 Outboard",
+      "score": 65
+    },
+    "categoryPayload": {
+      "usageUnit": "hours",
+      "usageValue": 18,
+      "unitType": "boat",
+      "hullMaterial": "fiberglass"
+    },
+    "soldAt": "2026-05-01T12:00:00Z",
+    "removedAt": null,
+    "reactivatedAt": null,
+    "createdAt": "2026-04-08T12:00:00Z",
+    "updatedAt": "2026-06-01T12:00:00Z"
+  },
+  {
+    "id": "veh_0049",
+    "dealershipId": "dealer_coastal_boats",
+    "vin": "MOCKVIN000000049",
+    "stockNumber": "COASTAL1004",
+    "year": 2023,
+    "make": "Yamaha",
+    "model": "AR195",
+    "trim": "Jet Boat",
+    "mileage": 256,
+    "priceCents": 3806000,
+    "originalPriceCents": 3956000,
+    "priceLastChangedAt": "2026-05-11T12:00:00Z",
+    "condition": "cpo",
+    "exteriorColor": "Black",
+    "interiorColor": "Tan",
+    "bodyStyle": "Boat",
+    "drivetrain": "RWD",
+    "fuelType": "Diesel",
+    "transmission": "Manual",
+    "options": {
+      "features": [
+        "Tow Package",
+        "Navigation"
+      ]
+    },
+    "starCore": {
+      "title": "2023 Yamaha AR195 Jet Boat",
+      "score": 66
+    },
+    "categoryPayload": {
+      "usageUnit": "hours",
+      "usageValue": 256,
+      "unitType": "boat",
+      "hullMaterial": "fiberglass"
+    },
+    "soldAt": null,
+    "removedAt": null,
+    "reactivatedAt": null,
+    "createdAt": "2026-05-08T12:00:00Z",
+    "updatedAt": "2026-06-04T12:00:00Z"
+  },
+  {
+    "id": "veh_0050",
+    "dealershipId": "dealer_coastal_boats",
+    "vin": "MOCKVIN000000050",
+    "stockNumber": "COASTAL1005",
+    "year": 2018,
+    "make": "Sea Ray",
+    "model": "SPX 190",
+    "trim": "Outboard",
+    "mileage": 446,
+    "priceCents": 5744200,
+    "originalPriceCents": 5794200,
+    "priceLastChangedAt": "2026-05-28T12:00:00Z",
+    "condition": "new",
+    "exteriorColor": "Silver",
+    "interiorColor": "Tan",
+    "bodyStyle": "Boat",
+    "drivetrain": "RWD",
+    "fuelType": "Hybrid",
+    "transmission": "CVT",
+    "options": {
+      "features": [
+        "Leather",
+        "Bluetooth"
+      ]
+    },
+    "starCore": {
+      "title": "2018 Sea Ray SPX 190 Outboard",
+      "score": 82
+    },
+    "categoryPayload": {
+      "usageUnit": "hours",
+      "usageValue": 446,
+      "unitType": "boat",
+      "hullMaterial": "fiberglass"
+    },
+    "soldAt": null,
+    "removedAt": null,
+    "reactivatedAt": null,
+    "createdAt": "2026-05-10T12:00:00Z",
+    "updatedAt": "2026-06-03T12:00:00Z"
+  },
+  {
+    "id": "veh_0051",
+    "dealershipId": "dealer_coastal_boats",
+    "vin": "MOCKVIN000000051",
+    "stockNumber": "COASTAL1006",
+    "year": 2022,
+    "make": "Yamaha",
+    "model": "AR195",
+    "trim": "Jet Boat",
+    "mileage": 336,
+    "priceCents": 5233600,
+    "originalPriceCents": 5333600,
+    "priceLastChangedAt": "2026-05-25T12:00:00Z",
+    "condition": "cpo",
+    "exteriorColor": "Green",
+    "interiorColor": "Black",
+    "bodyStyle": "Boat",
+    "drivetrain": "RWD",
+    "fuelType": "Gasoline",
+    "transmission": "CVT",
+    "options": {
+      "features": [
+        "Leather",
+        "Tow Package",
+        "Navigation"
+      ]
+    },
+    "starCore": {
+      "title": "2022 Yamaha AR195 Jet Boat",
+      "score": 68
+    },
+    "categoryPayload": {
+      "usageUnit": "hours",
+      "usageValue": 336,
+      "unitType": "boat",
+      "hullMaterial": "fiberglass"
+    },
+    "soldAt": null,
+    "removedAt": null,
+    "reactivatedAt": null,
+    "createdAt": "2026-02-16T12:00:00Z",
+    "updatedAt": "2026-06-03T12:00:00Z"
+  },
+  {
+    "id": "veh_0052",
+    "dealershipId": "dealer_coastal_boats",
+    "vin": "MOCKVIN000000052",
+    "stockNumber": "COASTAL1007",
+    "year": 2026,
+    "make": "Sea Ray",
+    "model": "SPX 190",
+    "trim": "Outboard",
+    "mileage": 247,
+    "priceCents": 3406600,
+    "originalPriceCents": 3406600,
+    "priceLastChangedAt": "2026-06-02T12:00:00Z",
+    "condition": "used",
+    "exteriorColor": "Red",
+    "interiorColor": "Black",
+    "bodyStyle": "Boat",
+    "drivetrain": "AWD",
+    "fuelType": "Hybrid",
+    "transmission": "CVT",
+    "options": {
+      "features": [
+        "Apple CarPlay",
+        "Leather",
+        "Tow Package"
+      ]
+    },
+    "starCore": {
+      "title": "2026 Sea Ray SPX 190 Outboard",
+      "score": 88
+    },
+    "categoryPayload": {
+      "usageUnit": "hours",
+      "usageValue": 247,
+      "unitType": "boat",
+      "hullMaterial": "fiberglass"
+    },
+    "soldAt": "2026-05-27T12:00:00Z",
+    "removedAt": null,
+    "reactivatedAt": null,
+    "createdAt": "2026-01-14T12:00:00Z",
+    "updatedAt": "2026-06-05T12:00:00Z"
+  },
+  {
+    "id": "veh_0053",
+    "dealershipId": "dealer_coastal_boats",
+    "vin": "MOCKVIN000000053",
+    "stockNumber": "COASTAL1008",
+    "year": 2022,
+    "make": "Bayliner",
+    "model": "VR5",
+    "trim": "Bowrider",
+    "mileage": 48,
+    "priceCents": 4636200,
+    "originalPriceCents": 4686200,
+    "priceLastChangedAt": "2026-05-17T12:00:00Z",
+    "condition": "certified",
+    "exteriorColor": "White",
+    "interiorColor": "Black",
+    "bodyStyle": "Boat",
+    "drivetrain": "AWD",
+    "fuelType": "Gasoline",
+    "transmission": "Automatic",
+    "options": {
+      "features": [
+        "Apple CarPlay",
+        "Bluetooth",
+        "Navigation"
+      ]
+    },
+    "starCore": {
+      "title": "2022 Bayliner VR5 Bowrider",
+      "score": 66
+    },
+    "categoryPayload": {
+      "usageUnit": "hours",
+      "usageValue": 48,
+      "unitType": "boat",
+      "hullMaterial": "fiberglass"
+    },
+    "soldAt": null,
+    "removedAt": "2026-05-17T12:00:00Z",
+    "reactivatedAt": null,
+    "createdAt": "2026-05-09T12:00:00Z",
+    "updatedAt": "2026-06-07T12:00:00Z"
+  },
+  {
+    "id": "veh_0054",
+    "dealershipId": "dealer_coastal_boats",
+    "vin": "MOCKVIN000000054",
+    "stockNumber": "COASTAL1009",
+    "year": 2021,
+    "make": "Sea Ray",
+    "model": "SPX 190",
+    "trim": "Outboard",
+    "mileage": 143,
+    "priceCents": 4267100,
+    "originalPriceCents": 4317100,
+    "priceLastChangedAt": "2026-06-01T12:00:00Z",
+    "condition": "new",
+    "exteriorColor": "White",
+    "interiorColor": "Tan",
+    "bodyStyle": "Boat",
+    "drivetrain": "FWD",
+    "fuelType": "Hybrid",
+    "transmission": "Automatic",
+    "options": {
+      "features": [
+        "Navigation",
+        "Heated Seats",
+        "Sunroof",
+        "Backup Camera",
+        "Tow Package"
+      ]
+    },
+    "starCore": {
+      "title": "2021 Sea Ray SPX 190 Outboard",
+      "score": 84
+    },
+    "categoryPayload": {
+      "usageUnit": "hours",
+      "usageValue": 143,
+      "unitType": "boat",
+      "hullMaterial": "fiberglass"
+    },
+    "soldAt": null,
+    "removedAt": null,
+    "reactivatedAt": null,
+    "createdAt": "2026-02-24T12:00:00Z",
+    "updatedAt": "2026-06-10T12:00:00Z"
+  },
+  {
+    "id": "veh_0055",
+    "dealershipId": "dealer_coastal_boats",
+    "vin": "MOCKVIN000000055",
+    "stockNumber": "COASTAL1010",
+    "year": 2024,
+    "make": "Yamaha",
+    "model": "AR195",
+    "trim": "Jet Boat",
+    "mileage": 189,
+    "priceCents": 5064700,
+    "originalPriceCents": 5064700,
+    "priceLastChangedAt": "2026-05-30T12:00:00Z",
+    "condition": "cpo",
+    "exteriorColor": "Gray",
+    "interiorColor": "Tan",
+    "bodyStyle": "Boat",
+    "drivetrain": "4WD",
+    "fuelType": "Electric",
+    "transmission": "Automatic",
+    "options": {
+      "features": [
+        "Bluetooth",
+        "Apple CarPlay",
+        "Sunroof"
+      ]
+    },
+    "starCore": {
+      "title": "2024 Yamaha AR195 Jet Boat",
+      "score": 82
+    },
+    "categoryPayload": {
+      "usageUnit": "hours",
+      "usageValue": 189,
+      "unitType": "boat",
+      "hullMaterial": "fiberglass"
+    },
+    "soldAt": null,
+    "removedAt": null,
+    "reactivatedAt": null,
+    "createdAt": "2026-04-22T12:00:00Z",
+    "updatedAt": "2026-06-06T12:00:00Z"
+  },
+  {
+    "id": "veh_0056",
+    "dealershipId": "dealer_coastal_boats",
+    "vin": "MOCKVIN000000056",
+    "stockNumber": "COASTAL1011",
+    "year": 2022,
+    "make": "Sea Ray",
+    "model": "SPX 190",
+    "trim": "Outboard",
+    "mileage": 211,
+    "priceCents": 3735000,
+    "originalPriceCents": 3735000,
+    "priceLastChangedAt": "2026-05-16T12:00:00Z",
+    "condition": "certified",
+    "exteriorColor": "Gray",
+    "interiorColor": "Gray",
+    "bodyStyle": "Boat",
+    "drivetrain": "AWD",
+    "fuelType": "Electric",
+    "transmission": "Automatic",
+    "options": {
+      "features": [
+        "Backup Camera",
+        "Heated Seats",
+        "Navigation"
+      ]
+    },
+    "starCore": {
+      "title": "2022 Sea Ray SPX 190 Outboard",
+      "score": 76
+    },
+    "categoryPayload": {
+      "usageUnit": "hours",
+      "usageValue": 211,
+      "unitType": "boat",
+      "hullMaterial": "fiberglass"
+    },
+    "soldAt": null,
+    "removedAt": null,
+    "reactivatedAt": null,
+    "createdAt": "2026-01-25T12:00:00Z",
+    "updatedAt": "2026-06-09T12:00:00Z"
+  },
+  {
+    "id": "veh_0057",
+    "dealershipId": "dealer_messy_motors",
+    "vin": "",
+    "stockNumber": "MESSY1000",
+    "year": 2020,
+    "make": "Mercedes-Benz",
+    "model": "C-Class",
+    "trim": "AMG Line",
+    "mileage": 37493,
+    "priceCents": 0,
+    "originalPriceCents": 3650600,
+    "priceLastChangedAt": "2026-05-15T12:00:00Z",
+    "condition": "used",
+    "exteriorColor": "Black",
+    "interiorColor": "Brown",
+    "bodyStyle": "Sedan",
+    "drivetrain": "AWD",
+    "fuelType": "Diesel",
+    "transmission": "CVT",
+    "options": {
+      "features": [
+        "Navigation",
+        "Leather",
+        "Apple CarPlay"
+      ]
+    },
+    "starCore": {
+      "title": "2020 Mercedes-Benz C-Class C300",
+      "score": 71
+    },
+    "categoryPayload": null,
+    "soldAt": null,
+    "removedAt": null,
+    "reactivatedAt": null,
+    "createdAt": "2026-05-26T12:00:00Z",
+    "updatedAt": "2026-06-09T12:00:00Z"
+  },
+  {
+    "id": "veh_0058",
+    "dealershipId": "dealer_messy_motors",
+    "vin": "MOCKVIN000000058",
+    "stockNumber": "MESSY1001",
+    "year": 2023,
+    "make": "BMW",
+    "model": "X5",
+    "trim": "M Sport",
+    "mileage": 59714,
+    "priceCents": 4369300,
+    "originalPriceCents": 4419300,
+    "priceLastChangedAt": "2026-05-13T12:00:00Z",
+    "condition": "used",
+    "exteriorColor": "Green",
+    "interiorColor": "Gray",
+    "bodyStyle": "SUV",
+    "drivetrain": "AWD",
+    "fuelType": "Hybrid",
+    "transmission": "Manual",
+    "options": {
+      "features": [
+        "Leather",
+        "Bluetooth"
+      ]
+    },
+    "starCore": {
+      "title": "2023 BMW X5 M Sport",
+      "score": 65
+    },
+    "categoryPayload": null,
+    "soldAt": "2026-05-04T12:00:00Z",
+    "removedAt": null,
+    "reactivatedAt": null,
+    "createdAt": "2026-03-16T12:00:00Z",
+    "updatedAt": "2026-06-01T12:00:00Z"
+  },
+  {
+    "id": "veh_0059",
+    "dealershipId": "dealer_messy_motors",
+    "vin": "MOCKVIN000000059",
+    "stockNumber": "MESSY1002",
+    "year": 2023,
+    "make": "Tesla",
+    "model": "Model 3",
+    "trim": "Performance",
+    "mileage": 71500,
+    "priceCents": 6337400,
+    "originalPriceCents": 6487400,
+    "priceLastChangedAt": "2026-05-22T12:00:00Z",
+    "condition": "used",
+    "exteriorColor": "Black",
+    "interiorColor": "Black",
+    "bodyStyle": "Sedan",
+    "drivetrain": "AWD",
+    "fuelType": "Hybrid",
+    "transmission": "Manual",
+    "options": {
+      "features": [
+        "Heated Seats",
+        "Tow Package"
+      ]
+    },
+    "starCore": {
+      "title": "2023 Tesla Model 3 Performance",
+      "score": 77
+    },
+    "categoryPayload": null,
+    "soldAt": null,
+    "removedAt": null,
+    "reactivatedAt": null,
+    "createdAt": "2026-05-01T12:00:00Z",
+    "updatedAt": "2026-06-01T12:00:00Z"
+  },
+  {
+    "id": "veh_0060",
+    "dealershipId": "dealer_messy_motors",
+    "vin": "MOCKVIN000000060",
+    "stockNumber": "MESSY1003",
+    "year": 2017,
+    "make": "Chevrolet",
+    "model": "Silverado 1500",
+    "trim": "Custom",
+    "mileage": 84284,
+    "priceCents": 2532400,
+    "originalPriceCents": 2682400,
+    "priceLastChangedAt": "2026-05-12T12:00:00Z",
+    "condition": "used",
+    "exteriorColor": "Red",
+    "interiorColor": "Brown",
+    "bodyStyle": "Truck",
+    "drivetrain": "AWD",
+    "fuelType": "Diesel",
+    "transmission": "CVT",
+    "options": {
+      "features": [
+        "Tow Package",
+        "Sunroof",
+        "Apple CarPlay"
+      ]
+    },
+    "starCore": {
+      "title": "2017 Chevrolet Silverado 1500 LT",
+      "score": 82
+    },
+    "categoryPayload": null,
+    "soldAt": null,
+    "removedAt": null,
+    "reactivatedAt": null,
+    "createdAt": "2026-01-09T12:00:00Z",
+    "updatedAt": "2026-06-03T12:00:00Z"
+  },
+  {
+    "id": "veh_0061",
+    "dealershipId": "dealer_messy_motors",
+    "vin": "MOCKVIN000000061",
+    "stockNumber": "MESSY1004",
+    "year": 2019,
+    "make": "Chevrolet",
+    "model": "Silverado 1500",
+    "trim": "LT",
+    "mileage": 77585,
+    "priceCents": 5965900,
+    "originalPriceCents": 5965900,
+    "priceLastChangedAt": "2026-05-25T12:00:00Z",
+    "condition": "used",
+    "exteriorColor": "Green",
+    "interiorColor": "Black",
+    "bodyStyle": "Truck",
+    "drivetrain": "AWD",
+    "fuelType": "Electric",
+    "transmission": "Manual",
+    "options": {
+      "features": [
+        "Heated Seats",
+        "Backup Camera",
+        "Bluetooth"
+      ]
+    },
+    "starCore": {
+      "title": "2019 Chevrolet Silverado 1500 LT",
+      "score": 67
+    },
+    "categoryPayload": null,
+    "soldAt": null,
+    "removedAt": null,
+    "reactivatedAt": null,
+    "createdAt": "2026-04-16T12:00:00Z",
+    "updatedAt": "2026-06-10T12:00:00Z"
+  },
+  {
+    "id": "veh_0062",
+    "dealershipId": "dealer_messy_motors",
+    "vin": "MOCKVIN000000062",
+    "stockNumber": "MESSY1005",
+    "year": 2019,
+    "make": "Tesla",
+    "model": "Model 3",
+    "trim": "Long Range",
+    "mileage": 91106,
+    "priceCents": 7093000,
+    "originalPriceCents": 7093000,
+    "priceLastChangedAt": "2026-06-04T12:00:00Z",
+    "condition": "used",
+    "exteriorColor": "Red",
+    "interiorColor": "Gray",
+    "bodyStyle": "Sedan",
+    "drivetrain": "FWD",
+    "fuelType": "Gasoline",
+    "transmission": "Automatic",
+    "options": {
+      "features": [
+        "Heated Seats",
+        "Apple CarPlay",
+        "Backup Camera",
+        "Bluetooth"
+      ]
+    },
+    "starCore": {
+      "title": "2019 Tesla Model 3 Long Range",
+      "score": 73
+    },
+    "categoryPayload": null,
+    "soldAt": null,
+    "removedAt": null,
+    "reactivatedAt": null,
+    "createdAt": "2026-04-23T12:00:00Z",
+    "updatedAt": "2026-06-08T12:00:00Z"
+  },
+  {
+    "id": "veh_0063",
+    "dealershipId": "dealer_messy_motors",
+    "vin": "MOCKVIN000000063",
+    "stockNumber": "MESSY1006",
+    "year": 2021,
+    "make": "Jeep",
+    "model": "Wrangler",
+    "trim": "Sahara",
+    "mileage": 47167,
+    "priceCents": 3793100,
+    "originalPriceCents": 3943100,
+    "priceLastChangedAt": "2026-05-24T12:00:00Z",
+    "condition": "used",
+    "exteriorColor": "Black",
+    "interiorColor": "Black",
+    "bodyStyle": "SUV",
+    "drivetrain": "4WD",
+    "fuelType": "Diesel",
+    "transmission": "Automatic",
+    "options": {
+      "features": [
+        "Bluetooth",
+        "Apple CarPlay"
+      ]
+    },
+    "starCore": {
+      "title": "2021 Jeep Wrangler Sahara",
+      "score": 66
+    },
+    "categoryPayload": null,
+    "soldAt": null,
+    "removedAt": null,
+    "reactivatedAt": null,
+    "createdAt": "2026-05-15T12:00:00Z",
+    "updatedAt": "2026-06-09T12:00:00Z"
+  },
+  {
+    "id": "veh_0064",
+    "dealershipId": "dealer_messy_motors",
+    "vin": "MOCKVIN000000064",
+    "stockNumber": "MESSY1007",
+    "year": 2018,
+    "make": "Ford",
+    "model": "F-150",
+    "trim": "XL",
+    "mileage": 33889,
+    "priceCents": 1806000,
+    "originalPriceCents": 1906000,
+    "priceLastChangedAt": "2026-05-24T12:00:00Z",
+    "condition": "used",
+    "exteriorColor": "Gray",
+    "interiorColor": "Gray",
+    "bodyStyle": "Truck",
+    "drivetrain": "RWD",
+    "fuelType": "Hybrid",
+    "transmission": "Automatic",
+    "options": {
+      "features": [
+        "Tow Package",
+        "Leather",
+        "Sunroof",
+        "Apple CarPlay",
+        "Navigation"
+      ]
+    },
+    "starCore": {
+      "title": "2018 Ford F-150 XL",
+      "score": 71
+    },
+    "categoryPayload": null,
+    "soldAt": null,
+    "removedAt": null,
+    "reactivatedAt": null,
+    "createdAt": "2026-01-07T12:00:00Z",
+    "updatedAt": "2026-05-31T12:00:00Z"
+  },
+  {
+    "id": "veh_0065",
+    "dealershipId": "dealer_messy_motors",
+    "vin": "MOCKVIN000000065",
+    "stockNumber": "MESSY1008",
+    "year": 2025,
+    "make": "Nissan",
+    "model": "Altima",
+    "trim": "SR",
+    "mileage": 28826,
+    "priceCents": 0,
+    "originalPriceCents": 4376000,
+    "priceLastChangedAt": "2026-06-10T12:00:00Z",
+    "condition": "new",
+    "exteriorColor": "Black",
+    "interiorColor": "Tan",
+    "bodyStyle": "Sedan",
+    "drivetrain": "RWD",
+    "fuelType": "Diesel",
+    "transmission": "Automatic",
+    "options": {
+      "features": [
+        "Leather",
+        "Apple CarPlay",
+        "Backup Camera"
+      ]
+    },
+    "starCore": {
+      "title": "2025 Nissan Altima SR",
+      "score": 70
+    },
+    "categoryPayload": null,
+    "soldAt": null,
+    "removedAt": null,
+    "reactivatedAt": null,
+    "createdAt": "2026-01-20T12:00:00Z",
+    "updatedAt": "2026-06-01T12:00:00Z"
+  },
+  {
+    "id": "veh_0066",
+    "dealershipId": "dealer_messy_motors",
+    "vin": "",
+    "stockNumber": "MESSY1009",
+    "year": 2023,
+    "make": "Mercedes-Benz",
+    "model": "C-Class",
+    "trim": "AMG Line",
+    "mileage": 83170,
+    "priceCents": 2491300,
+    "originalPriceCents": 2541300,
+    "priceLastChangedAt": "2026-06-03T12:00:00Z",
+    "condition": "new",
+    "exteriorColor": "Black",
+    "interiorColor": "Black",
+    "bodyStyle": "Sedan",
+    "drivetrain": "AWD",
+    "fuelType": "Hybrid",
+    "transmission": "Manual",
+    "options": {
+      "features": [
+        "Backup Camera",
+        "Leather"
+      ]
+    },
+    "starCore": {
+      "title": "2023 Mercedes-Benz C-Class AMG Line",
+      "score": 65
+    },
+    "categoryPayload": null,
+    "soldAt": null,
+    "removedAt": null,
+    "reactivatedAt": null,
+    "createdAt": "2025-12-29T12:00:00Z",
+    "updatedAt": "2026-06-09T12:00:00Z"
+  },
+  {
+    "id": "veh_0067",
+    "dealershipId": "dealer_messy_motors",
+    "vin": "MOCKVIN000000067",
+    "stockNumber": "MESSY1010",
+    "year": 2016,
+    "make": "Mercedes-Benz",
+    "model": "C-Class",
+    "trim": "AMG Line",
+    "mileage": 99333,
+    "priceCents": 5070700,
+    "originalPriceCents": 5220700,
+    "priceLastChangedAt": "2026-05-20T12:00:00Z",
+    "condition": "used",
+    "exteriorColor": "Green",
+    "interiorColor": "Black",
+    "bodyStyle": "Sedan",
+    "drivetrain": "4WD",
+    "fuelType": "Gasoline",
+    "transmission": "Manual",
+    "options": {
+      "features": [
+        "Tow Package",
+        "Apple CarPlay",
+        "Bluetooth"
+      ]
+    },
+    "starCore": {
+      "title": "2016 Mercedes-Benz C-Class AMG Line",
+      "score": 65
+    },
+    "categoryPayload": null,
+    "soldAt": null,
+    "removedAt": null,
+    "reactivatedAt": null,
+    "createdAt": "2026-02-09T12:00:00Z",
+    "updatedAt": "2026-05-31T12:00:00Z"
+  },
+  {
+    "id": "veh_0068",
+    "dealershipId": "dealer_messy_motors",
+    "vin": "MOCKVIN000000068",
+    "stockNumber": "MESSY1011",
+    "year": 2018,
+    "make": "Mercedes-Benz",
+    "model": "C-Class",
+    "trim": "AMG Line",
+    "mileage": 28155,
+    "priceCents": 4065400,
+    "originalPriceCents": 4065400,
+    "priceLastChangedAt": "2026-06-07T12:00:00Z",
+    "condition": "new",
+    "exteriorColor": "Green",
+    "interiorColor": "Gray",
+    "bodyStyle": "Sedan",
+    "drivetrain": "RWD",
+    "fuelType": "Electric",
+    "transmission": "Automatic",
+    "options": {
+      "features": [
+        "Heated Seats",
+        "Apple CarPlay",
+        "Leather",
+        "Tow Package",
+        "Backup Camera"
+      ]
+    },
+    "starCore": {
+      "title": "2018 Mercedes-Benz C-Class AMG Line",
+      "score": 81
+    },
+    "categoryPayload": null,
+    "soldAt": null,
+    "removedAt": null,
+    "reactivatedAt": null,
+    "createdAt": "2026-01-10T12:00:00Z",
+    "updatedAt": "2026-06-04T12:00:00Z"
+  },
+  {
+    "id": "veh_0069",
+    "dealershipId": "dealer_messy_motors",
+    "vin": "MOCKVIN000000069",
+    "stockNumber": "MESSY1012",
+    "year": 2022,
+    "make": "Chevrolet",
+    "model": "Silverado 1500",
+    "trim": "Custom",
+    "mileage": 14656,
+    "priceCents": 5143900,
+    "originalPriceCents": 5193900,
+    "priceLastChangedAt": "2026-05-13T12:00:00Z",
+    "condition": "new",
+    "exteriorColor": "Gray",
+    "interiorColor": "Gray",
+    "bodyStyle": "Truck",
+    "drivetrain": "FWD",
+    "fuelType": "Diesel",
+    "transmission": "Manual",
+    "options": {
+      "features": [
+        "Leather",
+        "Heated Seats",
+        "Backup Camera",
+        "Tow Package",
+        "Bluetooth"
+      ]
+    },
+    "starCore": {
+      "title": "2022 Chevrolet Silverado 1500 RST",
+      "score": 78
+    },
+    "categoryPayload": null,
+    "soldAt": null,
+    "removedAt": null,
+    "reactivatedAt": null,
+    "createdAt": "2026-01-26T12:00:00Z",
+    "updatedAt": "2026-06-10T12:00:00Z"
+  },
+  {
+    "id": "veh_0070",
+    "dealershipId": "dealer_messy_motors",
+    "vin": "MOCKVIN000000070",
+    "stockNumber": "MESSY1013",
+    "year": 2020,
+    "make": "Nissan",
+    "model": "Altima",
+    "trim": "SV",
+    "mileage": 35809,
+    "priceCents": 3049000,
+    "originalPriceCents": 3149000,
+    "priceLastChangedAt": "2026-06-09T12:00:00Z",
+    "condition": "new",
+    "exteriorColor": "Gray",
+    "interiorColor": "Black",
+    "bodyStyle": "Sedan",
+    "drivetrain": "FWD",
+    "fuelType": "Hybrid",
+    "transmission": "CVT",
+    "options": {
+      "features": [
+        "Apple CarPlay",
+        "Backup Camera",
+        "Heated Seats",
+        "Sunroof"
+      ]
+    },
+    "starCore": {
+      "title": "2020 Nissan Altima SV",
+      "score": 92
+    },
+    "categoryPayload": null,
+    "soldAt": null,
+    "removedAt": null,
+    "reactivatedAt": null,
+    "createdAt": "2026-05-20T12:00:00Z",
+    "updatedAt": "2026-06-10T12:00:00Z"
+  },
+  {
+    "id": "veh_0071",
+    "dealershipId": "dealer_messy_motors",
+    "vin": "MOCKVIN000000071",
+    "stockNumber": "MESSY1014",
+    "year": 2021,
+    "make": "Honda",
+    "model": "CR-V",
+    "trim": "Touring",
+    "mileage": 26529,
+    "priceCents": 4170400,
+    "originalPriceCents": 4170400,
+    "priceLastChangedAt": "2026-06-03T12:00:00Z",
+    "condition": "used",
+    "exteriorColor": "Silver",
+    "interiorColor": "Brown",
+    "bodyStyle": "SUV",
+    "drivetrain": "RWD",
+    "fuelType": "Hybrid",
+    "transmission": "Automatic",
+    "options": {
+      "features": [
+        "Apple CarPlay",
+        "Navigation"
+      ]
+    },
+    "starCore": {
+      "title": "2021 Honda CR-V EX",
+      "score": 74
+    },
+    "categoryPayload": null,
+    "soldAt": null,
+    "removedAt": null,
+    "reactivatedAt": null,
+    "createdAt": "2026-05-03T12:00:00Z",
+    "updatedAt": "2026-06-03T12:00:00Z"
+  },
+  {
+    "id": "veh_0072",
+    "dealershipId": "dealer_messy_motors",
+    "vin": "MOCKVIN000000072",
+    "stockNumber": "MESSY1015",
+    "year": 2016,
+    "make": "BMW",
+    "model": "X5",
+    "trim": "xDrive40i",
+    "mileage": 58950,
+    "priceCents": 3118400,
+    "originalPriceCents": 3218400,
+    "priceLastChangedAt": "2026-05-30T12:00:00Z",
+    "condition": "used",
+    "exteriorColor": "Blue",
+    "interiorColor": "Black",
+    "bodyStyle": "SUV",
+    "drivetrain": "FWD",
+    "fuelType": "Electric",
+    "transmission": "Manual",
+    "options": {
+      "features": [
+        "Backup Camera",
+        "Heated Seats",
+        "Bluetooth",
+        "Sunroof"
+      ]
+    },
+    "starCore": {
+      "title": "2016 BMW X5 xDrive40i",
+      "score": 94
+    },
+    "categoryPayload": null,
+    "soldAt": "2026-04-30T12:00:00Z",
+    "removedAt": null,
+    "reactivatedAt": null,
+    "createdAt": "2026-05-18T12:00:00Z",
+    "updatedAt": "2026-06-03T12:00:00Z"
+  },
+  {
+    "id": "veh_0073",
+    "dealershipId": "dealer_messy_motors",
+    "vin": "MOCKVIN000000073",
+    "stockNumber": "MESSY1016",
+    "year": 2022,
+    "make": "Ford",
+    "model": "F-150",
+    "trim": "XLT",
+    "mileage": 64340,
+    "priceCents": 0,
+    "originalPriceCents": 5438400,
+    "priceLastChangedAt": "2026-05-16T12:00:00Z",
+    "condition": "new",
+    "exteriorColor": "Black",
+    "interiorColor": "Black",
+    "bodyStyle": "Truck",
+    "drivetrain": "RWD",
+    "fuelType": "Gasoline",
+    "transmission": "Manual",
+    "options": {
+      "features": [
+        "Navigation",
+        "Heated Seats",
+        "Sunroof"
+      ]
+    },
+    "starCore": {
+      "title": "2022 Ford F-150 XLT",
+      "score": 76
+    },
+    "categoryPayload": null,
+    "soldAt": null,
+    "removedAt": null,
+    "reactivatedAt": null,
+    "createdAt": "2026-02-26T12:00:00Z",
+    "updatedAt": "2026-06-08T12:00:00Z"
+  },
+  {
+    "id": "veh_0074",
+    "dealershipId": "dealer_messy_motors",
+    "vin": "MOCKVIN000000074",
+    "stockNumber": "MESSY1017",
+    "year": 2022,
+    "make": "Subaru",
+    "model": "Outback",
+    "trim": "Limited",
+    "mileage": 40690,
+    "priceCents": 7531900,
+    "originalPriceCents": 7681900,
+    "priceLastChangedAt": "2026-05-31T12:00:00Z",
+    "condition": "used",
+    "exteriorColor": "White",
+    "interiorColor": "Brown",
+    "bodyStyle": "Wagon",
+    "drivetrain": "FWD",
+    "fuelType": "Electric",
+    "transmission": "CVT",
+    "options": {
+      "features": [
+        "Backup Camera",
+        "Leather",
+        "Navigation"
+      ]
+    },
+    "starCore": {
+      "title": "2022 Subaru Outback Limited",
+      "score": 88
+    },
+    "categoryPayload": null,
+    "soldAt": "2026-06-08T12:00:00Z",
+    "removedAt": null,
+    "reactivatedAt": null,
+    "createdAt": "2026-01-29T12:00:00Z",
+    "updatedAt": "2026-06-02T12:00:00Z"
+  },
+  {
+    "id": "veh_0075",
+    "dealershipId": "dealer_messy_motors",
+    "vin": "",
+    "stockNumber": "MESSY1018",
+    "year": 2016,
+    "make": "Subaru",
+    "model": "Outback",
+    "trim": "Premium",
+    "mileage": 68363,
+    "priceCents": 6976900,
+    "originalPriceCents": 6976900,
+    "priceLastChangedAt": "2026-05-20T12:00:00Z",
+    "condition": "used",
+    "exteriorColor": "Green",
+    "interiorColor": "Tan",
+    "bodyStyle": "Wagon",
+    "drivetrain": "4WD",
+    "fuelType": "Hybrid",
+    "transmission": "Automatic",
+    "options": {
+      "features": [
+        "Tow Package",
+        "Bluetooth",
+        "Backup Camera"
+      ]
+    },
+    "starCore": {
+      "title": "2016 Subaru Outback Limited",
+      "score": 66
+    },
+    "categoryPayload": null,
+    "soldAt": null,
+    "removedAt": "2026-05-02T12:00:00Z",
+    "reactivatedAt": null,
+    "createdAt": "2026-02-23T12:00:00Z",
+    "updatedAt": "2026-06-02T12:00:00Z"
+  },
+  {
+    "id": "veh_0076",
+    "dealershipId": "dealer_messy_motors",
+    "vin": "MOCKVIN000000076",
+    "stockNumber": "MESSY1019",
+    "year": 2020,
+    "make": "Chevrolet",
+    "model": "Silverado 1500",
+    "trim": "RST",
+    "mileage": 86510,
+    "priceCents": 5909100,
+    "originalPriceCents": 5959100,
+    "priceLastChangedAt": "2026-05-30T12:00:00Z",
+    "condition": "new",
+    "exteriorColor": "Silver",
+    "interiorColor": "Black",
+    "bodyStyle": "Truck",
+    "drivetrain": "4WD",
+    "fuelType": "Electric",
+    "transmission": "Manual",
+    "options": {
+      "features": [
+        "Navigation",
+        "Apple CarPlay",
+        "Tow Package",
+        "Sunroof",
+        "Backup Camera"
+      ]
+    },
+    "starCore": {
+      "title": "2020 Chevrolet Silverado 1500 RST",
+      "score": 83
+    },
+    "categoryPayload": null,
+    "soldAt": null,
+    "removedAt": null,
+    "reactivatedAt": null,
+    "createdAt": "2026-05-18T12:00:00Z",
+    "updatedAt": "2026-06-10T12:00:00Z"
+  },
+  {
+    "id": "veh_0077",
+    "dealershipId": "dealer_messy_motors",
+    "vin": "MOCKVIN000000077",
+    "stockNumber": "MESSY1020",
+    "year": 2022,
+    "make": "Tesla",
+    "model": "Model 3",
+    "trim": "Long Range",
+    "mileage": 27037,
+    "priceCents": 2635700,
+    "originalPriceCents": 2685700,
+    "priceLastChangedAt": "2026-05-18T12:00:00Z",
+    "condition": "used",
+    "exteriorColor": "Black",
+    "interiorColor": "Gray",
+    "bodyStyle": "Sedan",
+    "drivetrain": "AWD",
+    "fuelType": "Hybrid",
+    "transmission": "CVT",
+    "options": {
+      "features": [
+        "Navigation",
+        "Tow Package",
+        "Backup Camera",
+        "Sunroof"
+      ]
+    },
+    "starCore": {
+      "title": "2022 Tesla Model 3 Performance",
+      "score": 85
+    },
+    "categoryPayload": null,
+    "soldAt": null,
+    "removedAt": null,
+    "reactivatedAt": null,
+    "createdAt": "2026-03-23T12:00:00Z",
+    "updatedAt": "2026-06-04T12:00:00Z"
+  },
+  {
+    "id": "veh_0078",
+    "dealershipId": "dealer_messy_motors",
+    "vin": "MOCKVIN000000078",
+    "stockNumber": "MESSY1021",
+    "year": 2022,
+    "make": "Nissan",
+    "model": "Altima",
+    "trim": "SR",
+    "mileage": 106434,
+    "priceCents": 5667600,
+    "originalPriceCents": 5667600,
+    "priceLastChangedAt": "2026-06-07T12:00:00Z",
+    "condition": "used",
+    "exteriorColor": "White",
+    "interiorColor": "Tan",
+    "bodyStyle": "Sedan",
+    "drivetrain": "4WD",
+    "fuelType": "Diesel",
+    "transmission": "Manual",
+    "options": {
+      "features": [
+        "Backup Camera",
+        "Apple CarPlay",
+        "Navigation"
+      ]
+    },
+    "starCore": {
+      "title": "2022 Nissan Altima SV",
+      "score": 79
+    },
+    "categoryPayload": null,
+    "soldAt": null,
+    "removedAt": null,
+    "reactivatedAt": null,
+    "createdAt": "2026-01-02T12:00:00Z",
+    "updatedAt": "2026-06-02T12:00:00Z"
+  },
+  {
+    "id": "veh_0079",
+    "dealershipId": "dealer_messy_motors",
+    "vin": "MOCKVIN000000079",
+    "stockNumber": "MESSY1022",
+    "year": 2020,
+    "make": "Toyota",
+    "model": "Camry",
+    "trim": "SE",
+    "mileage": 39810,
+    "priceCents": 1826600,
+    "originalPriceCents": 1826600,
+    "priceLastChangedAt": "2026-05-30T12:00:00Z",
+    "condition": "new",
+    "exteriorColor": "Silver",
+    "interiorColor": "Black",
+    "bodyStyle": "Sedan",
+    "drivetrain": "FWD",
+    "fuelType": "Diesel",
+    "transmission": "CVT",
+    "options": {
+      "features": [
+        "Apple CarPlay",
+        "Tow Package",
+        "Leather",
+        "Heated Seats"
+      ]
+    },
+    "starCore": {
+      "title": "2020 Toyota Camry LE",
+      "score": 94
+    },
+    "categoryPayload": null,
+    "soldAt": null,
+    "removedAt": null,
+    "reactivatedAt": null,
+    "createdAt": "2026-02-11T12:00:00Z",
+    "updatedAt": "2026-06-07T12:00:00Z"
+  },
+  {
+    "id": "veh_0080",
+    "dealershipId": "dealer_messy_motors",
+    "vin": "MOCKVIN000000080",
+    "stockNumber": "MESSY1023",
+    "year": 2022,
+    "make": "Jeep",
+    "model": "Wrangler",
+    "trim": "Sport",
+    "mileage": 66234,
+    "priceCents": 1631400,
+    "originalPriceCents": 1781400,
+    "priceLastChangedAt": "2026-06-09T12:00:00Z",
+    "condition": "used",
+    "exteriorColor": "Blue",
+    "interiorColor": "Gray",
+    "bodyStyle": "SUV",
+    "drivetrain": "4WD",
+    "fuelType": "Diesel",
+    "transmission": "Manual",
+    "options": {
+      "features": [
+        "Backup Camera",
+        "Apple CarPlay",
+        "Bluetooth",
+        "Heated Seats",
+        "Tow Package"
+      ]
+    },
+    "starCore": {
+      "title": "2022 Jeep Wrangler Sport",
+      "score": 71
+    },
+    "categoryPayload": null,
+    "soldAt": null,
+    "removedAt": null,
+    "reactivatedAt": null,
+    "createdAt": "2026-02-14T12:00:00Z",
+    "updatedAt": "2026-06-05T12:00:00Z"
+  },
+  {
+    "id": "veh_0081",
+    "dealershipId": "dealer_messy_motors",
+    "vin": "MOCKVIN000000081",
+    "stockNumber": "MESSY1024",
+    "year": 2016,
+    "make": "Nissan",
+    "model": "Altima",
+    "trim": "SV",
+    "mileage": 52106,
+    "priceCents": 0,
+    "originalPriceCents": 7254800,
+    "priceLastChangedAt": "2026-06-02T12:00:00Z",
+    "condition": "new",
+    "exteriorColor": "Blue",
+    "interiorColor": "Tan",
+    "bodyStyle": "Sedan",
+    "drivetrain": "RWD",
+    "fuelType": "Electric",
+    "transmission": "CVT",
+    "options": {
+      "features": [
+        "Apple CarPlay",
+        "Sunroof",
+        "Leather"
+      ]
+    },
+    "starCore": {
+      "title": "2016 Nissan Altima SV",
+      "score": 79
+    },
+    "categoryPayload": null,
+    "soldAt": null,
+    "removedAt": "2026-05-18T12:00:00Z",
+    "reactivatedAt": null,
+    "createdAt": "2026-03-02T12:00:00Z",
+    "updatedAt": "2026-06-03T12:00:00Z"
+  },
+  {
+    "id": "veh_0082",
+    "dealershipId": "dealer_messy_motors",
+    "vin": "MOCKVIN000000082",
+    "stockNumber": "MESSY1025",
+    "year": 2021,
+    "make": "BMW",
+    "model": "X5",
+    "trim": "xDrive40i",
+    "mileage": 15720,
+    "priceCents": 4897900,
+    "originalPriceCents": 5047900,
+    "priceLastChangedAt": "2026-05-23T12:00:00Z",
+    "condition": "used",
+    "exteriorColor": "Blue",
+    "interiorColor": "Black",
+    "bodyStyle": "SUV",
+    "drivetrain": "4WD",
+    "fuelType": "Electric",
+    "transmission": "CVT",
+    "options": {
+      "features": [
+        "Navigation",
+        "Heated Seats",
+        "Backup Camera",
+        "Sunroof"
+      ]
+    },
+    "starCore": {
+      "title": "2021 BMW X5 M Sport",
+      "score": 79
+    },
+    "categoryPayload": null,
+    "soldAt": null,
+    "removedAt": null,
+    "reactivatedAt": null,
+    "createdAt": "2026-04-10T12:00:00Z",
+    "updatedAt": "2026-06-05T12:00:00Z"
+  },
+  {
+    "id": "veh_0083",
+    "dealershipId": "dealer_messy_motors",
+    "vin": "MOCKVIN000000083",
+    "stockNumber": "MESSY1026",
+    "year": 2021,
+    "make": "Nissan",
+    "model": "Altima",
+    "trim": "SV",
+    "mileage": 90625,
+    "priceCents": 5247000,
+    "originalPriceCents": 5397000,
+    "priceLastChangedAt": "2026-05-24T12:00:00Z",
+    "condition": "used",
+    "exteriorColor": "Black",
+    "interiorColor": "Brown",
+    "bodyStyle": "Sedan",
+    "drivetrain": "AWD",
+    "fuelType": "Diesel",
+    "transmission": "Automatic",
+    "options": {
+      "features": [
+        "Apple CarPlay",
+        "Sunroof"
+      ]
+    },
+    "starCore": {
+      "title": "2021 Nissan Altima SR",
+      "score": 96
+    },
+    "categoryPayload": null,
+    "soldAt": null,
+    "removedAt": null,
+    "reactivatedAt": null,
+    "createdAt": "2026-04-15T12:00:00Z",
+    "updatedAt": "2026-06-01T12:00:00Z"
+  },
+  {
+    "id": "veh_0084",
+    "dealershipId": "dealer_messy_motors",
+    "vin": "",
+    "stockNumber": "MESSY1027",
+    "year": 2024,
+    "make": "Jeep",
+    "model": "Wrangler",
+    "trim": "Sahara",
+    "mileage": 88922,
+    "priceCents": 4776300,
+    "originalPriceCents": 4926300,
+    "priceLastChangedAt": "2026-05-11T12:00:00Z",
+    "condition": "used",
+    "exteriorColor": "White",
+    "interiorColor": "Tan",
+    "bodyStyle": "SUV",
+    "drivetrain": "AWD",
+    "fuelType": "Electric",
+    "transmission": "Manual",
+    "options": {
+      "features": [
+        "Bluetooth",
+        "Heated Seats"
+      ]
+    },
+    "starCore": {
+      "title": "2024 Jeep Wrangler Sahara",
+      "score": 78
+    },
+    "categoryPayload": null,
+    "soldAt": null,
+    "removedAt": null,
+    "reactivatedAt": null,
+    "createdAt": "2025-12-28T12:00:00Z",
+    "updatedAt": "2026-06-01T12:00:00Z"
+  },
+  {
+    "id": "veh_0085",
+    "dealershipId": "dealer_premium_imports",
+    "vin": "MOCKVIN000000085",
+    "stockNumber": "PREMIUM1000",
+    "year": 2025,
+    "make": "Jeep",
+    "model": "Wrangler",
+    "trim": "Sport",
+    "mileage": 86686,
+    "priceCents": 4789300,
+    "originalPriceCents": 4789300,
+    "priceLastChangedAt": "2026-06-08T12:00:00Z",
+    "condition": "certified",
+    "exteriorColor": "Green",
+    "interiorColor": "Black",
+    "bodyStyle": "SUV",
+    "drivetrain": "4WD",
+    "fuelType": "Gasoline",
+    "transmission": "Manual",
+    "options": {
+      "features": [
+        "Bluetooth",
+        "Apple CarPlay",
+        "Heated Seats",
+        "Backup Camera",
+        "Navigation"
+      ]
+    },
+    "starCore": {
+      "title": "2025 Jeep Wrangler Sport",
+      "score": 77
+    },
+    "categoryPayload": null,
+    "soldAt": null,
+    "removedAt": "2026-05-10T12:00:00Z",
+    "reactivatedAt": null,
+    "createdAt": "2026-05-16T12:00:00Z",
+    "updatedAt": "2026-06-01T12:00:00Z"
+  },
+  {
+    "id": "veh_0086",
+    "dealershipId": "dealer_premium_imports",
+    "vin": "MOCKVIN000000086",
+    "stockNumber": "PREMIUM1001",
+    "year": 2022,
+    "make": "Mercedes-Benz",
+    "model": "C-Class",
+    "trim": "AMG Line",
+    "mileage": 101686,
+    "priceCents": 4136900,
+    "originalPriceCents": 4236900,
+    "priceLastChangedAt": "2026-05-23T12:00:00Z",
+    "condition": "certified",
+    "exteriorColor": "Green",
+    "interiorColor": "Tan",
+    "bodyStyle": "Sedan",
+    "drivetrain": "FWD",
+    "fuelType": "Electric",
+    "transmission": "CVT",
+    "options": {
+      "features": [
+        "Leather",
+        "Apple CarPlay",
+        "Bluetooth"
+      ]
+    },
+    "starCore": {
+      "title": "2022 Mercedes-Benz C-Class C300",
+      "score": 76
+    },
+    "categoryPayload": null,
+    "soldAt": null,
+    "removedAt": "2026-05-25T12:00:00Z",
+    "reactivatedAt": null,
+    "createdAt": "2026-04-06T12:00:00Z",
+    "updatedAt": "2026-06-03T12:00:00Z"
+  },
+  {
+    "id": "veh_0087",
+    "dealershipId": "dealer_premium_imports",
+    "vin": "MOCKVIN000000087",
+    "stockNumber": "PREMIUM1002",
+    "year": 2025,
+    "make": "BMW",
+    "model": "X5",
+    "trim": "xDrive40i",
+    "mileage": 10976,
+    "priceCents": 6821900,
+    "originalPriceCents": 6921900,
+    "priceLastChangedAt": "2026-06-05T12:00:00Z",
+    "condition": "cpo",
+    "exteriorColor": "Blue",
+    "interiorColor": "Gray",
+    "bodyStyle": "SUV",
+    "drivetrain": "4WD",
+    "fuelType": "Electric",
+    "transmission": "Manual",
+    "options": {
+      "features": [
+        "Bluetooth",
+        "Tow Package"
+      ]
+    },
+    "starCore": {
+      "title": "2025 BMW X5 M Sport",
+      "score": 91
+    },
+    "categoryPayload": null,
+    "soldAt": null,
+    "removedAt": null,
+    "reactivatedAt": null,
+    "createdAt": "2026-05-22T12:00:00Z",
+    "updatedAt": "2026-06-01T12:00:00Z"
+  },
+  {
+    "id": "veh_0088",
+    "dealershipId": "dealer_premium_imports",
+    "vin": "MOCKVIN000000088",
+    "stockNumber": "PREMIUM1003",
+    "year": 2016,
+    "make": "Jeep",
+    "model": "Wrangler",
+    "trim": "Sahara",
+    "mileage": 100084,
+    "priceCents": 6232700,
+    "originalPriceCents": 6332700,
+    "priceLastChangedAt": "2026-06-10T12:00:00Z",
+    "condition": "used",
+    "exteriorColor": "Green",
+    "interiorColor": "Gray",
+    "bodyStyle": "SUV",
+    "drivetrain": "4WD",
+    "fuelType": "Electric",
+    "transmission": "Automatic",
+    "options": {
+      "features": [
+        "Tow Package",
+        "Apple CarPlay",
+        "Navigation",
+        "Sunroof"
+      ]
+    },
+    "starCore": {
+      "title": "2016 Jeep Wrangler Sahara",
+      "score": 92
+    },
+    "categoryPayload": null,
+    "soldAt": null,
+    "removedAt": null,
+    "reactivatedAt": null,
+    "createdAt": "2026-02-17T12:00:00Z",
+    "updatedAt": "2026-06-09T12:00:00Z"
+  },
+  {
+    "id": "veh_0089",
+    "dealershipId": "dealer_premium_imports",
+    "vin": "MOCKVIN000000089",
+    "stockNumber": "PREMIUM1004",
+    "year": 2018,
+    "make": "Jeep",
+    "model": "Wrangler",
+    "trim": "Sahara",
+    "mileage": 110536,
+    "priceCents": 4019400,
+    "originalPriceCents": 4169400,
+    "priceLastChangedAt": "2026-05-25T12:00:00Z",
+    "condition": "certified",
+    "exteriorColor": "Green",
+    "interiorColor": "Gray",
+    "bodyStyle": "SUV",
+    "drivetrain": "FWD",
+    "fuelType": "Gasoline",
+    "transmission": "CVT",
+    "options": {
+      "features": [
+        "Backup Camera",
+        "Navigation",
+        "Apple CarPlay",
+        "Tow Package",
+        "Leather"
+      ]
+    },
+    "starCore": {
+      "title": "2018 Jeep Wrangler Sahara",
+      "score": 85
+    },
+    "categoryPayload": null,
+    "soldAt": "2026-05-21T12:00:00Z",
+    "removedAt": null,
+    "reactivatedAt": null,
+    "createdAt": "2026-03-24T12:00:00Z",
+    "updatedAt": "2026-06-09T12:00:00Z"
+  },
+  {
+    "id": "veh_0090",
+    "dealershipId": "dealer_premium_imports",
+    "vin": "MOCKVIN000000090",
+    "stockNumber": "PREMIUM1005",
+    "year": 2016,
+    "make": "Nissan",
+    "model": "Altima",
+    "trim": "SV",
+    "mileage": 87338,
+    "priceCents": 6179400,
+    "originalPriceCents": 6229400,
+    "priceLastChangedAt": "2026-05-15T12:00:00Z",
+    "condition": "cpo",
+    "exteriorColor": "Gray",
+    "interiorColor": "Tan",
+    "bodyStyle": "Sedan",
+    "drivetrain": "FWD",
+    "fuelType": "Diesel",
+    "transmission": "Automatic",
+    "options": {
+      "features": [
+        "Navigation",
+        "Tow Package",
+        "Leather",
+        "Bluetooth"
+      ]
+    },
+    "starCore": {
+      "title": "2016 Nissan Altima SV",
+      "score": 90
+    },
+    "categoryPayload": null,
+    "soldAt": null,
+    "removedAt": "2026-05-05T12:00:00Z",
+    "reactivatedAt": null,
+    "createdAt": "2026-05-29T12:00:00Z",
+    "updatedAt": "2026-06-03T12:00:00Z"
+  },
+  {
+    "id": "veh_0091",
+    "dealershipId": "dealer_premium_imports",
+    "vin": "MOCKVIN000000091",
+    "stockNumber": "PREMIUM1006",
+    "year": 2020,
+    "make": "Honda",
+    "model": "CR-V",
+    "trim": "Touring",
+    "mileage": 77810,
+    "priceCents": 5059500,
+    "originalPriceCents": 5059500,
+    "priceLastChangedAt": "2026-06-05T12:00:00Z",
+    "condition": "cpo",
+    "exteriorColor": "Blue",
+    "interiorColor": "Brown",
+    "bodyStyle": "SUV",
+    "drivetrain": "RWD",
+    "fuelType": "Diesel",
+    "transmission": "Manual",
+    "options": {
+      "features": [
+        "Bluetooth",
+        "Apple CarPlay",
+        "Tow Package",
+        "Sunroof"
+      ]
+    },
+    "starCore": {
+      "title": "2020 Honda CR-V EX",
+      "score": 66
+    },
+    "categoryPayload": null,
+    "soldAt": null,
+    "removedAt": null,
+    "reactivatedAt": null,
+    "createdAt": "2025-12-16T12:00:00Z",
+    "updatedAt": "2026-05-31T12:00:00Z"
+  },
+  {
+    "id": "veh_0092",
+    "dealershipId": "dealer_premium_imports",
+    "vin": "MOCKVIN000000092",
+    "stockNumber": "PREMIUM1007",
+    "year": 2018,
+    "make": "Mercedes-Benz",
+    "model": "C-Class",
+    "trim": "AMG Line",
+    "mileage": 76448,
+    "priceCents": 6295500,
+    "originalPriceCents": 6295500,
+    "priceLastChangedAt": "2026-06-04T12:00:00Z",
+    "condition": "new",
+    "exteriorColor": "Blue",
+    "interiorColor": "Tan",
+    "bodyStyle": "Sedan",
+    "drivetrain": "FWD",
+    "fuelType": "Electric",
+    "transmission": "CVT",
+    "options": {
+      "features": [
+        "Leather",
+        "Bluetooth"
+      ]
+    },
+    "starCore": {
+      "title": "2018 Mercedes-Benz C-Class AMG Line",
+      "score": 96
+    },
+    "categoryPayload": null,
+    "soldAt": null,
+    "removedAt": null,
+    "reactivatedAt": null,
+    "createdAt": "2025-12-18T12:00:00Z",
+    "updatedAt": "2026-06-09T12:00:00Z"
+  },
+  {
+    "id": "veh_0093",
+    "dealershipId": "dealer_premium_imports",
+    "vin": "MOCKVIN000000093",
+    "stockNumber": "PREMIUM1008",
+    "year": 2021,
+    "make": "Mercedes-Benz",
+    "model": "C-Class",
+    "trim": "AMG Line",
+    "mileage": 65783,
+    "priceCents": 6334500,
+    "originalPriceCents": 6384500,
+    "priceLastChangedAt": "2026-05-29T12:00:00Z",
+    "condition": "cpo",
+    "exteriorColor": "Red",
+    "interiorColor": "Black",
+    "bodyStyle": "Sedan",
+    "drivetrain": "4WD",
+    "fuelType": "Gasoline",
+    "transmission": "CVT",
+    "options": {
+      "features": [
+        "Bluetooth",
+        "Apple CarPlay",
+        "Navigation"
+      ]
+    },
+    "starCore": {
+      "title": "2021 Mercedes-Benz C-Class AMG Line",
+      "score": 73
+    },
+    "categoryPayload": null,
+    "soldAt": null,
+    "removedAt": null,
+    "reactivatedAt": null,
+    "createdAt": "2026-04-20T12:00:00Z",
+    "updatedAt": "2026-06-07T12:00:00Z"
+  },
+  {
+    "id": "veh_0094",
+    "dealershipId": "dealer_premium_imports",
+    "vin": "MOCKVIN000000094",
+    "stockNumber": "PREMIUM1009",
+    "year": 2020,
+    "make": "Jeep",
+    "model": "Wrangler",
+    "trim": "Sport",
+    "mileage": 93593,
+    "priceCents": 7545000,
+    "originalPriceCents": 7645000,
+    "priceLastChangedAt": "2026-05-28T12:00:00Z",
+    "condition": "certified",
+    "exteriorColor": "Green",
+    "interiorColor": "Tan",
+    "bodyStyle": "SUV",
+    "drivetrain": "RWD",
+    "fuelType": "Diesel",
+    "transmission": "Manual",
+    "options": {
+      "features": [
+        "Backup Camera",
+        "Tow Package"
+      ]
+    },
+    "starCore": {
+      "title": "2020 Jeep Wrangler Sport",
+      "score": 69
+    },
+    "categoryPayload": null,
+    "soldAt": null,
+    "removedAt": null,
+    "reactivatedAt": null,
+    "createdAt": "2026-03-23T12:00:00Z",
+    "updatedAt": "2026-06-06T12:00:00Z"
+  },
+  {
+    "id": "veh_0095",
+    "dealershipId": "dealer_premium_imports",
+    "vin": "MOCKVIN000000095",
+    "stockNumber": "PREMIUM1010",
+    "year": 2019,
+    "make": "Honda",
+    "model": "CR-V",
+    "trim": "Touring",
+    "mileage": 95013,
+    "priceCents": 1684000,
+    "originalPriceCents": 1784000,
+    "priceLastChangedAt": "2026-05-14T12:00:00Z",
+    "condition": "used",
+    "exteriorColor": "Green",
+    "interiorColor": "Tan",
+    "bodyStyle": "SUV",
+    "drivetrain": "4WD",
+    "fuelType": "Diesel",
+    "transmission": "CVT",
+    "options": {
+      "features": [
+        "Sunroof",
+        "Heated Seats",
+        "Tow Package",
+        "Leather",
+        "Apple CarPlay"
+      ]
+    },
+    "starCore": {
+      "title": "2019 Honda CR-V EX",
+      "score": 72
+    },
+    "categoryPayload": null,
+    "soldAt": null,
+    "removedAt": "2026-05-10T12:00:00Z",
+    "reactivatedAt": null,
+    "createdAt": "2026-02-22T12:00:00Z",
+    "updatedAt": "2026-06-08T12:00:00Z"
+  },
+  {
+    "id": "veh_0096",
+    "dealershipId": "dealer_premium_imports",
+    "vin": "MOCKVIN000000096",
+    "stockNumber": "PREMIUM1011",
+    "year": 2026,
+    "make": "Toyota",
+    "model": "Camry",
+    "trim": "XLE",
+    "mileage": 41664,
+    "priceCents": 6006700,
+    "originalPriceCents": 6156700,
+    "priceLastChangedAt": "2026-05-18T12:00:00Z",
+    "condition": "cpo",
+    "exteriorColor": "White",
+    "interiorColor": "Tan",
+    "bodyStyle": "Sedan",
+    "drivetrain": "RWD",
+    "fuelType": "Gasoline",
+    "transmission": "CVT",
+    "options": {
+      "features": [
+        "Heated Seats",
+        "Leather",
+        "Backup Camera"
+      ]
+    },
+    "starCore": {
+      "title": "2026 Toyota Camry XLE",
+      "score": 97
+    },
+    "categoryPayload": null,
+    "soldAt": null,
+    "removedAt": null,
+    "reactivatedAt": null,
+    "createdAt": "2025-12-22T12:00:00Z",
+    "updatedAt": "2026-06-06T12:00:00Z"
+  },
+  {
+    "id": "veh_0097",
+    "dealershipId": "dealer_premium_imports",
+    "vin": "MOCKVIN000000097",
+    "stockNumber": "PREMIUM1012",
+    "year": 2025,
+    "make": "Nissan",
+    "model": "Altima",
+    "trim": "SR",
+    "mileage": 112035,
+    "priceCents": 6568900,
+    "originalPriceCents": 6568900,
+    "priceLastChangedAt": "2026-05-18T12:00:00Z",
+    "condition": "cpo",
+    "exteriorColor": "Black",
+    "interiorColor": "Gray",
+    "bodyStyle": "Sedan",
+    "drivetrain": "FWD",
+    "fuelType": "Gasoline",
+    "transmission": "CVT",
+    "options": {
+      "features": [
+        "Heated Seats",
+        "Apple CarPlay"
+      ]
+    },
+    "starCore": {
+      "title": "2025 Nissan Altima SR",
+      "score": 82
+    },
+    "categoryPayload": null,
+    "soldAt": null,
+    "removedAt": null,
+    "reactivatedAt": null,
+    "createdAt": "2026-04-18T12:00:00Z",
+    "updatedAt": "2026-06-01T12:00:00Z"
+  },
+  {
+    "id": "veh_0098",
+    "dealershipId": "dealer_premium_imports",
+    "vin": "MOCKVIN000000098",
+    "stockNumber": "PREMIUM1013",
+    "year": 2016,
+    "make": "Mercedes-Benz",
+    "model": "C-Class",
+    "trim": "C300",
+    "mileage": 98289,
+    "priceCents": 2190300,
+    "originalPriceCents": 2240300,
+    "priceLastChangedAt": "2026-06-09T12:00:00Z",
+    "condition": "used",
+    "exteriorColor": "Gray",
+    "interiorColor": "Gray",
+    "bodyStyle": "Sedan",
+    "drivetrain": "AWD",
+    "fuelType": "Gasoline",
+    "transmission": "Automatic",
+    "options": {
+      "features": [
+        "Heated Seats",
+        "Leather",
+        "Bluetooth",
+        "Tow Package",
+        "Backup Camera"
+      ]
+    },
+    "starCore": {
+      "title": "2016 Mercedes-Benz C-Class AMG Line",
+      "score": 98
+    },
+    "categoryPayload": null,
+    "soldAt": null,
+    "removedAt": null,
+    "reactivatedAt": null,
+    "createdAt": "2026-03-30T12:00:00Z",
+    "updatedAt": "2026-06-03T12:00:00Z"
+  },
+  {
+    "id": "veh_0099",
+    "dealershipId": "dealer_premium_imports",
+    "vin": "MOCKVIN000000099",
+    "stockNumber": "PREMIUM1014",
+    "year": 2016,
+    "make": "Ford",
+    "model": "F-150",
+    "trim": "XLT",
+    "mileage": 12020,
+    "priceCents": 2641900,
+    "originalPriceCents": 2691900,
+    "priceLastChangedAt": "2026-05-16T12:00:00Z",
+    "condition": "new",
+    "exteriorColor": "Green",
+    "interiorColor": "Black",
+    "bodyStyle": "Truck",
+    "drivetrain": "4WD",
+    "fuelType": "Electric",
+    "transmission": "Manual",
+    "options": {
+      "features": [
+        "Apple CarPlay",
+        "Backup Camera",
+        "Sunroof"
+      ]
+    },
+    "starCore": {
+      "title": "2016 Ford F-150 XLT",
+      "score": 84
+    },
+    "categoryPayload": null,
+    "soldAt": null,
+    "removedAt": null,
+    "reactivatedAt": null,
+    "createdAt": "2026-05-09T12:00:00Z",
+    "updatedAt": "2026-06-07T12:00:00Z"
+  },
+  {
+    "id": "veh_0100",
+    "dealershipId": "dealer_premium_imports",
+    "vin": "MOCKVIN000000100",
+    "stockNumber": "PREMIUM1015",
+    "year": 2016,
+    "make": "Subaru",
+    "model": "Outback",
+    "trim": "Premium",
+    "mileage": 2208,
+    "priceCents": 4560800,
+    "originalPriceCents": 4660800,
+    "priceLastChangedAt": "2026-06-01T12:00:00Z",
+    "condition": "certified",
+    "exteriorColor": "Gray",
+    "interiorColor": "Gray",
+    "bodyStyle": "Wagon",
+    "drivetrain": "AWD",
+    "fuelType": "Hybrid",
+    "transmission": "CVT",
+    "options": {
+      "features": [
+        "Backup Camera",
+        "Tow Package",
+        "Apple CarPlay",
+        "Bluetooth",
+        "Leather"
+      ]
+    },
+    "starCore": {
+      "title": "2016 Subaru Outback Limited",
+      "score": 72
+    },
+    "categoryPayload": null,
+    "soldAt": null,
+    "removedAt": null,
+    "reactivatedAt": null,
+    "createdAt": "2026-03-18T12:00:00Z",
+    "updatedAt": "2026-06-01T12:00:00Z"
+  },
+  {
+    "id": "veh_0101",
+    "dealershipId": "dealer_premium_imports",
+    "vin": "MOCKVIN000000101",
+    "stockNumber": "PREMIUM1016",
+    "year": 2020,
+    "make": "Nissan",
+    "model": "Altima",
+    "trim": "SR",
+    "mileage": 95828,
+    "priceCents": 2427400,
+    "originalPriceCents": 2527400,
+    "priceLastChangedAt": "2026-06-05T12:00:00Z",
+    "condition": "certified",
+    "exteriorColor": "Gray",
+    "interiorColor": "Tan",
+    "bodyStyle": "Sedan",
+    "drivetrain": "RWD",
+    "fuelType": "Diesel",
+    "transmission": "CVT",
+    "options": {
+      "features": [
+        "Backup Camera",
+        "Bluetooth",
+        "Leather",
+        "Navigation"
+      ]
+    },
+    "starCore": {
+      "title": "2020 Nissan Altima SR",
+      "score": 84
+    },
+    "categoryPayload": null,
+    "soldAt": null,
+    "removedAt": null,
+    "reactivatedAt": null,
+    "createdAt": "2026-05-01T12:00:00Z",
+    "updatedAt": "2026-06-05T12:00:00Z"
+  },
+  {
+    "id": "veh_0102",
+    "dealershipId": "dealer_premium_imports",
+    "vin": "MOCKVIN000000102",
+    "stockNumber": "PREMIUM1017",
+    "year": 2016,
+    "make": "Honda",
+    "model": "CR-V",
+    "trim": "Touring",
+    "mileage": 94754,
+    "priceCents": 6208100,
+    "originalPriceCents": 6208100,
+    "priceLastChangedAt": "2026-05-30T12:00:00Z",
+    "condition": "cpo",
+    "exteriorColor": "Black",
+    "interiorColor": "Brown",
+    "bodyStyle": "SUV",
+    "drivetrain": "AWD",
+    "fuelType": "Hybrid",
+    "transmission": "CVT",
+    "options": {
+      "features": [
+        "Sunroof",
+        "Backup Camera",
+        "Bluetooth"
+      ]
+    },
+    "starCore": {
+      "title": "2016 Honda CR-V EX",
+      "score": 82
+    },
+    "categoryPayload": null,
+    "soldAt": null,
+    "removedAt": null,
+    "reactivatedAt": null,
+    "createdAt": "2026-04-17T12:00:00Z",
+    "updatedAt": "2026-06-08T12:00:00Z"
+  },
+  {
+    "id": "veh_0103",
+    "dealershipId": "dealer_premium_imports",
+    "vin": "MOCKVIN000000103",
+    "stockNumber": "PREMIUM1018",
+    "year": 2025,
+    "make": "Toyota",
+    "model": "Camry",
+    "trim": "SE",
+    "mileage": 10606,
+    "priceCents": 3055200,
+    "originalPriceCents": 3105200,
+    "priceLastChangedAt": "2026-05-20T12:00:00Z",
+    "condition": "new",
+    "exteriorColor": "Red",
+    "interiorColor": "Tan",
+    "bodyStyle": "Sedan",
+    "drivetrain": "4WD",
+    "fuelType": "Hybrid",
+    "transmission": "Automatic",
+    "options": {
+      "features": [
+        "Heated Seats",
+        "Navigation",
+        "Sunroof"
+      ]
+    },
+    "starCore": {
+      "title": "2025 Toyota Camry LE",
+      "score": 83
+    },
+    "categoryPayload": null,
+    "soldAt": null,
+    "removedAt": null,
+    "reactivatedAt": null,
+    "createdAt": "2026-05-24T12:00:00Z",
+    "updatedAt": "2026-05-31T12:00:00Z"
+  },
+  {
+    "id": "veh_0104",
+    "dealershipId": "dealer_premium_imports",
+    "vin": "MOCKVIN000000104",
+    "stockNumber": "PREMIUM1019",
+    "year": 2026,
+    "make": "Jeep",
+    "model": "Wrangler",
+    "trim": "Sport",
+    "mileage": 43631,
+    "priceCents": 3402000,
+    "originalPriceCents": 3552000,
+    "priceLastChangedAt": "2026-05-27T12:00:00Z",
+    "condition": "new",
+    "exteriorColor": "Green",
+    "interiorColor": "Black",
+    "bodyStyle": "SUV",
+    "drivetrain": "RWD",
+    "fuelType": "Gasoline",
+    "transmission": "Manual",
+    "options": {
+      "features": [
+        "Tow Package",
+        "Heated Seats",
+        "Leather",
+        "Bluetooth",
+        "Backup Camera"
+      ]
+    },
+    "starCore": {
+      "title": "2026 Jeep Wrangler Sahara",
+      "score": 71
+    },
+    "categoryPayload": null,
+    "soldAt": null,
+    "removedAt": null,
+    "reactivatedAt": null,
+    "createdAt": "2026-04-13T12:00:00Z",
+    "updatedAt": "2026-06-09T12:00:00Z"
+  },
+  {
+    "id": "veh_0105",
+    "dealershipId": "dealer_premium_imports",
+    "vin": "MOCKVIN000000105",
+    "stockNumber": "PREMIUM1020",
+    "year": 2024,
+    "make": "Mercedes-Benz",
+    "model": "C-Class",
+    "trim": "C300",
+    "mileage": 36304,
+    "priceCents": 2403800,
+    "originalPriceCents": 2403800,
+    "priceLastChangedAt": "2026-06-02T12:00:00Z",
+    "condition": "new",
+    "exteriorColor": "Silver",
+    "interiorColor": "Tan",
+    "bodyStyle": "Sedan",
+    "drivetrain": "AWD",
+    "fuelType": "Diesel",
+    "transmission": "Manual",
+    "options": {
+      "features": [
+        "Sunroof",
+        "Leather",
+        "Apple CarPlay",
+        "Tow Package",
+        "Backup Camera"
+      ]
+    },
+    "starCore": {
+      "title": "2024 Mercedes-Benz C-Class AMG Line",
+      "score": 97
+    },
+    "categoryPayload": null,
+    "soldAt": null,
+    "removedAt": null,
+    "reactivatedAt": null,
+    "createdAt": "2025-12-14T12:00:00Z",
+    "updatedAt": "2026-06-03T12:00:00Z"
+  },
+  {
+    "id": "veh_0106",
+    "dealershipId": "dealer_premium_imports",
+    "vin": "MOCKVIN000000106",
+    "stockNumber": "PREMIUM1021",
+    "year": 2018,
+    "make": "Honda",
+    "model": "CR-V",
+    "trim": "EX",
+    "mileage": 105424,
+    "priceCents": 1962100,
+    "originalPriceCents": 2112100,
+    "priceLastChangedAt": "2026-05-13T12:00:00Z",
+    "condition": "new",
+    "exteriorColor": "Gray",
+    "interiorColor": "Tan",
+    "bodyStyle": "SUV",
+    "drivetrain": "AWD",
+    "fuelType": "Electric",
+    "transmission": "Manual",
+    "options": {
+      "features": [
+        "Navigation",
+        "Sunroof",
+        "Tow Package"
+      ]
+    },
+    "starCore": {
+      "title": "2018 Honda CR-V LX",
+      "score": 85
+    },
+    "categoryPayload": null,
+    "soldAt": null,
+    "removedAt": null,
+    "reactivatedAt": null,
+    "createdAt": "2026-02-25T12:00:00Z",
+    "updatedAt": "2026-06-02T12:00:00Z"
+  },
+  {
+    "id": "veh_0107",
+    "dealershipId": "dealer_premium_imports",
+    "vin": "MOCKVIN000000107",
+    "stockNumber": "PREMIUM1022",
+    "year": 2016,
+    "make": "Tesla",
+    "model": "Model 3",
+    "trim": "Long Range",
+    "mileage": 32399,
+    "priceCents": 3670200,
+    "originalPriceCents": 3820200,
+    "priceLastChangedAt": "2026-05-30T12:00:00Z",
+    "condition": "used",
+    "exteriorColor": "Gray",
+    "interiorColor": "Black",
+    "bodyStyle": "Sedan",
+    "drivetrain": "AWD",
+    "fuelType": "Gasoline",
+    "transmission": "Automatic",
+    "options": {
+      "features": [
+        "Bluetooth",
+        "Heated Seats",
+        "Navigation",
+        "Leather"
+      ]
+    },
+    "starCore": {
+      "title": "2016 Tesla Model 3 Long Range",
+      "score": 79
+    },
+    "categoryPayload": null,
+    "soldAt": null,
+    "removedAt": null,
+    "reactivatedAt": null,
+    "createdAt": "2026-04-04T12:00:00Z",
+    "updatedAt": "2026-06-01T12:00:00Z"
+  },
+  {
+    "id": "veh_0108",
+    "dealershipId": "dealer_premium_imports",
+    "vin": "MOCKVIN000000108",
+    "stockNumber": "PREMIUM1023",
+    "year": 2023,
+    "make": "Tesla",
+    "model": "Model 3",
+    "trim": "Performance",
+    "mileage": 24947,
+    "priceCents": 2590100,
+    "originalPriceCents": 2640100,
+    "priceLastChangedAt": "2026-05-14T12:00:00Z",
+    "condition": "cpo",
+    "exteriorColor": "Red",
+    "interiorColor": "Black",
+    "bodyStyle": "Sedan",
+    "drivetrain": "FWD",
+    "fuelType": "Diesel",
+    "transmission": "CVT",
+    "options": {
+      "features": [
+        "Sunroof",
+        "Heated Seats",
+        "Bluetooth",
+        "Apple CarPlay",
+        "Tow Package"
+      ]
+    },
+    "starCore": {
+      "title": "2023 Tesla Model 3 Performance",
+      "score": 88
+    },
+    "categoryPayload": null,
+    "soldAt": "2026-05-21T12:00:00Z",
+    "removedAt": null,
+    "reactivatedAt": null,
+    "createdAt": "2026-03-06T12:00:00Z",
+    "updatedAt": "2026-06-03T12:00:00Z"
+  },
+  {
+    "id": "veh_0109",
+    "dealershipId": "dealer_premium_imports",
+    "vin": "MOCKVIN000000109",
+    "stockNumber": "PREMIUM1024",
+    "year": 2026,
+    "make": "Tesla",
+    "model": "Model 3",
+    "trim": "Long Range",
+    "mileage": 118997,
+    "priceCents": 4128600,
+    "originalPriceCents": 4178600,
+    "priceLastChangedAt": "2026-05-28T12:00:00Z",
+    "condition": "certified",
+    "exteriorColor": "Silver",
+    "interiorColor": "Tan",
+    "bodyStyle": "Sedan",
+    "drivetrain": "4WD",
+    "fuelType": "Electric",
+    "transmission": "Automatic",
+    "options": {
+      "features": [
+        "Heated Seats",
+        "Leather",
+        "Backup Camera",
+        "Navigation"
+      ]
+    },
+    "starCore": {
+      "title": "2026 Tesla Model 3 Performance",
+      "score": 76
+    },
+    "categoryPayload": null,
+    "soldAt": null,
+    "removedAt": null,
+    "reactivatedAt": null,
+    "createdAt": "2026-04-14T12:00:00Z",
+    "updatedAt": "2026-06-01T12:00:00Z"
+  },
+  {
+    "id": "veh_0110",
+    "dealershipId": "dealer_premium_imports",
+    "vin": "MOCKVIN000000110",
+    "stockNumber": "PREMIUM1025",
+    "year": 2023,
+    "make": "Subaru",
+    "model": "Outback",
+    "trim": "Premium",
+    "mileage": 74571,
+    "priceCents": 2060100,
+    "originalPriceCents": 2160100,
+    "priceLastChangedAt": "2026-05-12T12:00:00Z",
+    "condition": "cpo",
+    "exteriorColor": "Silver",
+    "interiorColor": "Brown",
+    "bodyStyle": "Wagon",
+    "drivetrain": "RWD",
+    "fuelType": "Diesel",
+    "transmission": "CVT",
+    "options": {
+      "features": [
+        "Leather",
+        "Tow Package"
+      ]
+    },
+    "starCore": {
+      "title": "2023 Subaru Outback Limited",
+      "score": 80
+    },
+    "categoryPayload": null,
+    "soldAt": null,
+    "removedAt": null,
+    "reactivatedAt": null,
+    "createdAt": "2026-03-04T12:00:00Z",
+    "updatedAt": "2026-06-03T12:00:00Z"
+  },
+  {
+    "id": "veh_0111",
+    "dealershipId": "dealer_premium_imports",
+    "vin": "MOCKVIN000000111",
+    "stockNumber": "PREMIUM1026",
+    "year": 2018,
+    "make": "Toyota",
+    "model": "Camry",
+    "trim": "XLE",
+    "mileage": 104660,
+    "priceCents": 4024200,
+    "originalPriceCents": 4024200,
+    "priceLastChangedAt": "2026-06-03T12:00:00Z",
+    "condition": "new",
+    "exteriorColor": "White",
+    "interiorColor": "Black",
+    "bodyStyle": "Sedan",
+    "drivetrain": "AWD",
+    "fuelType": "Diesel",
+    "transmission": "Automatic",
+    "options": {
+      "features": [
+        "Navigation",
+        "Bluetooth",
+        "Leather",
+        "Heated Seats"
+      ]
+    },
+    "starCore": {
+      "title": "2018 Toyota Camry XLE",
+      "score": 68
+    },
+    "categoryPayload": null,
+    "soldAt": null,
+    "removedAt": "2026-05-10T12:00:00Z",
+    "reactivatedAt": null,
+    "createdAt": "2026-01-14T12:00:00Z",
+    "updatedAt": "2026-06-07T12:00:00Z"
+  },
+  {
+    "id": "veh_0112",
+    "dealershipId": "dealer_premium_imports",
+    "vin": "MOCKVIN000000112",
+    "stockNumber": "PREMIUM1027",
+    "year": 2020,
+    "make": "Ford",
+    "model": "F-150",
+    "trim": "XL",
+    "mileage": 46723,
+    "priceCents": 3258200,
+    "originalPriceCents": 3358200,
+    "priceLastChangedAt": "2026-05-15T12:00:00Z",
+    "condition": "certified",
+    "exteriorColor": "Gray",
+    "interiorColor": "Brown",
+    "bodyStyle": "Truck",
+    "drivetrain": "4WD",
+    "fuelType": "Electric",
+    "transmission": "CVT",
+    "options": {
+      "features": [
+        "Heated Seats",
+        "Apple CarPlay"
+      ]
+    },
+    "starCore": {
+      "title": "2020 Ford F-150 XLT",
+      "score": 87
+    },
+    "categoryPayload": null,
+    "soldAt": null,
+    "removedAt": null,
+    "reactivatedAt": null,
+    "createdAt": "2026-03-01T12:00:00Z",
+    "updatedAt": "2026-06-08T12:00:00Z"
+  },
+  {
+    "id": "veh_0113",
+    "dealershipId": "dealer_premium_imports",
+    "vin": "MOCKVIN000000113",
+    "stockNumber": "PREMIUM1028",
+    "year": 2020,
+    "make": "Mercedes-Benz",
+    "model": "C-Class",
+    "trim": "AMG Line",
+    "mileage": 58380,
+    "priceCents": 4221800,
+    "originalPriceCents": 4271800,
+    "priceLastChangedAt": "2026-05-23T12:00:00Z",
+    "condition": "cpo",
+    "exteriorColor": "Green",
+    "interiorColor": "Brown",
+    "bodyStyle": "Sedan",
+    "drivetrain": "AWD",
+    "fuelType": "Hybrid",
+    "transmission": "Automatic",
+    "options": {
+      "features": [
+        "Backup Camera",
+        "Tow Package",
+        "Heated Seats",
+        "Bluetooth"
+      ]
+    },
+    "starCore": {
+      "title": "2020 Mercedes-Benz C-Class C300",
+      "score": 79
+    },
+    "categoryPayload": null,
+    "soldAt": "2026-05-07T12:00:00Z",
+    "removedAt": null,
+    "reactivatedAt": null,
+    "createdAt": "2026-01-28T12:00:00Z",
+    "updatedAt": "2026-06-06T12:00:00Z"
+  },
+  {
+    "id": "veh_0114",
+    "dealershipId": "dealer_premium_imports",
+    "vin": "MOCKVIN000000114",
+    "stockNumber": "PREMIUM1029",
+    "year": 2018,
+    "make": "Honda",
+    "model": "CR-V",
+    "trim": "EX",
+    "mileage": 95978,
+    "priceCents": 6393800,
+    "originalPriceCents": 6543800,
+    "priceLastChangedAt": "2026-06-05T12:00:00Z",
+    "condition": "cpo",
+    "exteriorColor": "Blue",
+    "interiorColor": "Tan",
+    "bodyStyle": "SUV",
+    "drivetrain": "RWD",
+    "fuelType": "Hybrid",
+    "transmission": "Manual",
+    "options": {
+      "features": [
+        "Navigation",
+        "Bluetooth",
+        "Sunroof"
+      ]
+    },
+    "starCore": {
+      "title": "2018 Honda CR-V EX",
+      "score": 79
+    },
+    "categoryPayload": null,
+    "soldAt": null,
+    "removedAt": null,
+    "reactivatedAt": null,
+    "createdAt": "2026-01-24T12:00:00Z",
+    "updatedAt": "2026-06-01T12:00:00Z"
+  },
+  {
+    "id": "veh_0115",
+    "dealershipId": "dealer_premium_imports",
+    "vin": "MOCKVIN000000115",
+    "stockNumber": "PREMIUM1030",
+    "year": 2019,
+    "make": "Subaru",
+    "model": "Outback",
+    "trim": "Premium",
+    "mileage": 105699,
+    "priceCents": 3002700,
+    "originalPriceCents": 3152700,
+    "priceLastChangedAt": "2026-05-27T12:00:00Z",
+    "condition": "used",
+    "exteriorColor": "Blue",
+    "interiorColor": "Gray",
+    "bodyStyle": "Wagon",
+    "drivetrain": "FWD",
+    "fuelType": "Gasoline",
+    "transmission": "Automatic",
+    "options": {
+      "features": [
+        "Heated Seats",
+        "Sunroof"
+      ]
+    },
+    "starCore": {
+      "title": "2019 Subaru Outback Limited",
+      "score": 71
+    },
+    "categoryPayload": null,
+    "soldAt": null,
+    "removedAt": null,
+    "reactivatedAt": null,
+    "createdAt": "2026-03-12T12:00:00Z",
+    "updatedAt": "2026-06-03T12:00:00Z"
+  },
+  {
+    "id": "veh_0116",
+    "dealershipId": "dealer_premium_imports",
+    "vin": "MOCKVIN000000116",
+    "stockNumber": "PREMIUM1031",
+    "year": 2026,
+    "make": "Tesla",
+    "model": "Model 3",
+    "trim": "Performance",
+    "mileage": 111903,
+    "priceCents": 1951800,
+    "originalPriceCents": 2001800,
+    "priceLastChangedAt": "2026-06-06T12:00:00Z",
+    "condition": "used",
+    "exteriorColor": "Black",
+    "interiorColor": "Gray",
+    "bodyStyle": "Sedan",
+    "drivetrain": "FWD",
+    "fuelType": "Gasoline",
+    "transmission": "Automatic",
+    "options": {
+      "features": [
+        "Bluetooth",
+        "Leather",
+        "Navigation"
+      ]
+    },
+    "starCore": {
+      "title": "2026 Tesla Model 3 Long Range",
+      "score": 91
+    },
+    "categoryPayload": null,
+    "soldAt": null,
+    "removedAt": null,
+    "reactivatedAt": null,
+    "createdAt": "2026-06-05T12:00:00Z",
+    "updatedAt": "2026-06-04T12:00:00Z"
+  }
+]

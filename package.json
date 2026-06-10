@@ -9,7 +9,7 @@
   "type": "module",
   "description": "V4.10: Catalog Sync UI — CatalogSyncPanel in PlatformDetailDrawer for all 7 catalog platforms.",
   "scripts": {
-    "build": "tsc",
+    "build": "tsc -p packages/category-schemas/tsconfig.json && tsc",
     "typecheck": "tsc --noEmit",
     "test": "npm run -s build && node --test dist/src/tests/*.test.js && npm run -s test -w auto-dealer-operator-ui && npm run -s test -w auto-dealer-marketplace-ui",
     "test:platforms": "npm run -s build && node --test dist/src/tests/platformReadinessContract.test.js dist/src/tests/platformFeedContract.test.js dist/src/tests/categoryPricePolicy.test.js dist/src/tests/pristineApiValidationFixture.test.js dist/src/tests/nonVehiclePlatformContract.test.js dist/src/tests/partnerPortalService.test.js dist/src/tests/feedGeneratorService.test.js dist/src/tests/consumerMarketplacePlatform.test.js",

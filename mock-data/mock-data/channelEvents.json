@@ -1,0 +1,4002 @@
+[
+  {
+    "id": "chev_dealer_austin_auto_0",
+    "dealershipId": "dealer_austin_auto",
+    "platformSlug": "facebook-business-page",
+    "vehicleId": "veh_0015",
+    "listingId": "AUSTIN1014",
+    "eventType": "REPORTED_CLICK",
+    "sourceConfidence": "OBSERVED_FIRST_PARTY",
+    "quantity": 7,
+    "metadataJson": {
+      "mock": true,
+      "utm": "seed"
+    },
+    "occurredAt": "2026-03-17T12:00:00Z",
+    "createdAt": "2026-04-02T12:00:00Z"
+  },
+  {
+    "id": "chev_dealer_austin_auto_1",
+    "dealershipId": "dealer_austin_auto",
+    "platformSlug": "facebook-business-page",
+    "vehicleId": "veh_0029",
+    "listingId": "AUSTIN1028",
+    "eventType": "REPORTED_CONTACT",
+    "sourceConfidence": "MANUAL_IMPORTED",
+    "quantity": 5,
+    "metadataJson": {
+      "mock": true,
+      "utm": "seed"
+    },
+    "occurredAt": "2026-04-09T12:00:00Z",
+    "createdAt": "2026-04-28T12:00:00Z"
+  },
+  {
+    "id": "chev_dealer_austin_auto_2",
+    "dealershipId": "dealer_austin_auto",
+    "platformSlug": "owned-storefront",
+    "vehicleId": "veh_0002",
+    "listingId": "AUSTIN1001",
+    "eventType": "INQUIRY_SUBMITTED",
+    "sourceConfidence": "MANUAL_IMPORTED",
+    "quantity": 4,
+    "metadataJson": {
+      "mock": true,
+      "utm": "seed"
+    },
+    "occurredAt": "2026-04-24T12:00:00Z",
+    "createdAt": "2026-04-09T12:00:00Z"
+  },
+  {
+    "id": "chev_dealer_austin_auto_3",
+    "dealershipId": "dealer_austin_auto",
+    "platformSlug": "owned-storefront",
+    "vehicleId": "veh_0003",
+    "listingId": "AUSTIN1002",
+    "eventType": "VEHICLE_IMPRESSION",
+    "sourceConfidence": "PLATFORM_REPORTED",
+    "quantity": 4,
+    "metadataJson": {
+      "mock": true,
+      "utm": "seed"
+    },
+    "occurredAt": "2026-06-04T12:00:00Z",
+    "createdAt": "2026-03-31T12:00:00Z"
+  },
+  {
+    "id": "chev_dealer_austin_auto_4",
+    "dealershipId": "dealer_austin_auto",
+    "platformSlug": "facebook-business-page",
+    "vehicleId": "veh_0011",
+    "listingId": "AUSTIN1010",
+    "eventType": "REPORTED_CONTACT",
+    "sourceConfidence": "PLATFORM_REPORTED",
+    "quantity": 7,
+    "metadataJson": {
+      "mock": true,
+      "utm": "seed"
+    },
+    "occurredAt": "2026-04-15T12:00:00Z",
+    "createdAt": "2026-05-14T12:00:00Z"
+  },
+  {
+    "id": "chev_dealer_austin_auto_5",
+    "dealershipId": "dealer_austin_auto",
+    "platformSlug": "google-business-profile",
+    "vehicleId": "veh_0020",
+    "listingId": "AUSTIN1019",
+    "eventType": "REPORTED_CLICK",
+    "sourceConfidence": "OBSERVED_FIRST_PARTY",
+    "quantity": 5,
+    "metadataJson": {
+      "mock": true,
+      "utm": "seed"
+    },
+    "occurredAt": "2026-03-15T12:00:00Z",
+    "createdAt": "2026-05-22T12:00:00Z"
+  },
+  {
+    "id": "chev_dealer_austin_auto_6",
+    "dealershipId": "dealer_austin_auto",
+    "platformSlug": "owned-storefront",
+    "vehicleId": "veh_0021",
+    "listingId": "AUSTIN1020",
+    "eventType": "INQUIRY_SUBMITTED",
+    "sourceConfidence": "OBSERVED_FIRST_PARTY",
+    "quantity": 3,
+    "metadataJson": {
+      "mock": true,
+      "utm": "seed"
+    },
+    "occurredAt": "2026-05-06T12:00:00Z",
+    "createdAt": "2026-04-16T12:00:00Z"
+  },
+  {
+    "id": "chev_dealer_austin_auto_7",
+    "dealershipId": "dealer_austin_auto",
+    "platformSlug": "owned-storefront",
+    "vehicleId": "veh_0013",
+    "listingId": "AUSTIN1012",
+    "eventType": "REPORTED_VIEW",
+    "sourceConfidence": "MANUAL_IMPORTED",
+    "quantity": 1,
+    "metadataJson": {
+      "mock": true,
+      "utm": "seed"
+    },
+    "occurredAt": "2026-04-30T12:00:00Z",
+    "createdAt": "2026-03-13T12:00:00Z"
+  },
+  {
+    "id": "chev_dealer_austin_auto_8",
+    "dealershipId": "dealer_austin_auto",
+    "platformSlug": "owned-storefront",
+    "vehicleId": "veh_0024",
+    "listingId": "AUSTIN1023",
+    "eventType": "REPORTED_VIEW",
+    "sourceConfidence": "MANUAL_IMPORTED",
+    "quantity": 5,
+    "metadataJson": {
+      "mock": true,
+      "utm": "seed"
+    },
+    "occurredAt": "2026-03-21T12:00:00Z",
+    "createdAt": "2026-03-15T12:00:00Z"
+  },
+  {
+    "id": "chev_dealer_austin_auto_9",
+    "dealershipId": "dealer_austin_auto",
+    "platformSlug": "microsoft-automotive-ads",
+    "vehicleId": "veh_0006",
+    "listingId": "AUSTIN1005",
+    "eventType": "VEHICLE_IMPRESSION",
+    "sourceConfidence": "PLATFORM_REPORTED",
+    "quantity": 5,
+    "metadataJson": {
+      "mock": true,
+      "utm": "seed"
+    },
+    "occurredAt": "2026-03-20T12:00:00Z",
+    "createdAt": "2026-04-20T12:00:00Z"
+  },
+  {
+    "id": "chev_dealer_austin_auto_10",
+    "dealershipId": "dealer_austin_auto",
+    "platformSlug": "google-business-profile",
+    "vehicleId": "veh_0031",
+    "listingId": "AUSTIN1030",
+    "eventType": "VEHICLE_IMPRESSION",
+    "sourceConfidence": "MANUAL_IMPORTED",
+    "quantity": 5,
+    "metadataJson": {
+      "mock": true,
+      "utm": "seed"
+    },
+    "occurredAt": "2026-03-15T12:00:00Z",
+    "createdAt": "2026-05-25T12:00:00Z"
+  },
+  {
+    "id": "chev_dealer_austin_auto_11",
+    "dealershipId": "dealer_austin_auto",
+    "platformSlug": "owned-storefront",
+    "vehicleId": "veh_0006",
+    "listingId": "AUSTIN1005",
+    "eventType": "REPORTED_CLICK",
+    "sourceConfidence": "PLATFORM_REPORTED",
+    "quantity": 7,
+    "metadataJson": {
+      "mock": true,
+      "utm": "seed"
+    },
+    "occurredAt": "2026-04-11T12:00:00Z",
+    "createdAt": "2026-03-13T12:00:00Z"
+  },
+  {
+    "id": "chev_dealer_austin_auto_12",
+    "dealershipId": "dealer_austin_auto",
+    "platformSlug": "microsoft-automotive-ads",
+    "vehicleId": "veh_0019",
+    "listingId": "AUSTIN1018",
+    "eventType": "VEHICLE_IMPRESSION",
+    "sourceConfidence": "MANUAL_IMPORTED",
+    "quantity": 4,
+    "metadataJson": {
+      "mock": true,
+      "utm": "seed"
+    },
+    "occurredAt": "2026-05-25T12:00:00Z",
+    "createdAt": "2026-03-15T12:00:00Z"
+  },
+  {
+    "id": "chev_dealer_austin_auto_13",
+    "dealershipId": "dealer_austin_auto",
+    "platformSlug": "meta-automotive-ads",
+    "vehicleId": "veh_0012",
+    "listingId": "AUSTIN1011",
+    "eventType": "REPORTED_CONTACT",
+    "sourceConfidence": "OBSERVED_FIRST_PARTY",
+    "quantity": 2,
+    "metadataJson": {
+      "mock": true,
+      "utm": "seed"
+    },
+    "occurredAt": "2026-05-19T12:00:00Z",
+    "createdAt": "2026-04-15T12:00:00Z"
+  },
+  {
+    "id": "chev_dealer_austin_auto_14",
+    "dealershipId": "dealer_austin_auto",
+    "platformSlug": "meta-automotive-ads",
+    "vehicleId": "veh_0030",
+    "listingId": "AUSTIN1029",
+    "eventType": "REPORTED_CLICK",
+    "sourceConfidence": "OBSERVED_FIRST_PARTY",
+    "quantity": 2,
+    "metadataJson": {
+      "mock": true,
+      "utm": "seed"
+    },
+    "occurredAt": "2026-03-26T12:00:00Z",
+    "createdAt": "2026-05-23T12:00:00Z"
+  },
+  {
+    "id": "chev_dealer_austin_auto_15",
+    "dealershipId": "dealer_austin_auto",
+    "platformSlug": "facebook-business-page",
+    "vehicleId": "veh_0003",
+    "listingId": "AUSTIN1002",
+    "eventType": "REPORTED_VIEW",
+    "sourceConfidence": "PLATFORM_REPORTED",
+    "quantity": 6,
+    "metadataJson": {
+      "mock": true,
+      "utm": "seed"
+    },
+    "occurredAt": "2026-06-02T12:00:00Z",
+    "createdAt": "2026-03-27T12:00:00Z"
+  },
+  {
+    "id": "chev_dealer_austin_auto_16",
+    "dealershipId": "dealer_austin_auto",
+    "platformSlug": "google-business-profile",
+    "vehicleId": "veh_0001",
+    "listingId": "AUSTIN1000",
+    "eventType": "REPORTED_CONTACT",
+    "sourceConfidence": "OBSERVED_FIRST_PARTY",
+    "quantity": 7,
+    "metadataJson": {
+      "mock": true,
+      "utm": "seed"
+    },
+    "occurredAt": "2026-04-22T12:00:00Z",
+    "createdAt": "2026-05-26T12:00:00Z"
+  },
+  {
+    "id": "chev_dealer_austin_auto_17",
+    "dealershipId": "dealer_austin_auto",
+    "platformSlug": "google-business-profile",
+    "vehicleId": "veh_0022",
+    "listingId": "AUSTIN1021",
+    "eventType": "REPORTED_CONTACT",
+    "sourceConfidence": "PLATFORM_REPORTED",
+    "quantity": 7,
+    "metadataJson": {
+      "mock": true,
+      "utm": "seed"
+    },
+    "occurredAt": "2026-05-01T12:00:00Z",
+    "createdAt": "2026-03-12T12:00:00Z"
+  },
+  {
+    "id": "chev_dealer_austin_auto_18",
+    "dealershipId": "dealer_austin_auto",
+    "platformSlug": "facebook-business-page",
+    "vehicleId": "veh_0016",
+    "listingId": "AUSTIN1015",
+    "eventType": "VEHICLE_IMPRESSION",
+    "sourceConfidence": "MANUAL_IMPORTED",
+    "quantity": 3,
+    "metadataJson": {
+      "mock": true,
+      "utm": "seed"
+    },
+    "occurredAt": "2026-04-06T12:00:00Z",
+    "createdAt": "2026-05-21T12:00:00Z"
+  },
+  {
+    "id": "chev_dealer_austin_auto_19",
+    "dealershipId": "dealer_austin_auto",
+    "platformSlug": "microsoft-automotive-ads",
+    "vehicleId": "veh_0029",
+    "listingId": "AUSTIN1028",
+    "eventType": "VEHICLE_IMPRESSION",
+    "sourceConfidence": "MANUAL_IMPORTED",
+    "quantity": 1,
+    "metadataJson": {
+      "mock": true,
+      "utm": "seed"
+    },
+    "occurredAt": "2026-04-21T12:00:00Z",
+    "createdAt": "2026-04-10T12:00:00Z"
+  },
+  {
+    "id": "chev_dealer_austin_auto_20",
+    "dealershipId": "dealer_austin_auto",
+    "platformSlug": "facebook-business-page",
+    "vehicleId": "veh_0008",
+    "listingId": "AUSTIN1007",
+    "eventType": "REPORTED_VIEW",
+    "sourceConfidence": "PLATFORM_REPORTED",
+    "quantity": 3,
+    "metadataJson": {
+      "mock": true,
+      "utm": "seed"
+    },
+    "occurredAt": "2026-03-14T12:00:00Z",
+    "createdAt": "2026-04-27T12:00:00Z"
+  },
+  {
+    "id": "chev_dealer_austin_auto_21",
+    "dealershipId": "dealer_austin_auto",
+    "platformSlug": "owned-storefront",
+    "vehicleId": "veh_0010",
+    "listingId": "AUSTIN1009",
+    "eventType": "REPORTED_CLICK",
+    "sourceConfidence": "MANUAL_IMPORTED",
+    "quantity": 6,
+    "metadataJson": {
+      "mock": true,
+      "utm": "seed"
+    },
+    "occurredAt": "2026-05-01T12:00:00Z",
+    "createdAt": "2026-03-16T12:00:00Z"
+  },
+  {
+    "id": "chev_dealer_austin_auto_22",
+    "dealershipId": "dealer_austin_auto",
+    "platformSlug": "meta-automotive-ads",
+    "vehicleId": "veh_0019",
+    "listingId": "AUSTIN1018",
+    "eventType": "VEHICLE_IMPRESSION",
+    "sourceConfidence": "OBSERVED_FIRST_PARTY",
+    "quantity": 1,
+    "metadataJson": {
+      "mock": true,
+      "utm": "seed"
+    },
+    "occurredAt": "2026-03-12T12:00:00Z",
+    "createdAt": "2026-05-10T12:00:00Z"
+  },
+  {
+    "id": "chev_dealer_austin_auto_23",
+    "dealershipId": "dealer_austin_auto",
+    "platformSlug": "microsoft-automotive-ads",
+    "vehicleId": "veh_0014",
+    "listingId": "AUSTIN1013",
+    "eventType": "VEHICLE_DETAIL_VIEW",
+    "sourceConfidence": "MANUAL_IMPORTED",
+    "quantity": 6,
+    "metadataJson": {
+      "mock": true,
+      "utm": "seed"
+    },
+    "occurredAt": "2026-04-18T12:00:00Z",
+    "createdAt": "2026-05-24T12:00:00Z"
+  },
+  {
+    "id": "chev_dealer_austin_auto_24",
+    "dealershipId": "dealer_austin_auto",
+    "platformSlug": "facebook-business-page",
+    "vehicleId": "veh_0013",
+    "listingId": "AUSTIN1012",
+    "eventType": "VEHICLE_IMPRESSION",
+    "sourceConfidence": "PLATFORM_REPORTED",
+    "quantity": 3,
+    "metadataJson": {
+      "mock": true,
+      "utm": "seed"
+    },
+    "occurredAt": "2026-04-05T12:00:00Z",
+    "createdAt": "2026-04-14T12:00:00Z"
+  },
+  {
+    "id": "chev_dealer_austin_auto_25",
+    "dealershipId": "dealer_austin_auto",
+    "platformSlug": "meta-automotive-ads",
+    "vehicleId": "veh_0014",
+    "listingId": "AUSTIN1013",
+    "eventType": "VEHICLE_IMPRESSION",
+    "sourceConfidence": "MANUAL_IMPORTED",
+    "quantity": 5,
+    "metadataJson": {
+      "mock": true,
+      "utm": "seed"
+    },
+    "occurredAt": "2026-05-31T12:00:00Z",
+    "createdAt": "2026-05-01T12:00:00Z"
+  },
+  {
+    "id": "chev_dealer_austin_auto_26",
+    "dealershipId": "dealer_austin_auto",
+    "platformSlug": "microsoft-automotive-ads",
+    "vehicleId": "veh_0009",
+    "listingId": "AUSTIN1008",
+    "eventType": "REPORTED_CONTACT",
+    "sourceConfidence": "PLATFORM_REPORTED",
+    "quantity": 8,
+    "metadataJson": {
+      "mock": true,
+      "utm": "seed"
+    },
+    "occurredAt": "2026-04-11T12:00:00Z",
+    "createdAt": "2026-04-16T12:00:00Z"
+  },
+  {
+    "id": "chev_dealer_austin_auto_27",
+    "dealershipId": "dealer_austin_auto",
+    "platformSlug": "google-business-profile",
+    "vehicleId": "veh_0017",
+    "listingId": "AUSTIN1016",
+    "eventType": "REPORTED_CONTACT",
+    "sourceConfidence": "OBSERVED_FIRST_PARTY",
+    "quantity": 3,
+    "metadataJson": {
+      "mock": true,
+      "utm": "seed"
+    },
+    "occurredAt": "2026-03-26T12:00:00Z",
+    "createdAt": "2026-05-24T12:00:00Z"
+  },
+  {
+    "id": "chev_dealer_austin_auto_28",
+    "dealershipId": "dealer_austin_auto",
+    "platformSlug": "google-business-profile",
+    "vehicleId": "veh_0022",
+    "listingId": "AUSTIN1021",
+    "eventType": "VEHICLE_DETAIL_VIEW",
+    "sourceConfidence": "MANUAL_IMPORTED",
+    "quantity": 2,
+    "metadataJson": {
+      "mock": true,
+      "utm": "seed"
+    },
+    "occurredAt": "2026-04-03T12:00:00Z",
+    "createdAt": "2026-03-14T12:00:00Z"
+  },
+  {
+    "id": "chev_dealer_austin_auto_29",
+    "dealershipId": "dealer_austin_auto",
+    "platformSlug": "meta-automotive-ads",
+    "vehicleId": "veh_0021",
+    "listingId": "AUSTIN1020",
+    "eventType": "REPORTED_VIEW",
+    "sourceConfidence": "PLATFORM_REPORTED",
+    "quantity": 6,
+    "metadataJson": {
+      "mock": true,
+      "utm": "seed"
+    },
+    "occurredAt": "2026-03-29T12:00:00Z",
+    "createdAt": "2026-04-07T12:00:00Z"
+  },
+  {
+    "id": "chev_dealer_austin_auto_30",
+    "dealershipId": "dealer_austin_auto",
+    "platformSlug": "microsoft-automotive-ads",
+    "vehicleId": "veh_0002",
+    "listingId": "AUSTIN1001",
+    "eventType": "REPORTED_CLICK",
+    "sourceConfidence": "MANUAL_IMPORTED",
+    "quantity": 5,
+    "metadataJson": {
+      "mock": true,
+      "utm": "seed"
+    },
+    "occurredAt": "2026-03-21T12:00:00Z",
+    "createdAt": "2026-04-18T12:00:00Z"
+  },
+  {
+    "id": "chev_dealer_austin_auto_31",
+    "dealershipId": "dealer_austin_auto",
+    "platformSlug": "microsoft-automotive-ads",
+    "vehicleId": "veh_0015",
+    "listingId": "AUSTIN1014",
+    "eventType": "REPORTED_VIEW",
+    "sourceConfidence": "PLATFORM_REPORTED",
+    "quantity": 2,
+    "metadataJson": {
+      "mock": true,
+      "utm": "seed"
+    },
+    "occurredAt": "2026-04-24T12:00:00Z",
+    "createdAt": "2026-04-24T12:00:00Z"
+  },
+  {
+    "id": "chev_dealer_austin_auto_32",
+    "dealershipId": "dealer_austin_auto",
+    "platformSlug": "google-business-profile",
+    "vehicleId": "veh_0008",
+    "listingId": "AUSTIN1007",
+    "eventType": "REPORTED_CONTACT",
+    "sourceConfidence": "OBSERVED_FIRST_PARTY",
+    "quantity": 7,
+    "metadataJson": {
+      "mock": true,
+      "utm": "seed"
+    },
+    "occurredAt": "2026-03-28T12:00:00Z",
+    "createdAt": "2026-05-24T12:00:00Z"
+  },
+  {
+    "id": "chev_dealer_austin_auto_33",
+    "dealershipId": "dealer_austin_auto",
+    "platformSlug": "microsoft-automotive-ads",
+    "vehicleId": "veh_0031",
+    "listingId": "AUSTIN1030",
+    "eventType": "REPORTED_CONTACT",
+    "sourceConfidence": "PLATFORM_REPORTED",
+    "quantity": 2,
+    "metadataJson": {
+      "mock": true,
+      "utm": "seed"
+    },
+    "occurredAt": "2026-05-15T12:00:00Z",
+    "createdAt": "2026-04-08T12:00:00Z"
+  },
+  {
+    "id": "chev_dealer_austin_auto_34",
+    "dealershipId": "dealer_austin_auto",
+    "platformSlug": "owned-storefront",
+    "vehicleId": "veh_0019",
+    "listingId": "AUSTIN1018",
+    "eventType": "REPORTED_VIEW",
+    "sourceConfidence": "OBSERVED_FIRST_PARTY",
+    "quantity": 6,
+    "metadataJson": {
+      "mock": true,
+      "utm": "seed"
+    },
+    "occurredAt": "2026-06-08T12:00:00Z",
+    "createdAt": "2026-05-25T12:00:00Z"
+  },
+  {
+    "id": "chev_dealer_austin_auto_35",
+    "dealershipId": "dealer_austin_auto",
+    "platformSlug": "facebook-business-page",
+    "vehicleId": "veh_0006",
+    "listingId": "AUSTIN1005",
+    "eventType": "REPORTED_CONTACT",
+    "sourceConfidence": "PLATFORM_REPORTED",
+    "quantity": 4,
+    "metadataJson": {
+      "mock": true,
+      "utm": "seed"
+    },
+    "occurredAt": "2026-05-12T12:00:00Z",
+    "createdAt": "2026-05-27T12:00:00Z"
+  },
+  {
+    "id": "chev_dealer_austin_auto_36",
+    "dealershipId": "dealer_austin_auto",
+    "platformSlug": "owned-storefront",
+    "vehicleId": "veh_0020",
+    "listingId": "AUSTIN1019",
+    "eventType": "REPORTED_CONTACT",
+    "sourceConfidence": "MANUAL_IMPORTED",
+    "quantity": 8,
+    "metadataJson": {
+      "mock": true,
+      "utm": "seed"
+    },
+    "occurredAt": "2026-05-17T12:00:00Z",
+    "createdAt": "2026-06-09T12:00:00Z"
+  },
+  {
+    "id": "chev_dealer_austin_auto_37",
+    "dealershipId": "dealer_austin_auto",
+    "platformSlug": "microsoft-automotive-ads",
+    "vehicleId": "veh_0006",
+    "listingId": "AUSTIN1005",
+    "eventType": "REPORTED_CONTACT",
+    "sourceConfidence": "OBSERVED_FIRST_PARTY",
+    "quantity": 7,
+    "metadataJson": {
+      "mock": true,
+      "utm": "seed"
+    },
+    "occurredAt": "2026-05-01T12:00:00Z",
+    "createdAt": "2026-04-11T12:00:00Z"
+  },
+  {
+    "id": "chev_dealer_austin_auto_38",
+    "dealershipId": "dealer_austin_auto",
+    "platformSlug": "microsoft-automotive-ads",
+    "vehicleId": "veh_0012",
+    "listingId": "AUSTIN1011",
+    "eventType": "VEHICLE_DETAIL_VIEW",
+    "sourceConfidence": "OBSERVED_FIRST_PARTY",
+    "quantity": 5,
+    "metadataJson": {
+      "mock": true,
+      "utm": "seed"
+    },
+    "occurredAt": "2026-05-01T12:00:00Z",
+    "createdAt": "2026-05-29T12:00:00Z"
+  },
+  {
+    "id": "chev_dealer_austin_auto_39",
+    "dealershipId": "dealer_austin_auto",
+    "platformSlug": "facebook-business-page",
+    "vehicleId": "veh_0018",
+    "listingId": "AUSTIN1017",
+    "eventType": "REPORTED_CLICK",
+    "sourceConfidence": "MANUAL_IMPORTED",
+    "quantity": 7,
+    "metadataJson": {
+      "mock": true,
+      "utm": "seed"
+    },
+    "occurredAt": "2026-05-29T12:00:00Z",
+    "createdAt": "2026-05-24T12:00:00Z"
+  },
+  {
+    "id": "chev_dealer_austin_auto_40",
+    "dealershipId": "dealer_austin_auto",
+    "platformSlug": "microsoft-automotive-ads",
+    "vehicleId": "veh_0013",
+    "listingId": "AUSTIN1012",
+    "eventType": "VEHICLE_IMPRESSION",
+    "sourceConfidence": "OBSERVED_FIRST_PARTY",
+    "quantity": 5,
+    "metadataJson": {
+      "mock": true,
+      "utm": "seed"
+    },
+    "occurredAt": "2026-05-31T12:00:00Z",
+    "createdAt": "2026-03-12T12:00:00Z"
+  },
+  {
+    "id": "chev_dealer_austin_auto_41",
+    "dealershipId": "dealer_austin_auto",
+    "platformSlug": "microsoft-automotive-ads",
+    "vehicleId": "veh_0011",
+    "listingId": "AUSTIN1010",
+    "eventType": "VEHICLE_DETAIL_VIEW",
+    "sourceConfidence": "MANUAL_IMPORTED",
+    "quantity": 4,
+    "metadataJson": {
+      "mock": true,
+      "utm": "seed"
+    },
+    "occurredAt": "2026-06-10T12:00:00Z",
+    "createdAt": "2026-04-05T12:00:00Z"
+  },
+  {
+    "id": "chev_dealer_austin_auto_42",
+    "dealershipId": "dealer_austin_auto",
+    "platformSlug": "facebook-business-page",
+    "vehicleId": "veh_0014",
+    "listingId": "AUSTIN1013",
+    "eventType": "REPORTED_CLICK",
+    "sourceConfidence": "OBSERVED_FIRST_PARTY",
+    "quantity": 3,
+    "metadataJson": {
+      "mock": true,
+      "utm": "seed"
+    },
+    "occurredAt": "2026-04-27T12:00:00Z",
+    "createdAt": "2026-04-28T12:00:00Z"
+  },
+  {
+    "id": "chev_dealer_austin_auto_43",
+    "dealershipId": "dealer_austin_auto",
+    "platformSlug": "owned-storefront",
+    "vehicleId": "veh_0031",
+    "listingId": "AUSTIN1030",
+    "eventType": "REPORTED_CONTACT",
+    "sourceConfidence": "OBSERVED_FIRST_PARTY",
+    "quantity": 5,
+    "metadataJson": {
+      "mock": true,
+      "utm": "seed"
+    },
+    "occurredAt": "2026-03-27T12:00:00Z",
+    "createdAt": "2026-05-20T12:00:00Z"
+  },
+  {
+    "id": "chev_dealer_austin_auto_44",
+    "dealershipId": "dealer_austin_auto",
+    "platformSlug": "microsoft-automotive-ads",
+    "vehicleId": "veh_0029",
+    "listingId": "AUSTIN1028",
+    "eventType": "REPORTED_CONTACT",
+    "sourceConfidence": "MANUAL_IMPORTED",
+    "quantity": 7,
+    "metadataJson": {
+      "mock": true,
+      "utm": "seed"
+    },
+    "occurredAt": "2026-05-21T12:00:00Z",
+    "createdAt": "2026-05-30T12:00:00Z"
+  },
+  {
+    "id": "chev_dealer_austin_auto_45",
+    "dealershipId": "dealer_austin_auto",
+    "platformSlug": "microsoft-automotive-ads",
+    "vehicleId": "veh_0030",
+    "listingId": "AUSTIN1029",
+    "eventType": "VEHICLE_IMPRESSION",
+    "sourceConfidence": "MANUAL_IMPORTED",
+    "quantity": 7,
+    "metadataJson": {
+      "mock": true,
+      "utm": "seed"
+    },
+    "occurredAt": "2026-04-28T12:00:00Z",
+    "createdAt": "2026-04-04T12:00:00Z"
+  },
+  {
+    "id": "chev_dealer_austin_auto_46",
+    "dealershipId": "dealer_austin_auto",
+    "platformSlug": "facebook-business-page",
+    "vehicleId": "veh_0009",
+    "listingId": "AUSTIN1008",
+    "eventType": "REPORTED_CLICK",
+    "sourceConfidence": "OBSERVED_FIRST_PARTY",
+    "quantity": 6,
+    "metadataJson": {
+      "mock": true,
+      "utm": "seed"
+    },
+    "occurredAt": "2026-04-06T12:00:00Z",
+    "createdAt": "2026-04-04T12:00:00Z"
+  },
+  {
+    "id": "chev_dealer_austin_auto_47",
+    "dealershipId": "dealer_austin_auto",
+    "platformSlug": "google-business-profile",
+    "vehicleId": "veh_0015",
+    "listingId": "AUSTIN1014",
+    "eventType": "VEHICLE_DETAIL_VIEW",
+    "sourceConfidence": "MANUAL_IMPORTED",
+    "quantity": 6,
+    "metadataJson": {
+      "mock": true,
+      "utm": "seed"
+    },
+    "occurredAt": "2026-03-15T12:00:00Z",
+    "createdAt": "2026-05-24T12:00:00Z"
+  },
+  {
+    "id": "chev_dealer_austin_auto_48",
+    "dealershipId": "dealer_austin_auto",
+    "platformSlug": "meta-automotive-ads",
+    "vehicleId": "veh_0032",
+    "listingId": "AUSTIN1031",
+    "eventType": "REPORTED_CONTACT",
+    "sourceConfidence": "OBSERVED_FIRST_PARTY",
+    "quantity": 5,
+    "metadataJson": {
+      "mock": true,
+      "utm": "seed"
+    },
+    "occurredAt": "2026-04-08T12:00:00Z",
+    "createdAt": "2026-03-22T12:00:00Z"
+  },
+  {
+    "id": "chev_dealer_austin_auto_49",
+    "dealershipId": "dealer_austin_auto",
+    "platformSlug": "meta-automotive-ads",
+    "vehicleId": "veh_0020",
+    "listingId": "AUSTIN1019",
+    "eventType": "VEHICLE_DETAIL_VIEW",
+    "sourceConfidence": "OBSERVED_FIRST_PARTY",
+    "quantity": 7,
+    "metadataJson": {
+      "mock": true,
+      "utm": "seed"
+    },
+    "occurredAt": "2026-05-25T12:00:00Z",
+    "createdAt": "2026-05-04T12:00:00Z"
+  },
+  {
+    "id": "chev_dealer_lone_star_rv_0",
+    "dealershipId": "dealer_lone_star_rv",
+    "platformSlug": "microsoft-automotive-ads",
+    "vehicleId": "veh_0041",
+    "listingId": "LONE1008",
+    "eventType": "REPORTED_CLICK",
+    "sourceConfidence": "PLATFORM_REPORTED",
+    "quantity": 6,
+    "metadataJson": {
+      "mock": true,
+      "utm": "seed"
+    },
+    "occurredAt": "2026-04-17T12:00:00Z",
+    "createdAt": "2026-05-06T12:00:00Z"
+  },
+  {
+    "id": "chev_dealer_lone_star_rv_1",
+    "dealershipId": "dealer_lone_star_rv",
+    "platformSlug": "meta-automotive-ads",
+    "vehicleId": "veh_0037",
+    "listingId": "LONE1004",
+    "eventType": "REPORTED_CLICK",
+    "sourceConfidence": "OBSERVED_FIRST_PARTY",
+    "quantity": 3,
+    "metadataJson": {
+      "mock": true,
+      "utm": "seed"
+    },
+    "occurredAt": "2026-04-16T12:00:00Z",
+    "createdAt": "2026-04-13T12:00:00Z"
+  },
+  {
+    "id": "chev_dealer_lone_star_rv_2",
+    "dealershipId": "dealer_lone_star_rv",
+    "platformSlug": "facebook-business-page",
+    "vehicleId": "veh_0036",
+    "listingId": "LONE1003",
+    "eventType": "REPORTED_CONTACT",
+    "sourceConfidence": "PLATFORM_REPORTED",
+    "quantity": 5,
+    "metadataJson": {
+      "mock": true,
+      "utm": "seed"
+    },
+    "occurredAt": "2026-03-19T12:00:00Z",
+    "createdAt": "2026-04-07T12:00:00Z"
+  },
+  {
+    "id": "chev_dealer_lone_star_rv_3",
+    "dealershipId": "dealer_lone_star_rv",
+    "platformSlug": "owned-storefront",
+    "vehicleId": "veh_0035",
+    "listingId": "LONE1002",
+    "eventType": "REPORTED_VIEW",
+    "sourceConfidence": "PLATFORM_REPORTED",
+    "quantity": 6,
+    "metadataJson": {
+      "mock": true,
+      "utm": "seed"
+    },
+    "occurredAt": "2026-05-22T12:00:00Z",
+    "createdAt": "2026-05-02T12:00:00Z"
+  },
+  {
+    "id": "chev_dealer_lone_star_rv_4",
+    "dealershipId": "dealer_lone_star_rv",
+    "platformSlug": "facebook-business-page",
+    "vehicleId": "veh_0035",
+    "listingId": "LONE1002",
+    "eventType": "VEHICLE_IMPRESSION",
+    "sourceConfidence": "OBSERVED_FIRST_PARTY",
+    "quantity": 1,
+    "metadataJson": {
+      "mock": true,
+      "utm": "seed"
+    },
+    "occurredAt": "2026-05-08T12:00:00Z",
+    "createdAt": "2026-04-13T12:00:00Z"
+  },
+  {
+    "id": "chev_dealer_lone_star_rv_5",
+    "dealershipId": "dealer_lone_star_rv",
+    "platformSlug": "owned-storefront",
+    "vehicleId": "veh_0043",
+    "listingId": "LONE1010",
+    "eventType": "VEHICLE_DETAIL_VIEW",
+    "sourceConfidence": "PLATFORM_REPORTED",
+    "quantity": 2,
+    "metadataJson": {
+      "mock": true,
+      "utm": "seed"
+    },
+    "occurredAt": "2026-04-15T12:00:00Z",
+    "createdAt": "2026-04-13T12:00:00Z"
+  },
+  {
+    "id": "chev_dealer_lone_star_rv_6",
+    "dealershipId": "dealer_lone_star_rv",
+    "platformSlug": "owned-storefront",
+    "vehicleId": "veh_0039",
+    "listingId": "LONE1006",
+    "eventType": "REPORTED_VIEW",
+    "sourceConfidence": "OBSERVED_FIRST_PARTY",
+    "quantity": 6,
+    "metadataJson": {
+      "mock": true,
+      "utm": "seed"
+    },
+    "occurredAt": "2026-05-15T12:00:00Z",
+    "createdAt": "2026-03-23T12:00:00Z"
+  },
+  {
+    "id": "chev_dealer_lone_star_rv_7",
+    "dealershipId": "dealer_lone_star_rv",
+    "platformSlug": "google-business-profile",
+    "vehicleId": "veh_0040",
+    "listingId": "LONE1007",
+    "eventType": "VEHICLE_IMPRESSION",
+    "sourceConfidence": "MANUAL_IMPORTED",
+    "quantity": 3,
+    "metadataJson": {
+      "mock": true,
+      "utm": "seed"
+    },
+    "occurredAt": "2026-05-06T12:00:00Z",
+    "createdAt": "2026-03-22T12:00:00Z"
+  },
+  {
+    "id": "chev_dealer_lone_star_rv_8",
+    "dealershipId": "dealer_lone_star_rv",
+    "platformSlug": "meta-automotive-ads",
+    "vehicleId": "veh_0041",
+    "listingId": "LONE1008",
+    "eventType": "REPORTED_CLICK",
+    "sourceConfidence": "PLATFORM_REPORTED",
+    "quantity": 2,
+    "metadataJson": {
+      "mock": true,
+      "utm": "seed"
+    },
+    "occurredAt": "2026-03-12T12:00:00Z",
+    "createdAt": "2026-05-07T12:00:00Z"
+  },
+  {
+    "id": "chev_dealer_lone_star_rv_9",
+    "dealershipId": "dealer_lone_star_rv",
+    "platformSlug": "meta-automotive-ads",
+    "vehicleId": "veh_0039",
+    "listingId": "LONE1006",
+    "eventType": "REPORTED_CLICK",
+    "sourceConfidence": "OBSERVED_FIRST_PARTY",
+    "quantity": 8,
+    "metadataJson": {
+      "mock": true,
+      "utm": "seed"
+    },
+    "occurredAt": "2026-05-05T12:00:00Z",
+    "createdAt": "2026-04-28T12:00:00Z"
+  },
+  {
+    "id": "chev_dealer_lone_star_rv_10",
+    "dealershipId": "dealer_lone_star_rv",
+    "platformSlug": "facebook-business-page",
+    "vehicleId": "veh_0041",
+    "listingId": "LONE1008",
+    "eventType": "REPORTED_CONTACT",
+    "sourceConfidence": "PLATFORM_REPORTED",
+    "quantity": 2,
+    "metadataJson": {
+      "mock": true,
+      "utm": "seed"
+    },
+    "occurredAt": "2026-04-14T12:00:00Z",
+    "createdAt": "2026-03-18T12:00:00Z"
+  },
+  {
+    "id": "chev_dealer_lone_star_rv_11",
+    "dealershipId": "dealer_lone_star_rv",
+    "platformSlug": "owned-storefront",
+    "vehicleId": "veh_0044",
+    "listingId": "LONE1011",
+    "eventType": "VEHICLE_IMPRESSION",
+    "sourceConfidence": "MANUAL_IMPORTED",
+    "quantity": 2,
+    "metadataJson": {
+      "mock": true,
+      "utm": "seed"
+    },
+    "occurredAt": "2026-04-06T12:00:00Z",
+    "createdAt": "2026-04-13T12:00:00Z"
+  },
+  {
+    "id": "chev_dealer_lone_star_rv_12",
+    "dealershipId": "dealer_lone_star_rv",
+    "platformSlug": "microsoft-automotive-ads",
+    "vehicleId": "veh_0035",
+    "listingId": "LONE1002",
+    "eventType": "INQUIRY_SUBMITTED",
+    "sourceConfidence": "PLATFORM_REPORTED",
+    "quantity": 1,
+    "metadataJson": {
+      "mock": true,
+      "utm": "seed"
+    },
+    "occurredAt": "2026-03-20T12:00:00Z",
+    "createdAt": "2026-05-30T12:00:00Z"
+  },
+  {
+    "id": "chev_dealer_lone_star_rv_13",
+    "dealershipId": "dealer_lone_star_rv",
+    "platformSlug": "microsoft-automotive-ads",
+    "vehicleId": "veh_0034",
+    "listingId": "LONE1001",
+    "eventType": "VEHICLE_DETAIL_VIEW",
+    "sourceConfidence": "PLATFORM_REPORTED",
+    "quantity": 2,
+    "metadataJson": {
+      "mock": true,
+      "utm": "seed"
+    },
+    "occurredAt": "2026-05-09T12:00:00Z",
+    "createdAt": "2026-03-30T12:00:00Z"
+  },
+  {
+    "id": "chev_dealer_lone_star_rv_14",
+    "dealershipId": "dealer_lone_star_rv",
+    "platformSlug": "meta-automotive-ads",
+    "vehicleId": "veh_0038",
+    "listingId": "LONE1005",
+    "eventType": "INQUIRY_SUBMITTED",
+    "sourceConfidence": "PLATFORM_REPORTED",
+    "quantity": 2,
+    "metadataJson": {
+      "mock": true,
+      "utm": "seed"
+    },
+    "occurredAt": "2026-05-27T12:00:00Z",
+    "createdAt": "2026-03-21T12:00:00Z"
+  },
+  {
+    "id": "chev_dealer_lone_star_rv_15",
+    "dealershipId": "dealer_lone_star_rv",
+    "platformSlug": "meta-automotive-ads",
+    "vehicleId": "veh_0042",
+    "listingId": "LONE1009",
+    "eventType": "REPORTED_CLICK",
+    "sourceConfidence": "PLATFORM_REPORTED",
+    "quantity": 1,
+    "metadataJson": {
+      "mock": true,
+      "utm": "seed"
+    },
+    "occurredAt": "2026-06-08T12:00:00Z",
+    "createdAt": "2026-03-29T12:00:00Z"
+  },
+  {
+    "id": "chev_dealer_lone_star_rv_16",
+    "dealershipId": "dealer_lone_star_rv",
+    "platformSlug": "meta-automotive-ads",
+    "vehicleId": "veh_0038",
+    "listingId": "LONE1005",
+    "eventType": "VEHICLE_IMPRESSION",
+    "sourceConfidence": "PLATFORM_REPORTED",
+    "quantity": 2,
+    "metadataJson": {
+      "mock": true,
+      "utm": "seed"
+    },
+    "occurredAt": "2026-04-30T12:00:00Z",
+    "createdAt": "2026-05-23T12:00:00Z"
+  },
+  {
+    "id": "chev_dealer_lone_star_rv_17",
+    "dealershipId": "dealer_lone_star_rv",
+    "platformSlug": "meta-automotive-ads",
+    "vehicleId": "veh_0043",
+    "listingId": "LONE1010",
+    "eventType": "REPORTED_CONTACT",
+    "sourceConfidence": "OBSERVED_FIRST_PARTY",
+    "quantity": 7,
+    "metadataJson": {
+      "mock": true,
+      "utm": "seed"
+    },
+    "occurredAt": "2026-05-02T12:00:00Z",
+    "createdAt": "2026-05-29T12:00:00Z"
+  },
+  {
+    "id": "chev_dealer_lone_star_rv_18",
+    "dealershipId": "dealer_lone_star_rv",
+    "platformSlug": "meta-automotive-ads",
+    "vehicleId": "veh_0044",
+    "listingId": "LONE1011",
+    "eventType": "INQUIRY_SUBMITTED",
+    "sourceConfidence": "OBSERVED_FIRST_PARTY",
+    "quantity": 4,
+    "metadataJson": {
+      "mock": true,
+      "utm": "seed"
+    },
+    "occurredAt": "2026-05-01T12:00:00Z",
+    "createdAt": "2026-04-12T12:00:00Z"
+  },
+  {
+    "id": "chev_dealer_lone_star_rv_19",
+    "dealershipId": "dealer_lone_star_rv",
+    "platformSlug": "facebook-business-page",
+    "vehicleId": "veh_0043",
+    "listingId": "LONE1010",
+    "eventType": "VEHICLE_DETAIL_VIEW",
+    "sourceConfidence": "OBSERVED_FIRST_PARTY",
+    "quantity": 8,
+    "metadataJson": {
+      "mock": true,
+      "utm": "seed"
+    },
+    "occurredAt": "2026-03-26T12:00:00Z",
+    "createdAt": "2026-06-02T12:00:00Z"
+  },
+  {
+    "id": "chev_dealer_lone_star_rv_20",
+    "dealershipId": "dealer_lone_star_rv",
+    "platformSlug": "microsoft-automotive-ads",
+    "vehicleId": "veh_0036",
+    "listingId": "LONE1003",
+    "eventType": "REPORTED_CONTACT",
+    "sourceConfidence": "OBSERVED_FIRST_PARTY",
+    "quantity": 4,
+    "metadataJson": {
+      "mock": true,
+      "utm": "seed"
+    },
+    "occurredAt": "2026-04-09T12:00:00Z",
+    "createdAt": "2026-04-09T12:00:00Z"
+  },
+  {
+    "id": "chev_dealer_lone_star_rv_21",
+    "dealershipId": "dealer_lone_star_rv",
+    "platformSlug": "facebook-business-page",
+    "vehicleId": "veh_0041",
+    "listingId": "LONE1008",
+    "eventType": "INQUIRY_SUBMITTED",
+    "sourceConfidence": "OBSERVED_FIRST_PARTY",
+    "quantity": 3,
+    "metadataJson": {
+      "mock": true,
+      "utm": "seed"
+    },
+    "occurredAt": "2026-03-16T12:00:00Z",
+    "createdAt": "2026-05-06T12:00:00Z"
+  },
+  {
+    "id": "chev_dealer_lone_star_rv_22",
+    "dealershipId": "dealer_lone_star_rv",
+    "platformSlug": "meta-automotive-ads",
+    "vehicleId": "veh_0033",
+    "listingId": "LONE1000",
+    "eventType": "REPORTED_CONTACT",
+    "sourceConfidence": "MANUAL_IMPORTED",
+    "quantity": 2,
+    "metadataJson": {
+      "mock": true,
+      "utm": "seed"
+    },
+    "occurredAt": "2026-05-21T12:00:00Z",
+    "createdAt": "2026-06-09T12:00:00Z"
+  },
+  {
+    "id": "chev_dealer_lone_star_rv_23",
+    "dealershipId": "dealer_lone_star_rv",
+    "platformSlug": "microsoft-automotive-ads",
+    "vehicleId": "veh_0042",
+    "listingId": "LONE1009",
+    "eventType": "REPORTED_CLICK",
+    "sourceConfidence": "PLATFORM_REPORTED",
+    "quantity": 1,
+    "metadataJson": {
+      "mock": true,
+      "utm": "seed"
+    },
+    "occurredAt": "2026-03-26T12:00:00Z",
+    "createdAt": "2026-04-06T12:00:00Z"
+  },
+  {
+    "id": "chev_dealer_lone_star_rv_24",
+    "dealershipId": "dealer_lone_star_rv",
+    "platformSlug": "meta-automotive-ads",
+    "vehicleId": "veh_0041",
+    "listingId": "LONE1008",
+    "eventType": "VEHICLE_DETAIL_VIEW",
+    "sourceConfidence": "MANUAL_IMPORTED",
+    "quantity": 2,
+    "metadataJson": {
+      "mock": true,
+      "utm": "seed"
+    },
+    "occurredAt": "2026-05-19T12:00:00Z",
+    "createdAt": "2026-04-21T12:00:00Z"
+  },
+  {
+    "id": "chev_dealer_lone_star_rv_25",
+    "dealershipId": "dealer_lone_star_rv",
+    "platformSlug": "facebook-business-page",
+    "vehicleId": "veh_0033",
+    "listingId": "LONE1000",
+    "eventType": "VEHICLE_IMPRESSION",
+    "sourceConfidence": "OBSERVED_FIRST_PARTY",
+    "quantity": 7,
+    "metadataJson": {
+      "mock": true,
+      "utm": "seed"
+    },
+    "occurredAt": "2026-04-16T12:00:00Z",
+    "createdAt": "2026-04-10T12:00:00Z"
+  },
+  {
+    "id": "chev_dealer_lone_star_rv_26",
+    "dealershipId": "dealer_lone_star_rv",
+    "platformSlug": "google-business-profile",
+    "vehicleId": "veh_0037",
+    "listingId": "LONE1004",
+    "eventType": "VEHICLE_IMPRESSION",
+    "sourceConfidence": "OBSERVED_FIRST_PARTY",
+    "quantity": 2,
+    "metadataJson": {
+      "mock": true,
+      "utm": "seed"
+    },
+    "occurredAt": "2026-03-14T12:00:00Z",
+    "createdAt": "2026-05-05T12:00:00Z"
+  },
+  {
+    "id": "chev_dealer_lone_star_rv_27",
+    "dealershipId": "dealer_lone_star_rv",
+    "platformSlug": "microsoft-automotive-ads",
+    "vehicleId": "veh_0034",
+    "listingId": "LONE1001",
+    "eventType": "REPORTED_VIEW",
+    "sourceConfidence": "PLATFORM_REPORTED",
+    "quantity": 4,
+    "metadataJson": {
+      "mock": true,
+      "utm": "seed"
+    },
+    "occurredAt": "2026-04-21T12:00:00Z",
+    "createdAt": "2026-03-16T12:00:00Z"
+  },
+  {
+    "id": "chev_dealer_lone_star_rv_28",
+    "dealershipId": "dealer_lone_star_rv",
+    "platformSlug": "facebook-business-page",
+    "vehicleId": "veh_0034",
+    "listingId": "LONE1001",
+    "eventType": "INQUIRY_SUBMITTED",
+    "sourceConfidence": "PLATFORM_REPORTED",
+    "quantity": 8,
+    "metadataJson": {
+      "mock": true,
+      "utm": "seed"
+    },
+    "occurredAt": "2026-05-31T12:00:00Z",
+    "createdAt": "2026-03-30T12:00:00Z"
+  },
+  {
+    "id": "chev_dealer_lone_star_rv_29",
+    "dealershipId": "dealer_lone_star_rv",
+    "platformSlug": "meta-automotive-ads",
+    "vehicleId": "veh_0042",
+    "listingId": "LONE1009",
+    "eventType": "REPORTED_CLICK",
+    "sourceConfidence": "OBSERVED_FIRST_PARTY",
+    "quantity": 3,
+    "metadataJson": {
+      "mock": true,
+      "utm": "seed"
+    },
+    "occurredAt": "2026-04-28T12:00:00Z",
+    "createdAt": "2026-06-07T12:00:00Z"
+  },
+  {
+    "id": "chev_dealer_lone_star_rv_30",
+    "dealershipId": "dealer_lone_star_rv",
+    "platformSlug": "google-business-profile",
+    "vehicleId": "veh_0040",
+    "listingId": "LONE1007",
+    "eventType": "INQUIRY_SUBMITTED",
+    "sourceConfidence": "PLATFORM_REPORTED",
+    "quantity": 7,
+    "metadataJson": {
+      "mock": true,
+      "utm": "seed"
+    },
+    "occurredAt": "2026-06-03T12:00:00Z",
+    "createdAt": "2026-05-07T12:00:00Z"
+  },
+  {
+    "id": "chev_dealer_lone_star_rv_31",
+    "dealershipId": "dealer_lone_star_rv",
+    "platformSlug": "facebook-business-page",
+    "vehicleId": "veh_0037",
+    "listingId": "LONE1004",
+    "eventType": "REPORTED_VIEW",
+    "sourceConfidence": "OBSERVED_FIRST_PARTY",
+    "quantity": 5,
+    "metadataJson": {
+      "mock": true,
+      "utm": "seed"
+    },
+    "occurredAt": "2026-05-10T12:00:00Z",
+    "createdAt": "2026-04-25T12:00:00Z"
+  },
+  {
+    "id": "chev_dealer_lone_star_rv_32",
+    "dealershipId": "dealer_lone_star_rv",
+    "platformSlug": "microsoft-automotive-ads",
+    "vehicleId": "veh_0038",
+    "listingId": "LONE1005",
+    "eventType": "REPORTED_CONTACT",
+    "sourceConfidence": "PLATFORM_REPORTED",
+    "quantity": 7,
+    "metadataJson": {
+      "mock": true,
+      "utm": "seed"
+    },
+    "occurredAt": "2026-04-07T12:00:00Z",
+    "createdAt": "2026-06-01T12:00:00Z"
+  },
+  {
+    "id": "chev_dealer_lone_star_rv_33",
+    "dealershipId": "dealer_lone_star_rv",
+    "platformSlug": "microsoft-automotive-ads",
+    "vehicleId": "veh_0040",
+    "listingId": "LONE1007",
+    "eventType": "REPORTED_CONTACT",
+    "sourceConfidence": "PLATFORM_REPORTED",
+    "quantity": 2,
+    "metadataJson": {
+      "mock": true,
+      "utm": "seed"
+    },
+    "occurredAt": "2026-04-10T12:00:00Z",
+    "createdAt": "2026-04-20T12:00:00Z"
+  },
+  {
+    "id": "chev_dealer_lone_star_rv_34",
+    "dealershipId": "dealer_lone_star_rv",
+    "platformSlug": "microsoft-automotive-ads",
+    "vehicleId": "veh_0041",
+    "listingId": "LONE1008",
+    "eventType": "REPORTED_CLICK",
+    "sourceConfidence": "PLATFORM_REPORTED",
+    "quantity": 5,
+    "metadataJson": {
+      "mock": true,
+      "utm": "seed"
+    },
+    "occurredAt": "2026-03-27T12:00:00Z",
+    "createdAt": "2026-03-24T12:00:00Z"
+  },
+  {
+    "id": "chev_dealer_lone_star_rv_35",
+    "dealershipId": "dealer_lone_star_rv",
+    "platformSlug": "microsoft-automotive-ads",
+    "vehicleId": "veh_0036",
+    "listingId": "LONE1003",
+    "eventType": "REPORTED_CLICK",
+    "sourceConfidence": "MANUAL_IMPORTED",
+    "quantity": 7,
+    "metadataJson": {
+      "mock": true,
+      "utm": "seed"
+    },
+    "occurredAt": "2026-05-25T12:00:00Z",
+    "createdAt": "2026-03-15T12:00:00Z"
+  },
+  {
+    "id": "chev_dealer_lone_star_rv_36",
+    "dealershipId": "dealer_lone_star_rv",
+    "platformSlug": "google-business-profile",
+    "vehicleId": "veh_0035",
+    "listingId": "LONE1002",
+    "eventType": "REPORTED_CONTACT",
+    "sourceConfidence": "PLATFORM_REPORTED",
+    "quantity": 8,
+    "metadataJson": {
+      "mock": true,
+      "utm": "seed"
+    },
+    "occurredAt": "2026-03-24T12:00:00Z",
+    "createdAt": "2026-03-18T12:00:00Z"
+  },
+  {
+    "id": "chev_dealer_lone_star_rv_37",
+    "dealershipId": "dealer_lone_star_rv",
+    "platformSlug": "meta-automotive-ads",
+    "vehicleId": "veh_0038",
+    "listingId": "LONE1005",
+    "eventType": "REPORTED_CONTACT",
+    "sourceConfidence": "OBSERVED_FIRST_PARTY",
+    "quantity": 1,
+    "metadataJson": {
+      "mock": true,
+      "utm": "seed"
+    },
+    "occurredAt": "2026-05-18T12:00:00Z",
+    "createdAt": "2026-04-09T12:00:00Z"
+  },
+  {
+    "id": "chev_dealer_lone_star_rv_38",
+    "dealershipId": "dealer_lone_star_rv",
+    "platformSlug": "facebook-business-page",
+    "vehicleId": "veh_0043",
+    "listingId": "LONE1010",
+    "eventType": "REPORTED_CLICK",
+    "sourceConfidence": "PLATFORM_REPORTED",
+    "quantity": 1,
+    "metadataJson": {
+      "mock": true,
+      "utm": "seed"
+    },
+    "occurredAt": "2026-05-28T12:00:00Z",
+    "createdAt": "2026-03-28T12:00:00Z"
+  },
+  {
+    "id": "chev_dealer_lone_star_rv_39",
+    "dealershipId": "dealer_lone_star_rv",
+    "platformSlug": "microsoft-automotive-ads",
+    "vehicleId": "veh_0033",
+    "listingId": "LONE1000",
+    "eventType": "REPORTED_CLICK",
+    "sourceConfidence": "OBSERVED_FIRST_PARTY",
+    "quantity": 8,
+    "metadataJson": {
+      "mock": true,
+      "utm": "seed"
+    },
+    "occurredAt": "2026-04-15T12:00:00Z",
+    "createdAt": "2026-03-16T12:00:00Z"
+  },
+  {
+    "id": "chev_dealer_lone_star_rv_40",
+    "dealershipId": "dealer_lone_star_rv",
+    "platformSlug": "owned-storefront",
+    "vehicleId": "veh_0036",
+    "listingId": "LONE1003",
+    "eventType": "VEHICLE_DETAIL_VIEW",
+    "sourceConfidence": "MANUAL_IMPORTED",
+    "quantity": 5,
+    "metadataJson": {
+      "mock": true,
+      "utm": "seed"
+    },
+    "occurredAt": "2026-03-31T12:00:00Z",
+    "createdAt": "2026-03-13T12:00:00Z"
+  },
+  {
+    "id": "chev_dealer_lone_star_rv_41",
+    "dealershipId": "dealer_lone_star_rv",
+    "platformSlug": "meta-automotive-ads",
+    "vehicleId": "veh_0040",
+    "listingId": "LONE1007",
+    "eventType": "INQUIRY_SUBMITTED",
+    "sourceConfidence": "PLATFORM_REPORTED",
+    "quantity": 5,
+    "metadataJson": {
+      "mock": true,
+      "utm": "seed"
+    },
+    "occurredAt": "2026-04-10T12:00:00Z",
+    "createdAt": "2026-05-23T12:00:00Z"
+  },
+  {
+    "id": "chev_dealer_lone_star_rv_42",
+    "dealershipId": "dealer_lone_star_rv",
+    "platformSlug": "meta-automotive-ads",
+    "vehicleId": "veh_0033",
+    "listingId": "LONE1000",
+    "eventType": "VEHICLE_IMPRESSION",
+    "sourceConfidence": "PLATFORM_REPORTED",
+    "quantity": 5,
+    "metadataJson": {
+      "mock": true,
+      "utm": "seed"
+    },
+    "occurredAt": "2026-03-19T12:00:00Z",
+    "createdAt": "2026-05-28T12:00:00Z"
+  },
+  {
+    "id": "chev_dealer_lone_star_rv_43",
+    "dealershipId": "dealer_lone_star_rv",
+    "platformSlug": "meta-automotive-ads",
+    "vehicleId": "veh_0033",
+    "listingId": "LONE1000",
+    "eventType": "REPORTED_CLICK",
+    "sourceConfidence": "OBSERVED_FIRST_PARTY",
+    "quantity": 4,
+    "metadataJson": {
+      "mock": true,
+      "utm": "seed"
+    },
+    "occurredAt": "2026-05-14T12:00:00Z",
+    "createdAt": "2026-05-16T12:00:00Z"
+  },
+  {
+    "id": "chev_dealer_lone_star_rv_44",
+    "dealershipId": "dealer_lone_star_rv",
+    "platformSlug": "meta-automotive-ads",
+    "vehicleId": "veh_0044",
+    "listingId": "LONE1011",
+    "eventType": "INQUIRY_SUBMITTED",
+    "sourceConfidence": "OBSERVED_FIRST_PARTY",
+    "quantity": 6,
+    "metadataJson": {
+      "mock": true,
+      "utm": "seed"
+    },
+    "occurredAt": "2026-04-12T12:00:00Z",
+    "createdAt": "2026-03-26T12:00:00Z"
+  },
+  {
+    "id": "chev_dealer_lone_star_rv_45",
+    "dealershipId": "dealer_lone_star_rv",
+    "platformSlug": "owned-storefront",
+    "vehicleId": "veh_0042",
+    "listingId": "LONE1009",
+    "eventType": "REPORTED_CLICK",
+    "sourceConfidence": "PLATFORM_REPORTED",
+    "quantity": 6,
+    "metadataJson": {
+      "mock": true,
+      "utm": "seed"
+    },
+    "occurredAt": "2026-05-04T12:00:00Z",
+    "createdAt": "2026-05-11T12:00:00Z"
+  },
+  {
+    "id": "chev_dealer_lone_star_rv_46",
+    "dealershipId": "dealer_lone_star_rv",
+    "platformSlug": "owned-storefront",
+    "vehicleId": "veh_0037",
+    "listingId": "LONE1004",
+    "eventType": "VEHICLE_DETAIL_VIEW",
+    "sourceConfidence": "OBSERVED_FIRST_PARTY",
+    "quantity": 2,
+    "metadataJson": {
+      "mock": true,
+      "utm": "seed"
+    },
+    "occurredAt": "2026-05-09T12:00:00Z",
+    "createdAt": "2026-04-23T12:00:00Z"
+  },
+  {
+    "id": "chev_dealer_lone_star_rv_47",
+    "dealershipId": "dealer_lone_star_rv",
+    "platformSlug": "owned-storefront",
+    "vehicleId": "veh_0039",
+    "listingId": "LONE1006",
+    "eventType": "INQUIRY_SUBMITTED",
+    "sourceConfidence": "OBSERVED_FIRST_PARTY",
+    "quantity": 8,
+    "metadataJson": {
+      "mock": true,
+      "utm": "seed"
+    },
+    "occurredAt": "2026-04-18T12:00:00Z",
+    "createdAt": "2026-05-26T12:00:00Z"
+  },
+  {
+    "id": "chev_dealer_lone_star_rv_48",
+    "dealershipId": "dealer_lone_star_rv",
+    "platformSlug": "microsoft-automotive-ads",
+    "vehicleId": "veh_0036",
+    "listingId": "LONE1003",
+    "eventType": "REPORTED_CONTACT",
+    "sourceConfidence": "OBSERVED_FIRST_PARTY",
+    "quantity": 8,
+    "metadataJson": {
+      "mock": true,
+      "utm": "seed"
+    },
+    "occurredAt": "2026-05-11T12:00:00Z",
+    "createdAt": "2026-03-20T12:00:00Z"
+  },
+  {
+    "id": "chev_dealer_lone_star_rv_49",
+    "dealershipId": "dealer_lone_star_rv",
+    "platformSlug": "google-business-profile",
+    "vehicleId": "veh_0044",
+    "listingId": "LONE1011",
+    "eventType": "REPORTED_VIEW",
+    "sourceConfidence": "PLATFORM_REPORTED",
+    "quantity": 5,
+    "metadataJson": {
+      "mock": true,
+      "utm": "seed"
+    },
+    "occurredAt": "2026-04-15T12:00:00Z",
+    "createdAt": "2026-04-01T12:00:00Z"
+  },
+  {
+    "id": "chev_dealer_coastal_boats_0",
+    "dealershipId": "dealer_coastal_boats",
+    "platformSlug": "meta-automotive-ads",
+    "vehicleId": "veh_0045",
+    "listingId": "COASTAL1000",
+    "eventType": "REPORTED_VIEW",
+    "sourceConfidence": "OBSERVED_FIRST_PARTY",
+    "quantity": 6,
+    "metadataJson": {
+      "mock": true,
+      "utm": "seed"
+    },
+    "occurredAt": "2026-05-24T12:00:00Z",
+    "createdAt": "2026-03-22T12:00:00Z"
+  },
+  {
+    "id": "chev_dealer_coastal_boats_1",
+    "dealershipId": "dealer_coastal_boats",
+    "platformSlug": "facebook-business-page",
+    "vehicleId": "veh_0045",
+    "listingId": "COASTAL1000",
+    "eventType": "VEHICLE_IMPRESSION",
+    "sourceConfidence": "PLATFORM_REPORTED",
+    "quantity": 4,
+    "metadataJson": {
+      "mock": true,
+      "utm": "seed"
+    },
+    "occurredAt": "2026-06-02T12:00:00Z",
+    "createdAt": "2026-04-30T12:00:00Z"
+  },
+  {
+    "id": "chev_dealer_coastal_boats_2",
+    "dealershipId": "dealer_coastal_boats",
+    "platformSlug": "microsoft-automotive-ads",
+    "vehicleId": "veh_0052",
+    "listingId": "COASTAL1007",
+    "eventType": "REPORTED_VIEW",
+    "sourceConfidence": "OBSERVED_FIRST_PARTY",
+    "quantity": 2,
+    "metadataJson": {
+      "mock": true,
+      "utm": "seed"
+    },
+    "occurredAt": "2026-03-25T12:00:00Z",
+    "createdAt": "2026-04-10T12:00:00Z"
+  },
+  {
+    "id": "chev_dealer_coastal_boats_3",
+    "dealershipId": "dealer_coastal_boats",
+    "platformSlug": "facebook-business-page",
+    "vehicleId": "veh_0048",
+    "listingId": "COASTAL1003",
+    "eventType": "VEHICLE_IMPRESSION",
+    "sourceConfidence": "MANUAL_IMPORTED",
+    "quantity": 3,
+    "metadataJson": {
+      "mock": true,
+      "utm": "seed"
+    },
+    "occurredAt": "2026-06-08T12:00:00Z",
+    "createdAt": "2026-05-08T12:00:00Z"
+  },
+  {
+    "id": "chev_dealer_coastal_boats_4",
+    "dealershipId": "dealer_coastal_boats",
+    "platformSlug": "owned-storefront",
+    "vehicleId": "veh_0047",
+    "listingId": "COASTAL1002",
+    "eventType": "VEHICLE_DETAIL_VIEW",
+    "sourceConfidence": "PLATFORM_REPORTED",
+    "quantity": 3,
+    "metadataJson": {
+      "mock": true,
+      "utm": "seed"
+    },
+    "occurredAt": "2026-04-30T12:00:00Z",
+    "createdAt": "2026-05-14T12:00:00Z"
+  },
+  {
+    "id": "chev_dealer_coastal_boats_5",
+    "dealershipId": "dealer_coastal_boats",
+    "platformSlug": "google-business-profile",
+    "vehicleId": "veh_0050",
+    "listingId": "COASTAL1005",
+    "eventType": "INQUIRY_SUBMITTED",
+    "sourceConfidence": "PLATFORM_REPORTED",
+    "quantity": 1,
+    "metadataJson": {
+      "mock": true,
+      "utm": "seed"
+    },
+    "occurredAt": "2026-03-20T12:00:00Z",
+    "createdAt": "2026-05-01T12:00:00Z"
+  },
+  {
+    "id": "chev_dealer_coastal_boats_6",
+    "dealershipId": "dealer_coastal_boats",
+    "platformSlug": "owned-storefront",
+    "vehicleId": "veh_0045",
+    "listingId": "COASTAL1000",
+    "eventType": "REPORTED_VIEW",
+    "sourceConfidence": "PLATFORM_REPORTED",
+    "quantity": 1,
+    "metadataJson": {
+      "mock": true,
+      "utm": "seed"
+    },
+    "occurredAt": "2026-03-13T12:00:00Z",
+    "createdAt": "2026-03-12T12:00:00Z"
+  },
+  {
+    "id": "chev_dealer_coastal_boats_7",
+    "dealershipId": "dealer_coastal_boats",
+    "platformSlug": "owned-storefront",
+    "vehicleId": "veh_0055",
+    "listingId": "COASTAL1010",
+    "eventType": "VEHICLE_IMPRESSION",
+    "sourceConfidence": "PLATFORM_REPORTED",
+    "quantity": 4,
+    "metadataJson": {
+      "mock": true,
+      "utm": "seed"
+    },
+    "occurredAt": "2026-04-28T12:00:00Z",
+    "createdAt": "2026-03-14T12:00:00Z"
+  },
+  {
+    "id": "chev_dealer_coastal_boats_8",
+    "dealershipId": "dealer_coastal_boats",
+    "platformSlug": "facebook-business-page",
+    "vehicleId": "veh_0049",
+    "listingId": "COASTAL1004",
+    "eventType": "REPORTED_VIEW",
+    "sourceConfidence": "MANUAL_IMPORTED",
+    "quantity": 4,
+    "metadataJson": {
+      "mock": true,
+      "utm": "seed"
+    },
+    "occurredAt": "2026-04-11T12:00:00Z",
+    "createdAt": "2026-03-27T12:00:00Z"
+  },
+  {
+    "id": "chev_dealer_coastal_boats_9",
+    "dealershipId": "dealer_coastal_boats",
+    "platformSlug": "meta-automotive-ads",
+    "vehicleId": "veh_0056",
+    "listingId": "COASTAL1011",
+    "eventType": "INQUIRY_SUBMITTED",
+    "sourceConfidence": "PLATFORM_REPORTED",
+    "quantity": 4,
+    "metadataJson": {
+      "mock": true,
+      "utm": "seed"
+    },
+    "occurredAt": "2026-05-25T12:00:00Z",
+    "createdAt": "2026-06-01T12:00:00Z"
+  },
+  {
+    "id": "chev_dealer_coastal_boats_10",
+    "dealershipId": "dealer_coastal_boats",
+    "platformSlug": "google-business-profile",
+    "vehicleId": "veh_0048",
+    "listingId": "COASTAL1003",
+    "eventType": "REPORTED_CLICK",
+    "sourceConfidence": "PLATFORM_REPORTED",
+    "quantity": 8,
+    "metadataJson": {
+      "mock": true,
+      "utm": "seed"
+    },
+    "occurredAt": "2026-05-22T12:00:00Z",
+    "createdAt": "2026-04-19T12:00:00Z"
+  },
+  {
+    "id": "chev_dealer_coastal_boats_11",
+    "dealershipId": "dealer_coastal_boats",
+    "platformSlug": "owned-storefront",
+    "vehicleId": "veh_0048",
+    "listingId": "COASTAL1003",
+    "eventType": "REPORTED_VIEW",
+    "sourceConfidence": "PLATFORM_REPORTED",
+    "quantity": 8,
+    "metadataJson": {
+      "mock": true,
+      "utm": "seed"
+    },
+    "occurredAt": "2026-05-26T12:00:00Z",
+    "createdAt": "2026-04-08T12:00:00Z"
+  },
+  {
+    "id": "chev_dealer_coastal_boats_12",
+    "dealershipId": "dealer_coastal_boats",
+    "platformSlug": "facebook-business-page",
+    "vehicleId": "veh_0055",
+    "listingId": "COASTAL1010",
+    "eventType": "REPORTED_CONTACT",
+    "sourceConfidence": "OBSERVED_FIRST_PARTY",
+    "quantity": 2,
+    "metadataJson": {
+      "mock": true,
+      "utm": "seed"
+    },
+    "occurredAt": "2026-06-09T12:00:00Z",
+    "createdAt": "2026-04-08T12:00:00Z"
+  },
+  {
+    "id": "chev_dealer_coastal_boats_13",
+    "dealershipId": "dealer_coastal_boats",
+    "platformSlug": "meta-automotive-ads",
+    "vehicleId": "veh_0052",
+    "listingId": "COASTAL1007",
+    "eventType": "INQUIRY_SUBMITTED",
+    "sourceConfidence": "OBSERVED_FIRST_PARTY",
+    "quantity": 6,
+    "metadataJson": {
+      "mock": true,
+      "utm": "seed"
+    },
+    "occurredAt": "2026-03-26T12:00:00Z",
+    "createdAt": "2026-05-14T12:00:00Z"
+  },
+  {
+    "id": "chev_dealer_coastal_boats_14",
+    "dealershipId": "dealer_coastal_boats",
+    "platformSlug": "meta-automotive-ads",
+    "vehicleId": "veh_0053",
+    "listingId": "COASTAL1008",
+    "eventType": "VEHICLE_DETAIL_VIEW",
+    "sourceConfidence": "PLATFORM_REPORTED",
+    "quantity": 4,
+    "metadataJson": {
+      "mock": true,
+      "utm": "seed"
+    },
+    "occurredAt": "2026-04-26T12:00:00Z",
+    "createdAt": "2026-06-05T12:00:00Z"
+  },
+  {
+    "id": "chev_dealer_coastal_boats_15",
+    "dealershipId": "dealer_coastal_boats",
+    "platformSlug": "google-business-profile",
+    "vehicleId": "veh_0050",
+    "listingId": "COASTAL1005",
+    "eventType": "INQUIRY_SUBMITTED",
+    "sourceConfidence": "PLATFORM_REPORTED",
+    "quantity": 2,
+    "metadataJson": {
+      "mock": true,
+      "utm": "seed"
+    },
+    "occurredAt": "2026-06-09T12:00:00Z",
+    "createdAt": "2026-05-16T12:00:00Z"
+  },
+  {
+    "id": "chev_dealer_coastal_boats_16",
+    "dealershipId": "dealer_coastal_boats",
+    "platformSlug": "google-business-profile",
+    "vehicleId": "veh_0052",
+    "listingId": "COASTAL1007",
+    "eventType": "VEHICLE_DETAIL_VIEW",
+    "sourceConfidence": "PLATFORM_REPORTED",
+    "quantity": 3,
+    "metadataJson": {
+      "mock": true,
+      "utm": "seed"
+    },
+    "occurredAt": "2026-03-14T12:00:00Z",
+    "createdAt": "2026-04-28T12:00:00Z"
+  },
+  {
+    "id": "chev_dealer_coastal_boats_17",
+    "dealershipId": "dealer_coastal_boats",
+    "platformSlug": "google-business-profile",
+    "vehicleId": "veh_0046",
+    "listingId": "COASTAL1001",
+    "eventType": "VEHICLE_DETAIL_VIEW",
+    "sourceConfidence": "PLATFORM_REPORTED",
+    "quantity": 3,
+    "metadataJson": {
+      "mock": true,
+      "utm": "seed"
+    },
+    "occurredAt": "2026-04-10T12:00:00Z",
+    "createdAt": "2026-06-04T12:00:00Z"
+  },
+  {
+    "id": "chev_dealer_coastal_boats_18",
+    "dealershipId": "dealer_coastal_boats",
+    "platformSlug": "owned-storefront",
+    "vehicleId": "veh_0050",
+    "listingId": "COASTAL1005",
+    "eventType": "REPORTED_CONTACT",
+    "sourceConfidence": "PLATFORM_REPORTED",
+    "quantity": 3,
+    "metadataJson": {
+      "mock": true,
+      "utm": "seed"
+    },
+    "occurredAt": "2026-03-24T12:00:00Z",
+    "createdAt": "2026-04-08T12:00:00Z"
+  },
+  {
+    "id": "chev_dealer_coastal_boats_19",
+    "dealershipId": "dealer_coastal_boats",
+    "platformSlug": "facebook-business-page",
+    "vehicleId": "veh_0054",
+    "listingId": "COASTAL1009",
+    "eventType": "VEHICLE_IMPRESSION",
+    "sourceConfidence": "OBSERVED_FIRST_PARTY",
+    "quantity": 6,
+    "metadataJson": {
+      "mock": true,
+      "utm": "seed"
+    },
+    "occurredAt": "2026-05-22T12:00:00Z",
+    "createdAt": "2026-05-05T12:00:00Z"
+  },
+  {
+    "id": "chev_dealer_coastal_boats_20",
+    "dealershipId": "dealer_coastal_boats",
+    "platformSlug": "google-business-profile",
+    "vehicleId": "veh_0045",
+    "listingId": "COASTAL1000",
+    "eventType": "REPORTED_CONTACT",
+    "sourceConfidence": "OBSERVED_FIRST_PARTY",
+    "quantity": 6,
+    "metadataJson": {
+      "mock": true,
+      "utm": "seed"
+    },
+    "occurredAt": "2026-03-14T12:00:00Z",
+    "createdAt": "2026-04-22T12:00:00Z"
+  },
+  {
+    "id": "chev_dealer_coastal_boats_21",
+    "dealershipId": "dealer_coastal_boats",
+    "platformSlug": "microsoft-automotive-ads",
+    "vehicleId": "veh_0052",
+    "listingId": "COASTAL1007",
+    "eventType": "REPORTED_VIEW",
+    "sourceConfidence": "MANUAL_IMPORTED",
+    "quantity": 1,
+    "metadataJson": {
+      "mock": true,
+      "utm": "seed"
+    },
+    "occurredAt": "2026-05-03T12:00:00Z",
+    "createdAt": "2026-03-12T12:00:00Z"
+  },
+  {
+    "id": "chev_dealer_coastal_boats_22",
+    "dealershipId": "dealer_coastal_boats",
+    "platformSlug": "microsoft-automotive-ads",
+    "vehicleId": "veh_0055",
+    "listingId": "COASTAL1010",
+    "eventType": "VEHICLE_DETAIL_VIEW",
+    "sourceConfidence": "PLATFORM_REPORTED",
+    "quantity": 3,
+    "metadataJson": {
+      "mock": true,
+      "utm": "seed"
+    },
+    "occurredAt": "2026-04-03T12:00:00Z",
+    "createdAt": "2026-04-21T12:00:00Z"
+  },
+  {
+    "id": "chev_dealer_coastal_boats_23",
+    "dealershipId": "dealer_coastal_boats",
+    "platformSlug": "owned-storefront",
+    "vehicleId": "veh_0051",
+    "listingId": "COASTAL1006",
+    "eventType": "VEHICLE_DETAIL_VIEW",
+    "sourceConfidence": "OBSERVED_FIRST_PARTY",
+    "quantity": 3,
+    "metadataJson": {
+      "mock": true,
+      "utm": "seed"
+    },
+    "occurredAt": "2026-04-27T12:00:00Z",
+    "createdAt": "2026-05-25T12:00:00Z"
+  },
+  {
+    "id": "chev_dealer_coastal_boats_24",
+    "dealershipId": "dealer_coastal_boats",
+    "platformSlug": "owned-storefront",
+    "vehicleId": "veh_0045",
+    "listingId": "COASTAL1000",
+    "eventType": "VEHICLE_IMPRESSION",
+    "sourceConfidence": "PLATFORM_REPORTED",
+    "quantity": 8,
+    "metadataJson": {
+      "mock": true,
+      "utm": "seed"
+    },
+    "occurredAt": "2026-06-06T12:00:00Z",
+    "createdAt": "2026-04-07T12:00:00Z"
+  },
+  {
+    "id": "chev_dealer_coastal_boats_25",
+    "dealershipId": "dealer_coastal_boats",
+    "platformSlug": "meta-automotive-ads",
+    "vehicleId": "veh_0054",
+    "listingId": "COASTAL1009",
+    "eventType": "VEHICLE_IMPRESSION",
+    "sourceConfidence": "OBSERVED_FIRST_PARTY",
+    "quantity": 5,
+    "metadataJson": {
+      "mock": true,
+      "utm": "seed"
+    },
+    "occurredAt": "2026-05-11T12:00:00Z",
+    "createdAt": "2026-05-28T12:00:00Z"
+  },
+  {
+    "id": "chev_dealer_coastal_boats_26",
+    "dealershipId": "dealer_coastal_boats",
+    "platformSlug": "meta-automotive-ads",
+    "vehicleId": "veh_0048",
+    "listingId": "COASTAL1003",
+    "eventType": "REPORTED_VIEW",
+    "sourceConfidence": "MANUAL_IMPORTED",
+    "quantity": 1,
+    "metadataJson": {
+      "mock": true,
+      "utm": "seed"
+    },
+    "occurredAt": "2026-06-06T12:00:00Z",
+    "createdAt": "2026-05-06T12:00:00Z"
+  },
+  {
+    "id": "chev_dealer_coastal_boats_27",
+    "dealershipId": "dealer_coastal_boats",
+    "platformSlug": "meta-automotive-ads",
+    "vehicleId": "veh_0050",
+    "listingId": "COASTAL1005",
+    "eventType": "REPORTED_CONTACT",
+    "sourceConfidence": "OBSERVED_FIRST_PARTY",
+    "quantity": 1,
+    "metadataJson": {
+      "mock": true,
+      "utm": "seed"
+    },
+    "occurredAt": "2026-05-30T12:00:00Z",
+    "createdAt": "2026-05-26T12:00:00Z"
+  },
+  {
+    "id": "chev_dealer_coastal_boats_28",
+    "dealershipId": "dealer_coastal_boats",
+    "platformSlug": "google-business-profile",
+    "vehicleId": "veh_0050",
+    "listingId": "COASTAL1005",
+    "eventType": "VEHICLE_DETAIL_VIEW",
+    "sourceConfidence": "MANUAL_IMPORTED",
+    "quantity": 1,
+    "metadataJson": {
+      "mock": true,
+      "utm": "seed"
+    },
+    "occurredAt": "2026-04-06T12:00:00Z",
+    "createdAt": "2026-04-27T12:00:00Z"
+  },
+  {
+    "id": "chev_dealer_coastal_boats_29",
+    "dealershipId": "dealer_coastal_boats",
+    "platformSlug": "microsoft-automotive-ads",
+    "vehicleId": "veh_0054",
+    "listingId": "COASTAL1009",
+    "eventType": "REPORTED_CLICK",
+    "sourceConfidence": "OBSERVED_FIRST_PARTY",
+    "quantity": 4,
+    "metadataJson": {
+      "mock": true,
+      "utm": "seed"
+    },
+    "occurredAt": "2026-06-02T12:00:00Z",
+    "createdAt": "2026-04-28T12:00:00Z"
+  },
+  {
+    "id": "chev_dealer_coastal_boats_30",
+    "dealershipId": "dealer_coastal_boats",
+    "platformSlug": "facebook-business-page",
+    "vehicleId": "veh_0045",
+    "listingId": "COASTAL1000",
+    "eventType": "REPORTED_VIEW",
+    "sourceConfidence": "PLATFORM_REPORTED",
+    "quantity": 2,
+    "metadataJson": {
+      "mock": true,
+      "utm": "seed"
+    },
+    "occurredAt": "2026-04-11T12:00:00Z",
+    "createdAt": "2026-06-10T12:00:00Z"
+  },
+  {
+    "id": "chev_dealer_coastal_boats_31",
+    "dealershipId": "dealer_coastal_boats",
+    "platformSlug": "microsoft-automotive-ads",
+    "vehicleId": "veh_0053",
+    "listingId": "COASTAL1008",
+    "eventType": "REPORTED_CONTACT",
+    "sourceConfidence": "MANUAL_IMPORTED",
+    "quantity": 2,
+    "metadataJson": {
+      "mock": true,
+      "utm": "seed"
+    },
+    "occurredAt": "2026-05-02T12:00:00Z",
+    "createdAt": "2026-03-26T12:00:00Z"
+  },
+  {
+    "id": "chev_dealer_coastal_boats_32",
+    "dealershipId": "dealer_coastal_boats",
+    "platformSlug": "microsoft-automotive-ads",
+    "vehicleId": "veh_0048",
+    "listingId": "COASTAL1003",
+    "eventType": "REPORTED_CONTACT",
+    "sourceConfidence": "OBSERVED_FIRST_PARTY",
+    "quantity": 7,
+    "metadataJson": {
+      "mock": true,
+      "utm": "seed"
+    },
+    "occurredAt": "2026-06-01T12:00:00Z",
+    "createdAt": "2026-04-04T12:00:00Z"
+  },
+  {
+    "id": "chev_dealer_coastal_boats_33",
+    "dealershipId": "dealer_coastal_boats",
+    "platformSlug": "microsoft-automotive-ads",
+    "vehicleId": "veh_0045",
+    "listingId": "COASTAL1000",
+    "eventType": "VEHICLE_DETAIL_VIEW",
+    "sourceConfidence": "MANUAL_IMPORTED",
+    "quantity": 2,
+    "metadataJson": {
+      "mock": true,
+      "utm": "seed"
+    },
+    "occurredAt": "2026-05-02T12:00:00Z",
+    "createdAt": "2026-03-15T12:00:00Z"
+  },
+  {
+    "id": "chev_dealer_coastal_boats_34",
+    "dealershipId": "dealer_coastal_boats",
+    "platformSlug": "meta-automotive-ads",
+    "vehicleId": "veh_0046",
+    "listingId": "COASTAL1001",
+    "eventType": "INQUIRY_SUBMITTED",
+    "sourceConfidence": "PLATFORM_REPORTED",
+    "quantity": 1,
+    "metadataJson": {
+      "mock": true,
+      "utm": "seed"
+    },
+    "occurredAt": "2026-04-18T12:00:00Z",
+    "createdAt": "2026-04-01T12:00:00Z"
+  },
+  {
+    "id": "chev_dealer_coastal_boats_35",
+    "dealershipId": "dealer_coastal_boats",
+    "platformSlug": "facebook-business-page",
+    "vehicleId": "veh_0056",
+    "listingId": "COASTAL1011",
+    "eventType": "VEHICLE_IMPRESSION",
+    "sourceConfidence": "MANUAL_IMPORTED",
+    "quantity": 2,
+    "metadataJson": {
+      "mock": true,
+      "utm": "seed"
+    },
+    "occurredAt": "2026-05-01T12:00:00Z",
+    "createdAt": "2026-06-01T12:00:00Z"
+  },
+  {
+    "id": "chev_dealer_coastal_boats_36",
+    "dealershipId": "dealer_coastal_boats",
+    "platformSlug": "microsoft-automotive-ads",
+    "vehicleId": "veh_0047",
+    "listingId": "COASTAL1002",
+    "eventType": "VEHICLE_DETAIL_VIEW",
+    "sourceConfidence": "PLATFORM_REPORTED",
+    "quantity": 3,
+    "metadataJson": {
+      "mock": true,
+      "utm": "seed"
+    },
+    "occurredAt": "2026-03-30T12:00:00Z",
+    "createdAt": "2026-05-26T12:00:00Z"
+  },
+  {
+    "id": "chev_dealer_coastal_boats_37",
+    "dealershipId": "dealer_coastal_boats",
+    "platformSlug": "meta-automotive-ads",
+    "vehicleId": "veh_0046",
+    "listingId": "COASTAL1001",
+    "eventType": "REPORTED_CONTACT",
+    "sourceConfidence": "PLATFORM_REPORTED",
+    "quantity": 7,
+    "metadataJson": {
+      "mock": true,
+      "utm": "seed"
+    },
+    "occurredAt": "2026-03-30T12:00:00Z",
+    "createdAt": "2026-03-12T12:00:00Z"
+  },
+  {
+    "id": "chev_dealer_coastal_boats_38",
+    "dealershipId": "dealer_coastal_boats",
+    "platformSlug": "meta-automotive-ads",
+    "vehicleId": "veh_0046",
+    "listingId": "COASTAL1001",
+    "eventType": "REPORTED_CONTACT",
+    "sourceConfidence": "PLATFORM_REPORTED",
+    "quantity": 8,
+    "metadataJson": {
+      "mock": true,
+      "utm": "seed"
+    },
+    "occurredAt": "2026-04-25T12:00:00Z",
+    "createdAt": "2026-04-11T12:00:00Z"
+  },
+  {
+    "id": "chev_dealer_coastal_boats_39",
+    "dealershipId": "dealer_coastal_boats",
+    "platformSlug": "google-business-profile",
+    "vehicleId": "veh_0048",
+    "listingId": "COASTAL1003",
+    "eventType": "REPORTED_CLICK",
+    "sourceConfidence": "MANUAL_IMPORTED",
+    "quantity": 1,
+    "metadataJson": {
+      "mock": true,
+      "utm": "seed"
+    },
+    "occurredAt": "2026-05-31T12:00:00Z",
+    "createdAt": "2026-05-12T12:00:00Z"
+  },
+  {
+    "id": "chev_dealer_coastal_boats_40",
+    "dealershipId": "dealer_coastal_boats",
+    "platformSlug": "google-business-profile",
+    "vehicleId": "veh_0055",
+    "listingId": "COASTAL1010",
+    "eventType": "INQUIRY_SUBMITTED",
+    "sourceConfidence": "PLATFORM_REPORTED",
+    "quantity": 4,
+    "metadataJson": {
+      "mock": true,
+      "utm": "seed"
+    },
+    "occurredAt": "2026-04-27T12:00:00Z",
+    "createdAt": "2026-03-22T12:00:00Z"
+  },
+  {
+    "id": "chev_dealer_coastal_boats_41",
+    "dealershipId": "dealer_coastal_boats",
+    "platformSlug": "google-business-profile",
+    "vehicleId": "veh_0054",
+    "listingId": "COASTAL1009",
+    "eventType": "INQUIRY_SUBMITTED",
+    "sourceConfidence": "MANUAL_IMPORTED",
+    "quantity": 8,
+    "metadataJson": {
+      "mock": true,
+      "utm": "seed"
+    },
+    "occurredAt": "2026-05-30T12:00:00Z",
+    "createdAt": "2026-06-05T12:00:00Z"
+  },
+  {
+    "id": "chev_dealer_coastal_boats_42",
+    "dealershipId": "dealer_coastal_boats",
+    "platformSlug": "microsoft-automotive-ads",
+    "vehicleId": "veh_0055",
+    "listingId": "COASTAL1010",
+    "eventType": "REPORTED_CLICK",
+    "sourceConfidence": "OBSERVED_FIRST_PARTY",
+    "quantity": 4,
+    "metadataJson": {
+      "mock": true,
+      "utm": "seed"
+    },
+    "occurredAt": "2026-04-19T12:00:00Z",
+    "createdAt": "2026-04-29T12:00:00Z"
+  },
+  {
+    "id": "chev_dealer_coastal_boats_43",
+    "dealershipId": "dealer_coastal_boats",
+    "platformSlug": "meta-automotive-ads",
+    "vehicleId": "veh_0048",
+    "listingId": "COASTAL1003",
+    "eventType": "REPORTED_VIEW",
+    "sourceConfidence": "PLATFORM_REPORTED",
+    "quantity": 8,
+    "metadataJson": {
+      "mock": true,
+      "utm": "seed"
+    },
+    "occurredAt": "2026-03-22T12:00:00Z",
+    "createdAt": "2026-04-12T12:00:00Z"
+  },
+  {
+    "id": "chev_dealer_coastal_boats_44",
+    "dealershipId": "dealer_coastal_boats",
+    "platformSlug": "owned-storefront",
+    "vehicleId": "veh_0053",
+    "listingId": "COASTAL1008",
+    "eventType": "REPORTED_CLICK",
+    "sourceConfidence": "PLATFORM_REPORTED",
+    "quantity": 6,
+    "metadataJson": {
+      "mock": true,
+      "utm": "seed"
+    },
+    "occurredAt": "2026-04-22T12:00:00Z",
+    "createdAt": "2026-04-11T12:00:00Z"
+  },
+  {
+    "id": "chev_dealer_coastal_boats_45",
+    "dealershipId": "dealer_coastal_boats",
+    "platformSlug": "microsoft-automotive-ads",
+    "vehicleId": "veh_0045",
+    "listingId": "COASTAL1000",
+    "eventType": "REPORTED_VIEW",
+    "sourceConfidence": "MANUAL_IMPORTED",
+    "quantity": 7,
+    "metadataJson": {
+      "mock": true,
+      "utm": "seed"
+    },
+    "occurredAt": "2026-05-01T12:00:00Z",
+    "createdAt": "2026-06-09T12:00:00Z"
+  },
+  {
+    "id": "chev_dealer_coastal_boats_46",
+    "dealershipId": "dealer_coastal_boats",
+    "platformSlug": "owned-storefront",
+    "vehicleId": "veh_0047",
+    "listingId": "COASTAL1002",
+    "eventType": "VEHICLE_DETAIL_VIEW",
+    "sourceConfidence": "MANUAL_IMPORTED",
+    "quantity": 8,
+    "metadataJson": {
+      "mock": true,
+      "utm": "seed"
+    },
+    "occurredAt": "2026-03-25T12:00:00Z",
+    "createdAt": "2026-03-13T12:00:00Z"
+  },
+  {
+    "id": "chev_dealer_coastal_boats_47",
+    "dealershipId": "dealer_coastal_boats",
+    "platformSlug": "meta-automotive-ads",
+    "vehicleId": "veh_0056",
+    "listingId": "COASTAL1011",
+    "eventType": "REPORTED_CONTACT",
+    "sourceConfidence": "PLATFORM_REPORTED",
+    "quantity": 6,
+    "metadataJson": {
+      "mock": true,
+      "utm": "seed"
+    },
+    "occurredAt": "2026-04-28T12:00:00Z",
+    "createdAt": "2026-04-12T12:00:00Z"
+  },
+  {
+    "id": "chev_dealer_coastal_boats_48",
+    "dealershipId": "dealer_coastal_boats",
+    "platformSlug": "microsoft-automotive-ads",
+    "vehicleId": "veh_0055",
+    "listingId": "COASTAL1010",
+    "eventType": "INQUIRY_SUBMITTED",
+    "sourceConfidence": "PLATFORM_REPORTED",
+    "quantity": 8,
+    "metadataJson": {
+      "mock": true,
+      "utm": "seed"
+    },
+    "occurredAt": "2026-04-02T12:00:00Z",
+    "createdAt": "2026-04-11T12:00:00Z"
+  },
+  {
+    "id": "chev_dealer_coastal_boats_49",
+    "dealershipId": "dealer_coastal_boats",
+    "platformSlug": "facebook-business-page",
+    "vehicleId": "veh_0046",
+    "listingId": "COASTAL1001",
+    "eventType": "INQUIRY_SUBMITTED",
+    "sourceConfidence": "OBSERVED_FIRST_PARTY",
+    "quantity": 4,
+    "metadataJson": {
+      "mock": true,
+      "utm": "seed"
+    },
+    "occurredAt": "2026-03-25T12:00:00Z",
+    "createdAt": "2026-05-01T12:00:00Z"
+  },
+  {
+    "id": "chev_dealer_messy_motors_0",
+    "dealershipId": "dealer_messy_motors",
+    "platformSlug": "owned-storefront",
+    "vehicleId": "veh_0075",
+    "listingId": "MESSY1018",
+    "eventType": "REPORTED_VIEW",
+    "sourceConfidence": "PLATFORM_REPORTED",
+    "quantity": 1,
+    "metadataJson": {
+      "mock": true,
+      "utm": "seed"
+    },
+    "occurredAt": "2026-05-15T12:00:00Z",
+    "createdAt": "2026-04-27T12:00:00Z"
+  },
+  {
+    "id": "chev_dealer_messy_motors_1",
+    "dealershipId": "dealer_messy_motors",
+    "platformSlug": "microsoft-automotive-ads",
+    "vehicleId": "veh_0074",
+    "listingId": "MESSY1017",
+    "eventType": "REPORTED_VIEW",
+    "sourceConfidence": "OBSERVED_FIRST_PARTY",
+    "quantity": 2,
+    "metadataJson": {
+      "mock": true,
+      "utm": "seed"
+    },
+    "occurredAt": "2026-04-17T12:00:00Z",
+    "createdAt": "2026-03-12T12:00:00Z"
+  },
+  {
+    "id": "chev_dealer_messy_motors_2",
+    "dealershipId": "dealer_messy_motors",
+    "platformSlug": "facebook-business-page",
+    "vehicleId": "veh_0079",
+    "listingId": "MESSY1022",
+    "eventType": "INQUIRY_SUBMITTED",
+    "sourceConfidence": "PLATFORM_REPORTED",
+    "quantity": 5,
+    "metadataJson": {
+      "mock": true,
+      "utm": "seed"
+    },
+    "occurredAt": "2026-03-12T12:00:00Z",
+    "createdAt": "2026-04-10T12:00:00Z"
+  },
+  {
+    "id": "chev_dealer_messy_motors_3",
+    "dealershipId": "dealer_messy_motors",
+    "platformSlug": "microsoft-automotive-ads",
+    "vehicleId": "veh_0082",
+    "listingId": "MESSY1025",
+    "eventType": "REPORTED_CONTACT",
+    "sourceConfidence": "OBSERVED_FIRST_PARTY",
+    "quantity": 4,
+    "metadataJson": {
+      "mock": true,
+      "utm": "seed"
+    },
+    "occurredAt": "2026-05-30T12:00:00Z",
+    "createdAt": "2026-04-05T12:00:00Z"
+  },
+  {
+    "id": "chev_dealer_messy_motors_4",
+    "dealershipId": "dealer_messy_motors",
+    "platformSlug": "google-business-profile",
+    "vehicleId": "veh_0076",
+    "listingId": "MESSY1019",
+    "eventType": "VEHICLE_IMPRESSION",
+    "sourceConfidence": "MANUAL_IMPORTED",
+    "quantity": 4,
+    "metadataJson": {
+      "mock": true,
+      "utm": "seed"
+    },
+    "occurredAt": "2026-05-10T12:00:00Z",
+    "createdAt": "2026-03-31T12:00:00Z"
+  },
+  {
+    "id": "chev_dealer_messy_motors_5",
+    "dealershipId": "dealer_messy_motors",
+    "platformSlug": "microsoft-automotive-ads",
+    "vehicleId": "veh_0073",
+    "listingId": "MESSY1016",
+    "eventType": "INQUIRY_SUBMITTED",
+    "sourceConfidence": "OBSERVED_FIRST_PARTY",
+    "quantity": 5,
+    "metadataJson": {
+      "mock": true,
+      "utm": "seed"
+    },
+    "occurredAt": "2026-03-23T12:00:00Z",
+    "createdAt": "2026-05-15T12:00:00Z"
+  },
+  {
+    "id": "chev_dealer_messy_motors_6",
+    "dealershipId": "dealer_messy_motors",
+    "platformSlug": "facebook-business-page",
+    "vehicleId": "veh_0081",
+    "listingId": "MESSY1024",
+    "eventType": "VEHICLE_DETAIL_VIEW",
+    "sourceConfidence": "MANUAL_IMPORTED",
+    "quantity": 8,
+    "metadataJson": {
+      "mock": true,
+      "utm": "seed"
+    },
+    "occurredAt": "2026-05-28T12:00:00Z",
+    "createdAt": "2026-04-18T12:00:00Z"
+  },
+  {
+    "id": "chev_dealer_messy_motors_7",
+    "dealershipId": "dealer_messy_motors",
+    "platformSlug": "microsoft-automotive-ads",
+    "vehicleId": "veh_0066",
+    "listingId": "MESSY1009",
+    "eventType": "REPORTED_CLICK",
+    "sourceConfidence": "OBSERVED_FIRST_PARTY",
+    "quantity": 7,
+    "metadataJson": {
+      "mock": true,
+      "utm": "seed"
+    },
+    "occurredAt": "2026-03-28T12:00:00Z",
+    "createdAt": "2026-05-16T12:00:00Z"
+  },
+  {
+    "id": "chev_dealer_messy_motors_8",
+    "dealershipId": "dealer_messy_motors",
+    "platformSlug": "google-business-profile",
+    "vehicleId": "veh_0061",
+    "listingId": "MESSY1004",
+    "eventType": "INQUIRY_SUBMITTED",
+    "sourceConfidence": "MANUAL_IMPORTED",
+    "quantity": 6,
+    "metadataJson": {
+      "mock": true,
+      "utm": "seed"
+    },
+    "occurredAt": "2026-05-02T12:00:00Z",
+    "createdAt": "2026-05-06T12:00:00Z"
+  },
+  {
+    "id": "chev_dealer_messy_motors_9",
+    "dealershipId": "dealer_messy_motors",
+    "platformSlug": "google-business-profile",
+    "vehicleId": "veh_0062",
+    "listingId": "MESSY1005",
+    "eventType": "INQUIRY_SUBMITTED",
+    "sourceConfidence": "MANUAL_IMPORTED",
+    "quantity": 8,
+    "metadataJson": {
+      "mock": true,
+      "utm": "seed"
+    },
+    "occurredAt": "2026-04-28T12:00:00Z",
+    "createdAt": "2026-04-27T12:00:00Z"
+  },
+  {
+    "id": "chev_dealer_messy_motors_10",
+    "dealershipId": "dealer_messy_motors",
+    "platformSlug": "facebook-business-page",
+    "vehicleId": "veh_0084",
+    "listingId": "MESSY1027",
+    "eventType": "REPORTED_CLICK",
+    "sourceConfidence": "OBSERVED_FIRST_PARTY",
+    "quantity": 5,
+    "metadataJson": {
+      "mock": true,
+      "utm": "seed"
+    },
+    "occurredAt": "2026-04-12T12:00:00Z",
+    "createdAt": "2026-05-31T12:00:00Z"
+  },
+  {
+    "id": "chev_dealer_messy_motors_11",
+    "dealershipId": "dealer_messy_motors",
+    "platformSlug": "owned-storefront",
+    "vehicleId": "veh_0067",
+    "listingId": "MESSY1010",
+    "eventType": "REPORTED_CLICK",
+    "sourceConfidence": "OBSERVED_FIRST_PARTY",
+    "quantity": 2,
+    "metadataJson": {
+      "mock": true,
+      "utm": "seed"
+    },
+    "occurredAt": "2026-03-12T12:00:00Z",
+    "createdAt": "2026-06-04T12:00:00Z"
+  },
+  {
+    "id": "chev_dealer_messy_motors_12",
+    "dealershipId": "dealer_messy_motors",
+    "platformSlug": "microsoft-automotive-ads",
+    "vehicleId": "veh_0068",
+    "listingId": "MESSY1011",
+    "eventType": "REPORTED_CONTACT",
+    "sourceConfidence": "PLATFORM_REPORTED",
+    "quantity": 2,
+    "metadataJson": {
+      "mock": true,
+      "utm": "seed"
+    },
+    "occurredAt": "2026-05-23T12:00:00Z",
+    "createdAt": "2026-05-13T12:00:00Z"
+  },
+  {
+    "id": "chev_dealer_messy_motors_13",
+    "dealershipId": "dealer_messy_motors",
+    "platformSlug": "microsoft-automotive-ads",
+    "vehicleId": "veh_0075",
+    "listingId": "MESSY1018",
+    "eventType": "VEHICLE_DETAIL_VIEW",
+    "sourceConfidence": "MANUAL_IMPORTED",
+    "quantity": 7,
+    "metadataJson": {
+      "mock": true,
+      "utm": "seed"
+    },
+    "occurredAt": "2026-04-04T12:00:00Z",
+    "createdAt": "2026-05-06T12:00:00Z"
+  },
+  {
+    "id": "chev_dealer_messy_motors_14",
+    "dealershipId": "dealer_messy_motors",
+    "platformSlug": "microsoft-automotive-ads",
+    "vehicleId": "veh_0076",
+    "listingId": "MESSY1019",
+    "eventType": "VEHICLE_DETAIL_VIEW",
+    "sourceConfidence": "OBSERVED_FIRST_PARTY",
+    "quantity": 5,
+    "metadataJson": {
+      "mock": true,
+      "utm": "seed"
+    },
+    "occurredAt": "2026-06-09T12:00:00Z",
+    "createdAt": "2026-04-08T12:00:00Z"
+  },
+  {
+    "id": "chev_dealer_messy_motors_15",
+    "dealershipId": "dealer_messy_motors",
+    "platformSlug": "owned-storefront",
+    "vehicleId": "veh_0079",
+    "listingId": "MESSY1022",
+    "eventType": "REPORTED_CONTACT",
+    "sourceConfidence": "MANUAL_IMPORTED",
+    "quantity": 5,
+    "metadataJson": {
+      "mock": true,
+      "utm": "seed"
+    },
+    "occurredAt": "2026-04-11T12:00:00Z",
+    "createdAt": "2026-04-11T12:00:00Z"
+  },
+  {
+    "id": "chev_dealer_messy_motors_16",
+    "dealershipId": "dealer_messy_motors",
+    "platformSlug": "owned-storefront",
+    "vehicleId": "veh_0074",
+    "listingId": "MESSY1017",
+    "eventType": "INQUIRY_SUBMITTED",
+    "sourceConfidence": "PLATFORM_REPORTED",
+    "quantity": 2,
+    "metadataJson": {
+      "mock": true,
+      "utm": "seed"
+    },
+    "occurredAt": "2026-03-19T12:00:00Z",
+    "createdAt": "2026-03-29T12:00:00Z"
+  },
+  {
+    "id": "chev_dealer_messy_motors_17",
+    "dealershipId": "dealer_messy_motors",
+    "platformSlug": "facebook-business-page",
+    "vehicleId": "veh_0066",
+    "listingId": "MESSY1009",
+    "eventType": "REPORTED_VIEW",
+    "sourceConfidence": "PLATFORM_REPORTED",
+    "quantity": 2,
+    "metadataJson": {
+      "mock": true,
+      "utm": "seed"
+    },
+    "occurredAt": "2026-05-13T12:00:00Z",
+    "createdAt": "2026-05-09T12:00:00Z"
+  },
+  {
+    "id": "chev_dealer_messy_motors_18",
+    "dealershipId": "dealer_messy_motors",
+    "platformSlug": "google-business-profile",
+    "vehicleId": "veh_0064",
+    "listingId": "MESSY1007",
+    "eventType": "REPORTED_CONTACT",
+    "sourceConfidence": "PLATFORM_REPORTED",
+    "quantity": 7,
+    "metadataJson": {
+      "mock": true,
+      "utm": "seed"
+    },
+    "occurredAt": "2026-05-22T12:00:00Z",
+    "createdAt": "2026-04-10T12:00:00Z"
+  },
+  {
+    "id": "chev_dealer_messy_motors_19",
+    "dealershipId": "dealer_messy_motors",
+    "platformSlug": "google-business-profile",
+    "vehicleId": "veh_0068",
+    "listingId": "MESSY1011",
+    "eventType": "VEHICLE_IMPRESSION",
+    "sourceConfidence": "MANUAL_IMPORTED",
+    "quantity": 3,
+    "metadataJson": {
+      "mock": true,
+      "utm": "seed"
+    },
+    "occurredAt": "2026-05-16T12:00:00Z",
+    "createdAt": "2026-05-20T12:00:00Z"
+  },
+  {
+    "id": "chev_dealer_messy_motors_20",
+    "dealershipId": "dealer_messy_motors",
+    "platformSlug": "google-business-profile",
+    "vehicleId": "veh_0063",
+    "listingId": "MESSY1006",
+    "eventType": "REPORTED_VIEW",
+    "sourceConfidence": "OBSERVED_FIRST_PARTY",
+    "quantity": 6,
+    "metadataJson": {
+      "mock": true,
+      "utm": "seed"
+    },
+    "occurredAt": "2026-05-19T12:00:00Z",
+    "createdAt": "2026-04-21T12:00:00Z"
+  },
+  {
+    "id": "chev_dealer_messy_motors_21",
+    "dealershipId": "dealer_messy_motors",
+    "platformSlug": "owned-storefront",
+    "vehicleId": "veh_0080",
+    "listingId": "MESSY1023",
+    "eventType": "VEHICLE_IMPRESSION",
+    "sourceConfidence": "OBSERVED_FIRST_PARTY",
+    "quantity": 3,
+    "metadataJson": {
+      "mock": true,
+      "utm": "seed"
+    },
+    "occurredAt": "2026-04-30T12:00:00Z",
+    "createdAt": "2026-04-02T12:00:00Z"
+  },
+  {
+    "id": "chev_dealer_messy_motors_22",
+    "dealershipId": "dealer_messy_motors",
+    "platformSlug": "owned-storefront",
+    "vehicleId": "veh_0061",
+    "listingId": "MESSY1004",
+    "eventType": "VEHICLE_DETAIL_VIEW",
+    "sourceConfidence": "MANUAL_IMPORTED",
+    "quantity": 4,
+    "metadataJson": {
+      "mock": true,
+      "utm": "seed"
+    },
+    "occurredAt": "2026-05-16T12:00:00Z",
+    "createdAt": "2026-03-21T12:00:00Z"
+  },
+  {
+    "id": "chev_dealer_messy_motors_23",
+    "dealershipId": "dealer_messy_motors",
+    "platformSlug": "microsoft-automotive-ads",
+    "vehicleId": "veh_0082",
+    "listingId": "MESSY1025",
+    "eventType": "VEHICLE_DETAIL_VIEW",
+    "sourceConfidence": "OBSERVED_FIRST_PARTY",
+    "quantity": 7,
+    "metadataJson": {
+      "mock": true,
+      "utm": "seed"
+    },
+    "occurredAt": "2026-05-11T12:00:00Z",
+    "createdAt": "2026-03-14T12:00:00Z"
+  },
+  {
+    "id": "chev_dealer_messy_motors_24",
+    "dealershipId": "dealer_messy_motors",
+    "platformSlug": "google-business-profile",
+    "vehicleId": "veh_0072",
+    "listingId": "MESSY1015",
+    "eventType": "REPORTED_VIEW",
+    "sourceConfidence": "OBSERVED_FIRST_PARTY",
+    "quantity": 2,
+    "metadataJson": {
+      "mock": true,
+      "utm": "seed"
+    },
+    "occurredAt": "2026-05-27T12:00:00Z",
+    "createdAt": "2026-03-26T12:00:00Z"
+  },
+  {
+    "id": "chev_dealer_messy_motors_25",
+    "dealershipId": "dealer_messy_motors",
+    "platformSlug": "owned-storefront",
+    "vehicleId": "veh_0075",
+    "listingId": "MESSY1018",
+    "eventType": "VEHICLE_IMPRESSION",
+    "sourceConfidence": "OBSERVED_FIRST_PARTY",
+    "quantity": 3,
+    "metadataJson": {
+      "mock": true,
+      "utm": "seed"
+    },
+    "occurredAt": "2026-04-19T12:00:00Z",
+    "createdAt": "2026-05-04T12:00:00Z"
+  },
+  {
+    "id": "chev_dealer_messy_motors_26",
+    "dealershipId": "dealer_messy_motors",
+    "platformSlug": "microsoft-automotive-ads",
+    "vehicleId": "veh_0082",
+    "listingId": "MESSY1025",
+    "eventType": "INQUIRY_SUBMITTED",
+    "sourceConfidence": "MANUAL_IMPORTED",
+    "quantity": 2,
+    "metadataJson": {
+      "mock": true,
+      "utm": "seed"
+    },
+    "occurredAt": "2026-04-06T12:00:00Z",
+    "createdAt": "2026-05-12T12:00:00Z"
+  },
+  {
+    "id": "chev_dealer_messy_motors_27",
+    "dealershipId": "dealer_messy_motors",
+    "platformSlug": "meta-automotive-ads",
+    "vehicleId": "veh_0070",
+    "listingId": "MESSY1013",
+    "eventType": "REPORTED_VIEW",
+    "sourceConfidence": "PLATFORM_REPORTED",
+    "quantity": 4,
+    "metadataJson": {
+      "mock": true,
+      "utm": "seed"
+    },
+    "occurredAt": "2026-05-30T12:00:00Z",
+    "createdAt": "2026-03-18T12:00:00Z"
+  },
+  {
+    "id": "chev_dealer_messy_motors_28",
+    "dealershipId": "dealer_messy_motors",
+    "platformSlug": "microsoft-automotive-ads",
+    "vehicleId": "veh_0081",
+    "listingId": "MESSY1024",
+    "eventType": "REPORTED_CONTACT",
+    "sourceConfidence": "OBSERVED_FIRST_PARTY",
+    "quantity": 5,
+    "metadataJson": {
+      "mock": true,
+      "utm": "seed"
+    },
+    "occurredAt": "2026-03-13T12:00:00Z",
+    "createdAt": "2026-04-27T12:00:00Z"
+  },
+  {
+    "id": "chev_dealer_messy_motors_29",
+    "dealershipId": "dealer_messy_motors",
+    "platformSlug": "microsoft-automotive-ads",
+    "vehicleId": "veh_0064",
+    "listingId": "MESSY1007",
+    "eventType": "REPORTED_VIEW",
+    "sourceConfidence": "PLATFORM_REPORTED",
+    "quantity": 7,
+    "metadataJson": {
+      "mock": true,
+      "utm": "seed"
+    },
+    "occurredAt": "2026-04-05T12:00:00Z",
+    "createdAt": "2026-04-11T12:00:00Z"
+  },
+  {
+    "id": "chev_dealer_messy_motors_30",
+    "dealershipId": "dealer_messy_motors",
+    "platformSlug": "owned-storefront",
+    "vehicleId": "veh_0071",
+    "listingId": "MESSY1014",
+    "eventType": "REPORTED_VIEW",
+    "sourceConfidence": "PLATFORM_REPORTED",
+    "quantity": 3,
+    "metadataJson": {
+      "mock": true,
+      "utm": "seed"
+    },
+    "occurredAt": "2026-06-08T12:00:00Z",
+    "createdAt": "2026-05-25T12:00:00Z"
+  },
+  {
+    "id": "chev_dealer_messy_motors_31",
+    "dealershipId": "dealer_messy_motors",
+    "platformSlug": "google-business-profile",
+    "vehicleId": "veh_0074",
+    "listingId": "MESSY1017",
+    "eventType": "VEHICLE_IMPRESSION",
+    "sourceConfidence": "OBSERVED_FIRST_PARTY",
+    "quantity": 8,
+    "metadataJson": {
+      "mock": true,
+      "utm": "seed"
+    },
+    "occurredAt": "2026-04-04T12:00:00Z",
+    "createdAt": "2026-04-23T12:00:00Z"
+  },
+  {
+    "id": "chev_dealer_messy_motors_32",
+    "dealershipId": "dealer_messy_motors",
+    "platformSlug": "meta-automotive-ads",
+    "vehicleId": "veh_0074",
+    "listingId": "MESSY1017",
+    "eventType": "INQUIRY_SUBMITTED",
+    "sourceConfidence": "MANUAL_IMPORTED",
+    "quantity": 5,
+    "metadataJson": {
+      "mock": true,
+      "utm": "seed"
+    },
+    "occurredAt": "2026-04-22T12:00:00Z",
+    "createdAt": "2026-06-03T12:00:00Z"
+  },
+  {
+    "id": "chev_dealer_messy_motors_33",
+    "dealershipId": "dealer_messy_motors",
+    "platformSlug": "google-business-profile",
+    "vehicleId": "veh_0081",
+    "listingId": "MESSY1024",
+    "eventType": "REPORTED_VIEW",
+    "sourceConfidence": "MANUAL_IMPORTED",
+    "quantity": 5,
+    "metadataJson": {
+      "mock": true,
+      "utm": "seed"
+    },
+    "occurredAt": "2026-06-05T12:00:00Z",
+    "createdAt": "2026-05-31T12:00:00Z"
+  },
+  {
+    "id": "chev_dealer_messy_motors_34",
+    "dealershipId": "dealer_messy_motors",
+    "platformSlug": "microsoft-automotive-ads",
+    "vehicleId": "veh_0070",
+    "listingId": "MESSY1013",
+    "eventType": "INQUIRY_SUBMITTED",
+    "sourceConfidence": "MANUAL_IMPORTED",
+    "quantity": 2,
+    "metadataJson": {
+      "mock": true,
+      "utm": "seed"
+    },
+    "occurredAt": "2026-05-20T12:00:00Z",
+    "createdAt": "2026-05-24T12:00:00Z"
+  },
+  {
+    "id": "chev_dealer_messy_motors_35",
+    "dealershipId": "dealer_messy_motors",
+    "platformSlug": "meta-automotive-ads",
+    "vehicleId": "veh_0081",
+    "listingId": "MESSY1024",
+    "eventType": "INQUIRY_SUBMITTED",
+    "sourceConfidence": "MANUAL_IMPORTED",
+    "quantity": 7,
+    "metadataJson": {
+      "mock": true,
+      "utm": "seed"
+    },
+    "occurredAt": "2026-05-17T12:00:00Z",
+    "createdAt": "2026-04-23T12:00:00Z"
+  },
+  {
+    "id": "chev_dealer_messy_motors_36",
+    "dealershipId": "dealer_messy_motors",
+    "platformSlug": "facebook-business-page",
+    "vehicleId": "veh_0072",
+    "listingId": "MESSY1015",
+    "eventType": "VEHICLE_IMPRESSION",
+    "sourceConfidence": "PLATFORM_REPORTED",
+    "quantity": 4,
+    "metadataJson": {
+      "mock": true,
+      "utm": "seed"
+    },
+    "occurredAt": "2026-06-01T12:00:00Z",
+    "createdAt": "2026-05-05T12:00:00Z"
+  },
+  {
+    "id": "chev_dealer_messy_motors_37",
+    "dealershipId": "dealer_messy_motors",
+    "platformSlug": "microsoft-automotive-ads",
+    "vehicleId": "veh_0075",
+    "listingId": "MESSY1018",
+    "eventType": "VEHICLE_DETAIL_VIEW",
+    "sourceConfidence": "OBSERVED_FIRST_PARTY",
+    "quantity": 1,
+    "metadataJson": {
+      "mock": true,
+      "utm": "seed"
+    },
+    "occurredAt": "2026-03-31T12:00:00Z",
+    "createdAt": "2026-03-18T12:00:00Z"
+  },
+  {
+    "id": "chev_dealer_messy_motors_38",
+    "dealershipId": "dealer_messy_motors",
+    "platformSlug": "meta-automotive-ads",
+    "vehicleId": "veh_0077",
+    "listingId": "MESSY1020",
+    "eventType": "REPORTED_CLICK",
+    "sourceConfidence": "PLATFORM_REPORTED",
+    "quantity": 3,
+    "metadataJson": {
+      "mock": true,
+      "utm": "seed"
+    },
+    "occurredAt": "2026-04-05T12:00:00Z",
+    "createdAt": "2026-04-01T12:00:00Z"
+  },
+  {
+    "id": "chev_dealer_messy_motors_39",
+    "dealershipId": "dealer_messy_motors",
+    "platformSlug": "facebook-business-page",
+    "vehicleId": "veh_0079",
+    "listingId": "MESSY1022",
+    "eventType": "VEHICLE_DETAIL_VIEW",
+    "sourceConfidence": "PLATFORM_REPORTED",
+    "quantity": 8,
+    "metadataJson": {
+      "mock": true,
+      "utm": "seed"
+    },
+    "occurredAt": "2026-05-01T12:00:00Z",
+    "createdAt": "2026-05-22T12:00:00Z"
+  },
+  {
+    "id": "chev_dealer_messy_motors_40",
+    "dealershipId": "dealer_messy_motors",
+    "platformSlug": "meta-automotive-ads",
+    "vehicleId": "veh_0081",
+    "listingId": "MESSY1024",
+    "eventType": "REPORTED_CONTACT",
+    "sourceConfidence": "MANUAL_IMPORTED",
+    "quantity": 6,
+    "metadataJson": {
+      "mock": true,
+      "utm": "seed"
+    },
+    "occurredAt": "2026-03-15T12:00:00Z",
+    "createdAt": "2026-04-07T12:00:00Z"
+  },
+  {
+    "id": "chev_dealer_messy_motors_41",
+    "dealershipId": "dealer_messy_motors",
+    "platformSlug": "meta-automotive-ads",
+    "vehicleId": "veh_0058",
+    "listingId": "MESSY1001",
+    "eventType": "VEHICLE_DETAIL_VIEW",
+    "sourceConfidence": "OBSERVED_FIRST_PARTY",
+    "quantity": 6,
+    "metadataJson": {
+      "mock": true,
+      "utm": "seed"
+    },
+    "occurredAt": "2026-05-17T12:00:00Z",
+    "createdAt": "2026-03-14T12:00:00Z"
+  },
+  {
+    "id": "chev_dealer_messy_motors_42",
+    "dealershipId": "dealer_messy_motors",
+    "platformSlug": "owned-storefront",
+    "vehicleId": "veh_0080",
+    "listingId": "MESSY1023",
+    "eventType": "INQUIRY_SUBMITTED",
+    "sourceConfidence": "MANUAL_IMPORTED",
+    "quantity": 1,
+    "metadataJson": {
+      "mock": true,
+      "utm": "seed"
+    },
+    "occurredAt": "2026-04-18T12:00:00Z",
+    "createdAt": "2026-05-14T12:00:00Z"
+  },
+  {
+    "id": "chev_dealer_messy_motors_43",
+    "dealershipId": "dealer_messy_motors",
+    "platformSlug": "meta-automotive-ads",
+    "vehicleId": "veh_0079",
+    "listingId": "MESSY1022",
+    "eventType": "REPORTED_CONTACT",
+    "sourceConfidence": "MANUAL_IMPORTED",
+    "quantity": 3,
+    "metadataJson": {
+      "mock": true,
+      "utm": "seed"
+    },
+    "occurredAt": "2026-04-11T12:00:00Z",
+    "createdAt": "2026-05-20T12:00:00Z"
+  },
+  {
+    "id": "chev_dealer_messy_motors_44",
+    "dealershipId": "dealer_messy_motors",
+    "platformSlug": "owned-storefront",
+    "vehicleId": "veh_0061",
+    "listingId": "MESSY1004",
+    "eventType": "REPORTED_CONTACT",
+    "sourceConfidence": "OBSERVED_FIRST_PARTY",
+    "quantity": 8,
+    "metadataJson": {
+      "mock": true,
+      "utm": "seed"
+    },
+    "occurredAt": "2026-05-31T12:00:00Z",
+    "createdAt": "2026-04-15T12:00:00Z"
+  },
+  {
+    "id": "chev_dealer_messy_motors_45",
+    "dealershipId": "dealer_messy_motors",
+    "platformSlug": "owned-storefront",
+    "vehicleId": "veh_0077",
+    "listingId": "MESSY1020",
+    "eventType": "VEHICLE_DETAIL_VIEW",
+    "sourceConfidence": "PLATFORM_REPORTED",
+    "quantity": 6,
+    "metadataJson": {
+      "mock": true,
+      "utm": "seed"
+    },
+    "occurredAt": "2026-03-23T12:00:00Z",
+    "createdAt": "2026-04-29T12:00:00Z"
+  },
+  {
+    "id": "chev_dealer_messy_motors_46",
+    "dealershipId": "dealer_messy_motors",
+    "platformSlug": "microsoft-automotive-ads",
+    "vehicleId": "veh_0071",
+    "listingId": "MESSY1014",
+    "eventType": "VEHICLE_DETAIL_VIEW",
+    "sourceConfidence": "PLATFORM_REPORTED",
+    "quantity": 1,
+    "metadataJson": {
+      "mock": true,
+      "utm": "seed"
+    },
+    "occurredAt": "2026-05-20T12:00:00Z",
+    "createdAt": "2026-04-06T12:00:00Z"
+  },
+  {
+    "id": "chev_dealer_messy_motors_47",
+    "dealershipId": "dealer_messy_motors",
+    "platformSlug": "google-business-profile",
+    "vehicleId": "veh_0082",
+    "listingId": "MESSY1025",
+    "eventType": "REPORTED_VIEW",
+    "sourceConfidence": "OBSERVED_FIRST_PARTY",
+    "quantity": 8,
+    "metadataJson": {
+      "mock": true,
+      "utm": "seed"
+    },
+    "occurredAt": "2026-05-31T12:00:00Z",
+    "createdAt": "2026-04-22T12:00:00Z"
+  },
+  {
+    "id": "chev_dealer_messy_motors_48",
+    "dealershipId": "dealer_messy_motors",
+    "platformSlug": "owned-storefront",
+    "vehicleId": "veh_0075",
+    "listingId": "MESSY1018",
+    "eventType": "VEHICLE_DETAIL_VIEW",
+    "sourceConfidence": "MANUAL_IMPORTED",
+    "quantity": 1,
+    "metadataJson": {
+      "mock": true,
+      "utm": "seed"
+    },
+    "occurredAt": "2026-05-04T12:00:00Z",
+    "createdAt": "2026-04-01T12:00:00Z"
+  },
+  {
+    "id": "chev_dealer_messy_motors_49",
+    "dealershipId": "dealer_messy_motors",
+    "platformSlug": "microsoft-automotive-ads",
+    "vehicleId": "veh_0079",
+    "listingId": "MESSY1022",
+    "eventType": "VEHICLE_DETAIL_VIEW",
+    "sourceConfidence": "MANUAL_IMPORTED",
+    "quantity": 3,
+    "metadataJson": {
+      "mock": true,
+      "utm": "seed"
+    },
+    "occurredAt": "2026-04-17T12:00:00Z",
+    "createdAt": "2026-04-03T12:00:00Z"
+  },
+  {
+    "id": "chev_dealer_premium_imports_0",
+    "dealershipId": "dealer_premium_imports",
+    "platformSlug": "facebook-business-page",
+    "vehicleId": "veh_0091",
+    "listingId": "PREMIUM1006",
+    "eventType": "REPORTED_CONTACT",
+    "sourceConfidence": "OBSERVED_FIRST_PARTY",
+    "quantity": 1,
+    "metadataJson": {
+      "mock": true,
+      "utm": "seed"
+    },
+    "occurredAt": "2026-04-14T12:00:00Z",
+    "createdAt": "2026-05-19T12:00:00Z"
+  },
+  {
+    "id": "chev_dealer_premium_imports_1",
+    "dealershipId": "dealer_premium_imports",
+    "platformSlug": "owned-storefront",
+    "vehicleId": "veh_0099",
+    "listingId": "PREMIUM1014",
+    "eventType": "REPORTED_CLICK",
+    "sourceConfidence": "MANUAL_IMPORTED",
+    "quantity": 7,
+    "metadataJson": {
+      "mock": true,
+      "utm": "seed"
+    },
+    "occurredAt": "2026-05-18T12:00:00Z",
+    "createdAt": "2026-04-24T12:00:00Z"
+  },
+  {
+    "id": "chev_dealer_premium_imports_2",
+    "dealershipId": "dealer_premium_imports",
+    "platformSlug": "google-business-profile",
+    "vehicleId": "veh_0093",
+    "listingId": "PREMIUM1008",
+    "eventType": "REPORTED_CLICK",
+    "sourceConfidence": "PLATFORM_REPORTED",
+    "quantity": 1,
+    "metadataJson": {
+      "mock": true,
+      "utm": "seed"
+    },
+    "occurredAt": "2026-04-19T12:00:00Z",
+    "createdAt": "2026-03-14T12:00:00Z"
+  },
+  {
+    "id": "chev_dealer_premium_imports_3",
+    "dealershipId": "dealer_premium_imports",
+    "platformSlug": "owned-storefront",
+    "vehicleId": "veh_0088",
+    "listingId": "PREMIUM1003",
+    "eventType": "REPORTED_CONTACT",
+    "sourceConfidence": "OBSERVED_FIRST_PARTY",
+    "quantity": 6,
+    "metadataJson": {
+      "mock": true,
+      "utm": "seed"
+    },
+    "occurredAt": "2026-05-07T12:00:00Z",
+    "createdAt": "2026-04-09T12:00:00Z"
+  },
+  {
+    "id": "chev_dealer_premium_imports_4",
+    "dealershipId": "dealer_premium_imports",
+    "platformSlug": "owned-storefront",
+    "vehicleId": "veh_0116",
+    "listingId": "PREMIUM1031",
+    "eventType": "REPORTED_VIEW",
+    "sourceConfidence": "OBSERVED_FIRST_PARTY",
+    "quantity": 7,
+    "metadataJson": {
+      "mock": true,
+      "utm": "seed"
+    },
+    "occurredAt": "2026-03-17T12:00:00Z",
+    "createdAt": "2026-05-18T12:00:00Z"
+  },
+  {
+    "id": "chev_dealer_premium_imports_5",
+    "dealershipId": "dealer_premium_imports",
+    "platformSlug": "microsoft-automotive-ads",
+    "vehicleId": "veh_0088",
+    "listingId": "PREMIUM1003",
+    "eventType": "VEHICLE_IMPRESSION",
+    "sourceConfidence": "PLATFORM_REPORTED",
+    "quantity": 1,
+    "metadataJson": {
+      "mock": true,
+      "utm": "seed"
+    },
+    "occurredAt": "2026-03-20T12:00:00Z",
+    "createdAt": "2026-04-15T12:00:00Z"
+  },
+  {
+    "id": "chev_dealer_premium_imports_6",
+    "dealershipId": "dealer_premium_imports",
+    "platformSlug": "microsoft-automotive-ads",
+    "vehicleId": "veh_0088",
+    "listingId": "PREMIUM1003",
+    "eventType": "REPORTED_CLICK",
+    "sourceConfidence": "OBSERVED_FIRST_PARTY",
+    "quantity": 1,
+    "metadataJson": {
+      "mock": true,
+      "utm": "seed"
+    },
+    "occurredAt": "2026-05-08T12:00:00Z",
+    "createdAt": "2026-06-04T12:00:00Z"
+  },
+  {
+    "id": "chev_dealer_premium_imports_7",
+    "dealershipId": "dealer_premium_imports",
+    "platformSlug": "owned-storefront",
+    "vehicleId": "veh_0109",
+    "listingId": "PREMIUM1024",
+    "eventType": "VEHICLE_DETAIL_VIEW",
+    "sourceConfidence": "OBSERVED_FIRST_PARTY",
+    "quantity": 7,
+    "metadataJson": {
+      "mock": true,
+      "utm": "seed"
+    },
+    "occurredAt": "2026-04-14T12:00:00Z",
+    "createdAt": "2026-05-08T12:00:00Z"
+  },
+  {
+    "id": "chev_dealer_premium_imports_8",
+    "dealershipId": "dealer_premium_imports",
+    "platformSlug": "facebook-business-page",
+    "vehicleId": "veh_0101",
+    "listingId": "PREMIUM1016",
+    "eventType": "VEHICLE_IMPRESSION",
+    "sourceConfidence": "MANUAL_IMPORTED",
+    "quantity": 2,
+    "metadataJson": {
+      "mock": true,
+      "utm": "seed"
+    },
+    "occurredAt": "2026-05-09T12:00:00Z",
+    "createdAt": "2026-03-31T12:00:00Z"
+  },
+  {
+    "id": "chev_dealer_premium_imports_9",
+    "dealershipId": "dealer_premium_imports",
+    "platformSlug": "google-business-profile",
+    "vehicleId": "veh_0110",
+    "listingId": "PREMIUM1025",
+    "eventType": "REPORTED_CONTACT",
+    "sourceConfidence": "MANUAL_IMPORTED",
+    "quantity": 8,
+    "metadataJson": {
+      "mock": true,
+      "utm": "seed"
+    },
+    "occurredAt": "2026-05-05T12:00:00Z",
+    "createdAt": "2026-04-21T12:00:00Z"
+  },
+  {
+    "id": "chev_dealer_premium_imports_10",
+    "dealershipId": "dealer_premium_imports",
+    "platformSlug": "facebook-business-page",
+    "vehicleId": "veh_0085",
+    "listingId": "PREMIUM1000",
+    "eventType": "REPORTED_VIEW",
+    "sourceConfidence": "OBSERVED_FIRST_PARTY",
+    "quantity": 1,
+    "metadataJson": {
+      "mock": true,
+      "utm": "seed"
+    },
+    "occurredAt": "2026-03-26T12:00:00Z",
+    "createdAt": "2026-05-06T12:00:00Z"
+  },
+  {
+    "id": "chev_dealer_premium_imports_11",
+    "dealershipId": "dealer_premium_imports",
+    "platformSlug": "microsoft-automotive-ads",
+    "vehicleId": "veh_0115",
+    "listingId": "PREMIUM1030",
+    "eventType": "VEHICLE_IMPRESSION",
+    "sourceConfidence": "MANUAL_IMPORTED",
+    "quantity": 8,
+    "metadataJson": {
+      "mock": true,
+      "utm": "seed"
+    },
+    "occurredAt": "2026-05-28T12:00:00Z",
+    "createdAt": "2026-03-14T12:00:00Z"
+  },
+  {
+    "id": "chev_dealer_premium_imports_12",
+    "dealershipId": "dealer_premium_imports",
+    "platformSlug": "facebook-business-page",
+    "vehicleId": "veh_0103",
+    "listingId": "PREMIUM1018",
+    "eventType": "INQUIRY_SUBMITTED",
+    "sourceConfidence": "MANUAL_IMPORTED",
+    "quantity": 1,
+    "metadataJson": {
+      "mock": true,
+      "utm": "seed"
+    },
+    "occurredAt": "2026-05-15T12:00:00Z",
+    "createdAt": "2026-04-26T12:00:00Z"
+  },
+  {
+    "id": "chev_dealer_premium_imports_13",
+    "dealershipId": "dealer_premium_imports",
+    "platformSlug": "facebook-business-page",
+    "vehicleId": "veh_0086",
+    "listingId": "PREMIUM1001",
+    "eventType": "REPORTED_CONTACT",
+    "sourceConfidence": "MANUAL_IMPORTED",
+    "quantity": 7,
+    "metadataJson": {
+      "mock": true,
+      "utm": "seed"
+    },
+    "occurredAt": "2026-05-11T12:00:00Z",
+    "createdAt": "2026-05-11T12:00:00Z"
+  },
+  {
+    "id": "chev_dealer_premium_imports_14",
+    "dealershipId": "dealer_premium_imports",
+    "platformSlug": "microsoft-automotive-ads",
+    "vehicleId": "veh_0094",
+    "listingId": "PREMIUM1009",
+    "eventType": "INQUIRY_SUBMITTED",
+    "sourceConfidence": "OBSERVED_FIRST_PARTY",
+    "quantity": 6,
+    "metadataJson": {
+      "mock": true,
+      "utm": "seed"
+    },
+    "occurredAt": "2026-04-30T12:00:00Z",
+    "createdAt": "2026-04-03T12:00:00Z"
+  },
+  {
+    "id": "chev_dealer_premium_imports_15",
+    "dealershipId": "dealer_premium_imports",
+    "platformSlug": "facebook-business-page",
+    "vehicleId": "veh_0105",
+    "listingId": "PREMIUM1020",
+    "eventType": "REPORTED_VIEW",
+    "sourceConfidence": "MANUAL_IMPORTED",
+    "quantity": 7,
+    "metadataJson": {
+      "mock": true,
+      "utm": "seed"
+    },
+    "occurredAt": "2026-05-16T12:00:00Z",
+    "createdAt": "2026-04-17T12:00:00Z"
+  },
+  {
+    "id": "chev_dealer_premium_imports_16",
+    "dealershipId": "dealer_premium_imports",
+    "platformSlug": "meta-automotive-ads",
+    "vehicleId": "veh_0088",
+    "listingId": "PREMIUM1003",
+    "eventType": "VEHICLE_DETAIL_VIEW",
+    "sourceConfidence": "OBSERVED_FIRST_PARTY",
+    "quantity": 2,
+    "metadataJson": {
+      "mock": true,
+      "utm": "seed"
+    },
+    "occurredAt": "2026-04-01T12:00:00Z",
+    "createdAt": "2026-04-28T12:00:00Z"
+  },
+  {
+    "id": "chev_dealer_premium_imports_17",
+    "dealershipId": "dealer_premium_imports",
+    "platformSlug": "google-business-profile",
+    "vehicleId": "veh_0109",
+    "listingId": "PREMIUM1024",
+    "eventType": "REPORTED_VIEW",
+    "sourceConfidence": "PLATFORM_REPORTED",
+    "quantity": 1,
+    "metadataJson": {
+      "mock": true,
+      "utm": "seed"
+    },
+    "occurredAt": "2026-04-20T12:00:00Z",
+    "createdAt": "2026-03-31T12:00:00Z"
+  },
+  {
+    "id": "chev_dealer_premium_imports_18",
+    "dealershipId": "dealer_premium_imports",
+    "platformSlug": "google-business-profile",
+    "vehicleId": "veh_0086",
+    "listingId": "PREMIUM1001",
+    "eventType": "VEHICLE_DETAIL_VIEW",
+    "sourceConfidence": "OBSERVED_FIRST_PARTY",
+    "quantity": 2,
+    "metadataJson": {
+      "mock": true,
+      "utm": "seed"
+    },
+    "occurredAt": "2026-03-15T12:00:00Z",
+    "createdAt": "2026-05-08T12:00:00Z"
+  },
+  {
+    "id": "chev_dealer_premium_imports_19",
+    "dealershipId": "dealer_premium_imports",
+    "platformSlug": "microsoft-automotive-ads",
+    "vehicleId": "veh_0114",
+    "listingId": "PREMIUM1029",
+    "eventType": "INQUIRY_SUBMITTED",
+    "sourceConfidence": "PLATFORM_REPORTED",
+    "quantity": 6,
+    "metadataJson": {
+      "mock": true,
+      "utm": "seed"
+    },
+    "occurredAt": "2026-06-02T12:00:00Z",
+    "createdAt": "2026-05-30T12:00:00Z"
+  },
+  {
+    "id": "chev_dealer_premium_imports_20",
+    "dealershipId": "dealer_premium_imports",
+    "platformSlug": "facebook-business-page",
+    "vehicleId": "veh_0097",
+    "listingId": "PREMIUM1012",
+    "eventType": "REPORTED_CLICK",
+    "sourceConfidence": "PLATFORM_REPORTED",
+    "quantity": 6,
+    "metadataJson": {
+      "mock": true,
+      "utm": "seed"
+    },
+    "occurredAt": "2026-04-20T12:00:00Z",
+    "createdAt": "2026-05-23T12:00:00Z"
+  },
+  {
+    "id": "chev_dealer_premium_imports_21",
+    "dealershipId": "dealer_premium_imports",
+    "platformSlug": "microsoft-automotive-ads",
+    "vehicleId": "veh_0115",
+    "listingId": "PREMIUM1030",
+    "eventType": "VEHICLE_IMPRESSION",
+    "sourceConfidence": "MANUAL_IMPORTED",
+    "quantity": 2,
+    "metadataJson": {
+      "mock": true,
+      "utm": "seed"
+    },
+    "occurredAt": "2026-04-30T12:00:00Z",
+    "createdAt": "2026-05-29T12:00:00Z"
+  },
+  {
+    "id": "chev_dealer_premium_imports_22",
+    "dealershipId": "dealer_premium_imports",
+    "platformSlug": "google-business-profile",
+    "vehicleId": "veh_0095",
+    "listingId": "PREMIUM1010",
+    "eventType": "VEHICLE_DETAIL_VIEW",
+    "sourceConfidence": "PLATFORM_REPORTED",
+    "quantity": 2,
+    "metadataJson": {
+      "mock": true,
+      "utm": "seed"
+    },
+    "occurredAt": "2026-03-22T12:00:00Z",
+    "createdAt": "2026-04-06T12:00:00Z"
+  },
+  {
+    "id": "chev_dealer_premium_imports_23",
+    "dealershipId": "dealer_premium_imports",
+    "platformSlug": "microsoft-automotive-ads",
+    "vehicleId": "veh_0103",
+    "listingId": "PREMIUM1018",
+    "eventType": "REPORTED_CONTACT",
+    "sourceConfidence": "MANUAL_IMPORTED",
+    "quantity": 6,
+    "metadataJson": {
+      "mock": true,
+      "utm": "seed"
+    },
+    "occurredAt": "2026-03-27T12:00:00Z",
+    "createdAt": "2026-04-17T12:00:00Z"
+  },
+  {
+    "id": "chev_dealer_premium_imports_24",
+    "dealershipId": "dealer_premium_imports",
+    "platformSlug": "microsoft-automotive-ads",
+    "vehicleId": "veh_0110",
+    "listingId": "PREMIUM1025",
+    "eventType": "REPORTED_VIEW",
+    "sourceConfidence": "MANUAL_IMPORTED",
+    "quantity": 4,
+    "metadataJson": {
+      "mock": true,
+      "utm": "seed"
+    },
+    "occurredAt": "2026-05-10T12:00:00Z",
+    "createdAt": "2026-05-26T12:00:00Z"
+  },
+  {
+    "id": "chev_dealer_premium_imports_25",
+    "dealershipId": "dealer_premium_imports",
+    "platformSlug": "google-business-profile",
+    "vehicleId": "veh_0102",
+    "listingId": "PREMIUM1017",
+    "eventType": "INQUIRY_SUBMITTED",
+    "sourceConfidence": "PLATFORM_REPORTED",
+    "quantity": 3,
+    "metadataJson": {
+      "mock": true,
+      "utm": "seed"
+    },
+    "occurredAt": "2026-03-23T12:00:00Z",
+    "createdAt": "2026-03-26T12:00:00Z"
+  },
+  {
+    "id": "chev_dealer_premium_imports_26",
+    "dealershipId": "dealer_premium_imports",
+    "platformSlug": "meta-automotive-ads",
+    "vehicleId": "veh_0091",
+    "listingId": "PREMIUM1006",
+    "eventType": "INQUIRY_SUBMITTED",
+    "sourceConfidence": "OBSERVED_FIRST_PARTY",
+    "quantity": 3,
+    "metadataJson": {
+      "mock": true,
+      "utm": "seed"
+    },
+    "occurredAt": "2026-04-03T12:00:00Z",
+    "createdAt": "2026-05-12T12:00:00Z"
+  },
+  {
+    "id": "chev_dealer_premium_imports_27",
+    "dealershipId": "dealer_premium_imports",
+    "platformSlug": "facebook-business-page",
+    "vehicleId": "veh_0089",
+    "listingId": "PREMIUM1004",
+    "eventType": "INQUIRY_SUBMITTED",
+    "sourceConfidence": "PLATFORM_REPORTED",
+    "quantity": 1,
+    "metadataJson": {
+      "mock": true,
+      "utm": "seed"
+    },
+    "occurredAt": "2026-05-19T12:00:00Z",
+    "createdAt": "2026-03-23T12:00:00Z"
+  },
+  {
+    "id": "chev_dealer_premium_imports_28",
+    "dealershipId": "dealer_premium_imports",
+    "platformSlug": "facebook-business-page",
+    "vehicleId": "veh_0099",
+    "listingId": "PREMIUM1014",
+    "eventType": "VEHICLE_DETAIL_VIEW",
+    "sourceConfidence": "OBSERVED_FIRST_PARTY",
+    "quantity": 4,
+    "metadataJson": {
+      "mock": true,
+      "utm": "seed"
+    },
+    "occurredAt": "2026-04-22T12:00:00Z",
+    "createdAt": "2026-05-08T12:00:00Z"
+  },
+  {
+    "id": "chev_dealer_premium_imports_29",
+    "dealershipId": "dealer_premium_imports",
+    "platformSlug": "facebook-business-page",
+    "vehicleId": "veh_0104",
+    "listingId": "PREMIUM1019",
+    "eventType": "REPORTED_CLICK",
+    "sourceConfidence": "MANUAL_IMPORTED",
+    "quantity": 3,
+    "metadataJson": {
+      "mock": true,
+      "utm": "seed"
+    },
+    "occurredAt": "2026-06-09T12:00:00Z",
+    "createdAt": "2026-04-27T12:00:00Z"
+  },
+  {
+    "id": "chev_dealer_premium_imports_30",
+    "dealershipId": "dealer_premium_imports",
+    "platformSlug": "microsoft-automotive-ads",
+    "vehicleId": "veh_0116",
+    "listingId": "PREMIUM1031",
+    "eventType": "VEHICLE_DETAIL_VIEW",
+    "sourceConfidence": "PLATFORM_REPORTED",
+    "quantity": 5,
+    "metadataJson": {
+      "mock": true,
+      "utm": "seed"
+    },
+    "occurredAt": "2026-04-30T12:00:00Z",
+    "createdAt": "2026-04-30T12:00:00Z"
+  },
+  {
+    "id": "chev_dealer_premium_imports_31",
+    "dealershipId": "dealer_premium_imports",
+    "platformSlug": "microsoft-automotive-ads",
+    "vehicleId": "veh_0095",
+    "listingId": "PREMIUM1010",
+    "eventType": "REPORTED_CLICK",
+    "sourceConfidence": "MANUAL_IMPORTED",
+    "quantity": 2,
+    "metadataJson": {
+      "mock": true,
+      "utm": "seed"
+    },
+    "occurredAt": "2026-05-31T12:00:00Z",
+    "createdAt": "2026-03-23T12:00:00Z"
+  },
+  {
+    "id": "chev_dealer_premium_imports_32",
+    "dealershipId": "dealer_premium_imports",
+    "platformSlug": "microsoft-automotive-ads",
+    "vehicleId": "veh_0107",
+    "listingId": "PREMIUM1022",
+    "eventType": "REPORTED_CONTACT",
+    "sourceConfidence": "OBSERVED_FIRST_PARTY",
+    "quantity": 4,
+    "metadataJson": {
+      "mock": true,
+      "utm": "seed"
+    },
+    "occurredAt": "2026-05-27T12:00:00Z",
+    "createdAt": "2026-05-30T12:00:00Z"
+  },
+  {
+    "id": "chev_dealer_premium_imports_33",
+    "dealershipId": "dealer_premium_imports",
+    "platformSlug": "facebook-business-page",
+    "vehicleId": "veh_0099",
+    "listingId": "PREMIUM1014",
+    "eventType": "REPORTED_CLICK",
+    "sourceConfidence": "OBSERVED_FIRST_PARTY",
+    "quantity": 5,
+    "metadataJson": {
+      "mock": true,
+      "utm": "seed"
+    },
+    "occurredAt": "2026-04-19T12:00:00Z",
+    "createdAt": "2026-03-19T12:00:00Z"
+  },
+  {
+    "id": "chev_dealer_premium_imports_34",
+    "dealershipId": "dealer_premium_imports",
+    "platformSlug": "owned-storefront",
+    "vehicleId": "veh_0100",
+    "listingId": "PREMIUM1015",
+    "eventType": "VEHICLE_DETAIL_VIEW",
+    "sourceConfidence": "PLATFORM_REPORTED",
+    "quantity": 4,
+    "metadataJson": {
+      "mock": true,
+      "utm": "seed"
+    },
+    "occurredAt": "2026-04-11T12:00:00Z",
+    "createdAt": "2026-05-01T12:00:00Z"
+  },
+  {
+    "id": "chev_dealer_premium_imports_35",
+    "dealershipId": "dealer_premium_imports",
+    "platformSlug": "microsoft-automotive-ads",
+    "vehicleId": "veh_0093",
+    "listingId": "PREMIUM1008",
+    "eventType": "REPORTED_CONTACT",
+    "sourceConfidence": "PLATFORM_REPORTED",
+    "quantity": 8,
+    "metadataJson": {
+      "mock": true,
+      "utm": "seed"
+    },
+    "occurredAt": "2026-04-03T12:00:00Z",
+    "createdAt": "2026-05-26T12:00:00Z"
+  },
+  {
+    "id": "chev_dealer_premium_imports_36",
+    "dealershipId": "dealer_premium_imports",
+    "platformSlug": "google-business-profile",
+    "vehicleId": "veh_0086",
+    "listingId": "PREMIUM1001",
+    "eventType": "VEHICLE_DETAIL_VIEW",
+    "sourceConfidence": "MANUAL_IMPORTED",
+    "quantity": 8,
+    "metadataJson": {
+      "mock": true,
+      "utm": "seed"
+    },
+    "occurredAt": "2026-04-15T12:00:00Z",
+    "createdAt": "2026-04-12T12:00:00Z"
+  },
+  {
+    "id": "chev_dealer_premium_imports_37",
+    "dealershipId": "dealer_premium_imports",
+    "platformSlug": "google-business-profile",
+    "vehicleId": "veh_0107",
+    "listingId": "PREMIUM1022",
+    "eventType": "INQUIRY_SUBMITTED",
+    "sourceConfidence": "OBSERVED_FIRST_PARTY",
+    "quantity": 8,
+    "metadataJson": {
+      "mock": true,
+      "utm": "seed"
+    },
+    "occurredAt": "2026-06-09T12:00:00Z",
+    "createdAt": "2026-05-19T12:00:00Z"
+  },
+  {
+    "id": "chev_dealer_premium_imports_38",
+    "dealershipId": "dealer_premium_imports",
+    "platformSlug": "owned-storefront",
+    "vehicleId": "veh_0094",
+    "listingId": "PREMIUM1009",
+    "eventType": "VEHICLE_DETAIL_VIEW",
+    "sourceConfidence": "PLATFORM_REPORTED",
+    "quantity": 6,
+    "metadataJson": {
+      "mock": true,
+      "utm": "seed"
+    },
+    "occurredAt": "2026-04-28T12:00:00Z",
+    "createdAt": "2026-05-15T12:00:00Z"
+  },
+  {
+    "id": "chev_dealer_premium_imports_39",
+    "dealershipId": "dealer_premium_imports",
+    "platformSlug": "meta-automotive-ads",
+    "vehicleId": "veh_0109",
+    "listingId": "PREMIUM1024",
+    "eventType": "VEHICLE_IMPRESSION",
+    "sourceConfidence": "PLATFORM_REPORTED",
+    "quantity": 1,
+    "metadataJson": {
+      "mock": true,
+      "utm": "seed"
+    },
+    "occurredAt": "2026-04-28T12:00:00Z",
+    "createdAt": "2026-05-01T12:00:00Z"
+  },
+  {
+    "id": "chev_dealer_premium_imports_40",
+    "dealershipId": "dealer_premium_imports",
+    "platformSlug": "facebook-business-page",
+    "vehicleId": "veh_0113",
+    "listingId": "PREMIUM1028",
+    "eventType": "REPORTED_CLICK",
+    "sourceConfidence": "PLATFORM_REPORTED",
+    "quantity": 7,
+    "metadataJson": {
+      "mock": true,
+      "utm": "seed"
+    },
+    "occurredAt": "2026-05-27T12:00:00Z",
+    "createdAt": "2026-04-11T12:00:00Z"
+  },
+  {
+    "id": "chev_dealer_premium_imports_41",
+    "dealershipId": "dealer_premium_imports",
+    "platformSlug": "google-business-profile",
+    "vehicleId": "veh_0085",
+    "listingId": "PREMIUM1000",
+    "eventType": "REPORTED_CONTACT",
+    "sourceConfidence": "PLATFORM_REPORTED",
+    "quantity": 7,
+    "metadataJson": {
+      "mock": true,
+      "utm": "seed"
+    },
+    "occurredAt": "2026-04-21T12:00:00Z",
+    "createdAt": "2026-06-05T12:00:00Z"
+  },
+  {
+    "id": "chev_dealer_premium_imports_42",
+    "dealershipId": "dealer_premium_imports",
+    "platformSlug": "google-business-profile",
+    "vehicleId": "veh_0097",
+    "listingId": "PREMIUM1012",
+    "eventType": "REPORTED_CONTACT",
+    "sourceConfidence": "MANUAL_IMPORTED",
+    "quantity": 8,
+    "metadataJson": {
+      "mock": true,
+      "utm": "seed"
+    },
+    "occurredAt": "2026-05-04T12:00:00Z",
+    "createdAt": "2026-03-23T12:00:00Z"
+  },
+  {
+    "id": "chev_dealer_premium_imports_43",
+    "dealershipId": "dealer_premium_imports",
+    "platformSlug": "owned-storefront",
+    "vehicleId": "veh_0094",
+    "listingId": "PREMIUM1009",
+    "eventType": "VEHICLE_DETAIL_VIEW",
+    "sourceConfidence": "PLATFORM_REPORTED",
+    "quantity": 6,
+    "metadataJson": {
+      "mock": true,
+      "utm": "seed"
+    },
+    "occurredAt": "2026-04-26T12:00:00Z",
+    "createdAt": "2026-03-31T12:00:00Z"
+  },
+  {
+    "id": "chev_dealer_premium_imports_44",
+    "dealershipId": "dealer_premium_imports",
+    "platformSlug": "google-business-profile",
+    "vehicleId": "veh_0101",
+    "listingId": "PREMIUM1016",
+    "eventType": "REPORTED_CLICK",
+    "sourceConfidence": "OBSERVED_FIRST_PARTY",
+    "quantity": 8,
+    "metadataJson": {
+      "mock": true,
+      "utm": "seed"
+    },
+    "occurredAt": "2026-04-03T12:00:00Z",
+    "createdAt": "2026-04-10T12:00:00Z"
+  },
+  {
+    "id": "chev_dealer_premium_imports_45",
+    "dealershipId": "dealer_premium_imports",
+    "platformSlug": "microsoft-automotive-ads",
+    "vehicleId": "veh_0100",
+    "listingId": "PREMIUM1015",
+    "eventType": "INQUIRY_SUBMITTED",
+    "sourceConfidence": "MANUAL_IMPORTED",
+    "quantity": 8,
+    "metadataJson": {
+      "mock": true,
+      "utm": "seed"
+    },
+    "occurredAt": "2026-03-17T12:00:00Z",
+    "createdAt": "2026-05-05T12:00:00Z"
+  },
+  {
+    "id": "chev_dealer_premium_imports_46",
+    "dealershipId": "dealer_premium_imports",
+    "platformSlug": "meta-automotive-ads",
+    "vehicleId": "veh_0108",
+    "listingId": "PREMIUM1023",
+    "eventType": "REPORTED_CLICK",
+    "sourceConfidence": "PLATFORM_REPORTED",
+    "quantity": 5,
+    "metadataJson": {
+      "mock": true,
+      "utm": "seed"
+    },
+    "occurredAt": "2026-04-17T12:00:00Z",
+    "createdAt": "2026-04-05T12:00:00Z"
+  },
+  {
+    "id": "chev_dealer_premium_imports_47",
+    "dealershipId": "dealer_premium_imports",
+    "platformSlug": "owned-storefront",
+    "vehicleId": "veh_0097",
+    "listingId": "PREMIUM1012",
+    "eventType": "REPORTED_VIEW",
+    "sourceConfidence": "MANUAL_IMPORTED",
+    "quantity": 7,
+    "metadataJson": {
+      "mock": true,
+      "utm": "seed"
+    },
+    "occurredAt": "2026-04-01T12:00:00Z",
+    "createdAt": "2026-03-25T12:00:00Z"
+  },
+  {
+    "id": "chev_dealer_premium_imports_48",
+    "dealershipId": "dealer_premium_imports",
+    "platformSlug": "facebook-business-page",
+    "vehicleId": "veh_0116",
+    "listingId": "PREMIUM1031",
+    "eventType": "REPORTED_CONTACT",
+    "sourceConfidence": "MANUAL_IMPORTED",
+    "quantity": 8,
+    "metadataJson": {
+      "mock": true,
+      "utm": "seed"
+    },
+    "occurredAt": "2026-06-01T12:00:00Z",
+    "createdAt": "2026-05-10T12:00:00Z"
+  },
+  {
+    "id": "chev_dealer_premium_imports_49",
+    "dealershipId": "dealer_premium_imports",
+    "platformSlug": "google-business-profile",
+    "vehicleId": "veh_0106",
+    "listingId": "PREMIUM1021",
+    "eventType": "REPORTED_VIEW",
+    "sourceConfidence": "MANUAL_IMPORTED",
+    "quantity": 5,
+    "metadataJson": {
+      "mock": true,
+      "utm": "seed"
+    },
+    "occurredAt": "2026-03-22T12:00:00Z",
+    "createdAt": "2026-04-18T12:00:00Z"
+  }
+]

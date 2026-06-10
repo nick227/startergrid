@@ -35,6 +35,7 @@ export type PlatformPublishResult = {
   socialPosting: boolean;
   marketplaceListing: boolean;
   partnerFeed: boolean;
+  leadSync: boolean;
   connectionType: string | null;
   integrationMaturity: string | null;
   regions: string[];
@@ -399,8 +400,10 @@ export type PlatformAccountDetail = {
   catalogSync: boolean;
   marketplaceListing: boolean;
   partnerFeed: boolean;
+  leadSync: boolean;
   connectionType: string | null;
   integrationMaturity: string | null;
+  liveValidationNote: string | null;
 };
 
 export type AccountStateSummary = {

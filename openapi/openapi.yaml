@@ -1411,6 +1411,81 @@ paths:
         '404':
           $ref: '#/components/responses/NotFound'
 
+  /api/admin/dashboard:
+    get:
+      tags: [Admin]
+      security:
+        - OperatorAuth: []
+      x-route-classification: admin
+      operationId: getAdminDashboard
+      summary: Retrieve the consolidated system administration overview dashboard (SUPER_ADMIN only)
+      responses:
+        '200':
+          description: Consolidated dashboard data
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AdminDashboardResponse'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+  /api/admin/blocked-dealers:
+    get:
+      tags: [Admin]
+      security:
+        - OperatorAuth: []
+      x-route-classification: admin
+      operationId: getBlockedDealers
+      summary: Retrieve the paginated and filterable blocked/attention-needed dealer configurations (SUPER_ADMIN only)
+      parameters:
+        - name: severity
+          in: query
+          required: false
+          schema:
+            type: string
+        - name: category
+          in: query
+          required: false
+          schema:
+            type: string
+        - name: platform
+          in: query
+          required: false
+          schema:
+            type: string
+        - name: source
+          in: query
+          required: false
+          schema:
+            type: string
+        - name: q
+          in: query
+          required: false
+          schema:
+            type: string
+        - name: page
+          in: query
+          required: false
+          schema:
+            type: integer
+            default: 1
+        - name: limit
+          in: query
+          required: false
+          schema:
+            type: integer
+            default: 10
+      responses:
+        '200':
+          description: Filtered list of blocked dealers with pagination and summaries
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AdminBlockedDealersResponse'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+
   /api/admin/platform-credentials:
     get:
       tags: [Admin]
@@ -3870,3 +3945,227 @@ components:
         message:
           type: string
           maxLength: 5000
+
+    AdminDashboardResponse:
+      type: object
+      required: [health, readiness, queueSnapshot, platformOverview, dealerAttention, recentEvents, meta]
+      properties:
+        health:
+          $ref: '#/components/schemas/AdminHealthSummary'
+        readiness:
+          $ref: '#/components/schemas/AdminReadinessSummary'
+        queueSnapshot:
+          $ref: '#/components/schemas/AdminQueueSnapshot'
+        platformOverview:
+          type: array
+          items:
+            $ref: '#/components/schemas/AdminPlatformOverviewItem'
+        dealerAttention:
+          type: array
+          items:
+            $ref: '#/components/schemas/AdminDealerAttentionItem'
+        recentEvents:
+          type: array
+          items:
+            $ref: '#/components/schemas/AdminRecentEventItem'
+        meta:
+          $ref: '#/components/schemas/AdminDashboardMeta'
+
+    AdminHealthSummary:
+      type: object
+      required: [api, db, queue, credentials]
+      properties:
+        api:
+          type: string
+        db:
+          type: string
+        queue:
+          type: string
+        credentials:
+          type: string
+
+    AdminReadinessSummary:
+      type: object
+      required: [platformRegistry, bridges, oauthClients, categorySchemas, geoCoordinates, smokeMarketplace, smokeOperator]
+      properties:
+        platformRegistry:
+          type: string
+        bridges:
+          type: string
+        oauthClients:
+          type: string
+        categorySchemas:
+          type: string
+        geoCoordinates:
+          type: string
+        smokeMarketplace:
+          type: string
+        smokeOperator:
+          type: string
+
+    AdminQueueSnapshot:
+      type: object
+      required: [pending, failed, retrying, held, oldestPendingAgeSec, lastSuccessSyncAt]
+      properties:
+        pending:
+          type: integer
+        failed:
+          type: integer
+        retrying:
+          type: integer
+        held:
+          type: integer
+        oldestPendingAgeSec:
+          type: integer
+          nullable: true
+        lastSuccessSyncAt:
+          type: string
+          format: date-time
+          nullable: true
+
+    AdminPlatformOverviewItem:
+      type: object
+      required: [platformName, platformSlug, capabilities, configured, liveValidationStatus, dealersUsing, blockedDealers, integrationMaturity]
+      properties:
+        platformName:
+          type: string
+        platformSlug:
+          type: string
+        capabilities:
+          type: array
+          items:
+            type: string
+        configured:
+          type: boolean
+        liveValidationStatus:
+          type: string
+        dealersUsing:
+          type: integer
+        blockedDealers:
+          type: integer
+        integrationMaturity:
+          type: string
+
+    AdminDealerAttentionItem:
+      type: object
+      required: [dealerId, dealerName, category, platformSlug, severity, reason, nextAction]
+      properties:
+        dealerId:
+          type: string
+        dealerName:
+          type: string
+        category:
+          type: string
+        platformSlug:
+          type: string
+        severity:
+          type: string
+        reason:
+          type: string
+        nextAction:
+          type: string
+
+    AdminRecentEventItem:
+      type: object
+      required: [id, action, actorId, actorEmail, detailString, createdAt]
+      properties:
+        id:
+          type: string
+        action:
+          type: string
+        actorId:
+          type: string
+        actorEmail:
+          type: string
+        detailString:
+          type: string
+        createdAt:
+          type: string
+          format: date-time
+
+    AdminDashboardMeta:
+      type: object
+      required: [generatedAt, cached, durationMs]
+      properties:
+        generatedAt:
+          type: string
+          format: date-time
+        cached:
+          type: boolean
+        durationMs:
+          type: integer
+
+    AdminBlockedDealersResponse:
+      type: object
+      required: [items, pagination, summary, meta]
+      properties:
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/AdminBlockedDealerItem'
+        pagination:
+          type: object
+          required: [total, page, limit, pages]
+          properties:
+            total:
+              type: integer
+            page:
+              type: integer
+            limit:
+              type: integer
+            pages:
+              type: integer
+        summary:
+          type: object
+          required: [total, critical, warning, info]
+          properties:
+            total:
+              type: integer
+            critical:
+              type: integer
+            warning:
+              type: integer
+            info:
+              type: integer
+        meta:
+          $ref: '#/components/schemas/AdminDashboardMeta'
+
+    AdminBlockedDealerItem:
+      type: object
+      required: [id, severity, dealerId, dealerName, category, platformSlug, platformName, source, reason, nextAction, status]
+      properties:
+        id:
+          type: string
+        severity:
+          type: string
+        dealerId:
+          type: string
+        dealerName:
+          type: string
+        category:
+          type: string
+        platformSlug:
+          type: string
+        platformName:
+          type: string
+        source:
+          type: string
+        reason:
+          type: string
+        nextAction:
+          type: string
+        status:
+          type: string
+        firstSeenAt:
+          type: string
+          format: date-time
+        lastSeenAt:
+          type: string
+          format: date-time
+        affectedCount:
+          type: integer
+          nullable: true
+        dealerHref:
+          type: string
+        platformHref:
+          type: string

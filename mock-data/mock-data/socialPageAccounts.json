@@ -1,0 +1,172 @@
+[
+  {
+    "id": "social_fb_dealer_austin_auto",
+    "dealershipId": "dealer_austin_auto",
+    "platformSlug": "facebook-business-page",
+    "pageId": "fbpage_dealer_austin_auto",
+    "name": "Austin Metro Auto Facebook",
+    "pictureUrl": "https://picsum.photos/seed/dealer_austin_auto-logo/160/160",
+    "category": "Car dealership",
+    "pageAccessToken": "mock_page_token_dealer_austin_auto",
+    "pageTokenExpiresAt": "2026-08-09T12:00:00Z",
+    "isSelected": true,
+    "metadataJson": {
+      "followers": 856
+    },
+    "createdAt": "2026-05-31T12:00:00Z",
+    "updatedAt": "2026-06-09T12:00:00Z"
+  },
+  {
+    "id": "social_gbp_dealer_austin_auto",
+    "dealershipId": "dealer_austin_auto",
+    "platformSlug": "google-business-profile",
+    "pageId": "gbp_locations_dealer_austin_auto",
+    "name": "Austin Metro Auto Google Location",
+    "pictureUrl": null,
+    "category": "Used car dealer",
+    "pageAccessToken": "mock_gbp_token_dealer_austin_auto",
+    "pageTokenExpiresAt": "2026-08-09T12:00:00Z",
+    "isSelected": true,
+    "metadataJson": {
+      "locationName": "locations/dealer_austin_auto"
+    },
+    "createdAt": "2026-05-31T12:00:00Z",
+    "updatedAt": "2026-06-09T12:00:00Z"
+  },
+  {
+    "id": "social_fb_dealer_lone_star_rv",
+    "dealershipId": "dealer_lone_star_rv",
+    "platformSlug": "facebook-business-page",
+    "pageId": "fbpage_dealer_lone_star_rv",
+    "name": "Lone Star Trail & RV Facebook",
+    "pictureUrl": "https://picsum.photos/seed/dealer_lone_star_rv-logo/160/160",
+    "category": "Car dealership",
+    "pageAccessToken": "mock_page_token_dealer_lone_star_rv",
+    "pageTokenExpiresAt": "2026-08-09T12:00:00Z",
+    "isSelected": true,
+    "metadataJson": {
+      "followers": 11230
+    },
+    "createdAt": "2026-05-31T12:00:00Z",
+    "updatedAt": "2026-06-09T12:00:00Z"
+  },
+  {
+    "id": "social_gbp_dealer_lone_star_rv",
+    "dealershipId": "dealer_lone_star_rv",
+    "platformSlug": "google-business-profile",
+    "pageId": "gbp_locations_dealer_lone_star_rv",
+    "name": "Lone Star Trail & RV Google Location",
+    "pictureUrl": null,
+    "category": "Used car dealer",
+    "pageAccessToken": "mock_gbp_token_dealer_lone_star_rv",
+    "pageTokenExpiresAt": "2026-08-09T12:00:00Z",
+    "isSelected": true,
+    "metadataJson": {
+      "locationName": "locations/dealer_lone_star_rv"
+    },
+    "createdAt": "2026-05-31T12:00:00Z",
+    "updatedAt": "2026-06-09T12:00:00Z"
+  },
+  {
+    "id": "social_fb_dealer_coastal_boats",
+    "dealershipId": "dealer_coastal_boats",
+    "platformSlug": "facebook-business-page",
+    "pageId": "fbpage_dealer_coastal_boats",
+    "name": "Coastal Bend Boats Facebook",
+    "pictureUrl": "https://picsum.photos/seed/dealer_coastal_boats-logo/160/160",
+    "category": "Car dealership",
+    "pageAccessToken": "mock_page_token_dealer_coastal_boats",
+    "pageTokenExpiresAt": "2026-08-09T12:00:00Z",
+    "isSelected": true,
+    "metadataJson": {
+      "followers": 11357
+    },
+    "createdAt": "2026-05-31T12:00:00Z",
+    "updatedAt": "2026-06-09T12:00:00Z"
+  },
+  {
+    "id": "social_gbp_dealer_coastal_boats",
+    "dealershipId": "dealer_coastal_boats",
+    "platformSlug": "google-business-profile",
+    "pageId": "gbp_locations_dealer_coastal_boats",
+    "name": "Coastal Bend Boats Google Location",
+    "pictureUrl": null,
+    "category": "Used car dealer",
+    "pageAccessToken": "mock_gbp_token_dealer_coastal_boats",
+    "pageTokenExpiresAt": "2026-08-09T12:00:00Z",
+    "isSelected": true,
+    "metadataJson": {
+      "locationName": "locations/dealer_coastal_boats"
+    },
+    "createdAt": "2026-05-31T12:00:00Z",
+    "updatedAt": "2026-06-09T12:00:00Z"
+  },
+  {
+    "id": "social_fb_dealer_messy_motors",
+    "dealershipId": "dealer_messy_motors",
+    "platformSlug": "facebook-business-page",
+    "pageId": "fbpage_dealer_messy_motors",
+    "name": "Messy Motors Facebook",
+    "pictureUrl": "https://picsum.photos/seed/dealer_messy_motors-logo/160/160",
+    "category": "Car dealership",
+    "pageAccessToken": "mock_page_token_dealer_messy_motors",
+    "pageTokenExpiresAt": "2026-08-09T12:00:00Z",
+    "isSelected": true,
+    "metadataJson": {
+      "followers": 9202
+    },
+    "createdAt": "2026-05-31T12:00:00Z",
+    "updatedAt": "2026-06-09T12:00:00Z"
+  },
+  {
+    "id": "social_gbp_dealer_messy_motors",
+    "dealershipId": "dealer_messy_motors",
+    "platformSlug": "google-business-profile",
+    "pageId": "gbp_locations_dealer_messy_motors",
+    "name": "Messy Motors Google Location",
+    "pictureUrl": null,
+    "category": "Used car dealer",
+    "pageAccessToken": "mock_gbp_token_dealer_messy_motors",
+    "pageTokenExpiresAt": "2026-08-09T12:00:00Z",
+    "isSelected": true,
+    "metadataJson": {
+      "locationName": "locations/dealer_messy_motors"
+    },
+    "createdAt": "2026-05-31T12:00:00Z",
+    "updatedAt": "2026-06-09T12:00:00Z"
+  },
+  {
+    "id": "social_fb_dealer_premium_imports",
+    "dealershipId": "dealer_premium_imports",
+    "platformSlug": "facebook-business-page",
+    "pageId": "fbpage_dealer_premium_imports",
+    "name": "Premium Imports Facebook",
+    "pictureUrl": "https://picsum.photos/seed/dealer_premium_imports-logo/160/160",
+    "category": "Car dealership",
+    "pageAccessToken": "mock_page_token_dealer_premium_imports",
+    "pageTokenExpiresAt": "2026-08-09T12:00:00Z",
+    "isSelected": true,
+    "metadataJson": {
+      "followers": 7961
+    },
+    "createdAt": "2026-05-31T12:00:00Z",
+    "updatedAt": "2026-06-09T12:00:00Z"
+  },
+  {
+    "id": "social_gbp_dealer_premium_imports",
+    "dealershipId": "dealer_premium_imports",
+    "platformSlug": "google-business-profile",
+    "pageId": "gbp_locations_dealer_premium_imports",
+    "name": "Premium Imports Google Location",
+    "pictureUrl": null,
+    "category": "Used car dealer",
+    "pageAccessToken": "mock_gbp_token_dealer_premium_imports",
+    "pageTokenExpiresAt": "2026-08-09T12:00:00Z",
+    "isSelected": true,
+    "metadataJson": {
+      "locationName": "locations/dealer_premium_imports"
+    },
+    "createdAt": "2026-05-31T12:00:00Z",
+    "updatedAt": "2026-06-09T12:00:00Z"
+  }
+]

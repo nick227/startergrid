@@ -1,0 +1,1794 @@
+[
+  {
+    "id": "perf_veh_0001",
+    "dealershipId": "dealer_austin_auto",
+    "vehicleId": "veh_0001",
+    "stockNumber": "AUSTIN1000",
+    "make": "Chevrolet",
+    "model": "Silverado 1500",
+    "year": 2017,
+    "priceCents": 4632000,
+    "condition": "new",
+    "daysOnline": 38,
+    "firstListedAt": "2026-05-03T12:00:00Z",
+    "comparableCount": 5,
+    "avgComparableDays": null,
+    "medianComparableDays": 57,
+    "benchmarkConfidence": "INSUFFICIENT",
+    "movementSignal": "ON_TRACK",
+    "platformAssistsJson": {
+      "facebook-business-page": {
+        "leads": 1
+      },
+      "owned-storefront": {
+        "leads": 5
+      }
+    },
+    "computedAt": "2026-06-10T08:00:00Z",
+    "updatedAt": "2026-06-10T08:00:00Z"
+  },
+  {
+    "id": "perf_veh_0002",
+    "dealershipId": "dealer_austin_auto",
+    "vehicleId": "veh_0002",
+    "stockNumber": "AUSTIN1001",
+    "make": "Chevrolet",
+    "model": "Silverado 1500",
+    "year": 2025,
+    "priceCents": 3636300,
+    "condition": "used",
+    "daysOnline": 77,
+    "firstListedAt": "2026-03-25T12:00:00Z",
+    "comparableCount": 5,
+    "avgComparableDays": 48.2,
+    "medianComparableDays": 57,
+    "benchmarkConfidence": "INSUFFICIENT",
+    "movementSignal": "LOW_DATA",
+    "platformAssistsJson": {
+      "facebook-business-page": {
+        "leads": 1
+      },
+      "owned-storefront": {
+        "leads": 3
+      }
+    },
+    "computedAt": "2026-06-10T08:00:00Z",
+    "updatedAt": "2026-06-10T08:00:00Z"
+  },
+  {
+    "id": "perf_veh_0004",
+    "dealershipId": "dealer_austin_auto",
+    "vehicleId": "veh_0004",
+    "stockNumber": "AUSTIN1003",
+    "make": "Ford",
+    "model": "F-150",
+    "year": 2026,
+    "priceCents": 1848600,
+    "condition": "cpo",
+    "daysOnline": 48,
+    "firstListedAt": "2026-04-23T12:00:00Z",
+    "comparableCount": 8,
+    "avgComparableDays": 48.2,
+    "medianComparableDays": 32,
+    "benchmarkConfidence": "MEDIUM",
+    "movementSignal": "SLOW",
+    "platformAssistsJson": {
+      "facebook-business-page": {
+        "leads": 2
+      },
+      "owned-storefront": {
+        "leads": 7
+      }
+    },
+    "computedAt": "2026-06-10T08:00:00Z",
+    "updatedAt": "2026-06-10T08:00:00Z"
+  },
+  {
+    "id": "perf_veh_0005",
+    "dealershipId": "dealer_austin_auto",
+    "vehicleId": "veh_0005",
+    "stockNumber": "AUSTIN1004",
+    "make": "Mercedes-Benz",
+    "model": "C-Class",
+    "year": 2023,
+    "priceCents": 1276800,
+    "condition": "used",
+    "daysOnline": 12,
+    "firstListedAt": "2026-05-29T12:00:00Z",
+    "comparableCount": 12,
+    "avgComparableDays": null,
+    "medianComparableDays": 57,
+    "benchmarkConfidence": "HIGH",
+    "movementSignal": "SLOW",
+    "platformAssistsJson": {
+      "facebook-business-page": {
+        "leads": 1
+      },
+      "owned-storefront": {
+        "leads": 2
+      }
+    },
+    "computedAt": "2026-06-10T08:00:00Z",
+    "updatedAt": "2026-06-10T08:00:00Z"
+  },
+  {
+    "id": "perf_veh_0007",
+    "dealershipId": "dealer_austin_auto",
+    "vehicleId": "veh_0007",
+    "stockNumber": "AUSTIN1006",
+    "make": "Subaru",
+    "model": "Outback",
+    "year": 2020,
+    "priceCents": 5840100,
+    "condition": "new",
+    "daysOnline": 126,
+    "firstListedAt": "2026-02-04T12:00:00Z",
+    "comparableCount": 1,
+    "avgComparableDays": 48.2,
+    "medianComparableDays": null,
+    "benchmarkConfidence": "HIGH",
+    "movementSignal": "LOW_DATA",
+    "platformAssistsJson": {
+      "facebook-business-page": {
+        "leads": 2
+      },
+      "owned-storefront": {
+        "leads": 6
+      }
+    },
+    "computedAt": "2026-06-10T08:00:00Z",
+    "updatedAt": "2026-06-10T08:00:00Z"
+  },
+  {
+    "id": "perf_veh_0009",
+    "dealershipId": "dealer_austin_auto",
+    "vehicleId": "veh_0009",
+    "stockNumber": "AUSTIN1008",
+    "make": "Tesla",
+    "model": "Model 3",
+    "year": 2023,
+    "priceCents": 6209300,
+    "condition": "new",
+    "daysOnline": 28,
+    "firstListedAt": "2026-05-13T12:00:00Z",
+    "comparableCount": 1,
+    "avgComparableDays": 61.0,
+    "medianComparableDays": 32,
+    "benchmarkConfidence": "INSUFFICIENT",
+    "movementSignal": "STALE",
+    "platformAssistsJson": {
+      "facebook-business-page": {
+        "leads": 4
+      },
+      "owned-storefront": {
+        "leads": 6
+      }
+    },
+    "computedAt": "2026-06-10T08:00:00Z",
+    "updatedAt": "2026-06-10T08:00:00Z"
+  },
+  {
+    "id": "perf_veh_0011",
+    "dealershipId": "dealer_austin_auto",
+    "vehicleId": "veh_0011",
+    "stockNumber": "AUSTIN1010",
+    "make": "Nissan",
+    "model": "Altima",
+    "year": 2016,
+    "priceCents": 3094600,
+    "condition": "certified",
+    "daysOnline": 64,
+    "firstListedAt": "2026-04-07T12:00:00Z",
+    "comparableCount": 6,
+    "avgComparableDays": 35.4,
+    "medianComparableDays": null,
+    "benchmarkConfidence": "LOW",
+    "movementSignal": "FAST",
+    "platformAssistsJson": {
+      "facebook-business-page": {
+        "leads": 2
+      },
+      "owned-storefront": {
+        "leads": 6
+      }
+    },
+    "computedAt": "2026-06-10T08:00:00Z",
+    "updatedAt": "2026-06-10T08:00:00Z"
+  },
+  {
+    "id": "perf_veh_0012",
+    "dealershipId": "dealer_austin_auto",
+    "vehicleId": "veh_0012",
+    "stockNumber": "AUSTIN1011",
+    "make": "Ford",
+    "model": "F-150",
+    "year": 2017,
+    "priceCents": 5588400,
+    "condition": "new",
+    "daysOnline": 155,
+    "firstListedAt": "2026-01-06T12:00:00Z",
+    "comparableCount": 0,
+    "avgComparableDays": 48.2,
+    "medianComparableDays": 57,
+    "benchmarkConfidence": "INSUFFICIENT",
+    "movementSignal": "ON_TRACK",
+    "platformAssistsJson": {
+      "facebook-business-page": {
+        "leads": 3
+      },
+      "owned-storefront": {
+        "leads": 0
+      }
+    },
+    "computedAt": "2026-06-10T08:00:00Z",
+    "updatedAt": "2026-06-10T08:00:00Z"
+  },
+  {
+    "id": "perf_veh_0013",
+    "dealershipId": "dealer_austin_auto",
+    "vehicleId": "veh_0013",
+    "stockNumber": "AUSTIN1012",
+    "make": "Ford",
+    "model": "F-150",
+    "year": 2024,
+    "priceCents": 5900300,
+    "condition": "used",
+    "daysOnline": 76,
+    "firstListedAt": "2026-03-26T12:00:00Z",
+    "comparableCount": 9,
+    "avgComparableDays": 48.2,
+    "medianComparableDays": 32,
+    "benchmarkConfidence": "HIGH",
+    "movementSignal": "LOW_DATA",
+    "platformAssistsJson": {
+      "facebook-business-page": {
+        "leads": 0
+      },
+      "owned-storefront": {
+        "leads": 2
+      }
+    },
+    "computedAt": "2026-06-10T08:00:00Z",
+    "updatedAt": "2026-06-10T08:00:00Z"
+  },
+  {
+    "id": "perf_veh_0014",
+    "dealershipId": "dealer_austin_auto",
+    "vehicleId": "veh_0014",
+    "stockNumber": "AUSTIN1013",
+    "make": "BMW",
+    "model": "X5",
+    "year": 2021,
+    "priceCents": 1639300,
+    "condition": "used",
+    "daysOnline": 55,
+    "firstListedAt": "2026-04-16T12:00:00Z",
+    "comparableCount": 10,
+    "avgComparableDays": 48.2,
+    "medianComparableDays": null,
+    "benchmarkConfidence": "MEDIUM",
+    "movementSignal": "ON_TRACK",
+    "platformAssistsJson": {
+      "facebook-business-page": {
+        "leads": 2
+      },
+      "owned-storefront": {
+        "leads": 5
+      }
+    },
+    "computedAt": "2026-06-10T08:00:00Z",
+    "updatedAt": "2026-06-10T08:00:00Z"
+  },
+  {
+    "id": "perf_veh_0018",
+    "dealershipId": "dealer_austin_auto",
+    "vehicleId": "veh_0018",
+    "stockNumber": "AUSTIN1017",
+    "make": "Honda",
+    "model": "CR-V",
+    "year": 2020,
+    "priceCents": 5898400,
+    "condition": "used",
+    "daysOnline": 13,
+    "firstListedAt": "2026-05-28T12:00:00Z",
+    "comparableCount": 11,
+    "avgComparableDays": 61.0,
+    "medianComparableDays": null,
+    "benchmarkConfidence": "HIGH",
+    "movementSignal": "SLOW",
+    "platformAssistsJson": {
+      "facebook-business-page": {
+        "leads": 0
+      },
+      "owned-storefront": {
+        "leads": 1
+      }
+    },
+    "computedAt": "2026-06-10T08:00:00Z",
+    "updatedAt": "2026-06-10T08:00:00Z"
+  },
+  {
+    "id": "perf_veh_0020",
+    "dealershipId": "dealer_austin_auto",
+    "vehicleId": "veh_0020",
+    "stockNumber": "AUSTIN1019",
+    "make": "Jeep",
+    "model": "Wrangler",
+    "year": 2025,
+    "priceCents": 3672600,
+    "condition": "certified",
+    "daysOnline": 45,
+    "firstListedAt": "2026-04-26T12:00:00Z",
+    "comparableCount": 2,
+    "avgComparableDays": 35.4,
+    "medianComparableDays": null,
+    "benchmarkConfidence": "INSUFFICIENT",
+    "movementSignal": "SLOW",
+    "platformAssistsJson": {
+      "facebook-business-page": {
+        "leads": 0
+      },
+      "owned-storefront": {
+        "leads": 0
+      }
+    },
+    "computedAt": "2026-06-10T08:00:00Z",
+    "updatedAt": "2026-06-10T08:00:00Z"
+  },
+  {
+    "id": "perf_veh_0021",
+    "dealershipId": "dealer_austin_auto",
+    "vehicleId": "veh_0021",
+    "stockNumber": "AUSTIN1020",
+    "make": "Toyota",
+    "model": "Camry",
+    "year": 2017,
+    "priceCents": 2101000,
+    "condition": "cpo",
+    "daysOnline": 140,
+    "firstListedAt": "2026-01-21T12:00:00Z",
+    "comparableCount": 1,
+    "avgComparableDays": 48.2,
+    "medianComparableDays": null,
+    "benchmarkConfidence": "MEDIUM",
+    "movementSignal": "ON_TRACK",
+    "platformAssistsJson": {
+      "facebook-business-page": {
+        "leads": 2
+      },
+      "owned-storefront": {
+        "leads": 2
+      }
+    },
+    "computedAt": "2026-06-10T08:00:00Z",
+    "updatedAt": "2026-06-10T08:00:00Z"
+  },
+  {
+    "id": "perf_veh_0022",
+    "dealershipId": "dealer_austin_auto",
+    "vehicleId": "veh_0022",
+    "stockNumber": "AUSTIN1021",
+    "make": "Subaru",
+    "model": "Outback",
+    "year": 2022,
+    "priceCents": 6193200,
+    "condition": "cpo",
+    "daysOnline": 60,
+    "firstListedAt": "2026-04-11T12:00:00Z",
+    "comparableCount": 12,
+    "avgComparableDays": 61.0,
+    "medianComparableDays": 57,
+    "benchmarkConfidence": "MEDIUM",
+    "movementSignal": "FAST",
+    "platformAssistsJson": {
+      "facebook-business-page": {
+        "leads": 0
+      },
+      "owned-storefront": {
+        "leads": 3
+      }
+    },
+    "computedAt": "2026-06-10T08:00:00Z",
+    "updatedAt": "2026-06-10T08:00:00Z"
+  },
+  {
+    "id": "perf_veh_0023",
+    "dealershipId": "dealer_austin_auto",
+    "vehicleId": "veh_0023",
+    "stockNumber": "AUSTIN1022",
+    "make": "Jeep",
+    "model": "Wrangler",
+    "year": 2016,
+    "priceCents": 4664100,
+    "condition": "new",
+    "daysOnline": 60,
+    "firstListedAt": "2026-04-11T12:00:00Z",
+    "comparableCount": 10,
+    "avgComparableDays": null,
+    "medianComparableDays": 57,
+    "benchmarkConfidence": "INSUFFICIENT",
+    "movementSignal": "STALE",
+    "platformAssistsJson": {
+      "facebook-business-page": {
+        "leads": 2
+      },
+      "owned-storefront": {
+        "leads": 2
+      }
+    },
+    "computedAt": "2026-06-10T08:00:00Z",
+    "updatedAt": "2026-06-10T08:00:00Z"
+  },
+  {
+    "id": "perf_veh_0025",
+    "dealershipId": "dealer_austin_auto",
+    "vehicleId": "veh_0025",
+    "stockNumber": "AUSTIN1024",
+    "make": "Tesla",
+    "model": "Model 3",
+    "year": 2019,
+    "priceCents": 4398800,
+    "condition": "new",
+    "daysOnline": 33,
+    "firstListedAt": "2026-05-08T12:00:00Z",
+    "comparableCount": 10,
+    "avgComparableDays": 35.4,
+    "medianComparableDays": 57,
+    "benchmarkConfidence": "INSUFFICIENT",
+    "movementSignal": "LOW_DATA",
+    "platformAssistsJson": {
+      "facebook-business-page": {
+        "leads": 1
+      },
+      "owned-storefront": {
+        "leads": 3
+      }
+    },
+    "computedAt": "2026-06-10T08:00:00Z",
+    "updatedAt": "2026-06-10T08:00:00Z"
+  },
+  {
+    "id": "perf_veh_0028",
+    "dealershipId": "dealer_austin_auto",
+    "vehicleId": "veh_0028",
+    "stockNumber": "AUSTIN1027",
+    "make": "Chevrolet",
+    "model": "Silverado 1500",
+    "year": 2024,
+    "priceCents": 5241100,
+    "condition": "used",
+    "daysOnline": 108,
+    "firstListedAt": "2026-02-22T12:00:00Z",
+    "comparableCount": 11,
+    "avgComparableDays": 35.4,
+    "medianComparableDays": 57,
+    "benchmarkConfidence": "MEDIUM",
+    "movementSignal": "ON_TRACK",
+    "platformAssistsJson": {
+      "facebook-business-page": {
+        "leads": 2
+      },
+      "owned-storefront": {
+        "leads": 7
+      }
+    },
+    "computedAt": "2026-06-10T08:00:00Z",
+    "updatedAt": "2026-06-10T08:00:00Z"
+  },
+  {
+    "id": "perf_veh_0030",
+    "dealershipId": "dealer_austin_auto",
+    "vehicleId": "veh_0030",
+    "stockNumber": "AUSTIN1029",
+    "make": "Toyota",
+    "model": "Camry",
+    "year": 2025,
+    "priceCents": 7595100,
+    "condition": "cpo",
+    "daysOnline": 70,
+    "firstListedAt": "2026-04-01T12:00:00Z",
+    "comparableCount": 4,
+    "avgComparableDays": 35.4,
+    "medianComparableDays": 45,
+    "benchmarkConfidence": "MEDIUM",
+    "movementSignal": "STALE",
+    "platformAssistsJson": {
+      "facebook-business-page": {
+        "leads": 1
+      },
+      "owned-storefront": {
+        "leads": 1
+      }
+    },
+    "computedAt": "2026-06-10T08:00:00Z",
+    "updatedAt": "2026-06-10T08:00:00Z"
+  },
+  {
+    "id": "perf_veh_0033",
+    "dealershipId": "dealer_lone_star_rv",
+    "vehicleId": "veh_0033",
+    "stockNumber": "LONE1000",
+    "make": "Polaris",
+    "model": "Ranger",
+    "year": 2026,
+    "priceCents": 3488400,
+    "condition": "certified",
+    "daysOnline": 66,
+    "firstListedAt": "2026-04-05T12:00:00Z",
+    "comparableCount": 12,
+    "avgComparableDays": null,
+    "medianComparableDays": 45,
+    "benchmarkConfidence": "HIGH",
+    "movementSignal": "ON_TRACK",
+    "platformAssistsJson": {
+      "facebook-business-page": {
+        "leads": 0
+      },
+      "owned-storefront": {
+        "leads": 5
+      }
+    },
+    "computedAt": "2026-06-10T08:00:00Z",
+    "updatedAt": "2026-06-10T08:00:00Z"
+  },
+  {
+    "id": "perf_veh_0035",
+    "dealershipId": "dealer_lone_star_rv",
+    "vehicleId": "veh_0035",
+    "stockNumber": "LONE1002",
+    "make": "Polaris",
+    "model": "Ranger",
+    "year": 2023,
+    "priceCents": 3966300,
+    "condition": "used",
+    "daysOnline": 33,
+    "firstListedAt": "2026-05-08T12:00:00Z",
+    "comparableCount": 3,
+    "avgComparableDays": 61.0,
+    "medianComparableDays": null,
+    "benchmarkConfidence": "LOW",
+    "movementSignal": "LOW_DATA",
+    "platformAssistsJson": {
+      "facebook-business-page": {
+        "leads": 4
+      },
+      "owned-storefront": {
+        "leads": 6
+      }
+    },
+    "computedAt": "2026-06-10T08:00:00Z",
+    "updatedAt": "2026-06-10T08:00:00Z"
+  },
+  {
+    "id": "perf_veh_0037",
+    "dealershipId": "dealer_lone_star_rv",
+    "vehicleId": "veh_0037",
+    "stockNumber": "LONE1004",
+    "make": "Polaris",
+    "model": "Ranger",
+    "year": 2026,
+    "priceCents": 4267400,
+    "condition": "used",
+    "daysOnline": 120,
+    "firstListedAt": "2026-02-10T12:00:00Z",
+    "comparableCount": 8,
+    "avgComparableDays": 48.2,
+    "medianComparableDays": 45,
+    "benchmarkConfidence": "LOW",
+    "movementSignal": "ON_TRACK",
+    "platformAssistsJson": {
+      "facebook-business-page": {
+        "leads": 2
+      },
+      "owned-storefront": {
+        "leads": 5
+      }
+    },
+    "computedAt": "2026-06-10T08:00:00Z",
+    "updatedAt": "2026-06-10T08:00:00Z"
+  },
+  {
+    "id": "perf_veh_0039",
+    "dealershipId": "dealer_lone_star_rv",
+    "vehicleId": "veh_0039",
+    "stockNumber": "LONE1006",
+    "make": "Airstream",
+    "model": "Basecamp",
+    "year": 2022,
+    "priceCents": 2734100,
+    "condition": "certified",
+    "daysOnline": 17,
+    "firstListedAt": "2026-05-24T12:00:00Z",
+    "comparableCount": 11,
+    "avgComparableDays": 61.0,
+    "medianComparableDays": 57,
+    "benchmarkConfidence": "LOW",
+    "movementSignal": "FAST",
+    "platformAssistsJson": {
+      "facebook-business-page": {
+        "leads": 3
+      },
+      "owned-storefront": {
+        "leads": 8
+      }
+    },
+    "computedAt": "2026-06-10T08:00:00Z",
+    "updatedAt": "2026-06-10T08:00:00Z"
+  },
+  {
+    "id": "perf_veh_0040",
+    "dealershipId": "dealer_lone_star_rv",
+    "vehicleId": "veh_0040",
+    "stockNumber": "LONE1007",
+    "make": "Airstream",
+    "model": "Basecamp",
+    "year": 2020,
+    "priceCents": 2888900,
+    "condition": "certified",
+    "daysOnline": 63,
+    "firstListedAt": "2026-04-08T12:00:00Z",
+    "comparableCount": 4,
+    "avgComparableDays": 35.4,
+    "medianComparableDays": 32,
+    "benchmarkConfidence": "INSUFFICIENT",
+    "movementSignal": "FAST",
+    "platformAssistsJson": {
+      "facebook-business-page": {
+        "leads": 4
+      },
+      "owned-storefront": {
+        "leads": 5
+      }
+    },
+    "computedAt": "2026-06-10T08:00:00Z",
+    "updatedAt": "2026-06-10T08:00:00Z"
+  },
+  {
+    "id": "perf_veh_0041",
+    "dealershipId": "dealer_lone_star_rv",
+    "vehicleId": "veh_0041",
+    "stockNumber": "LONE1008",
+    "make": "Airstream",
+    "model": "Basecamp",
+    "year": 2022,
+    "priceCents": 5797800,
+    "condition": "certified",
+    "daysOnline": 151,
+    "firstListedAt": "2026-01-10T12:00:00Z",
+    "comparableCount": 12,
+    "avgComparableDays": 35.4,
+    "medianComparableDays": 45,
+    "benchmarkConfidence": "MEDIUM",
+    "movementSignal": "SLOW",
+    "platformAssistsJson": {
+      "facebook-business-page": {
+        "leads": 0
+      },
+      "owned-storefront": {
+        "leads": 0
+      }
+    },
+    "computedAt": "2026-06-10T08:00:00Z",
+    "updatedAt": "2026-06-10T08:00:00Z"
+  },
+  {
+    "id": "perf_veh_0043",
+    "dealershipId": "dealer_lone_star_rv",
+    "vehicleId": "veh_0043",
+    "stockNumber": "LONE1010",
+    "make": "Forest River",
+    "model": "Rockwood",
+    "year": 2023,
+    "priceCents": 5975300,
+    "condition": "certified",
+    "daysOnline": 59,
+    "firstListedAt": "2026-04-12T12:00:00Z",
+    "comparableCount": 12,
+    "avgComparableDays": null,
+    "medianComparableDays": 45,
+    "benchmarkConfidence": "INSUFFICIENT",
+    "movementSignal": "STALE",
+    "platformAssistsJson": {
+      "facebook-business-page": {
+        "leads": 1
+      },
+      "owned-storefront": {
+        "leads": 2
+      }
+    },
+    "computedAt": "2026-06-10T08:00:00Z",
+    "updatedAt": "2026-06-10T08:00:00Z"
+  },
+  {
+    "id": "perf_veh_0045",
+    "dealershipId": "dealer_coastal_boats",
+    "vehicleId": "veh_0045",
+    "stockNumber": "COASTAL1000",
+    "make": "Yamaha",
+    "model": "AR195",
+    "year": 2025,
+    "priceCents": 8247400,
+    "condition": "certified",
+    "daysOnline": 151,
+    "firstListedAt": "2026-01-10T12:00:00Z",
+    "comparableCount": 8,
+    "avgComparableDays": 61.0,
+    "medianComparableDays": 45,
+    "benchmarkConfidence": "INSUFFICIENT",
+    "movementSignal": "SLOW",
+    "platformAssistsJson": {
+      "facebook-business-page": {
+        "leads": 1
+      },
+      "owned-storefront": {
+        "leads": 6
+      }
+    },
+    "computedAt": "2026-06-10T08:00:00Z",
+    "updatedAt": "2026-06-10T08:00:00Z"
+  },
+  {
+    "id": "perf_veh_0046",
+    "dealershipId": "dealer_coastal_boats",
+    "vehicleId": "veh_0046",
+    "stockNumber": "COASTAL1001",
+    "make": "Sea Ray",
+    "model": "SPX 190",
+    "year": 2026,
+    "priceCents": 4728800,
+    "condition": "cpo",
+    "daysOnline": 144,
+    "firstListedAt": "2026-01-17T12:00:00Z",
+    "comparableCount": 11,
+    "avgComparableDays": null,
+    "medianComparableDays": 45,
+    "benchmarkConfidence": "HIGH",
+    "movementSignal": "ON_TRACK",
+    "platformAssistsJson": {
+      "facebook-business-page": {
+        "leads": 1
+      },
+      "owned-storefront": {
+        "leads": 0
+      }
+    },
+    "computedAt": "2026-06-10T08:00:00Z",
+    "updatedAt": "2026-06-10T08:00:00Z"
+  },
+  {
+    "id": "perf_veh_0048",
+    "dealershipId": "dealer_coastal_boats",
+    "vehicleId": "veh_0048",
+    "stockNumber": "COASTAL1003",
+    "make": "Sea Ray",
+    "model": "SPX 190",
+    "year": 2021,
+    "priceCents": 4453200,
+    "condition": "cpo",
+    "daysOnline": 19,
+    "firstListedAt": "2026-05-22T12:00:00Z",
+    "comparableCount": 2,
+    "avgComparableDays": 61.0,
+    "medianComparableDays": null,
+    "benchmarkConfidence": "INSUFFICIENT",
+    "movementSignal": "SLOW",
+    "platformAssistsJson": {
+      "facebook-business-page": {
+        "leads": 4
+      },
+      "owned-storefront": {
+        "leads": 8
+      }
+    },
+    "computedAt": "2026-06-10T08:00:00Z",
+    "updatedAt": "2026-06-10T08:00:00Z"
+  },
+  {
+    "id": "perf_veh_0049",
+    "dealershipId": "dealer_coastal_boats",
+    "vehicleId": "veh_0049",
+    "stockNumber": "COASTAL1004",
+    "make": "Yamaha",
+    "model": "AR195",
+    "year": 2023,
+    "priceCents": 3806000,
+    "condition": "cpo",
+    "daysOnline": 101,
+    "firstListedAt": "2026-03-01T12:00:00Z",
+    "comparableCount": 10,
+    "avgComparableDays": 61.0,
+    "medianComparableDays": 32,
+    "benchmarkConfidence": "INSUFFICIENT",
+    "movementSignal": "ON_TRACK",
+    "platformAssistsJson": {
+      "facebook-business-page": {
+        "leads": 4
+      },
+      "owned-storefront": {
+        "leads": 7
+      }
+    },
+    "computedAt": "2026-06-10T08:00:00Z",
+    "updatedAt": "2026-06-10T08:00:00Z"
+  },
+  {
+    "id": "perf_veh_0054",
+    "dealershipId": "dealer_coastal_boats",
+    "vehicleId": "veh_0054",
+    "stockNumber": "COASTAL1009",
+    "make": "Sea Ray",
+    "model": "SPX 190",
+    "year": 2021,
+    "priceCents": 4267100,
+    "condition": "new",
+    "daysOnline": 46,
+    "firstListedAt": "2026-04-25T12:00:00Z",
+    "comparableCount": 7,
+    "avgComparableDays": 61.0,
+    "medianComparableDays": 32,
+    "benchmarkConfidence": "INSUFFICIENT",
+    "movementSignal": "FAST",
+    "platformAssistsJson": {
+      "facebook-business-page": {
+        "leads": 0
+      },
+      "owned-storefront": {
+        "leads": 6
+      }
+    },
+    "computedAt": "2026-06-10T08:00:00Z",
+    "updatedAt": "2026-06-10T08:00:00Z"
+  },
+  {
+    "id": "perf_veh_0061",
+    "dealershipId": "dealer_messy_motors",
+    "vehicleId": "veh_0061",
+    "stockNumber": "MESSY1004",
+    "make": "Chevrolet",
+    "model": "Silverado 1500",
+    "year": 2019,
+    "priceCents": 5965900,
+    "condition": "used",
+    "daysOnline": 36,
+    "firstListedAt": "2026-05-05T12:00:00Z",
+    "comparableCount": 7,
+    "avgComparableDays": 61.0,
+    "medianComparableDays": 45,
+    "benchmarkConfidence": "INSUFFICIENT",
+    "movementSignal": "FAST",
+    "platformAssistsJson": {
+      "facebook-business-page": {
+        "leads": 2
+      },
+      "owned-storefront": {
+        "leads": 4
+      }
+    },
+    "computedAt": "2026-06-10T08:00:00Z",
+    "updatedAt": "2026-06-10T08:00:00Z"
+  },
+  {
+    "id": "perf_veh_0063",
+    "dealershipId": "dealer_messy_motors",
+    "vehicleId": "veh_0063",
+    "stockNumber": "MESSY1006",
+    "make": "Jeep",
+    "model": "Wrangler",
+    "year": 2021,
+    "priceCents": 3793100,
+    "condition": "used",
+    "daysOnline": 8,
+    "firstListedAt": "2026-06-02T12:00:00Z",
+    "comparableCount": 9,
+    "avgComparableDays": 61.0,
+    "medianComparableDays": 32,
+    "benchmarkConfidence": "LOW",
+    "movementSignal": "LOW_DATA",
+    "platformAssistsJson": {
+      "facebook-business-page": {
+        "leads": 4
+      },
+      "owned-storefront": {
+        "leads": 8
+      }
+    },
+    "computedAt": "2026-06-10T08:00:00Z",
+    "updatedAt": "2026-06-10T08:00:00Z"
+  },
+  {
+    "id": "perf_veh_0064",
+    "dealershipId": "dealer_messy_motors",
+    "vehicleId": "veh_0064",
+    "stockNumber": "MESSY1007",
+    "make": "Ford",
+    "model": "F-150",
+    "year": 2018,
+    "priceCents": 1806000,
+    "condition": "used",
+    "daysOnline": 108,
+    "firstListedAt": "2026-02-22T12:00:00Z",
+    "comparableCount": 9,
+    "avgComparableDays": 35.4,
+    "medianComparableDays": 45,
+    "benchmarkConfidence": "LOW",
+    "movementSignal": "SLOW",
+    "platformAssistsJson": {
+      "facebook-business-page": {
+        "leads": 1
+      },
+      "owned-storefront": {
+        "leads": 3
+      }
+    },
+    "computedAt": "2026-06-10T08:00:00Z",
+    "updatedAt": "2026-06-10T08:00:00Z"
+  },
+  {
+    "id": "perf_veh_0065",
+    "dealershipId": "dealer_messy_motors",
+    "vehicleId": "veh_0065",
+    "stockNumber": "MESSY1008",
+    "make": "Nissan",
+    "model": "Altima",
+    "year": 2025,
+    "priceCents": 0,
+    "condition": "new",
+    "daysOnline": 132,
+    "firstListedAt": "2026-01-29T12:00:00Z",
+    "comparableCount": 5,
+    "avgComparableDays": 61.0,
+    "medianComparableDays": null,
+    "benchmarkConfidence": "LOW",
+    "movementSignal": "LOW_DATA",
+    "platformAssistsJson": {
+      "facebook-business-page": {
+        "leads": 0
+      },
+      "owned-storefront": {
+        "leads": 7
+      }
+    },
+    "computedAt": "2026-06-10T08:00:00Z",
+    "updatedAt": "2026-06-10T08:00:00Z"
+  },
+  {
+    "id": "perf_veh_0068",
+    "dealershipId": "dealer_messy_motors",
+    "vehicleId": "veh_0068",
+    "stockNumber": "MESSY1011",
+    "make": "Mercedes-Benz",
+    "model": "C-Class",
+    "year": 2018,
+    "priceCents": 4065400,
+    "condition": "new",
+    "daysOnline": 151,
+    "firstListedAt": "2026-01-10T12:00:00Z",
+    "comparableCount": 2,
+    "avgComparableDays": 61.0,
+    "medianComparableDays": 45,
+    "benchmarkConfidence": "LOW",
+    "movementSignal": "FAST",
+    "platformAssistsJson": {
+      "facebook-business-page": {
+        "leads": 1
+      },
+      "owned-storefront": {
+        "leads": 8
+      }
+    },
+    "computedAt": "2026-06-10T08:00:00Z",
+    "updatedAt": "2026-06-10T08:00:00Z"
+  },
+  {
+    "id": "perf_veh_0069",
+    "dealershipId": "dealer_messy_motors",
+    "vehicleId": "veh_0069",
+    "stockNumber": "MESSY1012",
+    "make": "Chevrolet",
+    "model": "Silverado 1500",
+    "year": 2022,
+    "priceCents": 5143900,
+    "condition": "new",
+    "daysOnline": 117,
+    "firstListedAt": "2026-02-13T12:00:00Z",
+    "comparableCount": 4,
+    "avgComparableDays": 48.2,
+    "medianComparableDays": null,
+    "benchmarkConfidence": "INSUFFICIENT",
+    "movementSignal": "FAST",
+    "platformAssistsJson": {
+      "facebook-business-page": {
+        "leads": 2
+      },
+      "owned-storefront": {
+        "leads": 4
+      }
+    },
+    "computedAt": "2026-06-10T08:00:00Z",
+    "updatedAt": "2026-06-10T08:00:00Z"
+  },
+  {
+    "id": "perf_veh_0070",
+    "dealershipId": "dealer_messy_motors",
+    "vehicleId": "veh_0070",
+    "stockNumber": "MESSY1013",
+    "make": "Nissan",
+    "model": "Altima",
+    "year": 2020,
+    "priceCents": 3049000,
+    "condition": "new",
+    "daysOnline": 101,
+    "firstListedAt": "2026-03-01T12:00:00Z",
+    "comparableCount": 12,
+    "avgComparableDays": 35.4,
+    "medianComparableDays": null,
+    "benchmarkConfidence": "HIGH",
+    "movementSignal": "LOW_DATA",
+    "platformAssistsJson": {
+      "facebook-business-page": {
+        "leads": 1
+      },
+      "owned-storefront": {
+        "leads": 4
+      }
+    },
+    "computedAt": "2026-06-10T08:00:00Z",
+    "updatedAt": "2026-06-10T08:00:00Z"
+  },
+  {
+    "id": "perf_veh_0071",
+    "dealershipId": "dealer_messy_motors",
+    "vehicleId": "veh_0071",
+    "stockNumber": "MESSY1014",
+    "make": "Honda",
+    "model": "CR-V",
+    "year": 2021,
+    "priceCents": 4170400,
+    "condition": "used",
+    "daysOnline": 28,
+    "firstListedAt": "2026-05-13T12:00:00Z",
+    "comparableCount": 4,
+    "avgComparableDays": null,
+    "medianComparableDays": 57,
+    "benchmarkConfidence": "HIGH",
+    "movementSignal": "SLOW",
+    "platformAssistsJson": {
+      "facebook-business-page": {
+        "leads": 0
+      },
+      "owned-storefront": {
+        "leads": 1
+      }
+    },
+    "computedAt": "2026-06-10T08:00:00Z",
+    "updatedAt": "2026-06-10T08:00:00Z"
+  },
+  {
+    "id": "perf_veh_0074",
+    "dealershipId": "dealer_messy_motors",
+    "vehicleId": "veh_0074",
+    "stockNumber": "MESSY1017",
+    "make": "Subaru",
+    "model": "Outback",
+    "year": 2022,
+    "priceCents": 7531900,
+    "condition": "used",
+    "daysOnline": 88,
+    "firstListedAt": "2026-03-14T12:00:00Z",
+    "comparableCount": 6,
+    "avgComparableDays": 48.2,
+    "medianComparableDays": 32,
+    "benchmarkConfidence": "HIGH",
+    "movementSignal": "ON_TRACK",
+    "platformAssistsJson": {
+      "facebook-business-page": {
+        "leads": 3
+      },
+      "owned-storefront": {
+        "leads": 3
+      }
+    },
+    "computedAt": "2026-06-10T08:00:00Z",
+    "updatedAt": "2026-06-10T08:00:00Z"
+  },
+  {
+    "id": "perf_veh_0075",
+    "dealershipId": "dealer_messy_motors",
+    "vehicleId": "veh_0075",
+    "stockNumber": "MESSY1018",
+    "make": "Subaru",
+    "model": "Outback",
+    "year": 2016,
+    "priceCents": 6976900,
+    "condition": "used",
+    "daysOnline": 154,
+    "firstListedAt": "2026-01-07T12:00:00Z",
+    "comparableCount": 0,
+    "avgComparableDays": 48.2,
+    "medianComparableDays": 57,
+    "benchmarkConfidence": "HIGH",
+    "movementSignal": "STALE",
+    "platformAssistsJson": {
+      "facebook-business-page": {
+        "leads": 4
+      },
+      "owned-storefront": {
+        "leads": 1
+      }
+    },
+    "computedAt": "2026-06-10T08:00:00Z",
+    "updatedAt": "2026-06-10T08:00:00Z"
+  },
+  {
+    "id": "perf_veh_0076",
+    "dealershipId": "dealer_messy_motors",
+    "vehicleId": "veh_0076",
+    "stockNumber": "MESSY1019",
+    "make": "Chevrolet",
+    "model": "Silverado 1500",
+    "year": 2020,
+    "priceCents": 5909100,
+    "condition": "new",
+    "daysOnline": 75,
+    "firstListedAt": "2026-03-27T12:00:00Z",
+    "comparableCount": 4,
+    "avgComparableDays": 35.4,
+    "medianComparableDays": 57,
+    "benchmarkConfidence": "MEDIUM",
+    "movementSignal": "LOW_DATA",
+    "platformAssistsJson": {
+      "facebook-business-page": {
+        "leads": 2
+      },
+      "owned-storefront": {
+        "leads": 4
+      }
+    },
+    "computedAt": "2026-06-10T08:00:00Z",
+    "updatedAt": "2026-06-10T08:00:00Z"
+  },
+  {
+    "id": "perf_veh_0079",
+    "dealershipId": "dealer_messy_motors",
+    "vehicleId": "veh_0079",
+    "stockNumber": "MESSY1022",
+    "make": "Toyota",
+    "model": "Camry",
+    "year": 2020,
+    "priceCents": 1826600,
+    "condition": "new",
+    "daysOnline": 133,
+    "firstListedAt": "2026-01-28T12:00:00Z",
+    "comparableCount": 3,
+    "avgComparableDays": null,
+    "medianComparableDays": null,
+    "benchmarkConfidence": "MEDIUM",
+    "movementSignal": "FAST",
+    "platformAssistsJson": {
+      "facebook-business-page": {
+        "leads": 2
+      },
+      "owned-storefront": {
+        "leads": 5
+      }
+    },
+    "computedAt": "2026-06-10T08:00:00Z",
+    "updatedAt": "2026-06-10T08:00:00Z"
+  },
+  {
+    "id": "perf_veh_0080",
+    "dealershipId": "dealer_messy_motors",
+    "vehicleId": "veh_0080",
+    "stockNumber": "MESSY1023",
+    "make": "Jeep",
+    "model": "Wrangler",
+    "year": 2022,
+    "priceCents": 1631400,
+    "condition": "used",
+    "daysOnline": 127,
+    "firstListedAt": "2026-02-03T12:00:00Z",
+    "comparableCount": 4,
+    "avgComparableDays": 48.2,
+    "medianComparableDays": 32,
+    "benchmarkConfidence": "INSUFFICIENT",
+    "movementSignal": "LOW_DATA",
+    "platformAssistsJson": {
+      "facebook-business-page": {
+        "leads": 2
+      },
+      "owned-storefront": {
+        "leads": 2
+      }
+    },
+    "computedAt": "2026-06-10T08:00:00Z",
+    "updatedAt": "2026-06-10T08:00:00Z"
+  },
+  {
+    "id": "perf_veh_0081",
+    "dealershipId": "dealer_messy_motors",
+    "vehicleId": "veh_0081",
+    "stockNumber": "MESSY1024",
+    "make": "Nissan",
+    "model": "Altima",
+    "year": 2016,
+    "priceCents": 0,
+    "condition": "new",
+    "daysOnline": 88,
+    "firstListedAt": "2026-03-14T12:00:00Z",
+    "comparableCount": 6,
+    "avgComparableDays": null,
+    "medianComparableDays": 32,
+    "benchmarkConfidence": "HIGH",
+    "movementSignal": "ON_TRACK",
+    "platformAssistsJson": {
+      "facebook-business-page": {
+        "leads": 3
+      },
+      "owned-storefront": {
+        "leads": 2
+      }
+    },
+    "computedAt": "2026-06-10T08:00:00Z",
+    "updatedAt": "2026-06-10T08:00:00Z"
+  },
+  {
+    "id": "perf_veh_0082",
+    "dealershipId": "dealer_messy_motors",
+    "vehicleId": "veh_0082",
+    "stockNumber": "MESSY1025",
+    "make": "BMW",
+    "model": "X5",
+    "year": 2021,
+    "priceCents": 4897900,
+    "condition": "used",
+    "daysOnline": 17,
+    "firstListedAt": "2026-05-24T12:00:00Z",
+    "comparableCount": 11,
+    "avgComparableDays": null,
+    "medianComparableDays": 45,
+    "benchmarkConfidence": "LOW",
+    "movementSignal": "ON_TRACK",
+    "platformAssistsJson": {
+      "facebook-business-page": {
+        "leads": 4
+      },
+      "owned-storefront": {
+        "leads": 4
+      }
+    },
+    "computedAt": "2026-06-10T08:00:00Z",
+    "updatedAt": "2026-06-10T08:00:00Z"
+  },
+  {
+    "id": "perf_veh_0083",
+    "dealershipId": "dealer_messy_motors",
+    "vehicleId": "veh_0083",
+    "stockNumber": "MESSY1026",
+    "make": "Nissan",
+    "model": "Altima",
+    "year": 2021,
+    "priceCents": 5247000,
+    "condition": "used",
+    "daysOnline": 62,
+    "firstListedAt": "2026-04-09T12:00:00Z",
+    "comparableCount": 10,
+    "avgComparableDays": 48.2,
+    "medianComparableDays": 57,
+    "benchmarkConfidence": "HIGH",
+    "movementSignal": "LOW_DATA",
+    "platformAssistsJson": {
+      "facebook-business-page": {
+        "leads": 1
+      },
+      "owned-storefront": {
+        "leads": 8
+      }
+    },
+    "computedAt": "2026-06-10T08:00:00Z",
+    "updatedAt": "2026-06-10T08:00:00Z"
+  },
+  {
+    "id": "perf_veh_0085",
+    "dealershipId": "dealer_premium_imports",
+    "vehicleId": "veh_0085",
+    "stockNumber": "PREMIUM1000",
+    "make": "Jeep",
+    "model": "Wrangler",
+    "year": 2025,
+    "priceCents": 4789300,
+    "condition": "certified",
+    "daysOnline": 65,
+    "firstListedAt": "2026-04-06T12:00:00Z",
+    "comparableCount": 10,
+    "avgComparableDays": 35.4,
+    "medianComparableDays": 45,
+    "benchmarkConfidence": "HIGH",
+    "movementSignal": "SLOW",
+    "platformAssistsJson": {
+      "facebook-business-page": {
+        "leads": 0
+      },
+      "owned-storefront": {
+        "leads": 0
+      }
+    },
+    "computedAt": "2026-06-10T08:00:00Z",
+    "updatedAt": "2026-06-10T08:00:00Z"
+  },
+  {
+    "id": "perf_veh_0086",
+    "dealershipId": "dealer_premium_imports",
+    "vehicleId": "veh_0086",
+    "stockNumber": "PREMIUM1001",
+    "make": "Mercedes-Benz",
+    "model": "C-Class",
+    "year": 2022,
+    "priceCents": 4136900,
+    "condition": "certified",
+    "daysOnline": 57,
+    "firstListedAt": "2026-04-14T12:00:00Z",
+    "comparableCount": 7,
+    "avgComparableDays": 61.0,
+    "medianComparableDays": 57,
+    "benchmarkConfidence": "HIGH",
+    "movementSignal": "STALE",
+    "platformAssistsJson": {
+      "facebook-business-page": {
+        "leads": 0
+      },
+      "owned-storefront": {
+        "leads": 0
+      }
+    },
+    "computedAt": "2026-06-10T08:00:00Z",
+    "updatedAt": "2026-06-10T08:00:00Z"
+  },
+  {
+    "id": "perf_veh_0091",
+    "dealershipId": "dealer_premium_imports",
+    "vehicleId": "veh_0091",
+    "stockNumber": "PREMIUM1006",
+    "make": "Honda",
+    "model": "CR-V",
+    "year": 2020,
+    "priceCents": 5059500,
+    "condition": "cpo",
+    "daysOnline": 78,
+    "firstListedAt": "2026-03-24T12:00:00Z",
+    "comparableCount": 2,
+    "avgComparableDays": 35.4,
+    "medianComparableDays": 57,
+    "benchmarkConfidence": "INSUFFICIENT",
+    "movementSignal": "LOW_DATA",
+    "platformAssistsJson": {
+      "facebook-business-page": {
+        "leads": 2
+      },
+      "owned-storefront": {
+        "leads": 7
+      }
+    },
+    "computedAt": "2026-06-10T08:00:00Z",
+    "updatedAt": "2026-06-10T08:00:00Z"
+  },
+  {
+    "id": "perf_veh_0092",
+    "dealershipId": "dealer_premium_imports",
+    "vehicleId": "veh_0092",
+    "stockNumber": "PREMIUM1007",
+    "make": "Mercedes-Benz",
+    "model": "C-Class",
+    "year": 2018,
+    "priceCents": 6295500,
+    "condition": "new",
+    "daysOnline": 33,
+    "firstListedAt": "2026-05-08T12:00:00Z",
+    "comparableCount": 12,
+    "avgComparableDays": 35.4,
+    "medianComparableDays": 45,
+    "benchmarkConfidence": "MEDIUM",
+    "movementSignal": "SLOW",
+    "platformAssistsJson": {
+      "facebook-business-page": {
+        "leads": 3
+      },
+      "owned-storefront": {
+        "leads": 4
+      }
+    },
+    "computedAt": "2026-06-10T08:00:00Z",
+    "updatedAt": "2026-06-10T08:00:00Z"
+  },
+  {
+    "id": "perf_veh_0097",
+    "dealershipId": "dealer_premium_imports",
+    "vehicleId": "veh_0097",
+    "stockNumber": "PREMIUM1012",
+    "make": "Nissan",
+    "model": "Altima",
+    "year": 2025,
+    "priceCents": 6568900,
+    "condition": "cpo",
+    "daysOnline": 51,
+    "firstListedAt": "2026-04-20T12:00:00Z",
+    "comparableCount": 5,
+    "avgComparableDays": 35.4,
+    "medianComparableDays": null,
+    "benchmarkConfidence": "LOW",
+    "movementSignal": "LOW_DATA",
+    "platformAssistsJson": {
+      "facebook-business-page": {
+        "leads": 1
+      },
+      "owned-storefront": {
+        "leads": 2
+      }
+    },
+    "computedAt": "2026-06-10T08:00:00Z",
+    "updatedAt": "2026-06-10T08:00:00Z"
+  },
+  {
+    "id": "perf_veh_0098",
+    "dealershipId": "dealer_premium_imports",
+    "vehicleId": "veh_0098",
+    "stockNumber": "PREMIUM1013",
+    "make": "Mercedes-Benz",
+    "model": "C-Class",
+    "year": 2016,
+    "priceCents": 2190300,
+    "condition": "used",
+    "daysOnline": 146,
+    "firstListedAt": "2026-01-15T12:00:00Z",
+    "comparableCount": 6,
+    "avgComparableDays": null,
+    "medianComparableDays": 45,
+    "benchmarkConfidence": "INSUFFICIENT",
+    "movementSignal": "SLOW",
+    "platformAssistsJson": {
+      "facebook-business-page": {
+        "leads": 3
+      },
+      "owned-storefront": {
+        "leads": 6
+      }
+    },
+    "computedAt": "2026-06-10T08:00:00Z",
+    "updatedAt": "2026-06-10T08:00:00Z"
+  },
+  {
+    "id": "perf_veh_0099",
+    "dealershipId": "dealer_premium_imports",
+    "vehicleId": "veh_0099",
+    "stockNumber": "PREMIUM1014",
+    "make": "Ford",
+    "model": "F-150",
+    "year": 2016,
+    "priceCents": 2641900,
+    "condition": "new",
+    "daysOnline": 145,
+    "firstListedAt": "2026-01-16T12:00:00Z",
+    "comparableCount": 8,
+    "avgComparableDays": 35.4,
+    "medianComparableDays": 45,
+    "benchmarkConfidence": "LOW",
+    "movementSignal": "SLOW",
+    "platformAssistsJson": {
+      "facebook-business-page": {
+        "leads": 1
+      },
+      "owned-storefront": {
+        "leads": 3
+      }
+    },
+    "computedAt": "2026-06-10T08:00:00Z",
+    "updatedAt": "2026-06-10T08:00:00Z"
+  },
+  {
+    "id": "perf_veh_0101",
+    "dealershipId": "dealer_premium_imports",
+    "vehicleId": "veh_0101",
+    "stockNumber": "PREMIUM1016",
+    "make": "Nissan",
+    "model": "Altima",
+    "year": 2020,
+    "priceCents": 2427400,
+    "condition": "certified",
+    "daysOnline": 149,
+    "firstListedAt": "2026-01-12T12:00:00Z",
+    "comparableCount": 5,
+    "avgComparableDays": 48.2,
+    "medianComparableDays": 57,
+    "benchmarkConfidence": "MEDIUM",
+    "movementSignal": "SLOW",
+    "platformAssistsJson": {
+      "facebook-business-page": {
+        "leads": 2
+      },
+      "owned-storefront": {
+        "leads": 6
+      }
+    },
+    "computedAt": "2026-06-10T08:00:00Z",
+    "updatedAt": "2026-06-10T08:00:00Z"
+  },
+  {
+    "id": "perf_veh_0103",
+    "dealershipId": "dealer_premium_imports",
+    "vehicleId": "veh_0103",
+    "stockNumber": "PREMIUM1018",
+    "make": "Toyota",
+    "model": "Camry",
+    "year": 2025,
+    "priceCents": 3055200,
+    "condition": "new",
+    "daysOnline": 154,
+    "firstListedAt": "2026-01-07T12:00:00Z",
+    "comparableCount": 12,
+    "avgComparableDays": 48.2,
+    "medianComparableDays": 32,
+    "benchmarkConfidence": "INSUFFICIENT",
+    "movementSignal": "FAST",
+    "platformAssistsJson": {
+      "facebook-business-page": {
+        "leads": 3
+      },
+      "owned-storefront": {
+        "leads": 4
+      }
+    },
+    "computedAt": "2026-06-10T08:00:00Z",
+    "updatedAt": "2026-06-10T08:00:00Z"
+  },
+  {
+    "id": "perf_veh_0104",
+    "dealershipId": "dealer_premium_imports",
+    "vehicleId": "veh_0104",
+    "stockNumber": "PREMIUM1019",
+    "make": "Jeep",
+    "model": "Wrangler",
+    "year": 2026,
+    "priceCents": 3402000,
+    "condition": "new",
+    "daysOnline": 12,
+    "firstListedAt": "2026-05-29T12:00:00Z",
+    "comparableCount": 8,
+    "avgComparableDays": 61.0,
+    "medianComparableDays": null,
+    "benchmarkConfidence": "HIGH",
+    "movementSignal": "FAST",
+    "platformAssistsJson": {
+      "facebook-business-page": {
+        "leads": 1
+      },
+      "owned-storefront": {
+        "leads": 1
+      }
+    },
+    "computedAt": "2026-06-10T08:00:00Z",
+    "updatedAt": "2026-06-10T08:00:00Z"
+  },
+  {
+    "id": "perf_veh_0105",
+    "dealershipId": "dealer_premium_imports",
+    "vehicleId": "veh_0105",
+    "stockNumber": "PREMIUM1020",
+    "make": "Mercedes-Benz",
+    "model": "C-Class",
+    "year": 2024,
+    "priceCents": 2403800,
+    "condition": "new",
+    "daysOnline": 6,
+    "firstListedAt": "2026-06-04T12:00:00Z",
+    "comparableCount": 4,
+    "avgComparableDays": null,
+    "medianComparableDays": 32,
+    "benchmarkConfidence": "INSUFFICIENT",
+    "movementSignal": "LOW_DATA",
+    "platformAssistsJson": {
+      "facebook-business-page": {
+        "leads": 0
+      },
+      "owned-storefront": {
+        "leads": 1
+      }
+    },
+    "computedAt": "2026-06-10T08:00:00Z",
+    "updatedAt": "2026-06-10T08:00:00Z"
+  },
+  {
+    "id": "perf_veh_0107",
+    "dealershipId": "dealer_premium_imports",
+    "vehicleId": "veh_0107",
+    "stockNumber": "PREMIUM1022",
+    "make": "Tesla",
+    "model": "Model 3",
+    "year": 2016,
+    "priceCents": 3670200,
+    "condition": "used",
+    "daysOnline": 6,
+    "firstListedAt": "2026-06-04T12:00:00Z",
+    "comparableCount": 0,
+    "avgComparableDays": 48.2,
+    "medianComparableDays": 32,
+    "benchmarkConfidence": "MEDIUM",
+    "movementSignal": "ON_TRACK",
+    "platformAssistsJson": {
+      "facebook-business-page": {
+        "leads": 1
+      },
+      "owned-storefront": {
+        "leads": 1
+      }
+    },
+    "computedAt": "2026-06-10T08:00:00Z",
+    "updatedAt": "2026-06-10T08:00:00Z"
+  },
+  {
+    "id": "perf_veh_0108",
+    "dealershipId": "dealer_premium_imports",
+    "vehicleId": "veh_0108",
+    "stockNumber": "PREMIUM1023",
+    "make": "Tesla",
+    "model": "Model 3",
+    "year": 2023,
+    "priceCents": 2590100,
+    "condition": "cpo",
+    "daysOnline": 76,
+    "firstListedAt": "2026-03-26T12:00:00Z",
+    "comparableCount": 5,
+    "avgComparableDays": null,
+    "medianComparableDays": 45,
+    "benchmarkConfidence": "LOW",
+    "movementSignal": "FAST",
+    "platformAssistsJson": {
+      "facebook-business-page": {
+        "leads": 4
+      },
+      "owned-storefront": {
+        "leads": 5
+      }
+    },
+    "computedAt": "2026-06-10T08:00:00Z",
+    "updatedAt": "2026-06-10T08:00:00Z"
+  },
+  {
+    "id": "perf_veh_0109",
+    "dealershipId": "dealer_premium_imports",
+    "vehicleId": "veh_0109",
+    "stockNumber": "PREMIUM1024",
+    "make": "Tesla",
+    "model": "Model 3",
+    "year": 2026,
+    "priceCents": 4128600,
+    "condition": "certified",
+    "daysOnline": 105,
+    "firstListedAt": "2026-02-25T12:00:00Z",
+    "comparableCount": 8,
+    "avgComparableDays": 35.4,
+    "medianComparableDays": null,
+    "benchmarkConfidence": "INSUFFICIENT",
+    "movementSignal": "FAST",
+    "platformAssistsJson": {
+      "facebook-business-page": {
+        "leads": 1
+      },
+      "owned-storefront": {
+        "leads": 3
+      }
+    },
+    "computedAt": "2026-06-10T08:00:00Z",
+    "updatedAt": "2026-06-10T08:00:00Z"
+  },
+  {
+    "id": "perf_veh_0110",
+    "dealershipId": "dealer_premium_imports",
+    "vehicleId": "veh_0110",
+    "stockNumber": "PREMIUM1025",
+    "make": "Subaru",
+    "model": "Outback",
+    "year": 2023,
+    "priceCents": 2060100,
+    "condition": "cpo",
+    "daysOnline": 137,
+    "firstListedAt": "2026-01-24T12:00:00Z",
+    "comparableCount": 0,
+    "avgComparableDays": 61.0,
+    "medianComparableDays": 57,
+    "benchmarkConfidence": "INSUFFICIENT",
+    "movementSignal": "LOW_DATA",
+    "platformAssistsJson": {
+      "facebook-business-page": {
+        "leads": 1
+      },
+      "owned-storefront": {
+        "leads": 3
+      }
+    },
+    "computedAt": "2026-06-10T08:00:00Z",
+    "updatedAt": "2026-06-10T08:00:00Z"
+  },
+  {
+    "id": "perf_veh_0112",
+    "dealershipId": "dealer_premium_imports",
+    "vehicleId": "veh_0112",
+    "stockNumber": "PREMIUM1027",
+    "make": "Ford",
+    "model": "F-150",
+    "year": 2020,
+    "priceCents": 3258200,
+    "condition": "certified",
+    "daysOnline": 84,
+    "firstListedAt": "2026-03-18T12:00:00Z",
+    "comparableCount": 5,
+    "avgComparableDays": 35.4,
+    "medianComparableDays": 45,
+    "benchmarkConfidence": "LOW",
+    "movementSignal": "LOW_DATA",
+    "platformAssistsJson": {
+      "facebook-business-page": {
+        "leads": 2
+      },
+      "owned-storefront": {
+        "leads": 4
+      }
+    },
+    "computedAt": "2026-06-10T08:00:00Z",
+    "updatedAt": "2026-06-10T08:00:00Z"
+  },
+  {
+    "id": "perf_veh_0114",
+    "dealershipId": "dealer_premium_imports",
+    "vehicleId": "veh_0114",
+    "stockNumber": "PREMIUM1029",
+    "make": "Honda",
+    "model": "CR-V",
+    "year": 2018,
+    "priceCents": 6393800,
+    "condition": "cpo",
+    "daysOnline": 133,
+    "firstListedAt": "2026-01-28T12:00:00Z",
+    "comparableCount": 10,
+    "avgComparableDays": 48.2,
+    "medianComparableDays": 45,
+    "benchmarkConfidence": "HIGH",
+    "movementSignal": "STALE",
+    "platformAssistsJson": {
+      "facebook-business-page": {
+        "leads": 0
+      },
+      "owned-storefront": {
+        "leads": 3
+      }
+    },
+    "computedAt": "2026-06-10T08:00:00Z",
+    "updatedAt": "2026-06-10T08:00:00Z"
+  },
+  {
+    "id": "perf_veh_0116",
+    "dealershipId": "dealer_premium_imports",
+    "vehicleId": "veh_0116",
+    "stockNumber": "PREMIUM1031",
+    "make": "Tesla",
+    "model": "Model 3",
+    "year": 2026,
+    "priceCents": 1951800,
+    "condition": "used",
+    "daysOnline": 29,
+    "firstListedAt": "2026-05-12T12:00:00Z",
+    "comparableCount": 7,
+    "avgComparableDays": 61.0,
+    "medianComparableDays": null,
+    "benchmarkConfidence": "HIGH",
+    "movementSignal": "LOW_DATA",
+    "platformAssistsJson": {
+      "facebook-business-page": {
+        "leads": 2
+      },
+      "owned-storefront": {
+        "leads": 0
+      }
+    },
+    "computedAt": "2026-06-10T08:00:00Z",
+    "updatedAt": "2026-06-10T08:00:00Z"
+  }
+]

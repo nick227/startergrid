@@ -126,6 +126,14 @@ export function resetCredentialValidationCache(): void {
   cachedRun = null;
 }
 
+export function getCachedCredentialValidationRun(): CredentialValidationRun | null {
+  if (cachedRun) {
+    const { results, lastCheckedAt, checkedBy, durationMs } = cachedRun;
+    return { results, meta: { lastCheckedAt, checkedBy, durationMs, cached: true } };
+  }
+  return null;
+}
+
 export async function runCredentialValidation(
   prisma: PrismaClient,
   actor: ValidationActor,

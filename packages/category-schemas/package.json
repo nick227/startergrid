@@ -5,6 +5,9 @@
   "type": "module",
   "description": "Declarative business category schemas for operator console copy and asset presentation",
   "exports": {
-    ".": "./src/index.ts"
+    ".": {
+      "types": "./src/index.ts",
+      "default": "./dist/index.js"
+    }
   }
 }

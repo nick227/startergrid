@@ -16,6 +16,10 @@ export const PARTNER_FEED_SLUGS = Object.freeze(
   new Set(platformProfiles.filter(p => p.partnerFeed).map(p => p.slug)),
 );
 
+export const LEAD_SYNC_SLUGS = Object.freeze(
+  new Set(platformProfiles.filter(p => p.leadSync).map(p => p.slug)),
+);
+
 export const OAUTH_PROFILE_SLUGS = Object.freeze(
   new Set(platformProfiles.filter(p => p.oauthProvider).map(p => p.slug)),
 );

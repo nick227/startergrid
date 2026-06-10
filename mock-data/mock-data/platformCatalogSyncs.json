@@ -1,0 +1,282 @@
+[
+  {
+    "id": "catalog_dealer_austin_auto_meta_automotive_ads",
+    "dealershipId": "dealer_austin_auto",
+    "platformSlug": "meta-automotive-ads",
+    "catalogId": "mock_catalog_meta-automotive-ads_dealer_austin_auto",
+    "metadataJson": {
+      "accountId": "acct_meta-automotive-ads_dealer_austin_auto",
+      "liveValidation": "mocked"
+    },
+    "lastSyncAt": "2026-06-09T08:00:00Z",
+    "lastSyncCount": 30,
+    "createdAt": "2026-05-21T12:00:00Z",
+    "updatedAt": "2026-06-09T12:00:00Z"
+  },
+  {
+    "id": "catalog_dealer_austin_auto_microsoft_automotive_ads",
+    "dealershipId": "dealer_austin_auto",
+    "platformSlug": "microsoft-automotive-ads",
+    "catalogId": "mock_catalog_microsoft-automotive-ads_dealer_austin_auto",
+    "metadataJson": {
+      "accountId": "acct_microsoft-automotive-ads_dealer_austin_auto",
+      "liveValidation": "blocked"
+    },
+    "lastSyncAt": null,
+    "lastSyncCount": null,
+    "createdAt": "2026-05-21T12:00:00Z",
+    "updatedAt": "2026-06-09T12:00:00Z"
+  },
+  {
+    "id": "catalog_dealer_austin_auto_x_dynamic_product_ads",
+    "dealershipId": "dealer_austin_auto",
+    "platformSlug": "x-dynamic-product-ads",
+    "catalogId": "mock_catalog_x-dynamic-product-ads_dealer_austin_auto",
+    "metadataJson": {
+      "accountId": "acct_x-dynamic-product-ads_dealer_austin_auto",
+      "liveValidation": "blocked"
+    },
+    "lastSyncAt": null,
+    "lastSyncCount": null,
+    "createdAt": "2026-05-21T12:00:00Z",
+    "updatedAt": "2026-06-09T12:00:00Z"
+  },
+  {
+    "id": "catalog_dealer_austin_auto_nextdoor_ads",
+    "dealershipId": "dealer_austin_auto",
+    "platformSlug": "nextdoor-ads",
+    "catalogId": "mock_catalog_nextdoor-ads_dealer_austin_auto",
+    "metadataJson": {
+      "accountId": "acct_nextdoor-ads_dealer_austin_auto",
+      "liveValidation": "blocked"
+    },
+    "lastSyncAt": null,
+    "lastSyncCount": null,
+    "createdAt": "2026-05-21T12:00:00Z",
+    "updatedAt": "2026-06-09T12:00:00Z"
+  },
+  {
+    "id": "catalog_dealer_lone_star_rv_meta_automotive_ads",
+    "dealershipId": "dealer_lone_star_rv",
+    "platformSlug": "meta-automotive-ads",
+    "catalogId": "mock_catalog_meta-automotive-ads_dealer_lone_star_rv",
+    "metadataJson": {
+      "accountId": "acct_meta-automotive-ads_dealer_lone_star_rv",
+      "liveValidation": "mocked"
+    },
+    "lastSyncAt": "2026-06-10T04:00:00Z",
+    "lastSyncCount": 70,
+    "createdAt": "2026-05-21T12:00:00Z",
+    "updatedAt": "2026-06-09T12:00:00Z"
+  },
+  {
+    "id": "catalog_dealer_lone_star_rv_microsoft_automotive_ads",
+    "dealershipId": "dealer_lone_star_rv",
+    "platformSlug": "microsoft-automotive-ads",
+    "catalogId": "mock_catalog_microsoft-automotive-ads_dealer_lone_star_rv",
+    "metadataJson": {
+      "accountId": "acct_microsoft-automotive-ads_dealer_lone_star_rv",
+      "liveValidation": "blocked"
+    },
+    "lastSyncAt": null,
+    "lastSyncCount": null,
+    "createdAt": "2026-05-21T12:00:00Z",
+    "updatedAt": "2026-06-09T12:00:00Z"
+  },
+  {
+    "id": "catalog_dealer_lone_star_rv_x_dynamic_product_ads",
+    "dealershipId": "dealer_lone_star_rv",
+    "platformSlug": "x-dynamic-product-ads",
+    "catalogId": "mock_catalog_x-dynamic-product-ads_dealer_lone_star_rv",
+    "metadataJson": {
+      "accountId": "acct_x-dynamic-product-ads_dealer_lone_star_rv",
+      "liveValidation": "blocked"
+    },
+    "lastSyncAt": null,
+    "lastSyncCount": null,
+    "createdAt": "2026-05-21T12:00:00Z",
+    "updatedAt": "2026-06-09T12:00:00Z"
+  },
+  {
+    "id": "catalog_dealer_lone_star_rv_nextdoor_ads",
+    "dealershipId": "dealer_lone_star_rv",
+    "platformSlug": "nextdoor-ads",
+    "catalogId": "mock_catalog_nextdoor-ads_dealer_lone_star_rv",
+    "metadataJson": {
+      "accountId": "acct_nextdoor-ads_dealer_lone_star_rv",
+      "liveValidation": "blocked"
+    },
+    "lastSyncAt": null,
+    "lastSyncCount": null,
+    "createdAt": "2026-05-21T12:00:00Z",
+    "updatedAt": "2026-06-09T12:00:00Z"
+  },
+  {
+    "id": "catalog_dealer_coastal_boats_meta_automotive_ads",
+    "dealershipId": "dealer_coastal_boats",
+    "platformSlug": "meta-automotive-ads",
+    "catalogId": "mock_catalog_meta-automotive-ads_dealer_coastal_boats",
+    "metadataJson": {
+      "accountId": "acct_meta-automotive-ads_dealer_coastal_boats",
+      "liveValidation": "mocked"
+    },
+    "lastSyncAt": "2026-06-08T02:00:00Z",
+    "lastSyncCount": 23,
+    "createdAt": "2026-05-21T12:00:00Z",
+    "updatedAt": "2026-06-09T12:00:00Z"
+  },
+  {
+    "id": "catalog_dealer_coastal_boats_microsoft_automotive_ads",
+    "dealershipId": "dealer_coastal_boats",
+    "platformSlug": "microsoft-automotive-ads",
+    "catalogId": "mock_catalog_microsoft-automotive-ads_dealer_coastal_boats",
+    "metadataJson": {
+      "accountId": "acct_microsoft-automotive-ads_dealer_coastal_boats",
+      "liveValidation": "blocked"
+    },
+    "lastSyncAt": null,
+    "lastSyncCount": null,
+    "createdAt": "2026-05-21T12:00:00Z",
+    "updatedAt": "2026-06-09T12:00:00Z"
+  },
+  {
+    "id": "catalog_dealer_coastal_boats_x_dynamic_product_ads",
+    "dealershipId": "dealer_coastal_boats",
+    "platformSlug": "x-dynamic-product-ads",
+    "catalogId": "mock_catalog_x-dynamic-product-ads_dealer_coastal_boats",
+    "metadataJson": {
+      "accountId": "acct_x-dynamic-product-ads_dealer_coastal_boats",
+      "liveValidation": "blocked"
+    },
+    "lastSyncAt": null,
+    "lastSyncCount": null,
+    "createdAt": "2026-05-21T12:00:00Z",
+    "updatedAt": "2026-06-09T12:00:00Z"
+  },
+  {
+    "id": "catalog_dealer_coastal_boats_nextdoor_ads",
+    "dealershipId": "dealer_coastal_boats",
+    "platformSlug": "nextdoor-ads",
+    "catalogId": "mock_catalog_nextdoor-ads_dealer_coastal_boats",
+    "metadataJson": {
+      "accountId": "acct_nextdoor-ads_dealer_coastal_boats",
+      "liveValidation": "blocked"
+    },
+    "lastSyncAt": null,
+    "lastSyncCount": null,
+    "createdAt": "2026-05-21T12:00:00Z",
+    "updatedAt": "2026-06-09T12:00:00Z"
+  },
+  {
+    "id": "catalog_dealer_messy_motors_meta_automotive_ads",
+    "dealershipId": "dealer_messy_motors",
+    "platformSlug": "meta-automotive-ads",
+    "catalogId": "mock_catalog_meta-automotive-ads_dealer_messy_motors",
+    "metadataJson": {
+      "accountId": "acct_meta-automotive-ads_dealer_messy_motors",
+      "liveValidation": "mocked"
+    },
+    "lastSyncAt": "2026-06-07T21:00:00Z",
+    "lastSyncCount": 55,
+    "createdAt": "2026-05-21T12:00:00Z",
+    "updatedAt": "2026-06-09T12:00:00Z"
+  },
+  {
+    "id": "catalog_dealer_messy_motors_microsoft_automotive_ads",
+    "dealershipId": "dealer_messy_motors",
+    "platformSlug": "microsoft-automotive-ads",
+    "catalogId": "mock_catalog_microsoft-automotive-ads_dealer_messy_motors",
+    "metadataJson": {
+      "accountId": "acct_microsoft-automotive-ads_dealer_messy_motors",
+      "liveValidation": "blocked"
+    },
+    "lastSyncAt": null,
+    "lastSyncCount": null,
+    "createdAt": "2026-05-21T12:00:00Z",
+    "updatedAt": "2026-06-09T12:00:00Z"
+  },
+  {
+    "id": "catalog_dealer_messy_motors_x_dynamic_product_ads",
+    "dealershipId": "dealer_messy_motors",
+    "platformSlug": "x-dynamic-product-ads",
+    "catalogId": "mock_catalog_x-dynamic-product-ads_dealer_messy_motors",
+    "metadataJson": {
+      "accountId": "acct_x-dynamic-product-ads_dealer_messy_motors",
+      "liveValidation": "blocked"
+    },
+    "lastSyncAt": null,
+    "lastSyncCount": null,
+    "createdAt": "2026-05-21T12:00:00Z",
+    "updatedAt": "2026-06-09T12:00:00Z"
+  },
+  {
+    "id": "catalog_dealer_messy_motors_nextdoor_ads",
+    "dealershipId": "dealer_messy_motors",
+    "platformSlug": "nextdoor-ads",
+    "catalogId": "mock_catalog_nextdoor-ads_dealer_messy_motors",
+    "metadataJson": {
+      "accountId": "acct_nextdoor-ads_dealer_messy_motors",
+      "liveValidation": "blocked"
+    },
+    "lastSyncAt": null,
+    "lastSyncCount": null,
+    "createdAt": "2026-05-21T12:00:00Z",
+    "updatedAt": "2026-06-09T12:00:00Z"
+  },
+  {
+    "id": "catalog_dealer_premium_imports_meta_automotive_ads",
+    "dealershipId": "dealer_premium_imports",
+    "platformSlug": "meta-automotive-ads",
+    "catalogId": "mock_catalog_meta-automotive-ads_dealer_premium_imports",
+    "metadataJson": {
+      "accountId": "acct_meta-automotive-ads_dealer_premium_imports",
+      "liveValidation": "mocked"
+    },
+    "lastSyncAt": "2026-06-08T11:00:00Z",
+    "lastSyncCount": 58,
+    "createdAt": "2026-05-21T12:00:00Z",
+    "updatedAt": "2026-06-09T12:00:00Z"
+  },
+  {
+    "id": "catalog_dealer_premium_imports_microsoft_automotive_ads",
+    "dealershipId": "dealer_premium_imports",
+    "platformSlug": "microsoft-automotive-ads",
+    "catalogId": "mock_catalog_microsoft-automotive-ads_dealer_premium_imports",
+    "metadataJson": {
+      "accountId": "acct_microsoft-automotive-ads_dealer_premium_imports",
+      "liveValidation": "blocked"
+    },
+    "lastSyncAt": null,
+    "lastSyncCount": null,
+    "createdAt": "2026-05-21T12:00:00Z",
+    "updatedAt": "2026-06-09T12:00:00Z"
+  },
+  {
+    "id": "catalog_dealer_premium_imports_x_dynamic_product_ads",
+    "dealershipId": "dealer_premium_imports",
+    "platformSlug": "x-dynamic-product-ads",
+    "catalogId": "mock_catalog_x-dynamic-product-ads_dealer_premium_imports",
+    "metadataJson": {
+      "accountId": "acct_x-dynamic-product-ads_dealer_premium_imports",
+      "liveValidation": "blocked"
+    },
+    "lastSyncAt": null,
+    "lastSyncCount": null,
+    "createdAt": "2026-05-21T12:00:00Z",
+    "updatedAt": "2026-06-09T12:00:00Z"
+  },
+  {
+    "id": "catalog_dealer_premium_imports_nextdoor_ads",
+    "dealershipId": "dealer_premium_imports",
+    "platformSlug": "nextdoor-ads",
+    "catalogId": "mock_catalog_nextdoor-ads_dealer_premium_imports",
+    "metadataJson": {
+      "accountId": "acct_nextdoor-ads_dealer_premium_imports",
+      "liveValidation": "blocked"
+    },
+    "lastSyncAt": null,
+    "lastSyncCount": null,
+    "createdAt": "2026-05-21T12:00:00Z",
+    "updatedAt": "2026-06-09T12:00:00Z"
+  }
+]

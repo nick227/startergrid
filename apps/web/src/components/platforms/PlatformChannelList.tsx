@@ -13,6 +13,7 @@ import {
   feedHealthLine,
   type PlatformConnection,
 } from '@/lib/platformPresentation.ts';
+import { socialRowSubtitle } from '@/lib/platformPanelGuards.ts';
 import {
   channelSecondaryMeta,
   channelDesktopFields,
@@ -110,12 +111,11 @@ export function PlatformChannelList({
     const perf = perfBySlug.get(platform.platformSlug);
     const badge = effortBadge(account);
 
-    const isSocial = platform.socialPosting;
-    const socialSubtitle = isSocial && conn.connection === 'connected'
-      ? (socialPageBySlug?.get(platform.platformSlug)
-          ? `Page selected: ${socialPageBySlug.get(platform.platformSlug)!.name}`
-          : 'No page selected — open details to choose one')
-      : null;
+    const socialSubtitle = socialRowSubtitle(
+      platform.socialPosting,
+      conn.connection === 'connected',
+      socialPageBySlug?.get(platform.platformSlug)?.name,
+    );
 
     return (
       <OpsRowCard

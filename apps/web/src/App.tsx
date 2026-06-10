@@ -11,6 +11,7 @@ import KnowledgeBasePage from './pages/KnowledgeBasePage.tsx';
 
 const ReportsRouter = lazy(() => import('./pages/ReportsRouter.tsx'));
 const AdminCredentialsPage = lazy(() => import('./pages/AdminCredentialsPage.tsx'));
+const AdminOverviewPage = lazy(() => import('./pages/AdminOverviewPage.tsx'));
 import { AuthLoadingScreen } from '@/components/auth/AuthLoadingScreen.tsx';
 import { useAuth } from '@/contexts/AuthContext.tsx';
 import { useOperatorRoute } from '@/hooks/useOperatorRoute.ts';
@@ -46,7 +47,11 @@ function OperatorApp() {
     <CategoryProvider schema={categorySchema}>
       {adminStandalone && user.role === 'SUPER_ADMIN' ? (
         <Suspense fallback={null}>
-          <AdminCredentialsPage />
+          {platformSlug === 'platform-credentials' ? (
+            <AdminCredentialsPage />
+          ) : (
+            <AdminOverviewPage />
+          )}
         </Suspense>
       ) : helpStandalone ? (
         <KnowledgeBasePage onBack={() => { window.location.hash = '#/help'; }} />
