@@ -8,7 +8,7 @@ import {
 } from '@/lib/api/admin.ts';
 import { useAsyncQuery } from '@/hooks/useAsyncQuery.ts';
 import { Skeleton } from '@/components/ui/Skeleton.tsx';
-import { ErrorState } from '@/components/operator/ErrorState.tsx';
+import { AdminShell, ErrorState } from '@/components/operator/index.ts';
 import { toErrorMessage } from '@/lib/errors.ts';
 
 const STATUS_PILLS: Record<ProviderCredentialResult['status'], { label: string; className: string }> = {
@@ -23,7 +23,6 @@ const STATUS_PILLS: Record<ProviderCredentialResult['status'], { label: string; 
 function StatusPill({ result }: { result: ProviderCredentialResult | undefined }) {
   if (!result) return <span className="text-xs text-ink-faint">—</span>;
   const pill = STATUS_PILLS[result.status];
-  // Inference checks only prove the client authenticated — label them distinctly.
   const label = result.status === 'valid' && result.checkMethod === 'client-auth-inference'
     ? 'Client auth inferred'
     : pill.label;
@@ -39,7 +38,7 @@ function ProviderRow({ summary, result }: {
   result: ProviderCredentialResult | undefined;
 }) {
   return (
-    <tr className="border-b border-silver-100 last:border-0">
+    <tr className="border-b border-silver-200 last:border-0">
       <td className="px-5 py-3 align-top">
         <div className="font-semibold text-ink-heading text-sm">{summary.provider}</div>
         <div className="text-ink-faint text-xs mt-0.5">{summary.platformSlugs.join(', ')}</div>
@@ -84,37 +83,32 @@ export default function AdminCredentialsPage() {
   };
 
   return (
-    <div className="min-h-screen bg-navy-950 p-6 flex justify-center">
-      <div className="w-full max-w-4xl">
-        <div className="mb-6 flex items-end justify-between gap-4">
-          <div>
-            <button
-              type="button"
-              onClick={() => { window.location.hash = '#/'; }}
-              className="text-xs font-semibold text-silver-300 hover:text-orange-400 transition-colors"
-            >
-              ← Back to dealers
-            </button>
-            <h1 className="text-2xl font-bold text-white tracking-tight mt-2">Site administration</h1>
-            <p className="text-ink-faint text-sm mt-1">
-              Developer API keys — verify our platform app credentials authenticate against each provider.
-            </p>
-          </div>
-          <button
-            type="button"
-            onClick={() => void runValidation()}
-            disabled={validating || loading}
-            className="btn-primary-operator !px-5 !py-2.5 disabled:opacity-40 shrink-0"
-          >
-            {validating ? 'Validating…' : 'Validate keys'}
-          </button>
+    <AdminShell
+      back={{ href: '#/admin', label: 'Back to overview' }}
+      action={
+        <button
+          type="button"
+          onClick={() => void runValidation()}
+          disabled={validating || loading}
+          className="inline-flex items-center rounded-md bg-orange-600 px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-orange-500 disabled:opacity-40"
+        >
+          {validating ? 'Validating…' : 'Validate keys'}
+        </button>
+      }
+    >
+      <div className="max-w-4xl">
+        <div className="mb-5">
+          <h2 className="text-xl font-bold text-ink-heading">Platform Credential Validation</h2>
+          <p className="text-ink-muted text-sm mt-1">
+            Developer API keys — verify our platform app credentials authenticate against each provider.
+          </p>
         </div>
 
         {meta && (
-          <div className="mb-3 text-xs text-silver-300">
+          <div className="mb-3 text-xs text-ink-muted">
             Last checked {new Date(meta.lastCheckedAt).toLocaleString()} by {meta.checkedBy} · {meta.durationMs} ms
             {meta.cached && (
-              <span className="ml-2 inline-block px-2 py-0.5 rounded-full border border-silver-200/40 text-silver-300">
+              <span className="ml-2 inline-block px-2 py-0.5 rounded-full border border-silver-300 text-ink-faint">
                 served from cache
               </span>
             )}
@@ -155,6 +149,6 @@ export default function AdminCredentialsPage() {
           Results are cached briefly to avoid hammering provider endpoints.
         </p>
       </div>
-    </div>
+    </AdminShell>
   );
 }

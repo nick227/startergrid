@@ -1,4 +1,5 @@
 export { PageShell } from './PageShell.tsx';
+export { AdminShell } from './AdminShell.tsx';
 export { OperatorPage } from './OperatorPage.tsx';
 export { OperatorNav } from './OperatorNav.tsx';
 export { SectionCard } from './SectionCard.tsx';

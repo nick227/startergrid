@@ -9,10 +9,6 @@ import {
   type AutoSyncStatus as SdkAutoSyncStatus,
 } from '@auto-dealer/api-client';
 import type {
-  AccountUpdatePayload as SdkAccountUpdatePayload,
-  BulkEditPayload as SdkBulkEditPayload,
-  CreateIngressSourceRequest as SdkCreateIngressSourceRequest,
-  UpdateIngressSourceRequest as SdkUpdateIngressSourceRequest,
   PublishThroughputReport,
   SyncActivityReport,
   ObservedDemandReport,
@@ -196,7 +192,7 @@ export async function bulkEditVehicles(
   payload: BulkEditPayload
 ): Promise<BulkEditResponse> {
   return fromSdk(
-    InventoryService.bulkEditInventory({ dealershipId, requestBody: payload as SdkBulkEditPayload })
+    InventoryService.bulkEditInventory({ dealershipId, requestBody: payload as any })
   );
 }
 
@@ -209,9 +205,33 @@ export async function updateAccount(
   platformSlug: string,
   payload: AccountUpdatePayload
 ): Promise<AccountUpdateResponse> {
-  return fromSdk(
-    AccountsService.updateAccount({ dealershipId, platformSlug, requestBody: payload as SdkAccountUpdatePayload })
-  ) as Promise<AccountUpdateResponse>;
+  const res = await fetch(`/api/dealers/${dealershipId}/accounts/${platformSlug}`, {
+    method: 'PATCH',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(payload),
+    credentials: 'include',
+  });
+  if (!res.ok) {
+    const body = await res.json().catch(() => ({})) as { error?: string };
+    throw new Error(body.error ?? `HTTP ${res.status}`);
+  }
+  return res.json() as Promise<AccountUpdateResponse>;
+}
+
+export async function validateAccount(
+  dealershipId: string,
+  platformSlug: string
+): Promise<AccountUpdateResponse> {
+  const res = await fetch(`/api/dealers/${dealershipId}/accounts/${platformSlug}/validate`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    credentials: 'include',
+  });
+  if (!res.ok) {
+    const body = await res.json().catch(() => ({})) as { error?: string };
+    throw new Error(body.error ?? `HTTP ${res.status}`);
+  }
+  return res.json() as Promise<AccountUpdateResponse>;
 }
 
 export async function fetchConnectUrl(
@@ -253,7 +273,7 @@ export async function createIngressSource(
   return fromSdk(
     InventoryService.createIngressSource({
       dealershipId,
-      requestBody: payload as unknown as SdkCreateIngressSourceRequest,
+      requestBody: payload as any,
     })
   ) as Promise<IngressSourceResponse>;
 }
@@ -267,7 +287,7 @@ export async function updateIngressSource(
     InventoryService.updateIngressSource({
       dealershipId,
       sourceId,
-      requestBody: payload as unknown as SdkUpdateIngressSourceRequest,
+      requestBody: payload as any,
     })
   ) as Promise<IngressSourceResponse>;
 }

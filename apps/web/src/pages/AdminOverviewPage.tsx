@@ -1,544 +1,865 @@
-import { useMemo } from 'react';
+import { useCallback, useMemo, useState } from 'react';
 import { fetchAdminDashboard } from '@/lib/api/admin.ts';
+import { fetchDealers } from '@/lib/api/sdk.ts';
 import { useAsyncQuery } from '@/hooks/useAsyncQuery.ts';
 import { Skeleton } from '@/components/ui/Skeleton.tsx';
-import { ErrorState } from '@/components/operator/ErrorState.tsx';
+import { AdminShell, ErrorState, SectionCard } from '@/components/operator/index.ts';
+import { adminDealerHash } from '@/lib/routes.ts';
 
-// Format duration to readable string
+// ── Types ─────────────────────────────────────────────────────────────────────
+
+type AdminTab = 'system' | 'dealers' | 'platforms' | 'triage' | 'audit';
+type SortDir = 'asc' | 'desc';
+type DealerSortField = 'legalName' | 'businessCategory' | 'createdAt' | 'issues';
+type PlatSortField   = 'platformName' | 'dealersUsing' | 'maturity';
+type TriageSortField = 'severity' | 'dealerName' | 'platformSlug';
+
+// ── Shared form-element class strings ────────────────────────────────────────
+
+const INPUT_CLS =
+  'bg-surface-card border border-silver-300 rounded-md px-3 py-1.5 text-xs text-ink-heading ' +
+  'placeholder-ink-faint focus:outline-none focus:ring-2 focus:ring-navy-500/30 transition-colors';
+
+const SELECT_CLS =
+  'bg-surface-card border border-silver-300 rounded-md px-3 py-1.5 text-xs text-ink-heading ' +
+  'focus:outline-none focus:ring-2 focus:ring-navy-500/30 transition-colors cursor-pointer';
+
+const CLEAR_CLS =
+  'px-3 py-1.5 text-xs font-semibold text-ink-muted hover:text-ink-heading ' +
+  'border border-silver-300 hover:border-silver-400 rounded-md transition-all';
+
+// ── Lookup tables ─────────────────────────────────────────────────────────────
+
+const SEV_ORDER: Record<string, number>     = { critical: 0, warning: 1, info: 2 };
+const MATURITY_ORDER: Record<string, number> = { PRODUCTION_READY: 0, BETA: 1, ALPHA: 2 };
+
 function formatDuration(sec: number | null): string {
   if (sec === null) return 'N/A';
   if (sec < 60) return `${sec}s`;
-  const mins = Math.floor(sec / 60);
-  const remainingSecs = sec % 60;
-  return `${mins}m ${remainingSecs}s`;
+  return `${Math.floor(sec / 60)}m ${sec % 60}s`;
 }
 
-export default function AdminOverviewPage() {
-  const { data, loading, error, reload } = useAsyncQuery(() => fetchAdminDashboard(), []);
+const HEALTH_CFG: Record<string, { label: string; cls: string }> = {
+  healthy:   { label: 'Healthy',    cls: 'bg-status-success-bg text-status-success-text border-status-success-border' },
+  flowing:   { label: 'Flowing',    cls: 'bg-status-success-bg text-status-success-text border-status-success-border' },
+  valid:     { label: 'Valid',      cls: 'bg-status-success-bg text-status-success-text border-status-success-border' },
+  backed_up: { label: 'Backed Up', cls: 'bg-status-warning-bg text-status-warning-text border-status-warning-border' },
+  invalid:   { label: 'Invalid',   cls: 'bg-status-error-bg text-status-error-text border-status-error-border' },
+  unhealthy: { label: 'Unhealthy', cls: 'bg-status-error-bg text-status-error-text border-status-error-border' },
+  unknown:   { label: 'Not Checked', cls: 'bg-status-neutral-bg text-status-neutral-text border-status-neutral-border' },
+};
+const HEALTH_DEFAULT = { label: 'Unknown', cls: 'bg-status-neutral-bg text-status-neutral-text border-status-neutral-border' };
 
-  const health = useMemo(() => data?.health, [data]);
-  const readiness = useMemo(() => data?.readiness, [data]);
-  const queueSnapshot = useMemo(() => data?.queueSnapshot, [data]);
+const READINESS_CFG: Record<string, { label: string; cls: string }> = {
+  valid:   { label: 'Pass',    cls: 'bg-status-success-bg text-status-success-text border-status-success-border' },
+  PASS:    { label: 'Pass',    cls: 'bg-status-success-bg text-status-success-text border-status-success-border' },
+  WARNING: { label: 'Warning', cls: 'bg-status-warning-bg text-status-warning-text border-status-warning-border' },
+  UNKNOWN: { label: 'Unknown', cls: 'bg-status-neutral-bg text-status-neutral-text border-status-neutral-border' },
+  invalid: { label: 'Fail',   cls: 'bg-status-error-bg text-status-error-text border-status-error-border' },
+};
+const READINESS_DEFAULT = { label: 'Unknown', cls: 'bg-status-neutral-bg text-status-neutral-text border-status-neutral-border' };
+
+const VALIDATION_CFG: Record<string, { label: string; cls: string }> = {
+  valid:            { label: 'Valid',          cls: 'bg-status-success-bg text-status-success-text border-status-success-border' },
+  invalid:          { label: 'Invalid',        cls: 'bg-status-error-bg text-status-error-text border-status-error-border' },
+  'not-configured': { label: 'Not Configured', cls: 'bg-surface-inset text-ink-faint border-silver-200' },
+  unsupported:      { label: 'No Live Check',  cls: 'bg-surface-inset text-ink-faint border-silver-200' },
+};
+const VALIDATION_DEFAULT = { label: 'Not Checked', cls: 'bg-surface-inset text-ink-faint border-silver-200' };
+
+const SEV_CFG: Record<string, { label: string; cls: string }> = {
+  critical: { label: 'Critical', cls: 'bg-status-error-bg text-status-error-text border-status-error-border' },
+  warning:  { label: 'Warning',  cls: 'bg-status-warning-bg text-status-warning-text border-status-warning-border' },
+  info:     { label: 'Info',     cls: 'bg-status-info-bg text-status-info-text border-status-info-border' },
+};
+const SEV_DEFAULT = { label: 'Info', cls: 'bg-status-info-bg text-status-info-text border-status-info-border' };
+
+const CAP_CLS = 'bg-surface-inset text-ink-muted border border-silver-200';
+
+const MATURITY_CFG: Record<string, { label: string; cls: string }> = {
+  PRODUCTION_READY: { label: 'Production Ready', cls: 'bg-status-success-bg text-status-success-text border-status-success-border' },
+  BETA:             { label: 'Beta',              cls: 'bg-status-info-bg text-status-info-text border-status-info-border' },
+  ALPHA:            { label: 'Alpha',             cls: 'bg-status-neutral-bg text-status-neutral-text border-status-neutral-border' },
+};
+const MATURITY_DEFAULT = { label: 'Unknown', cls: 'bg-status-neutral-bg text-status-neutral-text border-status-neutral-border' };
+
+// ── Reusable sortable column header ──────────────────────────────────────────
+
+function SortTh({
+  isActive,
+  dir,
+  onClick,
+  children,
+  className = '',
+}: {
+  isActive: boolean;
+  dir: SortDir;
+  onClick: () => void;
+  children: React.ReactNode;
+  className?: string;
+}) {
+  return (
+    <th className={`px-4 py-3 font-semibold ${className}`}>
+      <button
+        type="button"
+        onClick={onClick}
+        className="flex items-center gap-1 whitespace-nowrap hover:text-ink-heading transition-colors"
+      >
+        {children}
+        <span className={`text-[9px] ${isActive ? 'text-orange-600' : 'text-silver-300'}`}>
+          {isActive ? (dir === 'asc' ? '↑' : '↓') : '↕'}
+        </span>
+      </button>
+    </th>
+  );
+}
+
+// ── Results count line ────────────────────────────────────────────────────────
+
+function ResultCount({ shown, total, noun }: { shown: number; total: number; noun: string }) {
+  return (
+    <p className="text-xs text-ink-faint">
+      {shown === total
+        ? `${total} ${noun}${total !== 1 ? 's' : ''}`
+        : `${shown} of ${total} ${noun}${total !== 1 ? 's' : ''}`}
+    </p>
+  );
+}
+
+// ── Page component ────────────────────────────────────────────────────────────
+
+export default function AdminOverviewPage() {
+  const [tab, setTab] = useState<AdminTab>('system');
+
+  // Dealers tab
+  const [dealerSearch, setDealerSearch]           = useState('');
+  const [dealerCategory, setDealerCategory]       = useState('');
+  const [dealerSort, setDealerSort]               = useState<DealerSortField>('legalName');
+  const [dealerDir, setDealerDir]                 = useState<SortDir>('asc');
+
+  // Platforms tab
+  const [platSearch, setPlatSearch]               = useState('');
+  const [platCap, setPlatCap]                     = useState('');
+  const [platValidation, setPlatValidation]       = useState('');
+  const [platMaturity, setPlatMaturity]           = useState('');
+  const [platSort, setPlatSort]                   = useState<PlatSortField>('platformName');
+  const [platDir, setPlatDir]                     = useState<SortDir>('asc');
+
+  // Triage tab
+  const [triageSearch, setTriageSearch]           = useState('');
+  const [triageSev, setTriageSev]                 = useState('');
+  const [triageSort, setTriageSort]               = useState<TriageSortField>('severity');
+  const [triageDir, setTriageDir]                 = useState<SortDir>('asc');
+
+  // Audit tab
+  const [auditSearch, setAuditSearch]             = useState('');
+  const [auditDir, setAuditDir]                   = useState<SortDir>('desc');
+
+  // Data fetching
+  const { data, loading, error, reload }             = useAsyncQuery(() => fetchAdminDashboard(), []);
+  const { data: dealersData, loading: dealersLoading, error: dealersError } = useAsyncQuery(() => fetchDealers(), []);
+
+  // Dashboard shape
+  const health          = useMemo(() => data?.health, [data]);
+  const readiness       = useMemo(() => data?.readiness, [data]);
+  const queueSnapshot   = useMemo(() => data?.queueSnapshot, [data]);
   const platformOverview = useMemo(() => data?.platformOverview ?? [], [data]);
-  const dealerAttention = useMemo(() => data?.dealerAttention ?? [], [data]);
-  const recentEvents = useMemo(() => data?.recentEvents ?? [], [data]);
-  const meta = useMemo(() => data?.meta, [data]);
+  const dealerAttention  = useMemo(() => data?.dealerAttention ?? [], [data]);
+  const recentEvents     = useMemo(() => data?.recentEvents ?? [], [data]);
+  const meta            = useMemo(() => data?.meta, [data]);
+
+  const allDealers = useMemo(() => dealersData?.dealers ?? [], [dealersData]);
+
+  // Triage map: dealerId → { critical, warning, info }
+  const triageByDealer = useMemo(() => {
+    const m: Record<string, { critical: number; warning: number; info: number }> = {};
+    for (const item of dealerAttention) {
+      if (!m[item.dealerId]) m[item.dealerId] = { critical: 0, warning: 0, info: 0 };
+      const s = item.severity as 'critical' | 'warning' | 'info';
+      if (s in m[item.dealerId]) m[item.dealerId][s]++;
+    }
+    return m;
+  }, [dealerAttention]);
+
+  const dealerIssueWeight = useCallback((id: string) => {
+    const t = triageByDealer[id];
+    return t ? t.critical * 100 + t.warning * 10 + t.info : 0;
+  }, [triageByDealer]);
+
+  const dealerCategories = useMemo(
+    () => [...new Set(allDealers.map(d => d.businessCategory))].sort(),
+    [allDealers],
+  );
+
+  // ── Filtered & sorted lists ────────────────────────────────────────────────
+
+  const filteredDealers = useMemo(() => {
+    let list = [...allDealers];
+    if (dealerSearch) {
+      const q = dealerSearch.toLowerCase();
+      list = list.filter(d =>
+        d.legalName.toLowerCase().includes(q) ||
+        (d.dbaName?.toLowerCase().includes(q) ?? false) ||
+        d.id.toLowerCase().includes(q),
+      );
+    }
+    if (dealerCategory) list = list.filter(d => d.businessCategory === dealerCategory);
+    list.sort((a, b) => {
+      let cmp = 0;
+      if (dealerSort === 'legalName')       cmp = a.legalName.localeCompare(b.legalName);
+      else if (dealerSort === 'businessCategory') cmp = a.businessCategory.localeCompare(b.businessCategory);
+      else if (dealerSort === 'createdAt')  cmp = a.createdAt.localeCompare(b.createdAt);
+      else if (dealerSort === 'issues')     cmp = dealerIssueWeight(a.id) - dealerIssueWeight(b.id);
+      return dealerDir === 'asc' ? cmp : -cmp;
+    });
+    return list;
+  }, [allDealers, dealerSearch, dealerCategory, dealerSort, dealerDir, dealerIssueWeight]);
+
+  const filteredPlatforms = useMemo(() => {
+    let list = [...platformOverview];
+    if (platSearch) {
+      const q = platSearch.toLowerCase();
+      list = list.filter(p =>
+        p.platformName.toLowerCase().includes(q) ||
+        p.platformSlug.toLowerCase().includes(q),
+      );
+    }
+    if (platCap)       list = list.filter(p => p.capabilities.includes(platCap));
+    if (platValidation) list = list.filter(p => p.liveValidationStatus === platValidation);
+    if (platMaturity)  list = list.filter(p => p.integrationMaturity === platMaturity);
+    list.sort((a, b) => {
+      let cmp = 0;
+      if (platSort === 'platformName')  cmp = a.platformName.localeCompare(b.platformName);
+      else if (platSort === 'dealersUsing') cmp = a.dealersUsing - b.dealersUsing;
+      else if (platSort === 'maturity') cmp = (MATURITY_ORDER[a.integrationMaturity ?? ''] ?? 3) - (MATURITY_ORDER[b.integrationMaturity ?? ''] ?? 3);
+      return platDir === 'asc' ? cmp : -cmp;
+    });
+    return list;
+  }, [platformOverview, platSearch, platCap, platValidation, platMaturity, platSort, platDir]);
+
+  const filteredTriage = useMemo(() => {
+    let list = [...dealerAttention];
+    if (triageSearch) {
+      const q = triageSearch.toLowerCase();
+      list = list.filter(item =>
+        item.dealerName.toLowerCase().includes(q) ||
+        item.reason.toLowerCase().includes(q) ||
+        item.platformSlug.toLowerCase().includes(q),
+      );
+    }
+    if (triageSev) list = list.filter(d => d.severity === triageSev);
+    list.sort((a, b) => {
+      let cmp = 0;
+      if (triageSort === 'severity')      cmp = (SEV_ORDER[a.severity] ?? 3) - (SEV_ORDER[b.severity] ?? 3);
+      else if (triageSort === 'dealerName')  cmp = a.dealerName.localeCompare(b.dealerName);
+      else if (triageSort === 'platformSlug') cmp = a.platformSlug.localeCompare(b.platformSlug);
+      return triageDir === 'asc' ? cmp : -cmp;
+    });
+    return list;
+  }, [dealerAttention, triageSearch, triageSev, triageSort, triageDir]);
+
+  const filteredAudit = useMemo(() => {
+    let list = [...recentEvents];
+    if (auditSearch) {
+      const q = auditSearch.toLowerCase();
+      list = list.filter(e =>
+        e.action.toLowerCase().includes(q) ||
+        e.actorEmail.toLowerCase().includes(q) ||
+        (e.detailString?.toLowerCase().includes(q) ?? false),
+      );
+    }
+    list.sort((a, b) => {
+      const cmp = a.createdAt.localeCompare(b.createdAt);
+      return auditDir === 'desc' ? -cmp : cmp;
+    });
+    return list;
+  }, [recentEvents, auditSearch, auditDir]);
+
+  // ── Sort togglers ─────────────────────────────────────────────────────────
+
+  function toggleDealer(f: DealerSortField) {
+    if (dealerSort === f) setDealerDir(d => (d === 'asc' ? 'desc' : 'asc'));
+    else { setDealerSort(f); setDealerDir('asc'); }
+  }
+  function togglePlat(f: PlatSortField) {
+    if (platSort === f) setPlatDir(d => (d === 'asc' ? 'desc' : 'asc'));
+    else { setPlatSort(f); setPlatDir('asc'); }
+  }
+  function toggleTriage(f: TriageSortField) {
+    if (triageSort === f) setTriageDir(d => (d === 'asc' ? 'desc' : 'asc'));
+    else { setTriageSort(f); setTriageDir('asc'); }
+  }
+  function toggleAudit() {
+    setAuditDir(d => (d === 'asc' ? 'desc' : 'asc'));
+  }
+
+  // ── Derived counts ────────────────────────────────────────────────────────
+
+  const criticalCount      = useMemo(() => dealerAttention.filter(d => d.severity === 'critical').length, [dealerAttention]);
+  const dealerActiveFilters = [dealerSearch, dealerCategory].filter(Boolean).length;
+  const platActiveFilters   = [platSearch, platCap, platValidation, platMaturity].filter(Boolean).length;
+  const triageActiveFilters = [triageSearch, triageSev].filter(Boolean).length;
+  const auditActiveFilters  = [auditSearch].filter(Boolean).length;
+
+  // ── Render ────────────────────────────────────────────────────────────────
 
   return (
-    <div className="min-h-screen bg-navy-950 p-6 flex justify-center text-white font-sans">
-      <div className="w-full max-w-7xl">
-        {/* Header Block */}
-        <div className="mb-6 flex flex-col md:flex-row md:items-end md:justify-between gap-4">
-          <div>
-            <button
-              type="button"
-              onClick={() => { window.location.hash = '#/'; }}
-              className="text-xs font-semibold text-silver-300 hover:text-orange-400 transition-colors"
-            >
-              ← Back to dealers
-            </button>
-            <h1 className="text-3xl font-bold tracking-tight mt-2 bg-gradient-to-r from-teal-400 via-emerald-400 to-indigo-400 bg-clip-text text-transparent">
-              Admin Operations Dashboard
-            </h1>
-            <p className="text-silver-400 text-sm mt-1">
-              System-wide monitoring, dealer attention triage, readiness signals, and platform capability health.
-            </p>
-          </div>
-          <div className="flex gap-3">
-            <button
-              type="button"
-              onClick={() => { window.location.hash = '#/admin/platform-credentials'; }}
-              className="px-4 py-2 text-xs font-semibold text-orange-400 bg-orange-500/10 hover:bg-orange-500/20 border border-orange-500/30 rounded-lg transition-all"
-            >
-              Live Key Validation
-            </button>
-            <button
-              type="button"
-              onClick={() => void reload()}
-              disabled={loading}
-              className="px-4 py-2 text-xs font-semibold text-white bg-silver-800 hover:bg-silver-700 border border-silver-600/30 rounded-lg transition-all disabled:opacity-40"
-            >
-              {loading ? 'Refreshing…' : 'Refresh'}
-            </button>
-          </div>
-        </div>
+    <AdminShell
+      action={
+        <>
+          {meta && (
+            <span className="text-[10px] text-ink-faint font-mono hidden md:block">
+              {meta.cached ? 'cached' : 'live'} · {meta.durationMs}ms
+            </span>
+          )}
+          <a
+            href="#/help"
+            className="px-3 py-1.5 text-xs font-medium text-ink-faint hover:text-white border border-navy-700 hover:border-navy-600 rounded-md transition-all"
+          >
+            Knowledge Base
+          </a>
+          <button
+            type="button"
+            onClick={() => { window.location.hash = '#/admin/platform-credentials'; }}
+            className="btn-primary-operator"
+          >
+            Credential Validation
+          </button>
+          <button
+            type="button"
+            onClick={() => void reload()}
+            disabled={loading}
+            className="px-3 py-1.5 text-xs font-medium bg-navy-800 hover:bg-navy-700 text-silver-100 rounded-md transition-colors disabled:opacity-40"
+          >
+            {loading ? 'Refreshing…' : 'Refresh'}
+          </button>
+        </>
+      }
+    >
+      {loading && !data && (
+        <div className="surface-card-operator p-6"><Skeleton rows={12} /></div>
+      )}
+      {error && <ErrorState message={error} onRetry={reload} />}
 
-        {/* Metadata Banner */}
-        {meta && (
-          <div className="mb-6 p-3 bg-silver-900/40 rounded-lg border border-silver-800/40 flex flex-wrap gap-4 items-center text-xs text-silver-300">
-            <div>
-              Generated at:{' '}
-              <span className="font-mono text-silver-200">
-                {new Date(meta.generatedAt).toLocaleString()}
-              </span>
-            </div>
-            <div className="flex items-center gap-2">
-              <span>Cache:</span>
-              <span
-                className={`px-2 py-0.5 rounded-full border text-[10px] font-semibold ${
-                  meta.cached
-                    ? 'bg-emerald-950/40 text-emerald-400 border-emerald-500/30'
-                    : 'bg-indigo-950/40 text-indigo-400 border-indigo-500/30'
+      {!loading && !error && data && (
+        <>
+          {/* Tab Bar */}
+          <div className="flex border-b border-silver-200 mb-6 overflow-x-auto">
+            {([
+              { id: 'system'    as AdminTab, label: 'System Status',  count: null,                     alert: false },
+              { id: 'dealers'   as AdminTab, label: 'Dealerships',    count: allDealers.length || null, alert: false },
+              { id: 'platforms' as AdminTab, label: 'Platforms',      count: platformOverview.length,   alert: false },
+              { id: 'triage'    as AdminTab, label: 'Dealer Triage',  count: dealerAttention.length,    alert: criticalCount > 0 },
+              { id: 'audit'     as AdminTab, label: 'Audit Log',      count: recentEvents.length,       alert: false },
+            ]).map(t => (
+              <button
+                key={t.id}
+                type="button"
+                onClick={() => setTab(t.id)}
+                className={`px-5 py-3 text-sm font-semibold border-b-2 -mb-px whitespace-nowrap transition-colors flex items-center gap-2 ${
+                  tab === t.id
+                    ? 'border-orange-600 text-ink-heading'
+                    : 'border-transparent text-ink-muted hover:text-ink-body hover:border-silver-300'
                 }`}
               >
-                {meta.cached ? 'Served from cache (60s)' : 'Live hit'}
-              </span>
-            </div>
-            <div>
-              Load time:{' '}
-              <span className="font-mono text-teal-400 font-bold">{meta.durationMs}ms</span>
-            </div>
+                <span className={t.alert && tab !== t.id ? 'text-status-error-text' : ''}>{t.label}</span>
+                {t.count !== null && (
+                  <span className={`px-1.5 py-0.5 rounded text-[10px] font-mono ${
+                    t.alert
+                      ? 'bg-status-error-bg text-status-error-text'
+                      : tab === t.id
+                      ? 'bg-silver-100 text-ink-muted'
+                      : 'bg-silver-100 text-ink-faint'
+                  }`}>
+                    {t.count}
+                  </span>
+                )}
+              </button>
+            ))}
           </div>
-        )}
 
-        {loading && !data && (
-          <div className="bg-silver-900/20 rounded-xl p-6 border border-silver-800/40">
-            <Skeleton rows={10} />
-          </div>
-        )}
+          {/* ── System Status Tab ─────────────────────────────────────────── */}
+          {tab === 'system' && (
+            <div className="space-y-5">
 
-        {error && <ErrorState message={error} onRetry={reload} />}
-
-        {!loading && !error && data && (
-          <div className="space-y-6">
-            {/* Top Grid: System Health, Readiness, and Queue Snapshot */}
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              
-              {/* System Health Widget */}
-              <div className="bg-silver-900/20 border border-silver-800/40 rounded-xl p-5 shadow-lg">
-                <h2 className="text-lg font-bold text-teal-300 mb-4 flex items-center gap-2">
-                  <span className="w-2 h-2 rounded-full bg-teal-400 animate-pulse" />
-                  System Health Status
-                </h2>
-                <div className="space-y-3">
-                  {/* API */}
-                  <div className="flex items-center justify-between p-3 rounded-lg bg-silver-900/30 border border-silver-800/20">
-                    <span className="text-sm text-silver-300">API Gateway</span>
-                    <span className="px-2.5 py-1 rounded-md text-xs font-semibold bg-emerald-950/50 text-emerald-400 border border-emerald-500/30">
-                      Healthy
-                    </span>
-                  </div>
-
-                  {/* Database */}
-                  <div className="flex items-center justify-between p-3 rounded-lg bg-silver-900/30 border border-silver-800/20">
-                    <span className="text-sm text-silver-300">Database Connection</span>
-                    <span
-                      className={`px-2.5 py-1 rounded-md text-xs font-semibold border ${
-                        health?.db === 'healthy'
-                          ? 'bg-emerald-950/50 text-emerald-400 border-emerald-500/30'
-                          : 'bg-red-950/50 text-red-400 border-red-500/30'
-                      }`}
-                    >
-                      {health?.db === 'healthy' ? 'Healthy' : 'Unhealthy'}
-                    </span>
-                  </div>
-
-                  {/* Job Queue */}
-                  <div className="flex items-center justify-between p-3 rounded-lg bg-silver-900/30 border border-silver-800/20">
-                    <span className="text-sm text-silver-300">Queue Flow</span>
-                    <span
-                      className={`px-2.5 py-1 rounded-md text-xs font-semibold border ${
-                        health?.queue === 'flowing'
-                          ? 'bg-emerald-950/50 text-emerald-400 border-emerald-500/30'
-                          : health?.queue === 'backed_up'
-                          ? 'bg-amber-950/50 text-amber-400 border-amber-500/30'
-                          : 'bg-red-950/50 text-red-400 border-red-500/30'
-                      }`}
-                    >
-                      {health?.queue === 'flowing'
-                        ? 'Flowing'
-                        : health?.queue === 'backed_up'
-                        ? 'Backed Up'
-                        : 'Unhealthy'}
-                    </span>
-                  </div>
-
-                  {/* Developer Credentials */}
-                  <div className="flex items-center justify-between p-3 rounded-lg bg-silver-900/30 border border-silver-800/20">
-                    <span className="text-sm text-silver-300">Credentials Cache</span>
-                    <span
-                      className={`px-2.5 py-1 rounded-md text-xs font-semibold border ${
-                        health?.credentials === 'valid'
-                          ? 'bg-emerald-950/50 text-emerald-400 border-emerald-500/30'
-                          : health?.credentials === 'invalid'
-                          ? 'bg-red-950/50 text-red-400 border-red-500/30'
-                          : 'bg-amber-950/50 text-amber-400 border-amber-500/30'
-                      }`}
-                    >
-                      {health?.credentials === 'unknown' ? 'NOT_CHECKED' : health?.credentials?.toUpperCase() || 'NOT_CHECKED'}
-                    </span>
-                  </div>
-                </div>
-              </div>
-
-              {/* Readiness Checks Widget */}
-              <div className="bg-silver-900/20 border border-silver-800/40 rounded-xl p-5 shadow-lg">
-                <h2 className="text-lg font-bold text-teal-300 mb-4 flex items-center gap-2">
-                  <span className="w-2 h-2 rounded-full bg-teal-400" />
-                  Readiness Checklist
-                </h2>
-                <div className="grid grid-cols-1 gap-2.5 max-h-[260px] overflow-y-auto pr-1">
+              <SectionCard
+                title="Health"
+                subtitle="Live status of core infrastructure components powering this portal instance."
+              >
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
                   {[
-                    { label: 'Platform Registry', value: readiness?.platformRegistry },
-                    { label: 'Sync Bridges', value: readiness?.bridges },
-                    { label: 'OAuth Clients', value: readiness?.oauthClients },
-                    { label: 'Category Schemas', value: readiness?.categorySchemas },
-                    { label: 'Geo Coordinate Coverage', value: readiness?.geoCoordinates },
-                    { label: 'Smoke Test: Marketplace', value: readiness?.smokeMarketplace },
-                    { label: 'Smoke Test: Operator', value: readiness?.smokeOperator },
-                  ].map((check, idx) => {
-                    const isPass = check.value === 'valid' || check.value === 'PASS';
-                    const isWarn = check.value === 'WARNING';
-                    const isUnknown = check.value === 'UNKNOWN';
-                    
-                    let pillText = check.value?.toUpperCase() || 'UNKNOWN';
-                    let pillStyle = 'bg-silver-900/60 text-silver-400 border-silver-800';
-                    
-                    if (isPass) {
-                      pillText = 'PASS';
-                      pillStyle = 'bg-emerald-950/40 text-emerald-400 border-emerald-500/20';
-                    } else if (isWarn) {
-                      pillStyle = 'bg-amber-950/40 text-amber-400 border-amber-500/20';
-                    } else if (isUnknown) {
-                      pillText = check.label.includes('Geo') ? 'UNKNOWN/NOT_CONFIGURED' : 'UNKNOWN';
-                      pillStyle = 'bg-amber-950/30 text-amber-400/80 border-amber-500/10';
-                    } else if (check.value === 'invalid') {
-                      pillText = 'FAIL';
-                      pillStyle = 'bg-red-950/40 text-red-400 border-red-500/20';
-                    }
-
+                    { label: 'API Gateway',       value: 'healthy',                       hint: 'Request routing layer' },
+                    { label: 'Database',          value: health?.db,                       hint: 'Primary data store' },
+                    { label: 'Queue Flow',        value: health?.queue,                    hint: 'Sync and publish pipeline' },
+                    { label: 'Credentials Cache', value: health?.credentials ?? 'unknown', hint: 'Platform API key store' },
+                  ].map(item => {
+                    const cfg = HEALTH_CFG[item.value ?? ''] ?? HEALTH_DEFAULT;
                     return (
-                      <div
-                        key={idx}
-                        className="flex items-center justify-between p-2 rounded bg-silver-900/20 border border-silver-800/10"
-                      >
-                        <span className="text-xs text-silver-300">{check.label}</span>
-                        <span className={`px-2 py-0.5 rounded text-[10px] font-mono font-semibold border ${pillStyle}`}>
-                          {pillText}
+                      <div key={item.label} className="bg-surface-inset border border-silver-200 rounded-md p-4">
+                        <div className="text-xs font-semibold text-ink-heading mb-0.5">{item.label}</div>
+                        <div className="text-[10px] text-ink-faint mb-2">{item.hint}</div>
+                        <span className={`px-2 py-0.5 rounded text-[10px] font-semibold border ${cfg.cls}`}>
+                          {cfg.label}
                         </span>
                       </div>
                     );
                   })}
                 </div>
-              </div>
+              </SectionCard>
 
-              {/* Queue Snapshot Widget */}
-              <div className="bg-silver-900/20 border border-silver-800/40 rounded-xl p-5 shadow-lg flex flex-col justify-between">
-                <div>
-                  <h2 className="text-lg font-bold text-teal-300 mb-4 flex items-center gap-2">
-                    <span className="w-2 h-2 rounded-full bg-teal-400" />
-                    Publish & Sync Queue
-                  </h2>
-                  <div className="grid grid-cols-2 gap-4">
-                    <div className="p-3 bg-silver-900/30 rounded-lg border border-silver-800/20">
-                      <div className="text-2xl font-bold text-white font-mono">
-                        {queueSnapshot?.pending}
-                      </div>
-                      <div className="text-[10px] uppercase text-silver-400 tracking-wider font-semibold">
-                        Pending
-                      </div>
+              <SectionCard
+                title="Publish Queue"
+                subtitle="Current state of the sync and publish pipeline. Failed and held items require manual review."
+              >
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+                  {[
+                    { label: 'Pending',               value: queueSnapshot?.pending,  color: 'text-ink-heading' },
+                    { label: 'Retrying',              value: queueSnapshot?.retrying, color: 'text-status-warning-text' },
+                    { label: 'Failed',                value: queueSnapshot?.failed,   color: 'text-status-error-text' },
+                    { label: 'Held / Needs Approval', value: queueSnapshot?.held,     color: 'text-navy-700' },
+                  ].map(stat => (
+                    <div key={stat.label} className="bg-surface-inset border border-silver-200 rounded-md p-4">
+                      <div className={`text-2xl font-bold font-mono ${stat.color}`}>{stat.value ?? '—'}</div>
+                      <div className="text-[10px] text-ink-muted uppercase tracking-wide font-semibold mt-1">{stat.label}</div>
                     </div>
-                    <div className="p-3 bg-silver-900/30 rounded-lg border border-silver-800/20">
-                      <div className="text-2xl font-bold text-amber-400 font-mono">
-                        {queueSnapshot?.retrying}
-                      </div>
-                      <div className="text-[10px] uppercase text-silver-400 tracking-wider font-semibold">
-                        Retrying
-                      </div>
-                    </div>
-                    <div className="p-3 bg-silver-900/30 rounded-lg border border-silver-800/20">
-                      <div className="text-2xl font-bold text-red-400 font-mono">
-                        {queueSnapshot?.failed}
-                      </div>
-                      <div className="text-[10px] uppercase text-silver-400 tracking-wider font-semibold">
-                        Failed
-                      </div>
-                    </div>
-                    <div className="p-3 bg-silver-900/30 rounded-lg border border-silver-800/20">
-                      <div className="text-2xl font-bold text-indigo-400 font-mono">
-                        {queueSnapshot?.held}
-                      </div>
-                      <div className="text-[10px] uppercase text-silver-400 tracking-wider font-semibold">
-                        Held / Needs Approval
-                      </div>
-                    </div>
-                  </div>
+                  ))}
                 </div>
-
-                <div className="mt-4 pt-3 border-t border-silver-800/30 text-xs text-silver-300 space-y-1">
-                  <div className="flex justify-between">
-                    <span>Oldest Pending Age:</span>
-                    <span className="font-mono text-silver-200">
-                      {formatDuration(queueSnapshot?.oldestPendingAgeSec ?? null)}
-                    </span>
+                <div className="mt-3 grid grid-cols-1 md:grid-cols-2 gap-3">
+                  <div className="px-4 py-3 bg-surface-inset border border-silver-200 rounded-md flex justify-between text-xs">
+                    <span className="text-ink-muted">Oldest Pending Age</span>
+                    <span className="font-mono text-ink-heading">{formatDuration(queueSnapshot?.oldestPendingAgeSec ?? null)}</span>
                   </div>
-                  <div className="flex justify-between">
-                    <span>Last Successful Sync:</span>
-                    <span className="font-mono text-silver-200">
+                  <div className="px-4 py-3 bg-surface-inset border border-silver-200 rounded-md flex justify-between text-xs">
+                    <span className="text-ink-muted">Last Successful Sync</span>
+                    <span className="font-mono text-ink-heading">
                       {queueSnapshot?.lastSuccessSyncAt
                         ? new Date(queueSnapshot.lastSuccessSyncAt).toLocaleTimeString()
                         : 'Never'}
                     </span>
                   </div>
                 </div>
-              </div>
+              </SectionCard>
 
-            </div>
-
-            {/* Middle Row: Platform Overview Widget */}
-            <div className="bg-silver-900/20 border border-silver-800/40 rounded-xl p-5 shadow-lg overflow-hidden">
-              <h2 className="text-lg font-bold text-teal-300 mb-4 flex items-center gap-2">
-                <span className="w-2 h-2 rounded-full bg-teal-400" />
-                Platform Capabilities & Adoption Matrix
-              </h2>
-              <div className="overflow-x-auto scrollbar-thin">
-                <table className="w-full text-left border-collapse min-w-[800px]">
-                  <thead>
-                    <tr className="bg-silver-900/40 border-b border-silver-800 text-[10px] text-silver-400 uppercase tracking-wider">
-                      <th className="px-4 py-3 font-semibold">Platform</th>
-                      <th className="px-4 py-3 font-semibold text-center">Configured</th>
-                      <th className="px-4 py-3 font-semibold">Live Validation</th>
-                      <th className="px-4 py-3 font-semibold">Adoption</th>
-                      <th className="px-4 py-3 font-semibold">Capabilities</th>
-                      <th className="px-4 py-3 font-semibold">Maturity</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {platformOverview.map(p => {
-                      const hasBlocked = p.blockedDealers > 0;
-                      
-                      let validationPill = (
-                        <span className="px-2 py-0.5 rounded text-[10px] font-mono bg-silver-950 text-silver-400 border border-silver-800">
-                          NOT_CHECKED
-                        </span>
-                      );
-                      
-                      if (p.liveValidationStatus === 'valid') {
-                        validationPill = (
-                          <span className="px-2 py-0.5 rounded text-[10px] font-mono bg-emerald-950/50 text-emerald-400 border border-emerald-500/20">
-                            VALID
-                          </span>
-                        );
-                      } else if (p.liveValidationStatus === 'invalid') {
-                        validationPill = (
-                          <span className="px-2 py-0.5 rounded text-[10px] font-mono bg-red-950/50 text-red-400 border border-red-500/20">
-                            INVALID
-                          </span>
-                        );
-                      } else if (p.liveValidationStatus === 'not-configured') {
-                        validationPill = (
-                          <span className="px-2 py-0.5 rounded text-[10px] font-mono bg-silver-950 text-silver-500 border border-silver-800/40">
-                            NOT_CONFIGURED
-                          </span>
-                        );
-                      } else if (p.liveValidationStatus === 'unsupported') {
-                        validationPill = (
-                          <span className="px-2 py-0.5 rounded text-[10px] font-mono bg-silver-950 text-silver-500 border border-silver-800/40">
-                            NO_LIVE_CHECK
-                          </span>
-                        );
-                      }
-
-                      return (
-                        <tr
-                          key={p.platformSlug}
-                          className="border-b border-silver-800/20 hover:bg-silver-900/10 transition-colors"
-                        >
-                          <td className="px-4 py-3 align-top">
-                            <div className="font-semibold text-white text-sm">
-                              {p.platformName}
-                            </div>
-                            <div className="text-xs text-silver-400 mt-0.5 font-mono">
-                              {p.platformSlug}
-                            </div>
-                          </td>
-                          <td className="px-4 py-3 align-top text-center">
-                            <span
-                              className={`inline-block w-2.5 h-2.5 rounded-full ${
-                                p.configured ? 'bg-emerald-400 shadow-emerald-400/50 shadow-sm' : 'bg-silver-700'
-                              }`}
-                            />
-                          </td>
-                          <td className="px-4 py-3 align-top">
-                            {validationPill}
-                          </td>
-                          <td className="px-4 py-3 align-top">
-                            <div className="text-xs">
-                              <span className="font-semibold text-white">{p.dealersUsing}</span> dealers
-                            </div>
-                            {hasBlocked && (
-                              <div className="text-[10px] text-red-400 mt-0.5 font-semibold">
-                                {p.blockedDealers} blocked
-                              </div>
-                            )}
-                          </td>
-                          <td className="px-4 py-3 align-top">
-                            <div className="flex flex-wrap gap-1">
-                              {p.capabilities.map(cap => {
-                                let style = 'bg-silver-900/60 text-silver-300';
-                                if (cap === 'catalogSync') style = 'bg-teal-950/40 text-teal-400 border border-teal-500/20';
-                                if (cap === 'socialPosting') style = 'bg-indigo-950/40 text-indigo-400 border border-indigo-500/20';
-                                if (cap === 'marketplaceListing') style = 'bg-violet-950/40 text-violet-400 border border-violet-500/20';
-                                if (cap === 'partnerFeed') style = 'bg-sky-950/40 text-sky-400 border border-sky-500/20';
-                                if (cap === 'leadCapture') style = 'bg-amber-950/40 text-amber-400 border border-amber-500/20';
-                                return (
-                                  <span key={cap} className={`px-1.5 py-0.5 rounded text-[9px] font-semibold tracking-wide uppercase ${style}`}>
-                                    {cap}
-                                  </span>
-                                );
-                              })}
-                            </div>
-                          </td>
-                          <td className="px-4 py-3 align-top">
-                            <span
-                              className={`inline-block px-2 py-0.5 rounded text-[10px] font-semibold border ${
-                                p.integrationMaturity === 'PRODUCTION_READY'
-                                  ? 'bg-emerald-950/30 text-emerald-400 border-emerald-500/20'
-                                  : p.integrationMaturity === 'BETA'
-                                  ? 'bg-indigo-950/30 text-indigo-400 border-indigo-500/20'
-                                  : 'bg-silver-950 text-silver-400 border-silver-800'
-                              }`}
-                            >
-                              {p.integrationMaturity}
-                            </span>
-                          </td>
-                        </tr>
-                      );
-                    })}
-                  </tbody>
-                </table>
-              </div>
-            </div>
-
-            {/* Bottom Row: Dealer Attention and Recent Events */}
-            <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
-              
-              {/* Dealer Attention Widget */}
-              <div className="bg-silver-900/20 border border-silver-800/40 rounded-xl p-5 shadow-lg lg:col-span-7 flex flex-col justify-between">
-                <div>
-                  <h2 className="text-lg font-bold text-teal-300 mb-4 flex items-center gap-2">
-                    <span className="w-2.5 h-2.5 rounded-full bg-amber-400" />
-                    Dealer Attention Triage
-                  </h2>
-                  
-                  {dealerAttention.length === 0 ? (
-                    <div className="p-8 text-center bg-silver-900/10 rounded-lg border border-silver-850 border-dashed text-silver-400 text-sm">
-                      ✨ All dealers are fully operational. No triage actions required.
-                    </div>
-                  ) : (
-                    <div className="overflow-x-auto scrollbar-thin">
-                      <table className="w-full text-left border-collapse">
-                        <thead>
-                          <tr className="bg-silver-900/40 border-b border-silver-800 text-[10px] text-silver-400 uppercase tracking-wider">
-                            <th className="px-3 py-2 font-semibold">Dealer</th>
-                            <th className="px-3 py-2 font-semibold">Platform</th>
-                            <th className="px-3 py-2 font-semibold">Severity</th>
-                            <th className="px-3 py-2 font-semibold">Blocker / Action</th>
-                          </tr>
-                        </thead>
-                        <tbody>
-                          {dealerAttention.map((item, idx) => {
-                            const isCritical = item.severity === 'critical';
-                            const isWarning = item.severity === 'warning';
-                            
-                            let sevPill = (
-                              <span className="px-2 py-0.5 rounded text-[10px] font-semibold bg-sky-950/40 text-sky-400 border border-sky-500/20">
-                                INFO
+              <SectionCard
+                title="Readiness Checklist"
+                subtitle="Pre-flight validation across core subsystems. All checks should pass before onboarding new dealers."
+                noPadding
+              >
+                <div className="overflow-x-auto">
+                  <table className="w-full border-collapse">
+                    <thead>
+                      <tr className="bg-silver-100 border-b border-silver-200 text-[10px] text-ink-muted uppercase tracking-wider">
+                        <th className="px-4 py-3 text-left font-semibold">Subsystem</th>
+                        <th className="px-4 py-3 text-left font-semibold">Status</th>
+                        <th className="px-4 py-3 text-left font-semibold hidden md:table-cell">What it checks</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {[
+                        { label: 'Platform Registry', value: readiness?.platformRegistry, desc: 'All known platforms are registered and resolvable by slug.' },
+                        { label: 'Sync Bridges',      value: readiness?.bridges,          desc: 'Catalog and social sync bridge adapters are initialized.' },
+                        { label: 'OAuth Clients',     value: readiness?.oauthClients,     desc: 'OAuth provider client configurations are loaded and valid.' },
+                        { label: 'Category Schemas',  value: readiness?.categorySchemas,  desc: 'Vehicle category field schemas are defined and consistent.' },
+                        { label: 'Geo Coordinates',   value: readiness?.geoCoordinates,   desc: 'Rooftop geocoordinates are available for at least one dealer.' },
+                        { label: 'Marketplace Smoke', value: readiness?.smokeMarketplace, desc: 'Marketplace listing data pathway responds successfully.' },
+                        { label: 'Operator Smoke',    value: readiness?.smokeOperator,    desc: 'Operator console data path is accessible and returns results.' },
+                      ].map(check => {
+                        const cfg = READINESS_CFG[check.value ?? ''] ?? READINESS_DEFAULT;
+                        return (
+                          <tr key={check.label} className="border-b border-silver-200 last:border-0 hover:bg-surface-inset transition-colors">
+                            <td className="px-4 py-3 text-sm text-ink-heading font-medium">{check.label}</td>
+                            <td className="px-4 py-3">
+                              <span className={`px-2 py-0.5 rounded text-[10px] font-mono font-semibold border ${cfg.cls}`}>
+                                {cfg.label}
                               </span>
-                            );
-                            if (isCritical) {
-                              sevPill = (
-                                <span className="px-2 py-0.5 rounded text-[10px] font-semibold bg-red-950/40 text-red-400 border border-red-500/20">
-                                  CRITICAL
-                                </span>
-                              );
-                            } else if (isWarning) {
-                              sevPill = (
-                                <span className="px-2 py-0.5 rounded text-[10px] font-semibold bg-amber-950/40 text-amber-400 border border-amber-500/20">
-                                  WARNING
-                                </span>
-                              );
-                            }
+                            </td>
+                            <td className="px-4 py-3 text-xs text-ink-faint hidden md:table-cell">{check.desc}</td>
+                          </tr>
+                        );
+                      })}
+                    </tbody>
+                  </table>
+                </div>
+              </SectionCard>
 
-                            return (
-                              <tr
-                                key={idx}
-                                className="border-b border-silver-800/10 hover:bg-silver-900/10 transition-colors"
-                              >
-                                <td className="px-3 py-2.5 align-top">
-                                  <a
-                                    href={`#/${item.dealerId}/platforms`}
-                                    className="font-semibold text-teal-400 hover:text-teal-300 hover:underline text-xs"
-                                  >
-                                    {item.dealerName}
-                                  </a>
-                                  <div className="text-[10px] text-silver-400 mt-0.5 font-semibold">
-                                    {item.category}
+            </div>
+          )}
+
+          {/* ── Dealerships Tab ────────────────────────────────────────────── */}
+          {tab === 'dealers' && (
+            <div className="space-y-4">
+              <p className="text-sm text-ink-muted">
+                All registered dealerships. Click a dealer name to open the admin management screen.
+                Issue badges are sourced from the system health scan.
+              </p>
+
+              <div className="flex flex-wrap items-center gap-2">
+                <input
+                  type="text"
+                  value={dealerSearch}
+                  onChange={e => setDealerSearch(e.target.value)}
+                  placeholder="Search name or ID…"
+                  className={`${INPUT_CLS} w-48`}
+                />
+                <select value={dealerCategory} onChange={e => setDealerCategory(e.target.value)} className={SELECT_CLS}>
+                  <option value="">All Categories</option>
+                  {dealerCategories.map(cat => <option key={cat} value={cat}>{cat}</option>)}
+                </select>
+                {dealerActiveFilters > 0 && (
+                  <button type="button" onClick={() => { setDealerSearch(''); setDealerCategory(''); }} className={CLEAR_CLS}>
+                    Clear ({dealerActiveFilters})
+                  </button>
+                )}
+                {Object.keys(triageByDealer).length > 0 && (
+                  <span className="ml-auto text-xs text-status-warning-text">
+                    {Object.keys(triageByDealer).length} with open issues
+                  </span>
+                )}
+              </div>
+
+              {dealersLoading && !dealersData && (
+                <div className="surface-card-operator p-5"><Skeleton rows={8} /></div>
+              )}
+              {dealersError && <ErrorState message={dealersError} />}
+
+              {!dealersLoading && !dealersError && (
+                <>
+                  <ResultCount shown={filteredDealers.length} total={allDealers.length} noun="dealership" />
+                  <div className="surface-card-operator overflow-x-auto">
+                    <table className="w-full text-left border-collapse min-w-[680px]">
+                      <thead>
+                        <tr className="bg-silver-100 border-b border-silver-200 text-[10px] text-ink-muted uppercase tracking-wider">
+                          <SortTh isActive={dealerSort === 'legalName'}       dir={dealerDir} onClick={() => toggleDealer('legalName')}>Dealership</SortTh>
+                          <SortTh isActive={dealerSort === 'businessCategory'} dir={dealerDir} onClick={() => toggleDealer('businessCategory')}>Category</SortTh>
+                          <SortTh isActive={dealerSort === 'createdAt'}       dir={dealerDir} onClick={() => toggleDealer('createdAt')}>Member Since</SortTh>
+                          <SortTh isActive={dealerSort === 'issues'}          dir={dealerDir} onClick={() => toggleDealer('issues')}>Open Issues</SortTh>
+                          <th className="px-4 py-3 font-semibold">Actions</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {filteredDealers.map(dealer => {
+                          const triage = triageByDealer[dealer.id];
+                          return (
+                            <tr key={dealer.id} className="border-b border-silver-200 last:border-0 hover:bg-surface-inset transition-colors">
+                              <td className="px-4 py-3">
+                                <a href={adminDealerHash(dealer.id)} className="font-semibold text-navy-700 hover:text-navy-600 hover:underline text-sm">
+                                  {dealer.legalName}
+                                </a>
+                                {dealer.dbaName && dealer.dbaName !== dealer.legalName && (
+                                  <div className="text-[11px] text-ink-muted mt-0.5">dba {dealer.dbaName}</div>
+                                )}
+                                <div className="text-[10px] text-ink-faint font-mono mt-0.5">{dealer.id}</div>
+                              </td>
+                              <td className="px-4 py-3">
+                                <span className="px-2 py-0.5 rounded text-[10px] font-semibold bg-status-neutral-bg text-status-neutral-text border border-status-neutral-border">
+                                  {dealer.businessCategory}
+                                </span>
+                              </td>
+                              <td className="px-4 py-3 text-xs text-ink-muted font-mono whitespace-nowrap">
+                                {new Date(dealer.createdAt).toLocaleDateString()}
+                              </td>
+                              <td className="px-4 py-3">
+                                {!triage ? (
+                                  <span className="text-[10px] text-ink-faint">None</span>
+                                ) : (
+                                  <div className="flex flex-wrap gap-1">
+                                    {triage.critical > 0 && (
+                                      <span className="px-2 py-0.5 rounded text-[10px] font-semibold border bg-status-error-bg text-status-error-text border-status-error-border">
+                                        {triage.critical} critical
+                                      </span>
+                                    )}
+                                    {triage.warning > 0 && (
+                                      <span className="px-2 py-0.5 rounded text-[10px] font-semibold border bg-status-warning-bg text-status-warning-text border-status-warning-border">
+                                        {triage.warning} warning
+                                      </span>
+                                    )}
+                                    {triage.info > 0 && triage.critical === 0 && triage.warning === 0 && (
+                                      <span className="px-2 py-0.5 rounded text-[10px] font-semibold border bg-status-info-bg text-status-info-text border-status-info-border">
+                                        {triage.info} info
+                                      </span>
+                                    )}
                                   </div>
-                                </td>
-                                <td className="px-3 py-2.5 align-top font-mono text-xs text-silver-300">
-                                  {item.platformSlug}
-                                </td>
-                                <td className="px-3 py-2.5 align-top">
-                                  {sevPill}
-                                </td>
-                                <td className="px-3 py-2.5 align-top">
-                                  <div className="text-xs text-silver-200">
-                                    {item.reason}
-                                  </div>
-                                  <div className="text-[10px] text-orange-400 mt-1 font-semibold">
-                                    Next: {item.nextAction}
-                                  </div>
-                                </td>
-                              </tr>
-                            );
-                          })}
-                        </tbody>
-                      </table>
-                    </div>
+                                )}
+                              </td>
+                              <td className="px-4 py-3">
+                                <div className="flex gap-2">
+                                  <a href={adminDealerHash(dealer.id)} className="px-2.5 py-1 text-[10px] font-semibold text-orange-600 hover:text-orange-500 border border-orange-100 hover:border-orange-100 rounded transition-all">Manage</a>
+                                  <a href={`#/${dealer.id}/platforms`} className="px-2.5 py-1 text-[10px] font-semibold text-ink-muted hover:text-ink-heading border border-silver-300 hover:border-silver-400 rounded transition-all">Platforms</a>
+                                  <a href={`#/${dealer.id}/inventory`} className="px-2.5 py-1 text-[10px] font-semibold text-ink-muted hover:text-ink-heading border border-silver-300 hover:border-silver-400 rounded transition-all">Inventory</a>
+                                </div>
+                              </td>
+                            </tr>
+                          );
+                        })}
+                        {filteredDealers.length === 0 && (
+                          <tr><td colSpan={5} className="px-4 py-10 text-center text-ink-faint text-sm">No dealerships match the search criteria.</td></tr>
+                        )}
+                      </tbody>
+                    </table>
+                  </div>
+                </>
+              )}
+            </div>
+          )}
+
+          {/* ── Platforms Tab ──────────────────────────────────────────────── */}
+          {tab === 'platforms' && (
+            <div className="space-y-4">
+              <p className="text-sm text-ink-muted">
+                All registered advertising and distribution integrations. Click a platform name to manage its API credentials.
+              </p>
+
+              <div className="flex flex-wrap items-center gap-2">
+                <input
+                  type="text"
+                  value={platSearch}
+                  onChange={e => setPlatSearch(e.target.value)}
+                  placeholder="Search platforms…"
+                  className={`${INPUT_CLS} w-44`}
+                />
+                <select value={platCap} onChange={e => setPlatCap(e.target.value)} className={SELECT_CLS}>
+                  <option value="">All Capabilities</option>
+                  <option value="catalogSync">Catalog Sync</option>
+                  <option value="socialPosting">Social Posting</option>
+                  <option value="marketplaceListing">Marketplace Listing</option>
+                  <option value="partnerFeed">Partner Feed</option>
+                  <option value="leadCapture">Lead Capture</option>
+                </select>
+                <select value={platValidation} onChange={e => setPlatValidation(e.target.value)} className={SELECT_CLS}>
+                  <option value="">All Validation States</option>
+                  <option value="valid">Valid</option>
+                  <option value="invalid">Invalid</option>
+                  <option value="not-configured">Not Configured</option>
+                  <option value="unsupported">No Live Check</option>
+                </select>
+                <select value={platMaturity} onChange={e => setPlatMaturity(e.target.value)} className={SELECT_CLS}>
+                  <option value="">All Maturities</option>
+                  <option value="PRODUCTION_READY">Production Ready</option>
+                  <option value="BETA">Beta</option>
+                  <option value="ALPHA">Alpha</option>
+                </select>
+                {platActiveFilters > 0 && (
+                  <button type="button" onClick={() => { setPlatSearch(''); setPlatCap(''); setPlatValidation(''); setPlatMaturity(''); }} className={CLEAR_CLS}>
+                    Clear ({platActiveFilters})
+                  </button>
+                )}
+                <div className="ml-auto flex items-center gap-3 text-xs">
+                  {filteredPlatforms.filter(p => p.liveValidationStatus === 'invalid').length > 0 && (
+                    <span className="text-status-error-text">{filteredPlatforms.filter(p => p.liveValidationStatus === 'invalid').length} validation errors</span>
                   )}
                 </div>
               </div>
 
-              {/* Recent Events Widget */}
-              <div className="bg-silver-900/20 border border-silver-800/40 rounded-xl p-5 shadow-lg lg:col-span-5 flex flex-col justify-between">
-                <div>
-                  <h2 className="text-lg font-bold text-teal-300 mb-4 flex items-center gap-2">
-                    <span className="w-2.5 h-2.5 rounded-full bg-indigo-400" />
-                    Recent Events (Audit Logs)
-                  </h2>
-                  <div className="space-y-3 max-h-[300px] overflow-y-auto pr-1 scrollbar-thin">
-                    {recentEvents.map(event => (
-                      <div
-                        key={event.id}
-                        className="p-3 bg-silver-900/30 rounded-lg border border-silver-800/20 space-y-1.5"
-                      >
-                        <div className="flex items-center justify-between text-xs">
-                          <span className="font-semibold text-white font-mono break-all pr-2">
-                            {event.action}
-                          </span>
-                          <span className="text-[10px] text-silver-400 font-mono whitespace-nowrap shrink-0">
-                            {new Date(event.createdAt).toLocaleTimeString()}
-                          </span>
-                        </div>
-                        <div className="text-[10px] text-silver-400">
-                          Actor: <span className="text-silver-200">{event.actorEmail}</span>
-                        </div>
-                        {event.detailString && (
-                          <div className="text-[10px] text-silver-300 bg-silver-950/60 p-1.5 rounded font-mono break-words leading-normal max-h-16 overflow-y-auto">
-                            {event.detailString}
-                          </div>
-                        )}
-                      </div>
-                    ))}
-                  </div>
+              <ResultCount shown={filteredPlatforms.length} total={platformOverview.length} noun="platform" />
+
+              <div className="surface-card-operator overflow-x-auto">
+                <table className="w-full text-left border-collapse min-w-[700px]">
+                  <thead>
+                    <tr className="bg-silver-100 border-b border-silver-200 text-[10px] text-ink-muted uppercase tracking-wider">
+                      <SortTh isActive={platSort === 'platformName'}  dir={platDir} onClick={() => togglePlat('platformName')}>Platform</SortTh>
+                      <th className="px-4 py-3 font-semibold">Validation</th>
+                      <th className="px-4 py-3 font-semibold">Capabilities</th>
+                      <SortTh isActive={platSort === 'dealersUsing'} dir={platDir} onClick={() => togglePlat('dealersUsing')}>Dealers</SortTh>
+                      <SortTh isActive={platSort === 'maturity'}     dir={platDir} onClick={() => togglePlat('maturity')}>Maturity</SortTh>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {filteredPlatforms.map(p => {
+                      const valCfg = VALIDATION_CFG[p.liveValidationStatus ?? ''] ?? VALIDATION_DEFAULT;
+                      const matCfg = MATURITY_CFG[p.integrationMaturity ?? ''] ?? MATURITY_DEFAULT;
+                      return (
+                        <tr key={p.platformSlug} className="border-b border-silver-200 last:border-0 hover:bg-surface-inset transition-colors">
+                          <td className="px-4 py-3">
+                            <a href="#/admin/platform-credentials" className="font-semibold text-navy-700 hover:text-navy-600 hover:underline text-sm">
+                              {p.platformName}
+                            </a>
+                            <div className="text-[10px] text-ink-faint font-mono mt-0.5">
+                              {p.platformSlug}
+                              {!p.configured && <span className="ml-1.5 text-ink-faint">· not configured</span>}
+                            </div>
+                          </td>
+                          <td className="px-4 py-3">
+                            <span className={`px-2 py-0.5 rounded text-[10px] font-mono font-semibold border ${valCfg.cls}`}>{valCfg.label}</span>
+                          </td>
+                          <td className="px-4 py-3">
+                            <div className="flex flex-wrap gap-1">
+                              {p.capabilities.map(cap => (
+                                <span key={cap} className={`px-1.5 py-0.5 rounded text-[9px] font-semibold uppercase tracking-wide ${CAP_CLS}`}>
+                                  {cap}
+                                </span>
+                              ))}
+                            </div>
+                          </td>
+                          <td className="px-4 py-3">
+                            <span className="font-semibold text-ink-heading text-sm">{p.dealersUsing}</span>
+                            {p.blockedDealers > 0 && <div className="text-[10px] text-status-error-text font-semibold mt-0.5">{p.blockedDealers} blocked</div>}
+                          </td>
+                          <td className="px-4 py-3">
+                            <span className={`px-2 py-0.5 rounded text-[10px] font-semibold border ${matCfg.cls}`}>{matCfg.label}</span>
+                          </td>
+                        </tr>
+                      );
+                    })}
+                    {filteredPlatforms.length === 0 && (
+                      <tr><td colSpan={5} className="px-4 py-10 text-center text-ink-faint text-sm">No platforms match the selected filters.</td></tr>
+                    )}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          )}
+
+          {/* ── Dealer Triage Tab ──────────────────────────────────────────── */}
+          {tab === 'triage' && (
+            <div className="space-y-4">
+              <div className="flex items-start justify-between gap-4">
+                <p className="text-sm text-ink-muted">
+                  Dealer configurations flagged for attention — blocked syncs, invalid credentials, missing geocoordinates, and stalled queues.
+                </p>
+                <a href="#/admin/blocked-dealers" className="text-xs font-semibold text-orange-600 hover:text-orange-500 hover:underline shrink-0">
+                  Full blocked list →
+                </a>
+              </div>
+
+              <div className="flex flex-wrap items-center gap-2">
+                <input
+                  type="text"
+                  value={triageSearch}
+                  onChange={e => setTriageSearch(e.target.value)}
+                  placeholder="Search dealer, platform, reason…"
+                  className={`${INPUT_CLS} w-56`}
+                />
+                <select value={triageSev} onChange={e => setTriageSev(e.target.value)} className={SELECT_CLS}>
+                  <option value="">All Severities</option>
+                  <option value="critical">Critical</option>
+                  <option value="warning">Warning</option>
+                  <option value="info">Info</option>
+                </select>
+                {triageActiveFilters > 0 && (
+                  <button type="button" onClick={() => { setTriageSearch(''); setTriageSev(''); }} className={CLEAR_CLS}>
+                    Clear ({triageActiveFilters})
+                  </button>
+                )}
+                {criticalCount > 0 && (
+                  <span className="ml-auto text-xs text-status-error-text">{criticalCount} critical</span>
+                )}
+              </div>
+
+              <ResultCount shown={filteredTriage.length} total={dealerAttention.length} noun="item" />
+
+              {filteredTriage.length === 0 ? (
+                <div className="p-12 text-center border border-dashed border-silver-200 rounded-md text-ink-faint text-sm">
+                  All dealers are fully operational — no triage actions required.
+                </div>
+              ) : (
+                <div className="surface-card-operator overflow-x-auto">
+                  <table className="w-full text-left border-collapse min-w-[720px]">
+                    <thead>
+                      <tr className="bg-silver-100 border-b border-silver-200 text-[10px] text-ink-muted uppercase tracking-wider">
+                        <SortTh isActive={triageSort === 'dealerName'}   dir={triageDir} onClick={() => toggleTriage('dealerName')}>Dealer</SortTh>
+                        <SortTh isActive={triageSort === 'platformSlug'} dir={triageDir} onClick={() => toggleTriage('platformSlug')}>Platform</SortTh>
+                        <SortTh isActive={triageSort === 'severity'}     dir={triageDir} onClick={() => toggleTriage('severity')}>Severity</SortTh>
+                        <th className="px-4 py-3 font-semibold">Issue</th>
+                        <th className="px-4 py-3 font-semibold">Next Action</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {filteredTriage.map((item, idx) => {
+                        const sevCfg = SEV_CFG[item.severity] ?? SEV_DEFAULT;
+                        return (
+                          <tr key={idx} className="border-b border-silver-200 last:border-0 hover:bg-surface-inset transition-colors">
+                            <td className="px-4 py-3">
+                              <a href={`#/${item.dealerId}/platforms`} className="font-semibold text-navy-700 hover:text-navy-600 hover:underline text-sm">
+                                {item.dealerName}
+                              </a>
+                              <div className="text-[10px] text-ink-faint mt-0.5">{item.category}</div>
+                            </td>
+                            <td className="px-4 py-3 font-mono text-xs text-ink-muted">{item.platformSlug}</td>
+                            <td className="px-4 py-3">
+                              <span className={`px-2 py-0.5 rounded text-[10px] font-semibold border ${sevCfg.cls}`}>{sevCfg.label}</span>
+                            </td>
+                            <td className="px-4 py-3 text-xs text-ink-body max-w-xs">{item.reason}</td>
+                            <td className="px-4 py-3 text-xs text-orange-600 font-medium">{item.nextAction}</td>
+                          </tr>
+                        );
+                      })}
+                    </tbody>
+                  </table>
+                </div>
+              )}
+            </div>
+          )}
+
+          {/* ── Audit Log Tab ──────────────────────────────────────────────── */}
+          {tab === 'audit' && (
+            <div className="space-y-4">
+              <p className="text-sm text-ink-muted">
+                Recent operator and system events recorded for security and compliance review. Actions are attributed to the authenticated actor at the time of the event.
+              </p>
+
+              <div className="flex flex-wrap items-center gap-2">
+                <input
+                  type="text"
+                  value={auditSearch}
+                  onChange={e => setAuditSearch(e.target.value)}
+                  placeholder="Search action, actor, or details…"
+                  className={`${INPUT_CLS} w-60`}
+                />
+                {auditActiveFilters > 0 && (
+                  <button type="button" onClick={() => setAuditSearch('')} className={CLEAR_CLS}>
+                    Clear
+                  </button>
+                )}
+                <div className="ml-auto">
+                  <button
+                    type="button"
+                    onClick={() => toggleAudit()}
+                    className="px-3 py-1.5 text-xs font-semibold text-ink-muted hover:text-ink-heading border border-silver-300 hover:border-silver-400 rounded-md transition-all"
+                  >
+                    {auditDir === 'desc' ? 'Newest first ↓' : 'Oldest first ↑'}
+                  </button>
                 </div>
               </div>
 
+              <ResultCount shown={filteredAudit.length} total={recentEvents.length} noun="event" />
+
+              {filteredAudit.length === 0 ? (
+                <div className="p-12 text-center border border-dashed border-silver-200 rounded-md text-ink-faint text-sm">
+                  No events match the search criteria.
+                </div>
+              ) : (
+                <div className="surface-card-operator overflow-x-auto">
+                  <table className="w-full text-left border-collapse min-w-[600px]">
+                    <thead>
+                      <tr className="bg-silver-100 border-b border-silver-200 text-[10px] text-ink-muted uppercase tracking-wider">
+                        <SortTh isActive={true} dir={auditDir} onClick={() => toggleAudit()} className="whitespace-nowrap">Timestamp</SortTh>
+                        <th className="px-4 py-3 font-semibold">Action</th>
+                        <th className="px-4 py-3 font-semibold">Actor</th>
+                        <th className="px-4 py-3 font-semibold">Details</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {filteredAudit.map(event => (
+                        <tr key={event.id} className="border-b border-silver-200 last:border-0 hover:bg-surface-inset transition-colors align-top">
+                          <td className="px-4 py-3 font-mono text-[10px] text-ink-faint whitespace-nowrap">
+                            {new Date(event.createdAt).toLocaleString()}
+                          </td>
+                          <td className="px-4 py-3 font-mono text-xs font-semibold text-ink-heading">{event.action}</td>
+                          <td className="px-4 py-3 text-xs text-ink-muted">{event.actorEmail}</td>
+                          <td className="px-4 py-3 text-[10px] text-ink-faint font-mono max-w-xs break-words leading-relaxed">
+                            {event.detailString || '—'}
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              )}
             </div>
-          </div>
-        )}
-      </div>
-    </div>
+          )}
+
+        </>
+      )}
+    </AdminShell>
   );
 }

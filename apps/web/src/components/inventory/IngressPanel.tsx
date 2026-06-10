@@ -147,8 +147,8 @@ type ImpactChip = { label: string; cls: string };
 
 function buildImpactChips(impact: IngressRunPlatformImpact): ImpactChip[] {
   const chips: ImpactChip[] = [];
-  const s = impact.publishSummary;
-  if (impact.dispatched > 0)
+  const s: Record<string, number> = impact.publishSummary ?? {};
+  if ((impact.dispatched ?? 0) > 0)
     chips.push({ label: `${impact.dispatched} submitted`, cls: 'text-status-success-text' });
   const scheduled = (s['Scheduled'] ?? 0) + (s['Ready'] ?? 0);
   if (scheduled > 0)

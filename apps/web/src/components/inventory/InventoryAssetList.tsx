@@ -60,7 +60,7 @@ export function InventoryAssetList({
   const detailVehicle = detailId ? rows.find(r => r.id === detailId) ?? null : null;
 
   return (
-    <div className={`${detailVehicle ? 'lg:grid lg:grid-cols-[1fr_min(22rem,38%)] lg:gap-4 lg:items-start' : ''}`}>
+    <div>
       <div className="space-y-3">
         {selectable && onToggleAll && rows.length > 0 && (
           <div className="flex items-center gap-2 px-1">

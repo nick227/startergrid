@@ -9,9 +9,12 @@ import PlatformHistoryPage from './pages/PlatformHistoryPage.tsx';
 import InventoryPage from './pages/InventoryPage.tsx';
 import KnowledgeBasePage from './pages/KnowledgeBasePage.tsx';
 
+const PlatformDetailPage = lazy(() => import('./pages/PlatformDetailPage.tsx'));
 const ReportsRouter = lazy(() => import('./pages/ReportsRouter.tsx'));
 const AdminCredentialsPage = lazy(() => import('./pages/AdminCredentialsPage.tsx'));
 const AdminOverviewPage = lazy(() => import('./pages/AdminOverviewPage.tsx'));
+const AdminBlockedDealersPage = lazy(() => import('./pages/AdminBlockedDealersPage.tsx'));
+const AdminDealerPage = lazy(() => import('./pages/AdminDealerPage.tsx'));
 import { AuthLoadingScreen } from '@/components/auth/AuthLoadingScreen.tsx';
 import { useAuth } from '@/contexts/AuthContext.tsx';
 import { useOperatorRoute } from '@/hooks/useOperatorRoute.ts';
@@ -23,18 +26,19 @@ import { canAccessDealer } from '@/lib/operatorAccess.ts';
 function OperatorApp() {
   const { user, authReady } = useAuth();
   const { route, nav, activeTab, selectDealer } = useOperatorRoute();
-  const { dealerId, page, platformSlug, platformView, reportSlug, reportRange } = route;
+  const { dealerId, page, platformSlug, platformView, reportSlug, reportRange, adminDealerId } = route;
   const categorySchema = useDealerCategorySchema(dealerId ?? null);
 
   const helpStandalone = (page === 'help' || page === 'knowledge') && !dealerId;
-  const adminStandalone = page === 'admin' && !dealerId;
+  // SUPER_ADMIN has no dealer picker — AdminOverviewPage is their home screen.
+  const superAdminHome = !dealerId && user?.role === 'SUPER_ADMIN';
 
   useEffect(() => {
     if (!user || !dealerId || canAccessDealer(user, dealerId)) return;
     window.location.hash = '#/';
   }, [user, dealerId]);
 
-  // Site administration is SUPER_ADMIN only.
+  // Site administration is SUPER_ADMIN only — redirect anyone else away from /admin.
   useEffect(() => {
     if (!user || page !== 'admin' || user.role === 'SUPER_ADMIN') return;
     window.location.hash = '#/';
@@ -45,10 +49,14 @@ function OperatorApp() {
 
   return (
     <CategoryProvider schema={categorySchema}>
-      {adminStandalone && user.role === 'SUPER_ADMIN' ? (
+      {superAdminHome ? (
         <Suspense fallback={null}>
-          {platformSlug === 'platform-credentials' ? (
+          {adminDealerId ? (
+            <AdminDealerPage dealerId={adminDealerId} />
+          ) : platformSlug === 'platform-credentials' ? (
             <AdminCredentialsPage />
+          ) : platformSlug === 'blocked-dealers' ? (
+            <AdminBlockedDealersPage />
           ) : (
             <AdminOverviewPage />
           )}
@@ -59,6 +67,10 @@ function OperatorApp() {
         <DealerPicker onSelect={selectDealer} />
       ) : !canAccessDealer(user, dealerId) ? (
         <DealerPicker onSelect={selectDealer} forbiddenDealerId={dealerId} />
+      ) : platformSlug && !platformView ? (
+        <Suspense fallback={null}>
+          <PlatformDetailPage dealerId={dealerId} nav={nav} activeTab={activeTab} platformSlug={platformSlug} />
+        </Suspense>
       ) : platformSlug && platformView === 'queue' ? (
         <PlatformQueuePage dealerId={dealerId} nav={nav} activeTab={activeTab} platformSlug={platformSlug} />
       ) : platformSlug && platformView === 'history' ? (
@@ -80,7 +92,6 @@ function OperatorApp() {
           dealerId={dealerId}
           nav={nav}
           activeTab={activeTab}
-          initialPlatformSlug={platformSlug}
         />
       )}
       <DocReaderSheet />

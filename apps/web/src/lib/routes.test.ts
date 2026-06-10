@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import {
+  adminDealerHash,
   operatorHash,
   parseOperatorRoute,
   platformHistoryHash,
@@ -78,6 +79,25 @@ describe('parseOperatorRoute', () => {
       platformSlug: 'platform-credentials',
     });
   });
+
+  it('parses admin blocked dealers route', () => {
+    const route = parseOperatorRoute('#/admin/blocked-dealers');
+    expect(route).toMatchObject({
+      dealerId: null,
+      page: 'admin',
+      platformSlug: 'blocked-dealers',
+    });
+  });
+
+  it('parses admin dealer detail route', () => {
+    const route = parseOperatorRoute('#/admin/dealers/dealer-abc');
+    expect(route).toMatchObject({
+      dealerId: null,
+      page: 'admin',
+      platformSlug: null,
+      adminDealerId: 'dealer-abc',
+    });
+  });
 });
 
 describe('hash builders', () => {
@@ -95,5 +115,9 @@ describe('hash builders', () => {
     expect(platformHistoryHash('d1', 'fb', { assetId: 'v-1' })).toBe(
       '#/d1/platforms/fb/history?assetId=v-1'
     );
+  });
+
+  it('adminDealerHash builds correct href', () => {
+    expect(adminDealerHash('dealer-xyz')).toBe('#/admin/dealers/dealer-xyz');
   });
 });

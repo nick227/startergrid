@@ -14,6 +14,8 @@ export type OperatorRoute = {
   reportFamily: 'inventory' | 'platform' | null;
   reportSlug: string | null;
   reportRange: import('./reportsCatalog.ts').ReportRangePreset;
+  /** Set when page==='admin' and the URL is #/admin/dealers/{id}. Null for all other routes. */
+  adminDealerId: string | null;
 };
 
 const LEGACY_SEGMENT_MAP: Record<string, OperatorPageSegment> = {
@@ -51,6 +53,7 @@ function emptyRoute(): OperatorRoute {
     reportFamily: null,
     reportSlug: null,
     reportRange: 'now',
+    adminDealerId: null,
   };
 }
 
@@ -80,16 +83,23 @@ export function parseOperatorRoute(hash = window.location.hash): OperatorRoute {
   if (path.startsWith('/admin') || path.startsWith('admin')) {
     const cleanPath = path.replace(/^\//, ''); // remove leading slash
     const parts = cleanPath.split('/');
+    // #/admin/dealers/{dealerId} → adminDealerId
+    if (parts[1] === 'dealers' && parts[2]) {
+      return routeWithReports(
+        { dealerId: null, page: 'admin', platformSlug: null, platformView: null, assetRef, assetId, adminDealerId: parts[2] },
+        hash,
+      );
+    }
     const platformSlug = parts[1] || null;
     return routeWithReports(
-      { dealerId: null, page: 'admin', platformSlug, platformView: null, assetRef, assetId },
+      { dealerId: null, page: 'admin', platformSlug, platformView: null, assetRef, assetId, adminDealerId: null },
       hash,
     );
   }
 
   if (path === '/help' || path === 'help' || path === '/knowledge' || path === 'knowledge') {
     return routeWithReports(
-      { dealerId: null, page: 'help', platformSlug: null, platformView: null, assetRef, assetId },
+      { dealerId: null, page: 'help', platformSlug: null, platformView: null, assetRef, assetId, adminDealerId: null },
       hash,
     );
   }
@@ -110,6 +120,7 @@ export function parseOperatorRoute(hash = window.location.hash): OperatorRoute {
         platformView: (platformMatch[2] as 'queue' | 'history') ?? null,
         assetRef,
         assetId,
+        adminDealerId: null,
       },
       hash,
     );
@@ -117,16 +128,20 @@ export function parseOperatorRoute(hash = window.location.hash): OperatorRoute {
 
   if (rest.startsWith('reports')) {
     return routeWithReports(
-      { dealerId, page: 'reports', platformSlug: null, platformView: null, assetRef, assetId },
+      { dealerId, page: 'reports', platformSlug: null, platformView: null, assetRef, assetId, adminDealerId: null },
       hash,
     );
   }
 
   const page = parsePageSegment(rest || undefined);
   return routeWithReports(
-    { dealerId, page, platformSlug: null, platformView: null, assetRef, assetId },
+    { dealerId, page, platformSlug: null, platformView: null, assetRef, assetId, adminDealerId: null },
     hash,
   );
+}
+
+export function adminDealerHash(dealerId: string): string {
+  return `#/admin/dealers/${dealerId}`;
 }
 
 export function knowledgeHash(dealerId?: string | null): string {
@@ -147,6 +162,10 @@ export function operatorHash(
   return appendRowNavScope(base, scope);
 }
 
+export function platformDetailHash(dealerId: string, platformSlug: string, scope?: RowNavScope): string {
+  return appendRowNavScope(`#/${dealerId}/platforms/${platformSlug}`, scope);
+}
+
 export function platformQueueHash(dealerId: string, platformSlug: string, scope?: RowNavScope): string {
   return appendRowNavScope(`#/${dealerId}/platforms/${platformSlug}/queue`, scope);
 }
@@ -163,6 +182,7 @@ export function buildOperatorNav(dealerId: string): OperatorNavHandlers {
     goToReports: () => { window.location.hash = operatorHash(dealerId, 'reports'); },
     goToInventory: scope => { window.location.hash = operatorHash(dealerId, 'inventory', scope); },
     goToHelp: () => { window.location.hash = operatorHash(dealerId, 'help'); },
+    goToPlatformDetail: (slug, scope) => { window.location.hash = platformDetailHash(dealerId, slug, scope); },
     goToPlatformQueue: (slug, scope) => { window.location.hash = platformQueueHash(dealerId, slug, scope); },
     goToPlatformHistory: (slug, scope) => { window.location.hash = platformHistoryHash(dealerId, slug, scope); },
     goToSync: () => { window.location.hash = operatorHash(dealerId, 'platforms'); },

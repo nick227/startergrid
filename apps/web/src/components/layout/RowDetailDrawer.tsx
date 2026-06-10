@@ -13,13 +13,12 @@ export function RowDetailDrawer({ open, title, onClose, children }: Props) {
   return (
     <>
       <div
-        className="fixed inset-0 bg-navy-950/40 z-40 lg:hidden"
+        className="fixed inset-0 bg-navy-950/40 z-40"
         aria-hidden
         onClick={onClose}
       />
       <aside
-        className="fixed inset-y-0 right-0 z-50 w-full max-w-md bg-surface-card border-l border-silver-200 shadow-elevation-3 flex flex-col
-          lg:static lg:z-auto lg:max-w-none lg:shadow-elevation-1 lg:rounded-md lg:border lg:sticky lg:top-24 lg:max-h-[calc(100vh-8rem)]"
+        className="fixed inset-y-0 right-0 z-50 w-full max-w-md bg-surface-card border-l border-silver-200 shadow-elevation-3 flex flex-col overflow-hidden"
         aria-label={title}
       >
         <div className="flex items-center justify-between gap-3 px-4 py-3 border-b border-silver-200 shrink-0">

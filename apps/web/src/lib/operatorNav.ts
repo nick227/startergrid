@@ -9,6 +9,7 @@ export type OperatorNavHandlers = {
   goToReports: () => void;
   goToInventory: (scope?: RowNavScope) => void;
   goToHelp: () => void;
+  goToPlatformDetail: (platformSlug: string, scope?: RowNavScope) => void;
   goToPlatformQueue: (platformSlug: string, scope?: RowNavScope) => void;
   goToPlatformHistory: (platformSlug: string, scope?: RowNavScope) => void;
   /** @deprecated use goToPlatforms */

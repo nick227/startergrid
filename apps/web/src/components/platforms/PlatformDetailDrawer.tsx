@@ -200,17 +200,26 @@ export function PlatformDetailDrawer({
       <div className="space-y-4">
 
         {/* Header summary */}
-        <div className="flex items-center gap-3">
-          <PlatformLogo slug={platform.platformSlug} name={platform.platformName} size="sm" />
-          <div className="min-w-0">
-            <div className="flex flex-wrap items-center gap-1.5">
-              <span className={`px-1.5 py-0.5 rounded text-[10px] font-bold border ${conn.pill}`}>
-                {conn.label}
-              </span>
-              <span className="text-[10px] text-ink-faint">{publish.label}</span>
+        <div className="flex items-start justify-between gap-4">
+          <div className="flex items-center gap-3">
+            <PlatformLogo slug={platform.platformSlug} name={platform.platformName} size="sm" />
+            <div className="min-w-0">
+              <div className="flex flex-wrap items-center gap-1.5">
+                <span className={`px-1.5 py-0.5 rounded text-[10px] font-bold border ${conn.pill}`}>
+                  {conn.label}
+                </span>
+                <span className="text-[10px] text-ink-faint">{publish.label}</span>
+              </div>
+              {detail && <p className="text-[11px] text-ink-faint mt-0.5 truncate">{detail}</p>}
             </div>
-            {detail && <p className="text-[11px] text-ink-faint mt-0.5 truncate">{detail}</p>}
           </div>
+          <button
+            type="button"
+            onClick={() => nav.goToPlatformDetail(platform.platformSlug)}
+            className="shrink-0 px-2.5 py-1 text-[11px] font-semibold bg-silver-50 text-ink-body rounded-md hover:bg-silver-100 transition-colors"
+          >
+            View full profile
+          </button>
         </div>
 
         {/* Tab strip — scrollable on narrow viewports */}

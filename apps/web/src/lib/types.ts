@@ -19,6 +19,17 @@ export type NextRecommendedAction =
 export type IntegrationClass = 'OWNED' | 'FEEDABLE' | 'ASSISTED' | 'PARTNER_DEPENDENT';
 export type ReadinessColor = 'GREEN' | 'YELLOW' | 'RED';
 
+export type PlatformIntegrationUrls = {
+  partnerPortalUrl?: string;
+  developerDocsUrl?: string;
+  feedSpecUrl?: string;
+  feedSetupUrl?: string;
+  apiBaseUrl?: string;
+  apiRequestUrl?: string;
+  supportUrl?: string;
+  notes: string;
+};
+
 export type PlatformPublishResult = {
   platformSlug: string;
   platformName: string;
@@ -39,6 +50,7 @@ export type PlatformPublishResult = {
   connectionType: string | null;
   integrationMaturity: string | null;
   regions: string[];
+  setupInstructions?: string[];
 };
 
 export type PublishStateSummary = Record<PublishState, number>;
@@ -359,8 +371,9 @@ export type BulkEditResponse = { updated: number };
 // ── Platform Account Management ───────────────────────────────────────────────
 
 export type ConnectionField = {
-  field: 'accountId' | 'membershipStatus' | 'platformRepName' | 'platformRepEmail';
+  field: string;
   label: string;
+  isSecret?: boolean;
   hint?: string;
   placeholder?: string;
   helpUrl?: string;
@@ -386,6 +399,11 @@ export type PlatformAccountDetail = {
   nextAction: string | null;
   nextActionOwner: string | null;
   notes: string | null;
+  connectionConfig: Record<string, unknown> | null;
+  lastValidationStatus: string | null;
+  lastValidationNote: string | null;
+  lastValidatedAt: string | null;
+  highestConfirmedLevel: string | null;
   lastChecked: string | null;
   createdAt: string;
   updatedAt: string;
@@ -404,6 +422,12 @@ export type PlatformAccountDetail = {
   connectionType: string | null;
   integrationMaturity: string | null;
   liveValidationNote: string | null;
+  integrationUrls: PlatformIntegrationUrls | null;
+  requirementsConfidence: string | null;
+  sourceNote: string | null;
+  requiredDealershipFields: string[];
+  requiredVehicleFields: string[];
+  profileConfidence: string | null;
 };
 
 export type AccountStateSummary = {

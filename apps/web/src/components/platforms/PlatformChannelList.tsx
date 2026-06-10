@@ -152,6 +152,10 @@ export function PlatformChannelList({
             onClick: () => onSelectSlug(platform.platformSlug),
           },
           {
+            label: 'Full profile',
+            onClick: () => nav.goToPlatformDetail(platform.platformSlug),
+          },
+          {
             label: operatorCopy.channels.rowActions.queue,
             onClick: () => nav.goToPlatformQueue(platform.platformSlug),
           },
@@ -165,7 +169,7 @@ export function PlatformChannelList({
   };
 
   return (
-    <div className={`${selected ? 'lg:grid lg:grid-cols-[1fr_min(22rem,38%)] lg:gap-4 lg:items-start' : ''}`}>
+    <div>
       <div className="space-y-3">
         {useGroups ? (
           groups.map(group => (
