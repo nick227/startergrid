@@ -138,6 +138,12 @@ export type PlatformAccountDetail = {
   oauthExpired: boolean;
   tier: number | null;
   partnerSignup: PartnerSignupInfo | null;
+  socialPosting: boolean;
+  catalogSync: boolean;
+  marketplaceListing: boolean;
+  partnerFeed: boolean;
+  connectionType: string | null;
+  integrationMaturity: string | null;
 };
 
 // ── DB functions ─────────────────────────────────────────────────────────────
@@ -215,6 +221,12 @@ export async function listPlatformAccounts(
         : false,
       tier:              p.tier ?? null,
       partnerSignup:     p.partnerSignup ?? null,
+      socialPosting:     p.socialPosting ?? false,
+      catalogSync:       p.catalogSync ?? false,
+      marketplaceListing: p.marketplaceListing ?? false,
+      partnerFeed:       p.partnerFeed ?? false,
+      connectionType:    p.connectionType ?? null,
+      integrationMaturity: p.integrationMaturity ?? null,
     };
     return { ...base, readinessScore: computeReadinessScore(base).score };
   });
@@ -332,6 +344,12 @@ export async function updatePlatformAccount(
     oauthExpired:     tokenRow !== null && tokenExpired,
     tier:             platform?.tier ?? null,
     partnerSignup:    platform?.partnerSignup ?? null,
+    socialPosting:    platform?.socialPosting ?? false,
+    catalogSync:      platform?.catalogSync ?? false,
+    marketplaceListing: platform?.marketplaceListing ?? false,
+    partnerFeed:      platform?.partnerFeed ?? false,
+    connectionType:   platform?.connectionType ?? null,
+    integrationMaturity: platform?.integrationMaturity ?? null,
   };
   return { ...base, readinessScore: computeReadinessScore(base).score };
 }

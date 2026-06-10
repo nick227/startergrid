@@ -24,7 +24,7 @@ export type NonVehiclePlatformCategory = (typeof NON_VEHICLE_PLATFORM_CATEGORIES
 export type NonVehicleStubInput = {
   slug: string;
   name: string;
-  category: NonVehiclePlatformCategory;
+  categories: NonVehiclePlatformCategory[];
   outputFormat: string;
   partnerPortalUrl: string;
   developerDocsUrl: string;

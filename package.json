@@ -1,6 +1,6 @@
 {
   "name": "auto-dealer-onboarding-poc-v1",
-  "version": "4.10.0",
+  "version": "4.12.0",
   "private": true,
   "workspaces": [
     "apps/*",

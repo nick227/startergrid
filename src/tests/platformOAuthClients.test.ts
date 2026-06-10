@@ -6,6 +6,7 @@ import type { OAuthTokenPayload, AuthUrlParams } from '../services/platform/clie
 import { OAuthError } from '../services/platform/clients/types.js';
 import { CredentialStore } from '../services/platform/clients/CredentialStore.js';
 import { PlatformClientRegistry } from '../services/platform/clients/PlatformClientRegistry.js';
+import { OAUTH_PROFILE_SLUGS } from '../lib/platformCapabilityManifest.js';
 import type { OAuthProvider } from '../lib/types.js';
 
 // ── Minimal concrete subclass for testing abstract base ───────────────────────
@@ -133,22 +134,9 @@ describe('OAuthError', () => {
 // ── PlatformClientRegistry ────────────────────────────────────────────────────
 
 describe('PlatformClientRegistry.forSlug', () => {
-  const oauthSlugs = [
-    'google-vehicle-ads',
-    'google-business-profile',
-    'meta-automotive-ads',
-    'facebook-marketplace-general',
-    'tiktok-automotive-ads',
-    'microsoft-automotive-ads',
-    'linkedin-lead-gen-forms',
-    'pinterest-shopping-ads',
-    'reddit-dynamic-product-ads',
-    'ebay-motors',
-    'x-dynamic-product-ads',
-    'snapchat-dynamic-product-ads',
-    'nextdoor-ads',
-    // apple-business-connect: registry client exists but profile oauthProvider is suppressed until jose JWT ships
-  ];
+  // Derived from platform profiles — apple-business-connect excluded because its
+  // oauthProvider is suppressed until jose JWT ships (AppleOAuthClient is NOT_IMPLEMENTED).
+  const oauthSlugs = [...OAUTH_PROFILE_SLUGS];
 
   for (const slug of oauthSlugs) {
     it(`returns a client for ${slug}`, () => {

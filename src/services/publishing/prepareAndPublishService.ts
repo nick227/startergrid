@@ -178,6 +178,14 @@ export type PlatformPublishResult = {
   queueItemId: string | null;
   artifactPath: string | null;
   accountState: string | null;
+  // Capability flags threaded from PlatformProfileSeed
+  catalogSync: boolean;
+  socialPosting: boolean;
+  marketplaceListing: boolean;
+  partnerFeed: boolean;
+  connectionType: string | null;
+  integrationMaturity: string | null;
+  regions: string[];
 };
 
 export type PreparePublishResult = {
@@ -369,6 +377,13 @@ export async function runPrepareAndPublish(
       queueItemId: queueItem?.id ?? null,
       artifactPath: artifactBySlug.get(platform.slug) ?? null,
       accountState: acctState,
+      catalogSync: platform.catalogSync ?? false,
+      socialPosting: platform.socialPosting ?? false,
+      marketplaceListing: platform.marketplaceListing ?? false,
+      partnerFeed: platform.partnerFeed ?? false,
+      connectionType: platform.connectionType ?? null,
+      integrationMaturity: platform.integrationMaturity ?? null,
+      regions: platform.regions ?? [],
     };
   });
 

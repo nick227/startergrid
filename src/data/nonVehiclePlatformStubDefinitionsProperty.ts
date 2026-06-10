@@ -5,7 +5,7 @@ export const PROPERTY_NON_VEHICLE_STUB_DEFINITIONS: NonVehicleStubInput[] = [
   {
     slug: 'zillow-rental-manager',
     name: 'Zillow Rental Manager',
-    category: 'APARTMENTS',
+    categories: ['APARTMENTS'],
     outputFormat: 'ZILLOW_RENTAL_LISTING_PACKET',
     partnerPortalUrl: 'https://www.zillow.com/rental-manager/',
     developerDocsUrl: 'https://www.zillow.com/rental-manager/help/',
@@ -15,7 +15,7 @@ export const PROPERTY_NON_VEHICLE_STUB_DEFINITIONS: NonVehicleStubInput[] = [
   {
     slug: 'apartments-com',
     name: 'Apartments.com',
-    category: 'APARTMENTS',
+    categories: ['APARTMENTS'],
     outputFormat: 'APARTMENTS_COM_LISTING_PACKET',
     partnerPortalUrl: 'https://www.apartments.com/rental-tools/',
     developerDocsUrl: 'https://www.apartments.com/rental-tools/help',
@@ -25,7 +25,7 @@ export const PROPERTY_NON_VEHICLE_STUB_DEFINITIONS: NonVehicleStubInput[] = [
   {
     slug: 'zillow-homes',
     name: 'Zillow Premier Agent',
-    category: 'HOMES',
+    categories: ['HOMES'],
     outputFormat: 'ZILLOW_HOME_LISTING_PACKET',
     partnerPortalUrl: 'https://www.zillow.com/agent-resources/',
     developerDocsUrl: 'https://www.zillow.com/agent-resources/help/',
@@ -35,7 +35,7 @@ export const PROPERTY_NON_VEHICLE_STUB_DEFINITIONS: NonVehicleStubInput[] = [
   {
     slug: 'realtor-com',
     name: 'Realtor.com',
-    category: 'HOMES',
+    categories: ['HOMES'],
     outputFormat: 'REALTOR_COM_LISTING_PACKET',
     partnerPortalUrl: 'https://www.realtor.com/marketing/',
     developerDocsUrl: 'https://www.realtor.com/marketing/resources/',
@@ -45,7 +45,7 @@ export const PROPERTY_NON_VEHICLE_STUB_DEFINITIONS: NonVehicleStubInput[] = [
   {
     slug: 'loopnet',
     name: 'LoopNet',
-    category: 'COMMERCIAL_PROPERTY',
+    categories: ['COMMERCIAL_PROPERTY'],
     outputFormat: 'LOOPNET_LISTING_PACKET',
     partnerPortalUrl: 'https://www.loopnet.com/solutions/',
     developerDocsUrl: 'https://www.loopnet.com/solutions/listing-services/',
@@ -55,7 +55,7 @@ export const PROPERTY_NON_VEHICLE_STUB_DEFINITIONS: NonVehicleStubInput[] = [
   {
     slug: 'crexi',
     name: 'Crexi',
-    category: 'COMMERCIAL_PROPERTY',
+    categories: ['COMMERCIAL_PROPERTY'],
     outputFormat: 'CREXI_LISTING_PACKET',
     partnerPortalUrl: 'https://www.crexi.com/sell',
     developerDocsUrl: 'https://www.crexi.com/help',
@@ -65,7 +65,7 @@ export const PROPERTY_NON_VEHICLE_STUB_DEFINITIONS: NonVehicleStubInput[] = [
   {
     slug: 'machinery-trader',
     name: 'MachineryTrader',
-    category: 'HEAVY_EQUIPMENT',
+    categories: ['HEAVY_EQUIPMENT'],
     outputFormat: 'MACHINERY_TRADER_LISTING_PACKET',
     partnerPortalUrl: 'https://www.machinerytrader.com/',
     developerDocsUrl: 'https://www.machinerytrader.com/help/',
@@ -75,7 +75,7 @@ export const PROPERTY_NON_VEHICLE_STUB_DEFINITIONS: NonVehicleStubInput[] = [
   {
     slug: 'ironplanet',
     name: 'IronPlanet',
-    category: 'HEAVY_EQUIPMENT',
+    categories: ['HEAVY_EQUIPMENT'],
     outputFormat: 'IRONPLANET_LISTING_PACKET',
     partnerPortalUrl: 'https://www.ironplanet.com/sell',
     developerDocsUrl: 'https://www.ironplanet.com/help',

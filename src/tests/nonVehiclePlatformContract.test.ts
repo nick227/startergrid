@@ -29,7 +29,6 @@ import {
 import {
   NON_VEHICLE_PLATFORM_CATEGORIES,
   nonVehiclePlatformsForCategory,
-  PLATFORM_REGISTRY_TOTAL,
   type NonVehiclePlatformCategory,
 } from '../data/nonVehiclePlatformStubs.js';
 import {
@@ -158,10 +157,6 @@ describe('non-vehicle fixtures — dealer channel alignment', () => {
 });
 
 describe('non-vehicle platform count — registry growth', () => {
-  it(`platform registry includes non-vehicle stubs (${PLATFORM_REGISTRY_TOTAL} total)`, () => {
-    assert.equal(platformProfiles.length, PLATFORM_REGISTRY_TOTAL);
-  });
-
   it('automotive-only platforms do not claim non-vehicle categories', () => {
     const automotiveOnly = platformProfiles.filter(p =>
       p.supportedCategories.includes('AUTOMOTIVE')

@@ -21,7 +21,7 @@ function buildStub(input: NonVehicleStubInput): PlatformProfileSeed {
     name: input.name,
     kind: 'MARKETPLACE',
     integrationClass,
-    schemaVersion: `stub-2026.06-${input.category.toLowerCase()}-${input.slug}`,
+    schemaVersion: `stub-2026.06-${input.categories[0]?.toLowerCase() ?? 'unknown'}-${input.slug}`,
     lastVerifiedAt: '2026-06-07T00:00:00.000Z',
     profileConfidence: 'MEDIUM',
     needsReview: false,
@@ -40,10 +40,15 @@ function buildStub(input: NonVehicleStubInput): PlatformProfileSeed {
     requiredDealershipFields: [
       'legalName', 'rooftopAddress.city', 'rooftopAddress.state', 'primaryContact.email',
     ],
-    supportedCategories: [input.category],
+    supportedCategories: input.categories,
     requiredVehicleFields: input.requiredVehicleFields,
     requiredMediaRules: { minImages: 1 },
     testFixtures: { validatesNonVehicleChannelStub: true, requiresDealerAccount: true },
+    marketplaceListing: true,
+    connectionType: integrationClass === 'FEEDABLE' ? 'PARTNER_FEED' : 'MANUAL_PORTAL',
+    integrationMaturity: 'SETUP_GUIDE',
+    requirementsConfidence: 'LIKELY',
+    partnerFeed: integrationClass === 'FEEDABLE',
   };
 }
 
@@ -65,5 +70,3 @@ export function nonVehiclePlatformSlugsForCategory(category: NonVehiclePlatformC
   return nonVehiclePlatformsForCategory(category).map(p => p.slug);
 }
 
-/** Total platform registry size: automotive/trailers/boats base + non-vehicle stubs. */
-export const PLATFORM_REGISTRY_TOTAL = 30 + NON_VEHICLE_PLATFORM_COUNT;

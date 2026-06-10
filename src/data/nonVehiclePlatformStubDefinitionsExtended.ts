@@ -6,7 +6,7 @@ export const EXTENDED_NON_VEHICLE_STUB_DEFINITIONS: NonVehicleStubInput[] = [
   {
     slug: 'tunecore',
     name: 'TuneCore',
-    category: 'SONGS',
+    categories: ['SONGS'],
     outputFormat: 'TUNECORE_RELEASE_PACKET',
     partnerPortalUrl: 'https://www.tunecore.com/',
     developerDocsUrl: 'https://www.tunecore.com/guides',
@@ -16,7 +16,7 @@ export const EXTENDED_NON_VEHICLE_STUB_DEFINITIONS: NonVehicleStubInput[] = [
   {
     slug: 'bandcamp',
     name: 'Bandcamp for Artists',
-    category: 'SONGS',
+    categories: ['SONGS'],
     outputFormat: 'BANDCAMP_RELEASE_PACKET',
     partnerPortalUrl: 'https://bandcamp.com/artists',
     developerDocsUrl: 'https://get.bandcamp.help/hc/en-us',
@@ -27,7 +27,7 @@ export const EXTENDED_NON_VEHICLE_STUB_DEFINITIONS: NonVehicleStubInput[] = [
   {
     slug: 'google-play-books',
     name: 'Google Play Books Partner Center',
-    category: 'EBOOKS',
+    categories: ['EBOOKS'],
     outputFormat: 'GOOGLE_PLAY_BOOKS_TITLE_PACKET',
     partnerPortalUrl: 'https://play.google.com/books/publish/',
     developerDocsUrl: 'https://support.google.com/books/partner/answer/3324396',
@@ -38,7 +38,7 @@ export const EXTENDED_NON_VEHICLE_STUB_DEFINITIONS: NonVehicleStubInput[] = [
   {
     slug: 'barnes-noble-press',
     name: 'Barnes & Noble Press',
-    category: 'EBOOKS',
+    categories: ['EBOOKS'],
     outputFormat: 'BN_PRESS_TITLE_PACKET',
     partnerPortalUrl: 'https://press.barnesandnoble.com/',
     developerDocsUrl: 'https://press.barnesandnoble.com/help',
@@ -49,7 +49,7 @@ export const EXTENDED_NON_VEHICLE_STUB_DEFINITIONS: NonVehicleStubInput[] = [
   {
     slug: 'poshmark',
     name: 'Poshmark Seller',
-    category: 'APPAREL',
+    categories: ['APPAREL'],
     outputFormat: 'POSHMARK_LISTING_PACKET',
     partnerPortalUrl: 'https://poshmark.com/closet',
     developerDocsUrl: 'https://poshmark.com/sell_on_poshmark',
@@ -59,7 +59,7 @@ export const EXTENDED_NON_VEHICLE_STUB_DEFINITIONS: NonVehicleStubInput[] = [
   {
     slug: 'depop',
     name: 'Depop Seller',
-    category: 'APPAREL',
+    categories: ['APPAREL'],
     outputFormat: 'DEPOP_LISTING_PACKET',
     partnerPortalUrl: 'https://www.depop.com/sell/',
     developerDocsUrl: 'https://help.depop.com/hc/en-us',
@@ -70,7 +70,7 @@ export const EXTENDED_NON_VEHICLE_STUB_DEFINITIONS: NonVehicleStubInput[] = [
   {
     slug: 'saatchi-art',
     name: 'Saatchi Art',
-    category: 'DIGITAL_ART',
+    categories: ['DIGITAL_ART'],
     outputFormat: 'SAATCHI_ARTWORK_PACKET',
     partnerPortalUrl: 'https://www.saatchiart.com/sell',
     developerDocsUrl: 'https://www.saatchiart.com/artisthelp',
@@ -80,7 +80,7 @@ export const EXTENDED_NON_VEHICLE_STUB_DEFINITIONS: NonVehicleStubInput[] = [
   {
     slug: 'redbubble',
     name: 'Redbubble Artist Shop',
-    category: 'DIGITAL_ART',
+    categories: ['DIGITAL_ART'],
     outputFormat: 'REDBUBBLE_DESIGN_PACKET',
     partnerPortalUrl: 'https://www.redbubble.com/shop/dashboard',
     developerDocsUrl: 'https://help.redbubble.com/hc/en-us',
@@ -91,7 +91,7 @@ export const EXTENDED_NON_VEHICLE_STUB_DEFINITIONS: NonVehicleStubInput[] = [
   {
     slug: 'tiktok-creator',
     name: 'TikTok Creator Portal',
-    category: 'VIDEO_DISTRIBUTION',
+    categories: ['VIDEO_DISTRIBUTION'],
     outputFormat: 'TIKTOK_VIDEO_PACKET',
     partnerPortalUrl: 'https://www.tiktok.com/creators/creator-portal/',
     developerDocsUrl: 'https://support.tiktok.com/en/business-and-creator/creator-portal',
@@ -101,7 +101,7 @@ export const EXTENDED_NON_VEHICLE_STUB_DEFINITIONS: NonVehicleStubInput[] = [
   {
     slug: 'rumble-creator',
     name: 'Rumble Creator',
-    category: 'VIDEO_DISTRIBUTION',
+    categories: ['VIDEO_DISTRIBUTION'],
     outputFormat: 'RUMBLE_VIDEO_PACKET',
     partnerPortalUrl: 'https://rumble.com/upload.php',
     developerDocsUrl: 'https://rumble.com/help',
@@ -112,7 +112,7 @@ export const EXTENDED_NON_VEHICLE_STUB_DEFINITIONS: NonVehicleStubInput[] = [
   {
     slug: 'offerup',
     name: 'OfferUp Seller',
-    category: 'PAWN',
+    categories: ['PAWN'],
     outputFormat: 'OFFERUP_LISTING_PACKET',
     partnerPortalUrl: 'https://offerup.com/sell/',
     developerDocsUrl: 'https://help.offerup.com/hc/en-us',
@@ -122,7 +122,7 @@ export const EXTENDED_NON_VEHICLE_STUB_DEFINITIONS: NonVehicleStubInput[] = [
   {
     slug: 'facebook-marketplace-resale',
     name: 'Facebook Marketplace (Resale)',
-    category: 'PAWN',
+    categories: ['PAWN'],
     outputFormat: 'META_RESALE_CATALOG_CSV',
     partnerPortalUrl: 'https://www.facebook.com/marketplace/',
     developerDocsUrl: 'https://developers.facebook.com/docs/marketing-api/catalog/reference',
@@ -134,7 +134,7 @@ export const EXTENDED_NON_VEHICLE_STUB_DEFINITIONS: NonVehicleStubInput[] = [
   {
     slug: 'chrono24-dealer',
     name: 'Chrono24 Dealer',
-    category: 'WATCHES',
+    categories: ['WATCHES'],
     outputFormat: 'CHRONO24_LISTING_PACKET',
     partnerPortalUrl: 'https://www.chrono24.com/dealerinfo.htm',
     developerDocsUrl: 'https://www.chrono24.com/info/dealer.htm',
@@ -144,7 +144,7 @@ export const EXTENDED_NON_VEHICLE_STUB_DEFINITIONS: NonVehicleStubInput[] = [
   {
     slug: 'watchbox',
     name: 'WatchBox Seller',
-    category: 'WATCHES',
+    categories: ['WATCHES'],
     outputFormat: 'WATCHBOX_LISTING_PACKET',
     partnerPortalUrl: 'https://www.thewatchbox.com/',
     developerDocsUrl: 'https://www.thewatchbox.com/sell-your-watch',
@@ -155,7 +155,7 @@ export const EXTENDED_NON_VEHICLE_STUB_DEFINITIONS: NonVehicleStubInput[] = [
   {
     slug: 'stockx',
     name: 'StockX Seller',
-    category: 'SNEAKERS',
+    categories: ['SNEAKERS'],
     outputFormat: 'STOCKX_LISTING_PACKET',
     partnerPortalUrl: 'https://stockx.com/sell',
     developerDocsUrl: 'https://stockx.com/help/selling',
@@ -165,7 +165,7 @@ export const EXTENDED_NON_VEHICLE_STUB_DEFINITIONS: NonVehicleStubInput[] = [
   {
     slug: 'goat-sneakers',
     name: 'GOAT Seller',
-    category: 'SNEAKERS',
+    categories: ['SNEAKERS'],
     outputFormat: 'GOAT_LISTING_PACKET',
     partnerPortalUrl: 'https://www.goat.com/sell',
     developerDocsUrl: 'https://support.goat.com/hc/en-us',
@@ -176,7 +176,7 @@ export const EXTENDED_NON_VEHICLE_STUB_DEFINITIONS: NonVehicleStubInput[] = [
   {
     slug: 'tcgplayer',
     name: 'TCGplayer Seller',
-    category: 'COLLECTIBLES',
+    categories: ['COLLECTIBLES'],
     outputFormat: 'TCGPLAYER_LISTING_PACKET',
     partnerPortalUrl: 'https://seller.tcgplayer.com/',
     developerDocsUrl: 'https://help.tcgplayer.com/hc/en-us',
@@ -186,7 +186,7 @@ export const EXTENDED_NON_VEHICLE_STUB_DEFINITIONS: NonVehicleStubInput[] = [
   {
     slug: 'pwcc-marketplace',
     name: 'PWCC Marketplace',
-    category: 'COLLECTIBLES',
+    categories: ['COLLECTIBLES'],
     outputFormat: 'PWCC_LISTING_PACKET',
     partnerPortalUrl: 'https://www.pwccmarketplace.com/',
     developerDocsUrl: 'https://www.pwccmarketplace.com/faq',
@@ -197,7 +197,7 @@ export const EXTENDED_NON_VEHICLE_STUB_DEFINITIONS: NonVehicleStubInput[] = [
   {
     slug: 'chairish',
     name: 'Chairish Seller',
-    category: 'FURNITURE',
+    categories: ['FURNITURE'],
     outputFormat: 'CHAIRISH_LISTING_PACKET',
     partnerPortalUrl: 'https://www.chairish.com/sell',
     developerDocsUrl: 'https://www.chairish.com/page/seller-faq',
@@ -207,7 +207,7 @@ export const EXTENDED_NON_VEHICLE_STUB_DEFINITIONS: NonVehicleStubInput[] = [
   {
     slug: 'wayfair-seller',
     name: 'Wayfair Seller Portal',
-    category: 'FURNITURE',
+    categories: ['FURNITURE'],
     outputFormat: 'WAYFAIR_PRODUCT_PACKET',
     partnerPortalUrl: 'https://sell.wayfair.com/',
     developerDocsUrl: 'https://sell.wayfair.com/resources',
@@ -218,7 +218,7 @@ export const EXTENDED_NON_VEHICLE_STUB_DEFINITIONS: NonVehicleStubInput[] = [
   {
     slug: 'airbnb-host',
     name: 'Airbnb Host',
-    category: 'VACATION_RENTALS',
+    categories: ['VACATION_RENTALS'],
     outputFormat: 'AIRBNB_LISTING_PACKET',
     partnerPortalUrl: 'https://www.airbnb.com/host/homes',
     developerDocsUrl: 'https://www.airbnb.com/help/article/873',
@@ -228,7 +228,7 @@ export const EXTENDED_NON_VEHICLE_STUB_DEFINITIONS: NonVehicleStubInput[] = [
   {
     slug: 'vrbo-owner',
     name: 'Vrbo Owner',
-    category: 'VACATION_RENTALS',
+    categories: ['VACATION_RENTALS'],
     outputFormat: 'VRBO_LISTING_PACKET',
     partnerPortalUrl: 'https://www.vrbo.com/owner/',
     developerDocsUrl: 'https://help.vrbo.com/',

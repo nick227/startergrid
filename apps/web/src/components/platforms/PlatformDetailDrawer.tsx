@@ -13,13 +13,6 @@ import { fetchPublishHistory, updateAccount } from '@/lib/api/sdk.ts';
 import { useAsyncQuery } from '@/hooks/useAsyncQuery.ts';
 import { SocialPageSelector, SocialPostsTab } from '@/components/social/index.ts';
 
-const SOCIAL_SLUGS = new Set(['facebook-business-page', 'google-business-profile']);
-const CATALOG_SLUGS = new Set([
-  'meta-automotive-ads', 'google-vehicle-ads', 'tiktok-automotive-ads',
-  'microsoft-automotive-ads', 'pinterest-shopping-ads',
-  'snapchat-dynamic-product-ads', 'reddit-dynamic-product-ads',
-  'tiktok-shop',
-]);
 
 type Tab = 'setup' | 'feed' | 'activity' | 'notes' | 'social' | 'catalog';
 
@@ -184,17 +177,17 @@ function NotesTab({ account, dealerId, onSaved }: { account: PlatformAccountDeta
   );
 }
 
-function buildTabs(platformSlug: string): Array<{ key: Tab; label: string }> {
+function buildTabs(platform: PlatformPublishResult): Array<{ key: Tab; label: string }> {
   const tabs: Array<{ key: Tab; label: string }> = [
     { key: 'setup', label: 'Setup' },
     { key: 'feed', label: 'Feed' },
     { key: 'activity', label: 'Activity' },
     { key: 'notes', label: 'Notes' },
   ];
-  if (SOCIAL_SLUGS.has(platformSlug)) {
+  if (platform.socialPosting) {
     tabs.splice(1, 0, { key: 'social', label: 'Social' });
   }
-  if (CATALOG_SLUGS.has(platformSlug)) {
+  if (platform.catalogSync) {
     tabs.splice(tabs.length - 1, 0, { key: 'catalog', label: 'Catalog' });
   }
   return tabs;
@@ -211,7 +204,7 @@ export function PlatformDetailDrawer({
   onSaved,
 }: Props) {
   const [activeTab, setActiveTab] = useState<Tab>('setup');
-  const tabs = buildTabs(platform.platformSlug);
+  const tabs = buildTabs(platform);
   const conn = platformConnectionWithAccount(platform, account);
   const publish = platformOutcomeMeta(platform);
   const detail = friendlyPlatformDetail(platform);

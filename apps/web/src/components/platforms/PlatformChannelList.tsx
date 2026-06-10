@@ -20,7 +20,6 @@ import {
 } from '@/lib/channelRowPresentation.ts';
 import { operatorCopy } from '@/lib/copy/operator.ts';
 
-const SOCIAL_SLUGS = new Set(['facebook-business-page', 'google-business-profile']);
 
 type Props = {
   platforms: PlatformPublishResult[];
@@ -111,7 +110,7 @@ export function PlatformChannelList({
     const perf = perfBySlug.get(platform.platformSlug);
     const badge = effortBadge(account);
 
-    const isSocial = SOCIAL_SLUGS.has(platform.platformSlug);
+    const isSocial = platform.socialPosting;
     const socialSubtitle = isSocial && conn.connection === 'connected'
       ? (socialPageBySlug?.get(platform.platformSlug)
           ? `Page selected: ${socialPageBySlug.get(platform.platformSlug)!.name}`

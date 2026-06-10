@@ -3,7 +3,6 @@ import type { PlatformAccountDetail, SocialPreviewResponse } from '@/lib/types.t
 import { fetchAccounts, previewSocialPost, publishSocialPost } from '@/lib/api/sdk.ts';
 import { Modal } from '@/components/ui/Modal.tsx';
 
-const SOCIAL_SLUGS = new Set(['facebook-business-page', 'google-business-profile']);
 
 const PLATFORM_LABELS: Record<string, string> = {
   'facebook-business-page': 'Facebook Business Page',
@@ -73,7 +72,7 @@ export function CreatePostModal({ dealerId, vehicleId, vehicleTitle, onClose }: 
       .then(res => {
         if (!active) return;
         const social = res.accounts.filter(
-          a => SOCIAL_SLUGS.has(a.platformSlug) && a.oauthConnected,
+          a => a.socialPosting && a.oauthConnected,
         );
         setSocialPlatforms(social);
         // Auto-select if only one connected platform

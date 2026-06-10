@@ -52,6 +52,8 @@ const OAUTH_CLIENT_REGISTRY: Record<string, OAuthClient> = {
   'tiktok-shop':      new TikTokShopOAuthClient(),
 };
 
+export const CATALOG_BRIDGE_SLUGS = Object.freeze(new Set(Object.keys(BRIDGE_REGISTRY)));
+
 export function registerCatalogSyncRoutes(app: FastifyInstance, prisma: PrismaClient): void {
 
   // PUT /api/dealers/:dealershipId/platforms/:platformSlug/catalog-config

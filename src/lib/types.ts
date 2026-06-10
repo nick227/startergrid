@@ -89,6 +89,27 @@ export type PlatformIntegrationUrls = {
 
 export type IntegrationClass = 'OWNED' | 'FEEDABLE' | 'ASSISTED' | 'PARTNER_DEPENDENT';
 
+export type ConnectionType =
+  | 'OAUTH'
+  | 'PARTNER_FEED'
+  | 'SFTP'
+  | 'PULL_FEED_URL'
+  | 'API_KEY'
+  | 'MANUAL_PORTAL'
+  | 'NONE';
+
+export type IntegrationMaturity =
+  | 'PLANNED'
+  | 'SETUP_GUIDE'
+  | 'OAUTH_READY'
+  | 'PUBLISH_READY'
+  | 'SYNC_READY'
+  | 'LIVE_VERIFIED';
+
+export type RequirementsConfidence = 'CONFIRMED' | 'LIKELY' | 'UNKNOWN';
+
+export type PlatformRegion = 'US' | 'CA' | 'UK' | 'AU' | 'EU' | 'GLOBAL';
+
 export type OAuthProvider =
   | 'facebook-business-page'    // facebook-business-page (page posting, page management)
   | 'meta-catalog-ads'          // meta-automotive-ads, facebook-marketplace-general (catalog + ads API)
@@ -212,6 +233,18 @@ export type PlatformProfileSeed = {
   oauthProvider?: OAuthProvider;
   tier?: 1 | 2 | 3;
   partnerSignup?: PartnerSignupInfo;
+
+  // Capability flags — authoritative source of truth for derived slug sets and pinning tests
+  catalogSync?: boolean;         // true → BRIDGE_REGISTRY entry + CatalogSyncPanel UI tab
+  socialPosting?: boolean;       // true → Social tab + CreatePostModal filter
+  marketplaceListing?: boolean;  // true → platform can host browsable listings
+  partnerFeed?: boolean;         // true → ASSISTED/FEEDABLE with a feed deliverable
+
+  // Connection and maturity metadata
+  connectionType?: ConnectionType;
+  integrationMaturity?: IntegrationMaturity;
+  requirementsConfidence?: RequirementsConfidence;
+  regions?: PlatformRegion[];
 };
 
 export type IssueCode =

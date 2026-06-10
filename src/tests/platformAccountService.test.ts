@@ -212,6 +212,12 @@ describe('PlatformAccountDetail shape', () => {
     oauthExpired:     false,
     tier:             null,
     partnerSignup:    null,
+    socialPosting:    false,
+    catalogSync:      false,
+    marketplaceListing: false,
+    partnerFeed:      false,
+    connectionType:   null,
+    integrationMaturity: null,
   };
 
   it('has all required fields', () => {

@@ -31,6 +31,13 @@ export type PlatformPublishResult = {
   queueItemId: string | null;
   artifactPath: string | null;
   accountState: string | null;
+  catalogSync: boolean;
+  socialPosting: boolean;
+  marketplaceListing: boolean;
+  partnerFeed: boolean;
+  connectionType: string | null;
+  integrationMaturity: string | null;
+  regions: string[];
 };
 
 export type PublishStateSummary = Record<PublishState, number>;
@@ -388,6 +395,12 @@ export type PlatformAccountDetail = {
   oauthExpired: boolean;
   tier: number | null;
   partnerSignup: PartnerSignupInfo | null;
+  socialPosting: boolean;
+  catalogSync: boolean;
+  marketplaceListing: boolean;
+  partnerFeed: boolean;
+  connectionType: string | null;
+  integrationMaturity: string | null;
 };
 
 export type AccountStateSummary = {

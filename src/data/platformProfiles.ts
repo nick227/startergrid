@@ -34,6 +34,10 @@ export const platformProfiles: PlatformProfileSeed[] = [
     ],
     requiredMediaRules: { minImages: 1 },
     testFixtures: { validatesOwnedChannel: true, supportsLeadCapture: true, requiresDealerAccount: false },
+    marketplaceListing: true,
+    connectionType: 'NONE',
+    integrationMaturity: 'LIVE_VERIFIED',
+    requirementsConfidence: 'CONFIRMED',
   },
   // ── First-party owned marketplace ───────────────────────────────────────
   {
@@ -72,6 +76,10 @@ export const platformProfiles: PlatformProfileSeed[] = [
       requiresDealerAccount: false,
       vinNeverIncluded: true
     },
+    marketplaceListing: true,
+    connectionType: 'NONE',
+    integrationMaturity: 'LIVE_VERIFIED',
+    requirementsConfidence: 'CONFIRMED',
   },
   // ── Feedable — self-serve API/feed submission ─────────────────────────────
   {
@@ -123,6 +131,10 @@ export const platformProfiles: PlatformProfileSeed[] = [
     ],
     oauthProvider: 'google',
     tier: 1,
+    catalogSync: true,
+    connectionType: 'OAUTH',
+    integrationMaturity: 'SYNC_READY',
+    requirementsConfidence: 'CONFIRMED',
   },
   {
     slug: 'meta-automotive-ads',
@@ -166,6 +178,10 @@ export const platformProfiles: PlatformProfileSeed[] = [
     ],
     oauthProvider: 'meta-catalog-ads',
     tier: 1,
+    catalogSync: true,
+    connectionType: 'OAUTH',
+    integrationMaturity: 'SYNC_READY',
+    requirementsConfidence: 'CONFIRMED',
   },
   {
     slug: 'tiktok-automotive-ads',
@@ -210,6 +226,10 @@ export const platformProfiles: PlatformProfileSeed[] = [
     ],
     oauthProvider: 'tiktok',
     tier: 2,
+    catalogSync: true,
+    connectionType: 'OAUTH',
+    integrationMaturity: 'SYNC_READY',
+    requirementsConfidence: 'CONFIRMED',
   },
   {
     slug: 'tiktok-shop',
@@ -253,6 +273,11 @@ export const platformProfiles: PlatformProfileSeed[] = [
     ],
     oauthProvider: 'tiktok-shop',
     tier: 2,
+    catalogSync: true,
+    marketplaceListing: true,
+    connectionType: 'OAUTH',
+    integrationMaturity: 'SYNC_READY',
+    requirementsConfidence: 'CONFIRMED',
   },
   {
     slug: 'microsoft-automotive-ads',
@@ -295,6 +320,10 @@ export const platformProfiles: PlatformProfileSeed[] = [
     ],
     oauthProvider: 'microsoft',
     tier: 2,
+    catalogSync: true,
+    connectionType: 'OAUTH',
+    integrationMaturity: 'SYNC_READY',
+    requirementsConfidence: 'CONFIRMED',
   },
   {
     slug: 'pinterest-shopping-ads',
@@ -338,6 +367,10 @@ export const platformProfiles: PlatformProfileSeed[] = [
     ],
     oauthProvider: 'pinterest',
     tier: 3,
+    catalogSync: true,
+    connectionType: 'OAUTH',
+    integrationMaturity: 'SYNC_READY',
+    requirementsConfidence: 'LIKELY',
   },
   {
     slug: 'reddit-dynamic-product-ads',
@@ -381,6 +414,10 @@ export const platformProfiles: PlatformProfileSeed[] = [
     ],
     oauthProvider: 'reddit',
     tier: 3,
+    catalogSync: true,
+    connectionType: 'OAUTH',
+    integrationMaturity: 'SYNC_READY',
+    requirementsConfidence: 'LIKELY',
   },
   {
     // ── Assisted — email/manual handoff required ──────────────────────────────
@@ -429,6 +466,11 @@ export const platformProfiles: PlatformProfileSeed[] = [
       requirements: 'Active dealer license and valid inventory feed',
       contactType: 'rep-assisted',
     },
+    marketplaceListing: true,
+    partnerFeed: true,
+    connectionType: 'PARTNER_FEED',
+    integrationMaturity: 'SETUP_GUIDE',
+    requirementsConfidence: 'LIKELY',
   },
   {
     // ── Partner-dependent — commercial agreement required ─────────────────────
@@ -477,6 +519,11 @@ export const platformProfiles: PlatformProfileSeed[] = [
       requirements: 'Active dealer license and Cox Automotive dealer code',
       contactType: 'rep-assisted',
     },
+    marketplaceListing: true,
+    partnerFeed: true,
+    connectionType: 'PARTNER_FEED',
+    integrationMaturity: 'SETUP_GUIDE',
+    requirementsConfidence: 'LIKELY',
   },
   {
     // ── Feedable (continued) ──────────────────────────────────────────────────
@@ -525,6 +572,10 @@ export const platformProfiles: PlatformProfileSeed[] = [
     ],
     oauthProvider: 'ebay',
     tier: 1,
+    marketplaceListing: true,
+    connectionType: 'OAUTH',
+    integrationMaturity: 'OAUTH_READY',
+    requirementsConfidence: 'CONFIRMED',
   },
   {
     slug: 'x-dynamic-product-ads',
@@ -568,6 +619,9 @@ export const platformProfiles: PlatformProfileSeed[] = [
     ],
     oauthProvider: 'x',
     tier: 3,
+    connectionType: 'OAUTH',
+    integrationMaturity: 'OAUTH_READY',
+    requirementsConfidence: 'LIKELY',
   },
   {
     // ── Assisted (continued) ──────────────────────────────────────────────────
@@ -616,6 +670,11 @@ export const platformProfiles: PlatformProfileSeed[] = [
       requirements: 'Active dealer license and compliant inventory feed',
       contactType: 'rep-assisted',
     },
+    marketplaceListing: true,
+    partnerFeed: true,
+    connectionType: 'PARTNER_FEED',
+    integrationMaturity: 'SETUP_GUIDE',
+    requirementsConfidence: 'LIKELY',
   },
   {
     // ── Feedable (continued) ──────────────────────────────────────────────────
@@ -659,6 +718,10 @@ export const platformProfiles: PlatformProfileSeed[] = [
     ],
     oauthProvider: 'snapchat',
     tier: 3,
+    catalogSync: true,
+    connectionType: 'OAUTH',
+    integrationMaturity: 'SYNC_READY',
+    requirementsConfidence: 'LIKELY',
   },
   {
     // ── Assisted (continued) ──────────────────────────────────────────────────
@@ -699,6 +762,9 @@ export const platformProfiles: PlatformProfileSeed[] = [
     ],
     oauthProvider: 'microsoft',
     tier: 3,
+    connectionType: 'OAUTH',
+    integrationMaturity: 'OAUTH_READY',
+    requirementsConfidence: 'LIKELY',
   },
   {
     // ── Partner-dependent (continued) ────────────────────────────────────────
@@ -747,6 +813,11 @@ export const platformProfiles: PlatformProfileSeed[] = [
       requirements: 'Active dealer license; minimum inventory volume may apply',
       contactType: 'self-serve',
     },
+    marketplaceListing: true,
+    partnerFeed: true,
+    connectionType: 'PARTNER_FEED',
+    integrationMaturity: 'SETUP_GUIDE',
+    requirementsConfidence: 'LIKELY',
   },
   {
     // ── Feedable (continued) ──────────────────────────────────────────────────
@@ -779,6 +850,9 @@ export const platformProfiles: PlatformProfileSeed[] = [
       { field: 'platformRepName', label: 'CRM Integration Contact' },
       { field: 'platformRepEmail', label: 'Contact Email' },
     ],
+    connectionType: 'NONE',
+    integrationMaturity: 'PUBLISH_READY',
+    requirementsConfidence: 'CONFIRMED',
   },
   {
     slug: 'nextdoor-ads',
@@ -821,6 +895,9 @@ export const platformProfiles: PlatformProfileSeed[] = [
     ],
     oauthProvider: 'nextdoor',
     tier: 3,
+    connectionType: 'OAUTH',
+    integrationMaturity: 'OAUTH_READY',
+    requirementsConfidence: 'LIKELY',
   },
   {
     // ── Assisted (continued) ──────────────────────────────────────────────────
@@ -864,6 +941,9 @@ export const platformProfiles: PlatformProfileSeed[] = [
     ],
     // oauthProvider: 'apple', -- stub until jose JWT library ships (AppleOAuthClient throws NOT_IMPLEMENTED)
     tier: 3,
+    connectionType: 'MANUAL_PORTAL',
+    integrationMaturity: 'OAUTH_READY',
+    requirementsConfidence: 'LIKELY',
   },
   // ── Trailers / powersports / RV channel stubs (Phase 3A pilot) ───────────
   {
@@ -890,6 +970,11 @@ export const platformProfiles: PlatformProfileSeed[] = [
     requiredVehicleFields: ['vin', 'stockNumber', 'year', 'make', 'model', 'priceCents', 'condition', 'media[0].url'],
     requiredMediaRules: { minImages: 1 },
     testFixtures: { validatesTrailersChannelStub: true, requiresDealerAccount: true },
+    marketplaceListing: true,
+    partnerFeed: true,
+    connectionType: 'PARTNER_FEED',
+    integrationMaturity: 'SETUP_GUIDE',
+    requirementsConfidence: 'LIKELY',
   },
   {
     slug: 'cycle-trader',
@@ -915,6 +1000,11 @@ export const platformProfiles: PlatformProfileSeed[] = [
     requiredVehicleFields: ['vin', 'stockNumber', 'year', 'make', 'model', 'mileage', 'priceCents', 'condition', 'media[0].url'],
     requiredMediaRules: { minImages: 1 },
     testFixtures: { validatesTrailersChannelStub: true, requiresDealerAccount: true },
+    marketplaceListing: true,
+    partnerFeed: true,
+    connectionType: 'PARTNER_FEED',
+    integrationMaturity: 'SETUP_GUIDE',
+    requirementsConfidence: 'LIKELY',
   },
   {
     slug: 'atv-trader',
@@ -940,6 +1030,11 @@ export const platformProfiles: PlatformProfileSeed[] = [
     requiredVehicleFields: ['vin', 'stockNumber', 'year', 'make', 'model', 'mileage', 'priceCents', 'condition', 'media[0].url'],
     requiredMediaRules: { minImages: 1 },
     testFixtures: { validatesTrailersChannelStub: true, requiresDealerAccount: true },
+    marketplaceListing: true,
+    partnerFeed: true,
+    connectionType: 'PARTNER_FEED',
+    integrationMaturity: 'SETUP_GUIDE',
+    requirementsConfidence: 'LIKELY',
   },
   {
     slug: 'trailer-trader',
@@ -965,6 +1060,11 @@ export const platformProfiles: PlatformProfileSeed[] = [
     requiredVehicleFields: ['vin', 'stockNumber', 'year', 'make', 'model', 'priceCents', 'condition', 'media[0].url'],
     requiredMediaRules: { minImages: 1 },
     testFixtures: { validatesTrailersChannelStub: true, requiresDealerAccount: true },
+    marketplaceListing: true,
+    partnerFeed: true,
+    connectionType: 'PARTNER_FEED',
+    integrationMaturity: 'SETUP_GUIDE',
+    requirementsConfidence: 'LIKELY',
   },
   {
     slug: 'facebook-marketplace-general',
@@ -991,6 +1091,10 @@ export const platformProfiles: PlatformProfileSeed[] = [
     requiredMediaRules: { minImages: 1 },
     testFixtures: { validatesTrailersChannelStub: true, requiresDealerAccount: true },
     oauthProvider: 'meta-catalog-ads',
+    marketplaceListing: true,
+    connectionType: 'OAUTH',
+    integrationMaturity: 'SYNC_READY',
+    requirementsConfidence: 'LIKELY',
   },
   {
     slug: 'facebook-business-page',
@@ -1017,6 +1121,10 @@ export const platformProfiles: PlatformProfileSeed[] = [
     requiredMediaRules: { minImages: 1 },
     testFixtures: { requiresDealerAccount: true },
     oauthProvider: 'facebook-business-page',
+    socialPosting: true,
+    connectionType: 'OAUTH',
+    integrationMaturity: 'SYNC_READY',
+    requirementsConfidence: 'LIKELY',
   },
   {
     slug: 'google-business-profile',
@@ -1043,6 +1151,10 @@ export const platformProfiles: PlatformProfileSeed[] = [
     requiredMediaRules: { minImages: 1 },
     testFixtures: { requiresDealerAccount: true },
     oauthProvider: 'google-business-profile',
+    socialPosting: true,
+    connectionType: 'OAUTH',
+    integrationMaturity: 'SYNC_READY',
+    requirementsConfidence: 'LIKELY',
   },
   // ── Boats channel stubs (Phase 3B pilot) ───────────────────────────────────
   {
@@ -1069,6 +1181,11 @@ export const platformProfiles: PlatformProfileSeed[] = [
     requiredVehicleFields: ['vin', 'stockNumber', 'year', 'make', 'model', 'mileage', 'priceCents', 'condition', 'media[0].url'],
     requiredMediaRules: { minImages: 1 },
     testFixtures: { validatesBoatsChannelStub: true, requiresDealerAccount: true },
+    marketplaceListing: true,
+    partnerFeed: true,
+    connectionType: 'PARTNER_FEED',
+    integrationMaturity: 'SETUP_GUIDE',
+    requirementsConfidence: 'LIKELY',
   },
   {
     slug: 'yachtworld',
@@ -1094,6 +1211,11 @@ export const platformProfiles: PlatformProfileSeed[] = [
     requiredVehicleFields: ['vin', 'stockNumber', 'year', 'make', 'model', 'priceCents', 'condition', 'media[0].url'],
     requiredMediaRules: { minImages: 1 },
     testFixtures: { validatesBoatsChannelStub: true, requiresDealerAccount: true },
+    marketplaceListing: true,
+    partnerFeed: true,
+    connectionType: 'PARTNER_FEED',
+    integrationMaturity: 'SETUP_GUIDE',
+    requirementsConfidence: 'LIKELY',
   },
   {
     slug: 'boats-com',
@@ -1119,6 +1241,11 @@ export const platformProfiles: PlatformProfileSeed[] = [
     requiredVehicleFields: ['vin', 'stockNumber', 'year', 'make', 'model', 'mileage', 'priceCents', 'condition', 'media[0].url'],
     requiredMediaRules: { minImages: 1 },
     testFixtures: { validatesBoatsChannelStub: true, requiresDealerAccount: true },
+    marketplaceListing: true,
+    partnerFeed: true,
+    connectionType: 'PARTNER_FEED',
+    integrationMaturity: 'SETUP_GUIDE',
+    requirementsConfidence: 'LIKELY',
   },
   // ── Non-vehicle category stubs (digital + physical inventory) ─────────────
   ...nonVehiclePlatformStubs,
