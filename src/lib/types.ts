@@ -245,6 +245,9 @@ export type PlatformProfileSeed = {
   integrationMaturity?: IntegrationMaturity;
   requirementsConfidence?: RequirementsConfidence;
   regions?: PlatformRegion[];
+
+  // Human-readable note recording why live validation is not yet complete
+  liveValidationNote?: string;
 };
 
 export type IssueCode =

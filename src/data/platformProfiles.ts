@@ -324,6 +324,7 @@ export const platformProfiles: PlatformProfileSeed[] = [
     connectionType: 'OAUTH',
     integrationMaturity: 'SYNC_READY',
     requirementsConfidence: 'CONFIRMED',
+    liveValidationNote: 'Live validation blocked — requires MICROSOFT_CLIENT_ID, MICROSOFT_CLIENT_SECRET, and MICROSOFT_ADS_DEVELOPER_TOKEN',
   },
   {
     slug: 'pinterest-shopping-ads',
@@ -619,9 +620,11 @@ export const platformProfiles: PlatformProfileSeed[] = [
     ],
     oauthProvider: 'x',
     tier: 3,
+    catalogSync: true,
     connectionType: 'OAUTH',
-    integrationMaturity: 'OAUTH_READY',
+    integrationMaturity: 'SYNC_READY',
     requirementsConfidence: 'LIKELY',
+    liveValidationNote: 'Live validation blocked — requires X_CLIENT_ID, X_CLIENT_SECRET, and an approved X Ads API developer account with DPA catalog access',
   },
   {
     // ── Assisted (continued) ──────────────────────────────────────────────────
