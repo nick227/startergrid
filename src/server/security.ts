@@ -104,6 +104,11 @@ export const routeClassifications = {
   publicWrite: [
     'POST /api/dealers/:dealershipId/leads',
   ],
+  // Site-management routes — SUPER_ADMIN only (in-house operators).
+  admin: [
+    'GET /api/admin/platform-credentials',
+    'POST /api/admin/platform-credentials/validate',
+  ],
 } as const;
 
 // Full operator identity stored on the request after successful auth.
@@ -179,6 +184,23 @@ export async function requireOperator(
   };
   request.operator = ctx;
   return ctx;
+}
+
+// Requires operator auth AND the SUPER_ADMIN role — gates site-management routes.
+// The dev-header path (dev/test only) is always SUPER_ADMIN, so it passes.
+export async function requireSuperAdmin(
+  prisma: PrismaClient,
+  request: FastifyRequest,
+  reply: FastifyReply
+): Promise<OperatorContext | null> {
+  const operator = request.operator ?? await requireOperator(prisma, request, reply);
+  if (!operator) return null;
+
+  if (operator.role !== 'SUPER_ADMIN') {
+    reply.status(403).send({ error: 'Super admin access required' });
+    return null;
+  }
+  return operator;
 }
 
 // Requires operator auth AND confirms the operator can access the given dealership.

@@ -63,6 +63,8 @@ const REGISTERED_ROUTES = new Set([
   'GET    /api/dealers/{dealershipId}/reports/lifecycle-flow',
   'GET    /api/dealers/{dealershipId}/reports/merchandising-activity',
   'GET    /api/dealers/{dealershipId}/reports/channel-velocity',
+  'GET    /api/admin/platform-credentials',
+  'POST   /api/admin/platform-credentials/validate',
 ]);
 
 // ── Parse OpenAPI spec ────────────────────────────────────────────────────────

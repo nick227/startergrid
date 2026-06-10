@@ -119,7 +119,7 @@ export default function DealerPicker({ onSelect, forbiddenDealerId }: Props) {
             ))}
           </div>
 
-          <div className="px-4 py-3 border-t border-silver-200 bg-surface-card text-center">
+          <div className="px-4 py-3 border-t border-silver-200 bg-surface-card text-center flex items-center justify-center gap-6">
             <button
               type="button"
               onClick={() => { window.location.hash = '#/knowledge'; }}
@@ -127,6 +127,15 @@ export default function DealerPicker({ onSelect, forbiddenDealerId }: Props) {
             >
               Knowledge base →
             </button>
+            {user?.role === 'SUPER_ADMIN' && (
+              <button
+                type="button"
+                onClick={() => { window.location.hash = '#/admin'; }}
+                className="text-xs font-semibold text-ink-muted hover:text-orange-600 transition-colors"
+              >
+                Site administration →
+              </button>
+            )}
           </div>
 
           <div className="p-4 bg-surface-inset border-t border-silver-200">

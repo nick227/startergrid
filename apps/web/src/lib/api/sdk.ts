@@ -69,7 +69,7 @@ import { notifyUnauthorized } from './auth.ts';
 
 configureOpenApiClient();
 
-async function fromSdk<T>(promise: Promise<T>): Promise<T> {
+export async function fromSdk<T>(promise: Promise<T>): Promise<T> {
   try {
     return await promise;
   } catch (e) {

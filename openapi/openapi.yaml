@@ -19,6 +19,7 @@ tags:
   - name: Vehicles
   - name: Storefront
   - name: Performance
+  - name: Admin
 
 paths:
   /api/auth/login:
@@ -1410,6 +1411,46 @@ paths:
         '404':
           $ref: '#/components/responses/NotFound'
 
+  /api/admin/platform-credentials:
+    get:
+      tags: [Admin]
+      security:
+        - OperatorAuth: []
+      x-route-classification: admin
+      operationId: listPlatformCredentials
+      summary: List developer API credential configuration per OAuth provider (SUPER_ADMIN only)
+      responses:
+        '200':
+          description: Credential configuration summary per provider
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PlatformCredentialListResponse'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+
+  /api/admin/platform-credentials/validate:
+    post:
+      tags: [Admin]
+      security:
+        - OperatorAuth: []
+      x-route-classification: admin
+      operationId: validatePlatformCredentials
+      summary: Live-validate developer API credentials against each provider's token endpoint (SUPER_ADMIN only)
+      responses:
+        '200':
+          description: Validation outcome per provider
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PlatformCredentialValidationResponse'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+
 components:
   securitySchemes:
     OperatorAuth:
@@ -1488,6 +1529,58 @@ components:
             $ref: '#/components/schemas/ErrorResponse'
 
   schemas:
+    ProviderCredentialSummary:
+      type: object
+      required: [provider, platformSlugs, envVars, configured, probeSupported]
+      properties:
+        provider:
+          type: string
+          description: OAuth provider key (one developer app may serve multiple platform slugs)
+        platformSlugs:
+          type: array
+          items:
+            type: string
+        envVars:
+          type: array
+          items:
+            type: string
+          description: Environment variable names holding the credentials (names only, never values)
+        configured:
+          type: boolean
+        probeSupported:
+          type: boolean
+          description: Whether a live token-endpoint probe is available for this provider
+
+    ProviderCredentialResult:
+      allOf:
+        - $ref: '#/components/schemas/ProviderCredentialSummary'
+        - type: object
+          required: [status, detail]
+          properties:
+            status:
+              type: string
+              enum: [valid, invalid, unknown, unreachable, not-configured, unsupported]
+            detail:
+              type: string
+
+    PlatformCredentialListResponse:
+      type: object
+      required: [providers]
+      properties:
+        providers:
+          type: array
+          items:
+            $ref: '#/components/schemas/ProviderCredentialSummary'
+
+    PlatformCredentialValidationResponse:
+      type: object
+      required: [results]
+      properties:
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/ProviderCredentialResult'
+
     SocialPageSummary:
       type: object
       required: [id, pageId, name, isSelected]

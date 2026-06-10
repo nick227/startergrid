@@ -17,6 +17,7 @@ import { registerPlatformConnectRoutes }     from './routes/platformConnect.js';
 import { registerSocialPageRoutes }          from './routes/socialPages.js';
 import { registerMarketplaceListingRoutes }  from './routes/marketplaceListings.js';
 import { registerCatalogSyncRoutes }          from './routes/catalogSync.js';
+import { registerAdminRoutes }                from './routes/admin.js';
 import { demoFeedPayload }          from '../fixtures/scenarios/connectedInventoryDemo.fixture.js';
 
 export function buildApp(prisma: PrismaClient): FastifyInstance {
@@ -56,6 +57,7 @@ export function buildApp(prisma: PrismaClient): FastifyInstance {
   registerSocialPageRoutes(app, prisma);
   registerMarketplaceListingRoutes(app, prisma);
   registerCatalogSyncRoutes(app, prisma);
+  registerAdminRoutes(app, prisma);
 
   return app;
 }

@@ -10,6 +10,7 @@ import InventoryPage from './pages/InventoryPage.tsx';
 import KnowledgeBasePage from './pages/KnowledgeBasePage.tsx';
 
 const ReportsRouter = lazy(() => import('./pages/ReportsRouter.tsx'));
+const AdminCredentialsPage = lazy(() => import('./pages/AdminCredentialsPage.tsx'));
 import { AuthLoadingScreen } from '@/components/auth/AuthLoadingScreen.tsx';
 import { useAuth } from '@/contexts/AuthContext.tsx';
 import { useOperatorRoute } from '@/hooks/useOperatorRoute.ts';
@@ -25,18 +26,29 @@ function OperatorApp() {
   const categorySchema = useDealerCategorySchema(dealerId ?? null);
 
   const helpStandalone = (page === 'help' || page === 'knowledge') && !dealerId;
+  const adminStandalone = page === 'admin' && !dealerId;
 
   useEffect(() => {
     if (!user || !dealerId || canAccessDealer(user, dealerId)) return;
     window.location.hash = '#/';
   }, [user, dealerId]);
 
+  // Site administration is SUPER_ADMIN only.
+  useEffect(() => {
+    if (!user || page !== 'admin' || user.role === 'SUPER_ADMIN') return;
+    window.location.hash = '#/';
+  }, [user, page]);
+
   if (!authReady) return <AuthLoadingScreen />;
   if (!user) return <LoginPage />;
 
   return (
     <CategoryProvider schema={categorySchema}>
-      {helpStandalone ? (
+      {adminStandalone && user.role === 'SUPER_ADMIN' ? (
+        <Suspense fallback={null}>
+          <AdminCredentialsPage />
+        </Suspense>
+      ) : helpStandalone ? (
         <KnowledgeBasePage onBack={() => { window.location.hash = '#/help'; }} />
       ) : !dealerId || !nav ? (
         <DealerPicker onSelect={selectDealer} />

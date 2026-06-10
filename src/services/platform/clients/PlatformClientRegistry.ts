@@ -61,6 +61,12 @@ export const PlatformClientRegistry = {
   allClients(): OAuthClient[] {
     return [...new Set(Object.values(SLUG_TO_CLIENT))];
   },
+
+  slugsForClient(client: OAuthClient): string[] {
+    return Object.entries(SLUG_TO_CLIENT)
+      .filter(([, c]) => c === client)
+      .map(([slug]) => slug);
+  },
 };
 
 export { XOAuthClient };

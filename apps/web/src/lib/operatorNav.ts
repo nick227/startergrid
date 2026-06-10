@@ -38,7 +38,8 @@ export type OperatorPageSegment =
   | 'reports'
   | 'inventory'
   | 'help'
-  | 'knowledge';
+  | 'knowledge'
+  | 'admin';
 
 export function tabFromPage(page: OperatorPageSegment | null): OperatorTab {
   if (page === 'queue') return 'queue';

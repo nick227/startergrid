@@ -1,6 +1,13 @@
 import type { OAuthProvider } from '../../../lib/types.js';
 import type { OAuthTokenPayload, AuthUrlParams } from './types.js';
 import { OAuthError } from './types.js';
+import {
+  classifyProbeResponse,
+  PROBE_REFRESH_TOKEN,
+  PROBE_TIMEOUT_MS,
+  type CredentialProbeOutcome,
+  type CredentialProbeSpec,
+} from './credentialProbe.js';
 
 export abstract class OAuthClient {
   abstract readonly provider: OAuthProvider;
@@ -19,6 +26,50 @@ export abstract class OAuthClient {
   // Not all providers support refresh tokens — throw OAuthError with code 'REFRESH_NOT_SUPPORTED'
   // if the provider does not (e.g. Apple's short-lived JWT tokens).
   abstract refreshAccessToken(refreshToken: string): Promise<OAuthTokenPayload>;
+
+  isConfigured(): boolean {
+    return Boolean(this.clientId && this.clientSecret);
+  }
+
+  // Live-checks the developer app credentials against the provider's token endpoint.
+  // Never exposes secrets; the spec describes how this provider authenticates clients.
+  async probeCredentials(spec: CredentialProbeSpec): Promise<CredentialProbeOutcome> {
+    const body: Record<string, string> = { grant_type: spec.grant };
+    if (spec.grant === 'refresh_token') body['refresh_token'] = PROBE_REFRESH_TOKEN;
+    if (spec.scope) body['scope'] = spec.scope;
+
+    const headers: Record<string, string> = {
+      'Content-Type': 'application/x-www-form-urlencoded',
+    };
+    if (spec.auth === 'basic') {
+      const credentials = Buffer.from(`${this.clientId}:${this.clientSecret}`).toString('base64');
+      headers['Authorization'] = `Basic ${credentials}`;
+    } else {
+      body['client_id'] = this.clientId;
+      body['client_secret'] = this.clientSecret;
+    }
+
+    let res: Response;
+    try {
+      res = await fetch(this.tokenEndpoint, {
+        method: 'POST',
+        headers,
+        body: new URLSearchParams(body).toString(),
+        signal: AbortSignal.timeout(PROBE_TIMEOUT_MS),
+      });
+    } catch (err) {
+      const detail = err instanceof Error ? err.message : 'Network request failed';
+      return { status: 'unreachable', detail };
+    }
+
+    let json: Record<string, unknown> = {};
+    try {
+      json = await res.json() as Record<string, unknown>;
+    } catch {
+      // Non-JSON response — classification falls back to HTTP status.
+    }
+    return classifyProbeResponse(spec.grant, res.status, json);
+  }
 
   // Shared helper: POST to tokenEndpoint with form body, parse standard OAuth2 token response.
   protected async postTokenRequest(
