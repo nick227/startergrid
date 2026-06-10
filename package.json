@@ -44,6 +44,7 @@
     "smoke:pinterest-catalog": "npm run -s build && node dist/src/scripts/dev/pinterestCatalogSmoke.js",
     "smoke:snapchat-catalog": "npm run -s build && node dist/src/scripts/dev/snapchatCatalogSmoke.js",
     "smoke:reddit-catalog": "npm run -s build && node dist/src/scripts/dev/redditCatalogSmoke.js",
+    "smoke:tiktok-shop": "npm run -s build && node dist/src/scripts/dev/tiktokShopSmoke.js",
     "geo:verify": "npm run -s build && node dist/src/scripts/geo/geoVerify.js",
     "geo:backfill": "npm run -s build && node dist/src/scripts/geo/geocodeBackfill.js",
     "geo:download-zips": "node scripts/geo/downloadZipCentroids.mjs",

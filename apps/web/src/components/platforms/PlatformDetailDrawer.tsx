@@ -18,6 +18,7 @@ const CATALOG_SLUGS = new Set([
   'meta-automotive-ads', 'google-vehicle-ads', 'tiktok-automotive-ads',
   'microsoft-automotive-ads', 'pinterest-shopping-ads',
   'snapchat-dynamic-product-ads', 'reddit-dynamic-product-ads',
+  'tiktok-shop',
 ]);
 
 type Tab = 'setup' | 'feed' | 'activity' | 'notes' | 'social' | 'catalog';

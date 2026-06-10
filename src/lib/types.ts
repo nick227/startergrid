@@ -97,6 +97,7 @@ export type OAuthProvider =
   | 'microsoft'                 // microsoft-automotive-ads, linkedin-lead-gen-forms (same Azure AD app)
   | 'ebay'                      // ebay-motors, ebay-resale
   | 'tiktok'                    // tiktok-automotive-ads, tiktok-creator
+  | 'tiktok-shop'              // tiktok-shop (Seller Center — separate app from Ads)
   | 'apple'                     // apple-business-connect, apple-books (JWT-based, not standard OAuth2)
   | 'pinterest'                 // pinterest-shopping-ads
   | 'reddit'                    // reddit-dynamic-product-ads

@@ -25,6 +25,7 @@ export const pristineApiDealership: DealershipPayload = {
     'google-vehicle-ads',
     'meta-automotive-ads',
     'tiktok-automotive-ads',
+    'tiktok-shop',
     'microsoft-automotive-ads',
     'pinterest-shopping-ads',
     'reddit-dynamic-product-ads',

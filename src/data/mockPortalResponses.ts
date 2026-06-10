@@ -144,6 +144,47 @@ const tiktokAutomotiveAds: PlatformResponses = {
   )
 };
 
+const tiktokShop: PlatformResponses = {
+  PORTAL_ACCEPTED: r(
+    'tiktok-shop', 'PORTAL_ACCEPTED', 200,
+    { code: 0, message: 'Success', data: { product_id: '7300000000000000101', skus: [{ id: '7300000000000000201', seller_sku: 'MOCK-STK-001' }], warnings: [] } },
+    'PLATFORM_REVIEWING', null,
+    'Product submitted to TikTok Shop. Listings enter review before going live — typically 1–3 business days.'
+  ),
+  PORTAL_APPROVED: r(
+    'tiktok-shop', 'PORTAL_APPROVED', 200,
+    { code: 0, message: 'Success', data: { product_id: '7300000000000000101', status: 'ACTIVE', title: 'Mock Vehicle Listing', skus: [{ id: '7300000000000000201', seller_sku: 'MOCK-STK-001', price: { amount: '25999.00', currency: 'USD' } }] } },
+    'FEED_TESTING', null,
+    'TikTok Shop listing approved and live. Visible on For You Page, Shop tab, and Live Shopping.'
+  ),
+  FEED_LIVE: r(
+    'tiktok-shop', 'FEED_LIVE', 200,
+    { code: 0, message: 'Success', data: { shop_id: '7300000000000000001', product_count: 12, last_sync: '2026-06-09T12:00:00.000Z', gmv_estimate: 'available in Seller Center analytics' } },
+    'ACTIVE', null,
+    'TikTok Shop catalog syncing. Products visible in-app and eligible for shoppable video/live tags.'
+  ),
+  PORTAL_REJECTED: r(
+    'tiktok-shop', 'PORTAL_REJECTED', 200,
+    { code: 40601, message: 'Product rejected — policy violation', data: { reason: 'PROHIBITED_ITEM_TYPE', detail: 'Vehicle listings require a compliant dealer account with TikTok Shop Business verification', help_url: 'https://seller-support.tiktok.com/article/policy' } },
+    'REJECTED',
+    'Complete TikTok Shop Business verification and resubmit vehicle listings.',
+    'TikTok Shop product rejected due to category/policy requirements. Dealer business verification must be completed in Seller Center.'
+  ),
+  PORTAL_NEEDS_INFO: r(
+    'tiktok-shop', 'PORTAL_NEEDS_INFO', 200,
+    { code: 40001, message: 'Additional information required', data: { action_required: 'COMPLETE_SELLER_VERIFICATION', verification_url: 'https://seller.tiktok.com/verify', detail: 'Business license or dealer registration document required to sell vehicles on TikTok Shop.' } },
+    'DEALER_ACTION_NEEDED',
+    'Upload business/dealer license documents in TikTok Seller Center to proceed.',
+    'TikTok Shop seller verification pending. Dealer must submit business documents in Seller Center.'
+  ),
+  PORTAL_ERROR: r(
+    'tiktok-shop', 'PORTAL_ERROR', 200,
+    { code: 50001, message: 'Internal server error', data: null },
+    'SUBMITTED', null,
+    'Transient TikTok Shop API error. Request queued for retry.'
+  ),
+};
+
 const cargurusDealer: PlatformResponses = {
   PORTAL_ACCEPTED: r(
     'cargurus-dealer', 'PORTAL_ACCEPTED', 200,
@@ -939,6 +980,7 @@ export const mockPortalResponses: Record<string, PlatformResponses> = {
   'crexi': crexi,
   'machinery-trader': machineryTrader,
   'ironplanet': ironplanet,
+  'tiktok-shop': tiktokShop,
 };
 
 export function getMockPortalResponse(platformSlug: string, condition: MockPortalCondition): MockPortalResponse | undefined {

@@ -44,6 +44,11 @@ const CATALOG_FIELD_META: Record<string, CatalogFieldMeta> = {
     placeholder: 'a1b2c3d4e5f6',
     hint: 'Reddit Ads Manager → Assets → Catalogs',
   },
+  'tiktok-shop': {
+    label: 'Shop ID',
+    placeholder: '7300000000000000001',
+    hint: 'TikTok Seller Center → Shop Management → Shop ID',
+  },
 };
 
 const DEFAULT_META: CatalogFieldMeta = {

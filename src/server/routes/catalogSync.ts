@@ -12,6 +12,7 @@ import { MicrosoftAutomotiveBridge } from '../../services/catalog/bridges/Micros
 import { PinterestCatalogBridge } from '../../services/catalog/bridges/PinterestCatalogBridge.js';
 import { SnapchatCatalogBridge } from '../../services/catalog/bridges/SnapchatCatalogBridge.js';
 import { RedditCatalogBridge } from '../../services/catalog/bridges/RedditCatalogBridge.js';
+import { TikTokShopBridge } from '../../services/catalog/bridges/TikTokShopBridge.js';
 import type { CatalogSyncBridge } from '../../services/catalog/catalogTypes.js';
 import { MetaOAuthClient } from '../../services/platform/clients/providers/MetaOAuthClient.js';
 import { GoogleOAuthClient } from '../../services/platform/clients/providers/GoogleOAuthClient.js';
@@ -20,6 +21,7 @@ import { MicrosoftOAuthClient } from '../../services/platform/clients/providers/
 import { PinterestOAuthClient } from '../../services/platform/clients/providers/PinterestOAuthClient.js';
 import { SnapchatOAuthClient } from '../../services/platform/clients/providers/SnapchatOAuthClient.js';
 import { RedditOAuthClient } from '../../services/platform/clients/providers/RedditOAuthClient.js';
+import { TikTokShopOAuthClient } from '../../services/platform/clients/providers/TikTokShopOAuthClient.js';
 
 type DealerSlugParams = { dealershipId: string; platformSlug: string };
 type DealerSlugItemParams = DealerSlugParams & { itemId: string };
@@ -36,6 +38,7 @@ const BRIDGE_REGISTRY: Record<string, CatalogSyncBridge> = {
   'pinterest-shopping-ads':      new PinterestCatalogBridge(),
   'snapchat-dynamic-product-ads': new SnapchatCatalogBridge(),
   'reddit-dynamic-product-ads':  new RedditCatalogBridge(),
+  'tiktok-shop':                 new TikTokShopBridge(),
 };
 
 const OAUTH_CLIENT_REGISTRY: Record<string, OAuthClient> = {
@@ -46,6 +49,7 @@ const OAUTH_CLIENT_REGISTRY: Record<string, OAuthClient> = {
   'pinterest':        new PinterestOAuthClient(),
   'snapchat':         new SnapchatOAuthClient(),
   'reddit':           new RedditOAuthClient(),
+  'tiktok-shop':      new TikTokShopOAuthClient(),
 };
 
 export function registerCatalogSyncRoutes(app: FastifyInstance, prisma: PrismaClient): void {

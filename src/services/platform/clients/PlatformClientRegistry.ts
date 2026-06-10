@@ -7,6 +7,7 @@ import { MicrosoftOAuthClient } from './providers/MicrosoftOAuthClient.js';
 import { LinkedInOAuthClient } from './providers/LinkedInOAuthClient.js';
 import { EbayOAuthClient } from './providers/EbayOAuthClient.js';
 import { TikTokOAuthClient } from './providers/TikTokOAuthClient.js';
+import { TikTokShopOAuthClient } from './providers/TikTokShopOAuthClient.js';
 import { AppleOAuthClient } from './providers/AppleOAuthClient.js';
 import { PinterestOAuthClient } from './providers/PinterestOAuthClient.js';
 import { RedditOAuthClient } from './providers/RedditOAuthClient.js';
@@ -24,6 +25,7 @@ const microsoft = new MicrosoftOAuthClient();
 const linkedin = new LinkedInOAuthClient();
 const ebay = new EbayOAuthClient();
 const tiktok = new TikTokOAuthClient();
+const tiktokShop = new TikTokShopOAuthClient();
 const apple = new AppleOAuthClient();
 const pinterest = new PinterestOAuthClient();
 const reddit = new RedditOAuthClient();
@@ -39,6 +41,7 @@ const SLUG_TO_CLIENT: Record<string, OAuthClient> = {
   'meta-automotive-ads':          metaCatalogAds,
   'facebook-marketplace-general': metaCatalogAds,
   'tiktok-automotive-ads':        tiktok,
+  'tiktok-shop':                  tiktokShop,
   'microsoft-automotive-ads':     microsoft,
   'linkedin-lead-gen-forms':      linkedin,
   'pinterest-shopping-ads':       pinterest,

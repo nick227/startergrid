@@ -66,4 +66,4 @@ export function nonVehiclePlatformSlugsForCategory(category: NonVehiclePlatformC
 }
 
 /** Total platform registry size: automotive/trailers/boats base + non-vehicle stubs. */
-export const PLATFORM_REGISTRY_TOTAL = 29 + NON_VEHICLE_PLATFORM_COUNT;
+export const PLATFORM_REGISTRY_TOTAL = 30 + NON_VEHICLE_PLATFORM_COUNT;
