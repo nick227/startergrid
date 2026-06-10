@@ -57,9 +57,8 @@ export abstract class OAuthClient {
         body: new URLSearchParams(body).toString(),
         signal: AbortSignal.timeout(PROBE_TIMEOUT_MS),
       });
-    } catch (err) {
-      const detail = err instanceof Error ? err.message : 'Network request failed';
-      return { status: 'unreachable', detail };
+    } catch {
+      return { status: 'unreachable', detail: 'Token endpoint unreachable or timed out' };
     }
 
     let json: Record<string, unknown> = {};

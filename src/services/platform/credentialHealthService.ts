@@ -1,9 +1,18 @@
 // Admin-facing health reporting for our own developer API keys (env-configured
 // OAuth app credentials), independent of any dealer's OAuth connection.
+//
+// Validation runs are cached for a short TTL (repeated clicks must not hammer
+// provider token endpoints) and every live run is written to AdminAuditLog.
 
+import type { PrismaClient } from '@prisma/client';
 import type { OAuthProvider } from '../../lib/types.js';
 import { PlatformClientRegistry } from './clients/PlatformClientRegistry.js';
-import type { CredentialProbeSpec, CredentialProbeStatus } from './clients/credentialProbe.js';
+import {
+  checkMethodForGrant,
+  type CredentialCheckMethod,
+  type CredentialProbeSpec,
+  type CredentialProbeStatus,
+} from './clients/credentialProbe.js';
 
 // How each provider's developer credentials can be live-validated.
 // Absent = the provider has a non-standard token API with no app-level probe
@@ -52,8 +61,26 @@ export type ProviderCredentialSummary = {
 
 export type ProviderCredentialResult = ProviderCredentialSummary & {
   status: CredentialStatus;
+  // 'app-token' = fully validated; 'client-auth-inference' = client authentication
+  // inferred from the provider's grant rejection, NOT a full key validation;
+  // 'none' = no live check was performed.
+  checkMethod: CredentialCheckMethod;
   detail: string;
 };
+
+export type CredentialValidationMeta = {
+  lastCheckedAt: string;
+  checkedBy: string;
+  durationMs: number;
+  cached: boolean;
+};
+
+export type CredentialValidationRun = {
+  results: ProviderCredentialResult[];
+  meta: CredentialValidationMeta;
+};
+
+export type ValidationActor = { id: string; email: string };
 
 export function listProviderCredentials(): ProviderCredentialSummary[] {
   return PlatformClientRegistry.allClients().map(client => ({
@@ -65,19 +92,74 @@ export function listProviderCredentials(): ProviderCredentialSummary[] {
   }));
 }
 
-export async function validateProviderCredentials(): Promise<ProviderCredentialResult[]> {
+async function probeAllProviders(): Promise<ProviderCredentialResult[]> {
   const clients = PlatformClientRegistry.allClients();
   const summaries = listProviderCredentials();
   return Promise.all(clients.map(async (client, i) => {
     const summary = summaries[i] as ProviderCredentialSummary;
     if (!summary.configured) {
-      return { ...summary, status: 'not-configured' as const, detail: 'Credentials not set in environment' };
+      return { ...summary, status: 'not-configured' as const, checkMethod: 'none' as const, detail: 'Credentials not set in environment' };
     }
     const spec = PROBE_SPECS[client.provider];
     if (!spec) {
-      return { ...summary, status: 'unsupported' as const, detail: 'No app-level validation endpoint for this provider' };
+      return { ...summary, status: 'unsupported' as const, checkMethod: 'none' as const, detail: 'No app-level validation endpoint for this provider' };
     }
     const outcome = await client.probeCredentials(spec);
-    return { ...summary, ...outcome };
+    return { ...summary, ...outcome, checkMethod: checkMethodForGrant(spec.grant) };
   }));
+}
+
+const VALIDATION_CACHE_TTL_MS = 60_000;
+
+type CachedRun = {
+  results: ProviderCredentialResult[];
+  lastCheckedAt: string;
+  checkedBy: string;
+  durationMs: number;
+  expiresAt: number;
+};
+
+let cachedRun: CachedRun | null = null;
+
+/** Test hook — clears the validation result cache. */
+export function resetCredentialValidationCache(): void {
+  cachedRun = null;
+}
+
+export async function runCredentialValidation(
+  prisma: PrismaClient,
+  actor: ValidationActor,
+): Promise<CredentialValidationRun> {
+  if (cachedRun && cachedRun.expiresAt > Date.now()) {
+    const { results, lastCheckedAt, checkedBy, durationMs } = cachedRun;
+    return { results, meta: { lastCheckedAt, checkedBy, durationMs, cached: true } };
+  }
+
+  const startedAt = Date.now();
+  const results = await probeAllProviders();
+  const durationMs = Date.now() - startedAt;
+  const lastCheckedAt = new Date(startedAt).toISOString();
+
+  // Audit the live run — sanitized statuses only, never detail strings or secrets.
+  await prisma.adminAuditLog.create({
+    data: {
+      action:     'platform-credentials.validate',
+      actorId:    actor.id,
+      actorEmail: actor.email,
+      detail: {
+        durationMs,
+        providerCount: results.length,
+        statuses: Object.fromEntries(results.map(r => [r.provider, r.status])),
+      },
+    },
+  });
+
+  cachedRun = {
+    results,
+    lastCheckedAt,
+    checkedBy: actor.email,
+    durationMs,
+    expiresAt: startedAt + VALIDATION_CACHE_TTL_MS,
+  };
+  return { results, meta: { lastCheckedAt, checkedBy: actor.email, durationMs, cached: false } };
 }

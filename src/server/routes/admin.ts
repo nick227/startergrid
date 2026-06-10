@@ -3,7 +3,7 @@ import type { PrismaClient } from '@prisma/client';
 import { requireSuperAdmin } from '../security.js';
 import {
   listProviderCredentials,
-  validateProviderCredentials,
+  runCredentialValidation,
 } from '../../services/platform/credentialHealthService.js';
 
 export function registerAdminRoutes(app: FastifyInstance, prisma: PrismaClient): void {
@@ -13,7 +13,8 @@ export function registerAdminRoutes(app: FastifyInstance, prisma: PrismaClient):
   });
 
   app.post('/api/admin/platform-credentials/validate', async (request, reply) => {
-    if (!await requireSuperAdmin(prisma, request, reply)) return;
-    return reply.send({ results: await validateProviderCredentials() });
+    const operator = await requireSuperAdmin(prisma, request, reply);
+    if (!operator) return;
+    return reply.send(await runCredentialValidation(prisma, { id: operator.id, email: operator.email }));
   });
 }

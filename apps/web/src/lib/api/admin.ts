@@ -1,5 +1,6 @@
 import {
   AdminService,
+  type CredentialValidationMeta,
   type PlatformCredentialListResponse,
   type PlatformCredentialValidationResponse,
   type ProviderCredentialResult,
@@ -7,7 +8,7 @@ import {
 } from '@auto-dealer/api-client';
 import { fromSdk } from './sdk.ts';
 
-export type { ProviderCredentialResult, ProviderCredentialSummary };
+export type { CredentialValidationMeta, ProviderCredentialResult, ProviderCredentialSummary };
 
 export async function fetchPlatformCredentials(): Promise<PlatformCredentialListResponse> {
   return fromSdk(AdminService.listPlatformCredentials());

@@ -168,6 +168,20 @@ model OperatorSession {
   @@index([expiresAt])
 }
 
+// Append-only log of privileged admin actions. Actor is a loose ref (audit rows
+// must survive account deletion). Detail holds sanitized summaries only —
+// never secrets or raw provider responses.
+model AdminAuditLog {
+  id         String   @id @default(cuid())
+  action     String   @db.VarChar(80)
+  actorId    String   @db.VarChar(30)
+  actorEmail String   @db.VarChar(255)
+  detail     Json?
+  createdAt  DateTime @default(now())
+
+  @@index([action, createdAt])
+}
+
 // ─── Marketplace user models ──────────────────────────────────────────────────
 // Separate domain from operator auth. Tokens are not interchangeable.
 

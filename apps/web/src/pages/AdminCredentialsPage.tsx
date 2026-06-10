@@ -2,6 +2,7 @@ import { useMemo, useState } from 'react';
 import {
   fetchPlatformCredentials,
   validatePlatformCredentials,
+  type CredentialValidationMeta,
   type ProviderCredentialResult,
   type ProviderCredentialSummary,
 } from '@/lib/api/admin.ts';
@@ -22,9 +23,13 @@ const STATUS_PILLS: Record<ProviderCredentialResult['status'], { label: string; 
 function StatusPill({ result }: { result: ProviderCredentialResult | undefined }) {
   if (!result) return <span className="text-xs text-ink-faint">—</span>;
   const pill = STATUS_PILLS[result.status];
+  // Inference checks only prove the client authenticated — label them distinctly.
+  const label = result.status === 'valid' && result.checkMethod === 'client-auth-inference'
+    ? 'Client auth inferred'
+    : pill.label;
   return (
     <span className={`inline-block px-2 py-0.5 rounded-full border text-xs font-semibold whitespace-nowrap ${pill.className}`}>
-      {pill.label}
+      {label}
     </span>
   );
 }
@@ -58,6 +63,7 @@ function ProviderRow({ summary, result }: {
 export default function AdminCredentialsPage() {
   const { data, loading, error, reload } = useAsyncQuery(() => fetchPlatformCredentials(), []);
   const [results, setResults] = useState<Map<string, ProviderCredentialResult> | null>(null);
+  const [meta, setMeta] = useState<CredentialValidationMeta | null>(null);
   const [validating, setValidating] = useState(false);
   const [validateError, setValidateError] = useState<string | null>(null);
 
@@ -67,8 +73,9 @@ export default function AdminCredentialsPage() {
     setValidating(true);
     setValidateError(null);
     try {
-      const { results: outcomes } = await validatePlatformCredentials();
-      setResults(new Map(outcomes.map(r => [r.provider, r])));
+      const run = await validatePlatformCredentials();
+      setResults(new Map(run.results.map(r => [r.provider, r])));
+      setMeta(run.meta);
     } catch (e) {
       setValidateError(toErrorMessage(e));
     } finally {
@@ -103,6 +110,17 @@ export default function AdminCredentialsPage() {
           </button>
         </div>
 
+        {meta && (
+          <div className="mb-3 text-xs text-silver-300">
+            Last checked {new Date(meta.lastCheckedAt).toLocaleString()} by {meta.checkedBy} · {meta.durationMs} ms
+            {meta.cached && (
+              <span className="ml-2 inline-block px-2 py-0.5 rounded-full border border-silver-200/40 text-silver-300">
+                served from cache
+              </span>
+            )}
+          </div>
+        )}
+
         <div className="bg-surface-card rounded-xl shadow-elevation-3 overflow-hidden border border-silver-200">
           {validateError && (
             <div className="px-5 py-3 bg-status-error-bg border-b border-status-error-border text-xs text-status-error-text">
@@ -132,7 +150,9 @@ export default function AdminCredentialsPage() {
 
         <p className="text-ink-faint text-xs mt-4">
           Live checks call each provider's token endpoint with our app credentials only — no dealer tokens are used.
+          "Client auth inferred" means the provider accepted our client authentication but the keys were not fully validated.
           Providers marked "No live check" (Apple, TikTok, TikTok Shop) have non-standard token APIs; only env presence is reported.
+          Results are cached briefly to avoid hammering provider endpoints.
         </p>
       </div>
     </div>

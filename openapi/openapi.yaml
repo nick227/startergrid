@@ -1555,13 +1555,21 @@ components:
       allOf:
         - $ref: '#/components/schemas/ProviderCredentialSummary'
         - type: object
-          required: [status, detail]
+          required: [status, checkMethod, detail]
           properties:
             status:
               type: string
               enum: [valid, invalid, unknown, unreachable, not-configured, unsupported]
+            checkMethod:
+              type: string
+              enum: [app-token, client-auth-inference, none]
+              description: >
+                app-token = fully validated; client-auth-inference = client authentication
+                inferred from the provider's grant rejection (not a full key validation);
+                none = no live check performed.
             detail:
               type: string
+              description: Sanitized summary — never contains raw provider response bodies or secrets
 
     PlatformCredentialListResponse:
       type: object
@@ -1572,14 +1580,32 @@ components:
           items:
             $ref: '#/components/schemas/ProviderCredentialSummary'
 
+    CredentialValidationMeta:
+      type: object
+      required: [lastCheckedAt, checkedBy, durationMs, cached]
+      properties:
+        lastCheckedAt:
+          type: string
+          format: date-time
+        checkedBy:
+          type: string
+          description: Email of the operator who triggered the live run
+        durationMs:
+          type: integer
+        cached:
+          type: boolean
+          description: True when served from the short-TTL cache instead of live probes
+
     PlatformCredentialValidationResponse:
       type: object
-      required: [results]
+      required: [results, meta]
       properties:
         results:
           type: array
           items:
             $ref: '#/components/schemas/ProviderCredentialResult'
+        meta:
+          $ref: '#/components/schemas/CredentialValidationMeta'
 
     SocialPageSummary:
       type: object
