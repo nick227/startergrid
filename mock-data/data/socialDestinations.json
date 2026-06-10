@@ -1,0 +1,92 @@
+[
+  {
+    "id": "d14ca5e9-3feb-4f2c-9e8c-96224fc9f959",
+    "dealerId": "dealer_austin_auto",
+    "platformSlug": "facebook-business-page",
+    "externalId": "fb_page_dealer_austin_auto",
+    "name": "Austin City Motors Facebook Page",
+    "selected": true,
+    "status": "ACTIVE"
+  },
+  {
+    "id": "ad55bed9-2934-4c8c-948c-874befa3eeec",
+    "dealerId": "dealer_austin_auto",
+    "platformSlug": "google-business-profile",
+    "externalId": "gbp_loc_dealer_austin_auto",
+    "name": "Austin City Motors Google Location",
+    "selected": true,
+    "status": "ACTIVE"
+  },
+  {
+    "id": "fdfb6924-2a0e-415a-b65e-abb17d077d7f",
+    "dealerId": "dealer_lone_star",
+    "platformSlug": "facebook-business-page",
+    "externalId": "fb_page_dealer_lone_star",
+    "name": "Lone Star Select Autos Facebook Page",
+    "selected": true,
+    "status": "ACTIVE"
+  },
+  {
+    "id": "6f5f8271-349b-4731-a5e9-8889a4da2181",
+    "dealerId": "dealer_lone_star",
+    "platformSlug": "google-business-profile",
+    "externalId": "gbp_loc_dealer_lone_star",
+    "name": "Lone Star Select Autos Google Location",
+    "selected": true,
+    "status": "ACTIVE"
+  },
+  {
+    "id": "f2c5507a-e2cb-4e63-880f-3eb7182c2ff0",
+    "dealerId": "dealer_summit_rv",
+    "platformSlug": "facebook-business-page",
+    "externalId": "fb_page_dealer_summit_rv",
+    "name": "Summit Trail & RV Facebook Page",
+    "selected": true,
+    "status": "ACTIVE"
+  },
+  {
+    "id": "62c0e080-4cb6-49c9-913f-642fca1ce7a4",
+    "dealerId": "dealer_summit_rv",
+    "platformSlug": "google-business-profile",
+    "externalId": "gbp_loc_dealer_summit_rv",
+    "name": "Summit Trail & RV Google Location",
+    "selected": true,
+    "status": "ACTIVE"
+  },
+  {
+    "id": "e0dedec9-b6ea-4d7f-aadd-f2583d029a9a",
+    "dealerId": "dealer_harbor_boats",
+    "platformSlug": "facebook-business-page",
+    "externalId": "fb_page_dealer_harbor_boats",
+    "name": "Harborline Boat Exchange Facebook Page",
+    "selected": true,
+    "status": "ACTIVE"
+  },
+  {
+    "id": "ffeda4d9-fd5d-481a-bc16-d9f937bcc742",
+    "dealerId": "dealer_harbor_boats",
+    "platformSlug": "google-business-profile",
+    "externalId": "gbp_loc_dealer_harbor_boats",
+    "name": "Harborline Boat Exchange Google Location",
+    "selected": true,
+    "status": "ACTIVE"
+  },
+  {
+    "id": "a9e2143e-ad11-465f-b8e6-f74b65bef5fd",
+    "dealerId": "dealer_messy",
+    "platformSlug": "facebook-business-page",
+    "externalId": "fb_page_dealer_messy",
+    "name": "Budget Wheel Barn Facebook Page",
+    "selected": true,
+    "status": "ACTIVE"
+  },
+  {
+    "id": "ff043cd7-19ea-4597-8636-f4ed7c97c9c2",
+    "dealerId": "dealer_messy",
+    "platformSlug": "google-business-profile",
+    "externalId": "gbp_loc_dealer_messy",
+    "name": "Budget Wheel Barn Google Location",
+    "selected": true,
+    "status": "ACTIVE"
+  }
+]

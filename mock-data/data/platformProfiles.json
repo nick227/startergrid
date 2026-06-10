@@ -1,0 +1,230 @@
+[
+  {
+    "slug": "facebook-business-page",
+    "name": "Facebook Business Page",
+    "platformKind": "SOCIAL",
+    "connectionType": "OAUTH",
+    "capabilities": {
+      "socialPosting": true
+    },
+    "integrationMaturity": "PUBLISH_READY",
+    "requirementsConfidence": "CONFIRMED",
+    "regions": [
+      "GLOBAL"
+    ],
+    "supportedCategories": [
+      "AUTOMOTIVE",
+      "BOATS",
+      "TRAILERS_POWERSPORTS_RV"
+    ],
+    "liveValidationNote": null
+  },
+  {
+    "slug": "google-business-profile",
+    "name": "Google Business Profile",
+    "platformKind": "BUSINESS_PROFILE",
+    "connectionType": "OAUTH",
+    "capabilities": {
+      "socialPosting": true
+    },
+    "integrationMaturity": "PUBLISH_READY",
+    "requirementsConfidence": "CONFIRMED",
+    "regions": [
+      "GLOBAL"
+    ],
+    "supportedCategories": [
+      "AUTOMOTIVE",
+      "BOATS",
+      "TRAILERS_POWERSPORTS_RV"
+    ],
+    "liveValidationNote": null
+  },
+  {
+    "slug": "meta-automotive-ads",
+    "name": "Meta Automotive Ads",
+    "platformKind": "ADS",
+    "connectionType": "OAUTH",
+    "capabilities": {
+      "catalogSync": true
+    },
+    "integrationMaturity": "SYNC_READY",
+    "requirementsConfidence": "CONFIRMED",
+    "regions": [
+      "GLOBAL"
+    ],
+    "supportedCategories": [
+      "AUTOMOTIVE"
+    ],
+    "liveValidationNote": "Live validation requires Meta Business catalog permissions and selected catalog ID."
+  },
+  {
+    "slug": "microsoft-automotive-ads",
+    "name": "Microsoft Automotive Ads",
+    "platformKind": "ADS",
+    "connectionType": "OAUTH",
+    "capabilities": {
+      "catalogSync": true
+    },
+    "integrationMaturity": "SYNC_READY",
+    "requirementsConfidence": "CONFIRMED",
+    "regions": [
+      "US",
+      "CA",
+      "UK",
+      "EU"
+    ],
+    "supportedCategories": [
+      "AUTOMOTIVE"
+    ],
+    "liveValidationNote": "Live validation blocked \u2014 requires MICROSOFT_CLIENT_ID, MICROSOFT_CLIENT_SECRET, and MICROSOFT_ADS_DEVELOPER_TOKEN."
+  },
+  {
+    "slug": "x-dynamic-product-ads",
+    "name": "X Dynamic Product Ads",
+    "platformKind": "ADS",
+    "connectionType": "OAUTH",
+    "capabilities": {
+      "catalogSync": true
+    },
+    "integrationMaturity": "SYNC_READY",
+    "requirementsConfidence": "LIKELY",
+    "regions": [
+      "GLOBAL"
+    ],
+    "supportedCategories": [
+      "AUTOMOTIVE"
+    ],
+    "liveValidationNote": "Live validation blocked \u2014 requires X Ads/DPA account access."
+  },
+  {
+    "slug": "nextdoor-ads",
+    "name": "Nextdoor Ads",
+    "platformKind": "ADS",
+    "connectionType": "OAUTH",
+    "capabilities": {
+      "catalogSync": true
+    },
+    "integrationMaturity": "SYNC_READY",
+    "requirementsConfidence": "LIKELY",
+    "regions": [
+      "US"
+    ],
+    "supportedCategories": [
+      "AUTOMOTIVE",
+      "HOME_SERVICES"
+    ],
+    "liveValidationNote": "Live validation blocked \u2014 requires NEXTDOOR_CLIENT_ID, NEXTDOOR_CLIENT_SECRET, and Ads API program access."
+  },
+  {
+    "slug": "ebay-motors",
+    "name": "eBay Motors",
+    "platformKind": "MARKETPLACE",
+    "connectionType": "OAUTH",
+    "capabilities": {
+      "marketplaceListing": true
+    },
+    "integrationMaturity": "OAUTH_READY",
+    "requirementsConfidence": "CONFIRMED",
+    "regions": [
+      "US"
+    ],
+    "supportedCategories": [
+      "AUTOMOTIVE",
+      "BOATS",
+      "TRAILERS_POWERSPORTS_RV"
+    ],
+    "liveValidationNote": "Live validation deferred to HTTPS staging; requires seller business policies and merchant location key."
+  },
+  {
+    "slug": "linkedin-lead-gen-forms",
+    "name": "LinkedIn Lead Gen Forms",
+    "platformKind": "LEAD_CAPTURE",
+    "connectionType": "OAUTH",
+    "capabilities": {
+      "leadCapture": true
+    },
+    "integrationMaturity": "PLANNED",
+    "requirementsConfidence": "CONFIRMED",
+    "regions": [
+      "GLOBAL"
+    ],
+    "supportedCategories": [
+      "AUTOMOTIVE"
+    ],
+    "liveValidationNote": "Requires LinkedIn Marketing API/Lead Gen access. Do not model as catalog sync."
+  },
+  {
+    "slug": "autotrader-us",
+    "name": "AutoTrader US",
+    "platformKind": "MARKETPLACE",
+    "connectionType": "PARTNER_FEED",
+    "capabilities": {
+      "partnerFeed": true
+    },
+    "integrationMaturity": "SETUP_GUIDE",
+    "requirementsConfidence": "LIKELY",
+    "regions": [
+      "US"
+    ],
+    "supportedCategories": [
+      "AUTOMOTIVE"
+    ],
+    "liveValidationNote": "Partner/feed setup likely requires dealer account or rep-assisted activation."
+  },
+  {
+    "slug": "cars-com-us",
+    "name": "Cars.com",
+    "platformKind": "MARKETPLACE",
+    "connectionType": "PARTNER_FEED",
+    "capabilities": {
+      "partnerFeed": true
+    },
+    "integrationMaturity": "SETUP_GUIDE",
+    "requirementsConfidence": "LIKELY",
+    "regions": [
+      "US"
+    ],
+    "supportedCategories": [
+      "AUTOMOTIVE"
+    ],
+    "liveValidationNote": "Partner/feed setup likely requires dealer account or rep-assisted activation."
+  },
+  {
+    "slug": "cargurus-us",
+    "name": "CarGurus",
+    "platformKind": "MARKETPLACE",
+    "connectionType": "PARTNER_FEED",
+    "capabilities": {
+      "partnerFeed": true
+    },
+    "integrationMaturity": "SETUP_GUIDE",
+    "requirementsConfidence": "LIKELY",
+    "regions": [
+      "US"
+    ],
+    "supportedCategories": [
+      "AUTOMOTIVE"
+    ],
+    "liveValidationNote": "Partner/feed setup likely requires dealer account or rep-assisted activation."
+  },
+  {
+    "slug": "owned-marketplace",
+    "name": "Owned Marketplace",
+    "platformKind": "OWNED",
+    "connectionType": "OWNED_SITE",
+    "capabilities": {
+      "ownedPublishing": true
+    },
+    "integrationMaturity": "LIVE_VERIFIED",
+    "requirementsConfidence": "CONFIRMED",
+    "regions": [
+      "GLOBAL"
+    ],
+    "supportedCategories": [
+      "AUTOMOTIVE",
+      "BOATS",
+      "TRAILERS_POWERSPORTS_RV"
+    ],
+    "liveValidationNote": null
+  }
+]

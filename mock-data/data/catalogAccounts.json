@@ -1,0 +1,202 @@
+[
+  {
+    "id": "f5205d08-8d90-488d-8584-4439aff52878",
+    "dealerId": "dealer_austin_auto",
+    "platformSlug": "meta-automotive-ads",
+    "accountId": "acct_meta-automotive-ads_dealer_austin_auto",
+    "catalogId": "cat_meta-automotive-ads_dealer_austin_auto",
+    "selected": true,
+    "lastSyncStatus": "PARTIAL",
+    "lastSyncedAt": "2026-05-21T12:00:00Z"
+  },
+  {
+    "id": "7ad6219e-983f-4080-b209-455a901feb7d",
+    "dealerId": "dealer_austin_auto",
+    "platformSlug": "microsoft-automotive-ads",
+    "accountId": "acct_microsoft-automotive-ads_dealer_austin_auto",
+    "catalogId": "cat_microsoft-automotive-ads_dealer_austin_auto",
+    "selected": false,
+    "lastSyncStatus": "PARTIAL",
+    "lastSyncedAt": "2026-05-31T12:00:00Z"
+  },
+  {
+    "id": "da63526b-85e8-44e1-ba7a-60a8034e6aa8",
+    "dealerId": "dealer_austin_auto",
+    "platformSlug": "x-dynamic-product-ads",
+    "accountId": "acct_x-dynamic-product-ads_dealer_austin_auto",
+    "catalogId": "cat_x-dynamic-product-ads_dealer_austin_auto",
+    "selected": true,
+    "lastSyncStatus": "SUCCESS",
+    "lastSyncedAt": "2026-06-05T12:00:00Z"
+  },
+  {
+    "id": "0a5ddcba-cfc3-4029-ab36-0254942927b2",
+    "dealerId": "dealer_austin_auto",
+    "platformSlug": "nextdoor-ads",
+    "accountId": "acct_nextdoor-ads_dealer_austin_auto",
+    "catalogId": "cat_nextdoor-ads_dealer_austin_auto",
+    "selected": true,
+    "lastSyncStatus": "PARTIAL",
+    "lastSyncedAt": "2026-05-18T12:00:00Z"
+  },
+  {
+    "id": "a918ae93-98d4-4466-857d-b10039d1dc8a",
+    "dealerId": "dealer_lone_star",
+    "platformSlug": "meta-automotive-ads",
+    "accountId": "acct_meta-automotive-ads_dealer_lone_star",
+    "catalogId": "cat_meta-automotive-ads_dealer_lone_star",
+    "selected": true,
+    "lastSyncStatus": "FAILED",
+    "lastSyncedAt": "2026-05-13T12:00:00Z"
+  },
+  {
+    "id": "e5859e33-e74c-4be2-b3a3-a588407ece62",
+    "dealerId": "dealer_lone_star",
+    "platformSlug": "microsoft-automotive-ads",
+    "accountId": "acct_microsoft-automotive-ads_dealer_lone_star",
+    "catalogId": "cat_microsoft-automotive-ads_dealer_lone_star",
+    "selected": true,
+    "lastSyncStatus": "NEVER_RUN",
+    "lastSyncedAt": "2026-06-01T12:00:00Z"
+  },
+  {
+    "id": "e5e51d7e-d1ea-4ed4-b352-b32efe9dcbb0",
+    "dealerId": "dealer_lone_star",
+    "platformSlug": "x-dynamic-product-ads",
+    "accountId": "acct_x-dynamic-product-ads_dealer_lone_star",
+    "catalogId": "cat_x-dynamic-product-ads_dealer_lone_star",
+    "selected": true,
+    "lastSyncStatus": "FAILED",
+    "lastSyncedAt": "2026-06-06T12:00:00Z"
+  },
+  {
+    "id": "2beed557-8730-4569-b3ee-e8801d6a00e3",
+    "dealerId": "dealer_lone_star",
+    "platformSlug": "nextdoor-ads",
+    "accountId": "acct_nextdoor-ads_dealer_lone_star",
+    "catalogId": "cat_nextdoor-ads_dealer_lone_star",
+    "selected": true,
+    "lastSyncStatus": "SUCCESS",
+    "lastSyncedAt": "2026-06-06T12:00:00Z"
+  },
+  {
+    "id": "faaf5175-a901-46ab-bb21-00a7f80d6f00",
+    "dealerId": "dealer_summit_rv",
+    "platformSlug": "meta-automotive-ads",
+    "accountId": "acct_meta-automotive-ads_dealer_summit_rv",
+    "catalogId": "cat_meta-automotive-ads_dealer_summit_rv",
+    "selected": true,
+    "lastSyncStatus": "SUCCESS",
+    "lastSyncedAt": "2026-05-17T12:00:00Z"
+  },
+  {
+    "id": "b64c1626-a076-41b4-aeca-28519e472958",
+    "dealerId": "dealer_summit_rv",
+    "platformSlug": "microsoft-automotive-ads",
+    "accountId": "acct_microsoft-automotive-ads_dealer_summit_rv",
+    "catalogId": "cat_microsoft-automotive-ads_dealer_summit_rv",
+    "selected": false,
+    "lastSyncStatus": "FAILED",
+    "lastSyncedAt": "2026-05-22T12:00:00Z"
+  },
+  {
+    "id": "913d8beb-99b5-41c3-8fc3-6cbcf8bb4e52",
+    "dealerId": "dealer_summit_rv",
+    "platformSlug": "x-dynamic-product-ads",
+    "accountId": "acct_x-dynamic-product-ads_dealer_summit_rv",
+    "catalogId": "cat_x-dynamic-product-ads_dealer_summit_rv",
+    "selected": false,
+    "lastSyncStatus": "PARTIAL",
+    "lastSyncedAt": "2026-05-22T12:00:00Z"
+  },
+  {
+    "id": "9f64deb3-8802-4672-b9a2-f4a05ec130a9",
+    "dealerId": "dealer_summit_rv",
+    "platformSlug": "nextdoor-ads",
+    "accountId": "acct_nextdoor-ads_dealer_summit_rv",
+    "catalogId": "cat_nextdoor-ads_dealer_summit_rv",
+    "selected": true,
+    "lastSyncStatus": "PARTIAL",
+    "lastSyncedAt": "2026-05-20T12:00:00Z"
+  },
+  {
+    "id": "50c2f0b6-2a5f-496d-9f38-0eca55ef5bd4",
+    "dealerId": "dealer_harbor_boats",
+    "platformSlug": "meta-automotive-ads",
+    "accountId": "acct_meta-automotive-ads_dealer_harbor_boats",
+    "catalogId": "cat_meta-automotive-ads_dealer_harbor_boats",
+    "selected": true,
+    "lastSyncStatus": "FAILED",
+    "lastSyncedAt": "2026-06-08T12:00:00Z"
+  },
+  {
+    "id": "9e5dea5d-67fb-47bd-ab24-a44d987f9c4d",
+    "dealerId": "dealer_harbor_boats",
+    "platformSlug": "microsoft-automotive-ads",
+    "accountId": "acct_microsoft-automotive-ads_dealer_harbor_boats",
+    "catalogId": "cat_microsoft-automotive-ads_dealer_harbor_boats",
+    "selected": false,
+    "lastSyncStatus": "NEVER_RUN",
+    "lastSyncedAt": "2026-06-06T12:00:00Z"
+  },
+  {
+    "id": "00c2e479-1d50-4f46-9e07-e7ca00c061fe",
+    "dealerId": "dealer_harbor_boats",
+    "platformSlug": "x-dynamic-product-ads",
+    "accountId": "acct_x-dynamic-product-ads_dealer_harbor_boats",
+    "catalogId": "cat_x-dynamic-product-ads_dealer_harbor_boats",
+    "selected": false,
+    "lastSyncStatus": "NEVER_RUN",
+    "lastSyncedAt": "2026-05-19T12:00:00Z"
+  },
+  {
+    "id": "848bdb7c-55ef-4b5e-8add-85d4c4d98195",
+    "dealerId": "dealer_harbor_boats",
+    "platformSlug": "nextdoor-ads",
+    "accountId": "acct_nextdoor-ads_dealer_harbor_boats",
+    "catalogId": "cat_nextdoor-ads_dealer_harbor_boats",
+    "selected": false,
+    "lastSyncStatus": "FAILED",
+    "lastSyncedAt": "2026-06-05T12:00:00Z"
+  },
+  {
+    "id": "715ef756-0589-424d-befc-d8ba8e8285ec",
+    "dealerId": "dealer_messy",
+    "platformSlug": "meta-automotive-ads",
+    "accountId": "acct_meta-automotive-ads_dealer_messy",
+    "catalogId": "cat_meta-automotive-ads_dealer_messy",
+    "selected": true,
+    "lastSyncStatus": "NEVER_RUN",
+    "lastSyncedAt": "2026-05-26T12:00:00Z"
+  },
+  {
+    "id": "50628e81-7aea-48cf-ada0-708f5c07943a",
+    "dealerId": "dealer_messy",
+    "platformSlug": "microsoft-automotive-ads",
+    "accountId": "acct_microsoft-automotive-ads_dealer_messy",
+    "catalogId": "cat_microsoft-automotive-ads_dealer_messy",
+    "selected": true,
+    "lastSyncStatus": "PARTIAL",
+    "lastSyncedAt": "2026-06-04T12:00:00Z"
+  },
+  {
+    "id": "21f6a793-ed26-4f79-8605-586448a77c44",
+    "dealerId": "dealer_messy",
+    "platformSlug": "x-dynamic-product-ads",
+    "accountId": "acct_x-dynamic-product-ads_dealer_messy",
+    "catalogId": "cat_x-dynamic-product-ads_dealer_messy",
+    "selected": true,
+    "lastSyncStatus": "SUCCESS",
+    "lastSyncedAt": "2026-05-28T12:00:00Z"
+  },
+  {
+    "id": "80b1842e-e9f3-4c58-a9f1-4169ba9b2f1a",
+    "dealerId": "dealer_messy",
+    "platformSlug": "nextdoor-ads",
+    "accountId": "acct_nextdoor-ads_dealer_messy",
+    "catalogId": "cat_nextdoor-ads_dealer_messy",
+    "selected": true,
+    "lastSyncStatus": "FAILED",
+    "lastSyncedAt": "2026-05-11T12:00:00Z"
+  }
+]

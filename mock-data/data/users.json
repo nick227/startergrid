@@ -1,0 +1,122 @@
+[
+  {
+    "id": "2c57e18e-8928-4a89-ac1f-85a81f434ff7",
+    "dealerId": "dealer_austin_auto",
+    "name": "Jasmine Garcia",
+    "email": "owner@austincitymotors.example",
+    "role": "OWNER",
+    "status": "ACTIVE"
+  },
+  {
+    "id": "c25fdf6f-b081-4241-a417-45bda0de6088",
+    "dealerId": "dealer_austin_auto",
+    "name": "Bradley Jones",
+    "email": "manager@austincitymotors.example",
+    "role": "MANAGER",
+    "status": "ACTIVE"
+  },
+  {
+    "id": "93f9d637-3ce2-4d09-a906-2006e11ec64d",
+    "dealerId": "dealer_austin_auto",
+    "name": "Kristen Berg",
+    "email": "operator_admin@austincitymotors.example",
+    "role": "OPERATOR_ADMIN",
+    "status": "ACTIVE"
+  },
+  {
+    "id": "18688bbf-1e21-40dc-a4ae-7d22da7a9174",
+    "dealerId": "dealer_lone_star",
+    "name": "Gregory Landry",
+    "email": "owner@lonestarselect.example",
+    "role": "OWNER",
+    "status": "ACTIVE"
+  },
+  {
+    "id": "7fc678ea-4db6-4c09-a37d-d7cfbb771dff",
+    "dealerId": "dealer_lone_star",
+    "name": "Sylvia Torres",
+    "email": "manager@lonestarselect.example",
+    "role": "MANAGER",
+    "status": "ACTIVE"
+  },
+  {
+    "id": "347e072e-6fc4-49f7-af90-58ecf1b90dfc",
+    "dealerId": "dealer_lone_star",
+    "name": "Travis Campos",
+    "email": "operator_admin@lonestarselect.example",
+    "role": "OPERATOR_ADMIN",
+    "status": "ACTIVE"
+  },
+  {
+    "id": "f605af68-8779-443e-b6ac-262a51bf0c07",
+    "dealerId": "dealer_summit_rv",
+    "name": "Michelle Jones",
+    "email": "owner@summittrailrv.example",
+    "role": "OWNER",
+    "status": "ACTIVE"
+  },
+  {
+    "id": "a1af8886-5ab9-4acf-8a9d-4eb739a73d53",
+    "dealerId": "dealer_summit_rv",
+    "name": "Julia Obrien",
+    "email": "manager@summittrailrv.example",
+    "role": "MANAGER",
+    "status": "ACTIVE"
+  },
+  {
+    "id": "348d14ae-7017-48ee-8bee-2d8651ddcff3",
+    "dealerId": "dealer_summit_rv",
+    "name": "James Solis",
+    "email": "operator_admin@summittrailrv.example",
+    "role": "OPERATOR_ADMIN",
+    "status": "ACTIVE"
+  },
+  {
+    "id": "8a540a4f-5504-4bd4-a369-0eb61a374a58",
+    "dealerId": "dealer_harbor_boats",
+    "name": "Julia Pitts",
+    "email": "owner@harborlineboats.example",
+    "role": "OWNER",
+    "status": "ACTIVE"
+  },
+  {
+    "id": "916609d0-776d-43a5-90a8-b96cf9ba4111",
+    "dealerId": "dealer_harbor_boats",
+    "name": "Annette Powers",
+    "email": "manager@harborlineboats.example",
+    "role": "MANAGER",
+    "status": "ACTIVE"
+  },
+  {
+    "id": "379c79a7-f9ec-43bb-9c97-04d6667d4cf1",
+    "dealerId": "dealer_harbor_boats",
+    "name": "Ann Bird",
+    "email": "operator_admin@harborlineboats.example",
+    "role": "OPERATOR_ADMIN",
+    "status": "ACTIVE"
+  },
+  {
+    "id": "af96606e-66ad-4e15-9f8e-b712d563b2e7",
+    "dealerId": "dealer_messy",
+    "name": "Gabriel Murphy",
+    "email": "owner@budgetwheelbarn.example",
+    "role": "OWNER",
+    "status": "ACTIVE"
+  },
+  {
+    "id": "a0bf3aca-22af-4e90-b880-af6daedec6a9",
+    "dealerId": "dealer_messy",
+    "name": "Craig Nichols",
+    "email": "manager@budgetwheelbarn.example",
+    "role": "MANAGER",
+    "status": "ACTIVE"
+  },
+  {
+    "id": "4cab698a-fac1-46fe-8e4f-e5518accf53c",
+    "dealerId": "dealer_messy",
+    "name": "Devon Camacho",
+    "email": "operator_admin@budgetwheelbarn.example",
+    "role": "OPERATOR_ADMIN",
+    "status": "ACTIVE"
+  }
+]

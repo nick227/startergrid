@@ -1,0 +1,506 @@
+[
+  {
+    "id": "1a865ff2-beef-4923-906f-c2caf396f0c7",
+    "vehicleId": "veh_0002",
+    "dealerId": "dealer_messy",
+    "oldPrice": 58995,
+    "newPrice": 58495,
+    "changedAt": "2026-04-24T12:00:00Z",
+    "syncStatus": "PENDING"
+  },
+  {
+    "id": "282cc1c6-bc00-45b9-9d1e-21d359e82f71",
+    "vehicleId": "veh_0004",
+    "dealerId": "dealer_austin_auto",
+    "oldPrice": 51495,
+    "newPrice": 50495,
+    "changedAt": "2026-05-08T12:00:00Z",
+    "syncStatus": "PENDING"
+  },
+  {
+    "id": "9e6f975a-6e4a-49a0-93e0-ffc7a598cc3d",
+    "vehicleId": "veh_0005",
+    "dealerId": "dealer_austin_auto",
+    "oldPrice": 58995,
+    "newPrice": 57495,
+    "changedAt": "2026-04-17T12:00:00Z",
+    "syncStatus": "FAILED"
+  },
+  {
+    "id": "e0646962-bfb8-4701-8680-fba26fc80f0d",
+    "vehicleId": "veh_0009",
+    "dealerId": "dealer_messy",
+    "oldPrice": 21995,
+    "newPrice": 20495,
+    "changedAt": "2026-05-27T12:00:00Z",
+    "syncStatus": "SYNCED"
+  },
+  {
+    "id": "6874553e-b257-4ae0-8efa-7c63494508f1",
+    "vehicleId": "veh_0010",
+    "dealerId": "dealer_austin_auto",
+    "oldPrice": 11995,
+    "newPrice": 10495,
+    "changedAt": "2026-05-11T12:00:00Z",
+    "syncStatus": "PENDING"
+  },
+  {
+    "id": "e9b782ee-d1f7-4907-b89e-28c8c7432859",
+    "vehicleId": "veh_0012",
+    "dealerId": "dealer_messy",
+    "oldPrice": 10995,
+    "newPrice": 9495,
+    "changedAt": "2026-05-17T12:00:00Z",
+    "syncStatus": "SYNCED"
+  },
+  {
+    "id": "2d9b3918-0ada-475c-9bd1-f28903098102",
+    "vehicleId": "veh_0025",
+    "dealerId": "dealer_messy",
+    "oldPrice": 38495,
+    "newPrice": 36995,
+    "changedAt": "2026-06-04T12:00:00Z",
+    "syncStatus": "SYNCED"
+  },
+  {
+    "id": "071b97d4-7a23-441c-bfef-92b561702a25",
+    "vehicleId": "veh_0026",
+    "dealerId": "dealer_austin_auto",
+    "oldPrice": 57995,
+    "newPrice": 56495,
+    "changedAt": "2026-04-26T12:00:00Z",
+    "syncStatus": "PENDING"
+  },
+  {
+    "id": "3d701980-dffa-4b17-830d-0cdf8fffe58c",
+    "vehicleId": "veh_0027",
+    "dealerId": "dealer_austin_auto",
+    "oldPrice": 34495,
+    "newPrice": 33995,
+    "changedAt": "2026-04-14T12:00:00Z",
+    "syncStatus": "PENDING"
+  },
+  {
+    "id": "f2e4586c-4b57-42c9-93d0-aebc0de5acf5",
+    "vehicleId": "veh_0028",
+    "dealerId": "dealer_messy",
+    "oldPrice": 70495,
+    "newPrice": 68495,
+    "changedAt": "2026-04-18T12:00:00Z",
+    "syncStatus": "FAILED"
+  },
+  {
+    "id": "43503e30-5d22-48e7-8dab-7673ed9c731e",
+    "vehicleId": "veh_0029",
+    "dealerId": "dealer_austin_auto",
+    "oldPrice": 15995,
+    "newPrice": 13995,
+    "changedAt": "2026-06-04T12:00:00Z",
+    "syncStatus": "SYNCED"
+  },
+  {
+    "id": "7cf0ee4a-4d48-4301-84c2-aa96a54d9093",
+    "vehicleId": "veh_0031",
+    "dealerId": "dealer_messy",
+    "oldPrice": 61995,
+    "newPrice": 61495,
+    "changedAt": "2026-04-15T12:00:00Z",
+    "syncStatus": "PENDING"
+  },
+  {
+    "id": "06c07bdd-6633-498d-8a10-87e8dac2431a",
+    "vehicleId": "veh_0032",
+    "dealerId": "dealer_austin_auto",
+    "oldPrice": 33995,
+    "newPrice": 32995,
+    "changedAt": "2026-04-26T12:00:00Z",
+    "syncStatus": "PENDING"
+  },
+  {
+    "id": "9ae8a5c1-6259-4af6-b0d5-47e1b7f23545",
+    "vehicleId": "veh_0033",
+    "dealerId": "dealer_messy",
+    "oldPrice": 30995,
+    "newPrice": 29495,
+    "changedAt": "2026-04-28T12:00:00Z",
+    "syncStatus": "SYNCED"
+  },
+  {
+    "id": "fa06b932-6c66-40e8-8fb0-b6935da013f7",
+    "vehicleId": "veh_0035",
+    "dealerId": "dealer_lone_star",
+    "oldPrice": 47995,
+    "newPrice": 46995,
+    "changedAt": "2026-05-24T12:00:00Z",
+    "syncStatus": "PENDING"
+  },
+  {
+    "id": "7f958fe1-b07a-450f-ac7d-4853c0594311",
+    "vehicleId": "veh_0038",
+    "dealerId": "dealer_messy",
+    "oldPrice": 67995,
+    "newPrice": 66995,
+    "changedAt": "2026-05-03T12:00:00Z",
+    "syncStatus": "SYNCED"
+  },
+  {
+    "id": "032acf6c-f5b8-490f-a32a-954163d88edf",
+    "vehicleId": "veh_0043",
+    "dealerId": "dealer_messy",
+    "oldPrice": 8995,
+    "newPrice": 8495,
+    "changedAt": "2026-04-14T12:00:00Z",
+    "syncStatus": "SYNCED"
+  },
+  {
+    "id": "b212420e-ab6e-40fe-bba9-ebcbbbfc8dfb",
+    "vehicleId": "veh_0047",
+    "dealerId": "dealer_messy",
+    "oldPrice": 20995,
+    "newPrice": 19495,
+    "changedAt": "2026-04-17T12:00:00Z",
+    "syncStatus": "PENDING"
+  },
+  {
+    "id": "3c3b076f-0ff8-4bc0-ad3e-aebc89df4c9d",
+    "vehicleId": "veh_0054",
+    "dealerId": "dealer_summit_rv",
+    "oldPrice": 53495,
+    "newPrice": 52495,
+    "changedAt": "2026-04-24T12:00:00Z",
+    "syncStatus": "FAILED"
+  },
+  {
+    "id": "fcfc636a-d8d3-4187-91d8-414c15207eb6",
+    "vehicleId": "veh_0055",
+    "dealerId": "dealer_messy",
+    "oldPrice": 42495,
+    "newPrice": 41495,
+    "changedAt": "2026-04-14T12:00:00Z",
+    "syncStatus": "SYNCED"
+  },
+  {
+    "id": "76edee98-c0da-4e36-845c-c2bfd2382ef4",
+    "vehicleId": "veh_0056",
+    "dealerId": "dealer_lone_star",
+    "oldPrice": 24495,
+    "newPrice": 22995,
+    "changedAt": "2026-05-21T12:00:00Z",
+    "syncStatus": "PENDING"
+  },
+  {
+    "id": "60a6a8b9-1964-4d77-8137-017b6e65e82a",
+    "vehicleId": "veh_0060",
+    "dealerId": "dealer_lone_star",
+    "oldPrice": 61495,
+    "newPrice": 59995,
+    "changedAt": "2026-04-17T12:00:00Z",
+    "syncStatus": "FAILED"
+  },
+  {
+    "id": "af6beee0-e5ff-40aa-96c3-e613914c165f",
+    "vehicleId": "veh_0061",
+    "dealerId": "dealer_austin_auto",
+    "oldPrice": 49495,
+    "newPrice": 48495,
+    "changedAt": "2026-05-11T12:00:00Z",
+    "syncStatus": "SYNCED"
+  },
+  {
+    "id": "b76b1a07-b50e-438b-adfd-f9501365c153",
+    "vehicleId": "veh_0064",
+    "dealerId": "dealer_austin_auto",
+    "oldPrice": 9495,
+    "newPrice": 8995,
+    "changedAt": "2026-05-17T12:00:00Z",
+    "syncStatus": "PENDING"
+  },
+  {
+    "id": "91f3436a-2fd0-42ff-aa7a-45f8e890d73f",
+    "vehicleId": "veh_0069",
+    "dealerId": "dealer_messy",
+    "oldPrice": 66995,
+    "newPrice": 65995,
+    "changedAt": "2026-05-10T12:00:00Z",
+    "syncStatus": "PENDING"
+  },
+  {
+    "id": "2c3253f6-d0d3-4d7d-926f-fc35f10baa9e",
+    "vehicleId": "veh_0078",
+    "dealerId": "dealer_summit_rv",
+    "oldPrice": 18995,
+    "newPrice": 17495,
+    "changedAt": "2026-05-06T12:00:00Z",
+    "syncStatus": "PENDING"
+  },
+  {
+    "id": "aa52ec41-78da-416d-979c-3fc69348cfa7",
+    "vehicleId": "veh_0081",
+    "dealerId": "dealer_messy",
+    "oldPrice": 10995,
+    "newPrice": 9995,
+    "changedAt": "2026-04-25T12:00:00Z",
+    "syncStatus": "SYNCED"
+  },
+  {
+    "id": "6b22df05-b109-4ccb-82f0-3b0c58d68a3b",
+    "vehicleId": "veh_0082",
+    "dealerId": "dealer_austin_auto",
+    "oldPrice": 55995,
+    "newPrice": 53995,
+    "changedAt": "2026-04-21T12:00:00Z",
+    "syncStatus": "SYNCED"
+  },
+  {
+    "id": "f4f843ad-32ba-41c8-80c1-c3edfc8eaceb",
+    "vehicleId": "veh_0084",
+    "dealerId": "dealer_summit_rv",
+    "oldPrice": 29495,
+    "newPrice": 27995,
+    "changedAt": "2026-04-18T12:00:00Z",
+    "syncStatus": "PENDING"
+  },
+  {
+    "id": "daeaaf87-90cc-46dc-a354-4b2812f913ef",
+    "vehicleId": "veh_0085",
+    "dealerId": "dealer_lone_star",
+    "oldPrice": 51995,
+    "newPrice": 50495,
+    "changedAt": "2026-04-26T12:00:00Z",
+    "syncStatus": "FAILED"
+  },
+  {
+    "id": "da411467-fe2f-4a39-9077-b311484816d3",
+    "vehicleId": "veh_0087",
+    "dealerId": "dealer_summit_rv",
+    "oldPrice": 26495,
+    "newPrice": 25495,
+    "changedAt": "2026-04-11T12:00:00Z",
+    "syncStatus": "FAILED"
+  },
+  {
+    "id": "42a1b73d-aa2f-46aa-abb5-68c4161ccd6b",
+    "vehicleId": "veh_0088",
+    "dealerId": "dealer_lone_star",
+    "oldPrice": 48995,
+    "newPrice": 46995,
+    "changedAt": "2026-05-07T12:00:00Z",
+    "syncStatus": "FAILED"
+  },
+  {
+    "id": "6809b84c-877a-48cb-8603-f935058f5381",
+    "vehicleId": "veh_0094",
+    "dealerId": "dealer_lone_star",
+    "oldPrice": 28495,
+    "newPrice": 27495,
+    "changedAt": "2026-05-13T12:00:00Z",
+    "syncStatus": "FAILED"
+  },
+  {
+    "id": "69aaef3f-7043-486d-9edb-a72f65511b0d",
+    "vehicleId": "veh_0096",
+    "dealerId": "dealer_austin_auto",
+    "oldPrice": 35995,
+    "newPrice": 34995,
+    "changedAt": "2026-04-23T12:00:00Z",
+    "syncStatus": "PENDING"
+  },
+  {
+    "id": "0e8568c2-11d7-4ac1-a460-6df934f50655",
+    "vehicleId": "veh_0100",
+    "dealerId": "dealer_lone_star",
+    "oldPrice": 22995,
+    "newPrice": 21495,
+    "changedAt": "2026-06-02T12:00:00Z",
+    "syncStatus": "FAILED"
+  },
+  {
+    "id": "7793af8c-99c7-45eb-aedb-ccc93721876d",
+    "vehicleId": "veh_0103",
+    "dealerId": "dealer_lone_star",
+    "oldPrice": 22995,
+    "newPrice": 21495,
+    "changedAt": "2026-05-31T12:00:00Z",
+    "syncStatus": "SYNCED"
+  },
+  {
+    "id": "4b41f01b-b036-4701-a19b-d4ff57120f86",
+    "vehicleId": "veh_0108",
+    "dealerId": "dealer_messy",
+    "oldPrice": 23495,
+    "newPrice": 21995,
+    "changedAt": "2026-06-06T12:00:00Z",
+    "syncStatus": "SYNCED"
+  },
+  {
+    "id": "7369f7cb-9fbe-4ebc-966e-37103c17fd7e",
+    "vehicleId": "veh_0111",
+    "dealerId": "dealer_messy",
+    "oldPrice": 58995,
+    "newPrice": 57995,
+    "changedAt": "2026-06-03T12:00:00Z",
+    "syncStatus": "SYNCED"
+  },
+  {
+    "id": "6543bee3-b208-4b48-9d40-aebbc9181320",
+    "vehicleId": "veh_0112",
+    "dealerId": "dealer_lone_star",
+    "oldPrice": 8995,
+    "newPrice": 6995,
+    "changedAt": "2026-05-11T12:00:00Z",
+    "syncStatus": "PENDING"
+  },
+  {
+    "id": "4a96d379-eb1d-4b9c-9472-186536eaf984",
+    "vehicleId": "veh_0113",
+    "dealerId": "dealer_lone_star",
+    "oldPrice": 55495,
+    "newPrice": 54995,
+    "changedAt": "2026-04-27T12:00:00Z",
+    "syncStatus": "PENDING"
+  },
+  {
+    "id": "f30d06f9-41bb-44c9-aec8-2fefc4f78620",
+    "vehicleId": "veh_0114",
+    "dealerId": "dealer_austin_auto",
+    "oldPrice": 66995,
+    "newPrice": 64995,
+    "changedAt": "2026-05-04T12:00:00Z",
+    "syncStatus": "FAILED"
+  },
+  {
+    "id": "914d0a42-930d-4777-bdca-606d2261ab72",
+    "vehicleId": "veh_0115",
+    "dealerId": "dealer_summit_rv",
+    "oldPrice": 48495,
+    "newPrice": 46495,
+    "changedAt": "2026-05-27T12:00:00Z",
+    "syncStatus": "PENDING"
+  },
+  {
+    "id": "ca229df1-1897-4181-997c-1c3b4c08e66c",
+    "vehicleId": "veh_0116",
+    "dealerId": "dealer_messy",
+    "oldPrice": 12995,
+    "newPrice": 10995,
+    "changedAt": "2026-05-03T12:00:00Z",
+    "syncStatus": "FAILED"
+  },
+  {
+    "id": "4f8a5aaa-cd50-412e-a5c6-9e51b0fe88fb",
+    "vehicleId": "veh_0121",
+    "dealerId": "dealer_messy",
+    "oldPrice": 57495,
+    "newPrice": 56495,
+    "changedAt": "2026-04-24T12:00:00Z",
+    "syncStatus": "PENDING"
+  },
+  {
+    "id": "d54bdf14-89c0-4776-b082-dea1499d57b1",
+    "vehicleId": "veh_0123",
+    "dealerId": "dealer_summit_rv",
+    "oldPrice": 28995,
+    "newPrice": 28495,
+    "changedAt": "2026-05-14T12:00:00Z",
+    "syncStatus": "PENDING"
+  },
+  {
+    "id": "114e2c40-ba3f-449e-8b38-2b2db1cbdc83",
+    "vehicleId": "veh_0132",
+    "dealerId": "dealer_messy",
+    "oldPrice": 26495,
+    "newPrice": 24495,
+    "changedAt": "2026-04-19T12:00:00Z",
+    "syncStatus": "SYNCED"
+  },
+  {
+    "id": "164f73a3-1e8f-489b-8b31-39e4d233445d",
+    "vehicleId": "veh_0134",
+    "dealerId": "dealer_messy",
+    "oldPrice": 55995,
+    "newPrice": 54495,
+    "changedAt": "2026-06-09T12:00:00Z",
+    "syncStatus": "PENDING"
+  },
+  {
+    "id": "513e8054-31bf-4cb2-9fe9-748c02fed821",
+    "vehicleId": "veh_0136",
+    "dealerId": "dealer_messy",
+    "oldPrice": 67995,
+    "newPrice": 67495,
+    "changedAt": "2026-04-30T12:00:00Z",
+    "syncStatus": "SYNCED"
+  },
+  {
+    "id": "e4603fcb-14ff-47e0-892d-f7cdfb084d89",
+    "vehicleId": "veh_0139",
+    "dealerId": "dealer_messy",
+    "oldPrice": 14995,
+    "newPrice": 14495,
+    "changedAt": "2026-05-28T12:00:00Z",
+    "syncStatus": "FAILED"
+  },
+  {
+    "id": "6414f1cd-caf1-43a9-a940-58977b9fa1ec",
+    "vehicleId": "veh_0143",
+    "dealerId": "dealer_messy",
+    "oldPrice": 52995,
+    "newPrice": 51995,
+    "changedAt": "2026-05-30T12:00:00Z",
+    "syncStatus": "PENDING"
+  },
+  {
+    "id": "d96d07bc-4db9-4fae-9a80-c792776e5c3a",
+    "vehicleId": "veh_0144",
+    "dealerId": "dealer_harbor_boats",
+    "oldPrice": 60495,
+    "newPrice": 58495,
+    "changedAt": "2026-05-02T12:00:00Z",
+    "syncStatus": "FAILED"
+  },
+  {
+    "id": "9f0134e3-3b00-4584-b256-ae94e81759bf",
+    "vehicleId": "veh_0146",
+    "dealerId": "dealer_austin_auto",
+    "oldPrice": 9995,
+    "newPrice": 7995,
+    "changedAt": "2026-05-07T12:00:00Z",
+    "syncStatus": "PENDING"
+  },
+  {
+    "id": "bad29e2d-30f3-44ab-95c1-855e1b59bc0e",
+    "vehicleId": "veh_0149",
+    "dealerId": "dealer_messy",
+    "oldPrice": 40495,
+    "newPrice": 39495,
+    "changedAt": "2026-04-30T12:00:00Z",
+    "syncStatus": "PENDING"
+  },
+  {
+    "id": "362c4429-ea82-49c3-a16c-c34b25979b16",
+    "vehicleId": "veh_0152",
+    "dealerId": "dealer_austin_auto",
+    "oldPrice": 48495,
+    "newPrice": 47495,
+    "changedAt": "2026-04-15T12:00:00Z",
+    "syncStatus": "PENDING"
+  },
+  {
+    "id": "4aa3c478-cd13-40ad-8070-5070a505195c",
+    "vehicleId": "veh_0153",
+    "dealerId": "dealer_austin_auto",
+    "oldPrice": 17995,
+    "newPrice": 16495,
+    "changedAt": "2026-05-15T12:00:00Z",
+    "syncStatus": "FAILED"
+  },
+  {
+    "id": "ff2b79bd-2602-4798-af34-10e4746acecf",
+    "vehicleId": "veh_0158",
+    "dealerId": "dealer_messy",
+    "oldPrice": 14495,
+    "newPrice": 13495,
+    "changedAt": "2026-05-03T12:00:00Z",
+    "syncStatus": "FAILED"
+  }
+]
