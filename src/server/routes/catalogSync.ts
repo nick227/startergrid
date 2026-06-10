@@ -14,6 +14,7 @@ import { SnapchatCatalogBridge } from '../../services/catalog/bridges/SnapchatCa
 import { RedditCatalogBridge } from '../../services/catalog/bridges/RedditCatalogBridge.js';
 import { TikTokShopBridge } from '../../services/catalog/bridges/TikTokShopBridge.js';
 import { XCatalogBridge } from '../../services/catalog/bridges/XCatalogBridge.js';
+import { NextdoorCatalogBridge } from '../../services/catalog/bridges/NextdoorCatalogBridge.js';
 import type { CatalogSyncBridge } from '../../services/catalog/catalogTypes.js';
 import { MetaOAuthClient } from '../../services/platform/clients/providers/MetaOAuthClient.js';
 import { GoogleOAuthClient } from '../../services/platform/clients/providers/GoogleOAuthClient.js';
@@ -24,6 +25,7 @@ import { SnapchatOAuthClient } from '../../services/platform/clients/providers/S
 import { RedditOAuthClient } from '../../services/platform/clients/providers/RedditOAuthClient.js';
 import { TikTokShopOAuthClient } from '../../services/platform/clients/providers/TikTokShopOAuthClient.js';
 import { XOAuthClient } from '../../services/platform/clients/providers/XOAuthClient.js';
+import { NextdoorOAuthClient } from '../../services/platform/clients/providers/NextdoorOAuthClient.js';
 
 type DealerSlugParams = { dealershipId: string; platformSlug: string };
 type DealerSlugItemParams = DealerSlugParams & { itemId: string };
@@ -42,6 +44,7 @@ const BRIDGE_REGISTRY: Record<string, CatalogSyncBridge> = {
   'reddit-dynamic-product-ads':  new RedditCatalogBridge(),
   'tiktok-shop':                 new TikTokShopBridge(),
   'x-dynamic-product-ads':       new XCatalogBridge(),
+  'nextdoor-ads':                new NextdoorCatalogBridge(),
 };
 
 const OAUTH_CLIENT_REGISTRY: Record<string, OAuthClient> = {
@@ -54,6 +57,7 @@ const OAUTH_CLIENT_REGISTRY: Record<string, OAuthClient> = {
   'reddit':           new RedditOAuthClient(),
   'tiktok-shop':      new TikTokShopOAuthClient(),
   'x':                new XOAuthClient(),
+  'nextdoor':         new NextdoorOAuthClient(),
 };
 
 export const CATALOG_BRIDGE_SLUGS = Object.freeze(new Set(Object.keys(BRIDGE_REGISTRY)));

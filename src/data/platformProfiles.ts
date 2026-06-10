@@ -898,9 +898,11 @@ export const platformProfiles: PlatformProfileSeed[] = [
     ],
     oauthProvider: 'nextdoor',
     tier: 3,
+    catalogSync: true,
     connectionType: 'OAUTH',
-    integrationMaturity: 'OAUTH_READY',
+    integrationMaturity: 'SYNC_READY',
     requirementsConfidence: 'LIKELY',
+    liveValidationNote: 'Live validation blocked — requires NEXTDOOR_CLIENT_ID, NEXTDOOR_CLIENT_SECRET, and an approved Nextdoor Ads API program account',
   },
   {
     // ── Assisted (continued) ──────────────────────────────────────────────────

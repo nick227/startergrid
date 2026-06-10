@@ -38,6 +38,7 @@ describe('CATALOG_SYNC_SLUGS matches BRIDGE_REGISTRY exactly', () => {
       'reddit-dynamic-product-ads',
       'tiktok-shop',
       'x-dynamic-product-ads',
+      'nextdoor-ads',
     ]);
     assert.deepEqual(new Set(CATALOG_SYNC_SLUGS), expected);
   });

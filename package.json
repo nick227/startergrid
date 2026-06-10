@@ -45,6 +45,7 @@
     "smoke:snapchat-catalog": "npm run -s build && node dist/src/scripts/dev/snapchatCatalogSmoke.js",
     "smoke:reddit-catalog": "npm run -s build && node dist/src/scripts/dev/redditCatalogSmoke.js",
     "smoke:x-catalog": "npm run -s build && node dist/src/scripts/dev/xCatalogSmoke.js",
+    "smoke:nextdoor-catalog": "npm run -s build && node dist/src/scripts/dev/nextdoorCatalogSmoke.js",
     "smoke:tiktok-shop": "npm run -s build && node dist/src/scripts/dev/tiktokShopSmoke.js",
     "geo:verify": "npm run -s build && node dist/src/scripts/geo/geoVerify.js",
     "geo:backfill": "npm run -s build && node dist/src/scripts/geo/geocodeBackfill.js",
