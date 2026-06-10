@@ -239,6 +239,7 @@ export type PlatformProfileSeed = {
   socialPosting?: boolean;       // true → Social tab + CreatePostModal filter
   marketplaceListing?: boolean;  // true → platform can host browsable listings
   partnerFeed?: boolean;         // true → ASSISTED/FEEDABLE with a feed deliverable
+  leadSync?: boolean;            // true → LEAD_SYNC_SLUGS; platform delivers inbound leads via API pull
 
   // Connection and maturity metadata
   connectionType?: ConnectionType;
