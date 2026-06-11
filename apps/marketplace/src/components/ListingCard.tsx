@@ -46,20 +46,9 @@ export function ListingCard({ card, onQuickView }: Props) {
             imgClassName="transition-transform duration-200 group-hover:scale-105"
           />
         </a>
-        <div className="absolute right-2 top-2 z-10 flex flex-col items-end gap-2">
-          <AvailabilityBadge schema={schema} status={card.availabilityStatus} />
-          <NewArrivalBadge listedAt={card.listedAt} />
+        <div className="absolute right-2 top-2 z-10">
           <FavoriteButton listingId={card.listingId} />
         </div>
-        {onQuickView && (
-          <button
-            type="button"
-            onClick={() => onQuickView(card.listingId)}
-            className="absolute bottom-2 left-2 z-10 rounded-lg bg-white/90 px-2.5 py-1 text-xs font-semibold text-ink shadow hover:bg-white"
-          >
-            Quick view
-          </button>
-        )}
       </div>
 
       <a href={listingHref(slug, card.listingId)} className="mp-focus block flex-1">
@@ -67,6 +56,10 @@ export function ListingCard({ card, onQuickView }: Props) {
           <div className="space-y-1">
             <h3 className="text-base font-semibold leading-snug text-ink-heading">{title}</h3>
             {card.trim && <p className="text-sm text-ink-muted">{card.trim}</p>}
+            <div className="flex flex-wrap items-center gap-1.5 pt-1">
+              <AvailabilityBadge schema={schema} status={card.availabilityStatus} />
+              <NewArrivalBadge listedAt={card.listedAt} />
+            </div>
           </div>
 
           <p className="text-xl font-bold tabular-nums text-ink">
@@ -96,6 +89,15 @@ export function ListingCard({ card, onQuickView }: Props) {
           </p>
         )}
         {location && <p className="mt-0.5 text-xs text-ink-muted">{location}</p>}
+        {onQuickView && (
+          <button
+            type="button"
+            onClick={() => onQuickView(card.listingId)}
+            className="mp-focus mt-3 rounded-lg border border-silver-200 bg-white px-3 py-1.5 text-xs font-semibold text-ink-muted hover:text-ink"
+          >
+            Quick view
+          </button>
+        )}
       </div>
     </article>
   );

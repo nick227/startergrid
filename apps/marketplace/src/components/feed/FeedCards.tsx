@@ -90,6 +90,10 @@ function VehicleFeedCard({
             </a>
             <FavoriteButton listingId={card.listingId} />
           </div>
+          <div className="mt-1 flex flex-wrap items-center gap-1.5">
+            <AvailabilityBadge schema={schema} status={card.availabilityStatus} />
+            <PriceDropBadge originalPriceCents={card.originalPriceCents} priceCents={card.priceCents} />
+          </div>
           <p className="mt-1 text-base font-bold tabular-nums text-ink">{formatPrice(card.priceCents)}</p>
           <div className="mt-1 flex flex-wrap gap-x-3 gap-y-0.5 text-xs text-ink-muted">
             {card.mileage > 0 && <span>{formatUsage(card.mileage, card.usageUnit === 'hours' ? 'hours' : 'miles')}</span>}
@@ -104,6 +108,38 @@ function VehicleFeedCard({
           <a href={sellerHref(slug, card.dealerId)} className="mp-focus mt-1 block truncate text-xs text-ink-body hover:text-cta">
             {card.dealerName}
           </a>
+          {(showCompare || canQuickView) && (
+            <div className="mt-2 flex flex-wrap gap-2">
+              {showCompare && (
+                <button
+                  type="button"
+                  disabled={compareDisabled}
+                  onClick={() => toggleCompare(buildCompareItemFromCard(card, slug, title))}
+                  className={[
+                    'mp-focus rounded-lg border px-2.5 py-1 text-xs font-semibold',
+                    inCompare
+                      ? 'border-navy-700 bg-navy-700 text-white'
+                      : compareDisabled
+                        ? 'cursor-not-allowed border-silver-200 bg-silver-100 text-ink-muted'
+                        : 'border-silver-200 bg-white text-ink-muted hover:text-ink',
+                  ].join(' ')}
+                  aria-pressed={inCompare}
+                  aria-label={inCompare ? `Remove ${title} from compare` : `Add ${title} to compare`}
+                >
+                  {inCompare ? 'Comparing' : compareDisabled ? 'Max reached' : 'Compare'}
+                </button>
+              )}
+              {canQuickView && (
+                <button
+                  type="button"
+                  onClick={() => onQuickView?.(card.listingId)}
+                  className="mp-focus rounded-lg border border-silver-200 bg-white px-2.5 py-1 text-xs font-semibold text-ink-muted hover:text-ink"
+                >
+                  Quick view
+                </button>
+              )}
+            </div>
+          )}
         </div>
       </article>
     );
@@ -120,38 +156,9 @@ function VehicleFeedCard({
             eager={index < 6}
           />
         </a>
-        <div className="absolute right-2 top-2 z-10 flex flex-col items-end gap-2">
-          <AvailabilityBadge schema={schema} status={card.availabilityStatus} />
-          <NewArrivalBadge listedAt={card.listedAt} />
-          <PriceDropBadge originalPriceCents={card.originalPriceCents} priceCents={card.priceCents} />
+        <div className="absolute right-2 top-2 z-10">
           <FavoriteButton listingId={card.listingId} />
         </div>
-        {showCompare && <button
-          type="button"
-          disabled={compareDisabled}
-          onClick={() => toggleCompare(buildCompareItemFromCard(card, slug, title))}
-          className={[
-            'absolute bottom-2 left-2 z-10 rounded-lg px-2.5 py-1 text-xs font-semibold shadow',
-            inCompare
-              ? 'bg-navy-700 text-white'
-              : compareDisabled
-                ? 'cursor-not-allowed bg-white/70 text-ink-muted'
-                : 'bg-white/90 text-ink hover:bg-white',
-          ].join(' ')}
-          aria-pressed={inCompare}
-          aria-label={inCompare ? `Remove ${title} from compare` : `Add ${title} to compare`}
-        >
-          {inCompare ? '✓ Comparing' : compareDisabled ? 'Max reached' : '+ Compare'}
-        </button>}
-        {canQuickView && (
-          <button
-            type="button"
-            onClick={() => onQuickView?.(card.listingId)}
-            className="absolute bottom-2 right-2 z-10 rounded-lg bg-white/90 px-2.5 py-1 text-xs font-semibold text-ink shadow hover:bg-white"
-          >
-            Quick view
-          </button>
-        )}
       </div>
 
       <div className="flex flex-1 flex-col gap-4 p-5">
@@ -163,6 +170,11 @@ function VehicleFeedCard({
             <ConditionBadge condition={card.condition} className="shrink-0" />
           </div>
           {card.trim && <p className="text-sm leading-snug text-ink-muted">{card.trim}</p>}
+          <div className="flex flex-wrap items-center gap-1.5">
+            <AvailabilityBadge schema={schema} status={card.availabilityStatus} />
+            <NewArrivalBadge listedAt={card.listedAt} />
+            <PriceDropBadge originalPriceCents={card.originalPriceCents} priceCents={card.priceCents} />
+          </div>
         </div>
 
         <VehicleMeta card={card} location={location ?? ''} metaLabels={metaLabels} />
@@ -179,6 +191,38 @@ function VehicleFeedCard({
             </p>
           )}
           {location && <p className="mt-1 text-xs text-ink-muted">{location}</p>}
+          {(showCompare || canQuickView) && (
+            <div className="mt-3 flex flex-wrap gap-2">
+              {canQuickView && (
+                <button
+                  type="button"
+                  onClick={() => onQuickView?.(card.listingId)}
+                  className="mp-focus rounded-lg border border-silver-200 bg-white px-3 py-1.5 text-xs font-semibold text-ink-muted hover:text-ink"
+                >
+                  Quick view
+                </button>
+              )}
+              {showCompare && (
+                <button
+                  type="button"
+                  disabled={compareDisabled}
+                  onClick={() => toggleCompare(buildCompareItemFromCard(card, slug, title))}
+                  className={[
+                    'mp-focus rounded-lg border px-3 py-1.5 text-xs font-semibold',
+                    inCompare
+                      ? 'border-navy-700 bg-navy-700 text-white'
+                      : compareDisabled
+                        ? 'cursor-not-allowed border-silver-200 bg-silver-100 text-ink-muted'
+                        : 'border-silver-200 bg-white text-ink-muted hover:text-ink',
+                  ].join(' ')}
+                  aria-pressed={inCompare}
+                  aria-label={inCompare ? `Remove ${title} from compare` : `Add ${title} to compare`}
+                >
+                  {inCompare ? 'Comparing' : compareDisabled ? 'Max reached' : 'Compare'}
+                </button>
+              )}
+            </div>
+          )}
         </div>
       </div>
     </article>

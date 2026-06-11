@@ -8,7 +8,7 @@ import { listHref, parseRoute, type ListQuery } from '../lib/routes.ts';
 import { fromListQuery, toListQuery, type ListingQuery, type ListingSort } from '../features/listings/listingQuery.ts';
 import { isConsumerMarketplaceLive } from '@auto-dealer/category-schemas';
 import { useCategorySchema, useCategorySlug } from '../contexts/CategoryContext.tsx';
-import { buildListingFilterConfig, isListingFilterEnabled, sanitizeListingQuery } from '../features/listings/listingFilterConfig.ts';
+import { buildListingFilterConfig, isListingFilterEnabled, listingSearchAriaLabel, sanitizeListingQuery } from '../features/listings/listingFilterConfig.ts';
 import { sanitizeListingFacets } from '../features/listings/listingFacetConfig.ts';
 import { isCompareEnabled } from '../features/listings/listingCompareFields.ts';
 import { hasListingFilters } from '../features/listings/listingFilterChips.ts';
@@ -20,6 +20,7 @@ import { ActiveListingFilterChips } from '../components/listings/ActiveListingFi
 import { NoResultsRelaxation } from '../components/listings/NoResultsRelaxation.tsx';
 import { SavedSearchesPanel } from '../components/listings/SavedSearchesPanel.tsx';
 import { ListingGrid, type ViewMode } from '../components/ui/ListingGrid.tsx';
+import { SectionCard } from '../components/ui/SectionCard.tsx';
 import { ErrorState } from '../components/ui/ErrorState.tsx';
 import { EmptyState } from '../components/ui/EmptyState.tsx';
 import { FeedItemCard } from '../components/feed/FeedCards.tsx';
@@ -71,6 +72,9 @@ export default function ListingListPage({ initialQuery = {} }: Props) {
   });
   const [quickViewListingId, setQuickViewListingId] = useState<string | null>(null);
   const [quickViewOpen, setQuickViewOpen] = useState(false);
+  const [filtersOpen, setFiltersOpen] = useState(() => hasListingFilters(initial));
+  const [locationOpen, setLocationOpen] = useState(false);
+  const [savedSearchesOpen, setSavedSearchesOpen] = useState(false);
 
   const sortOptions = useMemo(() => buildListingSortOptions(filterConfig, Boolean(q.trim())), [filterConfig, q]);
   const sentinelRef = useRef<HTMLDivElement | null>(null);
@@ -177,6 +181,11 @@ export default function ListingListPage({ initialQuery = {} }: Props) {
 
   const hasActiveFilters = hasListingFilters(listingQuery);
   const hasItems = feed.items.length > 0;
+  const locationSummary = buyerLocation.preference?.nationwide
+    ? 'Nationwide'
+    : buyerLocation.preference?.postalCode
+      ? `${buyerLocation.preference.postalCode} · ${buyerLocation.preference.radiusMiles} mi`
+      : 'Set location';
   const newArrivalCards = useMemo(() => {
     if (hasActiveFilters) return [];
     const cards = feed.items
@@ -198,47 +207,102 @@ export default function ListingListPage({ initialQuery = {} }: Props) {
       />
 
       {consumerLive && (
-      <div className="mb-6 sm:mb-8">
-        <BuyerLocationControls
-          preference={buyerLocation.preference}
-          onApply={async draft => { await buyerLocation.applyDraft({ ...draft, nationwide: false }); }}
-          onNationwideChange={buyerLocation.setNationwide}
-          onClear={buyerLocation.clear}
-        />
-        <ListingFilterBar
-          config={filterConfig}
-          facets={filterConfig.facets}
-          facetValues={facetValues}
-          onFacetChange={handleFacetChange}
-          q={q}
-          brand={brand}
-          model={model}
-          condition={condition}
-          minPrice={minPrice}
-          maxPrice={maxPrice}
-          maxUsage={maxUsage}
-          minYear={minYear}
-          maxYear={maxYear}
-          sellerName={sellerName}
-          onQChange={setQ}
-          onBrandChange={setBrand}
-          onSellerNameChange={setSellerName}
-          onModelChange={setModel}
-          onConditionChange={setCondition}
-          onMinPriceChange={setMinPrice}
-          onMaxPriceChange={setMaxPrice}
-          onMaxUsageChange={setMaxUsage}
-          onMinYearChange={setMinYear}
-          onMaxYearChange={setMaxYear}
-          onSubmit={feed.reload}
-          onClear={resetFilters}
-          hasActiveFilters={hasActiveFilters}
-          focusToken={focusToken}
-          showAvailabilityFilter={showAvailabilityFilter}
-          availability={availability}
-          onAvailabilityChange={setAvailability}
-        />
-      </div>
+        <div className="mb-6 space-y-3 sm:mb-8">
+          <SectionCard padded={false} className="p-4">
+            <form
+              onSubmit={e => { e.preventDefault(); feed.reload(); }}
+              className="flex flex-col gap-3 md:flex-row md:items-end"
+              aria-label={listingSearchAriaLabel()}
+            >
+              <label className="flex min-w-0 flex-1 flex-col gap-1.5">
+                <span className="mp-label">Search</span>
+                <input
+                  type="search"
+                  value={q}
+                  onChange={e => setQ(e.target.value)}
+                  placeholder={`Search ${schema.asset.plural.toLowerCase()}...`}
+                  className="mp-input"
+                  autoComplete="off"
+                />
+              </label>
+              <div className="flex flex-wrap gap-2">
+                <button type="submit" className="mp-btn-primary">
+                  Search
+                </button>
+                <button
+                  type="button"
+                  className={filtersOpen ? 'mp-btn-secondary' : 'mp-btn-ghost border border-silver-200 bg-white'}
+                  onClick={() => setFiltersOpen(open => !open)}
+                  aria-expanded={filtersOpen}
+                >
+                  {filtersOpen ? 'Hide filters' : hasActiveFilters ? 'Edit filters' : 'Filters'}
+                </button>
+                <button
+                  type="button"
+                  className={locationOpen ? 'mp-btn-secondary' : 'mp-btn-ghost border border-silver-200 bg-white'}
+                  onClick={() => setLocationOpen(open => !open)}
+                  aria-expanded={locationOpen}
+                >
+                  {locationSummary}
+                </button>
+                <button
+                  type="button"
+                  className={savedSearchesOpen ? 'mp-btn-secondary' : 'mp-btn-ghost border border-silver-200 bg-white'}
+                  onClick={() => setSavedSearchesOpen(open => !open)}
+                  aria-expanded={savedSearchesOpen}
+                >
+                  Saved searches
+                </button>
+              </div>
+            </form>
+          </SectionCard>
+
+          {locationOpen && (
+            <BuyerLocationControls
+              preference={buyerLocation.preference}
+              onApply={async draft => { await buyerLocation.applyDraft({ ...draft, nationwide: false }); }}
+              onNationwideChange={buyerLocation.setNationwide}
+              onClear={buyerLocation.clear}
+            />
+          )}
+
+          {filtersOpen && (
+            <ListingFilterBar
+              config={filterConfig}
+              facets={filterConfig.facets}
+              facetValues={facetValues}
+              onFacetChange={handleFacetChange}
+              q={q}
+              brand={brand}
+              model={model}
+              condition={condition}
+              minPrice={minPrice}
+              maxPrice={maxPrice}
+              maxUsage={maxUsage}
+              minYear={minYear}
+              maxYear={maxYear}
+              sellerName={sellerName}
+              onQChange={setQ}
+              onBrandChange={setBrand}
+              onSellerNameChange={setSellerName}
+              onModelChange={setModel}
+              onConditionChange={setCondition}
+              onMinPriceChange={setMinPrice}
+              onMaxPriceChange={setMaxPrice}
+              onMaxUsageChange={setMaxUsage}
+              onMinYearChange={setMinYear}
+              onMaxYearChange={setMaxYear}
+              onSubmit={feed.reload}
+              onClear={resetFilters}
+              hasActiveFilters={hasActiveFilters}
+              focusToken={focusToken}
+              showAvailabilityFilter={showAvailabilityFilter}
+              availability={availability}
+              onAvailabilityChange={setAvailability}
+              showSearch={false}
+            />
+          )}
+        </div>
       )}
 
       {consumerLive && (
@@ -251,7 +315,7 @@ export default function ListingListPage({ initialQuery = {} }: Props) {
       />
       )}
 
-      {consumerLive && (
+      {consumerLive && savedSearchesOpen && (
       <SavedSearchesPanel
         categorySlug={slug}
         config={filterConfig}

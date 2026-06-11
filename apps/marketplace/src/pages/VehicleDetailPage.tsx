@@ -5,7 +5,6 @@ import { fetchVehicle, isNotFoundError, type MarketplaceVehicleDetailResponse } 
 import { formatPrice, formatMileage } from '../lib/display.ts';
 import { getListReturn } from '../lib/listReturn.ts';
 import { isAutomotiveSlug, sitesHref } from '../lib/routes.ts';
-import GenericListingDetailPage from './GenericListingDetailPage.tsx';
 import { MarketplaceEventType } from '../lib/events.ts';
 import { useTrackMarketplaceEvent } from '../hooks/useTrackMarketplaceEvent.ts';
 import { useCategoryId, useCategorySchema, useCategorySlug } from '../contexts/CategoryContext.tsx';
@@ -40,14 +39,12 @@ import { SimilarListingsRail } from '../components/listings/SimilarListingsRail.
 type Props = { listingId: string };
 
 export default function VehicleDetailPage({ listingId }: Props) {
-  const slug = useCategorySlug();
   const schema = useCategorySchema();
+  const slug = useCategorySlug();
   const backHref = getListReturn(slug);
 
-  if (!isAutomotiveSlug(slug)) {
-    if (isConsumerMarketplaceLive(schema)) {
-      return <GenericListingDetailPage listingId={listingId} />;
-    }
+  // Automotive is always open; other categories require explicit marketplace enablement.
+  if (!isAutomotiveSlug(slug) && !isConsumerMarketplaceLive(schema)) {
     return (
       <PageShell backHref={backHref} backLabel="Back to results">
         <NotFoundState
@@ -60,10 +57,12 @@ export default function VehicleDetailPage({ listingId }: Props) {
     );
   }
 
-  return <AutomotiveVehicleDetailPage listingId={listingId} />;
+  return <ListingDetailPage listingId={listingId} />;
 }
 
-function AutomotiveVehicleDetailPage({ listingId }: Props) {
+// ── Single shared fetch + render path for all consumer-enabled categories ─────
+
+function ListingDetailPage({ listingId }: Props) {
   const categoryId = useCategoryId();
   const slug = useCategorySlug();
   const schema = useCategorySchema();
@@ -100,8 +99,8 @@ function AutomotiveVehicleDetailPage({ listingId }: Props) {
       <PageShell backHref={backHref} backLabel="Back to results">
         {isNotFoundError(error) ? (
           <NotFoundState
-            title="Vehicle not found"
-            description="This listing may have sold or is no longer on the marketplace."
+            title="Listing not found"
+            description="This listing may have sold or is no longer available."
             backHref={backHref}
             backLabel="Back to results"
           />
@@ -115,7 +114,7 @@ function AutomotiveVehicleDetailPage({ listingId }: Props) {
   if (!data) return null;
 
   return (
-    <AutomotiveListingDetailContent
+    <ListingDetailContent
       listingId={listingId}
       categoryId={categoryId}
       slug={slug}
@@ -126,7 +125,9 @@ function AutomotiveVehicleDetailPage({ listingId }: Props) {
   );
 }
 
-function AutomotiveListingDetailContent({
+// ── Layout: shared across all categories, auto-specific sections gated ────────
+
+function ListingDetailContent({
   listingId,
   categoryId,
   slug,
@@ -147,67 +148,71 @@ function AutomotiveListingDetailContent({
     vehicle,
   });
 
+  // Engine and efficiency are automotive-specific; all other sections are
+  // either universal or internally guard on data presence.
+  const isAuto = isAutomotiveSlug(slug);
+
   return (
     <PageShell backHref={backHref} backLabel="Back to results">
       <div className="pb-24 lg:pb-0">
-      <div className="grid grid-cols-1 gap-8 lg:grid-cols-2 lg:gap-10">
-        <MediaSection media={vehicle.media} alt={vehicle.core.title} />
+        <div className="grid grid-cols-1 gap-8 lg:grid-cols-2 lg:gap-10">
+          <MediaSection media={vehicle.media} alt={vehicle.core.title} />
 
-        <div className="space-y-6 lg:sticky lg:top-20 lg:self-start">
-          <CoreHeaderSection core={vehicle.core} commerce={vehicle.commerce} />
-          <div className="flex flex-wrap items-center gap-2">
-            <FavoriteButton listingId={vehicle.core.listingId} />
-            <span className="text-sm text-ink-muted">Save this listing</span>
-            <ListingDetailShareAction
-              shareTitle={engagement.shareTitle}
-              shareUrl={engagement.shareUrl}
-              className="ml-auto"
-            />
-          </div>
-          <div className="text-right">
-            <ReportListingButton listingId={listingId} />
-          </div>
-          <AvailabilitySection commerce={vehicle.commerce} />
-          <CommerceSection commerce={vehicle.commerce} />
-          <LocationSection location={vehicle.location} />
-          <div id="inquiry">
-            <LeadInquiryForm
-              listingId={vehicle.core.listingId}
-              vehicleLabel={vehicle.core.title}
-              dealerName={vehicle.location.dealerName}
-            />
+          <div className="space-y-6 lg:sticky lg:top-20 lg:self-start">
+            <CoreHeaderSection core={vehicle.core} commerce={vehicle.commerce} />
+            <div className="flex flex-wrap items-center gap-2">
+              <FavoriteButton listingId={vehicle.core.listingId} />
+              <span className="text-sm text-ink-muted">Save this listing</span>
+              <ListingDetailShareAction
+                shareTitle={engagement.shareTitle}
+                shareUrl={engagement.shareUrl}
+                className="ml-auto"
+              />
+            </div>
+            <div className="text-right">
+              <ReportListingButton listingId={listingId} />
+            </div>
+            <AvailabilitySection commerce={vehicle.commerce} />
+            <CommerceSection commerce={vehicle.commerce} />
+            <LocationSection location={vehicle.location} />
+            <div id="inquiry">
+              <LeadInquiryForm
+                listingId={vehicle.core.listingId}
+                vehicleLabel={vehicle.core.title}
+                dealerName={vehicle.location.dealerName}
+              />
+            </div>
           </div>
         </div>
-      </div>
 
-      <div className="mt-10 space-y-6">
-        <FulfillmentSection />
-        <ClassificationSection classification={vehicle.classification} />
-        <ColorsSection colors={vehicle.colors} />
-        <EngineSection engine={vehicle.engine} />
-        <EfficiencySection efficiency={vehicle.efficiency} />
-        <ConditionHistorySection conditionHistory={vehicle.conditionHistory} />
-        <FeaturesSection features={vehicle.features} />
-        <WarrantySection warranty={vehicle.warranty} />
-        <ContentSection content={vehicle.content} />
-      </div>
+        <div className="mt-10 space-y-6">
+          <FulfillmentSection />
+          <ClassificationSection classification={vehicle.classification} />
+          <ColorsSection colors={vehicle.colors} />
+          {isAuto && <EngineSection engine={vehicle.engine} />}
+          {isAuto && <EfficiencySection efficiency={vehicle.efficiency} />}
+          <ConditionHistorySection conditionHistory={vehicle.conditionHistory} />
+          <FeaturesSection features={vehicle.features} />
+          <WarrantySection warranty={vehicle.warranty} />
+          <ContentSection content={vehicle.content} />
+        </div>
 
-      <SimilarListingsRail
-        listingId={listingId}
-        categoryId={categoryId}
-        categorySlug={slug}
-        make={vehicle.core.make}
-      />
+        <SimilarListingsRail
+          listingId={listingId}
+          categoryId={categoryId}
+          categorySlug={slug}
+          make={vehicle.core.make}
+        />
 
-      <ListingDetailEngagementPanels
-        categorySlug={slug}
-        listingId={listingId}
-        shareTitle={engagement.shareTitle}
-        shareUrl={engagement.shareUrl}
-        priceSummary={engagement.priceSummary}
-        sellerSummary={engagement.sellerSummary}
-        ctas={ctas}
-      />
+        <ListingDetailEngagementPanels
+          categorySlug={slug}
+          listingId={listingId}
+          shareTitle={engagement.shareTitle}
+          shareUrl={engagement.shareUrl}
+          priceSummary={engagement.priceSummary}
+          sellerSummary={engagement.sellerSummary}
+          ctas={ctas}
+        />
       </div>
     </PageShell>
   );
