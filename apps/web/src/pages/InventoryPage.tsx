@@ -31,7 +31,6 @@ import { CreatePostModal } from '@/components/social/index.ts';
 import { operatorCopy } from '@/lib/copy/index.ts';
 import { useCategorySchema } from '@/contexts/CategoryContext.tsx';
 import { useOperatorRoute } from '@/hooks/useOperatorRoute.ts';
-import { RowDetailDrawer } from '@/components/layout';
 
 type Props = OperatorPageBaseProps;
 
@@ -220,167 +219,8 @@ export default function InventoryPage({ dealerId, nav, activeTab }: Props) {
         </span>
       }
     >
-      <div className="space-y-5">
-        <PageHeader
-          title={operatorCopy.inventory.title}
-          infoDocId="inventory/inventory-readiness"
-          subtitle={operatorCopy.inventory.subtitle}
-        />
-
-        <VehicleAddControls
-          dealerId={dealerId}
-          onVehicleCreated={(newId) => {
-            handleIntakeRefresh();
-            setDetailId(newId);
-          }}
-        />
-
-        {(hasPerformanceData(perf.data?.computedAt) || isBenchmarksUpdating(autoSync.data) || !hasPerformanceData(perf.data?.computedAt)) && (
-          <BenchmarkFreshnessBar
-            dealerId={dealerId}
-            computedAt={perf.data?.computedAt}
-            autoSync={autoSync.data}
-            onRefreshed={reloadBenchmarks}
-            compact
-          />
-        )}
-
-        {!isEmpty && summary && summary.blocked > 0 && (
-          <InlineCallout
-            tone="warning"
-            title={operatorCopy.inventory.cleanupRecommended}
-            icon="!"
-            action={
-              <button type="button" onClick={() => setFilter('Blocked')} className="text-xs font-bold">
-                {operatorCopy.inventory.showBlocked}
-              </button>
-            }
-          >
-            {operatorCopy.inventory.blockedCallout(summary.blocked)}
-          </InlineCallout>
-        )}
-
-        {benchmarksUpdating && (
-          <InlineCallout tone="warning" title={EMPTY_STATE_COPY.postImportBenchmarksPending.title} icon="⟳">
-            {EMPTY_STATE_COPY.postImportBenchmarksPending.subtitle}
-          </InlineCallout>
-        )}
-
-        {!benchmarksUpdating && lowDataCount > 0 && lowDataCount >= vehicles.length - 1 && vehicles.length > 0 && (
-          <InlineCallout tone="neutral" title={EMPTY_STATE_COPY.movementLowDataFleet.title} icon="ℹ">
-            {EMPTY_STATE_COPY.movementLowDataFleet.subtitle}
-          </InlineCallout>
-        )}
-
-        {staleStocks.length > 0 && (
-          <InlineCallout tone="warning" title={operatorCopy.inventory.slowerThanPeers} icon="!">
-            {operatorCopy.inventory.staleReview(staleStocks.join(', '))}
-          </InlineCallout>
-        )}
-
-        {error && (
-          <Banner variant="error" action={<button type="button" onClick={load} className="text-xs underline">Retry</button>}>
-            {error}
-          </Banner>
-        )}
-
-        <InventoryWorkspace
-          dealerId={dealerId}
-          tabCounts={{
-            attention: summaryCounts.blocked,
-          }}
-          browseContent={
-            <>
-              {!isEmpty && (
-                <InventorySummaryStrip counts={summaryCounts} activeFilter={filter} onFilterChange={setFilter} />
-              )}
-              <SectionCard noPadding>
-                <div className="p-4 bg-white rounded-xl shadow-sm border border-silver-200">
-                  <InventoryGridToolbar
-                    viewMode={viewMode}
-                    onChangeViewMode={handleSetViewMode}
-                    activeColumns={activeColumns}
-                    onChangeColumns={handleSetColumns}
-                    search={search}
-                    onSearchChange={setSearch}
-                    selectedCount={selected.size}
-                  />
-                  
-                  <InventoryDataGrid
-                    items={mappedVisible}
-                    viewMode={viewMode}
-                    selectedIds={selected}
-                    onToggleSelection={(id) => {
-                      const next = new Set(selected);
-                      if (next.has(id)) next.delete(id); else next.add(id);
-                      setSelected(next);
-                    }}
-                    onToggleAll={toggleAll}
-                    onRowClick={(item) => setDetailId(item.id)}
-                    activeColumns={activeColumns}
-                    sortKey={sortKey}
-                    sortDir={sortDirection}
-                    onSort={(key) => {
-                      if (sortKey === key) {
-                        setSortDirection(sortDirection === 'asc' ? 'desc' : 'asc');
-                      } else {
-                        setSortKey(key);
-                        setSortDirection('asc');
-                      }
-                    }}
-                  />
-                </div>
-              </SectionCard>
-            </>
-          }
-        />
-
-        {isActiveScope && summary && summary.ready > 0 && (
-          <InlineCallout
-            tone="success"
-            title={operatorCopy.inventory.readyToSync}
-            icon="✓"
-            action={
-              <button
-                type="button"
-                onClick={() => nav.goToQueue()}
-                className="btn-primary-operator"
-              >
-                {operatorCopy.inventory.goToQueue}
-              </button>
-            }
-          >
-            {operatorCopy.inventory.readyCallout(summary.ready)}
-          </InlineCallout>
-        )}
-      </div>
-
-      {isActiveScope && selectedInView.length > 0 && (
-        <BulkActionBar
-          count={selectedInView.length}
-          fieldDefs={bulkEditFieldDefs(categorySchema)}
-          onApply={handleBulkApply}
-          onClear={() => setSelected(new Set())}
-        />
-      )}
-
-      {createPostTarget && (
-        <CreatePostModal
-          dealerId={dealerId}
-          vehicleId={createPostTarget.vehicleId}
-          vehicleTitle={createPostTarget.vehicleTitle}
-          onClose={() => setCreatePostTarget(null)}
-        />
-      )}
-
-      {detailId && (
-        <RowDetailDrawer
-          open
-          size="3xl"
-          hideTitle
-          title={detailVehicle ? `${detailVehicle.year} ${detailVehicle.make} ${detailVehicle.model}` : 'Vehicle Detail'}
-          onClose={() => setDetailId(null)}
-        >
+      {detailId ? (
+        <div className="mt-4 flex-1 bg-white rounded-xl shadow-sm border border-silver-200 overflow-hidden flex flex-col">
           <InventoryDetailPanel
             dealerId={dealerId}
             vehicleId={detailId}
@@ -390,7 +230,160 @@ export default function InventoryPage({ dealerId, nav, activeTab }: Props) {
             onClose={() => setDetailId(null)}
             onMediaAssigned={load}
           />
-        </RowDetailDrawer>
+        </div>
+      ) : (
+        <div className="space-y-5">
+          <PageHeader
+            title={operatorCopy.inventory.title}
+            infoDocId="inventory/inventory-readiness"
+            subtitle={operatorCopy.inventory.subtitle}
+          />
+
+          <VehicleAddControls
+            dealerId={dealerId}
+            onVehicleCreated={(newId) => {
+              handleIntakeRefresh();
+              setDetailId(newId);
+            }}
+          />
+
+          {(hasPerformanceData(perf.data?.computedAt) || isBenchmarksUpdating(autoSync.data) || !hasPerformanceData(perf.data?.computedAt)) && (
+            <BenchmarkFreshnessBar
+              dealerId={dealerId}
+              computedAt={perf.data?.computedAt}
+              autoSync={autoSync.data}
+              onRefreshed={reloadBenchmarks}
+              compact
+            />
+          )}
+
+          {!isEmpty && summary && summary.blocked > 0 && (
+            <InlineCallout
+              tone="warning"
+              title={operatorCopy.inventory.cleanupRecommended}
+              icon="!"
+              action={
+                <button type="button" onClick={() => setFilter('Blocked')} className="text-xs font-bold">
+                  {operatorCopy.inventory.showBlocked}
+                </button>
+              }
+            >
+              {operatorCopy.inventory.blockedCallout(summary.blocked)}
+            </InlineCallout>
+          )}
+
+          {benchmarksUpdating && (
+            <InlineCallout tone="warning" title={EMPTY_STATE_COPY.postImportBenchmarksPending.title} icon="⟳">
+              {EMPTY_STATE_COPY.postImportBenchmarksPending.subtitle}
+            </InlineCallout>
+          )}
+
+          {!benchmarksUpdating && lowDataCount > 0 && lowDataCount >= vehicles.length - 1 && vehicles.length > 0 && (
+            <InlineCallout tone="neutral" title={EMPTY_STATE_COPY.movementLowDataFleet.title} icon="ℹ">
+              {EMPTY_STATE_COPY.movementLowDataFleet.subtitle}
+            </InlineCallout>
+          )}
+
+          {staleStocks.length > 0 && (
+            <InlineCallout tone="warning" title={operatorCopy.inventory.slowerThanPeers} icon="!">
+              {operatorCopy.inventory.staleReview(staleStocks.join(', '))}
+            </InlineCallout>
+          )}
+
+          {error && (
+            <Banner variant="error" action={<button type="button" onClick={load} className="text-xs underline">Retry</button>}>
+              {error}
+            </Banner>
+          )}
+
+          <InventoryWorkspace
+            dealerId={dealerId}
+            tabCounts={{
+              attention: summaryCounts.blocked,
+            }}
+            browseContent={
+              <>
+                {!isEmpty && (
+                  <InventorySummaryStrip counts={summaryCounts} activeFilter={filter} onFilterChange={setFilter} />
+                )}
+                <SectionCard noPadding>
+                  <div className="p-4 bg-white rounded-xl shadow-sm border border-silver-200">
+                    <InventoryGridToolbar
+                      viewMode={viewMode}
+                      onChangeViewMode={handleSetViewMode}
+                      activeColumns={activeColumns}
+                      onChangeColumns={handleSetColumns}
+                      search={search}
+                      onSearchChange={setSearch}
+                      selectedCount={selected.size}
+                    />
+                    
+                    <InventoryDataGrid
+                      items={mappedVisible}
+                      viewMode={viewMode}
+                      selectedIds={selected}
+                      onToggleSelection={(id) => {
+                        const next = new Set(selected);
+                        if (next.has(id)) next.delete(id); else next.add(id);
+                        setSelected(next);
+                      }}
+                      onToggleAll={toggleAll}
+                      onRowClick={(item) => setDetailId(item.id)}
+                      activeColumns={activeColumns}
+                      sortKey={sortKey}
+                      sortDir={sortDirection}
+                      onSort={(key) => {
+                        if (sortKey === key) {
+                          setSortDirection(sortDirection === 'asc' ? 'desc' : 'asc');
+                        } else {
+                          setSortKey(key);
+                          setSortDirection('asc');
+                        }
+                      }}
+                    />
+                  </div>
+                </SectionCard>
+              </>
+            }
+          />
+
+          {isActiveScope && summary && summary.ready > 0 && (
+            <InlineCallout
+              tone="success"
+              title={operatorCopy.inventory.readyToSync}
+              icon="✓"
+              action={
+                <button
+                  type="button"
+                  onClick={() => nav.goToQueue()}
+                  className="btn-primary-operator"
+                >
+                  {operatorCopy.inventory.goToQueue}
+                </button>
+              }
+            >
+              {operatorCopy.inventory.readyCallout(summary.ready)}
+            </InlineCallout>
+          )}
+        </div>
+      )}
+
+      {isActiveScope && selectedInView.length > 0 && !detailId && (
+        <BulkActionBar
+          count={selectedInView.length}
+          fieldDefs={bulkEditFieldDefs(categorySchema)}
+          onApply={handleBulkApply}
+          onClear={() => setSelected(new Set())}
+        />
+      )}
+
+      {createPostTarget && !detailId && (
+        <CreatePostModal
+          dealerId={dealerId}
+          vehicleId={createPostTarget.vehicleId}
+          vehicleTitle={createPostTarget.vehicleTitle}
+          onClose={() => setCreatePostTarget(null)}
+        />
       )}
     </OperatorPage>
   );

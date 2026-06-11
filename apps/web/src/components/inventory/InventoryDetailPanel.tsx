@@ -7,10 +7,7 @@ import { VehicleMetricStrip } from './VehicleMetricStrip.tsx';
 import { VehiclePhotoWorkspace } from './VehiclePhotoWorkspace.tsx';
 import { VehicleFieldGroups } from './VehicleFieldGroups.tsx';
 import { VehicleReadinessChecklist } from './VehicleReadinessChecklist.tsx';
-import { VehiclePublishingSummary } from './VehiclePublishingSummary.tsx';
-import { VehiclePerformanceSummary } from './VehiclePerformanceSummary.tsx';
 import { AssetLifecycleHistory } from './AssetLifecycleHistory.tsx';
-import { MarketplacePublishPanel } from './MarketplacePublishPanel.tsx';
 
 type Props = {
   dealerId: string;
@@ -68,7 +65,7 @@ export function InventoryDetailPanel({
   };
 
   return (
-    <div className="flex flex-col min-h-0">
+    <div className="flex flex-col h-full bg-silver-50 w-full">
       {/* Sticky header — stays at top while scrolling */}
       <VehicleDetailHeader
         vehicle={vehicle}
@@ -81,12 +78,20 @@ export function InventoryDetailPanel({
 
       {/* Scrollable content */}
       <div className="flex-1 overflow-y-auto">
-        <div className="p-4 space-y-7">
+        <div className="p-6 space-y-6 max-w-5xl mx-auto w-full pb-24">
+
+          {/* ── Readiness ─────────────────────────────────────────────────── */}
+          <section className="bg-white rounded-xl shadow-sm border border-silver-200 p-6">
+            <SectionHeader title="Readiness" />
+            <div className="mt-4">
+              <VehicleReadinessChecklist readiness={vehicle.readiness} />
+            </div>
+          </section>
 
           {/* ── Photos (dominant section) ─────────────────────────────────── */}
-          <section>
+          <section className="bg-white rounded-xl shadow-sm border border-silver-200 p-6">
             <SectionHeader title="Photos" />
-            <div className="mt-3">
+            <div className="mt-4">
               <VehiclePhotoWorkspace
                 dealerId={dealerId}
                 vehicleId={vehicleId}
@@ -99,62 +104,26 @@ export function InventoryDetailPanel({
           </section>
 
           {/* ── Vehicle fields ────────────────────────────────────────────── */}
-          <section>
+          <section className="bg-white rounded-xl shadow-sm border border-silver-200 p-6">
             <SectionHeader title="Vehicle Details" />
-            <div className="mt-3">
+            <div className="mt-4">
               <VehicleFieldGroups vehicle={vehicle} onSaved={handleReload} />
             </div>
           </section>
 
-          {/* ── Readiness ─────────────────────────────────────────────────── */}
-          <section>
-            <SectionHeader title="Readiness" />
-            <div className="mt-3">
-              <VehicleReadinessChecklist readiness={vehicle.readiness} />
-            </div>
-          </section>
-
-          {/* ── Publishing ────────────────────────────────────────────────── */}
-          <section>
-            <SectionHeader title="Publishing" />
-            <div className="mt-3">
-              <VehiclePublishingSummary distribution={vehicle.distribution} />
-            </div>
-          </section>
-
-          {/* ── Marketplace ───────────────────────────────────────────────── */}
-          <section>
-            <SectionHeader title="Marketplace" />
-            <div className="mt-3">
-              <MarketplacePublishPanel dealerId={dealerId} vehicleId={vehicleId} />
-            </div>
-          </section>
-
-          {/* ── Performance ───────────────────────────────────────────────── */}
-          <section>
-            <SectionHeader title="Performance" />
-            <div className="mt-3">
-              <VehiclePerformanceSummary
-                perf={perf}
-                platformPerfBySlug={platformPerfBySlug}
-                benchmarksUpdating={benchmarksUpdating}
-              />
-            </div>
-          </section>
-
           {/* ── History ───────────────────────────────────────────────────── */}
-          <section>
+          <section className="bg-white rounded-xl shadow-sm border border-silver-200 p-6">
             <SectionHeader title="History" />
-            <div className="mt-3">
+            <div className="mt-4">
               <AssetLifecycleHistory dealerId={dealerId} stockNumber={vehicle.stockNumber} />
             </div>
           </section>
 
           {/* Options list (if any) */}
           {vehicle.options.length > 0 && (
-            <section>
+            <section className="bg-white rounded-xl shadow-sm border border-silver-200 p-6">
               <SectionHeader title="Options / Packages" />
-              <div className="mt-3 flex flex-wrap gap-1.5">
+              <div className="mt-4 flex flex-wrap gap-1.5">
                 {vehicle.options.map(opt => (
                   <span key={opt} className="text-[11px] px-2 py-0.5 bg-silver-100 border border-silver-200 rounded-md text-ink-body">
                     {opt}

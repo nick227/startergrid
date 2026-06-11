@@ -1,4 +1,4 @@
-import { useState, useRef } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import {
   DndContext,
   closestCenter,
@@ -62,7 +62,7 @@ function GalleryItem({
     <button
       type="button"
       onClick={onClick}
-      className={`relative group aspect-video rounded-xl overflow-hidden border-2 focus:outline-none transition-all ${
+      className={`relative group aspect-[4/3] rounded-xl overflow-hidden border-2 focus:outline-none transition-all ${
         isDragging
           ? 'border-navy-400 shadow-elevation-3 scale-105 z-50 opacity-90'
           : 'border-silver-200 hover:border-navy-300 hover:shadow-sm bg-white'
@@ -104,6 +104,8 @@ function SlotItem({
   missingWarning,
   onClick,
   isOver,
+  isUploading,
+  optimisticUrl,
 }: {
   slot: MediaSlot;
   assigned: VehicleMediaItem | null;
@@ -111,9 +113,15 @@ function SlotItem({
   missingWarning: boolean;
   onClick: () => void;
   isOver?: boolean;
+  isUploading?: boolean;
+  optimisticUrl?: string;
 }) {
-  const missingRequired = !assigned && isRequired;
-  const showWarning = missingRequired || missingWarning;
+  // Use optimistic blob URL if the API hasn't confirmed the slot yet
+  const displayUrl = assigned?.url ?? optimisticUrl ?? null;
+  const hasImage = !!displayUrl;
+
+  const missingRequired = !hasImage && isRequired;
+  const showWarning = missingRequired || (!hasImage && missingWarning);
 
   return (
     <button
@@ -122,16 +130,16 @@ function SlotItem({
       className={`group relative rounded-xl overflow-hidden border-2 transition-all focus:outline-none focus-visible:ring-2 focus-visible:ring-navy-400 flex flex-col bg-white ${
         isOver
           ? 'border-navy-500 scale-105 shadow-elevation-3 z-10'
-          : assigned
+          : hasImage
             ? 'border-green-200 hover:border-green-300 hover:shadow-sm'
             : showWarning
               ? 'border-red-200 bg-red-50 hover:border-red-300'
               : 'border-silver-200 border-dashed bg-surface-raised hover:border-silver-300 hover:border-solid'
       }`}
     >
-      <div className="aspect-video w-full bg-silver-100 overflow-hidden relative">
-        {assigned ? (
-          <img src={assigned.url} alt={slot.label} className="w-full h-full object-cover" />
+      <div className="aspect-[4/3] w-full bg-silver-100 overflow-hidden relative">
+        {displayUrl ? (
+          <img src={displayUrl} alt={slot.label} className="w-full h-full object-cover" />
         ) : (
           <div className="w-full h-full flex flex-col items-center justify-center gap-2 p-2">
             <span className={`text-2xl ${showWarning ? 'text-red-300' : 'text-silver-300'}`}>
@@ -140,11 +148,16 @@ function SlotItem({
             {isOver && <span className="text-[10px] font-bold text-navy-600">Drop to assign</span>}
           </div>
         )}
+        {isUploading && (
+          <div className="absolute inset-0 bg-white/70 backdrop-blur-sm flex items-center justify-center z-20">
+            <div className="animate-spin rounded-full h-6 w-6 border-2 border-navy-600 border-t-transparent" />
+          </div>
+        )}
         {/* Hover overlay */}
         <div className="absolute inset-0 bg-navy-950/0 group-hover:bg-navy-950/10 transition-colors" />
         <div className="absolute bottom-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity">
           <span className="text-[10px] font-bold px-2 py-1 rounded-md bg-navy-900/90 backdrop-blur text-white shadow-sm">
-            {assigned ? 'Change' : 'Add'}
+            {hasImage ? 'Change' : 'Add'}
           </span>
         </div>
       </div>
@@ -167,12 +180,16 @@ function DroppableSlot({
   isRequired,
   missingWarning,
   onClick,
+  isUploading,
+  optimisticUrl,
 }: {
   slot: MediaSlot;
   assigned: VehicleMediaItem | null;
   isRequired: boolean;
   missingWarning: boolean;
   onClick: () => void;
+  isUploading?: boolean;
+  optimisticUrl?: string;
 }) {
   const { isOver, setNodeRef } = useDroppable({
     id: slot.key,
@@ -188,6 +205,8 @@ function DroppableSlot({
         missingWarning={missingWarning}
         onClick={onClick}
         isOver={isOver}
+        isUploading={isUploading}
+        optimisticUrl={optimisticUrl}
       />
     </div>
   );
@@ -200,29 +219,69 @@ export function VehiclePhotoWorkspace({ dealerId, vehicleId, category, media, re
   const [activeId, setActiveId] = useState<string | null>(null);
   
   const fileInputRef = useRef<HTMLInputElement>(null);
-  const [activeUploadSlot, setActiveUploadSlot] = useState<MediaSlot | null>(null);
-  const [, setIsUploading] = useState(false);
+  const activeUploadSlotRef = useRef<MediaSlot | null>(null);
+  const [uploadingSlotKey, setUploadingSlotKey] = useState<string | null>(null);
+  const [uploadError, setUploadError] = useState<string | null>(null);
+
+  // Optimistic preview: slotKey → temporary blob URL shown before server confirms
+  const [optimisticPreviews, setOptimisticPreviews] = useState<Record<string, string>>({});
+
+  // Once the real media prop has the slot filled, revoke the blob and clear the entry
+  useEffect(() => {
+    setOptimisticPreviews(prev => {
+      const next = { ...prev };
+      let changed = false;
+      for (const slotKey of Object.keys(next)) {
+        if (media.some(m => m.mediaSlotKey === slotKey)) {
+          URL.revokeObjectURL(next[slotKey]);
+          delete next[slotKey];
+          changed = true;
+        }
+      }
+      return changed ? next : prev;
+    });
+  }, [media]);
 
   const handleSlotClick = (slot: MediaSlot) => {
-    setActiveUploadSlot(slot);
+    activeUploadSlotRef.current = slot;
+    setUploadError(null);
     fileInputRef.current?.click();
   };
 
   const handleFileSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = e.target.files;
-    if (!files || files.length === 0 || !activeUploadSlot) return;
+    const slot = activeUploadSlotRef.current;
+    if (!files || files.length === 0 || !slot) return;
 
-    setIsUploading(true);
+    // Show blob preview in the slot immediately — no waiting for the API
+    const previewUrl = URL.createObjectURL(files[0]);
+    setOptimisticPreviews(prev => ({ ...prev, [slot.key]: previewUrl }));
+    setUploadingSlotKey(slot.key);
+
     try {
-      const result = await uploadVehicleMedia(dealerId, vehicleId, Array.from(files), activeUploadSlot.key);
-      if (result.media.length > 0) {
-        onAssigned();
+      const result = await uploadVehicleMedia(dealerId, vehicleId, Array.from(files), slot.key);
+      // Explicitly assign the returned media item to the slot, regardless of
+      // whether the upload endpoint honours slotKey server-side.
+      const firstMedia = result.media[0];
+      if (firstMedia) {
+        await assignMediaSlot(dealerId, vehicleId, firstMedia.id, slot.key);
       }
+      // Triggers vehicle detail refetch; the useEffect above clears the
+      // optimistic entry once the real mediaSlotKey is confirmed in the response.
+      onAssigned();
     } catch (err) {
       console.error('Failed to upload and assign slot', err);
+      setUploadError('Upload failed — please try again.');
+      // Revert optimistic preview on error
+      setOptimisticPreviews(prev => {
+        const next = { ...prev };
+        URL.revokeObjectURL(next[slot.key]);
+        delete next[slot.key];
+        return next;
+      });
     } finally {
-      setIsUploading(false);
-      setActiveUploadSlot(null);
+      setUploadingSlotKey(null);
+      activeUploadSlotRef.current = null;
       if (fileInputRef.current) fileInputRef.current.value = '';
     }
   };
@@ -270,26 +329,17 @@ export function VehiclePhotoWorkspace({ dealerId, vehicleId, category, media, re
 
     if (!over) return;
 
-    // Dragged image ID
     const mediaId = active.id;
 
-    // Dropped on a slot
     if (over.data.current?.type === 'slot') {
       const slotKey = over.id;
-      // Optimistic or waiting? Let's just fire and reload
       try {
         await assignMediaSlot(dealerId, vehicleId, mediaId, slotKey);
         onAssigned();
       } catch (e) {
         console.error('Failed to assign media to slot', e);
       }
-    } 
-    // Dropped in gallery area to clear slot (if we want to support this, we'd add a droppable for gallery)
-    // Or sorted within gallery
-    else if (active.id !== over.id) {
-      // For full order persistence, we would need an API. 
-      // For now, sorting visually requires a local state override. 
-      // Given API constraints, we will leave sorting as a visual stub until API supports `sortOrder`.
+    } else if (active.id !== over.id) {
       console.log('Sort gallery items:', active.id, '->', over.id);
     }
   };
@@ -313,8 +363,8 @@ export function VehiclePhotoWorkspace({ dealerId, vehicleId, category, media, re
                 <h3 className="text-sm font-bold text-ink-heading">Main Photo</h3>
                 <p className="text-[11px] text-ink-muted mt-0.5">The primary hero image shown on the storefront.</p>
               </div>
-              <span className={`text-[10px] font-bold px-2 py-1 rounded-md uppercase ${mainAssigned ? 'bg-green-100 text-green-700' : 'bg-amber-100 text-amber-700'}`}>
-                {mainAssigned ? 'Assigned' : 'Fallback'}
+              <span className={`text-[10px] font-bold px-2 py-1 rounded-md uppercase ${(mainAssigned || optimisticPreviews['main-photo']) ? 'bg-green-100 text-green-700' : 'bg-amber-100 text-amber-700'}`}>
+                {(mainAssigned || optimisticPreviews['main-photo']) ? 'Assigned' : 'Fallback'}
               </span>
             </div>
             
@@ -326,6 +376,8 @@ export function VehiclePhotoWorkspace({ dealerId, vehicleId, category, media, re
                   isRequired={minimumSet.has('main-photo')}
                   missingWarning={readiness.missingRequiredMediaSlots.includes('main-photo')}
                   onClick={() => handleSlotClick(mainSlot)}
+                  isUploading={uploadingSlotKey === mainSlot.key}
+                  optimisticUrl={optimisticPreviews['main-photo']}
                 />
               </div>
             )}
@@ -353,6 +405,8 @@ export function VehiclePhotoWorkspace({ dealerId, vehicleId, category, media, re
                       isRequired={isRequired}
                       missingWarning={missingWarning}
                       onClick={() => handleSlotClick(slot)}
+                      isUploading={uploadingSlotKey === slot.key}
+                      optimisticUrl={optimisticPreviews[slot.key]}
                     />
                   );
                 })}
@@ -402,6 +456,14 @@ export function VehiclePhotoWorkspace({ dealerId, vehicleId, category, media, re
               </button>
             )}
           </section>
+
+          {/* Upload error banner */}
+          {uploadError && (
+            <div className="p-3 bg-red-50 border border-red-200 rounded-xl flex items-center justify-between gap-3">
+              <p className="text-xs text-red-700 font-medium">{uploadError}</p>
+              <button type="button" onClick={() => setUploadError(null)} className="text-red-400 hover:text-red-600 text-sm leading-none">✕</button>
+            </div>
+          )}
 
           {/* Readiness media hint */}
           {readiness.missingRequiredMediaSlots.length > 0 && (
