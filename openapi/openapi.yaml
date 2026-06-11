@@ -897,6 +897,426 @@ paths:
         '404':
           $ref: '#/components/responses/NotFound'
 
+  /api/dealers/{dealershipId}/inventory/automotive/decode-vin:
+    post:
+      tags: [Inventory]
+      security:
+        - OperatorAuth: []
+      x-route-classification: operator
+      operationId: decodeVin
+      summary: Decode a VIN via NHTSA vPIC (or mock decoder)
+      parameters:
+        - $ref: '#/components/parameters/dealershipId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [vin]
+              properties:
+                vin:
+                  type: string
+      responses:
+        '200':
+          description: Decoded VIN data
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  vin:         { type: string }
+                  year:        { type: integer, nullable: true }
+                  make:        { type: string, nullable: true }
+                  model:       { type: string, nullable: true }
+                  trim:        { type: string, nullable: true }
+                  bodyStyle:   { type: string, nullable: true }
+                  drivetrain:  { type: string, nullable: true }
+                  fuelType:    { type: string, nullable: true }
+                  transmission: { type: string, nullable: true }
+                  engineDisplacement: { type: number, nullable: true }
+                  cylinders:   { type: integer, nullable: true }
+                  source:      { type: string }
+        '422':
+          $ref: '#/components/responses/ValidationError'
+
+  /api/dealers/{dealershipId}/inventory/automotive/vehicles:
+    post:
+      tags: [Inventory]
+      security:
+        - OperatorAuth: []
+      x-route-classification: operator
+      operationId: createVehicleFromVin
+      summary: Create a vehicle shell from a decoded VIN
+      parameters:
+        - $ref: '#/components/parameters/dealershipId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [vin, stockNumber, priceCents]
+              properties:
+                vin:         { type: string }
+                stockNumber: { type: string }
+                priceCents:  { type: integer }
+      responses:
+        '201':
+          description: Created vehicle ID
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  vehicleId: { type: string }
+        '409':
+          description: VIN or stock number already exists
+        '422':
+          $ref: '#/components/responses/ValidationError'
+
+  /api/dealers/{dealershipId}/inventory/automotive/bulk-vins/preview:
+    post:
+      tags: [Inventory]
+      security:
+        - OperatorAuth: []
+      x-route-classification: operator
+      operationId: previewBulkVins
+      summary: Preview a bulk VIN list before committing
+      parameters:
+        - $ref: '#/components/parameters/dealershipId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [vins]
+              properties:
+                vins:
+                  type: array
+                  items: { type: string }
+      responses:
+        '200':
+          description: Preview results per VIN
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  results:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        vin:     { type: string }
+                        valid:   { type: boolean }
+                        decoded: { type: object, nullable: true }
+                        error:   { type: string, nullable: true }
+                        duplicate: { type: boolean }
+
+  /api/dealers/{dealershipId}/inventory/automotive/bulk-vins/commit:
+    post:
+      tags: [Inventory]
+      security:
+        - OperatorAuth: []
+      x-route-classification: operator
+      operationId: commitBulkVins
+      summary: Commit a previewed bulk VIN list, creating vehicle shells
+      parameters:
+        - $ref: '#/components/parameters/dealershipId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [vins, defaultPriceCents]
+              properties:
+                vins:               { type: array, items: { type: string } }
+                defaultPriceCents:  { type: integer }
+      responses:
+        '200':
+          description: Created vehicle IDs
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  created: { type: integer }
+                  skipped: { type: integer }
+                  vehicleIds:
+                    type: array
+                    items: { type: string }
+
+  /api/dealers/{dealershipId}/inventory/vehicles/{vehicleId}:
+    get:
+      tags: [Inventory]
+      security:
+        - OperatorAuth: []
+      x-route-classification: operator
+      operationId: fetchVehicleDetail
+      summary: Fetch full vehicle detail including readiness and distribution summary
+      parameters:
+        - $ref: '#/components/parameters/dealershipId'
+        - $ref: '#/components/parameters/vehicleId'
+      responses:
+        '200':
+          description: Vehicle detail DTO
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  id:           { type: string }
+                  dealershipId: { type: string }
+                  stockNumber:  { type: string }
+                  vin:          { type: string }
+                  year:         { type: integer }
+                  make:         { type: string }
+                  model:        { type: string }
+                  trim:         { type: string, nullable: true }
+                  priceCents:   { type: integer }
+                  mileage:      { type: integer }
+                  condition:    { type: string }
+                  exteriorColor: { type: string, nullable: true }
+                  interiorColor: { type: string, nullable: true }
+                  bodyStyle:    { type: string, nullable: true }
+                  drivetrain:   { type: string, nullable: true }
+                  fuelType:     { type: string, nullable: true }
+                  transmission: { type: string, nullable: true }
+                  category:     { type: string }
+                  soldAt:       { type: string, format: date-time, nullable: true }
+                  removedAt:    { type: string, format: date-time, nullable: true }
+                  priceLastChangedAt: { type: string, format: date-time, nullable: true }
+                  media:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        id:           { type: string }
+                        url:          { type: string }
+                        sortOrder:    { type: integer }
+                        mediaSlotKey: { type: string, nullable: true }
+                        mediaRole:    { type: string, nullable: true }
+                  readiness:
+                    type: object
+                    properties:
+                      status:       { type: string, enum: [READY, WARNING, BLOCKED] }
+                      blockers:     { type: array, items: { type: string } }
+                      warnings:     { type: array, items: { type: string } }
+                      missing:      { type: array, items: { type: string } }
+                      recommendations: { type: array, items: { type: string } }
+                      nextAction:   { type: string, nullable: true }
+                  distribution:
+                    type: object
+                    properties:
+                      liveCount:             { type: integer }
+                      queuedCount:           { type: integer }
+                      failedCount:           { type: integer }
+                      blockedCount:          { type: integer }
+                      totalEligiblePlatforms: { type: integer }
+                      lastSyncAt:            { type: string, format: date-time, nullable: true }
+                      nextAction:            { type: string, nullable: true }
+        '404':
+          $ref: '#/components/responses/NotFound'
+    patch:
+      tags: [Inventory]
+      security:
+        - OperatorAuth: []
+      x-route-classification: operator
+      operationId: patchVehicleFields
+      summary: Update dealer-owned vehicle fields (price, mileage, condition, colors, specs)
+      parameters:
+        - $ref: '#/components/parameters/dealershipId'
+        - $ref: '#/components/parameters/vehicleId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                stockNumber:  { type: string }
+                priceCents:   { type: integer }
+                mileage:      { type: integer }
+                condition:    { type: string }
+                exteriorColor: { type: string }
+                interiorColor: { type: string }
+                trim:         { type: string }
+                bodyStyle:    { type: string }
+                drivetrain:   { type: string }
+                fuelType:     { type: string }
+                transmission: { type: string }
+      responses:
+        '200':
+          description: Update result
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/VehicleUpdateResult'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /api/dealers/{dealershipId}/inventory/vehicles/{vehicleId}/sold:
+    post:
+      tags: [Inventory]
+      security:
+        - OperatorAuth: []
+      x-route-classification: operator
+      operationId: markVehicleSoldById
+      summary: Mark a vehicle sold by vehicleId
+      parameters:
+        - $ref: '#/components/parameters/dealershipId'
+        - $ref: '#/components/parameters/vehicleId'
+      responses:
+        '200':
+          description: Update propagation result
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/VehicleUpdateResult'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /api/dealers/{dealershipId}/inventory/vehicles/{vehicleId}/removed:
+    post:
+      tags: [Inventory]
+      security:
+        - OperatorAuth: []
+      x-route-classification: operator
+      operationId: markVehicleRemovedById
+      summary: Mark a vehicle removed by vehicleId
+      parameters:
+        - $ref: '#/components/parameters/dealershipId'
+        - $ref: '#/components/parameters/vehicleId'
+      responses:
+        '200':
+          description: Update propagation result
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/VehicleUpdateResult'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /api/dealers/{dealershipId}/inventory/vehicles/{vehicleId}/relist:
+    post:
+      tags: [Inventory]
+      security:
+        - OperatorAuth: []
+      x-route-classification: operator
+      operationId: relistVehicle
+      summary: Relist a sold or removed vehicle
+      parameters:
+        - $ref: '#/components/parameters/dealershipId'
+        - $ref: '#/components/parameters/vehicleId'
+      responses:
+        '200':
+          description: Update propagation result
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/VehicleUpdateResult'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /api/dealers/{dealershipId}/inventory/vehicles/{vehicleId}/media:
+    post:
+      tags: [Inventory]
+      security:
+        - OperatorAuth: []
+      x-route-classification: operator
+      operationId: addVehicleMedia
+      summary: Add one or more media URLs to a vehicle's gallery
+      parameters:
+        - $ref: '#/components/parameters/dealershipId'
+        - $ref: '#/components/parameters/vehicleId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [urls]
+              properties:
+                urls:
+                  type: array
+                  items: { type: string, format: uri }
+      responses:
+        '200':
+          description: Created media records
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  media:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        id:  { type: string }
+                        url: { type: string }
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /api/dealers/{dealershipId}/inventory/vehicles/{vehicleId}/media/{mediaId}:
+    delete:
+      tags: [Inventory]
+      security:
+        - OperatorAuth: []
+      x-route-classification: operator
+      operationId: deleteVehicleMedia
+      summary: Delete a media record from a vehicle
+      parameters:
+        - $ref: '#/components/parameters/dealershipId'
+        - $ref: '#/components/parameters/vehicleId'
+        - $ref: '#/components/parameters/mediaId'
+      responses:
+        '200':
+          description: Deleted
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /api/dealers/{dealershipId}/inventory/vehicles/{vehicleId}/media/{mediaId}/slot:
+    patch:
+      tags: [Inventory]
+      security:
+        - OperatorAuth: []
+      x-route-classification: operator
+      operationId: assignMediaSlot
+      summary: Assign or clear a named slot on a vehicle media record
+      parameters:
+        - $ref: '#/components/parameters/dealershipId'
+        - $ref: '#/components/parameters/vehicleId'
+        - $ref: '#/components/parameters/mediaId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [slotKey]
+              properties:
+                slotKey:
+                  type: string
+                  nullable: true
+                  description: Slot key to assign, or null to clear
+      responses:
+        '200':
+          description: Updated media record
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  id:           { type: string }
+                  mediaSlotKey: { type: string, nullable: true }
+                  mediaRole:    { type: string, nullable: true }
+        '404':
+          $ref: '#/components/responses/NotFound'
+
   /api/dealers/{dealershipId}/ingress/sources:
     get:
       tags: [Inventory]
@@ -1557,6 +1977,18 @@ components:
         type: string
     stockNumber:
       name: stockNumber
+      in: path
+      required: true
+      schema:
+        type: string
+    vehicleId:
+      name: vehicleId
+      in: path
+      required: true
+      schema:
+        type: string
+    mediaId:
+      name: mediaId
       in: path
       required: true
       schema:

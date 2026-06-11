@@ -67,6 +67,18 @@ const REGISTERED_ROUTES = new Set([
   'GET    /api/admin/platform-credentials',
   'POST   /api/admin/platform-credentials/validate',
   'GET    /api/admin/blocked-dealers',
+  'POST   /api/dealers/{dealershipId}/inventory/automotive/decode-vin',
+  'POST   /api/dealers/{dealershipId}/inventory/automotive/vehicles',
+  'POST   /api/dealers/{dealershipId}/inventory/automotive/bulk-vins/preview',
+  'POST   /api/dealers/{dealershipId}/inventory/automotive/bulk-vins/commit',
+  'GET    /api/dealers/{dealershipId}/inventory/vehicles/{vehicleId}',
+  'PATCH  /api/dealers/{dealershipId}/inventory/vehicles/{vehicleId}',
+  'POST   /api/dealers/{dealershipId}/inventory/vehicles/{vehicleId}/sold',
+  'POST   /api/dealers/{dealershipId}/inventory/vehicles/{vehicleId}/removed',
+  'POST   /api/dealers/{dealershipId}/inventory/vehicles/{vehicleId}/relist',
+  'POST   /api/dealers/{dealershipId}/inventory/vehicles/{vehicleId}/media',
+  'DELETE /api/dealers/{dealershipId}/inventory/vehicles/{vehicleId}/media/{mediaId}',
+  'PATCH  /api/dealers/{dealershipId}/inventory/vehicles/{vehicleId}/media/{mediaId}/slot',
 ]);
 
 // ── Parse OpenAPI spec ────────────────────────────────────────────────────────

@@ -1,4 +1,4 @@
-﻿import type { FastifyInstance } from 'fastify';
+import type { FastifyInstance } from 'fastify';
 import type { PrismaClient } from '@prisma/client';
 import {
   applyVehicleUpdate,
@@ -862,4 +862,64 @@ export function registerInventoryRoutes(app: FastifyInstance, prisma: PrismaClie
       return reply.status(204).send();
     }
   );
+  app.post<{ Params: MediaParams }>(
+    '/api/dealers/:dealershipId/inventory/vehicles/:vehicleId/media/upload',
+    async (request, reply) => {
+      const { dealershipId, vehicleId } = request.params;
+      if (!await requireDealerAccess(prisma, request, reply, dealershipId)) return;
+
+      const vehicle = await prisma.vehicle.findFirst({
+        where: { id: vehicleId, dealershipId },
+        select: { id: true, media: { select: { sortOrder: true }, orderBy: { sortOrder: 'desc' }, take: 1 } },
+      });
+      if (!vehicle) return reply.status(404).send({ error: 'Vehicle not found' });
+
+      let nextOrder = (vehicle.media[0]?.sortOrder ?? -1) + 1;
+      const createdMedia = [];
+      let slotKey: string | null = null;
+      
+      const { fileUploadService } = await import('../../services/storage/fileUploadService.js');
+
+      const parts = (request as unknown as { parts(): AsyncIterable<{ type: string; fieldname: string; value: string; file: NodeJS.ReadableStream; resume(): void; mimetype: string }> }).parts();
+      for await (const part of parts) {
+        if (part.type === 'field' && part.fieldname === 'slotKey') {
+          slotKey = part.value;
+        } else if (part.type === 'file') {
+          // Validation
+          if (!['image/jpeg', 'image/png', 'image/webp'].includes(part.mimetype)) {
+            // Drain stream if invalid
+            part.file.resume();
+            continue;
+          }
+
+          try {
+            const url = await fileUploadService.uploadFile(part.file, part.mimetype);
+            const mediaRole = slotKey ? 'STRUCTURED_SHOT' : 'GALLERY_IMAGE';
+            const media = await prisma.vehicleMedia.create({
+              data: { 
+                vehicleId, 
+                url, 
+                kind: 'IMAGE', 
+                sortOrder: nextOrder++, 
+                mediaRole, 
+                mediaSlotKey: slotKey,
+                mimeType: part.mimetype 
+              },
+              select: { id: true, url: true, kind: true, sortOrder: true, mediaSlotKey: true, mediaRole: true },
+            });
+            createdMedia.push(media);
+          } catch (e) {
+            request.log.error({ err: e }, 'File upload error');
+          }
+        }
+      }
+
+      if (createdMedia.length === 0) {
+        return reply.status(400).send({ error: 'No valid files uploaded or all failed.' });
+      }
+
+      return reply.status(201).send({ media: createdMedia });
+    }
+  );
+
 }
