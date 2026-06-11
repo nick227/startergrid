@@ -66,6 +66,7 @@ const REGISTERED_ROUTES = new Set([
   'GET    /api/admin/dashboard',
   'GET    /api/admin/platform-credentials',
   'POST   /api/admin/platform-credentials/validate',
+  'GET    /api/admin/blocked-dealers',
 ]);
 
 // ── Parse OpenAPI spec ────────────────────────────────────────────────────────

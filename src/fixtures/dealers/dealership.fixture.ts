@@ -30,6 +30,7 @@ export const mockDealership: DealershipPayload = {
     'autotrader-cox',
     'cars-com',
     'truecar-dealer-network',
+    'carfax-for-dealers',
     'adf-xml-lead-routing',
     'facebook-business-page',
     'google-business-profile'

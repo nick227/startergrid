@@ -455,10 +455,11 @@ export const platformProfiles: PlatformProfileSeed[] = [
     requiredMediaRules: { minImages: 3, notes: 'Assisted marketplace packet should include feed sample with image URLs.' },
     testFixtures: { validatesFeed: true, supportsReferralCredit: 'partner-dependent', requiresDealerAccount: false },
     connectionFields: [
-      { field: 'accountId', label: 'CarGurus Dealer ID', hint: 'From CarGurus Dealer Center dashboard', placeholder: '12345', helpUrl: 'https://dealer.cargurus.com/' },
-      { field: 'membershipStatus', label: 'CarGurus Package', placeholder: 'Featured / Enhanced / Standard' },
-      { field: 'platformRepName', label: 'CarGurus Account Rep' },
-      { field: 'platformRepEmail', label: 'Rep Email' },
+      { field: 'accountId', label: 'CarGurus Dealer ID', hint: 'Located in your CarGurus Dealer Center', placeholder: 'CG-XXXXX', docsLink: 'https://dealer.cargurus.com/', pattern: '^CG-\\\\d{5}$', validationHint: 'Must start with CG- followed by 5 digits' },
+      { field: 'sftpUsername', label: 'SFTP Username', hint: 'Provided by CarGurus integration team', placeholder: 'dealer_12345' },
+      { field: 'sftpPassword', label: 'SFTP Password', isSecret: true, hint: 'Leave blank to keep existing password', placeholder: '********' },
+      { field: 'platformRepName', label: 'CarGurus Account Rep', placeholder: 'Jane Doe' },
+      { field: 'platformRepEmail', label: 'Rep Email', placeholder: 'jane@cargurus.com' },
     ],
     tier: 1,
     partnerSignup: {
@@ -471,7 +472,16 @@ export const platformProfiles: PlatformProfileSeed[] = [
     partnerFeed: true,
     connectionType: 'PARTNER_FEED',
     integrationMaturity: 'SETUP_GUIDE',
-    requirementsConfidence: 'LIKELY',
+    requirementsConfidence: 'CONFIRMED',
+    liveValidationNote: 'CarGurus requires manual SFTP feed setup. After saving credentials, our system will test the SFTP connection. Reach out to your rep if the test fails.',
+    setupInstructions: [
+      'Confirm your dealer account is active in the CarGurus Dealer Center.',
+      'Contact your CarGurus rep to request inventory ingestion via SFTP.',
+      'Ask whether they require an active whitelist for your specific IP or provider.',
+      'Enter the assigned SFTP credentials below.',
+      'Save to validate credentials.',
+      'Confirm with your rep that the feed was accepted and listings are live.'
+    ],
   },
   {
     // ── Partner-dependent — commercial agreement required ─────────────────────
@@ -508,10 +518,11 @@ export const platformProfiles: PlatformProfileSeed[] = [
     requiredMediaRules: { minImages: 3 },
     testFixtures: { validatesFeed: true, supportsReferralCredit: 'consultant-or-partner-dependent', requiresDealerAccount: false },
     connectionFields: [
-      { field: 'accountId', label: 'Cox Dealer Code', hint: 'Your Cox Automotive-assigned dealer code', placeholder: 'COX-XXXXXX', helpUrl: 'https://b2b.autotrader.com/' },
-      { field: 'membershipStatus', label: 'AutoTrader Subscription Tier', placeholder: 'Featured / Standard / Basic' },
-      { field: 'platformRepName', label: 'Cox / AutoTrader Account Rep' },
-      { field: 'platformRepEmail', label: 'Rep Email' },
+      { field: 'accountId', label: 'Cox Dealer Code', hint: 'Assigned by Cox Automotive', placeholder: 'COX-XXXXXX', docsLink: 'https://b2b.autotrader.com/', validationHint: 'Case-sensitive dealer code' },
+      { field: 'sftpUsername', label: 'HomeNet/Cox SFTP Username', placeholder: 'dealer_homenet' },
+      { field: 'sftpPassword', label: 'HomeNet/Cox SFTP Password', isSecret: true, placeholder: '********' },
+      { field: 'platformRepName', label: 'Cox Account Rep', placeholder: 'John Smith' },
+      { field: 'platformRepEmail', label: 'Rep Email', placeholder: 'john.smith@coxautoinc.com' },
     ],
     tier: 1,
     partnerSignup: {
@@ -524,7 +535,16 @@ export const platformProfiles: PlatformProfileSeed[] = [
     partnerFeed: true,
     connectionType: 'PARTNER_FEED',
     integrationMaturity: 'SETUP_GUIDE',
-    requirementsConfidence: 'LIKELY',
+    requirementsConfidence: 'CONFIRMED',
+    liveValidationNote: 'Cox Automotive (Autotrader) uses HomeNet SFTP for inventory ingestion. Live listings confirmation is currently unavailable via API; feed acceptance is our highest validation level.',
+    setupInstructions: [
+      'Confirm your Autotrader/Cox dealer account is active.',
+      'Contact your Cox Automotive rep to request HomeNet/SFTP inventory ingestion.',
+      'Verify the correct Cox Dealer Code needed for the feed.',
+      'Enter the assigned HomeNet SFTP credentials below.',
+      'Save to validate credentials.',
+      'Confirm with your rep that listings are live on Autotrader.'
+    ],
   },
   {
     // ── Feedable (continued) ──────────────────────────────────────────────────
@@ -661,10 +681,11 @@ export const platformProfiles: PlatformProfileSeed[] = [
     requiredMediaRules: { minImages: 3 },
     testFixtures: { validatesFeed: true, supportsReferralCredit: 'partner-dependent', requiresDealerAccount: false },
     connectionFields: [
-      { field: 'accountId', label: 'Cars.com Dealer ID', hint: 'From your Cars.com or DealerRater account portal', placeholder: '456789', helpUrl: 'https://dealer.cars.com/' },
-      { field: 'membershipStatus', label: 'Package Tier', placeholder: 'Platinum / Gold / Standard' },
-      { field: 'platformRepName', label: 'Cars.com Account Manager' },
-      { field: 'platformRepEmail', label: 'Manager Email' },
+      { field: 'accountId', label: 'Cars.com Dealer ID', hint: 'From your Cars.com or DealerRater portal', placeholder: '456789', docsLink: 'https://dealer.cars.com/', validationHint: 'Exact match required for your feed' },
+      { field: 'sftpUsername', label: 'CarsCommerce SFTP Username', placeholder: 'dealer_cars' },
+      { field: 'sftpPassword', label: 'SFTP Password', isSecret: true, placeholder: '********' },
+      { field: 'platformRepName', label: 'Cars.com Account Manager', placeholder: 'Mike Brown' },
+      { field: 'platformRepEmail', label: 'Manager Email', placeholder: 'mbrown@cars.com' },
     ],
     tier: 2,
     partnerSignup: {
@@ -677,7 +698,16 @@ export const platformProfiles: PlatformProfileSeed[] = [
     partnerFeed: true,
     connectionType: 'PARTNER_FEED',
     integrationMaturity: 'SETUP_GUIDE',
-    requirementsConfidence: 'LIKELY',
+    requirementsConfidence: 'CONFIRMED',
+    liveValidationNote: 'Cars Commerce inventory is submitted via SFTP. Enter your SFTP credentials above to test the connection. Live validation beyond SFTP acceptance is not supported.',
+    setupInstructions: [
+      'Confirm your dealer account is active in the Cars.com DealerRater portal.',
+      'Contact your Cars.com Account Manager to set up automated feed ingestion.',
+      'Obtain the required SFTP username and password.',
+      'Enter the assigned SFTP credentials and Dealer ID below.',
+      'Save to validate credentials.',
+      'Confirm with your rep that the listings are successfully processing.'
+    ],
   },
   {
     // ── Feedable (continued) ──────────────────────────────────────────────────
@@ -806,10 +836,11 @@ export const platformProfiles: PlatformProfileSeed[] = [
     requiredMediaRules: { minImages: 3 },
     testFixtures: { validatesFeed: true, supportsReferralCredit: 'partner-dependent', requiresDealerAccount: false },
     connectionFields: [
-      { field: 'accountId', label: 'TrueCar Dealer ID', hint: 'From TrueCar Dealer Portal → Account Settings', placeholder: 'TC-12345', helpUrl: 'https://dealerportal.truecar.com/' },
-      { field: 'membershipStatus', label: 'Network Enrollment Status', placeholder: 'Enrolled / Pending / Waitlisted' },
-      { field: 'platformRepName', label: 'TrueCar Dealer Support Rep' },
-      { field: 'platformRepEmail', label: 'Rep Email' },
+      { field: 'accountId', label: 'TrueCar Dealer ID', hint: 'Located in Account Settings', placeholder: 'TC-12345', docsLink: 'https://dealerportal.truecar.com/', pattern: '^TC-\\\\d+$', validationHint: 'Must begin with TC-' },
+      { field: 'sftpUsername', label: 'TrueCar SFTP Username', placeholder: 'tc_dealer' },
+      { field: 'sftpPassword', label: 'SFTP Password', isSecret: true, placeholder: '********' },
+      { field: 'platformRepName', label: 'TrueCar Support Rep', placeholder: 'Sarah Connor' },
+      { field: 'platformRepEmail', label: 'Rep Email', placeholder: 'sconnor@truecar.com' },
     ],
     tier: 2,
     partnerSignup: {
@@ -822,7 +853,76 @@ export const platformProfiles: PlatformProfileSeed[] = [
     partnerFeed: true,
     connectionType: 'PARTNER_FEED',
     integrationMaturity: 'SETUP_GUIDE',
-    requirementsConfidence: 'LIKELY',
+    requirementsConfidence: 'CONFIRMED',
+    liveValidationNote: 'TrueCar inventory is ingested via SFTP. Provide credentials above for connection testing. Listing confirmation requires TrueCar rep verification.',
+    setupInstructions: [
+      'Confirm your dealer account is active in the TrueCar Dealer Portal.',
+      'Contact TrueCar Dealer Support to enable an inventory feed connection.',
+      'Ask for your specific SFTP ingestion credentials.',
+      'Enter the assigned SFTP credentials and TrueCar Dealer ID below.',
+      'Save to validate credentials.',
+      'Confirm with Dealer Support that your inventory is accurately reflected.'
+    ],
+  },
+  {
+    slug: 'carfax-for-dealers',
+    integrationClass: 'ASSISTED',
+    name: 'CARFAX for Dealers',
+    kind: 'MARKETPLACE',
+    schemaVersion: 'docs-2026.06-carfax-dealer-feed',
+    lastVerifiedAt: '2026-06-10T00:00:00.000Z',
+    profileConfidence: 'HIGH',
+    needsReview: false,
+    sourceNote: 'CARFAX inventory ingestion requires a structured feed (typically SFTP) and dealer account setup.',
+    mockEndpoint: 'mock://platform/carfax',
+    integrationUrls: {
+      partnerPortalUrl: 'https://www.carfaxonline.com/',
+      developerDocsUrl: 'https://www.carfaxonline.com/',
+      feedSetupUrl: 'https://www.carfaxonline.com/',
+      supportUrl: 'https://www.carfaxonline.com/',
+      notes: 'Carfax inventory feeds are typically configured via your inventory provider or through direct SFTP setup.'
+    },
+    outputFormat: 'ASSISTED_DEALER_APPLICATION_PACKET_PLUS_FEED_SAMPLE',
+    submissionMethods: ['MOCK_EMAIL', 'MANUAL_REP', 'SFTP'],
+    sourceUrls: [
+      'https://www.carfaxonline.com/'
+    ],
+    requiredDealershipFields: [
+      'legalName', 'dealerLicense', 'rooftopAddress.street', 'rooftopAddress.city',
+      'rooftopAddress.state', 'rooftopAddress.postalCode', 'primaryContact.email', 'primaryContact.phone', 'inventorySize'
+    ],
+    supportedCategories: ['AUTOMOTIVE'],
+    requiredVehicleFields: ['vin', 'stockNumber', 'year', 'make', 'model', 'mileage', 'priceCents', 'condition', 'media[0].url'],
+    requiredMediaRules: { minImages: 1 },
+    testFixtures: { validatesFeed: true, supportsReferralCredit: 'no', requiresDealerAccount: true },
+    connectionFields: [
+      { field: 'accountId', label: 'CARFAX Dealer ID', hint: 'Your CARFAX account ID', placeholder: 'CFX-12345', docsLink: 'https://www.carfaxonline.com/', pattern: '^CFX-\\\\d+$', validationHint: 'Must begin with CFX-' },
+      { field: 'sftpUsername', label: 'CARFAX SFTP Username', placeholder: 'cfx_dealer' },
+      { field: 'sftpPassword', label: 'SFTP Password', isSecret: true, placeholder: '********' },
+      { field: 'platformRepName', label: 'CARFAX Support Rep', placeholder: 'Tom Hanks' },
+      { field: 'platformRepEmail', label: 'Rep Email', placeholder: 'tom@carfax.com' },
+    ],
+    tier: 1,
+    partnerSignup: {
+      applyUrl: 'https://www.carfaxfordealers.com/',
+      estimatedDays: '1-2 weeks',
+      requirements: 'Active dealer license',
+      contactType: 'rep-assisted',
+    },
+    marketplaceListing: true,
+    partnerFeed: true,
+    connectionType: 'PARTNER_FEED',
+    integrationMaturity: 'SETUP_GUIDE',
+    requirementsConfidence: 'CONFIRMED',
+    liveValidationNote: 'CARFAX inventory is ingested via SFTP. Provide credentials above for connection testing. Listing confirmation requires CARFAX rep verification.',
+    setupInstructions: [
+      'Confirm your dealer account is active at CARFAX for Dealers.',
+      'Contact your CARFAX support rep and request inventory ingestion via SFTP.',
+      'Request your SFTP username and password from CARFAX.',
+      'Enter the assigned SFTP details and CARFAX Dealer ID below.',
+      'Save to validate credentials.',
+      'Confirm with your rep that listings are live.'
+    ],
   },
   {
     // ── Feedable (continued) ──────────────────────────────────────────────────

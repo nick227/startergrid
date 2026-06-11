@@ -332,6 +332,41 @@ const truecarDealerNetwork: PlatformResponses = {
   )
 };
 
+const carfaxForDealers: PlatformResponses = {
+  PORTAL_ACCEPTED: r(
+    'carfax-for-dealers', 'PORTAL_ACCEPTED', 200,
+    { type: 'ONBOARDING_INITIATED', referenceId: 'CFX-MOCK-11042', from: 'dealer-solutions@carfax.com', estimatedActivation: '3–5 business days', message: 'Your CARFAX for Dealers onboarding request has been received. A CARFAX representative will contact you to complete feed setup.' },
+    'PLATFORM_REVIEWING', null,
+    'CARFAX onboarding packet received. Feed configuration (SFTP or inventory provider integration) will be arranged by a CARFAX dealer solutions rep.'
+  ),
+  PORTAL_APPROVED: r(
+    'carfax-for-dealers', 'PORTAL_APPROVED', 200,
+    { type: 'FEED_SETUP_COMPLETE', referenceId: 'CFX-MOCK-11042', feedStatus: 'ACTIVE', message: 'CARFAX inventory feed is configured and active. Vehicle history reports will reflect your current inventory.' },
+    'ACTIVE', null,
+    'CARFAX feed is live. Dealer inventory is visible on CARFAX vehicle history reports and the CARFAX dealer listing page.'
+  ),
+  PORTAL_REJECTED: r(
+    'carfax-for-dealers', 'PORTAL_REJECTED', 200,
+    { type: 'APPLICATION_DECLINED', referenceId: 'CFX-MOCK-11043', reason: 'Dealer license verification failed', message: 'CARFAX could not verify your dealer license. Please contact dealer-solutions@carfax.com to resubmit with valid documentation.' },
+    'REJECTED',
+    'Provide a valid state dealer license to dealer-solutions@carfax.com to restart the CARFAX onboarding process.',
+    'CARFAX rejected application due to license verification failure. Dealer must supply valid license documentation.'
+  ),
+  PORTAL_NEEDS_INFO: r(
+    'carfax-for-dealers', 'PORTAL_NEEDS_INFO', 200,
+    { type: 'DOCUMENTATION_REQUIRED', referenceId: 'CFX-MOCK-11042', requiredDocuments: ['state_dealer_license', 'inventory_feed_provider_name'], deadline: '2026-06-24', message: 'Please provide your state dealer license and confirm your inventory feed provider to proceed with CARFAX setup.' },
+    'DEALER_ACTION_NEEDED',
+    'Email state dealer license and inventory provider name to dealer-solutions@carfax.com by 2026-06-24.',
+    'CARFAX onboarding paused pending dealer license and feed provider confirmation. Standard intake requirement.'
+  ),
+  PORTAL_ERROR: r(
+    'carfax-for-dealers', 'PORTAL_ERROR', 503,
+    { type: 'PORTAL_UNAVAILABLE', error: 'CARFAX dealer portal is temporarily unavailable', retryAfter: 'PT2H' },
+    'SUBMITTED', null,
+    'CARFAX dealer portal unavailable. Submission queued; retry recommended after 2 hours.'
+  )
+};
+
 const adfXmlLeadRouting: PlatformResponses = {
   PORTAL_ACCEPTED: r(
     'adf-xml-lead-routing', 'PORTAL_ACCEPTED', 200,
@@ -925,6 +960,7 @@ export const mockPortalResponses: Record<string, PlatformResponses> = {
   'snapchat-dynamic-product-ads': snapchatDynamicProductAds,
   'linkedin-lead-gen-forms': linkedinLeadGenForms,
   'truecar-dealer-network': truecarDealerNetwork,
+  'carfax-for-dealers': carfaxForDealers,
   'adf-xml-lead-routing': adfXmlLeadRouting,
   'nextdoor-ads': nextdoorAds,
   'apple-business-connect': appleBusinessConnect,

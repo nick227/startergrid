@@ -13,7 +13,9 @@ import {
   type AccountUpdatePayload,
   type PlatformAccountDetail,
   type ReadinessScore,
+  recordValidationAttempt,
 } from '../services/publishing/platformAccountService.js';
+import type { PlatformAccountState } from '@prisma/client';
 import {
   derivePublishState,
   summarizePublishStates,
@@ -82,7 +84,7 @@ describe('validateAccountUpdatePayload', () => {
   });
 
   it('invalid state returns error', () => {
-    const err = validateAccountUpdatePayload({ state: 'BOGUS_STATE' });
+    const err = validateAccountUpdatePayload({ state: 'BOGUS_STATE' as any });
     assert.ok(err !== null, 'should return error for bogus state');
     assert.ok(err!.includes('BOGUS_STATE'));
   });
@@ -135,10 +137,13 @@ describe('buildSummary', () => {
     assert.equal(s.partnerRequired, 0);
   });
 
-  it('counts ACTIVE correctly', () => {
-    const s = buildSummary([
-      { state: 'ACTIVE' }, { state: 'ACTIVE' }, { state: 'ACCOUNT_NEEDED' }
-    ]);
+  it('buildSummary counts active platforms correctly', () => {
+    const accounts = [
+      { state: 'ACTIVE' as any },
+      { state: 'ACTIVE' as any },
+      { state: 'ACCOUNT_NEEDED' as any }
+    ] as any;
+    const s = buildSummary(accounts);
     assert.equal(s.active, 2);
     assert.equal(s.total, 3);
   });
@@ -152,9 +157,7 @@ describe('buildSummary', () => {
   });
 
   it('counts blocked as BLOCKED + SUSPENDED', () => {
-    const s = buildSummary([
-      { state: 'BLOCKED' }, { state: 'SUSPENDED' }, { state: 'ACTIVE' }
-    ]);
+    const s = buildSummary([{ state: 'BLOCKED' }, { state: 'SUSPENDED' }, { state: 'ACTIVE' }]);
     assert.equal(s.blocked, 2);
   });
 
@@ -175,10 +178,11 @@ describe('buildSummary', () => {
 // ── VALID_ACCOUNT_STATES completeness ────────────────────────────────────────
 
 describe('VALID_ACCOUNT_STATES', () => {
-  it('contains all 7 expected states', () => {
+  it('contains all 11 expected states', () => {
     const expected = [
       'ACCOUNT_NEEDED', 'CREDENTIALS_NEEDED', 'PENDING_REVIEW',
-      'ACTIVE', 'BLOCKED', 'PARTNER_REQUIRED', 'SUSPENDED'
+      'ACTIVE', 'READY', 'BLOCKED', 'FAILED',
+      'PARTNER_REQUIRED', 'SUSPENDED', 'NEEDS_INFO', 'WAITING_ON_PARTNER',
     ];
     for (const s of expected) {
       assert.ok(VALID_ACCOUNT_STATES.includes(s as any), `missing state: ${s}`);
@@ -207,6 +211,10 @@ describe('PlatformAccountDetail shape', () => {
     createdAt:        new Date().toISOString(),
     updatedAt:        new Date().toISOString(),
     readinessScore:   10,
+    lastValidationStatus: null,
+    lastValidationNote: null,
+    lastValidatedAt: null,
+    highestConfirmedLevel: null,
     oauthProvider:    null,
     oauthConnected:   false,
     oauthExpired:     false,
@@ -220,6 +228,13 @@ describe('PlatformAccountDetail shape', () => {
     connectionType:   null,
     integrationMaturity: null,
     liveValidationNote: null,
+    integrationUrls: null,
+    requirementsConfidence: null,
+    sourceNote: null,
+    requiredDealershipFields: [],
+    requiredVehicleFields: [],
+    profileConfidence: null,
+    connectionConfig: null,
   };
 
   it('has all required fields', () => {
@@ -353,7 +368,7 @@ describe('buildSummary totals', () => {
       { state: 'SUSPENDED' },
       { state: 'PARTNER_REQUIRED' },
     ];
-    const s = buildSummary(states);
+    const s = buildSummary(states as any);
     const classified = s.active + s.needsSetup + s.pendingReview + s.blocked + s.partnerRequired;
     assert.equal(classified, s.total);
   });
@@ -444,7 +459,7 @@ describe('computeReadinessScore — field bonuses', () => {
   });
 
   it('fully populated ACTIVE account reaches 100', () => {
-    const { score, missing } = computeReadinessScore({
+    const { score, issues } = computeReadinessScore({
       state: 'ACTIVE',
       accountId: 'D-999',
       platformRepName: 'Jane',
@@ -453,7 +468,7 @@ describe('computeReadinessScore — field bonuses', () => {
       membershipStatus: 'PREMIUM',
     });
     assert.equal(score, 100);
-    assert.equal(missing.length, 0);
+    assert.equal(issues.length, 0);
   });
 
   it('score is capped at 100', () => {
@@ -471,29 +486,29 @@ describe('computeReadinessScore — field bonuses', () => {
 
 describe('computeReadinessScore — missing fields', () => {
   it('empty ACTIVE account reports 4 missing fields', () => {
-    const { missing } = computeReadinessScore(emptyAccount({ state: 'ACTIVE' }));
-    assert.equal(missing.length, 4);
+    const { issues } = computeReadinessScore(emptyAccount({ state: 'ACTIVE' }));
+    assert.equal(issues.length, 4);
   });
 
   it('missing includes Account ID when not set', () => {
-    const { missing } = computeReadinessScore(emptyAccount({ state: 'ACTIVE' }));
-    assert.ok(missing.includes('Account ID'));
+    const { issues } = computeReadinessScore(emptyAccount({ state: 'ACTIVE' }));
+    assert.ok(issues.some(i => i.includes('Account ID')));
   });
 
   it('missing includes Platform rep contact when neither name nor email set', () => {
-    const { missing } = computeReadinessScore(emptyAccount({ state: 'ACTIVE' }));
-    assert.ok(missing.includes('Platform rep contact'));
+    const { issues } = computeReadinessScore(emptyAccount({ state: 'ACTIVE' }));
+    assert.ok(issues.some(i => i.includes('Partner Contact')));
   });
 
   it('missing does not include rep when email only is set', () => {
-    const { missing } = computeReadinessScore(emptyAccount({ state: 'ACTIVE', platformRepEmail: 'r@ex.com' }));
-    assert.ok(!missing.includes('Platform rep contact'));
+    const { issues } = computeReadinessScore(emptyAccount({ state: 'ACTIVE', platformRepEmail: 'r@ex.com' }));
+    assert.ok(!issues.some(i => i.includes('Partner Contact')));
   });
 
   it('score 0 and missing all fields for BLOCKED with no fields', () => {
-    const { score, missing } = computeReadinessScore(emptyAccount({ state: 'BLOCKED' }));
+    const { score, issues } = computeReadinessScore(emptyAccount({ state: 'BLOCKED' }));
     assert.equal(score, 0);
-    assert.equal(missing.length, 4);
+    assert.equal(issues.length, 4);
   });
 });
 
@@ -508,5 +523,74 @@ describe('STATE_BASE_SCORE covers all VALID_ACCOUNT_STATES', () => {
     for (const [state, score] of Object.entries(STATE_BASE_SCORE)) {
       assert.ok(score >= 0 && score <= 100, `${state} score ${score} out of range`);
     }
+  });
+});
+
+// -- recordValidationAttempt ---------------------------------------------------
+
+describe('recordValidationAttempt', () => {
+  it('stub success -> READY + CONNECTION_TESTED', async () => {
+    const prismaMock = {
+      platformAccount: {
+        update: async (args: any) => {
+          assert.equal(args.data.state, 'READY');
+          assert.equal(args.data.highestConfirmedLevel, 'CONNECTION_TESTED');
+          assert.equal(args.data.lastValidationStatus, 'SUCCESS');
+          assert.equal(args.data.lastValidationNote, null);
+          return {};
+        }
+      },
+      adminAuditLog: {
+        create: async (args: any) => {
+          assert.equal(args.data.action, 'PARTNER_CONNECTION_VALIDATED');
+          assert.equal(args.data.detail.success, true);
+          assert.equal(args.data.detail.code, 'SUCCESS');
+        }
+      }
+    };
+
+    await recordValidationAttempt(
+      prismaMock as any,
+      'dealer-1',
+      'platform-1',
+      true,
+      undefined,
+      'SUCCESS',
+      150,
+      { id: 'actor-1', email: 'test@example.com' }
+    );
+  });
+
+  it('timeout/auth/unreachable -> FAILED + safe reason', async () => {
+    const prismaMock = {
+      platformAccount: {
+        update: async (args: any) => {
+          assert.equal(args.data.state, 'FAILED');
+          assert.equal(args.data.highestConfirmedLevel, undefined);
+          assert.equal(args.data.lastValidationStatus, 'AUTH_FAILED');
+          assert.equal(args.data.lastValidationNote, 'Invalid credentials');
+          return {};
+        }
+      },
+      adminAuditLog: {
+        create: async (args: any) => {
+          assert.equal(args.data.action, 'PARTNER_CONNECTION_VALIDATED');
+          assert.equal(args.data.detail.success, false);
+          assert.equal(args.data.detail.code, 'AUTH_FAILED');
+          assert.equal(args.data.detail.safeReason, 'Invalid credentials');
+        }
+      }
+    };
+
+    await recordValidationAttempt(
+      prismaMock as any,
+      'dealer-1',
+      'platform-1',
+      false,
+      'Invalid credentials',
+      'AUTH_FAILED',
+      150,
+      { id: 'actor-1', email: 'test@example.com' }
+    );
   });
 });

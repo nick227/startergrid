@@ -89,6 +89,7 @@ export const accountUpdateSchema = z.object({
   membershipStatus: optionalText(80),
   nextAction: optionalText(255),
   nextActionOwner: z.enum(['DEALER', 'OPERATOR', 'PLATFORM']).nullable().optional(),
+  connectionConfig: z.record(z.string(), z.unknown()).optional(),
 }).strict();
 
 // operationId: updateVehiclePrice
@@ -239,6 +240,45 @@ export const marketplaceLoginSchema = z.object({
 }).strict();
 
 export type MarketplaceLoginBody = z.infer<typeof marketplaceLoginSchema>;
+
+// ── VIN / Inventory schemas ───────────────────────────────────────────────────
+
+// operationId: decodeVin
+export const decodeVinSchema = z.object({
+  vin: z.string().trim().min(1).max(20),
+}).strict();
+export type DecodeVinBody = z.infer<typeof decodeVinSchema>;
+
+// operationId: createVehicleFromVin
+export const createFromVinSchema = z.object({
+  vin:        z.string().trim().min(17).max(17),
+  stockNumber: z.string().trim().min(1).max(80).optional(),
+  priceCents:  z.number().int().min(0).optional(),
+  mileage:     z.number().int().min(0).optional(),
+  condition:   z.enum(['NEW', 'USED', 'CPO']).optional(),
+}).strict();
+export type CreateFromVinBody = z.infer<typeof createFromVinSchema>;
+
+// operationId: bulkVinPreview
+export const bulkVinPreviewSchema = z.object({
+  vins: z.array(z.string().trim().min(1).max(20)).min(1).max(500),
+}).strict();
+export type BulkVinPreviewBody = z.infer<typeof bulkVinPreviewSchema>;
+
+// operationId: bulkVinCommit
+export const bulkVinCommitSchema = z.object({
+  vins: z.array(z.string().trim().min(1).max(20)).min(1).max(500),
+  /** Optional map of VIN → stockNumber overrides. */
+  stockNumberMap: z.record(z.string(), z.string().trim().min(1).max(80)).optional(),
+}).strict();
+export type BulkVinCommitBody = z.infer<typeof bulkVinCommitSchema>;
+
+// operationId: assignMediaSlot
+export const mediaSlotAssignSchema = z.object({
+  /** Slot key to assign (e.g. 'front', 'odometer'). Null = unassign / move to gallery. */
+  slotKey: z.string().trim().min(1).max(80).nullable(),
+}).strict();
+export type MediaSlotAssignBody = z.infer<typeof mediaSlotAssignSchema>;
 
 // operationId: captureMarketplaceChannelEvent
 export const marketplaceChannelEventSchema = z.object({

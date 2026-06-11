@@ -195,11 +195,15 @@ export type FeedArtifact = {
 };
 
 export type ConnectionField = {
-  field: 'accountId' | 'membershipStatus' | 'platformRepName' | 'platformRepEmail';
+  field: string;
   label: string;
+  isSecret?: boolean;
   hint?: string;
   placeholder?: string;
   helpUrl?: string;
+  docsLink?: string;
+  pattern?: string;
+  validationHint?: string;
 };
 
 export type PartnerSignupInfo = {
@@ -249,6 +253,7 @@ export type PlatformProfileSeed = {
 
   // Human-readable note recording why live validation is not yet complete
   liveValidationNote?: string;
+  setupInstructions?: string[];
 };
 
 export type IssueCode =

@@ -1,118 +1,32 @@
-import type { PrismaClient, PlatformAccountState, Prisma } from '@prisma/client';
+import type { PrismaClient, Prisma, PlatformAccountState } from '@prisma/client';
 import { platformProfiles } from '../../data/platformProfiles.js';
-import type { PlatformProfileSeed, ConnectionField, PartnerSignupInfo } from '../../lib/types.js';
+import type { PlatformProfileSeed, ConnectionField } from '../../lib/types.js';
 
-// ── State classification helpers ─────────────────────────────────────────────
+type ProfileConfidence = 'HIGH' | 'MEDIUM' | 'LOW';
 
 export const VALID_ACCOUNT_STATES: PlatformAccountState[] = [
-  'ACCOUNT_NEEDED', 'CREDENTIALS_NEEDED', 'PENDING_REVIEW',
-  'ACTIVE', 'BLOCKED', 'PARTNER_REQUIRED', 'SUSPENDED'
+  'ACCOUNT_NEEDED', 'CREDENTIALS_NEEDED', 'READY', 'FAILED', 'ACTIVE', 'BLOCKED', 'PARTNER_REQUIRED', 'SUSPENDED', 'PENDING_REVIEW', 'NEEDS_INFO', 'WAITING_ON_PARTNER'
 ];
 
-export const NEXT_ACTION_OWNERS = ['DEALER', 'OPERATOR', 'PLATFORM'] as const;
-export type NextActionOwner = typeof NEXT_ACTION_OWNERS[number];
+export const NEXT_ACTION_OWNERS = ['DEALER', 'PARTNER', 'PLATFORM', 'SYSTEM', 'SUPPORT'] as const;
 
-const ACCOUNT_FIELD_LIMITS: Partial<Record<keyof AccountUpdatePayload, number>> = {
-  notes: 5000,
-  accountId: 120,
-  platformRepName: 160,
-  platformRepEmail: 255,
-  membershipStatus: 80,
-  nextAction: 255,
+export const STATE_BASE_SCORE: Record<PlatformAccountState, number> = {
+  ACTIVE: 60,
+  READY: 60,
+  PENDING_REVIEW: 40,
+  CREDENTIALS_NEEDED: 25,
+  PARTNER_REQUIRED: 15,
+  ACCOUNT_NEEDED: 10,
+  FAILED: 0,
+  BLOCKED: 0,
+  SUSPENDED: 0,
+  NEEDS_INFO: 0,
+  WAITING_ON_PARTNER: 0,
 };
-
-export function isBlockingAccountState(state: string): boolean {
-  return state === 'BLOCKED' || state === 'SUSPENDED';
-}
-
-export function isPartnerRequiredAccountState(state: string): boolean {
-  return state === 'PARTNER_REQUIRED';
-}
-
-export function needsSetupAccountState(state: string): boolean {
-  return state === 'ACCOUNT_NEEDED' || state === 'CREDENTIALS_NEEDED';
-}
-
-export function validateAccountUpdatePayload(payload: AccountUpdatePayload): string | null {
-  if (payload.state !== undefined && !VALID_ACCOUNT_STATES.includes(payload.state as PlatformAccountState)) {
-    return `Invalid state: ${payload.state}`;
-  }
-  if (
-    payload.nextActionOwner !== undefined &&
-    payload.nextActionOwner !== null &&
-    payload.nextActionOwner !== '' &&
-    !NEXT_ACTION_OWNERS.includes(payload.nextActionOwner as NextActionOwner)
-  ) {
-    return `Invalid nextActionOwner: ${payload.nextActionOwner}`;
-  }
-  for (const [field, max] of Object.entries(ACCOUNT_FIELD_LIMITS)) {
-    const value = payload[field as keyof AccountUpdatePayload];
-    if (value !== undefined && value !== null && typeof value !== 'string') {
-      return `${field} must be a string`;
-    }
-    if (typeof value === 'string' && value.length > max) {
-      return `${field} must be ${max} characters or less`;
-    }
-  }
-  if (
-    payload.platformRepEmail &&
-    !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(payload.platformRepEmail)
-  ) {
-    return 'platformRepEmail must be a valid email address';
-  }
-  return null;
-}
-
-// ── Readiness score ──────────────────────────────────────────────────────────
 
 export type ReadinessScore = {
-  score: number;       // 0–100
-  missing: string[];   // unfilled fields that would improve the score
-};
-
-export const STATE_BASE_SCORE: Record<string, number> = {
-  ACTIVE:             60,
-  PENDING_REVIEW:     40,
-  CREDENTIALS_NEEDED: 25,
-  ACCOUNT_NEEDED:     10,
-  PARTNER_REQUIRED:   15,
-  BLOCKED:             0,
-  SUSPENDED:           0,
-};
-
-export function computeReadinessScore(
-  account: Pick<PlatformAccountDetail, 'state' | 'accountId' | 'platformRepName' | 'platformRepEmail' | 'nextAction' | 'membershipStatus'>
-): ReadinessScore {
-  const base = STATE_BASE_SCORE[account.state] ?? 10;
-  const missing: string[] = [];
-  let bonus = 0;
-
-  if (account.accountId)                                   bonus += 10;
-  else                                                     missing.push('Account ID');
-
-  if (account.platformRepName || account.platformRepEmail) bonus += 10;
-  else                                                     missing.push('Platform rep contact');
-
-  if (account.nextAction)                                  bonus += 10;
-  else                                                     missing.push('Next action');
-
-  if (account.membershipStatus)                            bonus += 10;
-  else                                                     missing.push('Membership status');
-
-  return { score: Math.min(100, base + bonus), missing };
-}
-
-// ── Public types ─────────────────────────────────────────────────────────────
-
-export type AccountUpdatePayload = {
-  state?: string;
-  notes?: string;
-  accountId?: string;
-  platformRepName?: string;
-  platformRepEmail?: string;
-  membershipStatus?: string;
-  nextAction?: string;
-  nextActionOwner?: string | null;
+  score: number;
+  issues: string[];
 };
 
 export type PlatformAccountDetail = {
@@ -120,7 +34,7 @@ export type PlatformAccountDetail = {
   platformSlug: string;
   platformName: string;
   integrationClass: string;
-  state: string;
+  state: PlatformAccountState;
   accountId: string | null;
   platformRepName: string | null;
   platformRepEmail: string | null;
@@ -128,16 +42,16 @@ export type PlatformAccountDetail = {
   nextAction: string | null;
   nextActionOwner: string | null;
   notes: string | null;
+  connectionConfig: Record<string, unknown> | null;
   lastChecked: string | null;
   createdAt: string;
   updatedAt: string;
-  readinessScore: number;
   connectionFields?: ConnectionField[];
   oauthProvider: string | null;
   oauthConnected: boolean;
   oauthExpired: boolean;
   tier: number | null;
-  partnerSignup: PartnerSignupInfo | null;
+  partnerSignup: any | null;
   socialPosting: boolean;
   catalogSync: boolean;
   marketplaceListing: boolean;
@@ -146,31 +60,118 @@ export type PlatformAccountDetail = {
   connectionType: string | null;
   integrationMaturity: string | null;
   liveValidationNote: string | null;
+  integrationUrls: any | null;
+  requirementsConfidence: string | null;
+  sourceNote: string | null;
+  requiredDealershipFields: string[];
+  requiredVehicleFields: string[];
+  profileConfidence: string | null;
+  readinessScore: number;
+  lastValidationStatus: string | null;
+  lastValidationNote: string | null;
+  lastValidatedAt: string | null;
+  highestConfirmedLevel: string | null;
 };
 
-// ── DB functions ─────────────────────────────────────────────────────────────
+export type AccountUpdatePayload = {
+  state?: PlatformAccountState;
+  notes?: string | null;
+  accountId?: string | null;
+  platformRepName?: string | null;
+  platformRepEmail?: string | null;
+  membershipStatus?: string | null;
+  nextAction?: string | null;
+  nextActionOwner?: string | null;
+  connectionConfig?: Record<string, unknown>;
+};
 
-function profilesForCategory(category: string): PlatformProfileSeed[] {
+export function needsSetupAccountState(s: string) {
+  return s === 'ACCOUNT_NEEDED' || s === 'CREDENTIALS_NEEDED';
+}
+
+export function isBlockingAccountState(s: string) {
+  return s === 'FAILED' || s === 'BLOCKED' || s === 'SUSPENDED';
+}
+
+export function isPartnerRequiredAccountState(s: string) {
+  return s === 'PARTNER_REQUIRED';
+}
+
+export function validateAccountUpdatePayload(payload: AccountUpdatePayload): string | null {
+  if (payload.state && !VALID_ACCOUNT_STATES.includes(payload.state)) {
+    return `Invalid state: ${payload.state}`;
+  }
+  if (payload.nextActionOwner && payload.nextActionOwner !== '' && !NEXT_ACTION_OWNERS.includes(payload.nextActionOwner as any)) {
+    return `Invalid nextActionOwner: ${payload.nextActionOwner}`;
+  }
+  return null;
+}
+
+export function profilesForCategory(category: string): PlatformProfileSeed[] {
   return platformProfiles.filter(p => p.supportedCategories.includes(category));
 }
 
-async function ensureAccountRows(
-  prisma: PrismaClient,
-  dealershipId: string,
-  profiles: PlatformProfileSeed[]
-): Promise<void> {
+async function ensureAccountRows(prisma: PrismaClient, dealershipId: string, profiles: PlatformProfileSeed[]) {
   const existing = await prisma.platformAccount.findMany({
-    where: { dealershipId }, select: { platformSlug: true }
+    where: { dealershipId },
+    select: { platformSlug: true }
   });
-  const existingSlugs = new Set(existing.map(a => a.platformSlug));
+  const existingSlugs = new Set(existing.map(r => r.platformSlug));
+
   const missing = profiles.filter(p => !existingSlugs.has(p.slug));
-  if (!missing.length) return;
+  if (missing.length === 0) return;
+
   await prisma.platformAccount.createMany({
     data: missing.map(p => ({
-      dealershipId, platformSlug: p.slug, state: 'ACCOUNT_NEEDED' as PlatformAccountState
+      dealershipId,
+      platformSlug: p.slug,
+      state: 'ACCOUNT_NEEDED' as PlatformAccountState,
+      notes: null,
+      connectionConfig: {},
+      lastChecked: new Date(),
     })),
-    skipDuplicates: true
+    skipDuplicates: true,
   });
+}
+
+export function computeReadinessScore(
+  account: Pick<PlatformAccountDetail, 'state' | 'accountId' | 'platformRepName' | 'platformRepEmail' | 'nextAction' | 'membershipStatus'>
+): ReadinessScore {
+  const issues: string[] = [];
+  let score = STATE_BASE_SCORE[account.state] || 0;
+
+  if (account.state === 'FAILED' || account.state === 'BLOCKED' || account.state === 'SUSPENDED') {
+    issues.push(`Account state is ${account.state}`);
+  } else if (score < 40) {
+    issues.push('Account setup not started');
+  }
+
+  if (account.accountId) {
+    score += 10;
+  } else {
+    issues.push('Missing Account ID');
+  }
+
+  if (account.platformRepName || account.platformRepEmail) {
+    score += 10;
+  } else {
+    issues.push('Missing Partner Contact Info');
+  }
+
+  if (account.membershipStatus) {
+    score += 10;
+  } else {
+    issues.push('Missing Membership Status');
+  }
+
+  const isHardBlocked = account.state === 'FAILED' || account.state === 'BLOCKED' || account.state === 'SUSPENDED';
+  if (account.nextAction) {
+    score += 10;
+  } else if (!isHardBlocked) {
+    issues.push('Missing Next Action');
+  }
+
+  return { score: Math.min(100, score), issues };
 }
 
 export async function listPlatformAccounts(
@@ -186,10 +187,16 @@ export async function listPlatformAccounts(
 
   await ensureAccountRows(prisma, dealershipId, profiles);
 
-  const [rows, tokenRows] = await Promise.all([
+  const [rows, tokenRows, secretRows] = await Promise.all([
     prisma.platformAccount.findMany({ where: { dealershipId } }),
     prisma.platformOAuthToken.findMany({ where: { dealershipId }, select: { provider: true, expiresAt: true } }),
+    (prisma as any).platformSecret.findMany({ where: { dealershipId } }),
   ]);
+  const secretsBySlug = new Map<string, any[]>();
+  for (const s of secretRows as any[]) {
+    if (!secretsBySlug.has(s.platformSlug)) secretsBySlug.set(s.platformSlug, []);
+    secretsBySlug.get(s.platformSlug)!.push(s);
+  }
   const bySlug = new Map(rows.map(r => [r.platformSlug, r]));
   // 60 s buffer: treat tokens expiring within the next minute as already expired
   const EXPIRY_BUFFER_MS = 60_000;
@@ -199,40 +206,62 @@ export async function listPlatformAccounts(
 
   const accounts: PlatformAccountDetail[] = profiles.map(p => {
     const r = bySlug.get(p.slug);
-    const base: Omit<PlatformAccountDetail, 'readinessScore'> = {
-      id:                r?.id ?? p.slug,
-      platformSlug:      p.slug,
-      platformName:      p.name,
-      integrationClass:  p.integrationClass,
-      state:             r?.state ?? 'ACCOUNT_NEEDED',
-      accountId:         r?.accountId ?? null,
-      platformRepName:   r?.platformRepName ?? null,
-      platformRepEmail:  r?.platformRepEmail ?? null,
-      membershipStatus:  r?.membershipStatus ?? null,
-      nextAction:        r?.nextAction ?? null,
-      nextActionOwner:   r?.nextActionOwner ?? null,
-      notes:             r?.notes ?? null,
-      lastChecked:       r?.lastChecked?.toISOString() ?? null,
-      createdAt:         r?.createdAt.toISOString() ?? new Date().toISOString(),
-      updatedAt:         r?.updatedAt.toISOString() ?? new Date().toISOString(),
-      connectionFields:  p.connectionFields,
-      oauthProvider:     p.oauthProvider ?? null,
-      oauthConnected:    p.oauthProvider ? liveProviders.has(p.oauthProvider) : false,
-      oauthExpired:      p.oauthProvider
-        ? anyProviders.has(p.oauthProvider) && !liveProviders.has(p.oauthProvider)
-        : false,
-      tier:              p.tier ?? null,
-      partnerSignup:     p.partnerSignup ?? null,
-      socialPosting:     p.socialPosting ?? false,
-      catalogSync:       p.catalogSync ?? false,
-      marketplaceListing: p.marketplaceListing ?? false,
-      partnerFeed:       p.partnerFeed ?? false,
-      leadSync:          p.leadSync ?? false,
-      connectionType:    p.connectionType ?? null,
-      integrationMaturity: p.integrationMaturity ?? null,
-      liveValidationNote: p.liveValidationNote ?? null,
-    };
-    return { ...base, readinessScore: computeReadinessScore(base).score };
+      let connectionConfig = (r as any)?.connectionConfig as Record<string, unknown> | null ?? null;
+      const secrets = secretsBySlug.get(p.slug);
+      if (secrets && secrets.length > 0) {
+        connectionConfig = connectionConfig ? { ...connectionConfig } : {};
+        for (const s of secrets) {
+          connectionConfig[s.fieldKey] = s.maskedValue;
+        }
+      }
+
+      const base: Omit<PlatformAccountDetail, 'readinessScore'> = {
+        id:                r?.id ?? p.slug,
+        platformSlug:      p.slug,
+        platformName:      p.name,
+        integrationClass:  p.integrationClass,
+        state:             r?.state ?? 'ACCOUNT_NEEDED',
+        accountId:         r?.accountId ?? null,
+        platformRepName:   r?.platformRepName ?? null,
+        platformRepEmail:  r?.platformRepEmail ?? null,
+        membershipStatus:  r?.membershipStatus ?? null,
+        nextAction:        r?.nextAction ?? null,
+        nextActionOwner:   r?.nextActionOwner ?? null,
+        notes:             r?.notes ?? null,
+        connectionConfig,
+        lastChecked:       r?.lastChecked?.toISOString() ?? null,
+        createdAt:         r?.createdAt?.toISOString() ?? new Date().toISOString(),
+        updatedAt:         r?.updatedAt?.toISOString() ?? new Date().toISOString(),
+        connectionFields:  p.connectionFields,
+        oauthProvider:     p.oauthProvider ?? null,
+        oauthConnected:    p.oauthProvider ? liveProviders.has(p.oauthProvider) : false,
+        oauthExpired:      p.oauthProvider
+          ? anyProviders.has(p.oauthProvider) && !liveProviders.has(p.oauthProvider)
+          : false,
+        tier:              p.tier ?? null,
+        partnerSignup:     p.partnerSignup ?? null,
+        socialPosting:     p.socialPosting ?? false,
+        catalogSync:       p.catalogSync ?? false,
+        marketplaceListing: p.marketplaceListing ?? false,
+        partnerFeed:       p.partnerFeed ?? false,
+        leadSync:          p.leadSync ?? false,
+        connectionType:    p.connectionType ?? null,
+        integrationMaturity: p.integrationMaturity ?? null,
+        liveValidationNote: p.liveValidationNote ?? null,
+        integrationUrls:   p.integrationUrls ?? null,
+        requirementsConfidence: p.requirementsConfidence ?? null,
+        sourceNote:        p.sourceNote ?? null,
+        requiredDealershipFields: p.requiredDealershipFields ?? [],
+        requiredVehicleFields: p.requiredVehicleFields ?? [],
+        profileConfidence: p.profileConfidence ?? null,
+        lastValidationStatus: (r as any)?.lastValidationStatus ?? null,
+        lastValidationNote: (r as any)?.lastValidationNote ?? null,
+        lastValidatedAt: (r as any)?.lastValidatedAt?.toISOString() ?? null,
+        highestConfirmedLevel: (r as any)?.highestConfirmedLevel ?? null,
+      };
+
+      if (!r) return { ...base, readinessScore: computeReadinessScore(base).score };
+      return { ...base, readinessScore: (r as any).readinessScore ?? computeReadinessScore(base).score };
   });
 
   const summary = buildSummary(accounts);
@@ -263,11 +292,54 @@ export async function updatePlatformAccount(
   prisma: PrismaClient,
   dealershipId: string,
   platformSlug: string,
-  payload: AccountUpdatePayload
+  payload: AccountUpdatePayload,
+  actor?: { id: string; email: string }
 ): Promise<PlatformAccountDetail> {
   const current = await prisma.platformAccount.findUnique({
     where: { dealershipId_platformSlug: { dealershipId, platformSlug } }
   });
+
+  let configToSave = payload.connectionConfig ? { ...payload.connectionConfig } : undefined;
+  const updatedSecrets: string[] = [];
+
+  const platform = platformProfiles.find(p => p.slug === platformSlug);
+  if (configToSave && platform?.connectionFields) {
+    for (const field of platform.connectionFields) {
+      if (field.isSecret && configToSave[field.field] !== undefined) {
+        const rawValue = String(configToSave[field.field]);
+        delete configToSave[field.field]; // Never store raw in generic config
+
+        if (rawValue && rawValue !== '********') {
+          const { encryptSecret, maskSecretValue } = await import('../../lib/secrets.js');
+          const encryptedValue = encryptSecret(rawValue);
+          const maskedValue = maskSecretValue(rawValue);
+
+          await (prisma as any).platformSecret.upsert({
+            where: { dealershipId_platformSlug_fieldKey: { dealershipId, platformSlug, fieldKey: field.field } },
+            update: { encryptedValue, maskedValue },
+            create: { dealershipId, platformSlug, fieldKey: field.field, encryptedValue, maskedValue }
+          });
+          updatedSecrets.push(field.field);
+        } else if (rawValue === '') {
+          await (prisma as any).platformSecret.deleteMany({
+            where: { dealershipId, platformSlug, fieldKey: field.field }
+          });
+          updatedSecrets.push(field.field);
+        }
+      }
+    }
+  }
+
+  if (updatedSecrets.length > 0 && actor) {
+    await prisma.adminAuditLog.create({
+      data: {
+        action: 'SECRET_UPDATED',
+        actorId: actor.id,
+        actorEmail: actor.email,
+        detail: { platformSlug, fields: updatedSecrets } as any
+      }
+    });
+  }
 
   const update: Prisma.PlatformAccountUpdateInput = { lastChecked: new Date() };
   if (payload.state !== undefined)            update.state = payload.state as PlatformAccountState;
@@ -278,6 +350,7 @@ export async function updatePlatformAccount(
   if (payload.membershipStatus !== undefined) update.membershipStatus = payload.membershipStatus;
   if (payload.nextAction !== undefined)       update.nextAction = payload.nextAction;
   if (payload.nextActionOwner !== undefined)  update.nextActionOwner = payload.nextActionOwner ?? null;
+  if (configToSave !== undefined)             (update as any).connectionConfig = configToSave;
 
   const updated = await prisma.platformAccount.upsert({
     where: { dealershipId_platformSlug: { dealershipId, platformSlug } },
@@ -293,6 +366,7 @@ export async function updatePlatformAccount(
       membershipStatus: payload.membershipStatus,
       nextAction: payload.nextAction,
       nextActionOwner: payload.nextActionOwner,
+      connectionConfig: configToSave as any,
       lastChecked: new Date(),
     }
   });
@@ -314,48 +388,57 @@ export async function updatePlatformAccount(
     });
   }
 
-  const platform = platformProfiles.find(p => p.slug === platformSlug);
-  const tokenRow = platform?.oauthProvider
-    ? await prisma.platformOAuthToken.findUnique({
-        where: { dealershipId_provider: { dealershipId, provider: platform.oauthProvider } },
-        select: { expiresAt: true },
-      })
-    : null;
+  const { accounts } = await listPlatformAccounts(prisma, dealershipId);
+  const result = accounts.find(a => a.platformSlug === platformSlug);
+  if (!result) throw new Error('Account missing after update');
+  return result;
+}
 
-  const EXPIRY_BUFFER_MS = 60_000;
-  const tokenExpired = tokenRow?.expiresAt !== undefined && tokenRow.expiresAt !== null
-    && tokenRow.expiresAt.getTime() - EXPIRY_BUFFER_MS <= Date.now();
-
-  const base: Omit<PlatformAccountDetail, 'readinessScore'> = {
-    id:               updated.id,
-    platformSlug,
-    platformName:     platform?.name ?? platformSlug,
-    integrationClass: platform?.integrationClass ?? 'ASSISTED',
-    state:            updated.state,
-    accountId:        updated.accountId,
-    platformRepName:  updated.platformRepName,
-    platformRepEmail: updated.platformRepEmail,
-    membershipStatus: updated.membershipStatus,
-    nextAction:       updated.nextAction,
-    nextActionOwner:  updated.nextActionOwner,
-    notes:            updated.notes,
-    lastChecked:      updated.lastChecked?.toISOString() ?? null,
-    createdAt:        updated.createdAt.toISOString(),
-    updatedAt:        updated.updatedAt.toISOString(),
-    connectionFields: platform?.connectionFields,
-    oauthProvider:    platform?.oauthProvider ?? null,
-    oauthConnected:   tokenRow !== null && !tokenExpired,
-    oauthExpired:     tokenRow !== null && tokenExpired,
-    tier:             platform?.tier ?? null,
-    partnerSignup:    platform?.partnerSignup ?? null,
-    socialPosting:    platform?.socialPosting ?? false,
-    catalogSync:      platform?.catalogSync ?? false,
-    marketplaceListing: platform?.marketplaceListing ?? false,
-    partnerFeed:      platform?.partnerFeed ?? false,
-    leadSync:         platform?.leadSync ?? false,
-    connectionType:   platform?.connectionType ?? null,
-    integrationMaturity: platform?.integrationMaturity ?? null,
-    liveValidationNote: platform?.liveValidationNote ?? null,
+export async function recordValidationAttempt(
+  prisma: PrismaClient,
+  dealershipId: string,
+  platformSlug: string,
+  success: boolean,
+  safeReason: string | undefined,
+  code: string,
+  durationMs: number,
+  actor?: { id: string; email: string }
+) {
+  const update: Prisma.PlatformAccountUpdateInput = {
+    lastChecked: new Date(),
+    lastValidatedAt: new Date(),
+    lastValidationStatus: code,
+    lastValidationNote: safeReason || null,
   };
-  return { ...base, readinessScore: computeReadinessScore(base).score };
+
+  if (success) {
+    update.state = 'READY';
+    update.highestConfirmedLevel = 'CONNECTION_TESTED';
+  } else {
+    update.state = 'FAILED';
+  }
+
+  const updated = await prisma.platformAccount.update({
+    where: { dealershipId_platformSlug: { dealershipId, platformSlug } },
+    data: update
+  });
+
+  if (actor) {
+    await prisma.adminAuditLog.create({
+      data: {
+        action: 'PARTNER_CONNECTION_VALIDATED',
+        actorId: actor.id,
+        actorEmail: actor.email,
+        detail: {
+          platformSlug,
+          success,
+          code,
+          safeReason,
+          durationMs
+        } as any
+      }
+    });
+  }
+
+  return updated;
 }

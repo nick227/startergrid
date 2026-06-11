@@ -69,6 +69,12 @@ function makeApp(role: 'SUPER_ADMIN' | 'OPERATOR'): {
     syncRun: {
       findFirst: async () => null,
       findMany: async () => []
+    },
+    syncEvent: {
+      findMany: async () => []
+    },
+    platformAccount: {
+      findMany: async () => []
     }
   } as unknown as PrismaClient;
   
@@ -195,5 +201,112 @@ describe('admin dashboard — operational behaviors & cache', () => {
     // Out of 2 mock dealers, 1 is addressable & geocoded, 1 has null lat/lng.
     // So geoCoordinates check should evaluate to WARNING (50% coverage).
     assert.equal(body.readiness.geoCoordinates, 'WARNING');
+  });
+});
+
+describe('admin blocked dealers — access controls, gating & functionality', () => {
+  beforeEach(() => {
+    resetDashboardCache();
+  });
+
+  it('401 without auth cookie/headers', async () => {
+    const { app } = makeApp('SUPER_ADMIN');
+    const res = await app.inject({ method: 'GET', url: '/api/admin/blocked-dealers' }) as unknown as InjectResult;
+    assert.equal(res.statusCode, 401);
+  });
+
+  it('403 for OPERATOR role', async () => {
+    const { app, token } = makeApp('OPERATOR');
+    const res = await app.inject({
+      method: 'GET',
+      url: '/api/admin/blocked-dealers',
+      headers: { Cookie: `op_session=${token}` }
+    }) as unknown as InjectResult;
+    assert.equal(res.statusCode, 403);
+  });
+
+  it('200 for SUPER_ADMIN with paginated payload and summaries', async () => {
+    const { app, token } = makeApp('SUPER_ADMIN');
+    const res = await app.inject({
+      method: 'GET',
+      url: '/api/admin/blocked-dealers',
+      headers: { Cookie: `op_session=${token}` }
+    }) as unknown as InjectResult;
+    assert.equal(res.statusCode, 200);
+    const body = res.json() as Record<string, any>;
+    assert.ok(Array.isArray(body.items), 'items is array');
+    assert.ok(body.pagination, 'pagination present');
+    assert.ok(body.summary, 'summary present');
+    assert.ok(body.meta, 'meta present');
+    assert.equal(body.meta.cached, false);
+  });
+
+  it('filters by severity, category, source, platform, and search query', async () => {
+    const { app, token } = makeApp('SUPER_ADMIN');
+    
+    // Filter by severity critical
+    const resCrit = await app.inject({
+      method: 'GET',
+      url: '/api/admin/blocked-dealers?severity=critical',
+      headers: { Cookie: `op_session=${token}` }
+    }) as unknown as InjectResult;
+    assert.equal(resCrit.statusCode, 200);
+    const bodyCrit = resCrit.json() as Record<string, any>;
+    assert.ok(bodyCrit.items.every((item: any) => item.severity === 'critical'));
+
+    // Filter by source
+    const resSrc = await app.inject({
+      method: 'GET',
+      url: '/api/admin/blocked-dealers?source=geo',
+      headers: { Cookie: `op_session=${token}` }
+    }) as unknown as InjectResult;
+    assert.equal(resSrc.statusCode, 200);
+    const bodySrc = resSrc.json() as Record<string, any>;
+    assert.ok(bodySrc.items.every((item: any) => item.source === 'geo'));
+
+    // Search query q
+    const resQ = await app.inject({
+      method: 'GET',
+      url: '/api/admin/blocked-dealers?q=Dealer',
+      headers: { Cookie: `op_session=${token}` }
+    }) as unknown as InjectResult;
+    assert.equal(resQ.statusCode, 200);
+    const bodyQ = resQ.json() as Record<string, any>;
+    assert.ok(bodyQ.items.every((item: any) => item.dealerName.includes('Dealer') || item.reason.includes('Dealer')));
+  });
+
+  it('serves from cache on repeated requests', async () => {
+    const { app, token } = makeApp('SUPER_ADMIN');
+    
+    const res1 = await app.inject({
+      method: 'GET',
+      url: '/api/admin/blocked-dealers?limit=5',
+      headers: { Cookie: `op_session=${token}` }
+    }) as unknown as InjectResult;
+    assert.equal(res1.statusCode, 200);
+    const body1 = res1.json() as Record<string, any>;
+    assert.equal(body1.meta.cached, false);
+
+    const res2 = await app.inject({
+      method: 'GET',
+      url: '/api/admin/blocked-dealers?limit=5',
+      headers: { Cookie: `op_session=${token}` }
+    }) as unknown as InjectResult;
+    assert.equal(res2.statusCode, 200);
+    const body2 = res2.json() as Record<string, any>;
+    assert.equal(body2.meta.cached, true);
+    assert.equal(body2.meta.generatedAt, body1.meta.generatedAt);
+  });
+
+  it('sanitizes secrets and sensitive details', async () => {
+    const { app, token } = makeApp('SUPER_ADMIN');
+    const res = await app.inject({
+      method: 'GET',
+      url: '/api/admin/blocked-dealers',
+      headers: { Cookie: `op_session=${token}` }
+    }) as unknown as InjectResult;
+    assert.equal(res.statusCode, 200);
+    assert.ok(!res.body.includes('access_token'), 'must not leak tokens');
+    assert.ok(!res.body.includes('client_secret'), 'must not leak secrets');
   });
 });

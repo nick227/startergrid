@@ -31,6 +31,7 @@ export const pristineApiDealership: DealershipPayload = {
     'reddit-dynamic-product-ads',
     'cargurus-dealer',
     'autotrader-cox',
+    'carfax-for-dealers',
     'ebay-motors',
     'x-dynamic-product-ads',
     'cars-com',

@@ -4,11 +4,14 @@ import {
   listPlatformAccounts,
   updatePlatformAccount,
   validateAccountUpdatePayload,
+  recordValidationAttempt,
   type AccountUpdatePayload,
 } from '../../services/publishing/platformAccountService.js';
 import { platformProfiles } from '../../data/platformProfiles.js';
 import { requireDealerAccess } from '../security.js';
 import { accountUpdateSchema, validateBody } from '../requestValidation.js';
+import { PartnerConnectionValidator } from '../../services/validation/PartnerConnectionValidator.js';
+import { decryptSecret } from '../../lib/secrets.js';
 
 type DealerParams = { dealershipId: string };
 type SlugParams   = { dealershipId: string; platformSlug: string };
@@ -58,7 +61,69 @@ export function registerAccountRoutes(app: FastifyInstance, prisma: PrismaClient
       if (validationError)
         return reply.status(400).send({ error: validationError });
 
-      const updated = await updatePlatformAccount(prisma, dealershipId, platformSlug, body);
+      const updated = await updatePlatformAccount(
+        prisma,
+        dealershipId,
+        platformSlug,
+        body,
+        request.operator
+      );
+    }
+  );
+
+  // POST /api/dealers/:dealershipId/accounts/:platformSlug/validate
+  app.post<{ Params: SlugParams }>(
+    '/api/dealers/:dealershipId/accounts/:platformSlug/validate',
+    async (request, reply) => {
+      const { dealershipId, platformSlug } = request.params;
+      if (!await requireDealerAccess(prisma, request, reply, dealershipId)) return;
+      if (!await requireDealer(prisma, dealershipId))
+        return reply.status(404).send({ error: 'Dealer not found' });
+
+      const profile = platformProfiles.find(p => p.slug === platformSlug);
+      if (!profile)
+        return reply.status(404).send({ error: `Unknown platform: ${platformSlug}` });
+
+      const account = await prisma.platformAccount.findUnique({
+        where: { dealershipId_platformSlug: { dealershipId, platformSlug } }
+      });
+      if (!account) return reply.status(404).send({ error: 'Account not found' });
+
+      const config = (account.connectionConfig as Record<string, any>) || {};
+
+      const dbSecrets = await (prisma as any).platformSecret.findMany({
+        where: { dealershipId, platformSlug }
+      });
+
+      const secrets: Record<string, string | null> = {};
+      for (const s of dbSecrets) {
+        try {
+          secrets[s.fieldKey] = decryptSecret(s.encryptedValue);
+        } catch (e) {
+          secrets[s.fieldKey] = null;
+        }
+      }
+
+      const startTime = Date.now();
+      const result = await PartnerConnectionValidator.validate({
+        dealershipId,
+        platformSlug,
+        config,
+        secrets
+      });
+      const durationMs = Date.now() - startTime;
+
+      const updated = await recordValidationAttempt(
+        prisma,
+        dealershipId,
+        platformSlug,
+        result.success,
+        result.safeReason,
+        result.code,
+        durationMs,
+        request.operator
+      );
+
       return reply.send({ account: updated });
     }
   );

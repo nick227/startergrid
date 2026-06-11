@@ -1,4 +1,4 @@
-﻿import type { PrismaClient, Prisma } from '@prisma/client';
+import type { PrismaClient, Prisma } from '@prisma/client';
 import type {
   DealershipPayload,
   IntegrationClass,
@@ -187,6 +187,7 @@ export type PlatformPublishResult = {
   connectionType: string | null;
   integrationMaturity: string | null;
   regions: string[];
+  setupInstructions?: string[];
 };
 
 export type PreparePublishResult = {
@@ -386,6 +387,7 @@ export async function runPrepareAndPublish(
       connectionType: platform.connectionType ?? null,
       integrationMaturity: platform.integrationMaturity ?? null,
       regions: platform.regions ?? [],
+      setupInstructions: platform.setupInstructions ?? [],
     };
   });
 
