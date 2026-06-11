@@ -1,8 +1,10 @@
 import { OperatorNav } from './OperatorNav.tsx';
 import type { OperatorTab, OperatorNavHandlers } from '../../lib/operatorNav.ts';
+import { OPERATOR_TABS } from '../../lib/operatorNav.ts';
 import { operatorCopy } from '../../lib/copy/operator.ts';
 import { useAuth } from '@/contexts/AuthContext.tsx';
 import { useCategorySchema } from '@/contexts/CategoryContext.tsx';
+import { useAdminView } from '@/contexts/AdminViewContext.tsx';
 
 type Props = {
   dealerId: string;
@@ -20,6 +22,7 @@ type Props = {
 };
 
 const TAB_LABELS: Record<OperatorTab, string> = {
+  home: 'Overview',
   platforms: 'Platforms',
   queue: 'Queue',
   history: 'History',
@@ -44,6 +47,69 @@ export function PageShell({
 }: Props) {
   const { user, logout } = useAuth();
   const categorySchema = useCategorySchema();
+  const isAdminView = useAdminView();
+
+  if (isAdminView) {
+    const tabHandlers: Record<OperatorTab, () => void> = {
+      home: nav.goToHome,
+      platforms: nav.goToPlatforms,
+      queue: () => nav.goToQueue(),
+      history: () => nav.goToHistory(),
+      reports: nav.goToReports,
+      inventory: () => nav.goToInventory(),
+      help: nav.goToHelp,
+    };
+    return (
+      <div className={footerPad ? 'pb-20' : ''}>
+        <div className="flex items-center justify-between gap-4 py-3 border-b border-silver-200">
+          <div className="flex items-center gap-3 min-w-0">
+            {dealerName ? (
+              <span className="text-sm font-semibold text-ink-heading truncate">{dealerName}</span>
+            ) : (
+              <div className="h-4 w-32 bg-silver-200 rounded animate-pulse" />
+            )}
+            {!hideDealerId && (
+              <span className="text-xs text-ink-faint font-mono hidden sm:block truncate max-w-[14rem]">{dealerId}</span>
+            )}
+          </div>
+          <div className="flex items-center gap-2 shrink-0">
+            {lastRefresh && !refreshing && (
+              <span className="text-silver-400 text-xs hidden sm:block">Updated {lastRefresh.toLocaleTimeString()}</span>
+            )}
+            {refreshing && <span className="text-ink-faint text-xs animate-pulse">Refreshing…</span>}
+            {onRefresh && (
+              <button
+                type="button"
+                onClick={onRefresh}
+                disabled={refreshing}
+                className="px-3 py-1.5 text-xs font-medium bg-silver-100 hover:bg-silver-200 text-ink-heading rounded-md transition-colors disabled:opacity-40"
+              >
+                Refresh
+              </button>
+            )}
+            {headerAction}
+          </div>
+        </div>
+        <div className="flex border-b border-silver-200 mb-6 overflow-x-auto">
+          {OPERATOR_TABS.map(tab => (
+            <button
+              key={tab.id}
+              type="button"
+              onClick={tabHandlers[tab.id]}
+              className={`px-5 py-3 text-sm font-semibold border-b-2 -mb-px whitespace-nowrap transition-colors ${
+                tab.id === activeTab
+                  ? 'border-orange-600 text-ink-heading'
+                  : 'border-transparent text-ink-muted hover:text-ink-body hover:border-silver-300'
+              }`}
+            >
+              {tab.label}
+            </button>
+          ))}
+        </div>
+        <div>{children}</div>
+      </div>
+    );
+  }
 
   return (
     <div className={`min-h-screen bg-surface-page ${footerPad ? 'pb-20' : ''}`}>

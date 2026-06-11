@@ -1,8 +1,9 @@
 import { useState, useEffect } from 'react';
 import type { PlatformPublishResult, PlatformAccountDetail, PlatformPerformanceItem, SyncEvent } from '@/lib/types.ts';
 import { friendlyPlatformDetail, platformOutcomeMeta } from '@/lib/syncPresentation.ts';
-import { platformConnectionWithAccount } from '@/lib/platformPresentation.ts';
+
 import { timeAgo } from '@/lib/timeAgo.ts';
+import { getSetupReadiness, severityToPill } from '@/lib/setupReadiness.ts';
 import type { OperatorNavHandlers } from '@/lib/operatorNav.ts';
 import { buildTabs, type Tab } from '@/lib/platformDrawerTabs.ts';
 import { AccountEditForm } from './AccountEditForm.tsx';
@@ -191,9 +192,9 @@ export function PlatformDetailDrawer({
   // Reset to Setup whenever the operator opens a different platform.
   useEffect(() => { setActiveTab('setup'); }, [platform.platformSlug]);
   const tabs = buildTabs(platform);
-  const conn = platformConnectionWithAccount(platform, account);
   const publish = platformOutcomeMeta(platform);
   const detail = friendlyPlatformDetail(platform);
+  const readiness = getSetupReadiness(platform, account || null);
 
   return (
     <RowDetailDrawer open={open} title={platform.platformName} onClose={onClose}>
@@ -205,8 +206,8 @@ export function PlatformDetailDrawer({
             <PlatformLogo slug={platform.platformSlug} name={platform.platformName} size="sm" />
             <div className="min-w-0">
               <div className="flex flex-wrap items-center gap-1.5">
-                <span className={`px-1.5 py-0.5 rounded text-[10px] font-bold border ${conn.pill}`}>
-                  {conn.label}
+                <span className={`px-1.5 py-0.5 rounded text-[10px] font-bold border ${severityToPill(readiness.severity)}`}>
+                  {readiness.statusLabel}
                 </span>
                 <span className="text-[10px] text-ink-faint">{publish.label}</span>
               </div>

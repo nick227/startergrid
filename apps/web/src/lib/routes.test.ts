@@ -96,6 +96,62 @@ describe('parseOperatorRoute', () => {
       page: 'admin',
       platformSlug: null,
       adminDealerId: 'dealer-abc',
+      adminDealerPage: null,
+    });
+  });
+
+  it('parses admin dealer platforms sub-route', () => {
+    const route = parseOperatorRoute('#/admin/dealers/dealer-abc/platforms');
+    expect(route).toMatchObject({
+      page: 'admin',
+      adminDealerId: 'dealer-abc',
+      adminDealerPage: 'platforms',
+      platformSlug: null,
+      platformView: null,
+    });
+  });
+
+  it('parses admin dealer platform detail sub-route', () => {
+    const route = parseOperatorRoute('#/admin/dealers/dealer-abc/platforms/facebook-social-posting');
+    expect(route).toMatchObject({
+      page: 'admin',
+      adminDealerId: 'dealer-abc',
+      adminDealerPage: 'platforms',
+      platformSlug: 'facebook-social-posting',
+      platformView: null,
+    });
+  });
+
+  it('parses admin dealer platform queue sub-route', () => {
+    const route = parseOperatorRoute('#/admin/dealers/dealer-abc/platforms/facebook-social-posting/queue');
+    expect(route).toMatchObject({
+      page: 'admin',
+      adminDealerId: 'dealer-abc',
+      adminDealerPage: 'platforms',
+      platformSlug: 'facebook-social-posting',
+      platformView: 'queue',
+    });
+  });
+
+  it('parses admin dealer queue sub-route', () => {
+    const route = parseOperatorRoute('#/admin/dealers/dealer-abc/queue');
+    expect(route).toMatchObject({
+      page: 'admin',
+      adminDealerId: 'dealer-abc',
+      adminDealerPage: 'queue',
+      platformSlug: null,
+    });
+  });
+
+  it('parses admin dealer reports sub-route', () => {
+    const route = parseOperatorRoute('#/admin/dealers/dealer-abc/reports/inventory/movement?range=30d');
+    expect(route).toMatchObject({
+      page: 'admin',
+      adminDealerId: 'dealer-abc',
+      adminDealerPage: 'reports',
+      reportFamily: 'inventory',
+      reportSlug: 'movement',
+      reportRange: '30d',
     });
   });
 });

@@ -16,6 +16,8 @@ export type OperatorRoute = {
   reportRange: import('./reportsCatalog.ts').ReportRangePreset;
   /** Set when page==='admin' and the URL is #/admin/dealers/{id}. Null for all other routes. */
   adminDealerId: string | null;
+  /** Dealer sub-page within admin (platforms/queue/history/reports/inventory/help). Null otherwise. */
+  adminDealerPage: string | null;
 };
 
 const LEGACY_SEGMENT_MAP: Record<string, OperatorPageSegment> = {
@@ -54,6 +56,7 @@ function emptyRoute(): OperatorRoute {
     reportSlug: null,
     reportRange: 'now',
     adminDealerId: null,
+    adminDealerPage: null,
   };
 }
 
@@ -83,23 +86,45 @@ export function parseOperatorRoute(hash = window.location.hash): OperatorRoute {
   if (path.startsWith('/admin') || path.startsWith('admin')) {
     const cleanPath = path.replace(/^\//, ''); // remove leading slash
     const parts = cleanPath.split('/');
-    // #/admin/dealers/{dealerId} → adminDealerId
+    // #/admin/dealers/{dealerId}[/{page}[/{platformSlug}[/queue|history]]]
     if (parts[1] === 'dealers' && parts[2]) {
+      const adminDealerId = parts[2];
+      const adminDealerPage = parts[3] ?? null;
+      // Platform detail sub-route: /admin/dealers/{id}/platforms/{slug}[/queue|history]
+      if (adminDealerPage === 'platforms' && parts[4]) {
+        const platformSlug = parts[4];
+        const platformView = (parts[5] === 'queue' || parts[5] === 'history') ? parts[5] as 'queue' | 'history' : null;
+        return routeWithReports(
+          { dealerId: null, page: 'admin', platformSlug, platformView, assetRef, assetId, adminDealerId, adminDealerPage },
+          hash,
+        );
+      }
+      // Reports sub-route: parse report family/slug from path segments
+      if (adminDealerPage === 'reports') {
+        const { query } = splitOperatorHash(hash);
+        const reportFamily = (parts[4] === 'inventory' || parts[4] === 'platform') ? parts[4] as 'inventory' | 'platform' : null;
+        const reportSlug = parts[5] ?? null;
+        const params = new URLSearchParams(query.startsWith('?') ? query.slice(1) : query);
+        const rawRange = params.get('range');
+        const reportRange: import('./reportsCatalog.ts').ReportRangePreset =
+          (rawRange === '7d' || rawRange === '30d' || rawRange === '90d' || rawRange === 'now') ? rawRange : 'now';
+        return { dealerId: null, page: 'admin', platformSlug: null, platformView: null, assetRef, assetId, adminDealerId, adminDealerPage, reportFamily, reportSlug, reportRange };
+      }
       return routeWithReports(
-        { dealerId: null, page: 'admin', platformSlug: null, platformView: null, assetRef, assetId, adminDealerId: parts[2] },
+        { dealerId: null, page: 'admin', platformSlug: null, platformView: null, assetRef, assetId, adminDealerId, adminDealerPage },
         hash,
       );
     }
     const platformSlug = parts[1] || null;
     return routeWithReports(
-      { dealerId: null, page: 'admin', platformSlug, platformView: null, assetRef, assetId, adminDealerId: null },
+      { dealerId: null, page: 'admin', platformSlug, platformView: null, assetRef, assetId, adminDealerId: null, adminDealerPage: null },
       hash,
     );
   }
 
   if (path === '/help' || path === 'help' || path === '/knowledge' || path === 'knowledge') {
     return routeWithReports(
-      { dealerId: null, page: 'help', platformSlug: null, platformView: null, assetRef, assetId, adminDealerId: null },
+      { dealerId: null, page: 'help', platformSlug: null, platformView: null, assetRef, assetId, adminDealerId: null, adminDealerPage: null },
       hash,
     );
   }
@@ -121,6 +146,7 @@ export function parseOperatorRoute(hash = window.location.hash): OperatorRoute {
         assetRef,
         assetId,
         adminDealerId: null,
+        adminDealerPage: null,
       },
       hash,
     );
@@ -128,14 +154,14 @@ export function parseOperatorRoute(hash = window.location.hash): OperatorRoute {
 
   if (rest.startsWith('reports')) {
     return routeWithReports(
-      { dealerId, page: 'reports', platformSlug: null, platformView: null, assetRef, assetId, adminDealerId: null },
+      { dealerId, page: 'reports', platformSlug: null, platformView: null, assetRef, assetId, adminDealerId: null, adminDealerPage: null },
       hash,
     );
   }
 
   const page = parsePageSegment(rest || undefined);
   return routeWithReports(
-    { dealerId, page, platformSlug: null, platformView: null, assetRef, assetId, adminDealerId: null },
+    { dealerId, page, platformSlug: null, platformView: null, assetRef, assetId, adminDealerId: null, adminDealerPage: null },
     hash,
   );
 }
@@ -176,6 +202,7 @@ export function platformHistoryHash(dealerId: string, platformSlug: string, scop
 
 export function buildOperatorNav(dealerId: string): OperatorNavHandlers {
   return {
+    goToHome: () => { window.location.hash = `#/${dealerId}`; },
     goToPlatforms: () => { window.location.hash = operatorHash(dealerId, 'platforms'); },
     goToQueue: scope => { window.location.hash = operatorHash(dealerId, 'queue', scope); },
     goToHistory: scope => { window.location.hash = operatorHash(dealerId, 'history', scope); },

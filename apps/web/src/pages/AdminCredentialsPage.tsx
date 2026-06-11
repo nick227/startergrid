@@ -8,7 +8,7 @@ import {
 } from '@/lib/api/admin.ts';
 import { useAsyncQuery } from '@/hooks/useAsyncQuery.ts';
 import { Skeleton } from '@/components/ui/Skeleton.tsx';
-import { AdminShell, ErrorState } from '@/components/operator/index.ts';
+import { ErrorState } from '@/components/operator/index.ts';
 import { toErrorMessage } from '@/lib/errors.ts';
 
 const STATUS_PILLS: Record<ProviderCredentialResult['status'], { label: string; className: string }> = {
@@ -83,26 +83,23 @@ export default function AdminCredentialsPage() {
   };
 
   return (
-    <AdminShell
-      back={{ href: '#/admin', label: 'Back to overview' }}
-      action={
-        <button
-          type="button"
-          onClick={() => void runValidation()}
-          disabled={validating || loading}
-          className="inline-flex items-center rounded-md bg-orange-600 px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-orange-500 disabled:opacity-40"
-        >
-          {validating ? 'Validating…' : 'Validate keys'}
-        </button>
-      }
-    >
-      <div className="max-w-4xl">
-        <div className="mb-5">
+    <div className="max-w-4xl">
+      <div className="mb-5 flex items-start justify-between gap-4">
+        <div>
           <h2 className="text-xl font-bold text-ink-heading">Platform Credential Validation</h2>
           <p className="text-ink-muted text-sm mt-1">
             Developer API keys — verify our platform app credentials authenticate against each provider.
           </p>
         </div>
+        <button
+          type="button"
+          onClick={() => void runValidation()}
+          disabled={validating || loading}
+          className="shrink-0 inline-flex items-center rounded-md bg-orange-600 px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-orange-500 disabled:opacity-40"
+        >
+          {validating ? 'Validating…' : 'Validate keys'}
+        </button>
+      </div>
 
         {meta && (
           <div className="mb-3 text-xs text-ink-muted">
@@ -148,7 +145,6 @@ export default function AdminCredentialsPage() {
           Providers marked "No live check" (Apple, TikTok, TikTok Shop) have non-standard token APIs; only env presence is reported.
           Results are cached briefly to avoid hammering provider endpoints.
         </p>
-      </div>
-    </AdminShell>
+    </div>
   );
 }

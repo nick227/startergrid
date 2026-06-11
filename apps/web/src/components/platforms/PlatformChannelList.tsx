@@ -20,6 +20,8 @@ import {
   channelRowSurface,
 } from '@/lib/channelRowPresentation.ts';
 import { operatorCopy } from '@/lib/copy/operator.ts';
+import { getValidationBadge } from '@/lib/validationPresentation.ts';
+import { getSetupReadiness, severityToPill } from '@/lib/setupReadiness.ts';
 
 
 type Props = {
@@ -117,12 +119,14 @@ export function PlatformChannelList({
       socialPageBySlug?.get(platform.platformSlug)?.name,
     );
 
+    const readiness = getSetupReadiness(platform, account || null);
+
     return (
       <OpsRowCard
         key={platform.platformSlug}
         title={platform.platformName}
-        statusLabel={conn.label}
-        statusClassName={conn.pill}
+        statusLabel={readiness.statusLabel}
+        statusClassName={severityToPill(readiness.severity)}
         secondaryMeta={channelSecondaryMeta(platform)}
         desktopFields={channelDesktopFields(platform, perf)}
         detailOpen={selectedSlug === platform.platformSlug}
@@ -133,7 +137,17 @@ export function PlatformChannelList({
           <span className={`shrink-0 px-1.5 py-0.5 rounded text-[10px] font-semibold border ${badge.pill}`}>
             {badge.label}
           </span>
-        ) : undefined}
+        ) : (
+          (() => {
+            const valBadge = getValidationBadge(account);
+            if (valBadge.state === 'NOT_TESTED') return undefined;
+            return (
+              <span className={`shrink-0 px-1.5 py-0.5 rounded text-[10px] font-semibold border ${valBadge.pillClass}`}>
+                {valBadge.label}
+              </span>
+            );
+          })()
+        )}
         healthLine={feedHealthLine(perf, conn.connection)}
         ctaNode={
           conn.connection === 'needs_oauth' && account?.oauthProvider ? (

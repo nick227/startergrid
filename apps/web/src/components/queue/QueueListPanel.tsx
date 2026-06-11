@@ -2,10 +2,11 @@ import { useEffect, useMemo, useState } from 'react';
 import type { OperatorNavHandlers } from '@/lib/operatorNav.ts';
 import { useAsyncQuery } from '@/hooks/useAsyncQuery.ts';
 import { fetchPublishQueue } from '@/lib/api/sdk.ts';
-import { OperatorPage, ErrorState, PanelSkeleton } from '@/components/operator';
-import { PageSituation, ControlBlock } from '@/components/layout';
+import { OperatorPage, ErrorState } from '@/components/operator';
+import { PageSituation, ControlBlock, OpsRowCardSkeleton } from '@/components/layout';
 import { OpsRowCard } from '@/components/layout/OpsRowCard.tsx';
 import { FilterChips } from '@/components/generic';
+import { EmptyState } from '@/components/ui';
 import { QueueDetailDrawer } from './QueueDetailDrawer.tsx';
 import {
   QUEUE_TASK_FILTERS,
@@ -119,9 +120,28 @@ export function QueueListPanel({
       <div className={`${selected ? 'lg:grid lg:grid-cols-[1fr_min(22rem,38%)] lg:gap-4 lg:items-start' : ''}`}>
         <div className="space-y-3">
           {loading && !data ? (
-            <PanelSkeleton rows={6} />
+            <>
+              <OpsRowCardSkeleton />
+              <OpsRowCardSkeleton />
+              <OpsRowCardSkeleton />
+            </>
           ) : items.length === 0 ? (
-            <p className="text-sm text-ink-muted py-8 text-center">{operatorCopy.queue.emptyFilter}</p>
+            <EmptyState
+              icon="📭"
+              title="No queue items found"
+              subtitle={operatorCopy.queue.emptyFilter}
+              action={
+                search || filter !== 'ALL' ? (
+                  <button
+                    type="button"
+                    onClick={() => { setSearch(''); setFilter('ALL'); }}
+                    className="text-navy-600 hover:text-navy-700 font-medium text-sm"
+                  >
+                    Clear filters
+                  </button>
+                ) : null
+              }
+            />
           ) : (
             items.map(item => {
               const st = queueItemStatusVisual(item);

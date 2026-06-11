@@ -8,13 +8,11 @@ import PlatformQueuePage from './pages/PlatformQueuePage.tsx';
 import PlatformHistoryPage from './pages/PlatformHistoryPage.tsx';
 import InventoryPage from './pages/InventoryPage.tsx';
 import KnowledgeBasePage from './pages/KnowledgeBasePage.tsx';
+import HomePage from './pages/HomePage.tsx';
 
 const PlatformDetailPage = lazy(() => import('./pages/PlatformDetailPage.tsx'));
 const ReportsRouter = lazy(() => import('./pages/ReportsRouter.tsx'));
-const AdminCredentialsPage = lazy(() => import('./pages/AdminCredentialsPage.tsx'));
-const AdminOverviewPage = lazy(() => import('./pages/AdminOverviewPage.tsx'));
-const AdminBlockedDealersPage = lazy(() => import('./pages/AdminBlockedDealersPage.tsx'));
-const AdminDealerPage = lazy(() => import('./pages/AdminDealerPage.tsx'));
+const AdminApp = lazy(() => import('./pages/AdminApp.tsx'));
 import { AuthLoadingScreen } from '@/components/auth/AuthLoadingScreen.tsx';
 import { useAuth } from '@/contexts/AuthContext.tsx';
 import { useOperatorRoute } from '@/hooks/useOperatorRoute.ts';
@@ -26,11 +24,10 @@ import { canAccessDealer } from '@/lib/operatorAccess.ts';
 function OperatorApp() {
   const { user, authReady } = useAuth();
   const { route, nav, activeTab, selectDealer } = useOperatorRoute();
-  const { dealerId, page, platformSlug, platformView, reportSlug, reportRange, adminDealerId } = route;
+  const { dealerId, page, platformSlug, platformView, reportSlug, reportRange, adminDealerId, adminDealerPage } = route;
   const categorySchema = useDealerCategorySchema(dealerId ?? null);
 
   const helpStandalone = (page === 'help' || page === 'knowledge') && !dealerId;
-  // SUPER_ADMIN has no dealer picker — AdminOverviewPage is their home screen.
   const superAdminHome = !dealerId && user?.role === 'SUPER_ADMIN';
 
   useEffect(() => {
@@ -51,15 +48,14 @@ function OperatorApp() {
     <CategoryProvider schema={categorySchema}>
       {superAdminHome ? (
         <Suspense fallback={null}>
-          {adminDealerId ? (
-            <AdminDealerPage dealerId={adminDealerId} />
-          ) : platformSlug === 'platform-credentials' ? (
-            <AdminCredentialsPage />
-          ) : platformSlug === 'blocked-dealers' ? (
-            <AdminBlockedDealersPage />
-          ) : (
-            <AdminOverviewPage />
-          )}
+          <AdminApp
+            adminDealerId={adminDealerId}
+            platformSlug={platformSlug}
+            adminDealerPage={adminDealerPage}
+            platformView={platformView}
+            reportSlug={reportSlug}
+            reportRange={reportRange}
+          />
         </Suspense>
       ) : helpStandalone ? (
         <KnowledgeBasePage onBack={() => { window.location.hash = '#/help'; }} />
@@ -87,8 +83,14 @@ function OperatorApp() {
         </Suspense>
       ) : page === 'inventory' ? (
         <InventoryPage dealerId={dealerId} nav={nav} activeTab={activeTab} />
-      ) : (
+      ) : page === 'platforms' ? (
         <PlatformsPage
+          dealerId={dealerId}
+          nav={nav}
+          activeTab={activeTab}
+        />
+      ) : (
+        <HomePage
           dealerId={dealerId}
           nav={nav}
           activeTab={activeTab}

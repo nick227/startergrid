@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { fetchInventory, bulkEditVehicles, fetchVehiclePerformanceList, fetchPlatformPerformance } from '@/lib/api/sdk.ts';
-import type { BulkEditPayload, CommitImportResponse, VehiclePerformanceItem, PlatformPerformanceItem, LifecycleScope } from '@/lib/types.ts';
+import type { BulkEditPayload, VehiclePerformanceItem, PlatformPerformanceItem, LifecycleScope } from '@/lib/types.ts';
 import type { OperatorPageBaseProps } from '@/lib/operatorPage.ts';
 import { useAsyncQuery } from '@/hooks/useAsyncQuery.ts';
 import { useAutoSyncWatch } from '@/hooks/useAutoSyncWatch.ts';
@@ -8,80 +8,79 @@ import { OperatorPage, SectionCard, InlineCallout, PageHeader } from '@/componen
 import { EMPTY_STATE_COPY } from '@/lib/statusRegistry.ts';
 import { hasPerformanceData, isBenchmarksUpdating } from '@/lib/performanceFreshness.ts';
 import { isActiveLifecycleScope } from '@/lib/lifecycleDisplay.ts';
-import {
-  countBenchmarkedVehicles,
-  countLowDataVehicles,
-  staleStockNumbers,
-} from '@/lib/movementBenchmark.ts';
-import {
-  composeInventoryList,
-  movementFilterCountsScoped,
-  type InventoryListQuery,
-  type InventorySortKey,
-  type MovementFilter,
-  type SortDirection,
-} from '@/lib/inventoryAssetOps.ts';
-import { Banner, EmptyState } from '@/components/ui';
+import { countLowDataVehicles, staleStockNumbers } from '@/lib/movementBenchmark.ts';
+import { composeInventoryList, type InventoryListQuery, type MovementFilter } from '@/lib/inventoryAssetOps.ts';
+import { Banner } from '@/components/ui';
 import { InfoButton } from '@/components/docs';
-import { SearchField } from '@/components/ui/SearchField.tsx';
-import { BulkActionBar, SummaryStrip } from '@/components/generic';
-import type { SummaryItem } from '@/components/generic';
+import { BulkActionBar } from '@/components/generic';
 import {
-  ImportModal,
-  CleanupFilterBar,
-  ImportBatchHistory,
   IngressPanel,
-  MovementFilterBar,
-  InventorySortBar,
-  LifecycleFilterBar,
   BenchmarkFreshnessBar,
   InventoryWalkthroughBanner,
-  InventoryAssetList,
-  SUMMARY_STRIP_ITEMS,
   bulkEditFieldDefs,
   applyCleanupFilter,
+  InventoryDataGrid,
+  InventoryGridToolbar,
+  InventorySummaryStrip,
+  INVENTORY_COLUMN_PRESETS,
+  mapLegacyVehicleToGridRow,
+  InventoryDetailPanel,
+  InventoryWorkspace
 } from '@/components/inventory';
+import type { CleanupFilter } from '@/components/inventory/inventoryConfig.tsx';
 import { CreatePostModal } from '@/components/social/index.ts';
-import type { CleanupFilter } from '@/components/inventory';
 import { operatorCopy } from '@/lib/copy/index.ts';
-import { useCategorySchema, useInventoryLabels } from '@/contexts/CategoryContext.tsx';
+import { useCategorySchema } from '@/contexts/CategoryContext.tsx';
 import { useOperatorRoute } from '@/hooks/useOperatorRoute.ts';
+import { RowDetailDrawer } from '@/components/layout';
 
 type Props = OperatorPageBaseProps;
 
+const DEFAULT_COLS = INVENTORY_COLUMN_PRESETS['Default'];
+
 export default function InventoryPage({ dealerId, nav, activeTab }: Props) {
   const categorySchema = useCategorySchema();
-  const inventoryLbls = useInventoryLabels();
   const { route } = useOperatorRoute();
-  const [lifecycleScope, setLifecycleScope] = useState<LifecycleScope>('active');
+  const [lifecycleScope] = useState<LifecycleScope>('active');
   const { data, loading, error, reload: load, lastRefresh } = useAsyncQuery(
     () => fetchInventory(dealerId, { lifecycleScope }),
     [dealerId, lifecycleScope],
   );
   const [selected, setSelected] = useState<Set<string>>(new Set());
-  const [filter, setFilter] = useState<CleanupFilter>('ALL');
-  const [movementFilter, setMovementFilter] = useState<MovementFilter>('ALL');
-  const [sortKey, setSortKey] = useState<InventorySortKey>('movementSignal');
-  const [sortDirection, setSortDirection] = useState<SortDirection>('asc');
+  const [filter, setFilter] = useState<string>('All');
+  const [movementFilter] = useState<MovementFilter>('ALL');
+  const [sortKey, setSortKey] = useState<string>('specs.make');
+  const [sortDirection, setSortDirection] = useState<'asc'|'desc'>('asc');
   const [search, setSearch] = useState(route.assetRef ?? '');
-  const [showImport, setShowImport] = useState(false);
   const [createPostTarget, setCreatePostTarget] = useState<{ vehicleId: string; vehicleTitle: string } | null>(null);
+
+  // Persistence for grid view/columns
+  const [viewMode, setViewMode] = useState<'table' | 'card'>(() => (localStorage.getItem('inventoryViewMode') as 'table'|'card') || 'table');
+  const [activeColumns, setActiveColumns] = useState<string[]>(() => {
+    try {
+      const stored = localStorage.getItem('inventoryColumns');
+      return stored ? JSON.parse(stored) : DEFAULT_COLS;
+    } catch {
+      return DEFAULT_COLS;
+    }
+  });
+
+  const handleSetViewMode = (m: 'table'|'card') => {
+    setViewMode(m);
+    localStorage.setItem('inventoryViewMode', m);
+  };
+  const handleSetColumns = (cols: string[]) => {
+    setActiveColumns(cols);
+    localStorage.setItem('inventoryColumns', JSON.stringify(cols));
+  };
 
   useEffect(() => {
     if (route.assetRef) setSearch(route.assetRef);
   }, [route.assetRef]);
-  const [importResult, setImportResult] = useState<CommitImportResponse | null>(null);
   const [latestIngestRunId, setLatestIngestRunId] = useState<string | null>(null);
 
-  const perf = useAsyncQuery(
-    () => fetchVehiclePerformanceList(dealerId),
-    [dealerId]
-  );
-
-  const platformPerf = useAsyncQuery(
-    () => fetchPlatformPerformance(dealerId),
-    [dealerId]
-  );
+  const perf = useAsyncQuery(() => fetchVehiclePerformanceList(dealerId), [dealerId]);
+  const platformPerf = useAsyncQuery(() => fetchPlatformPerformance(dealerId), [dealerId]);
 
   const reloadBenchmarks = useCallback(() => {
     perf.reload();
@@ -111,37 +110,59 @@ export default function InventoryPage({ dealerId, nav, activeTab }: Props) {
   const vehicles = useMemo(() => vehicleRows ?? [], [vehicleRows]);
   const summary = data?.summary;
 
+  // Filter mapping from chip -> old cleanup filter logic (temp)
+  const legacyFilterMap: Record<string, CleanupFilter> = {
+    'All': 'ALL',
+    'Ready': 'READY',
+    'Needs photos': 'MISSING_PHOTOS',
+    'Queued': 'ALL',
+    'Blocked': 'BLOCKED',
+  };
+  const resolvedFilter = legacyFilterMap[filter] ?? 'ALL';
+
   const listQuery = useMemo<InventoryListQuery>(() => ({
     search,
-    cleanupFilter: filter,
+    cleanupFilter: resolvedFilter,
     movementFilter,
-    sortKey,
+    sortKey: 'movementSignal', // legacy sort override while we transition sorting
     sortDirection,
-  }), [search, filter, movementFilter, sortKey, sortDirection]);
+  }), [search, resolvedFilter, movementFilter, sortDirection]);
 
   const visible = useMemo(
     () => composeInventoryList(vehicles, perfMap, listQuery, applyCleanupFilter),
     [vehicles, perfMap, listQuery],
   );
 
-  const movementCounts = useMemo(
-    () => movementFilterCountsScoped(vehicles, perfMap, listQuery, applyCleanupFilter),
-    [vehicles, perfMap, listQuery],
-  );
   const benchmarksUpdating = isBenchmarksUpdating(autoSync.data);
-  const lowDataCount = useMemo(
-    () => countLowDataVehicles(perf.data?.items ?? []),
-    [perf.data],
-  );
+  const lowDataCount = useMemo(() => countLowDataVehicles(perf.data?.items ?? []), [perf.data]);
 
-  const allVisibleSelected = visible.length > 0 && visible.every(v => selected.has(v.id));
+  const mappedVisible = useMemo(() => {
+    const sorted = visible.map(v => mapLegacyVehicleToGridRow(v, perfMap.get(v.stockNumber)));
+    if (sortKey) {
+      sorted.sort((a, b) => {
+        const parts = sortKey.split('.');
+        let valA: any = a;
+        let valB: any = b;
+        for (const p of parts) { valA = valA?.[p]; valB = valB?.[p]; }
+        if (typeof valA === 'string' && typeof valB === 'string') {
+          return sortDirection === 'asc' ? valA.localeCompare(valB) : valB.localeCompare(valA);
+        }
+        if (valA < valB) return sortDirection === 'asc' ? -1 : 1;
+        if (valA > valB) return sortDirection === 'asc' ? 1 : -1;
+        return 0;
+      });
+    }
+    return sorted;
+  }, [visible, perfMap, sortKey, sortDirection]);
+
+  const allVisibleSelected = mappedVisible.length > 0 && mappedVisible.every(v => selected.has(v.id));
   const selectedInView = useMemo(() => visible.filter(v => selected.has(v.id)), [visible, selected]);
 
   const toggleAll = () =>
     setSelected(s => {
       const ns = new Set(s);
-      if (allVisibleSelected) visible.forEach(v => ns.delete(v.id));
-      else visible.forEach(v => ns.add(v.id));
+      if (allVisibleSelected) mappedVisible.forEach(v => ns.delete(v.id));
+      else mappedVisible.forEach(v => ns.add(v.id));
       return ns;
     });
 
@@ -158,45 +179,21 @@ export default function InventoryPage({ dealerId, nav, activeTab }: Props) {
     load();
   };
 
-  const summaryItems: SummaryItem[] = SUMMARY_STRIP_ITEMS.map(def => ({
-    key: def.key,
-    label: def.label,
-    colorClass: def.colorClass,
-    value: (summary as Record<string, number> | undefined)?.[def.key] ?? 0,
-  }));
+  const isEmpty = !loading && vehicles.length === 0;
 
-  const chipCounts = useMemo(() => {
-    const idKey = inventoryLbls.idFieldKey;
-    return {
-      MISSING_PHOTOS: vehicles.filter(v => v.issues.some(i => i.path === 'media')).length,
-      INVALID_IDENTIFIER: idKey
-        ? vehicles.filter(v => v.issues.some(i => i.path === idKey && i.severity === 'FAIL')).length
-        : 0,
-      SUSPICIOUS_PRICE: vehicles.filter(v => v.issues.some(i => i.path === 'priceCents')).length,
-    };
-  }, [vehicles, inventoryLbls.idFieldKey]);
-
-  const benchmarkCount = useMemo(
-    () => countBenchmarkedVehicles(perf.data?.items ?? []),
-    [perf.data],
-  );
-  const staleStocks = useMemo(
-    () => staleStockNumbers(perf.data?.items ?? []),
-    [perf.data],
-  );
-
-  const isActiveScope = isActiveLifecycleScope(lifecycleScope);
-  const lifecycleCounts = summary?.lifecycle ?? { active: 0, sold: 0, removed: 0 };
-
-  const handleImportCommitted = (result: CommitImportResponse) => {
-    setShowImport(false);
-    setImportResult(result);
-    load();
-    perf.reload();
-    platformPerf.reload();
+  const summaryCounts = {
+    active: summary?.total ?? 0,
+    ready: summary?.ready ?? 0,
+    needsPhotos: vehicles.filter(v => v.issues.some(i => i.path === 'media')).length,
+    queued: 0, // Mocked
+    blocked: summary?.blocked ?? 0,
   };
 
-  const isEmpty = !loading && vehicles.length === 0;
+  const staleStocks = useMemo(() => staleStockNumbers(perf.data?.items ?? []), [perf.data]);
+  const isActiveScope = isActiveLifecycleScope(lifecycleScope);
+
+  const [detailId, setDetailId] = useState<string | null>(null);
+  const detailVehicle = detailId ? vehicles.find(r => r.id === detailId) ?? null : null;
 
   return (
     <OperatorPage
@@ -210,16 +207,9 @@ export default function InventoryPage({ dealerId, nav, activeTab }: Props) {
       headerAction={
         <span className="inline-flex items-center gap-2">
           <span className="inline-flex items-center gap-1 text-xs font-semibold text-ink-body">
-            CSV import
-            <InfoButton docId="inventory/csv-import" />
+            Inventory System
+            <InfoButton docId="inventory/inventory-readiness" />
           </span>
-          <button
-            type="button"
-            onClick={() => { setImportResult(null); setShowImport(true); }}
-            className="btn-primary-operator"
-          >
-            Import CSV
-          </button>
         </span>
       }
     >
@@ -228,17 +218,6 @@ export default function InventoryPage({ dealerId, nav, activeTab }: Props) {
           title={operatorCopy.inventory.title}
           infoDocId="inventory/inventory-readiness"
           subtitle={operatorCopy.inventory.subtitle}
-          action={
-            isActiveScope && summary && summary.ready > 0 ? (
-              <button
-                type="button"
-                onClick={() => nav.goToQueue()}
-                className="btn-primary-operator !px-5 !py-2.5 !text-sm shadow-elevation-1"
-              >
-                {operatorCopy.inventory.readyCta(summary.ready)}
-              </button>
-            ) : undefined
-          }
         />
 
         <InventoryWalkthroughBanner />
@@ -255,8 +234,8 @@ export default function InventoryPage({ dealerId, nav, activeTab }: Props) {
 
         <IngressPanel
           dealerId={dealerId}
-          latestRunId={importResult?.ingressRunId ?? latestIngestRunId}
-          onShowBlockedVehicles={() => setFilter('BLOCKED')}
+          latestRunId={latestIngestRunId}
+          onShowBlockedVehicles={() => setFilter('Blocked')}
           onIngestComplete={(ingressRunId) => {
             setLatestIngestRunId(ingressRunId);
             handleIntakeRefresh();
@@ -264,41 +243,13 @@ export default function InventoryPage({ dealerId, nav, activeTab }: Props) {
           onSnapshotCommitted={handleIntakeRefresh}
         />
 
-        {isEmpty && (
-          <SectionCard>
-            <EmptyState
-              icon="📦"
-              title={EMPTY_STATE_COPY.noInventory.title}
-              subtitle={EMPTY_STATE_COPY.noInventory.subtitle}
-              action={
-                <div className="flex flex-col sm:flex-row gap-3 justify-center">
-                  <button
-                    type="button"
-                    onClick={() => setShowImport(true)}
-                    className="px-6 py-3 bg-navy-900 text-white text-sm font-semibold rounded-xl"
-                  >
-                    {operatorCopy.inventory.importInventory}
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => nav.goToQueue()}
-                    className="px-6 py-3 bg-white border border-silver-200 text-ink-body text-sm font-semibold rounded-xl"
-                  >
-                    {operatorCopy.inventory.skipToQueue}
-                  </button>
-                </div>
-              }
-            />
-          </SectionCard>
-        )}
-
         {!isEmpty && summary && summary.blocked > 0 && (
           <InlineCallout
             tone="warning"
             title={operatorCopy.inventory.cleanupRecommended}
             icon="!"
             action={
-              <button type="button" onClick={() => setFilter('BLOCKED')} className="text-xs font-bold">
+              <button type="button" onClick={() => setFilter('Blocked')} className="text-xs font-bold">
                 {operatorCopy.inventory.showBlocked}
               </button>
             }
@@ -307,36 +258,19 @@ export default function InventoryPage({ dealerId, nav, activeTab }: Props) {
           </InlineCallout>
         )}
 
-        {importResult && (
-          <Banner variant="success" onDismiss={() => setImportResult(null)}>
-            Import complete: <strong>{importResult.created}</strong> created,{' '}
-            <strong>{importResult.updated}</strong> updated
-            {importResult.skipped > 0 && <>, <strong>{importResult.skipped}</strong> skipped</>}
-            {importResult.errors > 0 && <>, <strong className="text-red-700">{importResult.errors} errors</strong></>}
-            . {operatorCopy.inventory.importCompletePlatforms}
-            {benchmarksUpdating ? (
-              <> {EMPTY_STATE_COPY.postImportBenchmarksPending.title} — {EMPTY_STATE_COPY.postImportBenchmarksPending.subtitle}</>
-            ) : hasPerformanceData(perf.data?.computedAt) && benchmarkCount > 0 ? (
-              <> {operatorCopy.inventory.movementBenchmarks(benchmarkCount)}</>
-            ) : (
-              <> {operatorCopy.inventory.movementWhenSync}</>
-            )}
-          </Banner>
-        )}
-
-        {!importResult && benchmarksUpdating && (
+        {benchmarksUpdating && (
           <InlineCallout tone="warning" title={EMPTY_STATE_COPY.postImportBenchmarksPending.title} icon="⟳">
             {EMPTY_STATE_COPY.postImportBenchmarksPending.subtitle}
           </InlineCallout>
         )}
 
-        {!importResult && !benchmarksUpdating && lowDataCount > 0 && lowDataCount >= vehicles.length - 1 && vehicles.length > 0 && (
+        {!benchmarksUpdating && lowDataCount > 0 && lowDataCount >= vehicles.length - 1 && vehicles.length > 0 && (
           <InlineCallout tone="neutral" title={EMPTY_STATE_COPY.movementLowDataFleet.title} icon="ℹ">
             {EMPTY_STATE_COPY.movementLowDataFleet.subtitle}
           </InlineCallout>
         )}
 
-        {!importResult && staleStocks.length > 0 && (
+        {staleStocks.length > 0 && (
           <InlineCallout tone="warning" title={operatorCopy.inventory.slowerThanPeers} icon="!">
             {operatorCopy.inventory.staleReview(staleStocks.join(', '))}
           </InlineCallout>
@@ -348,128 +282,78 @@ export default function InventoryPage({ dealerId, nav, activeTab }: Props) {
           </Banner>
         )}
 
-        {!isEmpty && (
-          <>
-            <SummaryStrip items={summaryItems} loading={loading && !data} />
-
-            <SectionCard title="Filters" subtitle={operatorCopy.inventory.filtersSubtitle}>
-              <LifecycleFilterBar
-                active={lifecycleScope}
-                counts={lifecycleCounts}
-                onSelect={setLifecycleScope}
-              />
-              {isActiveScope && (
-                <>
-                  <div className="mt-4 pt-4 border-t border-silver-100">
-                    <CleanupFilterBar
-                      active={filter}
-                      counts={chipCounts}
-                      readinessCounts={{
-                        total: summary?.total ?? 0,
-                        ready: summary?.ready ?? 0,
-                        warning: summary?.warning ?? 0,
-                        blocked: summary?.blocked ?? 0,
-                      }}
-                      onSelect={setFilter}
-                    />
-                  </div>
-                  <div className="mt-4 pt-4 border-t border-silver-100">
-                    <MovementFilterBar
-                      active={movementFilter}
-                      counts={movementCounts}
-                      onSelect={setMovementFilter}
-                      benchmarksUpdating={benchmarksUpdating}
-                    />
-                  </div>
-                </>
+        <InventoryWorkspace
+          dealerId={dealerId}
+          onVehicleCreated={(newId) => {
+            handleIntakeRefresh();
+            setDetailId(newId);
+          }}
+          tabCounts={{
+            attention: summaryCounts.blocked,
+          }}
+          browseContent={
+            <>
+              {!isEmpty && (
+                <InventorySummaryStrip counts={summaryCounts} activeFilter={filter} onFilterChange={setFilter} />
               )}
-            </SectionCard>
+              <SectionCard noPadding>
+                <div className="p-4 bg-white rounded-xl shadow-sm border border-silver-200">
+                  <InventoryGridToolbar
+                    viewMode={viewMode}
+                    onChangeViewMode={handleSetViewMode}
+                    activeColumns={activeColumns}
+                    onChangeColumns={handleSetColumns}
+                    search={search}
+                    onSearchChange={setSearch}
+                    selectedCount={selected.size}
+                  />
+                  
+                  <InventoryDataGrid
+                    items={mappedVisible}
+                    viewMode={viewMode}
+                    selectedIds={selected}
+                    onToggleSelection={(id) => {
+                      const next = new Set(selected);
+                      if (next.has(id)) next.delete(id); else next.add(id);
+                      setSelected(next);
+                    }}
+                    onToggleAll={toggleAll}
+                    onRowClick={(item) => setDetailId(item.id)}
+                    activeColumns={activeColumns}
+                    sortKey={sortKey}
+                    sortDir={sortDirection}
+                    onSort={(key) => {
+                      if (sortKey === key) {
+                        setSortDirection(sortDirection === 'asc' ? 'desc' : 'asc');
+                      } else {
+                        setSortKey(key);
+                        setSortDirection('asc');
+                      }
+                    }}
+                  />
+                </div>
+              </SectionCard>
+            </>
+          }
+        />
 
-            <SectionCard title="Import history" subtitle={operatorCopy.inventory.importHistorySubtitle} noPadding>
-              <ImportBatchHistory
-                key={importResult?.batchId ?? 'none'}
-                dealerId={dealerId}
-                latestBatchId={importResult?.batchId}
-                initialOpen={!!importResult}
-              />
-            </SectionCard>
-
-            <div className="flex flex-wrap items-center gap-3">
-              <SearchField
-                value={search}
-                onChange={setSearch}
-                placeholder={inventoryLbls.searchPlaceholder}
-                className="flex-1 max-w-md"
-              />
-              <InventorySortBar
-                sortKey={sortKey}
-                direction={sortDirection}
-                onSortKey={setSortKey}
-                onDirection={setSortDirection}
-              />
-              {(filter !== 'ALL' || movementFilter !== 'ALL' || lifecycleScope !== 'active') && (
-                <button
-                  type="button"
-                  onClick={() => { setFilter('ALL'); setMovementFilter('ALL'); setLifecycleScope('active'); }}
-                  className="text-xs font-semibold text-orange-600"
-                >
-                  Clear filters
-                </button>
-              )}
-              {selected.size > 0 && (
-                <span className="ml-auto text-xs font-medium text-ink-muted">{selected.size} selected</span>
-              )}
-            </div>
-
-            <SectionCard noPadding>
-              <div className="p-4">
-                <InventoryAssetList
-                  rows={visible}
-                  perfMap={perfMap}
-                  platformPerfBySlug={platformPerfBySlug}
-                  benchmarksUpdating={benchmarksUpdating}
-                  dealerId={dealerId}
-                  nav={nav}
-                  lifecycleScope={lifecycleScope}
-                  selectable={isActiveScope}
-                  selected={selected}
-                  onToggle={id => setSelected(s => {
-                    const ns = new Set(s);
-                    if (ns.has(id)) ns.delete(id);
-                    else ns.add(id);
-                    return ns;
-                  })}
-                  onToggleAll={toggleAll}
-                  allSelected={allVisibleSelected}
-                  loading={loading && !data}
-                  showLifecycle={lifecycleScope !== 'active'}
-                  onCreatePost={(vehicleId, vehicleTitle) => setCreatePostTarget({ vehicleId, vehicleTitle })}
-                  emptyState={
-                    <EmptyState icon="🔍" title={EMPTY_STATE_COPY.noInventoryFilter.title} subtitle={EMPTY_STATE_COPY.noInventoryFilter.subtitle} />
-                  }
-                />
-              </div>
-            </SectionCard>
-
-            {isActiveScope && summary && summary.ready > 0 && (
-              <InlineCallout
-                tone="success"
-                title={operatorCopy.inventory.readyToSync}
-                icon="✓"
-                action={
-                  <button
-                    type="button"
-                    onClick={() => nav.goToQueue()}
-                    className="btn-primary-operator"
-                  >
-                    {operatorCopy.inventory.goToQueue}
-                  </button>
-                }
+        {isActiveScope && summary && summary.ready > 0 && (
+          <InlineCallout
+            tone="success"
+            title={operatorCopy.inventory.readyToSync}
+            icon="✓"
+            action={
+              <button
+                type="button"
+                onClick={() => nav.goToQueue()}
+                className="btn-primary-operator"
               >
-                {operatorCopy.inventory.readyCallout(summary.ready)}
-              </InlineCallout>
-            )}
-          </>
+                {operatorCopy.inventory.goToQueue}
+              </button>
+            }
+          >
+            {operatorCopy.inventory.readyCallout(summary.ready)}
+          </InlineCallout>
         )}
       </div>
 
@@ -482,10 +366,6 @@ export default function InventoryPage({ dealerId, nav, activeTab }: Props) {
         />
       )}
 
-      {showImport && (
-        <ImportModal dealerId={dealerId} onClose={() => setShowImport(false)} onCommitted={handleImportCommitted} />
-      )}
-
       {createPostTarget && (
         <CreatePostModal
           dealerId={dealerId}
@@ -493,6 +373,26 @@ export default function InventoryPage({ dealerId, nav, activeTab }: Props) {
           vehicleTitle={createPostTarget.vehicleTitle}
           onClose={() => setCreatePostTarget(null)}
         />
+      )}
+
+      {detailId && (
+        <RowDetailDrawer
+          open
+          size="3xl"
+          hideTitle
+          title={detailVehicle ? `${detailVehicle.year} ${detailVehicle.make} ${detailVehicle.model}` : 'Vehicle Detail'}
+          onClose={() => setDetailId(null)}
+        >
+          <InventoryDetailPanel
+            dealerId={dealerId}
+            vehicleId={detailId}
+            perf={detailVehicle ? perfMap.get(detailVehicle.stockNumber) : undefined}
+            platformPerfBySlug={platformPerfBySlug}
+            benchmarksUpdating={benchmarksUpdating}
+            onClose={() => setDetailId(null)}
+            onMediaAssigned={load}
+          />
+        </RowDetailDrawer>
       )}
     </OperatorPage>
   );

@@ -2,7 +2,8 @@ import { useState, useMemo } from 'react';
 import { fetchBlockedDealers } from '@/lib/api/admin.ts';
 import { useAsyncQuery } from '@/hooks/useAsyncQuery.ts';
 import { Skeleton } from '@/components/ui/Skeleton.tsx';
-import { AdminShell, ErrorState } from '@/components/operator/index.ts';
+import { ErrorState } from '@/components/operator/index.ts';
+import { severityToPill, type ReadinessSeverity } from '@/lib/setupReadiness.ts';
 
 const SOURCE_LABELS: Record<string, string> = {
   partner_setup: 'Partner Setup',
@@ -12,11 +13,7 @@ const SOURCE_LABELS: Record<string, string> = {
   developer_credentials: 'Invalid Platform Credentials',
 };
 
-const SEVERITY_BADGES: Record<string, { label: string; className: string }> = {
-  critical: { label: 'CRITICAL', className: 'bg-status-error-bg text-status-error-text border-status-error-border' },
-  warning:  { label: 'WARNING', className: 'bg-status-warning-bg text-status-warning-text border-status-warning-border' },
-  info:     { label: 'INFO', className: 'bg-status-info-bg text-status-info-text border-status-info-border' },
-};
+
 
 const PLATFORMS_LIST = [
   { slug: 'facebook-dynamic-product-ads', name: 'Facebook DPA' },
@@ -46,10 +43,10 @@ const PLATFORMS_LIST = [
 ];
 
 const FIELD_CLS =
-  'w-full bg-surface-card border border-silver-300 rounded-md px-3 py-2 text-sm text-ink-heading ' +
-  'focus:outline-none focus:ring-2 focus:ring-navy-500/30 transition-colors';
+  'w-full bg-white border border-silver-200 rounded-lg px-3.5 py-2 text-sm text-ink-heading ' +
+  'focus:outline-none focus:ring-2 focus:ring-navy-500/30 transition-colors shadow-sm';
 
-const LABEL_CLS = 'text-xs text-ink-muted font-semibold uppercase tracking-wider';
+const LABEL_CLS = 'text-sm font-medium text-ink-body';
 
 export default function AdminBlockedDealersPage() {
   const [severity, setSeverity] = useState('');
@@ -101,7 +98,7 @@ export default function AdminBlockedDealersPage() {
   };
 
   return (
-    <AdminShell back={{ href: '#/admin', label: 'Back to overview' }}>
+    <>
 
       {/* Page title */}
       <div className="mb-6">
@@ -250,7 +247,7 @@ export default function AdminBlockedDealersPage() {
           ) : (
             <div className="space-y-4">
               {items.map(item => {
-                const badge = SEVERITY_BADGES[item.severity] ?? SEVERITY_BADGES.info;
+                const isValidationSource = item.source === 'dealer_partner_credentials' || item.source === 'feed_validation';
 
                 return (
                   <div
@@ -260,14 +257,14 @@ export default function AdminBlockedDealersPage() {
                     {/* Left: Blocker Summary */}
                     <div className="space-y-2.5">
                       <div className="flex flex-wrap items-center gap-2">
-                        <span className={`px-2 py-0.5 rounded text-[10px] font-bold border ${badge.className}`}>
-                          {badge.label}
+                        <span className={`px-2 py-0.5 rounded text-[10px] font-bold capitalize ${severityToPill(item.severity as ReadinessSeverity)}`}>
+                          {item.severity}
                         </span>
-                        <span className="px-2 py-0.5 rounded text-[10px] font-semibold bg-surface-inset text-ink-muted border border-silver-200 font-mono">
-                          {SOURCE_LABELS[item.source] || item.source.toUpperCase()}
+                        <span className="px-2 py-0.5 rounded text-[10px] font-semibold bg-silver-100 text-ink-muted">
+                          {SOURCE_LABELS[item.source] || item.source}
                         </span>
                         {item.affectedCount && (
-                          <span className="px-2 py-0.5 rounded text-[10px] font-semibold bg-status-error-bg text-status-error-text border border-status-error-border">
+                          <span className="px-2 py-0.5 rounded text-[10px] font-semibold bg-red-50 text-red-700">
                             {item.affectedCount} items affected
                           </span>
                         )}
@@ -291,11 +288,18 @@ export default function AdminBlockedDealersPage() {
                       </div>
 
                       <div className="text-sm text-ink-body">
-                        {item.reason}
+                        {isValidationSource ? (
+                          <div className="p-3 bg-red-50 text-red-800 rounded-md">
+                            <span className="font-semibold text-xs block mb-1">Validation Failure</span>
+                            {item.reason}
+                          </div>
+                        ) : (
+                          item.reason
+                        )}
                       </div>
 
-                      <div className="text-xs text-orange-600 bg-orange-100/40 border border-orange-100 p-2.5 rounded-md max-w-2xl">
-                        <span className="font-bold">Next Action:</span> {item.nextAction}
+                      <div className="text-sm text-orange-800 bg-orange-50 p-3 rounded-md max-w-2xl mt-3">
+                        <span className="font-semibold">Next Action:</span> {item.nextAction}
                       </div>
                     </div>
 
@@ -376,6 +380,6 @@ export default function AdminBlockedDealersPage() {
           · Query took {meta.durationMs}ms
         </div>
       )}
-    </AdminShell>
+    </>
   );
 }

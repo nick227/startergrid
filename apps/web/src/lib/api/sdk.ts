@@ -630,3 +630,243 @@ export async function triggerLeadSync(
     { method: 'POST' },
   );
 }
+
+// ── Vehicle detail ────────────────────────────────────────────────────────────
+
+export type VehicleMediaItem = {
+  id: string;
+  url: string;
+  kind: string;
+  sortOrder: number;
+  width: number | null;
+  height: number | null;
+  mimeType: string | null;
+  mediaSlotKey: string | null;
+  mediaRole: string | null;
+};
+
+export type VehicleReadinessDto = {
+  status: 'READY' | 'WARNING' | 'BLOCKED';
+  missingFields: string[];
+  invalidFields: string[];
+  missingRequiredMediaSlots: string[];
+  missingRecommendedMediaSlots: string[];
+  blockers: string[];
+  warnings: string[];
+  nextAction: string | null;
+};
+
+export type VehicleDistributionDto = {
+  liveCount: number;
+  queuedCount: number;
+  failedCount: number;
+  blockedCount: number;
+  totalEligiblePlatforms: number;
+  lastSyncAt: string | null;
+  nextAction: string | null;
+  nextActionHref: string | null;
+};
+
+export type VehicleDetailDto = {
+  id: string;
+  dealershipId: string;
+  category: string;
+  vin: string;
+  stockNumber: string;
+  year: number;
+  make: string;
+  model: string;
+  trim: string | null;
+  bodyStyle: string | null;
+  drivetrain: string | null;
+  fuelType: string | null;
+  transmission: string | null;
+  mileage: number;
+  priceCents: number;
+  originalPriceCents: number | null;
+  condition: string;
+  exteriorColor: string;
+  interiorColor: string | null;
+  options: string[];
+  priceLastChangedAt: string | null;
+  soldAt: string | null;
+  removedAt: string | null;
+  reactivatedAt: string | null;
+  createdAt: string;
+  updatedAt: string;
+  media: VehicleMediaItem[];
+  readiness: VehicleReadinessDto;
+  distribution: VehicleDistributionDto;
+};
+
+export async function fetchVehicleDetail(
+  dealershipId: string,
+  vehicleId: string,
+): Promise<VehicleDetailDto> {
+  return catalogFetch<VehicleDetailDto>(
+    `/api/dealers/${dealershipId}/inventory/vehicles/${vehicleId}`,
+  );
+}
+
+// ── VIN / Inventory ───────────────────────────────────────────────────────────
+
+export type VinDecodeResponse = {
+  vin: string;
+  valid: boolean;
+  decoded: boolean;
+  year?: number;
+  make?: string;
+  model?: string;
+  trim?: string;
+  bodyStyle?: string;
+  fuelType?: string;
+  drivetrain?: string;
+  transmission?: string;
+  engineDescription?: string;
+  warnings: string[];
+};
+
+export type CreateVehicleFromVinPayload = {
+  vin: string;
+  stockNumber?: string;
+  priceCents?: number;
+  mileage?: number;
+  condition?: 'NEW' | 'USED' | 'CPO';
+};
+
+export type CreateVehicleFromVinResponse = {
+  vehicleId: string;
+  vin: string;
+  stockNumber: string;
+};
+
+export type BulkVinPreviewRow = {
+  vin: string;
+  status: 'OK' | 'INVALID' | 'DUPLICATE';
+  error?: string;
+  decoded?: VinDecodeResponse;
+};
+
+export type BulkVinPreviewResponse = { rows: BulkVinPreviewRow[] };
+export type BulkVinCommitResponse = { created: number; skipped: number; errors: number };
+
+export async function decodeVin(
+  dealershipId: string,
+  vin: string,
+): Promise<VinDecodeResponse> {
+  return catalogFetch<VinDecodeResponse>(
+    `/api/dealers/${dealershipId}/inventory/automotive/decode-vin`,
+    { method: 'POST', body: JSON.stringify({ vin }), headers: { 'Content-Type': 'application/json' } },
+  );
+}
+
+export async function createVehicleFromVin(
+  dealershipId: string,
+  payload: CreateVehicleFromVinPayload,
+): Promise<CreateVehicleFromVinResponse> {
+  return catalogFetch<CreateVehicleFromVinResponse>(
+    `/api/dealers/${dealershipId}/inventory/automotive/vehicles`,
+    { method: 'POST', body: JSON.stringify(payload), headers: { 'Content-Type': 'application/json' } },
+  );
+}
+
+export async function previewBulkVins(
+  dealershipId: string,
+  vins: string[],
+): Promise<BulkVinPreviewResponse> {
+  return catalogFetch<BulkVinPreviewResponse>(
+    `/api/dealers/${dealershipId}/inventory/automotive/bulk-vins/preview`,
+    { method: 'POST', body: JSON.stringify({ vins }), headers: { 'Content-Type': 'application/json' } },
+  );
+}
+
+export async function commitBulkVins(
+  dealershipId: string,
+  vins: string[],
+  stockNumberMap?: Record<string, string>,
+): Promise<BulkVinCommitResponse> {
+  return catalogFetch<BulkVinCommitResponse>(
+    `/api/dealers/${dealershipId}/inventory/automotive/bulk-vins/commit`,
+    { method: 'POST', body: JSON.stringify({ vins, stockNumberMap }), headers: { 'Content-Type': 'application/json' } },
+  );
+}
+
+export async function assignMediaSlot(
+  dealershipId: string,
+  vehicleId: string,
+  mediaId: string,
+  slotKey: string | null,
+): Promise<void> {
+  await catalogFetch<void>(
+    `/api/dealers/${dealershipId}/inventory/vehicles/${vehicleId}/media/${mediaId}/slot`,
+    { method: 'PATCH', body: JSON.stringify({ slotKey }), headers: { 'Content-Type': 'application/json' } },
+  );
+}
+
+export type VehicleFieldPatch = {
+  stockNumber?: string;
+  priceCents?: number;
+  mileage?: number;
+  condition?: string;
+  exteriorColor?: string;
+  interiorColor?: string | null;
+  trim?: string | null;
+  bodyStyle?: string | null;
+  drivetrain?: string | null;
+  fuelType?: string | null;
+  transmission?: string | null;
+};
+
+export async function patchVehicleFields(
+  dealershipId: string,
+  vehicleId: string,
+  fields: VehicleFieldPatch,
+): Promise<void> {
+  await catalogFetch<void>(
+    `/api/dealers/${dealershipId}/inventory/vehicles/${vehicleId}`,
+    { method: 'PATCH', body: JSON.stringify(fields), headers: { 'Content-Type': 'application/json' } },
+  );
+}
+
+export async function addVehicleMedia(
+  dealershipId: string,
+  vehicleId: string,
+  urls: string[],
+): Promise<{ media: VehicleMediaItem[] }> {
+  return catalogFetch<{ media: VehicleMediaItem[] }>(
+    `/api/dealers/${dealershipId}/inventory/vehicles/${vehicleId}/media`,
+    { method: 'POST', body: JSON.stringify({ urls }), headers: { 'Content-Type': 'application/json' } },
+  );
+}
+
+export async function deleteVehicleMedia(
+  dealershipId: string,
+  vehicleId: string,
+  mediaId: string,
+): Promise<void> {
+  await catalogFetch<void>(
+    `/api/dealers/${dealershipId}/inventory/vehicles/${vehicleId}/media/${mediaId}`,
+    { method: 'DELETE' },
+  );
+}
+
+export async function markVehicleSold(dealershipId: string, vehicleId: string): Promise<void> {
+  await catalogFetch<void>(
+    `/api/dealers/${dealershipId}/inventory/vehicles/${vehicleId}/sold`,
+    { method: 'POST' },
+  );
+}
+
+export async function markVehicleRemoved(dealershipId: string, vehicleId: string): Promise<void> {
+  await catalogFetch<void>(
+    `/api/dealers/${dealershipId}/inventory/vehicles/${vehicleId}/removed`,
+    { method: 'POST' },
+  );
+}
+
+export async function relistVehicle(dealershipId: string, vehicleId: string): Promise<void> {
+  await catalogFetch<void>(
+    `/api/dealers/${dealershipId}/inventory/vehicles/${vehicleId}/relist`,
+    { method: 'POST' },
+  );
+}

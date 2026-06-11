@@ -3,7 +3,8 @@ import { fetchDealers } from '@/lib/api/sdk.ts';
 import { fetchAdminDashboard } from '@/lib/api/admin.ts';
 import type { AdminDealerAttentionItem } from '@/lib/api/admin.ts';
 import { useAsyncQuery } from '@/hooks/useAsyncQuery.ts';
-import { AdminShell, ErrorState, SectionCard } from '@/components/operator/index.ts';
+import { ErrorState, SectionCard, OperatorPage } from '@/components/operator/index.ts';
+import type { OperatorNavHandlers, OperatorTab } from '@/lib/operatorNav.ts';
 import { Skeleton } from '@/components/ui/Skeleton.tsx';
 
 const BUSINESS_CATEGORY_LABELS: Record<string, string> = {
@@ -50,9 +51,13 @@ const TAB_LIST: { key: Tab; label: string }[] = [
   { key: 'audit',    label: 'Audit' },
 ];
 
-type Props = { dealerId: string };
+type Props = {
+  dealerId: string;
+  nav: OperatorNavHandlers;
+  activeTab: OperatorTab;
+};
 
-export default function AdminDealerPage({ dealerId }: Props) {
+export default function AdminDealerPage({ dealerId, nav, activeTab }: Props) {
   const [tab, setTab] = useState<Tab>('overview');
 
   const { data: dealersData, loading: dealersLoading, error: dealersError, reload: reloadDealers } =
@@ -71,54 +76,31 @@ export default function AdminDealerPage({ dealerId }: Props) {
     [dashboard, dealerId],
   );
 
-  const triageCounts = useMemo(() => {
-    const critical = triageItems.filter(i => i.severity === 'critical').length;
-    const warning  = triageItems.filter(i => i.severity === 'warning').length;
-    const info     = triageItems.filter(i => i.severity === 'info').length;
-    return { critical, warning, info };
-  }, [triageItems]);
-
   const loading = dealersLoading || dashLoading;
   const error   = dealersError || dashError;
   const reload  = () => { reloadDealers(); reloadDash(); };
 
   if (loading) {
-    return (
-      <AdminShell back={{ href: '#/admin', label: 'Back to overview' }}>
-        <div className="surface-card-operator p-6"><Skeleton rows={6} /></div>
-      </AdminShell>
-    );
+    return <div className="surface-card-operator p-6"><Skeleton rows={6} /></div>;
   }
 
   if (error) {
-    return (
-      <AdminShell back={{ href: '#/admin', label: 'Back to overview' }}>
-        <ErrorState message={error} onRetry={reload} />
-      </AdminShell>
-    );
+    return <ErrorState message={error} onRetry={reload} />;
   }
 
   if (!dealer) {
     return (
-      <AdminShell back={{ href: '#/admin', label: 'Back to overview' }}>
-        <div className="flex flex-col items-center justify-center py-20 gap-4 text-center">
-          <div className="text-4xl font-black text-silver-300 select-none">404</div>
-          <h2 className="text-lg font-bold text-ink-heading">Dealer not found</h2>
-          <p className="text-sm text-ink-muted max-w-sm">
-            No dealer with ID{' '}
-            <span className="font-mono bg-surface-inset border border-silver-200 px-1.5 py-0.5 rounded text-xs text-ink-heading">
-              {dealerId}
-            </span>{' '}
-            exists in the system.
-          </p>
-          <a
-            href="#/admin"
-            className="mt-2 inline-flex items-center gap-1.5 px-4 py-2 rounded-md bg-navy-900 text-white text-sm font-semibold hover:bg-navy-800 transition-colors"
-          >
-            ← Back to Admin Overview
-          </a>
-        </div>
-      </AdminShell>
+      <div className="flex flex-col items-center justify-center py-20 gap-4 text-center">
+        <div className="text-4xl font-black text-silver-300 select-none">404</div>
+        <h2 className="text-lg font-bold text-ink-heading">Dealer not found</h2>
+        <p className="text-sm text-ink-muted max-w-sm">
+          No dealer with ID{' '}
+          <span className="font-mono bg-surface-inset border border-silver-200 px-1.5 py-0.5 rounded text-xs text-ink-heading">
+            {dealerId}
+          </span>{' '}
+          exists in the system. Use the Dealers tab to navigate back.
+        </p>
+      </div>
     );
   }
 
@@ -127,94 +109,36 @@ export default function AdminDealerPage({ dealerId }: Props) {
   });
 
   return (
-    <AdminShell back={{ href: '#/admin', label: 'Back to overview' }}>
-
-      {/* Identity card */}
-      <div className="surface-card-operator p-6 mb-6">
-        <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-4">
-          <div className="space-y-1">
-            <h2 className="text-xl font-bold text-ink-heading">{dealer.legalName}</h2>
-            {dealer.dbaName && dealer.dbaName !== dealer.legalName && (
-              <p className="text-sm text-ink-muted">dba {dealer.dbaName}</p>
-            )}
-            <div className="flex flex-wrap items-center gap-3 pt-1">
-              <span className="px-2 py-0.5 rounded text-[10px] font-semibold bg-status-neutral-bg text-status-neutral-text border border-status-neutral-border">
-                {BUSINESS_CATEGORY_LABELS[dealer.businessCategory] ?? dealer.businessCategory}
-              </span>
-              <span className="text-xs text-ink-faint">Member since {memberSince}</span>
-            </div>
-            <div className="pt-1">
-              <CopyableId value={dealer.id} />
-            </div>
-          </div>
-
-          {/* Triage badge summary */}
-          {triageItems.length > 0 && (
-            <div className="flex flex-wrap gap-2 shrink-0">
-              {triageCounts.critical > 0 && (
-                <span className="px-2.5 py-1 rounded text-[10px] font-bold border bg-status-error-bg text-status-error-text border-status-error-border">
-                  {triageCounts.critical} critical
-                </span>
-              )}
-              {triageCounts.warning > 0 && (
-                <span className="px-2.5 py-1 rounded text-[10px] font-bold border bg-status-warning-bg text-status-warning-text border-status-warning-border">
-                  {triageCounts.warning} warning
-                </span>
-              )}
-              {triageCounts.info > 0 && (
-                <span className="px-2.5 py-1 rounded text-[10px] font-bold border bg-status-info-bg text-status-info-text border-status-info-border">
-                  {triageCounts.info} info
-                </span>
-              )}
-            </div>
-          )}
-        </div>
-      </div>
-
-      {/* Quick nav */}
-      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3 mb-6">
-        {[
-          { label: 'Platforms', href: `#/${dealer.id}/platforms`, desc: 'Connected channels' },
-          { label: 'Inventory', href: `#/${dealer.id}/inventory`, desc: 'Vehicles & assets' },
-          { label: 'Queue',     href: `#/${dealer.id}/queue`,     desc: 'Publish queue' },
-          { label: 'History',   href: `#/${dealer.id}/history`,   desc: 'Sync history' },
-          { label: 'Reports',   href: `#/${dealer.id}/reports`,   desc: 'Performance data' },
-          { label: 'Help',      href: `#/${dealer.id}/help`,      desc: 'Knowledge base' },
-        ].map(card => (
-          <a
-            key={card.label}
-            href={card.href}
-            className="surface-card-operator p-4 hover:border-silver-300 transition-all group"
+    <OperatorPage
+      dealerId={dealerId}
+      dealerName={dealer.legalName}
+      activeTab={activeTab}
+      nav={nav}
+      sectionLabel="Overview"
+    >
+      {/* Secondary internal navigation */}
+      <div className="mb-6 flex flex-wrap gap-2">
+        {TAB_LIST.map(t => (
+          <button
+            key={t.key}
+            type="button"
+            onClick={() => setTab(t.key)}
+            className={`px-4 py-2 text-sm font-medium rounded-full transition-colors flex items-center gap-2 ${
+              tab === t.key
+                ? 'bg-navy-800 text-white shadow-sm'
+                : 'bg-white text-ink-muted border border-silver-200 hover:border-silver-300 hover:text-ink-heading'
+            }`}
           >
-            <div className="text-sm font-semibold text-navy-700 group-hover:text-navy-600">{card.label}</div>
-            <div className="text-xs text-ink-muted mt-0.5">{card.desc}</div>
-          </a>
+            {t.label}
+            {t.key === 'triage' && triageItems.length > 0 && (
+              <span className={`px-1.5 py-0.5 rounded-full text-[10px] font-bold ${
+                tab === t.key ? 'bg-red-500 text-white' : 'bg-red-50 text-red-700'
+              }`}>
+                {triageItems.length}
+              </span>
+            )}
+          </button>
         ))}
-      </div>
-
-      {/* Tabs */}
-      <div className="border-b border-silver-200 mb-6">
-        <nav className="flex gap-1 -mb-px">
-          {TAB_LIST.map(t => (
-            <button
-              key={t.key}
-              type="button"
-              onClick={() => setTab(t.key)}
-              className={`px-4 py-2.5 text-xs font-semibold border-b-2 transition-colors ${
-                tab === t.key
-                  ? 'border-orange-600 text-ink-heading'
-                  : 'border-transparent text-ink-muted hover:text-ink-heading'
-              }`}
-            >
-              {t.label}
-              {t.key === 'triage' && triageItems.length > 0 && (
-                <span className="ml-1.5 px-1.5 py-0.5 rounded-full text-[9px] font-bold bg-status-error-bg text-status-error-text border border-status-error-border">
-                  {triageItems.length}
-                </span>
-              )}
-            </button>
-          ))}
-        </nav>
       </div>
 
       {/* Tab content */}
@@ -261,9 +185,16 @@ export default function AdminDealerPage({ dealerId }: Props) {
                       <span className={`shrink-0 mt-0.5 px-2 py-0.5 rounded text-[10px] font-bold border ${sev.cls}`}>
                         {sev.label}
                       </span>
-                      <div className="min-w-0">
-                        <div className="text-sm text-ink-heading font-medium truncate">{item.reason}</div>
-                        <div className="text-xs text-ink-muted mt-0.5 font-mono">{item.platformSlug}</div>
+                      <div className="min-w-0 w-full">
+                        {item.source === 'dealer_partner_credentials' ? (
+                          <div className="text-sm text-red-800 bg-red-50 p-2 rounded-md border border-red-100 font-medium truncate">
+                            <span className="font-bold text-[10px] uppercase tracking-widest block mb-0.5">Validation Failure</span>
+                            {item.reason}
+                          </div>
+                        ) : (
+                          <div className="text-sm text-ink-heading font-medium truncate">{item.reason}</div>
+                        )}
+                        <div className="text-xs text-ink-muted mt-1 font-mono">{item.platformSlug}</div>
                         {item.nextAction && (
                           <div className="text-xs text-orange-600 mt-1">{item.nextAction}</div>
                         )}
@@ -307,7 +238,14 @@ export default function AdminDealerPage({ dealerId }: Props) {
                       {item.platformSlug}
                     </span>
                   </div>
-                  <p className="text-sm text-ink-heading">{item.reason}</p>
+                  {item.source === 'dealer_partner_credentials' ? (
+                    <div className="text-sm text-red-800 bg-red-50 p-3 rounded-md border border-red-200">
+                      <span className="font-bold text-[10px] uppercase tracking-widest block mb-1">Validation Failure</span>
+                      {item.reason}
+                    </div>
+                  ) : (
+                    <p className="text-sm text-ink-heading">{item.reason}</p>
+                  )}
                   {item.nextAction && (
                     <p className="text-xs text-orange-600 bg-orange-100/40 border border-orange-100 p-2 rounded-md">
                       <span className="font-bold">Next Action:</span> {item.nextAction}
@@ -355,6 +293,6 @@ export default function AdminDealerPage({ dealerId }: Props) {
           </div>
         </SectionCard>
       )}
-    </AdminShell>
+    </OperatorPage>
   );
 }

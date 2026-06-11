@@ -7,6 +7,7 @@ type Props = {
 
 export function OperatorNav({ active, nav }: Props) {
   const handlers: Record<OperatorTab, () => void> = {
+    home: nav.goToHome,
     platforms: nav.goToPlatforms,
     queue: nav.goToQueue,
     history: nav.goToHistory,

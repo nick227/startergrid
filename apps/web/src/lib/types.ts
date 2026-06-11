@@ -377,6 +377,9 @@ export type ConnectionField = {
   hint?: string;
   placeholder?: string;
   helpUrl?: string;
+  pattern?: string;
+  docsLink?: string;
+  validationHint?: string;
 };
 
 export type PartnerSignupInfo = {

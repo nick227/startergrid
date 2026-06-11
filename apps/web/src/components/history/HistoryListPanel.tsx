@@ -2,10 +2,11 @@ import { useEffect, useMemo, useState } from 'react';
 import type { OperatorNavHandlers, OperatorTab } from '@/lib/operatorNav.ts';
 import { useAsyncQuery } from '@/hooks/useAsyncQuery.ts';
 import { fetchPublishHistory, fetchPublishStatus } from '@/lib/api/sdk.ts';
-import { OperatorPage, ErrorState, PanelSkeleton } from '@/components/operator';
-import { PageSituation, ControlBlock } from '@/components/layout';
+import { OperatorPage, ErrorState } from '@/components/operator';
+import { PageSituation, ControlBlock, OpsRowCardSkeleton } from '@/components/layout';
 import { OpsRowCard } from '@/components/layout/OpsRowCard.tsx';
 import { FilterChips } from '@/components/generic';
+import { EmptyState } from '@/components/ui';
 import { HistoryEventDrawer } from './HistoryEventDrawer.tsx';
 import {
   HISTORY_KIND_FILTERS,
@@ -121,9 +122,28 @@ export function HistoryListPanel({
       <div className={`${selected ? 'lg:grid lg:grid-cols-[1fr_min(22rem,38%)] lg:gap-4 lg:items-start' : ''}`}>
         <div className="space-y-3">
           {historyQuery.loading && !historyQuery.data ? (
-            <PanelSkeleton rows={5} />
+            <>
+              <OpsRowCardSkeleton />
+              <OpsRowCardSkeleton />
+              <OpsRowCardSkeleton />
+            </>
           ) : visible.length === 0 ? (
-            <p className="text-sm text-ink-muted py-8 text-center">{operatorCopy.history.empty}</p>
+            <EmptyState
+              icon="🕰️"
+              title="No history found"
+              subtitle={operatorCopy.history.empty}
+              action={
+                search || kindFilter !== 'ALL' ? (
+                  <button
+                    type="button"
+                    onClick={() => { setSearch(''); setKindFilter('ALL'); }}
+                    className="text-navy-600 hover:text-navy-700 font-medium text-sm"
+                  >
+                    Clear filters
+                  </button>
+                ) : null
+              }
+            />
           ) : (
             visible.map(event => (
               <OpsRowCard
