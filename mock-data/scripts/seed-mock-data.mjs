@@ -55,6 +55,7 @@ const SEED_PLAN = [
   ["vehiclePerformanceCache", "vehiclePerformanceCaches.json"],
   ["platformPerformanceSummary", "platformPerformanceSummaries.json"],
   ["dealerNotification", "dealerNotifications.json"],
+  ["adminAuditLog", "adminAuditLogs.json"],
 ];
 
 const CLEAR_ORDER = [...SEED_PLAN].reverse();
@@ -77,7 +78,7 @@ function convertDates(value) {
 
 async function readJson(filename) {
   const raw = await fs.readFile(path.join(DATA_DIR, filename), "utf8");
-  return JSON.parse(raw).map(convertDates);
+  return JSON.parse(raw.replace(/^\uFEFF/, "")).map(convertDates);
 }
 
 async function clearMockRows() {
@@ -120,6 +121,7 @@ async function clearMockRows() {
             { id: { startsWith: "perf_" } },
             { id: { startsWith: "pperf_" } },
             { id: { startsWith: "notif_" } },
+            { id: { startsWith: "audit_" } },
             { id: { startsWith: "sub_" } },
             { id: { startsWith: "op_" } },
             { id: { startsWith: "access_" } },
@@ -140,13 +142,19 @@ async function upsertRows(modelName, rows) {
     console.warn(`skip: prisma.${modelName} not found`);
     return;
   }
+
   console.log(`${DRY_RUN ? "[dry] " : ""}${modelName}: ${rows.length} rows`);
   if (DRY_RUN) return;
 
   for (const row of rows) {
     try {
+      const where =
+        modelName === "platformProfile"
+          ? { slug: row.slug }
+          : { id: row.id };
+
       await model.upsert({
-        where: { id: row.id },
+        where,
         create: row,
         update: row,
       });

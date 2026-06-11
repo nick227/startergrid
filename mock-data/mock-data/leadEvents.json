@@ -1,4 +1,4 @@
-[
+﻿[
   {
     "id": "1e8aba4c-33f4-47ee-9c4e-691a12e1a564",
     "dealerId": "dealer_austin_auto",
@@ -74,7 +74,7 @@
   {
     "id": "332f426c-8bf5-492b-868b-89e719dcb029",
     "dealerId": "dealer_lone_star",
-    "platformSlug": "cars-com-us",
+    "platformSlug": "cars-com",
     "vehicleId": "veh_0109",
     "source": "WEBSITE_FORM",
     "consumerName": "Ashley Edwards",
@@ -158,7 +158,7 @@
   {
     "id": "4f093aee-f7ce-4e6b-98bb-c666436c5568",
     "dealerId": "dealer_harbor_boats",
-    "platformSlug": "cars-com-us",
+    "platformSlug": "cars-com",
     "vehicleId": "veh_0102",
     "source": "EMAIL_CLICK",
     "consumerName": "Jessica Hughes",
@@ -266,7 +266,7 @@
   {
     "id": "86583ba6-36bd-4da2-8548-ef4cb013acc3",
     "dealerId": "dealer_messy",
-    "platformSlug": "cars-com-us",
+    "platformSlug": "cars-com",
     "vehicleId": "veh_0146",
     "source": "PHONE_CLICK",
     "consumerName": "Julia Ritter",
@@ -350,7 +350,7 @@
   {
     "id": "84e49f26-94a7-4203-9039-54558a073c5e",
     "dealerId": "dealer_austin_auto",
-    "platformSlug": "autotrader-us",
+    "platformSlug": "autotrader-cox",
     "vehicleId": "veh_0040",
     "source": "PHONE_CLICK",
     "consumerName": "John Martinez",
@@ -410,7 +410,7 @@
   {
     "id": "e31e35f2-4bf3-4e81-8294-be4391ac0c90",
     "dealerId": "dealer_lone_star",
-    "platformSlug": "autotrader-us",
+    "platformSlug": "autotrader-cox",
     "vehicleId": "veh_0118",
     "source": "FACEBOOK_INQUIRY",
     "consumerName": "Carolyn Gonzalez",
@@ -422,7 +422,7 @@
   {
     "id": "0b30064c-7ddb-4ee5-8dca-3385dc78b7b4",
     "dealerId": "dealer_lone_star",
-    "platformSlug": "cars-com-us",
+    "platformSlug": "cars-com",
     "vehicleId": "veh_0001",
     "source": "PHONE_CLICK",
     "consumerName": "Russell Flynn",
@@ -518,7 +518,7 @@
   {
     "id": "84d4839b-a87e-4e0f-aac1-58ae214d2193",
     "dealerId": "dealer_harbor_boats",
-    "platformSlug": "autotrader-us",
+    "platformSlug": "autotrader-cox",
     "vehicleId": "veh_0062",
     "source": "EMAIL_CLICK",
     "consumerName": "Heather Moore",
@@ -530,7 +530,7 @@
   {
     "id": "e92f76b5-2059-4f2b-b9a1-ff367f7af84c",
     "dealerId": "dealer_harbor_boats",
-    "platformSlug": "autotrader-us",
+    "platformSlug": "autotrader-cox",
     "vehicleId": "veh_0158",
     "source": "PHONE_CLICK",
     "consumerName": "Maria Wells",
@@ -542,7 +542,7 @@
   {
     "id": "a83d28b8-7c97-497e-b55e-6b5502d172ce",
     "dealerId": "dealer_harbor_boats",
-    "platformSlug": "cars-com-us",
+    "platformSlug": "cars-com",
     "vehicleId": "veh_0082",
     "source": "EMAIL_CLICK",
     "consumerName": "Jennifer Oliver",
@@ -638,7 +638,7 @@
   {
     "id": "6331bd91-b98a-4d59-92a0-e9ff9f537864",
     "dealerId": "dealer_austin_auto",
-    "platformSlug": "autotrader-us",
+    "platformSlug": "autotrader-cox",
     "vehicleId": "veh_0033",
     "source": "WEBSITE_FORM",
     "consumerName": "Jody Spencer",
@@ -650,7 +650,7 @@
   {
     "id": "65237977-3e29-47bd-9c20-d3f3f82492d0",
     "dealerId": "dealer_austin_auto",
-    "platformSlug": "cars-com-us",
+    "platformSlug": "cars-com",
     "vehicleId": "veh_0076",
     "source": "PHONE_CLICK",
     "consumerName": "Jesse Humphrey",
@@ -746,7 +746,7 @@
   {
     "id": "d972e177-3f15-4caf-a6c7-abd56ea50289",
     "dealerId": "dealer_summit_rv",
-    "platformSlug": "autotrader-us",
+    "platformSlug": "autotrader-cox",
     "vehicleId": "veh_0010",
     "source": "EMAIL_CLICK",
     "consumerName": "Jennifer Lewis",
@@ -758,7 +758,7 @@
   {
     "id": "6c453c67-81f4-4d97-8867-f9cf7ae6faea",
     "dealerId": "dealer_summit_rv",
-    "platformSlug": "cars-com-us",
+    "platformSlug": "cars-com",
     "vehicleId": "veh_0078",
     "source": "WEBSITE_FORM",
     "consumerName": "Emily Newton",
@@ -782,7 +782,7 @@
   {
     "id": "8a62a3eb-16be-44f7-bb79-846a82d2b88b",
     "dealerId": "dealer_harbor_boats",
-    "platformSlug": "autotrader-us",
+    "platformSlug": "autotrader-cox",
     "vehicleId": "veh_0044",
     "source": "FACEBOOK_INQUIRY",
     "consumerName": "Matthew Harrell",
@@ -818,7 +818,7 @@
   {
     "id": "54eb574a-dc56-404e-b91a-de12f9668243",
     "dealerId": "dealer_messy",
-    "platformSlug": "autotrader-us",
+    "platformSlug": "autotrader-cox",
     "vehicleId": "veh_0034",
     "source": "FACEBOOK_INQUIRY",
     "consumerName": "Julia Brandt",
@@ -830,7 +830,7 @@
   {
     "id": "5c63d455-4756-46a8-a7e3-d6c560e25205",
     "dealerId": "dealer_messy",
-    "platformSlug": "cars-com-us",
+    "platformSlug": "cars-com",
     "vehicleId": "veh_0049",
     "source": "MARKETPLACE_FORM",
     "consumerName": "Michael Holmes",
@@ -842,7 +842,7 @@
   {
     "id": "48ed3528-ee1f-4276-8995-ccd3960eef97",
     "dealerId": "dealer_messy",
-    "platformSlug": "cars-com-us",
+    "platformSlug": "cars-com",
     "vehicleId": "veh_0043",
     "source": "WEBSITE_FORM",
     "consumerName": "Arthur Harris",
@@ -854,7 +854,7 @@
   {
     "id": "e1966bcd-ac84-43bc-a6ad-c6fdf1413dcb",
     "dealerId": "dealer_messy",
-    "platformSlug": "cars-com-us",
+    "platformSlug": "cars-com",
     "vehicleId": "veh_0119",
     "source": "MARKETPLACE_FORM",
     "consumerName": "Kelly Moody",
@@ -866,7 +866,7 @@
   {
     "id": "64bd68a2-d6e0-46cb-8293-611304f9d1eb",
     "dealerId": "dealer_messy",
-    "platformSlug": "cars-com-us",
+    "platformSlug": "cars-com",
     "vehicleId": "veh_0005",
     "source": "PHONE_CLICK",
     "consumerName": "Scott Duran",
@@ -986,7 +986,7 @@
   {
     "id": "8805848e-6d29-42de-96bc-a4eecc585704",
     "dealerId": "dealer_lone_star",
-    "platformSlug": "autotrader-us",
+    "platformSlug": "autotrader-cox",
     "vehicleId": "veh_0043",
     "source": "FACEBOOK_INQUIRY",
     "consumerName": "Marcus Melendez",
@@ -998,7 +998,7 @@
   {
     "id": "782b8a18-9b93-4675-a7e3-d3b12b2861d6",
     "dealerId": "dealer_lone_star",
-    "platformSlug": "cars-com-us",
+    "platformSlug": "cars-com",
     "vehicleId": "veh_0066",
     "source": "PHONE_CLICK",
     "consumerName": "Scott Bauer",
@@ -1082,7 +1082,7 @@
   {
     "id": "bffa9603-f42f-43d5-97b3-16fa1f001b48",
     "dealerId": "dealer_harbor_boats",
-    "platformSlug": "cars-com-us",
+    "platformSlug": "cars-com",
     "vehicleId": "veh_0099",
     "source": "PHONE_CLICK",
     "consumerName": "Dana Wright",
@@ -1094,7 +1094,7 @@
   {
     "id": "2e8fdb1c-d1da-49e2-9843-3806390f3a47",
     "dealerId": "dealer_harbor_boats",
-    "platformSlug": "cars-com-us",
+    "platformSlug": "cars-com",
     "vehicleId": "veh_0067",
     "source": "WEBSITE_FORM",
     "consumerName": "Morgan Herrera",
@@ -1190,7 +1190,7 @@
   {
     "id": "7914e7fa-548c-42d4-86b8-e34bd247c5ea",
     "dealerId": "dealer_messy",
-    "platformSlug": "cars-com-us",
+    "platformSlug": "cars-com",
     "vehicleId": "veh_0150",
     "source": "EMAIL_CLICK",
     "consumerName": "James Thompson",
@@ -1202,7 +1202,7 @@
   {
     "id": "6e4d75dd-0bcd-4468-86f2-90e4520ac15b",
     "dealerId": "dealer_messy",
-    "platformSlug": "cars-com-us",
+    "platformSlug": "cars-com",
     "vehicleId": "veh_0053",
     "source": "EMAIL_CLICK",
     "consumerName": "Jeff Perez",
@@ -1214,7 +1214,7 @@
   {
     "id": "4d42c94d-9e27-4544-9372-4deb076905b0",
     "dealerId": "dealer_messy",
-    "platformSlug": "cars-com-us",
+    "platformSlug": "cars-com",
     "vehicleId": "veh_0127",
     "source": "FACEBOOK_INQUIRY",
     "consumerName": "Frances Lane",
@@ -1298,7 +1298,7 @@
   {
     "id": "d2659c8a-b107-4886-b4d4-1bd1d90b907c",
     "dealerId": "dealer_austin_auto",
-    "platformSlug": "autotrader-us",
+    "platformSlug": "autotrader-cox",
     "vehicleId": "veh_0109",
     "source": "FACEBOOK_INQUIRY",
     "consumerName": "Kyle Kaiser",
@@ -1310,7 +1310,7 @@
   {
     "id": "092b2613-8af3-4cb0-9572-41f17df3623d",
     "dealerId": "dealer_austin_auto",
-    "platformSlug": "cars-com-us",
+    "platformSlug": "cars-com",
     "vehicleId": "veh_0159",
     "source": "PHONE_CLICK",
     "consumerName": "Justin Smith",
@@ -1418,7 +1418,7 @@
   {
     "id": "de9c682c-01dd-4ecf-95c4-88c1b3424195",
     "dealerId": "dealer_lone_star",
-    "platformSlug": "autotrader-us",
+    "platformSlug": "autotrader-cox",
     "vehicleId": "veh_0028",
     "source": "PHONE_CLICK",
     "consumerName": "Erica Silva",
@@ -1430,7 +1430,7 @@
   {
     "id": "dd936168-bbe5-4717-8167-170fd64acd8d",
     "dealerId": "dealer_lone_star",
-    "platformSlug": "cars-com-us",
+    "platformSlug": "cars-com",
     "vehicleId": "veh_0113",
     "source": "WEBSITE_FORM",
     "consumerName": "Scott Khan",
@@ -1478,7 +1478,7 @@
   {
     "id": "a34c6049-0fe1-4620-aa34-a5ed41173909",
     "dealerId": "dealer_summit_rv",
-    "platformSlug": "autotrader-us",
+    "platformSlug": "autotrader-cox",
     "vehicleId": "veh_0065",
     "source": "PHONE_CLICK",
     "consumerName": "Elizabeth Vang",
@@ -1562,7 +1562,7 @@
   {
     "id": "9629087e-727c-4260-8747-440c749fbec5",
     "dealerId": "dealer_harbor_boats",
-    "platformSlug": "autotrader-us",
+    "platformSlug": "autotrader-cox",
     "vehicleId": "veh_0033",
     "source": "PHONE_CLICK",
     "consumerName": "Mr. Carl Walker",
@@ -1574,7 +1574,7 @@
   {
     "id": "e6360dc0-44e0-4eca-b899-187a85a8e425",
     "dealerId": "dealer_harbor_boats",
-    "platformSlug": "cars-com-us",
+    "platformSlug": "cars-com",
     "vehicleId": "veh_0050",
     "source": "WEBSITE_FORM",
     "consumerName": "Jeffrey Sharp",
@@ -1586,7 +1586,7 @@
   {
     "id": "25cb6f17-aaa3-493c-bb24-2647c63999be",
     "dealerId": "dealer_messy",
-    "platformSlug": "cars-com-us",
+    "platformSlug": "cars-com",
     "vehicleId": "veh_0094",
     "source": "EMAIL_CLICK",
     "consumerName": "Angela Allen",
@@ -1646,7 +1646,7 @@
   {
     "id": "00ff29e9-7e6d-42cd-aaf9-1421979980aa",
     "dealerId": "dealer_lone_star",
-    "platformSlug": "autotrader-us",
+    "platformSlug": "autotrader-cox",
     "vehicleId": "veh_0072",
     "source": "WEBSITE_FORM",
     "consumerName": "Adam Holmes",
@@ -1658,7 +1658,7 @@
   {
     "id": "80ff3605-3d4e-4221-9412-c5423eec57f6",
     "dealerId": "dealer_lone_star",
-    "platformSlug": "autotrader-us",
+    "platformSlug": "autotrader-cox",
     "vehicleId": "veh_0139",
     "source": "WEBSITE_FORM",
     "consumerName": "Roger Wood",
@@ -1670,7 +1670,7 @@
   {
     "id": "d22b1e12-86e8-4a71-84ed-d11623fdd486",
     "dealerId": "dealer_lone_star",
-    "platformSlug": "cars-com-us",
+    "platformSlug": "cars-com",
     "vehicleId": "veh_0065",
     "source": "EMAIL_CLICK",
     "consumerName": "Charles Fitzpatrick",
@@ -1802,7 +1802,7 @@
   {
     "id": "d017721b-1509-4544-b1b6-e4fff0cd82f5",
     "dealerId": "dealer_harbor_boats",
-    "platformSlug": "cars-com-us",
+    "platformSlug": "cars-com",
     "vehicleId": "veh_0069",
     "source": "FACEBOOK_INQUIRY",
     "consumerName": "James Carpenter",
@@ -1862,7 +1862,7 @@
   {
     "id": "b399aac4-fe10-44b2-a57a-dfc32680c654",
     "dealerId": "dealer_messy",
-    "platformSlug": "autotrader-us",
+    "platformSlug": "autotrader-cox",
     "vehicleId": "veh_0108",
     "source": "WEBSITE_FORM",
     "consumerName": "Paul Sheppard",
@@ -1898,7 +1898,7 @@
   {
     "id": "2dd19193-0812-4396-90af-33349f69f22b",
     "dealerId": "dealer_austin_auto",
-    "platformSlug": "autotrader-us",
+    "platformSlug": "autotrader-cox",
     "vehicleId": "veh_0046",
     "source": "EMAIL_CLICK",
     "consumerName": "Edward Smith",
@@ -1910,7 +1910,7 @@
   {
     "id": "ddc98695-3cad-463f-a5a2-e1d24aa22c2e",
     "dealerId": "dealer_austin_auto",
-    "platformSlug": "autotrader-us",
+    "platformSlug": "autotrader-cox",
     "vehicleId": "veh_0060",
     "source": "WEBSITE_FORM",
     "consumerName": "Frank Sanchez",
@@ -1922,7 +1922,7 @@
   {
     "id": "c2ca08fa-dc62-4a27-a152-2d41574827c7",
     "dealerId": "dealer_austin_auto",
-    "platformSlug": "autotrader-us",
+    "platformSlug": "autotrader-cox",
     "vehicleId": "veh_0013",
     "source": "EMAIL_CLICK",
     "consumerName": "Judy White",
@@ -1934,7 +1934,7 @@
   {
     "id": "506fc88e-8b8f-477e-b954-950fb3ce67aa",
     "dealerId": "dealer_austin_auto",
-    "platformSlug": "cars-com-us",
+    "platformSlug": "cars-com",
     "vehicleId": "veh_0054",
     "source": "PHONE_CLICK",
     "consumerName": "Vincent Hudson",
@@ -2006,7 +2006,7 @@
   {
     "id": "ac7d067b-5082-4560-9209-289ecaa4defa",
     "dealerId": "dealer_summit_rv",
-    "platformSlug": "autotrader-us",
+    "platformSlug": "autotrader-cox",
     "vehicleId": "veh_0055",
     "source": "MARKETPLACE_FORM",
     "consumerName": "Suzanne Rodriguez",
@@ -2018,7 +2018,7 @@
   {
     "id": "b2b58882-90c4-4077-83c5-6a88a814fca3",
     "dealerId": "dealer_summit_rv",
-    "platformSlug": "cars-com-us",
+    "platformSlug": "cars-com",
     "vehicleId": "veh_0108",
     "source": "WEBSITE_FORM",
     "consumerName": "Terry Edwards",
@@ -2030,7 +2030,7 @@
   {
     "id": "ed93eea8-de8b-4a03-b1f2-c936cb555834",
     "dealerId": "dealer_summit_rv",
-    "platformSlug": "cars-com-us",
+    "platformSlug": "cars-com",
     "vehicleId": "veh_0150",
     "source": "FACEBOOK_INQUIRY",
     "consumerName": "Sherry Owens",
@@ -2090,7 +2090,7 @@
   {
     "id": "8b7e41b4-8c42-453e-ba4b-915de043d1d2",
     "dealerId": "dealer_harbor_boats",
-    "platformSlug": "autotrader-us",
+    "platformSlug": "autotrader-cox",
     "vehicleId": "veh_0109",
     "source": "PHONE_CLICK",
     "consumerName": "Craig Lucas",
@@ -2102,7 +2102,7 @@
   {
     "id": "a7815fbf-0948-4afe-bce0-9ca70ac93ab7",
     "dealerId": "dealer_harbor_boats",
-    "platformSlug": "cars-com-us",
+    "platformSlug": "cars-com",
     "vehicleId": "veh_0012",
     "source": "WEBSITE_FORM",
     "consumerName": "John Moore",
@@ -2114,7 +2114,7 @@
   {
     "id": "b08019b2-6858-4cd3-bcba-51b8bc9890b5",
     "dealerId": "dealer_harbor_boats",
-    "platformSlug": "cars-com-us",
+    "platformSlug": "cars-com",
     "vehicleId": "veh_0057",
     "source": "EMAIL_CLICK",
     "consumerName": "Geoffrey Wilson",
@@ -2150,7 +2150,7 @@
   {
     "id": "84c5f259-b060-43ef-bdbb-ac4218c4bf2a",
     "dealerId": "dealer_messy",
-    "platformSlug": "autotrader-us",
+    "platformSlug": "autotrader-cox",
     "vehicleId": "veh_0073",
     "source": "WEBSITE_FORM",
     "consumerName": "Stacey Russo",
@@ -2162,7 +2162,7 @@
   {
     "id": "9ebf8845-4b4d-429f-9354-a8d0e1b128f6",
     "dealerId": "dealer_messy",
-    "platformSlug": "cars-com-us",
+    "platformSlug": "cars-com",
     "vehicleId": "veh_0103",
     "source": "FACEBOOK_INQUIRY",
     "consumerName": "Raven Gonzalez",
@@ -2234,7 +2234,7 @@
   {
     "id": "9b1e4c32-e3af-4fb9-8dcb-2f855fb3f7d8",
     "dealerId": "dealer_austin_auto",
-    "platformSlug": "cars-com-us",
+    "platformSlug": "cars-com",
     "vehicleId": "veh_0022",
     "source": "MARKETPLACE_FORM",
     "consumerName": "Ashley Collins",
@@ -2306,7 +2306,7 @@
   {
     "id": "a38b2a64-4ed8-4c3c-9d4a-c08343d6cb37",
     "dealerId": "dealer_lone_star",
-    "platformSlug": "autotrader-us",
+    "platformSlug": "autotrader-cox",
     "vehicleId": "veh_0103",
     "source": "MARKETPLACE_FORM",
     "consumerName": "Ashley Hart",
@@ -2318,7 +2318,7 @@
   {
     "id": "a16de395-babe-45c1-b703-0f2fac87440d",
     "dealerId": "dealer_lone_star",
-    "platformSlug": "cars-com-us",
+    "platformSlug": "cars-com",
     "vehicleId": "veh_0096",
     "source": "EMAIL_CLICK",
     "consumerName": "Russell Mercado",
@@ -2366,7 +2366,7 @@
   {
     "id": "197274a9-bbd3-4b64-9e6d-d41567b4f916",
     "dealerId": "dealer_summit_rv",
-    "platformSlug": "autotrader-us",
+    "platformSlug": "autotrader-cox",
     "vehicleId": "veh_0079",
     "source": "WEBSITE_FORM",
     "consumerName": "Samuel Smith",
@@ -2378,7 +2378,7 @@
   {
     "id": "eb519a4d-69fe-4e85-ac2d-3568e3f93eb3",
     "dealerId": "dealer_summit_rv",
-    "platformSlug": "cars-com-us",
+    "platformSlug": "cars-com",
     "vehicleId": "veh_0040",
     "source": "MARKETPLACE_FORM",
     "consumerName": "Darrell Davies",
@@ -2390,7 +2390,7 @@
   {
     "id": "51fecf2d-e9d2-4879-9e61-cc96ac6c7ef4",
     "dealerId": "dealer_summit_rv",
-    "platformSlug": "cars-com-us",
+    "platformSlug": "cars-com",
     "vehicleId": "veh_0046",
     "source": "WEBSITE_FORM",
     "consumerName": "Ruben Frazier",
@@ -2402,7 +2402,7 @@
   {
     "id": "77734ae5-a848-42ec-952a-e1399cf3f5de",
     "dealerId": "dealer_summit_rv",
-    "platformSlug": "cars-com-us",
+    "platformSlug": "cars-com",
     "vehicleId": "veh_0134",
     "source": "EMAIL_CLICK",
     "consumerName": "Holly Morgan",
@@ -2414,7 +2414,7 @@
   {
     "id": "6f4cefce-efd6-4a44-98d5-1bef8a332e79",
     "dealerId": "dealer_summit_rv",
-    "platformSlug": "cars-com-us",
+    "platformSlug": "cars-com",
     "vehicleId": "veh_0148",
     "source": "EMAIL_CLICK",
     "consumerName": "Nicole Wilson",
@@ -2426,7 +2426,7 @@
   {
     "id": "9513f611-5865-4d8c-9765-71f915e1fcc0",
     "dealerId": "dealer_summit_rv",
-    "platformSlug": "cars-com-us",
+    "platformSlug": "cars-com",
     "vehicleId": "veh_0158",
     "source": "PHONE_CLICK",
     "consumerName": "Catherine Mcdowell",
@@ -2510,7 +2510,7 @@
   {
     "id": "26323b59-5eae-48bd-b303-7686b095f44e",
     "dealerId": "dealer_harbor_boats",
-    "platformSlug": "autotrader-us",
+    "platformSlug": "autotrader-cox",
     "vehicleId": "veh_0158",
     "source": "EMAIL_CLICK",
     "consumerName": "Sharon Todd",
@@ -2522,7 +2522,7 @@
   {
     "id": "09cbf47f-e711-4286-8a26-76533149457a",
     "dealerId": "dealer_harbor_boats",
-    "platformSlug": "autotrader-us",
+    "platformSlug": "autotrader-cox",
     "vehicleId": "veh_0096",
     "source": "FACEBOOK_INQUIRY",
     "consumerName": "Jessica Mendoza",
@@ -2570,7 +2570,7 @@
   {
     "id": "c9a47169-8e1b-41d5-aa5e-fbc5b4f436d8",
     "dealerId": "dealer_messy",
-    "platformSlug": "cars-com-us",
+    "platformSlug": "cars-com",
     "vehicleId": "veh_0004",
     "source": "PHONE_CLICK",
     "consumerName": "Travis Scott",
@@ -2654,7 +2654,7 @@
   {
     "id": "9c0cccae-9c94-4000-bd35-a6f46a6712d0",
     "dealerId": "dealer_lone_star",
-    "platformSlug": "autotrader-us",
+    "platformSlug": "autotrader-cox",
     "vehicleId": "veh_0009",
     "source": "MARKETPLACE_FORM",
     "consumerName": "Melissa Hale",
@@ -2666,7 +2666,7 @@
   {
     "id": "017e90cf-f290-41bc-a602-4cb468249f3c",
     "dealerId": "dealer_lone_star",
-    "platformSlug": "cars-com-us",
+    "platformSlug": "cars-com",
     "vehicleId": "veh_0151",
     "source": "MARKETPLACE_FORM",
     "consumerName": "Michael Myers",
@@ -2774,7 +2774,7 @@
   {
     "id": "f43d06af-ee24-49e0-9f99-e6df2a7aca54",
     "dealerId": "dealer_summit_rv",
-    "platformSlug": "cars-com-us",
+    "platformSlug": "cars-com",
     "vehicleId": "veh_0053",
     "source": "PHONE_CLICK",
     "consumerName": "Tiffany Holt",
@@ -2846,7 +2846,7 @@
   {
     "id": "848bcdd5-832b-4b70-918e-4028415adf37",
     "dealerId": "dealer_harbor_boats",
-    "platformSlug": "autotrader-us",
+    "platformSlug": "autotrader-cox",
     "vehicleId": "veh_0099",
     "source": "FACEBOOK_INQUIRY",
     "consumerName": "Mark Russell",
@@ -2858,7 +2858,7 @@
   {
     "id": "a38ae1be-b1ef-4865-aa5f-0afc0c0dbfb5",
     "dealerId": "dealer_harbor_boats",
-    "platformSlug": "cars-com-us",
+    "platformSlug": "cars-com",
     "vehicleId": "veh_0108",
     "source": "FACEBOOK_INQUIRY",
     "consumerName": "Elizabeth Rios",
@@ -2930,7 +2930,7 @@
   {
     "id": "10140ce4-df09-41a3-8b0c-c90d8909b40b",
     "dealerId": "dealer_messy",
-    "platformSlug": "autotrader-us",
+    "platformSlug": "autotrader-cox",
     "vehicleId": "veh_0095",
     "source": "WEBSITE_FORM",
     "consumerName": "Stephanie Jenkins",
@@ -2942,7 +2942,7 @@
   {
     "id": "ab67d098-341d-4e3d-9be5-1016d62f39c2",
     "dealerId": "dealer_messy",
-    "platformSlug": "cars-com-us",
+    "platformSlug": "cars-com",
     "vehicleId": "veh_0107",
     "source": "MARKETPLACE_FORM",
     "consumerName": "Jessica Aguilar",
@@ -3014,7 +3014,7 @@
   {
     "id": "fa202bf1-affc-4b1e-9ffe-49bb262f5e82",
     "dealerId": "dealer_austin_auto",
-    "platformSlug": "autotrader-us",
+    "platformSlug": "autotrader-cox",
     "vehicleId": "veh_0013",
     "source": "WEBSITE_FORM",
     "consumerName": "Kyle Garcia",
@@ -3122,7 +3122,7 @@
   {
     "id": "3b6afb0f-68f4-4bd9-8a8e-6b4122ae871c",
     "dealerId": "dealer_lone_star",
-    "platformSlug": "autotrader-us",
+    "platformSlug": "autotrader-cox",
     "vehicleId": "veh_0116",
     "source": "PHONE_CLICK",
     "consumerName": "Melanie Kelley",
@@ -3134,7 +3134,7 @@
   {
     "id": "aac8616b-698a-4ebd-8fd2-452adde2cbd7",
     "dealerId": "dealer_lone_star",
-    "platformSlug": "cars-com-us",
+    "platformSlug": "cars-com",
     "vehicleId": "veh_0006",
     "source": "WEBSITE_FORM",
     "consumerName": "Julian Ross",
@@ -3182,7 +3182,7 @@
   {
     "id": "6f812578-38bd-48af-b856-f875a6fbbb27",
     "dealerId": "dealer_summit_rv",
-    "platformSlug": "autotrader-us",
+    "platformSlug": "autotrader-cox",
     "vehicleId": "veh_0026",
     "source": "PHONE_CLICK",
     "consumerName": "Rachel Scott",
@@ -3230,7 +3230,7 @@
   {
     "id": "d051b6a6-3d3a-4d5d-9e05-5eb27f6c0a85",
     "dealerId": "dealer_harbor_boats",
-    "platformSlug": "autotrader-us",
+    "platformSlug": "autotrader-cox",
     "vehicleId": "veh_0063",
     "source": "PHONE_CLICK",
     "consumerName": "Derrick Bradshaw",
@@ -3242,7 +3242,7 @@
   {
     "id": "4d223100-6903-40dc-9629-9e85cec217f2",
     "dealerId": "dealer_harbor_boats",
-    "platformSlug": "autotrader-us",
+    "platformSlug": "autotrader-cox",
     "vehicleId": "veh_0009",
     "source": "PHONE_CLICK",
     "consumerName": "Brandon Garner",
@@ -3254,7 +3254,7 @@
   {
     "id": "0a8f83c4-eb73-439a-8d33-c01419741e79",
     "dealerId": "dealer_harbor_boats",
-    "platformSlug": "cars-com-us",
+    "platformSlug": "cars-com",
     "vehicleId": "veh_0156",
     "source": "EMAIL_CLICK",
     "consumerName": "Megan Esparza",
@@ -3278,7 +3278,7 @@
   {
     "id": "dadb531a-5c56-409b-bb70-780e48f7c15c",
     "dealerId": "dealer_messy",
-    "platformSlug": "autotrader-us",
+    "platformSlug": "autotrader-cox",
     "vehicleId": "veh_0116",
     "source": "WEBSITE_FORM",
     "consumerName": "Rebecca Johnson",
@@ -3350,7 +3350,7 @@
   {
     "id": "0533b9ca-e60b-4839-9981-593d2e1d88b7",
     "dealerId": "dealer_austin_auto",
-    "platformSlug": "autotrader-us",
+    "platformSlug": "autotrader-cox",
     "vehicleId": "veh_0088",
     "source": "FACEBOOK_INQUIRY",
     "consumerName": "Janet Aguirre",
@@ -3362,7 +3362,7 @@
   {
     "id": "9305e132-610f-4215-b944-ec6b811b790f",
     "dealerId": "dealer_austin_auto",
-    "platformSlug": "autotrader-us",
+    "platformSlug": "autotrader-cox",
     "vehicleId": "veh_0058",
     "source": "FACEBOOK_INQUIRY",
     "consumerName": "James Drake",
@@ -3374,7 +3374,7 @@
   {
     "id": "f0d55079-251a-4688-b5ec-8ef5aea72bd3",
     "dealerId": "dealer_austin_auto",
-    "platformSlug": "autotrader-us",
+    "platformSlug": "autotrader-cox",
     "vehicleId": "veh_0031",
     "source": "FACEBOOK_INQUIRY",
     "consumerName": "Phillip Walter",
@@ -3398,7 +3398,7 @@
   {
     "id": "9d4cbcbc-ebb7-42b7-8a6b-871def1a7263",
     "dealerId": "dealer_lone_star",
-    "platformSlug": "cars-com-us",
+    "platformSlug": "cars-com",
     "vehicleId": "veh_0082",
     "source": "MARKETPLACE_FORM",
     "consumerName": "Desiree Jones",
@@ -3410,7 +3410,7 @@
   {
     "id": "8290579d-9a4f-4be2-a44a-de51fb83e486",
     "dealerId": "dealer_lone_star",
-    "platformSlug": "cars-com-us",
+    "platformSlug": "cars-com",
     "vehicleId": "veh_0030",
     "source": "PHONE_CLICK",
     "consumerName": "Christy Diaz",
@@ -3422,7 +3422,7 @@
   {
     "id": "a5bd9951-852a-4707-8b2b-3c712e9e4c3a",
     "dealerId": "dealer_lone_star",
-    "platformSlug": "cars-com-us",
+    "platformSlug": "cars-com",
     "vehicleId": "veh_0051",
     "source": "MARKETPLACE_FORM",
     "consumerName": "Rebecca Perez",
@@ -3506,7 +3506,7 @@
   {
     "id": "4218ceb5-7fdc-4bea-b604-e020df33a0c3",
     "dealerId": "dealer_summit_rv",
-    "platformSlug": "cars-com-us",
+    "platformSlug": "cars-com",
     "vehicleId": "veh_0054",
     "source": "EMAIL_CLICK",
     "consumerName": "Richard Wilson",
@@ -3638,7 +3638,7 @@
   {
     "id": "57870313-b145-4d96-b9d7-1e6a28dfe1ea",
     "dealerId": "dealer_harbor_boats",
-    "platformSlug": "autotrader-us",
+    "platformSlug": "autotrader-cox",
     "vehicleId": "veh_0151",
     "source": "PHONE_CLICK",
     "consumerName": "Elijah Torres",
@@ -3650,7 +3650,7 @@
   {
     "id": "964468af-565f-4f69-9055-2763037a67b0",
     "dealerId": "dealer_harbor_boats",
-    "platformSlug": "autotrader-us",
+    "platformSlug": "autotrader-cox",
     "vehicleId": "veh_0015",
     "source": "WEBSITE_FORM",
     "consumerName": "Christopher Nelson",
@@ -3662,7 +3662,7 @@
   {
     "id": "83e94975-d6d0-4053-b450-02bf725e1bbb",
     "dealerId": "dealer_harbor_boats",
-    "platformSlug": "autotrader-us",
+    "platformSlug": "autotrader-cox",
     "vehicleId": "veh_0095",
     "source": "PHONE_CLICK",
     "consumerName": "Andrea Weiss",
@@ -3758,7 +3758,7 @@
   {
     "id": "55d3259e-f203-40ba-8f3b-71e575b84d47",
     "dealerId": "dealer_messy",
-    "platformSlug": "cars-com-us",
+    "platformSlug": "cars-com",
     "vehicleId": "veh_0111",
     "source": "WEBSITE_FORM",
     "consumerName": "Kimberly Mcmahon",
@@ -3866,7 +3866,7 @@
   {
     "id": "491cdd9f-e726-4707-b5db-cf6da635f0c0",
     "dealerId": "dealer_lone_star",
-    "platformSlug": "autotrader-us",
+    "platformSlug": "autotrader-cox",
     "vehicleId": "veh_0080",
     "source": "MARKETPLACE_FORM",
     "consumerName": "Jennifer Gibson",
@@ -3902,7 +3902,7 @@
   {
     "id": "54e1fd55-9d0b-4c23-adaa-9e8949834f97",
     "dealerId": "dealer_summit_rv",
-    "platformSlug": "autotrader-us",
+    "platformSlug": "autotrader-cox",
     "vehicleId": "veh_0008",
     "source": "PHONE_CLICK",
     "consumerName": "Christopher Scott",
@@ -3950,7 +3950,7 @@
   {
     "id": "3f9c198c-b7dd-4ccf-b31a-e4540ee526d0",
     "dealerId": "dealer_harbor_boats",
-    "platformSlug": "cars-com-us",
+    "platformSlug": "cars-com",
     "vehicleId": "veh_0152",
     "source": "EMAIL_CLICK",
     "consumerName": "Tina Weaver",
@@ -4022,7 +4022,7 @@
   {
     "id": "a5a49e59-dd9f-4342-a0d6-dbbb51db8aee",
     "dealerId": "dealer_messy",
-    "platformSlug": "autotrader-us",
+    "platformSlug": "autotrader-cox",
     "vehicleId": "veh_0033",
     "source": "MARKETPLACE_FORM",
     "consumerName": "Abigail Franklin",
@@ -4034,7 +4034,7 @@
   {
     "id": "ce1287c3-4d6e-49ec-b6c8-51b1885b909d",
     "dealerId": "dealer_messy",
-    "platformSlug": "cars-com-us",
+    "platformSlug": "cars-com",
     "vehicleId": "veh_0116",
     "source": "PHONE_CLICK",
     "consumerName": "Brian Figueroa",
@@ -4082,7 +4082,7 @@
   {
     "id": "ec9bc81b-f706-4944-b5cd-cab435c29727",
     "dealerId": "dealer_austin_auto",
-    "platformSlug": "autotrader-us",
+    "platformSlug": "autotrader-cox",
     "vehicleId": "veh_0077",
     "source": "MARKETPLACE_FORM",
     "consumerName": "Stacy Hicks",
@@ -4094,7 +4094,7 @@
   {
     "id": "a4e8a49f-fc84-4023-a5a0-eae63a3c0101",
     "dealerId": "dealer_austin_auto",
-    "platformSlug": "cars-com-us",
+    "platformSlug": "cars-com",
     "vehicleId": "veh_0036",
     "source": "FACEBOOK_INQUIRY",
     "consumerName": "Eddie Wilson",
@@ -4130,7 +4130,7 @@
   {
     "id": "53868c6c-1b66-4100-ba80-7c0d71bc2906",
     "dealerId": "dealer_lone_star",
-    "platformSlug": "autotrader-us",
+    "platformSlug": "autotrader-cox",
     "vehicleId": "veh_0029",
     "source": "PHONE_CLICK",
     "consumerName": "Timothy Lane",
@@ -4142,7 +4142,7 @@
   {
     "id": "c3ea05cc-5f00-4ffa-9889-e88075c9ff9e",
     "dealerId": "dealer_lone_star",
-    "platformSlug": "cars-com-us",
+    "platformSlug": "cars-com",
     "vehicleId": "veh_0155",
     "source": "EMAIL_CLICK",
     "consumerName": "Jennifer Rogers",

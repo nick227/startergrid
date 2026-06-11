@@ -1,4 +1,4 @@
-[
+﻿[
   {
     "id": "dealer_austin_auto",
     "legalName": "Austin Metro Auto Group LLC",
@@ -27,8 +27,8 @@
       "meta-automotive-ads",
       "microsoft-automotive-ads",
       "ebay-motors",
-      "autotrader-us",
-      "cars-com-us"
+      "autotrader-cox",
+      "cars-com"
     ],
     "documents": {
       "w9": "mock://documents/austin/w9.pdf",
@@ -127,8 +127,8 @@
     "desiredChannels": [
       "facebook-business-page",
       "google-business-profile",
-      "autotrader-us",
-      "cars-com-us"
+      "autotrader-cox",
+      "cars-com"
     ],
     "documents": {
       "missing": [

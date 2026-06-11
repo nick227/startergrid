@@ -1,10 +1,10 @@
-[
+﻿[
   {
-    "id": "acct_dealer_austin_auto_owned_storefront",
+    "id": "acct_dealer_austin_auto_dealer_storefront",
     "dealershipId": "dealer_austin_auto",
-    "platformSlug": "owned-storefront",
+    "platformSlug": "dealer-storefront",
     "state": "ACTIVE",
-    "accountId": "owned-storefront-dealer_austin_auto",
+    "accountId": "dealer-storefront-dealer_austin_auto",
     "platformRepName": null,
     "platformRepEmail": null,
     "membershipStatus": "mock_active",
@@ -128,13 +128,13 @@
     "updatedAt": "2026-06-09T12:00:00Z"
   },
   {
-    "id": "acct_dealer_austin_auto_autotrader_us",
+    "id": "acct_dealer_austin_auto_autotrader_cox",
     "dealershipId": "dealer_austin_auto",
-    "platformSlug": "autotrader-us",
+    "platformSlug": "autotrader-cox",
     "state": "PARTNER_REQUIRED",
-    "accountId": "autotrader-us-dealer_austin_auto",
+    "accountId": "autotrader-cox-dealer_austin_auto",
     "platformRepName": "Mock Rep",
-    "platformRepEmail": "rep+autotrader-us@example.invalid",
+    "platformRepEmail": "rep+autotrader-cox@example.invalid",
     "membershipStatus": null,
     "nextAction": "Review setup fields",
     "nextActionOwner": "OPERATOR",
@@ -144,13 +144,13 @@
     "updatedAt": "2026-06-08T12:00:00Z"
   },
   {
-    "id": "acct_dealer_austin_auto_cars_com_us",
+    "id": "acct_dealer_austin_auto_cars_com",
     "dealershipId": "dealer_austin_auto",
-    "platformSlug": "cars-com-us",
+    "platformSlug": "cars-com",
     "state": "PENDING_REVIEW",
-    "accountId": "cars-com-us-dealer_austin_auto",
+    "accountId": "cars-com-dealer_austin_auto",
     "platformRepName": "Mock Rep",
-    "platformRepEmail": "rep+cars-com-us@example.invalid",
+    "platformRepEmail": "rep+cars-com@example.invalid",
     "membershipStatus": null,
     "nextAction": "Review setup fields",
     "nextActionOwner": "OPERATOR",
@@ -160,9 +160,9 @@
     "updatedAt": "2026-06-09T12:00:00Z"
   },
   {
-    "id": "acct_dealer_austin_auto_cargurus_us",
+    "id": "acct_dealer_austin_auto_cargurus_dealer",
     "dealershipId": "dealer_austin_auto",
-    "platformSlug": "cargurus-us",
+    "platformSlug": "cargurus-dealer",
     "state": "ACCOUNT_NEEDED",
     "accountId": null,
     "platformRepName": null,
@@ -192,11 +192,11 @@
     "updatedAt": "2026-06-07T12:00:00Z"
   },
   {
-    "id": "acct_dealer_lone_star_rv_owned_storefront",
+    "id": "acct_dealer_lone_star_rv_dealer_storefront",
     "dealershipId": "dealer_lone_star_rv",
-    "platformSlug": "owned-storefront",
+    "platformSlug": "dealer-storefront",
     "state": "ACTIVE",
-    "accountId": "owned-storefront-dealer_lone_star_rv",
+    "accountId": "dealer-storefront-dealer_lone_star_rv",
     "platformRepName": null,
     "platformRepEmail": null,
     "membershipStatus": "mock_active",
@@ -320,9 +320,9 @@
     "updatedAt": "2026-06-07T12:00:00Z"
   },
   {
-    "id": "acct_dealer_lone_star_rv_autotrader_us",
+    "id": "acct_dealer_lone_star_rv_autotrader_cox",
     "dealershipId": "dealer_lone_star_rv",
-    "platformSlug": "autotrader-us",
+    "platformSlug": "autotrader-cox",
     "state": "ACCOUNT_NEEDED",
     "accountId": null,
     "platformRepName": null,
@@ -336,9 +336,9 @@
     "updatedAt": "2026-06-07T12:00:00Z"
   },
   {
-    "id": "acct_dealer_lone_star_rv_cars_com_us",
+    "id": "acct_dealer_lone_star_rv_cars_com",
     "dealershipId": "dealer_lone_star_rv",
-    "platformSlug": "cars-com-us",
+    "platformSlug": "cars-com",
     "state": "ACCOUNT_NEEDED",
     "accountId": null,
     "platformRepName": null,
@@ -352,9 +352,9 @@
     "updatedAt": "2026-06-07T12:00:00Z"
   },
   {
-    "id": "acct_dealer_lone_star_rv_cargurus_us",
+    "id": "acct_dealer_lone_star_rv_cargurus_dealer",
     "dealershipId": "dealer_lone_star_rv",
-    "platformSlug": "cargurus-us",
+    "platformSlug": "cargurus-dealer",
     "state": "ACCOUNT_NEEDED",
     "accountId": null,
     "platformRepName": null,
@@ -384,11 +384,11 @@
     "updatedAt": "2026-06-10T12:00:00Z"
   },
   {
-    "id": "acct_dealer_coastal_boats_owned_storefront",
+    "id": "acct_dealer_coastal_boats_dealer_storefront",
     "dealershipId": "dealer_coastal_boats",
-    "platformSlug": "owned-storefront",
+    "platformSlug": "dealer-storefront",
     "state": "ACTIVE",
-    "accountId": "owned-storefront-dealer_coastal_boats",
+    "accountId": "dealer-storefront-dealer_coastal_boats",
     "platformRepName": null,
     "platformRepEmail": null,
     "membershipStatus": "mock_active",
@@ -512,9 +512,9 @@
     "updatedAt": "2026-06-09T12:00:00Z"
   },
   {
-    "id": "acct_dealer_coastal_boats_autotrader_us",
+    "id": "acct_dealer_coastal_boats_autotrader_cox",
     "dealershipId": "dealer_coastal_boats",
-    "platformSlug": "autotrader-us",
+    "platformSlug": "autotrader-cox",
     "state": "ACCOUNT_NEEDED",
     "accountId": null,
     "platformRepName": null,
@@ -528,9 +528,9 @@
     "updatedAt": "2026-06-07T12:00:00Z"
   },
   {
-    "id": "acct_dealer_coastal_boats_cars_com_us",
+    "id": "acct_dealer_coastal_boats_cars_com",
     "dealershipId": "dealer_coastal_boats",
-    "platformSlug": "cars-com-us",
+    "platformSlug": "cars-com",
     "state": "ACCOUNT_NEEDED",
     "accountId": null,
     "platformRepName": null,
@@ -544,9 +544,9 @@
     "updatedAt": "2026-06-08T12:00:00Z"
   },
   {
-    "id": "acct_dealer_coastal_boats_cargurus_us",
+    "id": "acct_dealer_coastal_boats_cargurus_dealer",
     "dealershipId": "dealer_coastal_boats",
-    "platformSlug": "cargurus-us",
+    "platformSlug": "cargurus-dealer",
     "state": "ACCOUNT_NEEDED",
     "accountId": null,
     "platformRepName": null,
@@ -576,11 +576,11 @@
     "updatedAt": "2026-06-09T12:00:00Z"
   },
   {
-    "id": "acct_dealer_messy_motors_owned_storefront",
+    "id": "acct_dealer_messy_motors_dealer_storefront",
     "dealershipId": "dealer_messy_motors",
-    "platformSlug": "owned-storefront",
+    "platformSlug": "dealer-storefront",
     "state": "ACTIVE",
-    "accountId": "owned-storefront-dealer_messy_motors",
+    "accountId": "dealer-storefront-dealer_messy_motors",
     "platformRepName": null,
     "platformRepEmail": null,
     "membershipStatus": "mock_active",
@@ -704,13 +704,13 @@
     "updatedAt": "2026-06-08T12:00:00Z"
   },
   {
-    "id": "acct_dealer_messy_motors_autotrader_us",
+    "id": "acct_dealer_messy_motors_autotrader_cox",
     "dealershipId": "dealer_messy_motors",
-    "platformSlug": "autotrader-us",
+    "platformSlug": "autotrader-cox",
     "state": "PARTNER_REQUIRED",
-    "accountId": "autotrader-us-dealer_messy_motors",
+    "accountId": "autotrader-cox-dealer_messy_motors",
     "platformRepName": "Mock Rep",
-    "platformRepEmail": "rep+autotrader-us@example.invalid",
+    "platformRepEmail": "rep+autotrader-cox@example.invalid",
     "membershipStatus": null,
     "nextAction": "Review setup fields",
     "nextActionOwner": "OPERATOR",
@@ -720,13 +720,13 @@
     "updatedAt": "2026-06-08T12:00:00Z"
   },
   {
-    "id": "acct_dealer_messy_motors_cars_com_us",
+    "id": "acct_dealer_messy_motors_cars_com",
     "dealershipId": "dealer_messy_motors",
-    "platformSlug": "cars-com-us",
+    "platformSlug": "cars-com",
     "state": "PENDING_REVIEW",
-    "accountId": "cars-com-us-dealer_messy_motors",
+    "accountId": "cars-com-dealer_messy_motors",
     "platformRepName": "Mock Rep",
-    "platformRepEmail": "rep+cars-com-us@example.invalid",
+    "platformRepEmail": "rep+cars-com@example.invalid",
     "membershipStatus": null,
     "nextAction": "Review setup fields",
     "nextActionOwner": "OPERATOR",
@@ -736,9 +736,9 @@
     "updatedAt": "2026-06-07T12:00:00Z"
   },
   {
-    "id": "acct_dealer_messy_motors_cargurus_us",
+    "id": "acct_dealer_messy_motors_cargurus_dealer",
     "dealershipId": "dealer_messy_motors",
-    "platformSlug": "cargurus-us",
+    "platformSlug": "cargurus-dealer",
     "state": "ACCOUNT_NEEDED",
     "accountId": null,
     "platformRepName": null,
@@ -768,11 +768,11 @@
     "updatedAt": "2026-06-10T12:00:00Z"
   },
   {
-    "id": "acct_dealer_premium_imports_owned_storefront",
+    "id": "acct_dealer_premium_imports_dealer_storefront",
     "dealershipId": "dealer_premium_imports",
-    "platformSlug": "owned-storefront",
+    "platformSlug": "dealer-storefront",
     "state": "ACTIVE",
-    "accountId": "owned-storefront-dealer_premium_imports",
+    "accountId": "dealer-storefront-dealer_premium_imports",
     "platformRepName": null,
     "platformRepEmail": null,
     "membershipStatus": "mock_active",
@@ -896,9 +896,9 @@
     "updatedAt": "2026-06-07T12:00:00Z"
   },
   {
-    "id": "acct_dealer_premium_imports_autotrader_us",
+    "id": "acct_dealer_premium_imports_autotrader_cox",
     "dealershipId": "dealer_premium_imports",
-    "platformSlug": "autotrader-us",
+    "platformSlug": "autotrader-cox",
     "state": "ACCOUNT_NEEDED",
     "accountId": null,
     "platformRepName": null,
@@ -912,9 +912,9 @@
     "updatedAt": "2026-06-08T12:00:00Z"
   },
   {
-    "id": "acct_dealer_premium_imports_cars_com_us",
+    "id": "acct_dealer_premium_imports_cars_com",
     "dealershipId": "dealer_premium_imports",
-    "platformSlug": "cars-com-us",
+    "platformSlug": "cars-com",
     "state": "ACCOUNT_NEEDED",
     "accountId": null,
     "platformRepName": null,
@@ -928,9 +928,9 @@
     "updatedAt": "2026-06-07T12:00:00Z"
   },
   {
-    "id": "acct_dealer_premium_imports_cargurus_us",
+    "id": "acct_dealer_premium_imports_cargurus_dealer",
     "dealershipId": "dealer_premium_imports",
-    "platformSlug": "cargurus-us",
+    "platformSlug": "cargurus-dealer",
     "state": "ACCOUNT_NEEDED",
     "accountId": null,
     "platformRepName": null,

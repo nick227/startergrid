@@ -1,8 +1,8 @@
-[
+﻿[
   {
-    "id": "app_dealer_austin_auto_owned_storefront",
+    "id": "app_dealer_austin_auto_dealer_storefront",
     "dealershipId": "dealer_austin_auto",
-    "platformId": "platform_owned_storefront",
+    "platformId": "platform_dealer_storefront",
     "status": "ACTIVE",
     "referralCode": null,
     "missingFields": [],
@@ -100,9 +100,9 @@
     "updatedAt": "2026-06-10T12:00:00Z"
   },
   {
-    "id": "app_dealer_austin_auto_autotrader_us",
+    "id": "app_dealer_austin_auto_autotrader_cox",
     "dealershipId": "dealer_austin_auto",
-    "platformId": "platform_autotrader_us",
+    "platformId": "platform_autotrader_cox",
     "status": "PARTNER_REQUIRED",
     "referralCode": null,
     "missingFields": [],
@@ -112,10 +112,10 @@
     "updatedAt": "2026-06-06T12:00:00Z"
   },
   {
-    "id": "app_dealer_austin_auto_cars_com_us",
+    "id": "app_dealer_austin_auto_cars_com",
     "dealershipId": "dealer_austin_auto",
-    "platformId": "platform_cars_com_us",
-    "status": "PENDING_REVIEW",
+    "platformId": "platform_cars_com",
+    "status": "PLATFORM_REVIEWING",
     "referralCode": null,
     "missingFields": [],
     "nextAction": "Awaiting platform/rep",
@@ -124,9 +124,9 @@
     "updatedAt": "2026-06-07T12:00:00Z"
   },
   {
-    "id": "app_dealer_austin_auto_cargurus_us",
+    "id": "app_dealer_austin_auto_cargurus_dealer",
     "dealershipId": "dealer_austin_auto",
-    "platformId": "platform_cargurus_us",
+    "platformId": "platform_cargurus_dealer",
     "status": "NOT_STARTED",
     "referralCode": null,
     "missingFields": [],
@@ -148,9 +148,9 @@
     "updatedAt": "2026-06-08T12:00:00Z"
   },
   {
-    "id": "app_dealer_lone_star_rv_owned_storefront",
+    "id": "app_dealer_lone_star_rv_dealer_storefront",
     "dealershipId": "dealer_lone_star_rv",
-    "platformId": "platform_owned_storefront",
+    "platformId": "platform_dealer_storefront",
     "status": "ACTIVE",
     "referralCode": null,
     "missingFields": [],
@@ -246,9 +246,9 @@
     "updatedAt": "2026-06-06T12:00:00Z"
   },
   {
-    "id": "app_dealer_lone_star_rv_autotrader_us",
+    "id": "app_dealer_lone_star_rv_autotrader_cox",
     "dealershipId": "dealer_lone_star_rv",
-    "platformId": "platform_autotrader_us",
+    "platformId": "platform_autotrader_cox",
     "status": "NOT_STARTED",
     "referralCode": null,
     "missingFields": [],
@@ -258,9 +258,9 @@
     "updatedAt": "2026-06-06T12:00:00Z"
   },
   {
-    "id": "app_dealer_lone_star_rv_cars_com_us",
+    "id": "app_dealer_lone_star_rv_cars_com",
     "dealershipId": "dealer_lone_star_rv",
-    "platformId": "platform_cars_com_us",
+    "platformId": "platform_cars_com",
     "status": "NOT_STARTED",
     "referralCode": null,
     "missingFields": [],
@@ -270,9 +270,9 @@
     "updatedAt": "2026-06-06T12:00:00Z"
   },
   {
-    "id": "app_dealer_lone_star_rv_cargurus_us",
+    "id": "app_dealer_lone_star_rv_cargurus_dealer",
     "dealershipId": "dealer_lone_star_rv",
-    "platformId": "platform_cargurus_us",
+    "platformId": "platform_cargurus_dealer",
     "status": "NOT_STARTED",
     "referralCode": null,
     "missingFields": [],
@@ -294,9 +294,9 @@
     "updatedAt": "2026-06-05T12:00:00Z"
   },
   {
-    "id": "app_dealer_coastal_boats_owned_storefront",
+    "id": "app_dealer_coastal_boats_dealer_storefront",
     "dealershipId": "dealer_coastal_boats",
-    "platformId": "platform_owned_storefront",
+    "platformId": "platform_dealer_storefront",
     "status": "ACTIVE",
     "referralCode": null,
     "missingFields": [],
@@ -392,9 +392,9 @@
     "updatedAt": "2026-06-08T12:00:00Z"
   },
   {
-    "id": "app_dealer_coastal_boats_autotrader_us",
+    "id": "app_dealer_coastal_boats_autotrader_cox",
     "dealershipId": "dealer_coastal_boats",
-    "platformId": "platform_autotrader_us",
+    "platformId": "platform_autotrader_cox",
     "status": "NOT_STARTED",
     "referralCode": null,
     "missingFields": [],
@@ -404,9 +404,9 @@
     "updatedAt": "2026-06-10T12:00:00Z"
   },
   {
-    "id": "app_dealer_coastal_boats_cars_com_us",
+    "id": "app_dealer_coastal_boats_cars_com",
     "dealershipId": "dealer_coastal_boats",
-    "platformId": "platform_cars_com_us",
+    "platformId": "platform_cars_com",
     "status": "NOT_STARTED",
     "referralCode": null,
     "missingFields": [],
@@ -416,9 +416,9 @@
     "updatedAt": "2026-06-09T12:00:00Z"
   },
   {
-    "id": "app_dealer_coastal_boats_cargurus_us",
+    "id": "app_dealer_coastal_boats_cargurus_dealer",
     "dealershipId": "dealer_coastal_boats",
-    "platformId": "platform_cargurus_us",
+    "platformId": "platform_cargurus_dealer",
     "status": "NOT_STARTED",
     "referralCode": null,
     "missingFields": [],
@@ -440,9 +440,9 @@
     "updatedAt": "2026-06-10T12:00:00Z"
   },
   {
-    "id": "app_dealer_messy_motors_owned_storefront",
+    "id": "app_dealer_messy_motors_dealer_storefront",
     "dealershipId": "dealer_messy_motors",
-    "platformId": "platform_owned_storefront",
+    "platformId": "platform_dealer_storefront",
     "status": "ACTIVE",
     "referralCode": null,
     "missingFields": [],
@@ -536,9 +536,9 @@
     "updatedAt": "2026-06-06T12:00:00Z"
   },
   {
-    "id": "app_dealer_messy_motors_autotrader_us",
+    "id": "app_dealer_messy_motors_autotrader_cox",
     "dealershipId": "dealer_messy_motors",
-    "platformId": "platform_autotrader_us",
+    "platformId": "platform_autotrader_cox",
     "status": "PARTNER_REQUIRED",
     "referralCode": null,
     "missingFields": [],
@@ -548,10 +548,10 @@
     "updatedAt": "2026-06-07T12:00:00Z"
   },
   {
-    "id": "app_dealer_messy_motors_cars_com_us",
+    "id": "app_dealer_messy_motors_cars_com",
     "dealershipId": "dealer_messy_motors",
-    "platformId": "platform_cars_com_us",
-    "status": "PENDING_REVIEW",
+    "platformId": "platform_cars_com",
+    "status": "PLATFORM_REVIEWING",
     "referralCode": null,
     "missingFields": [],
     "nextAction": "Awaiting platform/rep",
@@ -560,9 +560,9 @@
     "updatedAt": "2026-06-10T12:00:00Z"
   },
   {
-    "id": "app_dealer_messy_motors_cargurus_us",
+    "id": "app_dealer_messy_motors_cargurus_dealer",
     "dealershipId": "dealer_messy_motors",
-    "platformId": "platform_cargurus_us",
+    "platformId": "platform_cargurus_dealer",
     "status": "NOT_STARTED",
     "referralCode": null,
     "missingFields": [],
@@ -584,9 +584,9 @@
     "updatedAt": "2026-06-07T12:00:00Z"
   },
   {
-    "id": "app_dealer_premium_imports_owned_storefront",
+    "id": "app_dealer_premium_imports_dealer_storefront",
     "dealershipId": "dealer_premium_imports",
-    "platformId": "platform_owned_storefront",
+    "platformId": "platform_dealer_storefront",
     "status": "ACTIVE",
     "referralCode": null,
     "missingFields": [],
@@ -688,9 +688,9 @@
     "updatedAt": "2026-06-06T12:00:00Z"
   },
   {
-    "id": "app_dealer_premium_imports_autotrader_us",
+    "id": "app_dealer_premium_imports_autotrader_cox",
     "dealershipId": "dealer_premium_imports",
-    "platformId": "platform_autotrader_us",
+    "platformId": "platform_autotrader_cox",
     "status": "NOT_STARTED",
     "referralCode": null,
     "missingFields": [],
@@ -700,9 +700,9 @@
     "updatedAt": "2026-06-10T12:00:00Z"
   },
   {
-    "id": "app_dealer_premium_imports_cars_com_us",
+    "id": "app_dealer_premium_imports_cars_com",
     "dealershipId": "dealer_premium_imports",
-    "platformId": "platform_cars_com_us",
+    "platformId": "platform_cars_com",
     "status": "NOT_STARTED",
     "referralCode": null,
     "missingFields": [],
@@ -712,9 +712,9 @@
     "updatedAt": "2026-06-06T12:00:00Z"
   },
   {
-    "id": "app_dealer_premium_imports_cargurus_us",
+    "id": "app_dealer_premium_imports_cargurus_dealer",
     "dealershipId": "dealer_premium_imports",
-    "platformId": "platform_cargurus_us",
+    "platformId": "platform_cargurus_dealer",
     "status": "NOT_STARTED",
     "referralCode": null,
     "missingFields": [],

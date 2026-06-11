@@ -8,7 +8,7 @@ import { adminDealerHash } from '@/lib/routes.ts';
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 
-type AdminTab = 'system' | 'dealers' | 'platforms' | 'triage' | 'audit';
+type AdminTab = 'system' | 'dealers' | 'platforms' | 'triage' | 'audit' | 'insights';
 type SortDir = 'asc' | 'desc';
 type DealerSortField = 'legalName' | 'businessCategory' | 'createdAt' | 'issues';
 type PlatSortField   = 'platformName' | 'dealersUsing' | 'maturity';
@@ -855,6 +855,35 @@ export default function AdminOverviewPage() {
                   </table>
                 </div>
               )}
+            </div>
+          )}
+
+          {/* ── Insights Tab ────────────────────────────────────────────────── */}
+          {activeTab === 'insights' && (
+            <div className="space-y-4">
+              <p className="text-sm text-ink-muted mb-4">
+                Global aggregate sales and performance insights across all dealerships.
+              </p>
+              <DealerDashboard 
+                isAdmin={true} 
+                nav={{
+                  goToHome: () => { window.location.hash = '#/admin' },
+                  goToPlatforms: () => { window.location.hash = '#/admin/platforms' },
+                  goToQueue: () => {},
+                  goToHistory: () => {},
+                  goToReports: () => { window.location.hash = '#/admin' },
+                  goToInventory: () => { window.location.hash = '#/admin/dealers' },
+                  goToHelp: () => {},
+                  goToPlatformDetail: () => { window.location.hash = '#/admin/platforms' },
+                  goToPlatformQueue: () => {},
+                  goToPlatformHistory: () => {},
+                  goToSync: () => {},
+                  goToAccounts: () => {},
+                  goToInsights: () => { window.location.hash = '#/admin/insights' },
+                  goToKnowledge: () => {},
+                  changeDealer: () => { window.location.hash = '#/admin/dealers' },
+                } as OperatorNavHandlers} 
+              />
             </div>
           )}
 

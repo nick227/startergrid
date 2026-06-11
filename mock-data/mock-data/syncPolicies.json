@@ -1,8 +1,8 @@
-[
+﻿[
   {
     "id": "policy_dealer_austin_auto_owned_storefront",
     "dealershipId": "dealer_austin_auto",
-    "platformSlug": "owned-storefront",
+    "platformSlug": "dealer-storefront",
     "mode": "REAL_TIME",
     "urgentRemoval": true,
     "scheduleHint": null,
@@ -80,7 +80,7 @@
   {
     "id": "policy_dealer_austin_auto_autotrader_us",
     "dealershipId": "dealer_austin_auto",
-    "platformSlug": "autotrader-us",
+    "platformSlug": "autotrader-cox",
     "mode": "SCHEDULED",
     "urgentRemoval": true,
     "scheduleHint": "HOURLY",
@@ -93,7 +93,7 @@
   {
     "id": "policy_dealer_austin_auto_cars_com_us",
     "dealershipId": "dealer_austin_auto",
-    "platformSlug": "cars-com-us",
+    "platformSlug": "cars-com",
     "mode": "SCHEDULED",
     "urgentRemoval": true,
     "scheduleHint": "HOURLY",
@@ -106,7 +106,7 @@
   {
     "id": "policy_dealer_lone_star_rv_owned_storefront",
     "dealershipId": "dealer_lone_star_rv",
-    "platformSlug": "owned-storefront",
+    "platformSlug": "dealer-storefront",
     "mode": "REAL_TIME",
     "urgentRemoval": true,
     "scheduleHint": null,
@@ -171,7 +171,7 @@
   {
     "id": "policy_dealer_coastal_boats_owned_storefront",
     "dealershipId": "dealer_coastal_boats",
-    "platformSlug": "owned-storefront",
+    "platformSlug": "dealer-storefront",
     "mode": "REAL_TIME",
     "urgentRemoval": true,
     "scheduleHint": null,
@@ -223,7 +223,7 @@
   {
     "id": "policy_dealer_messy_motors_owned_storefront",
     "dealershipId": "dealer_messy_motors",
-    "platformSlug": "owned-storefront",
+    "platformSlug": "dealer-storefront",
     "mode": "REAL_TIME",
     "urgentRemoval": true,
     "scheduleHint": null,
@@ -262,7 +262,7 @@
   {
     "id": "policy_dealer_messy_motors_autotrader_us",
     "dealershipId": "dealer_messy_motors",
-    "platformSlug": "autotrader-us",
+    "platformSlug": "autotrader-cox",
     "mode": "SCHEDULED",
     "urgentRemoval": true,
     "scheduleHint": "HOURLY",
@@ -275,7 +275,7 @@
   {
     "id": "policy_dealer_messy_motors_cars_com_us",
     "dealershipId": "dealer_messy_motors",
-    "platformSlug": "cars-com-us",
+    "platformSlug": "cars-com",
     "mode": "SCHEDULED",
     "urgentRemoval": true,
     "scheduleHint": "HOURLY",
@@ -288,7 +288,7 @@
   {
     "id": "policy_dealer_premium_imports_owned_storefront",
     "dealershipId": "dealer_premium_imports",
-    "platformSlug": "owned-storefront",
+    "platformSlug": "dealer-storefront",
     "mode": "REAL_TIME",
     "urgentRemoval": true,
     "scheduleHint": null,

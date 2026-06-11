@@ -1,4 +1,4 @@
-[
+﻿[
   {
     "id": "perf_veh_0001",
     "dealershipId": "dealer_austin_auto",
@@ -20,7 +20,7 @@
       "facebook-business-page": {
         "leads": 1
       },
-      "owned-storefront": {
+      "dealer-storefront": {
         "leads": 5
       }
     },
@@ -48,7 +48,7 @@
       "facebook-business-page": {
         "leads": 1
       },
-      "owned-storefront": {
+      "dealer-storefront": {
         "leads": 3
       }
     },
@@ -76,7 +76,7 @@
       "facebook-business-page": {
         "leads": 2
       },
-      "owned-storefront": {
+      "dealer-storefront": {
         "leads": 7
       }
     },
@@ -104,7 +104,7 @@
       "facebook-business-page": {
         "leads": 1
       },
-      "owned-storefront": {
+      "dealer-storefront": {
         "leads": 2
       }
     },
@@ -132,7 +132,7 @@
       "facebook-business-page": {
         "leads": 2
       },
-      "owned-storefront": {
+      "dealer-storefront": {
         "leads": 6
       }
     },
@@ -160,7 +160,7 @@
       "facebook-business-page": {
         "leads": 4
       },
-      "owned-storefront": {
+      "dealer-storefront": {
         "leads": 6
       }
     },
@@ -188,7 +188,7 @@
       "facebook-business-page": {
         "leads": 2
       },
-      "owned-storefront": {
+      "dealer-storefront": {
         "leads": 6
       }
     },
@@ -216,7 +216,7 @@
       "facebook-business-page": {
         "leads": 3
       },
-      "owned-storefront": {
+      "dealer-storefront": {
         "leads": 0
       }
     },
@@ -244,7 +244,7 @@
       "facebook-business-page": {
         "leads": 0
       },
-      "owned-storefront": {
+      "dealer-storefront": {
         "leads": 2
       }
     },
@@ -272,7 +272,7 @@
       "facebook-business-page": {
         "leads": 2
       },
-      "owned-storefront": {
+      "dealer-storefront": {
         "leads": 5
       }
     },
@@ -300,7 +300,7 @@
       "facebook-business-page": {
         "leads": 0
       },
-      "owned-storefront": {
+      "dealer-storefront": {
         "leads": 1
       }
     },
@@ -328,7 +328,7 @@
       "facebook-business-page": {
         "leads": 0
       },
-      "owned-storefront": {
+      "dealer-storefront": {
         "leads": 0
       }
     },
@@ -356,7 +356,7 @@
       "facebook-business-page": {
         "leads": 2
       },
-      "owned-storefront": {
+      "dealer-storefront": {
         "leads": 2
       }
     },
@@ -384,7 +384,7 @@
       "facebook-business-page": {
         "leads": 0
       },
-      "owned-storefront": {
+      "dealer-storefront": {
         "leads": 3
       }
     },
@@ -412,7 +412,7 @@
       "facebook-business-page": {
         "leads": 2
       },
-      "owned-storefront": {
+      "dealer-storefront": {
         "leads": 2
       }
     },
@@ -440,7 +440,7 @@
       "facebook-business-page": {
         "leads": 1
       },
-      "owned-storefront": {
+      "dealer-storefront": {
         "leads": 3
       }
     },
@@ -468,7 +468,7 @@
       "facebook-business-page": {
         "leads": 2
       },
-      "owned-storefront": {
+      "dealer-storefront": {
         "leads": 7
       }
     },
@@ -496,7 +496,7 @@
       "facebook-business-page": {
         "leads": 1
       },
-      "owned-storefront": {
+      "dealer-storefront": {
         "leads": 1
       }
     },
@@ -524,7 +524,7 @@
       "facebook-business-page": {
         "leads": 0
       },
-      "owned-storefront": {
+      "dealer-storefront": {
         "leads": 5
       }
     },
@@ -552,7 +552,7 @@
       "facebook-business-page": {
         "leads": 4
       },
-      "owned-storefront": {
+      "dealer-storefront": {
         "leads": 6
       }
     },
@@ -580,7 +580,7 @@
       "facebook-business-page": {
         "leads": 2
       },
-      "owned-storefront": {
+      "dealer-storefront": {
         "leads": 5
       }
     },
@@ -608,7 +608,7 @@
       "facebook-business-page": {
         "leads": 3
       },
-      "owned-storefront": {
+      "dealer-storefront": {
         "leads": 8
       }
     },
@@ -636,7 +636,7 @@
       "facebook-business-page": {
         "leads": 4
       },
-      "owned-storefront": {
+      "dealer-storefront": {
         "leads": 5
       }
     },
@@ -664,7 +664,7 @@
       "facebook-business-page": {
         "leads": 0
       },
-      "owned-storefront": {
+      "dealer-storefront": {
         "leads": 0
       }
     },
@@ -692,7 +692,7 @@
       "facebook-business-page": {
         "leads": 1
       },
-      "owned-storefront": {
+      "dealer-storefront": {
         "leads": 2
       }
     },
@@ -720,7 +720,7 @@
       "facebook-business-page": {
         "leads": 1
       },
-      "owned-storefront": {
+      "dealer-storefront": {
         "leads": 6
       }
     },
@@ -748,7 +748,7 @@
       "facebook-business-page": {
         "leads": 1
       },
-      "owned-storefront": {
+      "dealer-storefront": {
         "leads": 0
       }
     },
@@ -776,7 +776,7 @@
       "facebook-business-page": {
         "leads": 4
       },
-      "owned-storefront": {
+      "dealer-storefront": {
         "leads": 8
       }
     },
@@ -804,7 +804,7 @@
       "facebook-business-page": {
         "leads": 4
       },
-      "owned-storefront": {
+      "dealer-storefront": {
         "leads": 7
       }
     },
@@ -832,7 +832,7 @@
       "facebook-business-page": {
         "leads": 0
       },
-      "owned-storefront": {
+      "dealer-storefront": {
         "leads": 6
       }
     },
@@ -860,7 +860,7 @@
       "facebook-business-page": {
         "leads": 2
       },
-      "owned-storefront": {
+      "dealer-storefront": {
         "leads": 4
       }
     },
@@ -888,7 +888,7 @@
       "facebook-business-page": {
         "leads": 4
       },
-      "owned-storefront": {
+      "dealer-storefront": {
         "leads": 8
       }
     },
@@ -916,7 +916,7 @@
       "facebook-business-page": {
         "leads": 1
       },
-      "owned-storefront": {
+      "dealer-storefront": {
         "leads": 3
       }
     },
@@ -944,7 +944,7 @@
       "facebook-business-page": {
         "leads": 0
       },
-      "owned-storefront": {
+      "dealer-storefront": {
         "leads": 7
       }
     },
@@ -972,7 +972,7 @@
       "facebook-business-page": {
         "leads": 1
       },
-      "owned-storefront": {
+      "dealer-storefront": {
         "leads": 8
       }
     },
@@ -1000,7 +1000,7 @@
       "facebook-business-page": {
         "leads": 2
       },
-      "owned-storefront": {
+      "dealer-storefront": {
         "leads": 4
       }
     },
@@ -1028,7 +1028,7 @@
       "facebook-business-page": {
         "leads": 1
       },
-      "owned-storefront": {
+      "dealer-storefront": {
         "leads": 4
       }
     },
@@ -1056,7 +1056,7 @@
       "facebook-business-page": {
         "leads": 0
       },
-      "owned-storefront": {
+      "dealer-storefront": {
         "leads": 1
       }
     },
@@ -1084,7 +1084,7 @@
       "facebook-business-page": {
         "leads": 3
       },
-      "owned-storefront": {
+      "dealer-storefront": {
         "leads": 3
       }
     },
@@ -1112,7 +1112,7 @@
       "facebook-business-page": {
         "leads": 4
       },
-      "owned-storefront": {
+      "dealer-storefront": {
         "leads": 1
       }
     },
@@ -1140,7 +1140,7 @@
       "facebook-business-page": {
         "leads": 2
       },
-      "owned-storefront": {
+      "dealer-storefront": {
         "leads": 4
       }
     },
@@ -1168,7 +1168,7 @@
       "facebook-business-page": {
         "leads": 2
       },
-      "owned-storefront": {
+      "dealer-storefront": {
         "leads": 5
       }
     },
@@ -1196,7 +1196,7 @@
       "facebook-business-page": {
         "leads": 2
       },
-      "owned-storefront": {
+      "dealer-storefront": {
         "leads": 2
       }
     },
@@ -1224,7 +1224,7 @@
       "facebook-business-page": {
         "leads": 3
       },
-      "owned-storefront": {
+      "dealer-storefront": {
         "leads": 2
       }
     },
@@ -1252,7 +1252,7 @@
       "facebook-business-page": {
         "leads": 4
       },
-      "owned-storefront": {
+      "dealer-storefront": {
         "leads": 4
       }
     },
@@ -1280,7 +1280,7 @@
       "facebook-business-page": {
         "leads": 1
       },
-      "owned-storefront": {
+      "dealer-storefront": {
         "leads": 8
       }
     },
@@ -1308,7 +1308,7 @@
       "facebook-business-page": {
         "leads": 0
       },
-      "owned-storefront": {
+      "dealer-storefront": {
         "leads": 0
       }
     },
@@ -1336,7 +1336,7 @@
       "facebook-business-page": {
         "leads": 0
       },
-      "owned-storefront": {
+      "dealer-storefront": {
         "leads": 0
       }
     },
@@ -1364,7 +1364,7 @@
       "facebook-business-page": {
         "leads": 2
       },
-      "owned-storefront": {
+      "dealer-storefront": {
         "leads": 7
       }
     },
@@ -1392,7 +1392,7 @@
       "facebook-business-page": {
         "leads": 3
       },
-      "owned-storefront": {
+      "dealer-storefront": {
         "leads": 4
       }
     },
@@ -1420,7 +1420,7 @@
       "facebook-business-page": {
         "leads": 1
       },
-      "owned-storefront": {
+      "dealer-storefront": {
         "leads": 2
       }
     },
@@ -1448,7 +1448,7 @@
       "facebook-business-page": {
         "leads": 3
       },
-      "owned-storefront": {
+      "dealer-storefront": {
         "leads": 6
       }
     },
@@ -1476,7 +1476,7 @@
       "facebook-business-page": {
         "leads": 1
       },
-      "owned-storefront": {
+      "dealer-storefront": {
         "leads": 3
       }
     },
@@ -1504,7 +1504,7 @@
       "facebook-business-page": {
         "leads": 2
       },
-      "owned-storefront": {
+      "dealer-storefront": {
         "leads": 6
       }
     },
@@ -1532,7 +1532,7 @@
       "facebook-business-page": {
         "leads": 3
       },
-      "owned-storefront": {
+      "dealer-storefront": {
         "leads": 4
       }
     },
@@ -1560,7 +1560,7 @@
       "facebook-business-page": {
         "leads": 1
       },
-      "owned-storefront": {
+      "dealer-storefront": {
         "leads": 1
       }
     },
@@ -1588,7 +1588,7 @@
       "facebook-business-page": {
         "leads": 0
       },
-      "owned-storefront": {
+      "dealer-storefront": {
         "leads": 1
       }
     },
@@ -1616,7 +1616,7 @@
       "facebook-business-page": {
         "leads": 1
       },
-      "owned-storefront": {
+      "dealer-storefront": {
         "leads": 1
       }
     },
@@ -1644,7 +1644,7 @@
       "facebook-business-page": {
         "leads": 4
       },
-      "owned-storefront": {
+      "dealer-storefront": {
         "leads": 5
       }
     },
@@ -1672,7 +1672,7 @@
       "facebook-business-page": {
         "leads": 1
       },
-      "owned-storefront": {
+      "dealer-storefront": {
         "leads": 3
       }
     },
@@ -1700,7 +1700,7 @@
       "facebook-business-page": {
         "leads": 1
       },
-      "owned-storefront": {
+      "dealer-storefront": {
         "leads": 3
       }
     },
@@ -1728,7 +1728,7 @@
       "facebook-business-page": {
         "leads": 2
       },
-      "owned-storefront": {
+      "dealer-storefront": {
         "leads": 4
       }
     },
@@ -1756,7 +1756,7 @@
       "facebook-business-page": {
         "leads": 0
       },
-      "owned-storefront": {
+      "dealer-storefront": {
         "leads": 3
       }
     },
@@ -1784,7 +1784,7 @@
       "facebook-business-page": {
         "leads": 2
       },
-      "owned-storefront": {
+      "dealer-storefront": {
         "leads": 0
       }
     },

@@ -1,11 +1,11 @@
-[
+﻿[
   {
     "id": "6b5ec074-41a7-4d59-abc3-626ab1c46077",
     "vehicleId": "veh_0006",
     "dealerId": "dealer_summit_rv",
     "soldDate": "2026-03-13T12:00:00Z",
     "salePrice": 41245,
-    "attributedPlatformSlug": "autotrader-us",
+    "attributedPlatformSlug": "autotrader-cox",
     "daysOnline": 55
   },
   {
@@ -14,7 +14,7 @@
     "dealerId": "dealer_messy",
     "soldDate": "2026-03-27T12:00:00Z",
     "salePrice": 20495,
-    "attributedPlatformSlug": "autotrader-us",
+    "attributedPlatformSlug": "autotrader-cox",
     "daysOnline": 11
   },
   {
@@ -23,7 +23,7 @@
     "dealerId": "dealer_austin_auto",
     "soldDate": "2026-05-31T12:00:00Z",
     "salePrice": 10495,
-    "attributedPlatformSlug": "cars-com-us",
+    "attributedPlatformSlug": "cars-com",
     "daysOnline": 83
   },
   {
@@ -32,7 +32,7 @@
     "dealerId": "dealer_austin_auto",
     "soldDate": "2026-05-27T12:00:00Z",
     "salePrice": 42995,
-    "attributedPlatformSlug": "autotrader-us",
+    "attributedPlatformSlug": "autotrader-cox",
     "daysOnline": 85
   },
   {
@@ -41,7 +41,7 @@
     "dealerId": "dealer_messy",
     "soldDate": "2026-04-28T12:00:00Z",
     "salePrice": 37495,
-    "attributedPlatformSlug": "cars-com-us",
+    "attributedPlatformSlug": "cars-com",
     "daysOnline": 45
   },
   {
@@ -68,7 +68,7 @@
     "dealerId": "dealer_messy",
     "soldDate": "2026-04-01T12:00:00Z",
     "salePrice": 42495,
-    "attributedPlatformSlug": "cars-com-us",
+    "attributedPlatformSlug": "cars-com",
     "daysOnline": 100
   },
   {
@@ -95,7 +95,7 @@
     "dealerId": "dealer_lone_star",
     "soldDate": "2026-05-09T12:00:00Z",
     "salePrice": 20995,
-    "attributedPlatformSlug": "cars-com-us",
+    "attributedPlatformSlug": "cars-com",
     "daysOnline": 69
   },
   {
@@ -104,7 +104,7 @@
     "dealerId": "dealer_lone_star",
     "soldDate": "2026-04-24T12:00:00Z",
     "salePrice": 50495,
-    "attributedPlatformSlug": "cars-com-us",
+    "attributedPlatformSlug": "cars-com",
     "daysOnline": 98
   }
 ]

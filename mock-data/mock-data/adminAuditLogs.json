@@ -1,0 +1,157 @@
+﻿[
+  {
+    "id": "audit_001",
+    "action": "platform-credentials.validate",
+    "actorId": "op_super_admin",
+    "actorEmail": "superadmin@example.local",
+    "detail": {
+      "triggeredBy": "manual",
+      "platformsChecked": 12,
+      "durationMs": 3120,
+      "summary": "12 platforms checked: 8 healthy, 3 blocked, 1 unknown"
+    },
+    "createdAt": "2026-06-10T11:45:00Z"
+  },
+  {
+    "id": "audit_002",
+    "action": "super-admin.login",
+    "actorId": "op_super_admin",
+    "actorEmail": "superadmin@example.local",
+    "detail": {
+      "ipAddress": "203.0.113.42",
+      "userAgent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36"
+    },
+    "createdAt": "2026-06-10T11:44:22Z"
+  },
+  {
+    "id": "audit_003",
+    "action": "platform-account.state-changed",
+    "actorId": "op_super_admin",
+    "actorEmail": "superadmin@example.local",
+    "detail": {
+      "dealershipId": "dealer_premium_imports",
+      "platformSlug": "meta-automotive-ads",
+      "fromState": "CREDENTIALS_NEEDED",
+      "toState": "ACTIVE",
+      "note": "Meta Business permissions confirmed by dealer"
+    },
+    "createdAt": "2026-06-10T10:02:11Z"
+  },
+  {
+    "id": "audit_004",
+    "action": "platform-credentials.validate",
+    "actorId": "op_super_admin",
+    "actorEmail": "superadmin@example.local",
+    "detail": {
+      "triggeredBy": "scheduled",
+      "platformsChecked": 12,
+      "durationMs": 2940,
+      "summary": "12 platforms checked: 7 healthy, 3 blocked, 2 unknown"
+    },
+    "createdAt": "2026-06-10T06:00:02Z"
+  },
+  {
+    "id": "audit_005",
+    "action": "dealer.blocked",
+    "actorId": "op_super_admin",
+    "actorEmail": "superadmin@example.local",
+    "detail": {
+      "dealershipId": "dealer_messy_motors",
+      "reason": "Missing dealer license and insurance documentation",
+      "severity": "critical",
+      "source": "compliance"
+    },
+    "createdAt": "2026-06-09T16:30:00Z"
+  },
+  {
+    "id": "audit_006",
+    "action": "platform-account.state-changed",
+    "actorId": "op_operator_1",
+    "actorEmail": "operator@example.local",
+    "detail": {
+      "dealershipId": "dealer_austin_auto",
+      "platformSlug": "ebay-motors",
+      "fromState": "ACCOUNT_NEEDED",
+      "toState": "CREDENTIALS_NEEDED",
+      "note": "eBay sandbox OAuth app registered; awaiting HTTPS callback URL"
+    },
+    "createdAt": "2026-06-09T14:15:33Z"
+  },
+  {
+    "id": "audit_007",
+    "action": "super-admin.login",
+    "actorId": "op_super_admin",
+    "actorEmail": "superadmin@example.local",
+    "detail": {
+      "ipAddress": "203.0.113.42",
+      "userAgent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36"
+    },
+    "createdAt": "2026-06-09T14:00:00Z"
+  },
+  {
+    "id": "audit_008",
+    "action": "platform-credentials.validate",
+    "actorId": "op_super_admin",
+    "actorEmail": "superadmin@example.local",
+    "detail": {
+      "triggeredBy": "manual",
+      "platformsChecked": 12,
+      "durationMs": 3380,
+      "summary": "12 platforms checked: 7 healthy, 4 blocked, 1 unknown"
+    },
+    "createdAt": "2026-06-09T14:01:45Z"
+  },
+  {
+    "id": "audit_009",
+    "action": "platform-account.state-changed",
+    "actorId": "op_operator_1",
+    "actorEmail": "operator@example.local",
+    "detail": {
+      "dealershipId": "dealer_lone_star_rv",
+      "platformSlug": "meta-automotive-ads",
+      "fromState": "ACCOUNT_NEEDED",
+      "toState": "ACTIVE",
+      "note": "Meta catalog ID confirmed; catalog sync ready"
+    },
+    "createdAt": "2026-06-08T09:22:10Z"
+  },
+  {
+    "id": "audit_010",
+    "action": "platform-credentials.validate",
+    "actorId": "op_super_admin",
+    "actorEmail": "superadmin@example.local",
+    "detail": {
+      "triggeredBy": "scheduled",
+      "platformsChecked": 12,
+      "durationMs": 2810,
+      "summary": "12 platforms checked: 6 healthy, 4 blocked, 2 unknown"
+    },
+    "createdAt": "2026-06-08T06:00:04Z"
+  },
+  {
+    "id": "audit_011",
+    "action": "dealer.unblocked",
+    "actorId": "op_super_admin",
+    "actorEmail": "superadmin@example.local",
+    "detail": {
+      "dealershipId": "dealer_austin_auto",
+      "reason": "Dealer license renewed and uploaded",
+      "source": "compliance"
+    },
+    "createdAt": "2026-06-07T11:00:00Z"
+  },
+  {
+    "id": "audit_012",
+    "action": "platform-credentials.validate",
+    "actorId": "op_super_admin",
+    "actorEmail": "superadmin@example.local",
+    "detail": {
+      "triggeredBy": "scheduled",
+      "platformsChecked": 12,
+      "durationMs": 3050,
+      "summary": "12 platforms checked: 5 healthy, 5 blocked, 2 unknown"
+    },
+    "createdAt": "2026-06-07T06:00:01Z"
+  }
+]
+

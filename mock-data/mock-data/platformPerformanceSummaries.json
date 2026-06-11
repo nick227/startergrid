@@ -1,8 +1,8 @@
-[
+﻿[
   {
     "id": "pperf_dealer_austin_auto_owned_storefront",
     "dealershipId": "dealer_austin_auto",
-    "platformSlug": "owned-storefront",
+    "platformSlug": "dealer-storefront",
     "vehiclesListed": 30,
     "vehiclesSold": 0,
     "vehiclesRemoved": 0,
@@ -112,7 +112,7 @@
   {
     "id": "pperf_dealer_austin_auto_autotrader_us",
     "dealershipId": "dealer_austin_auto",
-    "platformSlug": "autotrader-us",
+    "platformSlug": "autotrader-cox",
     "vehiclesListed": 26,
     "vehiclesSold": 7,
     "vehiclesRemoved": 2,
@@ -134,7 +134,7 @@
   {
     "id": "pperf_dealer_austin_auto_cars_com_us",
     "dealershipId": "dealer_austin_auto",
-    "platformSlug": "cars-com-us",
+    "platformSlug": "cars-com",
     "vehiclesListed": 8,
     "vehiclesSold": 5,
     "vehiclesRemoved": 4,
@@ -156,7 +156,7 @@
   {
     "id": "pperf_dealer_lone_star_rv_owned_storefront",
     "dealershipId": "dealer_lone_star_rv",
-    "platformSlug": "owned-storefront",
+    "platformSlug": "dealer-storefront",
     "vehiclesListed": 10,
     "vehiclesSold": 0,
     "vehiclesRemoved": 1,
@@ -266,7 +266,7 @@
   {
     "id": "pperf_dealer_lone_star_rv_autotrader_us",
     "dealershipId": "dealer_lone_star_rv",
-    "platformSlug": "autotrader-us",
+    "platformSlug": "autotrader-cox",
     "vehiclesListed": 8,
     "vehiclesSold": 0,
     "vehiclesRemoved": 1,
@@ -288,7 +288,7 @@
   {
     "id": "pperf_dealer_lone_star_rv_cars_com_us",
     "dealershipId": "dealer_lone_star_rv",
-    "platformSlug": "cars-com-us",
+    "platformSlug": "cars-com",
     "vehiclesListed": 6,
     "vehiclesSold": 5,
     "vehiclesRemoved": 4,
@@ -310,7 +310,7 @@
   {
     "id": "pperf_dealer_coastal_boats_owned_storefront",
     "dealershipId": "dealer_coastal_boats",
-    "platformSlug": "owned-storefront",
+    "platformSlug": "dealer-storefront",
     "vehiclesListed": 12,
     "vehiclesSold": 7,
     "vehiclesRemoved": 2,
@@ -420,7 +420,7 @@
   {
     "id": "pperf_dealer_coastal_boats_autotrader_us",
     "dealershipId": "dealer_coastal_boats",
-    "platformSlug": "autotrader-us",
+    "platformSlug": "autotrader-cox",
     "vehiclesListed": 8,
     "vehiclesSold": 3,
     "vehiclesRemoved": 2,
@@ -442,7 +442,7 @@
   {
     "id": "pperf_dealer_coastal_boats_cars_com_us",
     "dealershipId": "dealer_coastal_boats",
-    "platformSlug": "cars-com-us",
+    "platformSlug": "cars-com",
     "vehiclesListed": 10,
     "vehiclesSold": 8,
     "vehiclesRemoved": 1,
@@ -464,7 +464,7 @@
   {
     "id": "pperf_dealer_messy_motors_owned_storefront",
     "dealershipId": "dealer_messy_motors",
-    "platformSlug": "owned-storefront",
+    "platformSlug": "dealer-storefront",
     "vehiclesListed": 22,
     "vehiclesSold": 0,
     "vehiclesRemoved": 4,
@@ -574,7 +574,7 @@
   {
     "id": "pperf_dealer_messy_motors_autotrader_us",
     "dealershipId": "dealer_messy_motors",
-    "platformSlug": "autotrader-us",
+    "platformSlug": "autotrader-cox",
     "vehiclesListed": 5,
     "vehiclesSold": 3,
     "vehiclesRemoved": 0,
@@ -596,7 +596,7 @@
   {
     "id": "pperf_dealer_messy_motors_cars_com_us",
     "dealershipId": "dealer_messy_motors",
-    "platformSlug": "cars-com-us",
+    "platformSlug": "cars-com",
     "vehiclesListed": 9,
     "vehiclesSold": 3,
     "vehiclesRemoved": 2,
@@ -618,7 +618,7 @@
   {
     "id": "pperf_dealer_premium_imports_owned_storefront",
     "dealershipId": "dealer_premium_imports",
-    "platformSlug": "owned-storefront",
+    "platformSlug": "dealer-storefront",
     "vehiclesListed": 22,
     "vehiclesSold": 3,
     "vehiclesRemoved": 1,
@@ -728,7 +728,7 @@
   {
     "id": "pperf_dealer_premium_imports_autotrader_us",
     "dealershipId": "dealer_premium_imports",
-    "platformSlug": "autotrader-us",
+    "platformSlug": "autotrader-cox",
     "vehiclesListed": 13,
     "vehiclesSold": 10,
     "vehiclesRemoved": 5,
@@ -750,7 +750,7 @@
   {
     "id": "pperf_dealer_premium_imports_cars_com_us",
     "dealershipId": "dealer_premium_imports",
-    "platformSlug": "cars-com-us",
+    "platformSlug": "cars-com",
     "vehiclesListed": 18,
     "vehiclesSold": 8,
     "vehiclesRemoved": 4,

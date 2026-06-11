@@ -4048,7 +4048,7 @@ components:
 
     AdminDealerAttentionItem:
       type: object
-      required: [dealerId, dealerName, category, platformSlug, severity, reason, nextAction]
+      required: [dealerId, dealerName, category, platformSlug, severity, reason, nextAction, source]
       properties:
         dealerId:
           type: string
@@ -4063,6 +4063,8 @@ components:
         reason:
           type: string
         nextAction:
+          type: string
+        source:
           type: string
 
     AdminRecentEventItem:

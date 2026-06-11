@@ -1,7 +1,7 @@
-[
+﻿[
   {
-    "id": "platform_owned_storefront",
-    "slug": "owned-storefront",
+    "id": "platform_dealer_storefront",
+    "slug": "dealer-storefront",
     "name": "Owned Dealer Storefront",
     "kind": "DEALER_STOREFRONT",
     "integrationClass": "OWNED",
@@ -37,9 +37,9 @@
     "profileConfidence": "HIGH",
     "needsReview": false,
     "sourceNote": "LIVE verified first-party listing channel",
-    "mockEndpoint": "mock://platforms/owned-storefront",
+    "mockEndpoint": "mock://platforms/dealer-storefront",
     "integrationUrls": {
-      "docs": "https://example.invalid/integrations/owned-storefront"
+      "docs": "https://example.invalid/integrations/dealer-storefront"
     },
     "sourceUrls": [
       "mock://source/internal-profile"
@@ -448,8 +448,8 @@
     "updatedAt": "2026-06-09T12:00:00Z"
   },
   {
-    "id": "platform_autotrader_us",
-    "slug": "autotrader-us",
+    "id": "platform_autotrader_cox",
+    "slug": "autotrader-cox",
     "name": "AutoTrader US",
     "kind": "MARKETPLACE",
     "integrationClass": "PARTNER_DEPENDENT",
@@ -486,9 +486,9 @@
     "profileConfidence": "MEDIUM",
     "needsReview": true,
     "sourceNote": "Partner/feed setup required",
-    "mockEndpoint": "mock://platforms/autotrader-us",
+    "mockEndpoint": "mock://platforms/autotrader-cox",
     "integrationUrls": {
-      "docs": "https://example.invalid/integrations/autotrader-us"
+      "docs": "https://example.invalid/integrations/autotrader-cox"
     },
     "sourceUrls": [
       "mock://source/internal-profile"
@@ -505,8 +505,8 @@
     "updatedAt": "2026-06-09T12:00:00Z"
   },
   {
-    "id": "platform_cars_com_us",
-    "slug": "cars-com-us",
+    "id": "platform_cars_com",
+    "slug": "cars-com",
     "name": "Cars.com",
     "kind": "MARKETPLACE",
     "integrationClass": "PARTNER_DEPENDENT",
@@ -543,9 +543,9 @@
     "profileConfidence": "MEDIUM",
     "needsReview": true,
     "sourceNote": "Partner/feed setup required",
-    "mockEndpoint": "mock://platforms/cars-com-us",
+    "mockEndpoint": "mock://platforms/cars-com",
     "integrationUrls": {
-      "docs": "https://example.invalid/integrations/cars-com-us"
+      "docs": "https://example.invalid/integrations/cars-com"
     },
     "sourceUrls": [
       "mock://source/internal-profile"
@@ -562,8 +562,8 @@
     "updatedAt": "2026-06-09T12:00:00Z"
   },
   {
-    "id": "platform_cargurus_us",
-    "slug": "cargurus-us",
+    "id": "platform_cargurus_dealer",
+    "slug": "cargurus-dealer",
     "name": "CarGurus",
     "kind": "MARKETPLACE",
     "integrationClass": "PARTNER_DEPENDENT",
@@ -600,9 +600,9 @@
     "profileConfidence": "MEDIUM",
     "needsReview": true,
     "sourceNote": "Partner/feed setup required",
-    "mockEndpoint": "mock://platforms/cargurus-us",
+    "mockEndpoint": "mock://platforms/cargurus-dealer",
     "integrationUrls": {
-      "docs": "https://example.invalid/integrations/cargurus-us"
+      "docs": "https://example.invalid/integrations/cargurus-dealer"
     },
     "sourceUrls": [
       "mock://source/internal-profile"

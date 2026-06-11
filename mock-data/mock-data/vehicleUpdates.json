@@ -1,4 +1,4 @@
-[
+﻿[
   {
     "id": "upd_price_veh_0030",
     "vehicleId": "veh_0030",
@@ -11,7 +11,7 @@
       "priceCents": 7595100
     },
     "propagatedTo": {
-      "owned-storefront": "SENT",
+      "dealer-storefront": "SENT",
       "meta-automotive-ads": "READY",
       "ebay-motors": "BLOCKED"
     },
@@ -29,7 +29,7 @@
       "priceCents": 2101000
     },
     "propagatedTo": {
-      "owned-storefront": "SENT",
+      "dealer-storefront": "SENT",
       "meta-automotive-ads": "READY",
       "ebay-motors": "BLOCKED"
     },
@@ -47,7 +47,7 @@
       "priceCents": 4363000
     },
     "propagatedTo": {
-      "owned-storefront": "SENT",
+      "dealer-storefront": "SENT",
       "meta-automotive-ads": "READY",
       "ebay-motors": "BLOCKED"
     },
@@ -65,7 +65,7 @@
       "priceCents": 7278700
     },
     "propagatedTo": {
-      "owned-storefront": "SENT",
+      "dealer-storefront": "SENT",
       "meta-automotive-ads": "READY",
       "ebay-motors": "BLOCKED"
     },
@@ -83,7 +83,7 @@
       "priceCents": 7458800
     },
     "propagatedTo": {
-      "owned-storefront": "SENT",
+      "dealer-storefront": "SENT",
       "meta-automotive-ads": "READY",
       "ebay-motors": "BLOCKED"
     },
@@ -101,7 +101,7 @@
       "priceCents": 1741700
     },
     "propagatedTo": {
-      "owned-storefront": "SENT",
+      "dealer-storefront": "SENT",
       "meta-automotive-ads": "READY",
       "ebay-motors": "BLOCKED"
     },
@@ -119,7 +119,7 @@
       "priceCents": 4398800
     },
     "propagatedTo": {
-      "owned-storefront": "SENT",
+      "dealer-storefront": "SENT",
       "meta-automotive-ads": "READY",
       "ebay-motors": "BLOCKED"
     },
@@ -137,7 +137,7 @@
       "priceCents": 1276800
     },
     "propagatedTo": {
-      "owned-storefront": "SENT",
+      "dealer-storefront": "SENT",
       "meta-automotive-ads": "READY",
       "ebay-motors": "BLOCKED"
     },
@@ -155,7 +155,7 @@
       "priceCents": 7060200
     },
     "propagatedTo": {
-      "owned-storefront": "SENT",
+      "dealer-storefront": "SENT",
       "meta-automotive-ads": "READY",
       "ebay-motors": "BLOCKED"
     },
@@ -173,7 +173,7 @@
       "priceCents": 3636300
     },
     "propagatedTo": {
-      "owned-storefront": "SENT",
+      "dealer-storefront": "SENT",
       "meta-automotive-ads": "READY",
       "ebay-motors": "BLOCKED"
     },
@@ -191,7 +191,7 @@
       "priceCents": 3672600
     },
     "propagatedTo": {
-      "owned-storefront": "SENT",
+      "dealer-storefront": "SENT",
       "meta-automotive-ads": "READY",
       "ebay-motors": "BLOCKED"
     },
@@ -209,7 +209,7 @@
       "priceCents": 5840100
     },
     "propagatedTo": {
-      "owned-storefront": "SENT",
+      "dealer-storefront": "SENT",
       "meta-automotive-ads": "READY",
       "ebay-motors": "BLOCKED"
     },
@@ -227,7 +227,7 @@
       "priceCents": 3094600
     },
     "propagatedTo": {
-      "owned-storefront": "SENT",
+      "dealer-storefront": "SENT",
       "meta-automotive-ads": "READY",
       "ebay-motors": "BLOCKED"
     },
@@ -245,7 +245,7 @@
       "priceCents": 5900300
     },
     "propagatedTo": {
-      "owned-storefront": "SENT",
+      "dealer-storefront": "SENT",
       "meta-automotive-ads": "READY",
       "ebay-motors": "BLOCKED"
     },
@@ -263,7 +263,7 @@
       "priceCents": 2258000
     },
     "propagatedTo": {
-      "owned-storefront": "SENT",
+      "dealer-storefront": "SENT",
       "meta-automotive-ads": "READY",
       "ebay-motors": "BLOCKED"
     },
@@ -281,7 +281,7 @@
       "priceCents": 2734100
     },
     "propagatedTo": {
-      "owned-storefront": "SENT",
+      "dealer-storefront": "SENT",
       "meta-automotive-ads": "READY",
       "ebay-motors": "BLOCKED"
     },
@@ -299,7 +299,7 @@
       "priceCents": 5975300
     },
     "propagatedTo": {
-      "owned-storefront": "SENT",
+      "dealer-storefront": "SENT",
       "meta-automotive-ads": "READY",
       "ebay-motors": "BLOCKED"
     },
@@ -317,7 +317,7 @@
       "priceCents": 4267400
     },
     "propagatedTo": {
-      "owned-storefront": "SENT",
+      "dealer-storefront": "SENT",
       "meta-automotive-ads": "READY",
       "ebay-motors": "BLOCKED"
     },
@@ -335,7 +335,7 @@
       "priceCents": 5622600
     },
     "propagatedTo": {
-      "owned-storefront": "SENT",
+      "dealer-storefront": "SENT",
       "meta-automotive-ads": "READY",
       "ebay-motors": "BLOCKED"
     },
@@ -353,7 +353,7 @@
       "priceCents": 3966300
     },
     "propagatedTo": {
-      "owned-storefront": "SENT",
+      "dealer-storefront": "SENT",
       "meta-automotive-ads": "READY",
       "ebay-motors": "BLOCKED"
     },
@@ -371,7 +371,7 @@
       "priceCents": 5797800
     },
     "propagatedTo": {
-      "owned-storefront": "SENT",
+      "dealer-storefront": "SENT",
       "meta-automotive-ads": "READY",
       "ebay-motors": "BLOCKED"
     },
@@ -389,7 +389,7 @@
       "priceCents": 3488400
     },
     "propagatedTo": {
-      "owned-storefront": "SENT",
+      "dealer-storefront": "SENT",
       "meta-automotive-ads": "READY",
       "ebay-motors": "BLOCKED"
     },
@@ -407,7 +407,7 @@
       "priceCents": 2888900
     },
     "propagatedTo": {
-      "owned-storefront": "SENT",
+      "dealer-storefront": "SENT",
       "meta-automotive-ads": "READY",
       "ebay-motors": "BLOCKED"
     },
@@ -425,7 +425,7 @@
       "priceCents": 2993700
     },
     "propagatedTo": {
-      "owned-storefront": "SENT",
+      "dealer-storefront": "SENT",
       "meta-automotive-ads": "READY",
       "ebay-motors": "BLOCKED"
     },
@@ -443,7 +443,7 @@
       "priceCents": 4986000
     },
     "propagatedTo": {
-      "owned-storefront": "SENT",
+      "dealer-storefront": "SENT",
       "meta-automotive-ads": "READY",
       "ebay-motors": "BLOCKED"
     },
@@ -461,7 +461,7 @@
       "priceCents": 2000400
     },
     "propagatedTo": {
-      "owned-storefront": "SENT",
+      "dealer-storefront": "SENT",
       "meta-automotive-ads": "READY",
       "ebay-motors": "BLOCKED"
     },
@@ -479,7 +479,7 @@
       "priceCents": 2040800
     },
     "propagatedTo": {
-      "owned-storefront": "SENT",
+      "dealer-storefront": "SENT",
       "meta-automotive-ads": "READY",
       "ebay-motors": "BLOCKED"
     },
@@ -497,7 +497,7 @@
       "priceCents": 4728800
     },
     "propagatedTo": {
-      "owned-storefront": "SENT",
+      "dealer-storefront": "SENT",
       "meta-automotive-ads": "READY",
       "ebay-motors": "BLOCKED"
     },
@@ -515,7 +515,7 @@
       "priceCents": 3735000
     },
     "propagatedTo": {
-      "owned-storefront": "SENT",
+      "dealer-storefront": "SENT",
       "meta-automotive-ads": "READY",
       "ebay-motors": "BLOCKED"
     },
@@ -533,7 +533,7 @@
       "priceCents": 4267100
     },
     "propagatedTo": {
-      "owned-storefront": "SENT",
+      "dealer-storefront": "SENT",
       "meta-automotive-ads": "READY",
       "ebay-motors": "BLOCKED"
     },
@@ -551,7 +551,7 @@
       "priceCents": 5233600
     },
     "propagatedTo": {
-      "owned-storefront": "SENT",
+      "dealer-storefront": "SENT",
       "meta-automotive-ads": "READY",
       "ebay-motors": "BLOCKED"
     },
@@ -569,7 +569,7 @@
       "priceCents": 3806000
     },
     "propagatedTo": {
-      "owned-storefront": "SENT",
+      "dealer-storefront": "SENT",
       "meta-automotive-ads": "READY",
       "ebay-motors": "BLOCKED"
     },
@@ -587,7 +587,7 @@
       "priceCents": 5064700
     },
     "propagatedTo": {
-      "owned-storefront": "SENT",
+      "dealer-storefront": "SENT",
       "meta-automotive-ads": "READY",
       "ebay-motors": "BLOCKED"
     },
@@ -605,7 +605,7 @@
       "priceCents": 4453200
     },
     "propagatedTo": {
-      "owned-storefront": "SENT",
+      "dealer-storefront": "SENT",
       "meta-automotive-ads": "READY",
       "ebay-motors": "BLOCKED"
     },
@@ -623,7 +623,7 @@
       "priceCents": 5744200
     },
     "propagatedTo": {
-      "owned-storefront": "SENT",
+      "dealer-storefront": "SENT",
       "meta-automotive-ads": "READY",
       "ebay-motors": "BLOCKED"
     },
@@ -641,7 +641,7 @@
       "priceCents": 3406600
     },
     "propagatedTo": {
-      "owned-storefront": "SENT",
+      "dealer-storefront": "SENT",
       "meta-automotive-ads": "READY",
       "ebay-motors": "BLOCKED"
     },
@@ -659,7 +659,7 @@
       "priceCents": 4636200
     },
     "propagatedTo": {
-      "owned-storefront": "SENT",
+      "dealer-storefront": "SENT",
       "meta-automotive-ads": "READY",
       "ebay-motors": "BLOCKED"
     },
@@ -677,7 +677,7 @@
       "priceCents": 8997400
     },
     "propagatedTo": {
-      "owned-storefront": "SENT",
+      "dealer-storefront": "SENT",
       "meta-automotive-ads": "READY",
       "ebay-motors": "BLOCKED"
     },
@@ -695,7 +695,7 @@
       "priceCents": 8247400
     },
     "propagatedTo": {
-      "owned-storefront": "SENT",
+      "dealer-storefront": "SENT",
       "meta-automotive-ads": "READY",
       "ebay-motors": "BLOCKED"
     },
@@ -713,7 +713,7 @@
       "priceCents": 7531900
     },
     "propagatedTo": {
-      "owned-storefront": "SENT",
+      "dealer-storefront": "SENT",
       "meta-automotive-ads": "READY",
       "ebay-motors": "BLOCKED"
     },
@@ -731,7 +731,7 @@
       "priceCents": 0
     },
     "propagatedTo": {
-      "owned-storefront": "SENT",
+      "dealer-storefront": "SENT",
       "meta-automotive-ads": "READY",
       "ebay-motors": "BLOCKED"
     },
@@ -749,7 +749,7 @@
       "priceCents": 6976900
     },
     "propagatedTo": {
-      "owned-storefront": "SENT",
+      "dealer-storefront": "SENT",
       "meta-automotive-ads": "READY",
       "ebay-motors": "BLOCKED"
     },
@@ -767,7 +767,7 @@
       "priceCents": 5909100
     },
     "propagatedTo": {
-      "owned-storefront": "SENT",
+      "dealer-storefront": "SENT",
       "meta-automotive-ads": "READY",
       "ebay-motors": "BLOCKED"
     },
@@ -785,7 +785,7 @@
       "priceCents": 3793100
     },
     "propagatedTo": {
-      "owned-storefront": "SENT",
+      "dealer-storefront": "SENT",
       "meta-automotive-ads": "READY",
       "ebay-motors": "BLOCKED"
     },
@@ -803,7 +803,7 @@
       "priceCents": 7093000
     },
     "propagatedTo": {
-      "owned-storefront": "SENT",
+      "dealer-storefront": "SENT",
       "meta-automotive-ads": "READY",
       "ebay-motors": "BLOCKED"
     },
@@ -821,7 +821,7 @@
       "priceCents": 4065400
     },
     "propagatedTo": {
-      "owned-storefront": "SENT",
+      "dealer-storefront": "SENT",
       "meta-automotive-ads": "READY",
       "ebay-motors": "BLOCKED"
     },
@@ -839,7 +839,7 @@
       "priceCents": 3049000
     },
     "propagatedTo": {
-      "owned-storefront": "SENT",
+      "dealer-storefront": "SENT",
       "meta-automotive-ads": "READY",
       "ebay-motors": "BLOCKED"
     },
@@ -857,7 +857,7 @@
       "priceCents": 0
     },
     "propagatedTo": {
-      "owned-storefront": "SENT",
+      "dealer-storefront": "SENT",
       "meta-automotive-ads": "READY",
       "ebay-motors": "BLOCKED"
     },
@@ -875,7 +875,7 @@
       "priceCents": 1806000
     },
     "propagatedTo": {
-      "owned-storefront": "SENT",
+      "dealer-storefront": "SENT",
       "meta-automotive-ads": "READY",
       "ebay-motors": "BLOCKED"
     },
@@ -893,7 +893,7 @@
       "priceCents": 5965900
     },
     "propagatedTo": {
-      "owned-storefront": "SENT",
+      "dealer-storefront": "SENT",
       "meta-automotive-ads": "READY",
       "ebay-motors": "BLOCKED"
     },
@@ -911,7 +911,7 @@
       "priceCents": 5667600
     },
     "propagatedTo": {
-      "owned-storefront": "SENT",
+      "dealer-storefront": "SENT",
       "meta-automotive-ads": "READY",
       "ebay-motors": "BLOCKED"
     },
@@ -929,7 +929,7 @@
       "priceCents": 0
     },
     "propagatedTo": {
-      "owned-storefront": "SENT",
+      "dealer-storefront": "SENT",
       "meta-automotive-ads": "READY",
       "ebay-motors": "BLOCKED"
     },
@@ -947,7 +947,7 @@
       "priceCents": 1631400
     },
     "propagatedTo": {
-      "owned-storefront": "SENT",
+      "dealer-storefront": "SENT",
       "meta-automotive-ads": "READY",
       "ebay-motors": "BLOCKED"
     },
@@ -965,7 +965,7 @@
       "priceCents": 4897900
     },
     "propagatedTo": {
-      "owned-storefront": "SENT",
+      "dealer-storefront": "SENT",
       "meta-automotive-ads": "READY",
       "ebay-motors": "BLOCKED"
     },
@@ -983,7 +983,7 @@
       "priceCents": 2641900
     },
     "propagatedTo": {
-      "owned-storefront": "SENT",
+      "dealer-storefront": "SENT",
       "meta-automotive-ads": "READY",
       "ebay-motors": "BLOCKED"
     },
@@ -1001,7 +1001,7 @@
       "priceCents": 3055200
     },
     "propagatedTo": {
-      "owned-storefront": "SENT",
+      "dealer-storefront": "SENT",
       "meta-automotive-ads": "READY",
       "ebay-motors": "BLOCKED"
     },
@@ -1019,7 +1019,7 @@
       "priceCents": 3002700
     },
     "propagatedTo": {
-      "owned-storefront": "SENT",
+      "dealer-storefront": "SENT",
       "meta-automotive-ads": "READY",
       "ebay-motors": "BLOCKED"
     },
@@ -1037,7 +1037,7 @@
       "priceCents": 4221800
     },
     "propagatedTo": {
-      "owned-storefront": "SENT",
+      "dealer-storefront": "SENT",
       "meta-automotive-ads": "READY",
       "ebay-motors": "BLOCKED"
     },
@@ -1055,7 +1055,7 @@
       "priceCents": 4128600
     },
     "propagatedTo": {
-      "owned-storefront": "SENT",
+      "dealer-storefront": "SENT",
       "meta-automotive-ads": "READY",
       "ebay-motors": "BLOCKED"
     },
@@ -1073,7 +1073,7 @@
       "priceCents": 5059500
     },
     "propagatedTo": {
-      "owned-storefront": "SENT",
+      "dealer-storefront": "SENT",
       "meta-automotive-ads": "READY",
       "ebay-motors": "BLOCKED"
     },
@@ -1091,7 +1091,7 @@
       "priceCents": 1951800
     },
     "propagatedTo": {
-      "owned-storefront": "SENT",
+      "dealer-storefront": "SENT",
       "meta-automotive-ads": "READY",
       "ebay-motors": "BLOCKED"
     },
@@ -1109,7 +1109,7 @@
       "priceCents": 4024200
     },
     "propagatedTo": {
-      "owned-storefront": "SENT",
+      "dealer-storefront": "SENT",
       "meta-automotive-ads": "READY",
       "ebay-motors": "BLOCKED"
     },
@@ -1127,7 +1127,7 @@
       "priceCents": 3258200
     },
     "propagatedTo": {
-      "owned-storefront": "SENT",
+      "dealer-storefront": "SENT",
       "meta-automotive-ads": "READY",
       "ebay-motors": "BLOCKED"
     },
@@ -1145,7 +1145,7 @@
       "priceCents": 2403800
     },
     "propagatedTo": {
-      "owned-storefront": "SENT",
+      "dealer-storefront": "SENT",
       "meta-automotive-ads": "READY",
       "ebay-motors": "BLOCKED"
     },
@@ -1163,7 +1163,7 @@
       "priceCents": 6821900
     },
     "propagatedTo": {
-      "owned-storefront": "SENT",
+      "dealer-storefront": "SENT",
       "meta-automotive-ads": "READY",
       "ebay-motors": "BLOCKED"
     },
@@ -1181,7 +1181,7 @@
       "priceCents": 2427400
     },
     "propagatedTo": {
-      "owned-storefront": "SENT",
+      "dealer-storefront": "SENT",
       "meta-automotive-ads": "READY",
       "ebay-motors": "BLOCKED"
     },
@@ -1199,7 +1199,7 @@
       "priceCents": 3402000
     },
     "propagatedTo": {
-      "owned-storefront": "SENT",
+      "dealer-storefront": "SENT",
       "meta-automotive-ads": "READY",
       "ebay-motors": "BLOCKED"
     },
@@ -1217,7 +1217,7 @@
       "priceCents": 6334500
     },
     "propagatedTo": {
-      "owned-storefront": "SENT",
+      "dealer-storefront": "SENT",
       "meta-automotive-ads": "READY",
       "ebay-motors": "BLOCKED"
     },
@@ -1235,7 +1235,7 @@
       "priceCents": 6232700
     },
     "propagatedTo": {
-      "owned-storefront": "SENT",
+      "dealer-storefront": "SENT",
       "meta-automotive-ads": "READY",
       "ebay-motors": "BLOCKED"
     },

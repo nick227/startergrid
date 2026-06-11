@@ -30,6 +30,7 @@ This pack is aligned to your actual models/enums, including:
 - `DealerNotification`
 - `OperatorAccount`
 - `OperatorDealerAccess`
+- `AdminAuditLog`
 
 ## Mock scenario coverage
 
@@ -46,25 +47,34 @@ This pack is aligned to your actual models/enums, including:
 
 ## Install
 
-Copy `mock-data/` and `scripts/seed-mock-data.mjs` into your repo root.
-
-Then run:
+Run from the project root (the `mock-data/` directory is already in place):
 
 ```bash
-node scripts/seed-mock-data.mjs
+node mock-data/scripts/seed-mock-data.mjs
 ```
 
 Dry run:
 
 ```bash
-DRY_RUN=1 node scripts/seed-mock-data.mjs
+DRY_RUN=1 node mock-data/scripts/seed-mock-data.mjs
 ```
 
 Clear and reseed mock rows:
 
 ```bash
-CLEAR_MOCK=1 node scripts/seed-mock-data.mjs
+CLEAR_MOCK=1 node mock-data/scripts/seed-mock-data.mjs
 ```
+
+## Demo credentials
+
+Both operator accounts use the same password. Log in at `/operator/login`.
+
+| Role | Email | Password |
+|------|-------|----------|
+| SUPER_ADMIN | admin@example.invalid | Password123! |
+| OPERATOR | operator@example.invalid | Password123! |
+
+Passwords are hashed with argon2id. Generated from the project's own `@node-rs/argon2` dependency.
 
 ## Notes
 

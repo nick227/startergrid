@@ -1,4 +1,4 @@
-[
+﻿[
   {
     "id": "chev_dealer_austin_auto_0",
     "dealershipId": "dealer_austin_auto",
@@ -34,7 +34,7 @@
   {
     "id": "chev_dealer_austin_auto_2",
     "dealershipId": "dealer_austin_auto",
-    "platformSlug": "owned-storefront",
+    "platformSlug": "dealer-storefront",
     "vehicleId": "veh_0002",
     "listingId": "AUSTIN1001",
     "eventType": "INQUIRY_SUBMITTED",
@@ -50,7 +50,7 @@
   {
     "id": "chev_dealer_austin_auto_3",
     "dealershipId": "dealer_austin_auto",
-    "platformSlug": "owned-storefront",
+    "platformSlug": "dealer-storefront",
     "vehicleId": "veh_0003",
     "listingId": "AUSTIN1002",
     "eventType": "VEHICLE_IMPRESSION",
@@ -98,7 +98,7 @@
   {
     "id": "chev_dealer_austin_auto_6",
     "dealershipId": "dealer_austin_auto",
-    "platformSlug": "owned-storefront",
+    "platformSlug": "dealer-storefront",
     "vehicleId": "veh_0021",
     "listingId": "AUSTIN1020",
     "eventType": "INQUIRY_SUBMITTED",
@@ -114,7 +114,7 @@
   {
     "id": "chev_dealer_austin_auto_7",
     "dealershipId": "dealer_austin_auto",
-    "platformSlug": "owned-storefront",
+    "platformSlug": "dealer-storefront",
     "vehicleId": "veh_0013",
     "listingId": "AUSTIN1012",
     "eventType": "REPORTED_VIEW",
@@ -130,7 +130,7 @@
   {
     "id": "chev_dealer_austin_auto_8",
     "dealershipId": "dealer_austin_auto",
-    "platformSlug": "owned-storefront",
+    "platformSlug": "dealer-storefront",
     "vehicleId": "veh_0024",
     "listingId": "AUSTIN1023",
     "eventType": "REPORTED_VIEW",
@@ -178,7 +178,7 @@
   {
     "id": "chev_dealer_austin_auto_11",
     "dealershipId": "dealer_austin_auto",
-    "platformSlug": "owned-storefront",
+    "platformSlug": "dealer-storefront",
     "vehicleId": "veh_0006",
     "listingId": "AUSTIN1005",
     "eventType": "REPORTED_CLICK",
@@ -338,7 +338,7 @@
   {
     "id": "chev_dealer_austin_auto_21",
     "dealershipId": "dealer_austin_auto",
-    "platformSlug": "owned-storefront",
+    "platformSlug": "dealer-storefront",
     "vehicleId": "veh_0010",
     "listingId": "AUSTIN1009",
     "eventType": "REPORTED_CLICK",
@@ -546,7 +546,7 @@
   {
     "id": "chev_dealer_austin_auto_34",
     "dealershipId": "dealer_austin_auto",
-    "platformSlug": "owned-storefront",
+    "platformSlug": "dealer-storefront",
     "vehicleId": "veh_0019",
     "listingId": "AUSTIN1018",
     "eventType": "REPORTED_VIEW",
@@ -578,7 +578,7 @@
   {
     "id": "chev_dealer_austin_auto_36",
     "dealershipId": "dealer_austin_auto",
-    "platformSlug": "owned-storefront",
+    "platformSlug": "dealer-storefront",
     "vehicleId": "veh_0020",
     "listingId": "AUSTIN1019",
     "eventType": "REPORTED_CONTACT",
@@ -690,7 +690,7 @@
   {
     "id": "chev_dealer_austin_auto_43",
     "dealershipId": "dealer_austin_auto",
-    "platformSlug": "owned-storefront",
+    "platformSlug": "dealer-storefront",
     "vehicleId": "veh_0031",
     "listingId": "AUSTIN1030",
     "eventType": "REPORTED_CONTACT",
@@ -850,7 +850,7 @@
   {
     "id": "chev_dealer_lone_star_rv_3",
     "dealershipId": "dealer_lone_star_rv",
-    "platformSlug": "owned-storefront",
+    "platformSlug": "dealer-storefront",
     "vehicleId": "veh_0035",
     "listingId": "LONE1002",
     "eventType": "REPORTED_VIEW",
@@ -882,7 +882,7 @@
   {
     "id": "chev_dealer_lone_star_rv_5",
     "dealershipId": "dealer_lone_star_rv",
-    "platformSlug": "owned-storefront",
+    "platformSlug": "dealer-storefront",
     "vehicleId": "veh_0043",
     "listingId": "LONE1010",
     "eventType": "VEHICLE_DETAIL_VIEW",
@@ -898,7 +898,7 @@
   {
     "id": "chev_dealer_lone_star_rv_6",
     "dealershipId": "dealer_lone_star_rv",
-    "platformSlug": "owned-storefront",
+    "platformSlug": "dealer-storefront",
     "vehicleId": "veh_0039",
     "listingId": "LONE1006",
     "eventType": "REPORTED_VIEW",
@@ -978,7 +978,7 @@
   {
     "id": "chev_dealer_lone_star_rv_11",
     "dealershipId": "dealer_lone_star_rv",
-    "platformSlug": "owned-storefront",
+    "platformSlug": "dealer-storefront",
     "vehicleId": "veh_0044",
     "listingId": "LONE1011",
     "eventType": "VEHICLE_IMPRESSION",
@@ -1442,7 +1442,7 @@
   {
     "id": "chev_dealer_lone_star_rv_40",
     "dealershipId": "dealer_lone_star_rv",
-    "platformSlug": "owned-storefront",
+    "platformSlug": "dealer-storefront",
     "vehicleId": "veh_0036",
     "listingId": "LONE1003",
     "eventType": "VEHICLE_DETAIL_VIEW",
@@ -1522,7 +1522,7 @@
   {
     "id": "chev_dealer_lone_star_rv_45",
     "dealershipId": "dealer_lone_star_rv",
-    "platformSlug": "owned-storefront",
+    "platformSlug": "dealer-storefront",
     "vehicleId": "veh_0042",
     "listingId": "LONE1009",
     "eventType": "REPORTED_CLICK",
@@ -1538,7 +1538,7 @@
   {
     "id": "chev_dealer_lone_star_rv_46",
     "dealershipId": "dealer_lone_star_rv",
-    "platformSlug": "owned-storefront",
+    "platformSlug": "dealer-storefront",
     "vehicleId": "veh_0037",
     "listingId": "LONE1004",
     "eventType": "VEHICLE_DETAIL_VIEW",
@@ -1554,7 +1554,7 @@
   {
     "id": "chev_dealer_lone_star_rv_47",
     "dealershipId": "dealer_lone_star_rv",
-    "platformSlug": "owned-storefront",
+    "platformSlug": "dealer-storefront",
     "vehicleId": "veh_0039",
     "listingId": "LONE1006",
     "eventType": "INQUIRY_SUBMITTED",
@@ -1666,7 +1666,7 @@
   {
     "id": "chev_dealer_coastal_boats_4",
     "dealershipId": "dealer_coastal_boats",
-    "platformSlug": "owned-storefront",
+    "platformSlug": "dealer-storefront",
     "vehicleId": "veh_0047",
     "listingId": "COASTAL1002",
     "eventType": "VEHICLE_DETAIL_VIEW",
@@ -1698,7 +1698,7 @@
   {
     "id": "chev_dealer_coastal_boats_6",
     "dealershipId": "dealer_coastal_boats",
-    "platformSlug": "owned-storefront",
+    "platformSlug": "dealer-storefront",
     "vehicleId": "veh_0045",
     "listingId": "COASTAL1000",
     "eventType": "REPORTED_VIEW",
@@ -1714,7 +1714,7 @@
   {
     "id": "chev_dealer_coastal_boats_7",
     "dealershipId": "dealer_coastal_boats",
-    "platformSlug": "owned-storefront",
+    "platformSlug": "dealer-storefront",
     "vehicleId": "veh_0055",
     "listingId": "COASTAL1010",
     "eventType": "VEHICLE_IMPRESSION",
@@ -1778,7 +1778,7 @@
   {
     "id": "chev_dealer_coastal_boats_11",
     "dealershipId": "dealer_coastal_boats",
-    "platformSlug": "owned-storefront",
+    "platformSlug": "dealer-storefront",
     "vehicleId": "veh_0048",
     "listingId": "COASTAL1003",
     "eventType": "REPORTED_VIEW",
@@ -1890,7 +1890,7 @@
   {
     "id": "chev_dealer_coastal_boats_18",
     "dealershipId": "dealer_coastal_boats",
-    "platformSlug": "owned-storefront",
+    "platformSlug": "dealer-storefront",
     "vehicleId": "veh_0050",
     "listingId": "COASTAL1005",
     "eventType": "REPORTED_CONTACT",
@@ -1970,7 +1970,7 @@
   {
     "id": "chev_dealer_coastal_boats_23",
     "dealershipId": "dealer_coastal_boats",
-    "platformSlug": "owned-storefront",
+    "platformSlug": "dealer-storefront",
     "vehicleId": "veh_0051",
     "listingId": "COASTAL1006",
     "eventType": "VEHICLE_DETAIL_VIEW",
@@ -1986,7 +1986,7 @@
   {
     "id": "chev_dealer_coastal_boats_24",
     "dealershipId": "dealer_coastal_boats",
-    "platformSlug": "owned-storefront",
+    "platformSlug": "dealer-storefront",
     "vehicleId": "veh_0045",
     "listingId": "COASTAL1000",
     "eventType": "VEHICLE_IMPRESSION",
@@ -2306,7 +2306,7 @@
   {
     "id": "chev_dealer_coastal_boats_44",
     "dealershipId": "dealer_coastal_boats",
-    "platformSlug": "owned-storefront",
+    "platformSlug": "dealer-storefront",
     "vehicleId": "veh_0053",
     "listingId": "COASTAL1008",
     "eventType": "REPORTED_CLICK",
@@ -2338,7 +2338,7 @@
   {
     "id": "chev_dealer_coastal_boats_46",
     "dealershipId": "dealer_coastal_boats",
-    "platformSlug": "owned-storefront",
+    "platformSlug": "dealer-storefront",
     "vehicleId": "veh_0047",
     "listingId": "COASTAL1002",
     "eventType": "VEHICLE_DETAIL_VIEW",
@@ -2402,7 +2402,7 @@
   {
     "id": "chev_dealer_messy_motors_0",
     "dealershipId": "dealer_messy_motors",
-    "platformSlug": "owned-storefront",
+    "platformSlug": "dealer-storefront",
     "vehicleId": "veh_0075",
     "listingId": "MESSY1018",
     "eventType": "REPORTED_VIEW",
@@ -2578,7 +2578,7 @@
   {
     "id": "chev_dealer_messy_motors_11",
     "dealershipId": "dealer_messy_motors",
-    "platformSlug": "owned-storefront",
+    "platformSlug": "dealer-storefront",
     "vehicleId": "veh_0067",
     "listingId": "MESSY1010",
     "eventType": "REPORTED_CLICK",
@@ -2642,7 +2642,7 @@
   {
     "id": "chev_dealer_messy_motors_15",
     "dealershipId": "dealer_messy_motors",
-    "platformSlug": "owned-storefront",
+    "platformSlug": "dealer-storefront",
     "vehicleId": "veh_0079",
     "listingId": "MESSY1022",
     "eventType": "REPORTED_CONTACT",
@@ -2658,7 +2658,7 @@
   {
     "id": "chev_dealer_messy_motors_16",
     "dealershipId": "dealer_messy_motors",
-    "platformSlug": "owned-storefront",
+    "platformSlug": "dealer-storefront",
     "vehicleId": "veh_0074",
     "listingId": "MESSY1017",
     "eventType": "INQUIRY_SUBMITTED",
@@ -2738,7 +2738,7 @@
   {
     "id": "chev_dealer_messy_motors_21",
     "dealershipId": "dealer_messy_motors",
-    "platformSlug": "owned-storefront",
+    "platformSlug": "dealer-storefront",
     "vehicleId": "veh_0080",
     "listingId": "MESSY1023",
     "eventType": "VEHICLE_IMPRESSION",
@@ -2754,7 +2754,7 @@
   {
     "id": "chev_dealer_messy_motors_22",
     "dealershipId": "dealer_messy_motors",
-    "platformSlug": "owned-storefront",
+    "platformSlug": "dealer-storefront",
     "vehicleId": "veh_0061",
     "listingId": "MESSY1004",
     "eventType": "VEHICLE_DETAIL_VIEW",
@@ -2802,7 +2802,7 @@
   {
     "id": "chev_dealer_messy_motors_25",
     "dealershipId": "dealer_messy_motors",
-    "platformSlug": "owned-storefront",
+    "platformSlug": "dealer-storefront",
     "vehicleId": "veh_0075",
     "listingId": "MESSY1018",
     "eventType": "VEHICLE_IMPRESSION",
@@ -2882,7 +2882,7 @@
   {
     "id": "chev_dealer_messy_motors_30",
     "dealershipId": "dealer_messy_motors",
-    "platformSlug": "owned-storefront",
+    "platformSlug": "dealer-storefront",
     "vehicleId": "veh_0071",
     "listingId": "MESSY1014",
     "eventType": "REPORTED_VIEW",
@@ -3074,7 +3074,7 @@
   {
     "id": "chev_dealer_messy_motors_42",
     "dealershipId": "dealer_messy_motors",
-    "platformSlug": "owned-storefront",
+    "platformSlug": "dealer-storefront",
     "vehicleId": "veh_0080",
     "listingId": "MESSY1023",
     "eventType": "INQUIRY_SUBMITTED",
@@ -3106,7 +3106,7 @@
   {
     "id": "chev_dealer_messy_motors_44",
     "dealershipId": "dealer_messy_motors",
-    "platformSlug": "owned-storefront",
+    "platformSlug": "dealer-storefront",
     "vehicleId": "veh_0061",
     "listingId": "MESSY1004",
     "eventType": "REPORTED_CONTACT",
@@ -3122,7 +3122,7 @@
   {
     "id": "chev_dealer_messy_motors_45",
     "dealershipId": "dealer_messy_motors",
-    "platformSlug": "owned-storefront",
+    "platformSlug": "dealer-storefront",
     "vehicleId": "veh_0077",
     "listingId": "MESSY1020",
     "eventType": "VEHICLE_DETAIL_VIEW",
@@ -3170,7 +3170,7 @@
   {
     "id": "chev_dealer_messy_motors_48",
     "dealershipId": "dealer_messy_motors",
-    "platformSlug": "owned-storefront",
+    "platformSlug": "dealer-storefront",
     "vehicleId": "veh_0075",
     "listingId": "MESSY1018",
     "eventType": "VEHICLE_DETAIL_VIEW",
@@ -3218,7 +3218,7 @@
   {
     "id": "chev_dealer_premium_imports_1",
     "dealershipId": "dealer_premium_imports",
-    "platformSlug": "owned-storefront",
+    "platformSlug": "dealer-storefront",
     "vehicleId": "veh_0099",
     "listingId": "PREMIUM1014",
     "eventType": "REPORTED_CLICK",
@@ -3250,7 +3250,7 @@
   {
     "id": "chev_dealer_premium_imports_3",
     "dealershipId": "dealer_premium_imports",
-    "platformSlug": "owned-storefront",
+    "platformSlug": "dealer-storefront",
     "vehicleId": "veh_0088",
     "listingId": "PREMIUM1003",
     "eventType": "REPORTED_CONTACT",
@@ -3266,7 +3266,7 @@
   {
     "id": "chev_dealer_premium_imports_4",
     "dealershipId": "dealer_premium_imports",
-    "platformSlug": "owned-storefront",
+    "platformSlug": "dealer-storefront",
     "vehicleId": "veh_0116",
     "listingId": "PREMIUM1031",
     "eventType": "REPORTED_VIEW",
@@ -3314,7 +3314,7 @@
   {
     "id": "chev_dealer_premium_imports_7",
     "dealershipId": "dealer_premium_imports",
-    "platformSlug": "owned-storefront",
+    "platformSlug": "dealer-storefront",
     "vehicleId": "veh_0109",
     "listingId": "PREMIUM1024",
     "eventType": "VEHICLE_DETAIL_VIEW",
@@ -3746,7 +3746,7 @@
   {
     "id": "chev_dealer_premium_imports_34",
     "dealershipId": "dealer_premium_imports",
-    "platformSlug": "owned-storefront",
+    "platformSlug": "dealer-storefront",
     "vehicleId": "veh_0100",
     "listingId": "PREMIUM1015",
     "eventType": "VEHICLE_DETAIL_VIEW",
@@ -3810,7 +3810,7 @@
   {
     "id": "chev_dealer_premium_imports_38",
     "dealershipId": "dealer_premium_imports",
-    "platformSlug": "owned-storefront",
+    "platformSlug": "dealer-storefront",
     "vehicleId": "veh_0094",
     "listingId": "PREMIUM1009",
     "eventType": "VEHICLE_DETAIL_VIEW",
@@ -3890,7 +3890,7 @@
   {
     "id": "chev_dealer_premium_imports_43",
     "dealershipId": "dealer_premium_imports",
-    "platformSlug": "owned-storefront",
+    "platformSlug": "dealer-storefront",
     "vehicleId": "veh_0094",
     "listingId": "PREMIUM1009",
     "eventType": "VEHICLE_DETAIL_VIEW",
@@ -3954,7 +3954,7 @@
   {
     "id": "chev_dealer_premium_imports_47",
     "dealershipId": "dealer_premium_imports",
-    "platformSlug": "owned-storefront",
+    "platformSlug": "dealer-storefront",
     "vehicleId": "veh_0097",
     "listingId": "PREMIUM1012",
     "eventType": "REPORTED_VIEW",

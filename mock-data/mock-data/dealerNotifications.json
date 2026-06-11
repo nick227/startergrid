@@ -1,4 +1,4 @@
-[
+﻿[
   {
     "id": "notif_dealer_austin_auto_0",
     "dealershipId": "dealer_austin_auto",
@@ -17,7 +17,7 @@
     "type": "SYNC_FAILED",
     "payload": {
       "message": "Mock sync failed for Austin Metro Auto",
-      "platformSlug": "cars-com-us"
+      "platformSlug": "cars-com"
     },
     "deliveryStatus": "PENDING",
     "deliveredAt": null,
@@ -101,7 +101,7 @@
     "type": "LISTING_BLOCKED",
     "payload": {
       "message": "Mock listing blocked for Lone Star Trail & RV",
-      "platformSlug": "owned-storefront"
+      "platformSlug": "dealer-storefront"
     },
     "deliveryStatus": "PENDING",
     "deliveredAt": null,
@@ -233,7 +233,7 @@
     "type": "CATALOG_READY",
     "payload": {
       "message": "Mock catalog ready for Messy Motors",
-      "platformSlug": "cars-com-us"
+      "platformSlug": "cars-com"
     },
     "deliveryStatus": "PENDING",
     "deliveredAt": "2026-06-10T08:00:00Z",
@@ -257,7 +257,7 @@
     "type": "SYNC_FAILED",
     "payload": {
       "message": "Mock sync failed for Premium Imports",
-      "platformSlug": "owned-storefront"
+      "platformSlug": "dealer-storefront"
     },
     "deliveryStatus": "PENDING",
     "deliveredAt": null,
@@ -281,7 +281,7 @@
     "type": "LISTING_BLOCKED",
     "payload": {
       "message": "Mock listing blocked for Premium Imports",
-      "platformSlug": "owned-storefront"
+      "platformSlug": "dealer-storefront"
     },
     "deliveryStatus": "PENDING",
     "deliveredAt": null,
