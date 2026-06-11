@@ -143,3 +143,81 @@ export type CategorySchema = {
   marketplace: CategoryMarketplaceMeta;
   fulfillmentPolicy?: FulfillmentPolicy;
 };
+
+// ─── Inventory schema contract ────────────────────────────────────────────────
+
+export type RequiredLevel = 'REQUIRED' | 'RECOMMENDED' | 'OPTIONAL';
+export type MediaRole = 'STRUCTURED_SHOT' | 'GALLERY_IMAGE';
+export type InventoryReadinessSeverity = 'BLOCKER' | 'WARNING';
+
+export type MediaSlot = {
+  key: string;
+  label: string;
+  group: string;
+  requiredLevel: RequiredLevel;
+  sortOrder: number;
+  aliases?: string[];
+  helpText?: string;
+  /** Placeholder mapping to platform-specific image slot names — not wired to export adapters yet. */
+  platformMappings?: Record<string, string>;
+};
+
+export type MediaGuide = {
+  categoryId: BusinessCategoryId;
+  slots: MediaSlot[];
+  /** Slot keys that must be filled before any platform publish is allowed. */
+  minimumPublishSet: string[];
+  /** Slot keys that contribute to quality score / recommended coverage. */
+  recommendedSet: string[];
+};
+
+export type InventoryImportFieldDef = {
+  fieldKey: string;
+  label: string;
+  kind: 'text' | 'number' | 'currency' | 'identifier' | 'enum' | 'boolean';
+  requiredLevel: RequiredLevel;
+  /** Higher = show first in import column priority. */
+  displayPriority: number;
+  /** Normalized lowercase aliases that map to this field in CSV/bulk imports. */
+  importAliases: string[];
+  validation?: {
+    min?: number;
+    max?: number;
+    pattern?: string;
+    maxLength?: number;
+  };
+};
+
+export type AttributeGroup = {
+  key: string;
+  label: string;
+  fieldKeys: string[];
+};
+
+export type InventoryReadinessRule = {
+  fieldKey: string;
+  severity: InventoryReadinessSeverity;
+  message: string;
+};
+
+export type CategoryInventorySchema = {
+  categoryId: BusinessCategoryId;
+  /** Semver-style version string to detect schema drift in debug/readiness output. */
+  schemaVersion: string;
+  primaryIdentifier: {
+    fieldKey: string;
+    label: string;
+    /** Regex pattern used for format validation (server-side). */
+    pattern?: string;
+  };
+  displayFields: {
+    /** Ordered field keys shown on the browse row card. */
+    browseRow: string[];
+    /** Ordered field keys shown in the detail page header. */
+    detailHeader: string[];
+  };
+  importFields: InventoryImportFieldDef[];
+  attributeGroups: AttributeGroup[];
+  readinessRules: InventoryReadinessRule[];
+  mediaGuide?: MediaGuide;
+};

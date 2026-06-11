@@ -41,6 +41,9 @@ const baseDbVehicle: DbVehicle = {
       width: 1600,
       height: 1200,
       mimeType: 'image/jpeg',
+      mediaSlotKey: null,
+      mediaRole: null,
+      assignedBy: null,
       createdAt: new Date('2026-01-01')
     }
   ]

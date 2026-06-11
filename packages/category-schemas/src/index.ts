@@ -16,6 +16,16 @@ export type {
   CategoryStatus,
   FulfillmentMode,
   FulfillmentPolicy,
+  // Inventory schema contract
+  RequiredLevel,
+  MediaRole,
+  InventoryReadinessSeverity,
+  MediaSlot,
+  MediaGuide,
+  InventoryImportFieldDef,
+  AttributeGroup,
+  InventoryReadinessRule,
+  CategoryInventorySchema,
 } from './types.js';
 
 export { BUSINESS_CATEGORY_IDS } from './types.js';
@@ -54,7 +64,16 @@ export {
 export type { MarketplaceAvailabilityFilter } from './marketplace/availabilityFilter.js';
 export type { MarketplaceFacetDef, MarketplaceFacetKind } from './marketplace/facets.js';
 export { automotiveSchema } from './automotive/schema.js';
+export { automotiveInventorySchema, AUTO_SHOT_GUIDE } from './automotive/inventorySchema.js';
 export { createPlaceholderSchema, createUnknownFallbackSchema, genericOperatorFallback } from './generic/schema.js';
+export {
+  getCategoryInventorySchema,
+  getPrimaryIdentifierLabel,
+  getRequiredReadinessFields,
+  getMediaGuide,
+  getMissingMediaSlots,
+  getMissingRequiredPublishSlots,
+} from './inventory/registry.js';
 export {
   getFulfillmentPolicy,
   getFulfillmentSummary,

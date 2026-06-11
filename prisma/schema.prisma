@@ -258,6 +258,7 @@ model DealershipProfile {
   generatedArtifacts           GeneratedArtifact[]
   credentialRefs               PlatformCredentialRef[]
   notifications                DealerNotification[]
+  platformSecrets              PlatformSecret[]
   syncPolicies                 SyncPolicy[]
   publishQueue                 PublishQueueItem[]
   syncRuns                     SyncRun[]
@@ -337,19 +338,24 @@ model ListingReport {
 }
 
 model VehicleMedia {
-  id          String   @id @default(cuid())
-  vehicleId   String
-  url         String   @db.VarChar(512)
-  kind        String   @db.VarChar(32)
-  sortOrder   Int
-  width       Int?
-  height      Int?
-  mimeType    String?  @db.VarChar(80)
-  createdAt   DateTime @default(now())
+  id           String   @id @default(cuid())
+  vehicleId    String
+  url          String   @db.VarChar(512)
+  kind         String   @db.VarChar(32)
+  sortOrder    Int
+  width        Int?
+  height       Int?
+  mimeType     String?  @db.VarChar(80)
+  // Structured shot assignment — null means GALLERY_IMAGE (backwards-compatible default)
+  mediaSlotKey String?  @db.VarChar(80)   // e.g. 'front', 'odometer' — matches MediaSlot.key
+  mediaRole    String?  @db.VarChar(24)   // 'STRUCTURED_SHOT' | 'GALLERY_IMAGE'
+  assignedBy   String?  @db.VarChar(30)   // OperatorAccount.id (loose audit ref)
+  createdAt    DateTime @default(now())
 
   vehicle     Vehicle @relation(fields: [vehicleId], references: [id], onDelete: Cascade)
 
   @@index([vehicleId])
+  @@index([vehicleId, mediaSlotKey])
 }
 
 // ─── Platform models ─────────────────────────────────────────────────────────
@@ -680,6 +686,10 @@ enum PlatformAccountState {
   BLOCKED             // Account suspended or restricted
   PARTNER_REQUIRED    // Needs commercial agreement before activation
   SUSPENDED           // Operator-suspended
+  NEEDS_INFO          // Partner needs more information
+  READY               // Connection configured and ready
+  FAILED              // Connection failed validation
+  WAITING_ON_PARTNER  // Waiting on external partner action
 }
 
 model SyncPolicy {
@@ -862,6 +872,11 @@ model PlatformAccount {
   nextAction        String?              @db.VarChar(255)
   nextActionOwner   String?              @db.VarChar(80)
   notes             String?              @db.Text
+  connectionConfig      Json?
+  lastValidationStatus  String?              @db.VarChar(50)
+  lastValidationNote    String?              @db.Text
+  lastValidatedAt       DateTime?
+  highestConfirmedLevel String?              @db.VarChar(50)
   lastChecked       DateTime?
   createdAt         DateTime             @default(now())
   updatedAt         DateTime             @updatedAt
@@ -869,6 +884,26 @@ model PlatformAccount {
   dealership   DealershipProfile @relation(fields: [dealershipId], references: [id], onDelete: Cascade)
 
   @@unique([dealershipId, platformSlug])
+  @@index([dealershipId])
+}
+
+model PlatformSecret {
+  id                String               @id @default(cuid())
+  dealershipId      String
+  platformSlug      String               @db.VarChar(80)
+  fieldKey          String               @db.VarChar(80)
+  encryptedValue    String               @db.Text
+  maskedValue       String               @db.VarChar(80)
+  secretType        String?              @db.VarChar(40)
+  lastRotatedAt     DateTime?
+  lastValidatedAt   DateTime?
+  validationStatus  String?              @db.VarChar(40)
+  createdAt         DateTime             @default(now())
+  updatedAt         DateTime             @updatedAt
+
+  dealership   DealershipProfile @relation(fields: [dealershipId], references: [id], onDelete: Cascade)
+
+  @@unique([dealershipId, platformSlug, fieldKey])
   @@index([dealershipId])
 }
 
