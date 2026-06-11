@@ -2,10 +2,11 @@ import { useAuth } from '@/contexts/AuthContext.tsx';
 
 type Props = {
   nav?: React.ReactNode;
+  action?: React.ReactNode;
   children: React.ReactNode;
 };
 
-export function AdminShell({ nav, children }: Props) {
+export function AdminShell({ nav, action, children }: Props) {
   const { user, logout } = useAuth();
 
   return (
@@ -24,6 +25,7 @@ export function AdminShell({ nav, children }: Props) {
               </div>
             </div>
             <div className="flex items-center gap-2 shrink-0">
+              {action}
               {user && (
                 <>
                   <span className="text-ink-faint text-xs hidden lg:block truncate max-w-[12rem]">{user.email}</span>

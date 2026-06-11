@@ -156,10 +156,7 @@ export default function AdminApp({
   return (
     <AdminShell nav={tabNav}>
       {showOverview && (
-        <AdminOverviewPage
-          activeTab={section as OverviewTab}
-          onCredentials={() => navigate('credentials')}
-        />
+        <AdminOverviewPage />
       )}
 
       {showDealerDetail && adminNav && (

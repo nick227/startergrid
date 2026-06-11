@@ -201,17 +201,17 @@ export function generateMockDashboardData(dealerId?: string | null): DashboardMo
         type: 'neutral',
       },
     ],
-    performanceData: [
-      { id: 'veh-1', dealerName: 'Smith Auto Group', vehicleDescription: '2021 Toyota Camry SE', platformName: 'Meta', platformSlug: 'meta', status: 'Sold', price: 24000, daysOnline: 14, messages: 32, views: 1240 },
-      { id: 'veh-2', dealerName: 'Smith Auto Group', vehicleDescription: '2019 Honda Civic EX', platformName: 'OfferUp', platformSlug: 'offerup', status: 'Active', price: 19500, daysOnline: 5, messages: 12, views: 340 },
-      { id: 'veh-3', dealerName: 'Downtown Ford', vehicleDescription: '2020 Ford F-150 XLT', platformName: 'eBay Motors', platformSlug: 'ebay-motors', status: 'Sold', price: 38000, daysOnline: 30, messages: 15, views: 4050 },
-      { id: 'veh-4', dealerName: 'Westside Auto', vehicleDescription: '2022 Tesla Model 3', platformName: 'Meta', platformSlug: 'meta', status: 'Pending', price: 35000, daysOnline: 2, messages: 45, views: 890 },
-      { id: 'veh-5', dealerName: 'Smith Auto Group', vehicleDescription: '2018 Chevrolet Silverado', platformName: 'Craigslist', platformSlug: 'craigslist', status: 'Active', price: 28000, daysOnline: 42, messages: 3, views: 120 },
-      { id: 'veh-6', dealerName: 'Downtown Ford', vehicleDescription: '2023 Ford Mustang GT', platformName: 'Meta', platformSlug: 'meta', status: 'Active', price: 45000, daysOnline: 10, messages: 28, views: 2100 },
-      { id: 'veh-7', dealerName: 'Westside Auto', vehicleDescription: '2017 Honda Accord LX', platformName: 'OfferUp', platformSlug: 'offerup', status: 'Sold', price: 16000, daysOnline: 8, messages: 18, views: 560 },
-      { id: 'veh-8', dealerName: 'Smith Auto Group', vehicleDescription: '2021 Jeep Wrangler Unlimited', platformName: 'eBay Motors', platformSlug: 'ebay-motors', status: 'Pending', price: 42000, daysOnline: 15, messages: 22, views: 3200 },
-      { id: 'veh-9', dealerName: 'Downtown Ford', vehicleDescription: '2015 Toyota Corolla LE', platformName: 'Craigslist', platformSlug: 'craigslist', status: 'Sold', price: 12000, daysOnline: 3, messages: 55, views: 1800 },
-      { id: 'veh-10', dealerName: 'Westside Auto', vehicleDescription: '2020 BMW 330i', platformName: 'Meta', platformSlug: 'meta', status: 'Active', price: 32000, daysOnline: 25, messages: 14, views: 1500 },
-    ].filter(item => isGlobal || item.dealerName === 'Smith Auto Group') // Just fake filtering for realistic feel
+    performanceData: ([
+      { id: 'veh-1', dealerName: 'Smith Auto Group', vehicleDescription: '2021 Toyota Camry SE', platformName: 'Meta', platformSlug: 'meta', status: 'Sold' as const, price: 24000, daysOnline: 14, messages: 32, views: 1240 },
+      { id: 'veh-2', dealerName: 'Smith Auto Group', vehicleDescription: '2019 Honda Civic EX', platformName: 'OfferUp', platformSlug: 'offerup', status: 'Active' as const, price: 19500, daysOnline: 5, messages: 12, views: 340 },
+      { id: 'veh-3', dealerName: 'Downtown Ford', vehicleDescription: '2020 Ford F-150 XLT', platformName: 'eBay Motors', platformSlug: 'ebay-motors', status: 'Sold' as const, price: 38000, daysOnline: 30, messages: 15, views: 4050 },
+      { id: 'veh-4', dealerName: 'Westside Auto', vehicleDescription: '2022 Tesla Model 3', platformName: 'Meta', platformSlug: 'meta', status: 'Pending' as const, price: 35000, daysOnline: 2, messages: 45, views: 890 },
+      { id: 'veh-5', dealerName: 'Smith Auto Group', vehicleDescription: '2018 Chevrolet Silverado', platformName: 'Craigslist', platformSlug: 'craigslist', status: 'Active' as const, price: 28000, daysOnline: 42, messages: 3, views: 120 },
+      { id: 'veh-6', dealerName: 'Downtown Ford', vehicleDescription: '2023 Ford Mustang GT', platformName: 'Meta', platformSlug: 'meta', status: 'Active' as const, price: 45000, daysOnline: 10, messages: 28, views: 2100 },
+      { id: 'veh-7', dealerName: 'Westside Auto', vehicleDescription: '2017 Honda Accord LX', platformName: 'OfferUp', platformSlug: 'offerup', status: 'Sold' as const, price: 16000, daysOnline: 8, messages: 18, views: 560 },
+      { id: 'veh-8', dealerName: 'Smith Auto Group', vehicleDescription: '2021 Jeep Wrangler Unlimited', platformName: 'eBay Motors', platformSlug: 'ebay-motors', status: 'Pending' as const, price: 42000, daysOnline: 15, messages: 22, views: 3200 },
+      { id: 'veh-9', dealerName: 'Downtown Ford', vehicleDescription: '2015 Toyota Corolla LE', platformName: 'Craigslist', platformSlug: 'craigslist', status: 'Sold' as const, price: 12000, daysOnline: 3, messages: 55, views: 1800 },
+      { id: 'veh-10', dealerName: 'Westside Auto', vehicleDescription: '2020 BMW 330i', platformName: 'Meta', platformSlug: 'meta', status: 'Active' as const, price: 32000, daysOnline: 25, messages: 14, views: 1500 },
+    ] as FinancialPerformanceRowDto[]).filter(item => isGlobal || item.dealerName === 'Smith Auto Group')
   };
 }

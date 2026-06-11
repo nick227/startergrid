@@ -5,6 +5,8 @@ import { useAsyncQuery } from '@/hooks/useAsyncQuery.ts';
 import { Skeleton } from '@/components/ui/Skeleton.tsx';
 import { AdminShell, ErrorState, SectionCard } from '@/components/operator/index.ts';
 import { adminDealerHash } from '@/lib/routes.ts';
+import { DealerDashboard } from '@/components/dashboard';
+import type { OperatorNavHandlers } from '@/lib/operatorNav.ts';
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 
@@ -859,7 +861,7 @@ export default function AdminOverviewPage() {
           )}
 
           {/* ── Insights Tab ────────────────────────────────────────────────── */}
-          {activeTab === 'insights' && (
+          {tab === 'insights' && (
             <div className="space-y-4">
               <p className="text-sm text-ink-muted mb-4">
                 Global aggregate sales and performance insights across all dealerships.
