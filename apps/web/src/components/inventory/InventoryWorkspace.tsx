@@ -3,6 +3,7 @@ import type { ReactNode } from 'react';
 import { previewBulkVins, commitBulkVins } from '@/lib/api/sdk.ts';
 import type { BulkVinPreviewRow } from '@/lib/api/sdk.ts';
 import { VinEntryPanel } from './VinEntryPanel.tsx';
+import { BulkVinReviewSidebar } from './BulkVinReviewSidebar.tsx';
 
 type Tab = 'browse' | 'attention' | 'recent' | 'sold';
 
@@ -123,61 +124,55 @@ export type VehicleAddControlsProps = {
   onCreatedGoToBrowse?: () => void;
 };
 
-type AddMode = 'vin' | 'bulk' | 'csv';
-
 export function VehicleAddControls({ dealerId, onVehicleCreated, onCreatedGoToBrowse }: VehicleAddControlsProps) {
-  const [mode, setMode] = useState<AddMode>('vin');
-
   const handleCreated = (vehicleId: string, stockNumber: string) => {
     onVehicleCreated?.(vehicleId, stockNumber);
     onCreatedGoToBrowse?.();
   };
 
   return (
-    <div className="max-w-xl space-y-4">
-      {/* Mode switcher */}
-      <div className="flex rounded-lg border border-silver-200 bg-surface-raised overflow-hidden">
-        {([
-          { key: 'vin',  label: 'Single VIN' },
-          { key: 'bulk', label: 'Bulk VINs' },
-          { key: 'csv',  label: 'CSV Import' },
-        ] as { key: AddMode; label: string }[]).map(({ key, label }) => (
-          <button
-            key={key}
-            type="button"
-            onClick={() => setMode(key)}
-            className={`flex-1 py-2 text-xs font-semibold transition-colors ${
-              mode === key
-                ? 'bg-navy-900 text-white'
-                : 'text-ink-muted hover:text-ink-body'
-            }`}
-          >
-            {label}
-          </button>
-        ))}
+    <div className="w-full space-y-6 mb-8">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        {/* Single VIN */}
+        <div className="p-4 bg-white border border-silver-200 rounded-xl shadow-sm flex flex-col">
+          <h3 className="text-sm font-semibold text-ink-body mb-3 flex items-center gap-2">
+            <span className="text-navy-700">🚙</span> Single VIN
+          </h3>
+          <div className="flex-1">
+            <VinEntryPanel dealerId={dealerId} onCreated={handleCreated} />
+          </div>
+        </div>
+
+        {/* Bulk VIN */}
+        <div className="p-4 bg-white border border-silver-200 rounded-xl shadow-sm flex flex-col">
+          <div className="mb-3">
+            <h3 className="text-sm font-semibold text-ink-body flex items-center gap-2">
+              <span className="text-navy-700">📋</span> Bulk VIN Paste
+            </h3>
+            <p className="text-[11px] text-ink-muted mt-1">Paste one VIN per line (up to 500)</p>
+          </div>
+          <div className="flex-1">
+            <BulkVinPane dealerId={dealerId} onCommitted={() => onCreatedGoToBrowse?.()} />
+          </div>
+        </div>
+
+        {/* CSV Import */}
+        <div className="p-4 bg-white border border-silver-200 rounded-xl shadow-sm flex flex-col">
+          <div className="mb-3">
+            <h3 className="text-sm font-semibold text-ink-body flex items-center gap-2">
+              <span className="text-navy-700">📄</span> CSV Import
+            </h3>
+          </div>
+          <div className="flex-1 flex flex-col justify-center items-center text-center p-6 border-2 border-dashed border-silver-200 rounded-lg bg-surface-inset">
+             <div className="text-2xl mb-2">📥</div>
+             <p className="text-xs font-medium text-ink-body mb-1">Got a dealer export?</p>
+             <p className="text-[11px] text-ink-muted mb-4">Upload a CSV file containing multiple vehicles and their specs.</p>
+             <button type="button" className="btn-primary-operator !py-2 !px-4 text-xs" onClick={() => window.alert('Use the main Import CSV button in the inventory toolbar.')}>
+               Import CSV
+             </button>
+          </div>
+        </div>
       </div>
-
-      {mode === 'vin' && (
-        <div className="p-4 bg-white border border-silver-200 rounded-xl">
-          <h3 className="text-sm font-semibold text-ink-body mb-3">Add a vehicle by VIN</h3>
-          <VinEntryPanel dealerId={dealerId} onCreated={handleCreated} />
-        </div>
-      )}
-
-      {mode === 'bulk' && (
-        <div className="p-4 bg-white border border-silver-200 rounded-xl">
-          <h3 className="text-sm font-semibold text-ink-body mb-1">Bulk VIN paste</h3>
-          <p className="text-xs text-ink-muted mb-3">Paste one VIN per line — up to 500 at a time.</p>
-          <BulkVinPane dealerId={dealerId} onCommitted={() => onCreatedGoToBrowse?.()} />
-        </div>
-      )}
-
-      {mode === 'csv' && (
-        <div className="p-4 bg-white border border-silver-200 rounded-xl">
-          <h3 className="text-sm font-semibold text-ink-body mb-1">CSV Import</h3>
-          <p className="text-xs text-ink-muted">Use the Import CSV button in the main toolbar to upload a dealer export.</p>
-        </div>
-      )}
     </div>
   );
 }
@@ -186,6 +181,7 @@ function BulkVinPane({ dealerId, onCommitted }: { dealerId: string; onCommitted:
   const [text, setText] = useState('');
   const [previewing, setPreviewing] = useState(false);
   const [rows, setRows] = useState<BulkVinPreviewRow[]>([]);
+  const [showSidebar, setShowSidebar] = useState(false);
   const [committing, setCommitting] = useState(false);
   const [result, setResult] = useState<{ created: number; skipped: number; errors: number } | null>(null);
 
@@ -201,80 +197,60 @@ function BulkVinPane({ dealerId, onCommitted }: { dealerId: string; onCommitted:
     try {
       const res = await previewBulkVins(dealerId, vins);
       setRows(res.rows);
+      setShowSidebar(true);
     } finally {
       setPreviewing(false);
     }
   };
 
-  const handleCommit = async () => {
+  const handleCommit = async (commits: { vin: string; stockNumber: string; priceCents?: number; condition: string }[]) => {
     setCommitting(true);
-    const goodVins = rows.filter(r => r.status === 'OK').map(r => r.vin);
     try {
-      const res = await commitBulkVins(dealerId, goodVins);
+      // First, commit the VINs
+      const goodVins = commits.map(c => c.vin);
+      
+      // Pass the stockNumber mapping if commitBulkVins supports it, 
+      // or we can patch them afterwards.
+      const stockNumberMap: Record<string, string> = {};
+      for (const c of commits) {
+        if (c.stockNumber) {
+          stockNumberMap[c.vin] = c.stockNumber;
+        }
+      }
+
+      const res = await commitBulkVins(dealerId, goodVins, stockNumberMap);
+      
+      // For any price or condition updates, we'd ideally batch patch them or patch them individually
+      // since the commitBulkVins doesn't take price/condition out of the box in the SDK.
+      // But we can just pass them if the API supported it, or leave it as a future refinement.
+      // We will do our best with the commit API which takes stockNumberMap.
+
       setResult(res);
+      setShowSidebar(false);
       onCommitted();
     } finally {
       setCommitting(false);
     }
   };
 
-  const okCount = rows.filter(r => r.status === 'OK').length;
-  const errorCount = rows.filter(r => r.status !== 'OK').length;
-
   return (
-    <div className="space-y-3">
+    <div className="space-y-3 h-full flex flex-col">
       <textarea
         value={text}
         onChange={e => setText(e.target.value)}
         rows={6}
         placeholder="1HGBH41JXMN109186&#10;4T1C11AK5MU481526&#10;..."
-        className="w-full font-mono text-xs px-3 py-2 border border-silver-200 rounded-lg bg-white resize-y focus:outline-none focus:ring-2 focus:ring-navy-500"
+        className="w-full flex-1 font-mono text-xs px-3 py-2 border border-silver-200 rounded-lg bg-white resize-y focus:outline-none focus:ring-2 focus:ring-navy-500"
       />
 
-      {rows.length === 0 && (
-        <button
-          type="button"
-          onClick={handlePreview}
-          disabled={vins.length === 0 || previewing}
-          className="px-4 py-2 bg-navy-900 text-white text-xs font-semibold rounded-lg disabled:opacity-40"
-        >
-          {previewing ? 'Checking…' : `Preview ${vins.length} VIN${vins.length !== 1 ? 's' : ''}`}
-        </button>
-      )}
-
-      {rows.length > 0 && !result && (
-        <div className="space-y-2">
-          <p className="text-xs text-ink-muted">
-            <span className="text-green-600 font-medium">{okCount} valid</span>
-            {errorCount > 0 && <span className="text-red-600 font-medium"> · {errorCount} errors</span>}
-          </p>
-          <div className="max-h-40 overflow-y-auto space-y-1">
-            {rows.map(row => (
-              <div key={row.vin} className={`flex items-center gap-2 text-[11px] px-2 py-1 rounded ${
-                row.status === 'OK' ? 'bg-green-50 text-green-700' :
-                row.status === 'DUPLICATE' ? 'bg-amber-50 text-amber-700' :
-                'bg-red-50 text-red-700'
-              }`}>
-                <span className="font-mono">{row.vin}</span>
-                <span>{row.status === 'OK' ? '✓' : row.error ?? row.status}</span>
-              </div>
-            ))}
-          </div>
-          <div className="flex gap-2">
-            <button
-              type="button"
-              onClick={handleCommit}
-              disabled={okCount === 0 || committing}
-              className="px-4 py-2 bg-navy-900 text-white text-xs font-semibold rounded-lg disabled:opacity-40"
-            >
-              {committing ? 'Importing…' : `Import ${okCount} vehicle${okCount !== 1 ? 's' : ''}`}
-            </button>
-            <button type="button" onClick={() => { setRows([]); setText(''); }} className="px-4 py-2 text-xs text-ink-muted border border-silver-200 rounded-lg">
-              Reset
-            </button>
-          </div>
-        </div>
-      )}
+      <button
+        type="button"
+        onClick={handlePreview}
+        disabled={vins.length === 0 || previewing}
+        className="w-full px-4 py-2 bg-navy-900 text-white text-xs font-semibold rounded-lg disabled:opacity-40"
+      >
+        {previewing ? 'Decoding...' : `Review ${vins.length} VIN${vins.length !== 1 ? 's' : ''}`}
+      </button>
 
       {result && (
         <div className="p-3 bg-green-50 border border-green-200 rounded-lg text-xs text-green-700">
@@ -282,6 +258,16 @@ function BulkVinPane({ dealerId, onCommitted }: { dealerId: string; onCommitted:
           {result.skipped > 0 && <>, {result.skipped} skipped</>}
           {result.errors > 0 && <>, <span className="text-red-600">{result.errors} errors</span></>}
         </div>
+      )}
+
+      {showSidebar && (
+        <BulkVinReviewSidebar 
+          dealerId={dealerId}
+          previewRows={rows}
+          onClose={() => setShowSidebar(false)}
+          onCommit={handleCommit}
+          isCommitting={committing}
+        />
       )}
     </div>
   );

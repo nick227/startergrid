@@ -7,7 +7,7 @@ export type CompareRow = {
   render: (item: CompareItem) => string;
 };
 
-export const MIN_COMPARE_DATA_ROWS = 3;
+const MIN_COMPARE_DATA_ROWS = 3;
 
 function compareCell(value: string | number | undefined | null): string {
   if (value == null) return '—';

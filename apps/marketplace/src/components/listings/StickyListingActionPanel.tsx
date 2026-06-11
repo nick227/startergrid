@@ -6,7 +6,6 @@ import {
 import type { MarketplaceVehicleCtas } from '../../lib/api.ts';
 import { formatPrice } from '../../lib/display.ts';
 import { ShareListingButton } from './ShareListingButton.tsx';
-import { PriceDropBadge } from './PriceDropBadge.tsx';
 import { ctasToPrimaryAction } from '../../features/listings/listingCtas.ts';
 
 type Props = {
@@ -46,54 +45,6 @@ export function StickyListingActionPanel({
         >
           {primary.label}
         </button>
-      </div>
-    </div>
-  );
-}
-
-export function ListingActionSidebar({
-  priceSummary,
-  sellerSummary,
-  shareTitle,
-  shareUrl,
-  ctas,
-}: Props) {
-  const primary = ctasToPrimaryAction(ctas);
-  const secondaryLinks = (ctas?.secondary ?? []).filter(
-    s => s.action === 'DEALER_PAGE' || s.action === 'DEALER_INVENTORY',
-  );
-
-  return (
-    <div className="hidden rounded-xl border border-silver-200 bg-white p-5 shadow-elevation-1 lg:block">
-      <p className="mp-label text-ink-faint">{priceSummary.label ?? 'Price'}</p>
-      <p className="mt-1 text-3xl font-bold tabular-nums text-ink">
-        {formatPrice(priceSummary.priceCents)}
-      </p>
-      {priceSummary.originalPriceCents != null && priceSummary.originalPriceCents > priceSummary.priceCents && (
-        <div className="mt-2 flex items-center gap-2">
-          <span className="text-sm text-ink-muted line-through">{formatPrice(priceSummary.originalPriceCents)}</span>
-          <PriceDropBadge originalPriceCents={priceSummary.originalPriceCents} priceCents={priceSummary.priceCents} />
-        </div>
-      )}
-      <p className="mt-3 mp-label text-ink-faint">Seller</p>
-      <p className="mt-0.5 text-sm font-semibold text-ink-heading">{sellerSummary.name}</p>
-      {sellerSummary.location && (
-        <p className="mt-0.5 text-sm text-ink-muted">{sellerSummary.location}</p>
-      )}
-      <div className="mt-5 flex flex-col gap-2">
-        <button
-          type="button"
-          className="mp-btn-primary w-full"
-          onClick={() => runListingPrimaryAction(primary)}
-        >
-          {primary.label}
-        </button>
-        {secondaryLinks.map(s => (
-          <a key={s.action} href={s.href ?? '#'} className="mp-btn-secondary w-full text-center">
-            {s.label}
-          </a>
-        ))}
-        <ShareListingButton title={shareTitle} url={shareUrl} className="w-full" />
       </div>
     </div>
   );

@@ -18,13 +18,6 @@ export const CONDITION_TONE: Record<MarketplaceVehicleCard['condition'], 'sky' |
   CPO:  'emerald',
 };
 
-export function vehicleTitle(
-  card: Pick<MarketplaceVehicleCard, 'year' | 'make' | 'model' | 'trim'>,
-): string {
-  const base = `${card.year} ${card.make} ${card.model}`;
-  return card.trim ? `${base} ${card.trim}` : base;
-}
-
 export function vehicleHeading(
   card: Pick<MarketplaceVehicleCard, 'year' | 'make' | 'model'>,
 ): string {
@@ -66,9 +59,6 @@ export function formatDistanceAway(distanceMiles: number): string {
   return `${new Intl.NumberFormat('en-US').format(distanceMiles)} mi away`;
 }
 
-export function conditionLabel(condition: MarketplaceVehicleCard['condition']): string {
-  return CONDITION_LABEL[condition];
-}
 
 export function formatResultCount(count: number, noun = 'vehicle'): string {
   return `${count.toLocaleString()} ${noun}${count !== 1 ? 's' : ''}`;

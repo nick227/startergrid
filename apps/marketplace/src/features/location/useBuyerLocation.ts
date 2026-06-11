@@ -9,7 +9,6 @@ import {
   subscribeBuyerLocation,
   type BuyerGeoApiParams,
   type BuyerLocationDraft,
-  type BuyerLocationPreference,
 } from './buyerLocation.ts';
 
 export function useBuyerLocation() {
@@ -44,4 +43,3 @@ export function useBuyerLocation() {
   };
 }
 
-export type { BuyerLocationPreference, BuyerGeoApiParams };

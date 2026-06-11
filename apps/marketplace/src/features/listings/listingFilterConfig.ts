@@ -29,7 +29,7 @@ export type ListingCardMetaLabels = {
   unitType?: string;
 };
 
-export function resolveListingTypeLabel(schema: CategorySchema): string | undefined {
+function resolveListingTypeLabel(schema: CategorySchema): string | undefined {
   const field = schema.fields.find(f => f.key === 'vesselType' || f.key === 'unitType');
   return field?.label;
 }

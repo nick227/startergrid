@@ -2,7 +2,7 @@ import type { MarketplaceVehicleCard } from '../../lib/api.ts';
 import { DEFAULT_NEW_ARRIVAL_DAYS, isNewArrival } from './listingBadges.ts';
 
 export const NEW_ARRIVALS_RAIL_MIN = 3;
-export const NEW_ARRIVALS_RAIL_LIMIT = 8;
+const NEW_ARRIVALS_RAIL_LIMIT = 8;
 
 export function pickNewArrivalCards(
   cards: MarketplaceVehicleCard[],

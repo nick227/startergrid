@@ -221,6 +221,7 @@ export function registerAdminRoutes(app: FastifyInstance, prisma: PrismaClient):
           dealersUsing,
           blockedDealers,
           integrationMaturity: p.integrationMaturity || 'UNKNOWN',
+          supportedCategories: p.supportedCategories,
         };
       }));
 

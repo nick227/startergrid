@@ -956,7 +956,7 @@ paths:
           application/json:
             schema:
               type: object
-              required: [vin, stockNumber, priceCents]
+              required: [vin]
               properties:
                 vin:         { type: string }
                 stockNumber: { type: string }
@@ -2030,6 +2030,12 @@ components:
             $ref: '#/components/schemas/ErrorResponse'
     Forbidden:
       description: Operator does not have access to this dealership
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+    ValidationError:
+      description: Validation error
       content:
         application/json:
           schema:

@@ -20,16 +20,6 @@ export type SellerSummary = {
   location: string | null;
 };
 
-export function buildDefaultListingActions(): { primary: ListingPrimaryAction } {
-  return {
-    primary: {
-      label: 'Contact seller',
-      kind: 'scroll',
-      targetId: LISTING_INQUIRY_TARGET_ID,
-    },
-  };
-}
-
 export function runListingPrimaryAction(action: ListingPrimaryAction): void {
   if (action.kind === 'link' && action.href) {
     window.location.href = action.href;

@@ -37,11 +37,11 @@ function notifyBuyerLocationListeners(): void {
   for (const listener of listeners) listener();
 }
 
-export function normalizePostalCode(value: string): string {
+function normalizePostalCode(value: string): string {
   return value.trim().replace(/\s+/g, '');
 }
 
-export function isGeoRadiusMiles(value: number): value is GeoRadiusMiles {
+function isGeoRadiusMiles(value: number): value is GeoRadiusMiles {
   return (GEO_RADIUS_OPTIONS as readonly number[]).includes(value);
 }
 

@@ -15,8 +15,8 @@ export type SavedSearch = {
   label: string;
 };
 
-export const SAVED_SEARCHES_STORAGE_KEY = 'marketplace:savedSearches';
-export const DEFAULT_SAVED_SEARCHES_MAX = 12;
+const SAVED_SEARCHES_STORAGE_KEY = 'marketplace:savedSearches';
+const DEFAULT_SAVED_SEARCHES_MAX = 12;
 
 type StorageLike = Pick<Storage, 'getItem' | 'setItem'>;
 

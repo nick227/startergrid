@@ -28,7 +28,7 @@ export function CategoryProvider({ categoryId, slug, children }: Props) {
   );
 }
 
-export function useCategoryContext(): CategoryContextValue {
+function useCategoryContext(): CategoryContextValue {
   const value = useContext(CategoryContext);
   if (!value) throw new Error('useCategoryContext requires CategoryProvider');
   return value;

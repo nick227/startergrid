@@ -63,6 +63,3 @@ export function clearCompare(): void {
   notifyCompare();
 }
 
-export function isComparing(listingId: string): boolean {
-  return compareItems.some(i => i.listingId === listingId);
-}

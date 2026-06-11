@@ -18,33 +18,31 @@ import InventoryPage from './InventoryPage.tsx';
 import KnowledgeBasePage from './KnowledgeBasePage.tsx';
 import { Skeleton } from '@/components/ui/Skeleton.tsx';
 
-const AdminCredentialsPage  = lazy(() => import('./AdminCredentialsPage.tsx'));
-const AdminBlockedDealersPage = lazy(() => import('./AdminBlockedDealersPage.tsx'));
-const PlatformDetailPage    = lazy(() => import('./PlatformDetailPage.tsx'));
+const AdminBlockedDealersPage     = lazy(() => import('./AdminBlockedDealersPage.tsx'));
+const AdminPlatformDetailPage     = lazy(() => import('./AdminPlatformDetailPage.tsx'));
+const PlatformDetailPage          = lazy(() => import('./PlatformDetailPage.tsx'));
 const PlatformQueuePage     = lazy(() => import('./PlatformQueuePage.tsx'));
 const PlatformHistoryPage   = lazy(() => import('./PlatformHistoryPage.tsx'));
 const ReportsRouter         = lazy(() => import('./ReportsRouter.tsx'));
 
 const LAZY_FALLBACK = <div className="surface-card-operator p-6"><Skeleton rows={6} /></div>;
 
-type AdminSection = 'system' | 'dealers' | 'platforms' | 'triage' | 'blocked' | 'audit' | 'credentials' | 'insights';
+type AdminSection = 'system' | 'dealers' | 'platforms' | 'triage' | 'blocked' | 'audit' | 'insights';
 type OverviewTab = 'system' | 'dealers' | 'platforms' | 'triage' | 'audit' | 'insights';
 
 const SECTION_HASHES: Record<AdminSection, string> = {
-  system:      '#/admin',
-  dealers:     '#/admin/dealers',
-  platforms:   '#/admin/platforms',
-  triage:      '#/admin/triage',
-  insights:    '#/admin/insights',
-  blocked:     '#/admin/blocked-dealers',
-  audit:       '#/admin/audit',
-  credentials: '#/admin/platform-credentials',
+  system:    '#/admin',
+  dealers:   '#/admin/dealers',
+  platforms: '#/admin/platforms',
+  triage:    '#/admin/triage',
+  insights:  '#/admin/insights',
+  blocked:   '#/admin/blocked-dealers',
+  audit:     '#/admin/audit',
 };
 
 function routeToSection(adminDealerId: string | null, platformSlug: string | null): AdminSection {
-  if (platformSlug === 'platform-credentials') return 'credentials';
-  if (platformSlug === 'blocked-dealers')       return 'blocked';
-  if (platformSlug === 'insights')              return 'insights';
+  if (platformSlug === 'blocked-dealers')      return 'blocked';
+  if (platformSlug === 'insights')             return 'insights';
   if (platformSlug === 'dealers' || adminDealerId) return 'dealers';
   if (platformSlug === 'platforms') return 'platforms';
   if (platformSlug === 'triage')    return 'triage';
@@ -85,6 +83,7 @@ type Props = {
   platformView: 'queue' | 'history' | null;
   reportSlug: string | null;
   reportRange: ReportRangePreset;
+  adminPlatformSlug: string | null;
 };
 
 export default function AdminApp({
@@ -94,6 +93,7 @@ export default function AdminApp({
   platformView,
   reportSlug,
   reportRange,
+  adminPlatformSlug,
 }: Props) {
   const routeSection = useMemo(
     () => routeToSection(adminDealerId, platformSlug),
@@ -108,8 +108,9 @@ export default function AdminApp({
     window.location.hash = SECTION_HASHES[s];
   }
 
-  const showDealerDetail = section === 'dealers' && adminDealerId !== null;
-  const showOverview     = isOverviewTab(section) && !showDealerDetail;
+  const showDealerDetail  = section === 'dealers' && adminDealerId !== null;
+  const showPlatformDetail = section === 'platforms' && !!adminPlatformSlug;
+  const showOverview      = isOverviewTab(section) && !showDealerDetail && !showPlatformDetail;
 
   const adminNav = useMemo(
     () => adminDealerId ? buildAdminDealerNav(adminDealerId) : null,
@@ -139,45 +140,17 @@ export default function AdminApp({
   const criticalCount    = dealerAttention.filter(d => d.severity === 'critical').length;
 
   const adminAction = (
-    <>
-      {meta && (
-        <span className="text-[10px] text-ink-faint font-mono hidden md:block">
-          {meta.cached ? 'cached' : 'live'} · {meta.durationMs}ms
-        </span>
-      )}
-      <a
-        href="#/help"
-        className="px-3 py-1.5 text-xs font-medium text-ink-faint hover:text-white border border-navy-700 hover:border-navy-600 rounded-md transition-all"
-      >
-        Knowledge Base
-      </a>
-      <button
-        type="button"
-        onClick={() => { window.location.hash = '#/admin/platform-credentials'; }}
-        className="btn-primary-operator"
-      >
-        Credential Validation
-      </button>
-      <button
-        type="button"
-        onClick={() => void reload()}
-        disabled={loading}
-        className="px-3 py-1.5 text-xs font-medium bg-navy-800 hover:bg-navy-700 text-silver-100 rounded-md transition-colors disabled:opacity-40"
-      >
-        {loading ? 'Refreshing…' : 'Refresh'}
-      </button>
-    </>
+    <></>
   );
 
   const TABS = [
-    { id: 'system'      as AdminSection, label: 'System Status',  count: null,                     alert: false },
-    { id: 'dealers'     as AdminSection, label: 'Dealerships',    count: allDealers.length || null, alert: false },
-    { id: 'platforms'   as AdminSection, label: 'Platforms',      count: platformOverview.length,   alert: false },
-    { id: 'triage'      as AdminSection, label: 'Dealer Triage',  count: dealerAttention.length,    alert: criticalCount > 0 },
-    { id: 'insights'    as AdminSection, label: 'Insights',       count: null,                      alert: false },
-    { id: 'blocked'     as AdminSection, label: 'Blocked',        count: null,                      alert: false },
-    { id: 'audit'       as AdminSection, label: 'Audit Log',      count: recentEvents.length,       alert: false },
-    { id: 'credentials' as AdminSection, label: 'Credentials',    count: null,                      alert: false },
+    { id: 'system'    as AdminSection, label: 'System Status', count: null,                     alert: false },
+    { id: 'dealers'   as AdminSection, label: 'Dealerships',   count: allDealers.length || null, alert: false },
+    { id: 'platforms' as AdminSection, label: 'Platforms',     count: platformOverview.length,   alert: false },
+    { id: 'triage'    as AdminSection, label: 'Dealer Triage', count: dealerAttention.length,    alert: criticalCount > 0 },
+    { id: 'insights'  as AdminSection, label: 'Insights',      count: null,                      alert: false },
+    { id: 'blocked'   as AdminSection, label: 'Blocked',       count: null,                      alert: false },
+    { id: 'audit'     as AdminSection, label: 'Audit Log',     count: recentEvents.length,       alert: false },
   ];
 
   const activeTabId = showDealerDetail ? 'dealers' : section;
@@ -267,14 +240,22 @@ export default function AdminApp({
         </CategoryProvider>
       )}
 
+      {showPlatformDetail && adminPlatformSlug && (
+        <Suspense fallback={LAZY_FALLBACK}>
+          <AdminPlatformDetailPage
+            slug={adminPlatformSlug}
+            platformOverview={platformOverview}
+            dealerAttention={dealerAttention}
+            recentEvents={recentEvents}
+            queueSnapshot={data?.queueSnapshot ?? null}
+            loading={loading}
+          />
+        </Suspense>
+      )}
+
       {section === 'blocked' && (
         <Suspense fallback={LAZY_FALLBACK}>
           <AdminBlockedDealersPage />
-        </Suspense>
-      )}
-      {section === 'credentials' && (
-        <Suspense fallback={LAZY_FALLBACK}>
-          <AdminCredentialsPage />
         </Suspense>
       )}
     </AdminShell>

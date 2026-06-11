@@ -1,7 +1,13 @@
 import { useCallback, useMemo, useState } from 'react';
 import { Skeleton } from '@/components/ui/Skeleton.tsx';
 import { ErrorState, SectionCard } from '@/components/operator/index.ts';
-import { adminDealerHash } from '@/lib/routes.ts';
+import { adminDealerHash, adminPlatformHash } from '@/lib/routes.ts';
+import { BUSINESS_CATEGORY_IDS } from '@auto-dealer/category-schemas';
+import {
+  fetchPlatformCredentials,
+  validatePlatformCredentials,
+  type ProviderCredentialResult,
+} from '@/lib/api/admin.ts';
 import { DealerDashboard } from '@/components/dashboard';
 
 // ── Types ─────────────────────────────────────────────────────────────────────
@@ -156,10 +162,14 @@ export default function AdminOverviewPage({
   // Platforms tab
   const [platSearch, setPlatSearch]               = useState('');
   const [platCap, setPlatCap]                     = useState('');
+  const [platCategory, setPlatCategory]           = useState('');
   const [platValidation, setPlatValidation]       = useState('');
   const [platMaturity, setPlatMaturity]           = useState('');
   const [platSort, setPlatSort]                   = useState<PlatSortField>('platformName');
   const [platDir, setPlatDir]                     = useState<SortDir>('asc');
+  const [liveValidationMap, setLiveValidationMap] = useState<Map<string, ProviderCredentialResult> | null>(null);
+  const [validating, setValidating]               = useState(false);
+  const [validationMeta, setValidationMeta]       = useState<{ checkedAt: Date; durationMs: number } | null>(null);
 
   // Triage tab
   const [triageSearch, setTriageSearch]           = useState('');
@@ -237,6 +247,7 @@ export default function AdminOverviewPage({
       );
     }
     if (platCap)       list = list.filter(p => p.capabilities.includes(platCap));
+    if (platCategory)  list = list.filter(p => p.supportedCategories?.includes(platCategory));
     if (platValidation) list = list.filter(p => p.liveValidationStatus === platValidation);
     if (platMaturity)  list = list.filter(p => p.integrationMaturity === platMaturity);
     list.sort((a, b) => {
@@ -247,7 +258,7 @@ export default function AdminOverviewPage({
       return platDir === 'asc' ? cmp : -cmp;
     });
     return list;
-  }, [platformOverview, platSearch, platCap, platValidation, platMaturity, platSort, platDir]);
+  }, [platformOverview, platSearch, platCap, platCategory, platValidation, platMaturity, platSort, platDir]);
 
   const filteredTriage = useMemo(() => {
     let list = [...dealerAttention];
@@ -309,11 +320,30 @@ export default function AdminOverviewPage({
 
   const criticalCount      = useMemo(() => dealerAttention.filter(d => d.severity === 'critical').length, [dealerAttention]);
   const dealerActiveFilters = [dealerSearch, dealerCategory].filter(Boolean).length;
-  const platActiveFilters   = [platSearch, platCap, platValidation, platMaturity].filter(Boolean).length;
+  const platActiveFilters   = [platSearch, platCategory, platCap, platValidation, platMaturity].filter(Boolean).length;
   const triageActiveFilters = [triageSearch, triageSev].filter(Boolean).length;
   const auditActiveFilters  = [auditSearch].filter(Boolean).length;
 
   // ── Render ────────────────────────────────────────────────────────────────
+
+  async function runValidation() {
+    setValidating(true);
+    try {
+      const [valRes, credRes] = await Promise.all([
+        validatePlatformCredentials(),
+        fetchPlatformCredentials(),
+      ]);
+      const slugMap = new Map<string, ProviderCredentialResult>();
+      for (const r of valRes.results) {
+        const prov = credRes.providers.find(p => p.provider === r.provider);
+        if (prov) prov.platformSlugs.forEach(s => slugMap.set(s, r));
+      }
+      setLiveValidationMap(slugMap);
+      setValidationMeta({ checkedAt: new Date(), durationMs: valRes.meta?.durationMs ?? 0 });
+    } finally {
+      setValidating(false);
+    }
+  }
 
   return (
     <>
@@ -328,7 +358,6 @@ export default function AdminOverviewPage({
           {/* ── System Status Tab ─────────────────────────────────────────── */}
           {tab === 'system' && (
             <div className="space-y-5">
-
               <SectionCard
                 title="Health"
                 subtitle="Live status of core infrastructure components powering this portal instance."
@@ -435,11 +464,6 @@ export default function AdminOverviewPage({
           {/* ── Dealerships Tab ────────────────────────────────────────────── */}
           {tab === 'dealers' && (
             <div className="space-y-4">
-              <p className="text-sm text-ink-muted">
-                All registered dealerships. Click a dealer name to open the admin management screen.
-                Issue badges are sourced from the system health scan.
-              </p>
-
               <div className="flex flex-wrap items-center gap-2">
                 <input
                   type="text"
@@ -552,10 +576,6 @@ export default function AdminOverviewPage({
           {/* ── Platforms Tab ──────────────────────────────────────────────── */}
           {tab === 'platforms' && (
             <div className="space-y-4">
-              <p className="text-sm text-ink-muted">
-                All registered advertising and distribution integrations. Click a platform name to manage its API credentials.
-              </p>
-
               <div className="flex flex-wrap items-center gap-2">
                 <input
                   type="text"
@@ -564,6 +584,12 @@ export default function AdminOverviewPage({
                   placeholder="Search platforms…"
                   className={`${INPUT_CLS} w-44`}
                 />
+                <select value={platCategory} onChange={e => setPlatCategory(e.target.value)} className={SELECT_CLS}>
+                  <option value="">All Categories</option>
+                  {BUSINESS_CATEGORY_IDS.map(id => (
+                    <option key={id} value={id}>{id.replace(/_/g, ' ')}</option>
+                  ))}
+                </select>
                 <select value={platCap} onChange={e => setPlatCap(e.target.value)} className={SELECT_CLS}>
                   <option value="">All Capabilities</option>
                   <option value="catalogSync">Catalog Sync</option>
@@ -586,14 +612,29 @@ export default function AdminOverviewPage({
                   <option value="ALPHA">Alpha</option>
                 </select>
                 {platActiveFilters > 0 && (
-                  <button type="button" onClick={() => { setPlatSearch(''); setPlatCap(''); setPlatValidation(''); setPlatMaturity(''); }} className={CLEAR_CLS}>
+                  <button type="button" onClick={() => { setPlatSearch(''); setPlatCategory(''); setPlatCap(''); setPlatValidation(''); setPlatMaturity(''); }} className={CLEAR_CLS}>
                     Clear ({platActiveFilters})
                   </button>
                 )}
-                <div className="ml-auto flex items-center gap-3 text-xs">
-                  {filteredPlatforms.filter(p => p.liveValidationStatus === 'invalid').length > 0 && (
-                    <span className="text-status-error-text">{filteredPlatforms.filter(p => p.liveValidationStatus === 'invalid').length} validation errors</span>
+                <div className="ml-auto flex items-center gap-3">
+                  {validationMeta && (
+                    <span className="text-[10px] text-ink-faint">
+                      Validated {validationMeta.checkedAt.toLocaleTimeString()} · {validationMeta.durationMs}ms
+                    </span>
                   )}
+                  {!validationMeta && filteredPlatforms.filter(p => p.liveValidationStatus === 'invalid').length > 0 && (
+                    <span className="text-xs text-status-error-text">
+                      {filteredPlatforms.filter(p => p.liveValidationStatus === 'invalid').length} invalid
+                    </span>
+                  )}
+                  <button
+                    type="button"
+                    onClick={() => void runValidation()}
+                    disabled={validating}
+                    className="px-3 py-1.5 text-xs font-semibold bg-navy-800 hover:bg-navy-700 text-silver-100 rounded-md transition-colors disabled:opacity-40"
+                  >
+                    {validating ? 'Validating…' : 'Validate Credentials'}
+                  </button>
                 </div>
               </div>
 
@@ -617,7 +658,7 @@ export default function AdminOverviewPage({
                       return (
                         <tr key={p.platformSlug} className="border-b border-silver-200 last:border-0 hover:bg-surface-inset transition-colors">
                           <td className="px-4 py-3">
-                            <a href="#/admin/platform-credentials" className="font-semibold text-navy-700 hover:text-navy-600 hover:underline text-sm">
+                            <a href={adminPlatformHash(p.platformSlug)} className="font-semibold text-navy-700 hover:text-navy-600 hover:underline text-sm">
                               {p.platformName}
                             </a>
                             <div className="text-[10px] text-ink-faint font-mono mt-0.5">
@@ -660,9 +701,6 @@ export default function AdminOverviewPage({
           {tab === 'triage' && (
             <div className="space-y-4">
               <div className="flex items-start justify-between gap-4">
-                <p className="text-sm text-ink-muted">
-                  Dealer configurations flagged for attention — blocked syncs, invalid credentials, missing geocoordinates, and stalled queues.
-                </p>
                 <a href="#/admin/blocked-dealers" className="text-xs font-semibold text-orange-600 hover:text-orange-500 hover:underline shrink-0">
                   Full blocked list →
                 </a>
@@ -740,10 +778,6 @@ export default function AdminOverviewPage({
           {/* ── Audit Log Tab ──────────────────────────────────────────────── */}
           {tab === 'audit' && (
             <div className="space-y-4">
-              <p className="text-sm text-ink-muted">
-                Recent operator and system events recorded for security and compliance review. Actions are attributed to the authenticated actor at the time of the event.
-              </p>
-
               <div className="flex flex-wrap items-center gap-2">
                 <input
                   type="text"
@@ -808,9 +842,6 @@ export default function AdminOverviewPage({
           {/* ── Insights Tab ────────────────────────────────────────────────── */}
           {tab === 'insights' && (
             <div className="space-y-4">
-              <p className="text-sm text-ink-muted mb-4">
-                Global aggregate sales and performance insights across all dealerships.
-              </p>
               <DealerDashboard 
                 isAdmin={true} 
                 nav={{

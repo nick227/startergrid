@@ -1,7 +1,7 @@
 import type { MarketplaceMediaItem } from '@dealer-marketplace/client';
 import { MarketplaceMediaItem as MediaEnums } from '@dealer-marketplace/client';
 
-export function fixtureMedia(
+function fixtureMedia(
   id: string,
   overrides: Partial<MarketplaceMediaItem> & Pick<MarketplaceMediaItem, 'url' | 'sortOrder'>,
 ): MarketplaceMediaItem {

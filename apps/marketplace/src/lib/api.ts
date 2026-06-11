@@ -34,21 +34,6 @@ export type {
   MarketplaceUserIdentity,
   MarketplaceFavoritesResponse,
   MarketplaceSitesResponse,
-  MarketplaceSiteSummary,
-  MarketplaceBusinessCategory,
-  VehicleCore,
-  VehicleCommerce,
-  VehicleLocation,
-  VehicleClassification,
-  VehicleColors,
-  VehicleEngine,
-  VehicleEfficiency,
-  VehicleConditionHistory,
-  VehicleFeatures,
-  VehicleWarranty,
-  VehicleMedia,
-  VehicleContent,
-  MarketplaceListingPromotion,
   MarketplaceVehicleCtas,
 } from '@dealer-marketplace/client';
 
@@ -185,14 +170,6 @@ export function fetchSeller(
   category?: BusinessCategoryId,
 ): Promise<MarketplaceDealerIndexResponse> {
   return call(() => MarketplaceService.getMarketplaceSellerIndex({ sellerId, category: toApiCategory(category) }));
-}
-
-/** @deprecated Use fetchSeller */
-export function fetchDealer(
-  dealerId: string,
-  category?: BusinessCategoryId,
-): Promise<MarketplaceDealerIndexResponse> {
-  return fetchSeller(dealerId, category);
 }
 
 export function submitVehicleLead(

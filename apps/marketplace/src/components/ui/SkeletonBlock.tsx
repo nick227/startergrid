@@ -1,2 +1,2 @@
-export { LoadingSpinner, SkeletonBlock } from '../core/SkeletonBlock.tsx';
+export { SkeletonBlock } from '../core/SkeletonBlock.tsx';
 

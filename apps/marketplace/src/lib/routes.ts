@@ -207,10 +207,6 @@ export function favoritesHref(slug: string): string {
   return `#/${slug}/favorites`;
 }
 
-/** @deprecated Use sellerHref */
-export function dealerHref(slug: string, dealerId: string): string {
-  return sellerHref(slug, dealerId);
-}
 
 export function categorySiteHref(apiHref: string): string {
   const normalized = apiHref.startsWith('/') ? apiHref.slice(1) : apiHref;

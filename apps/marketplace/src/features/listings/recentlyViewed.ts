@@ -1,5 +1,4 @@
-import type { MarketplaceVehicleCard } from '../../lib/api.ts';
-import { formatLocation, vehicleHeading } from '../../lib/display.ts';
+import { formatLocation } from '../../lib/display.ts';
 
 export type RecentListing = {
   listingId: string;
@@ -14,7 +13,7 @@ export type RecentListing = {
 
 export type RecentListingSnapshot = Omit<RecentListing, 'viewedAt'>;
 
-export const RECENT_LISTINGS_STORAGE_KEY = 'marketplace:recentListings';
+const RECENT_LISTINGS_STORAGE_KEY = 'marketplace:recentListings';
 export const DEFAULT_RECENT_LISTINGS_MAX = 16;
 
 type StorageLike = Pick<Storage, 'getItem' | 'setItem'>;
@@ -104,24 +103,6 @@ export function recentListingsForCategory(
     .filter(item => item.categorySlug === categorySlug)
     .filter(item => item.listingId !== options.excludeListingId)
     .slice(0, limit);
-}
-
-export function recentListingFromCard(
-  categorySlug: string,
-  card: Pick<
-    MarketplaceVehicleCard,
-    'listingId' | 'priceCents' | 'dealerName' | 'dealerCity' | 'dealerState' | 'mediaUrls' | 'year' | 'make' | 'model' | 'trim'
-  >,
-): RecentListingSnapshot {
-  return {
-    listingId: card.listingId,
-    categorySlug,
-    title: vehicleHeading(card),
-    imageUrl: card.mediaUrls[0] ?? null,
-    priceCents: card.priceCents,
-    sellerName: card.dealerName,
-    location: formatLocation(card.dealerCity, card.dealerState),
-  };
 }
 
 export function recentListingFromDetail(
