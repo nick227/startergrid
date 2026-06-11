@@ -14,6 +14,7 @@ import {
   fetchMe,
   login as apiLogin,
   logout as apiLogout,
+  register as apiRegister,
   removeFavorite,
 } from '../lib/api.ts';
 
@@ -25,6 +26,7 @@ type AuthState = {
   openLoginModal: () => void;
   closeLoginModal: () => void;
   login: (email: string, password: string) => Promise<void>;
+  register: (email: string, password: string, displayName?: string) => Promise<void>;
   logout: () => Promise<void>;
   toggleFavorite: (listingId: string, category: BusinessCategoryId) => Promise<void>;
   isFavorited: (listingId: string) => boolean;
@@ -60,6 +62,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const login = useCallback(async (email: string, password: string) => {
     const identity = await apiLogin(email, password);
+    setUser(identity);
+    setLoginModalOpen(false);
+  }, []);
+
+  const register = useCallback(async (email: string, password: string, displayName?: string) => {
+    const identity = await apiRegister(email, password, displayName);
     setUser(identity);
     setLoginModalOpen(false);
   }, []);
@@ -109,7 +117,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       loginModalOpen,
       openLoginModal: () => setLoginModalOpen(true),
       closeLoginModal: () => setLoginModalOpen(false),
-      login, logout, toggleFavorite, isFavorited, syncFavorites,
+      login, register, logout, toggleFavorite, isFavorited, syncFavorites,
     }}>
       {children}
     </AuthContext.Provider>

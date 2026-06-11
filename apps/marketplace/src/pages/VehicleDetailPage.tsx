@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { isConsumerMarketplaceLive, type BusinessCategoryId } from '@auto-dealer/category-schemas';
 import { useQuery, queryErrorMessage } from '../hooks/useQuery.ts';
 import { usePageMeta } from '../hooks/usePageMeta.ts';
@@ -127,6 +128,40 @@ function ListingDetailPage({ listingId }: Props) {
 
 // ── Layout: shared across all categories, auto-specific sections gated ────────
 
+function MarkAsSoldButton({ listingId, onSold }: { listingId: string; onSold: () => void }) {
+  const [loading, setLoading] = useState(false);
+  const [done, setDone] = useState(false);
+
+  const handleSold = async () => {
+    if (done || loading) return;
+    setLoading(true);
+    try {
+      const res = await fetch(`/api/marketplace/vehicles/${listingId}/sold`, { method: 'POST' });
+      if (res.ok) {
+        setDone(true);
+        onSold();
+      }
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return (
+    <div className="rounded-lg border border-amber-200 bg-amber-50 p-3 text-xs">
+      <p className="font-semibold text-amber-800 mb-2">Demo mode — simulate a sale</p>
+      <button
+        type="button"
+        onClick={() => void handleSold()}
+        disabled={loading || done}
+        className="px-3 py-1.5 rounded bg-amber-600 text-white font-semibold disabled:opacity-50 hover:bg-amber-700 transition-colors"
+      >
+        {done ? 'Marked as sold' : loading ? 'Processing…' : 'Mark as Sold'}
+      </button>
+      {done && <p className="mt-1.5 text-amber-700">Operator-web has been notified. Vehicle removed from marketplace.</p>}
+    </div>
+  );
+}
+
 function ListingDetailContent({
   listingId,
   categoryId,
@@ -142,6 +177,9 @@ function ListingDetailContent({
   vehicle: MarketplaceVehicleDetailResponse['vehicle'];
   ctas: MarketplaceVehicleDetailResponse['ctas'];
 }) {
+  const [soldOut, setSoldOut] = useState(false);
+  const isDemoMode = typeof window !== 'undefined' && new URLSearchParams(window.location.search).get('demo') === '1';
+
   const engagement = useListingDetailEngagement({
     categorySlug: slug,
     listingId,
@@ -175,13 +213,22 @@ function ListingDetailContent({
             <AvailabilitySection commerce={vehicle.commerce} />
             <CommerceSection commerce={vehicle.commerce} />
             <LocationSection location={vehicle.location} />
-            <div id="inquiry">
-              <LeadInquiryForm
-                listingId={vehicle.core.listingId}
-                vehicleLabel={vehicle.core.title}
-                dealerName={vehicle.location.dealerName}
-              />
-            </div>
+            {isDemoMode && !soldOut && (
+              <MarkAsSoldButton listingId={listingId} onSold={() => setSoldOut(true)} />
+            )}
+            {soldOut ? (
+              <div className="rounded-lg border border-silver-200 bg-silver-50 p-4 text-center text-sm text-ink-muted">
+                This vehicle has been sold and is no longer available.
+              </div>
+            ) : (
+              <div id="inquiry">
+                <LeadInquiryForm
+                  listingId={vehicle.core.listingId}
+                  vehicleLabel={vehicle.core.title}
+                  dealerName={vehicle.location.dealerName}
+                />
+              </div>
+            )}
           </div>
         </div>
 

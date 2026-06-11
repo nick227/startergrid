@@ -5,6 +5,8 @@ import { operatorCopy } from '../../lib/copy/operator.ts';
 import { useAuth } from '@/contexts/AuthContext.tsx';
 import { useCategorySchema } from '@/contexts/CategoryContext.tsx';
 import { useAdminView } from '@/contexts/AdminViewContext.tsx';
+import { DealerLogo } from './DealerLogo.tsx';
+import { OperatorAvatar } from './OperatorAvatar.tsx';
 
 type Props = {
   dealerId: string;
@@ -28,6 +30,7 @@ const TAB_LABELS: Record<OperatorTab, string> = {
   history: 'History',
   reports: 'Reports',
   inventory: 'Inventory',
+  leads: 'Leads',
   help: 'Help',
 };
 
@@ -45,7 +48,7 @@ export function PageShell({
   hideDealerId,
   sectionLabel,
 }: Props) {
-  const { user, logout } = useAuth();
+  const { user, logout, refresh } = useAuth();
   const categorySchema = useCategorySchema();
   const isAdminView = useAdminView();
 
@@ -57,6 +60,7 @@ export function PageShell({
       history: () => nav.goToHistory(),
       reports: nav.goToReports,
       inventory: () => nav.goToInventory(),
+      leads: nav.goToLeads,
       help: nav.goToHelp,
     };
     return (
@@ -118,9 +122,7 @@ export function PageShell({
           <div className="py-4 flex flex-col gap-4">
             <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
               <div className="flex items-start gap-4 min-w-0">
-                <div className="w-11 h-11 rounded-xl bg-gradient-to-br from-navy-800 to-navy-700 flex items-center justify-center text-lg shrink-0 shadow-elevation-1">
-                  📡
-                </div>
+                <DealerLogo dealershipId={dealerId} />
                 <div className="min-w-0">
                   {dealerName ? (
                     <h1 className="font-bold text-base sm:text-lg tracking-tight truncate">{dealerName}</h1>
@@ -151,7 +153,7 @@ export function PageShell({
             </button>
             <div className="flex items-center gap-2">
               {user && (
-                <span className="text-ink-faint text-xs hidden sm:inline truncate max-w-[12rem]">{user.email}</span>
+                <OperatorAvatar user={user} onAvatarUpdated={refresh} />
               )}
               {lastRefresh && !refreshing && (
                 <span className="text-navy-500 text-xs">Updated {lastRefresh.toLocaleTimeString()}</span>

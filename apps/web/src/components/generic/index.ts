@@ -5,3 +5,4 @@ export type { Chip } from './FilterChips.tsx';
 export { SummaryStrip } from './SummaryStrip.tsx';
 export type { SummaryItem } from './SummaryStrip.tsx';
 export { WizardModal } from './WizardModal.tsx';
+export { FileLibraryModal } from './FileLibraryModal.tsx';

@@ -7,6 +7,7 @@ import HistoryPage from './pages/HistoryPage.tsx';
 import PlatformQueuePage from './pages/PlatformQueuePage.tsx';
 import PlatformHistoryPage from './pages/PlatformHistoryPage.tsx';
 import InventoryPage from './pages/InventoryPage.tsx';
+import LeadsPage from './pages/LeadsPage.tsx';
 import KnowledgeBasePage from './pages/KnowledgeBasePage.tsx';
 import HomePage from './pages/HomePage.tsx';
 
@@ -83,6 +84,8 @@ function OperatorApp() {
         </Suspense>
       ) : page === 'inventory' ? (
         <InventoryPage dealerId={dealerId} nav={nav} activeTab={activeTab} />
+      ) : page === 'leads' ? (
+        <LeadsPage dealerId={dealerId} nav={nav} activeTab={activeTab} />
       ) : page === 'platforms' ? (
         <PlatformsPage
           dealerId={dealerId}

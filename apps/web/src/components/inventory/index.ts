@@ -14,13 +14,13 @@ export { InventoryDetailPanel } from './InventoryDetailPanel.tsx';
 export { VehicleDetailHeader } from './VehicleDetailHeader.tsx';
 export { VehicleMetricStrip } from './VehicleMetricStrip.tsx';
 export { VehiclePhotoWorkspace } from './VehiclePhotoWorkspace.tsx';
-export { MediaLibraryModal } from './MediaLibraryModal.tsx';
 export { VehicleFieldGroups } from './VehicleFieldGroups.tsx';
 export { VehicleReadinessChecklist } from './VehicleReadinessChecklist.tsx';
 export { VehiclePublishingSummary } from './VehiclePublishingSummary.tsx';
 export { VehiclePerformanceSummary } from './VehiclePerformanceSummary.tsx';
 export { PlatformMovementCompare } from './PlatformMovementCompare.tsx';
 export { MarketplacePreviewCard } from './MarketplacePreviewCard.tsx';
+export { MarketplacePublishPanel } from './MarketplacePublishPanel.tsx';
 export { MovementFilterBar } from './MovementFilterBar.tsx';
 export { InventorySortBar } from './InventorySortBar.tsx';
 export { InventoryAssetList } from './InventoryAssetList.tsx';
@@ -42,7 +42,7 @@ export {
   buildVehicleColumns,
 } from './inventoryConfig.tsx';
 export type { CleanupFilter, FilterChipDef } from './inventoryConfig.tsx';
-export { InventoryWorkspace, useInventoryWorkspace } from './InventoryWorkspace.tsx';
+export { InventoryWorkspace, useInventoryWorkspace, VehicleAddControls } from './InventoryWorkspace.tsx';
 export { VinEntryPanel } from './VinEntryPanel.tsx';
 export { MediaSlotGrid } from './MediaSlotGrid.tsx';
 export { InventoryRowCard } from './InventoryRowCard.tsx';

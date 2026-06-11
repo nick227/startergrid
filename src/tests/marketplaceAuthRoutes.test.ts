@@ -79,6 +79,28 @@ function makeLoginPrisma(user: ReturnType<typeof makeUser> | null): PrismaClient
   } as unknown as PrismaClient;
 }
 
+function makeRegisterPrisma(opts: {
+  existingUser?: ReturnType<typeof makeUser> | null;
+  createdUser?: ReturnType<typeof makeUser>;
+} = {}): PrismaClient {
+  const createdUser = opts.createdUser ?? makeUser();
+  return {
+    marketplaceUser: {
+      findUnique: async () => opts.existingUser ?? null,
+      create: async (args: { data: Record<string, unknown> }) => ({
+        ...createdUser,
+        email: args.data['email'] as string,
+        displayName: (args.data['displayName'] as string | null | undefined) ?? null,
+        passwordHash: args.data['passwordHash'] as string,
+      }),
+      update: async () => createdUser,
+    },
+    marketplaceSession: {
+      create: async () => ({ id: 'mp-sess-test-001' }),
+    },
+  } as unknown as PrismaClient;
+}
+
 function makeLogoutPrisma(): PrismaClient {
   return {
     marketplaceSession: {
@@ -94,6 +116,93 @@ function makeMePrisma(sessionRow: ReturnType<typeof makeSessionRow> | null): Pri
     },
   } as unknown as PrismaClient;
 }
+
+// ── POST /api/marketplace/auth/register ──────────────────────────────────────
+
+describe('POST /api/marketplace/auth/register', () => {
+  it('returns 200 with consumer identity and sets mp_session cookie', async () => {
+    const app = buildApp(makeRegisterPrisma());
+    const res = await app.inject({
+      method: 'POST',
+      url: '/api/marketplace/auth/register',
+      payload: {
+        email: TEST_EMAIL,
+        password: TEST_PASSWORD,
+        displayName: 'Test Shopper',
+      },
+    });
+
+    assert.equal(res.statusCode, 200, `expected 200, got ${res.statusCode}: ${res.body}`);
+    const body = res.json() as Record<string, unknown>;
+    assert.equal(body['id'], USER_ID);
+    assert.equal(body['email'], TEST_EMAIL);
+    assert.equal(body['displayName'], 'Test Shopper');
+
+    const setCookie = res.headers['set-cookie'] as string | string[] | undefined;
+    const cookie = Array.isArray(setCookie) ? setCookie[0] : setCookie;
+    assert.ok(cookie?.startsWith('mp_session='));
+    assert.ok(cookie?.includes('HttpOnly'));
+  });
+
+  it('normalizes email to lowercase before persistence and response', async () => {
+    const app = buildApp(makeRegisterPrisma());
+    const res = await app.inject({
+      method: 'POST',
+      url: '/api/marketplace/auth/register',
+      payload: {
+        email: 'Shopper@Example.Local',
+        password: TEST_PASSWORD,
+      },
+    });
+
+    assert.equal(res.statusCode, 200);
+    const body = res.json() as Record<string, unknown>;
+    assert.equal(body['email'], 'shopper@example.local');
+  });
+
+  it('returns 409 when the email already exists', async () => {
+    const app = buildApp(makeRegisterPrisma({
+      existingUser: makeUser(),
+    }));
+    const res = await app.inject({
+      method: 'POST',
+      url: '/api/marketplace/auth/register',
+      payload: {
+        email: TEST_EMAIL,
+        password: TEST_PASSWORD,
+      },
+    });
+
+    assert.equal(res.statusCode, 409);
+    assert.deepEqual(res.json(), { error: 'An account with that email already exists' });
+  });
+
+  it('returns 400 on invalid email', async () => {
+    const app = buildApp(makeRegisterPrisma());
+    const res = await app.inject({
+      method: 'POST',
+      url: '/api/marketplace/auth/register',
+      payload: {
+        email: 'nope',
+        password: TEST_PASSWORD,
+      },
+    });
+    assert.equal(res.statusCode, 400);
+  });
+
+  it('returns 400 on short password', async () => {
+    const app = buildApp(makeRegisterPrisma());
+    const res = await app.inject({
+      method: 'POST',
+      url: '/api/marketplace/auth/register',
+      payload: {
+        email: TEST_EMAIL,
+        password: 'short',
+      },
+    });
+    assert.equal(res.statusCode, 400);
+  });
+});
 
 // ── POST /api/marketplace/auth/login — success ────────────────────────────────
 

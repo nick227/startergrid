@@ -8,7 +8,7 @@ import { toErrorMessage } from '../errors.ts';
 
 configureOpenApiClient();
 
-export type OperatorUser = OperatorIdentityResponse & { devBypass?: boolean };
+export type OperatorUser = OperatorIdentityResponse & { devBypass?: boolean, avatarUrl?: string };
 
 type UnauthorizedListener = () => void;
 const unauthorizedListeners = new Set<UnauthorizedListener>();
@@ -66,4 +66,20 @@ export async function logoutOperator(): Promise<void> {
   } catch {
     // Logout is idempotent — always clear local state.
   }
+}
+
+export async function uploadOperatorAvatar(file: File): Promise<{ avatarUrl: string }> {
+  const formData = new FormData();
+  formData.append('avatar', file);
+
+  const res = await fetch('/api/auth/avatar', {
+    method: 'POST',
+    body: formData,
+  });
+  
+  if (!res.ok) {
+    const data = await res.json().catch(() => ({}));
+    throw new Error(data.error || 'Failed to upload avatar');
+  }
+  return res.json();
 }

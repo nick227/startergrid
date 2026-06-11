@@ -1,4 +1,7 @@
 import { useState, useMemo, useEffect, lazy, Suspense } from 'react';
+import { useAsyncQuery } from '@/hooks/useAsyncQuery.ts';
+import { fetchAdminDashboard } from '@/lib/api/admin.ts';
+import { fetchDealers } from '@/lib/api/sdk.ts';
 import { AdminShell } from '@/components/operator/AdminShell.tsx';
 import { AdminViewContext } from '@/contexts/AdminViewContext.tsx';
 import { CategoryProvider } from '@/contexts/CategoryContext.tsx';
@@ -26,17 +29,6 @@ const LAZY_FALLBACK = <div className="surface-card-operator p-6"><Skeleton rows=
 
 type AdminSection = 'system' | 'dealers' | 'platforms' | 'triage' | 'blocked' | 'audit' | 'credentials' | 'insights';
 type OverviewTab = 'system' | 'dealers' | 'platforms' | 'triage' | 'audit' | 'insights';
-
-const TABS: { id: AdminSection; label: string }[] = [
-  { id: 'system',      label: 'System'      },
-  { id: 'dealers',     label: 'Dealers'     },
-  { id: 'platforms',   label: 'Platforms'   },
-  { id: 'triage',      label: 'Triage'      },
-  { id: 'insights',    label: 'Insights'    },
-  { id: 'blocked',     label: 'Blocked'     },
-  { id: 'audit',       label: 'Audit'       },
-  { id: 'credentials', label: 'Credentials' },
-];
 
 const SECTION_HASHES: Record<AdminSection, string> = {
   system:      '#/admin',
@@ -81,6 +73,7 @@ function buildAdminDealerNav(dealerId: string): OperatorNavHandlers {
     goToAccounts:       ()           => { window.location.hash = `${base}/platforms`; },
     goToInsights:       ()           => { window.location.hash = `${base}/reports`; },
     goToKnowledge:      ()           => { window.location.hash = `${base}/help`; },
+    goToLeads:          ()           => { window.location.hash = `${base}/leads`; },
     changeDealer:       ()           => { window.location.hash = '#/admin/dealers'; },
   };
 }
@@ -134,29 +127,103 @@ export default function AdminApp({
     : adminDealerPage === 'help'    ? 'help'
     : 'platforms';
 
+  // Data fetching
+  const { data, loading, error, reload }             = useAsyncQuery(() => fetchAdminDashboard(), []);
+  const { data: dealersData, loading: dealersLoading, error: dealersError } = useAsyncQuery(() => fetchDealers(), []);
+
+  const meta             = data?.meta;
+  const allDealers       = dealersData?.dealers ?? [];
+  const platformOverview = data?.platformOverview ?? [];
+  const dealerAttention  = data?.dealerAttention ?? [];
+  const recentEvents     = data?.recentEvents ?? [];
+  const criticalCount    = dealerAttention.filter(d => d.severity === 'critical').length;
+
+  const adminAction = (
+    <>
+      {meta && (
+        <span className="text-[10px] text-ink-faint font-mono hidden md:block">
+          {meta.cached ? 'cached' : 'live'} · {meta.durationMs}ms
+        </span>
+      )}
+      <a
+        href="#/help"
+        className="px-3 py-1.5 text-xs font-medium text-ink-faint hover:text-white border border-navy-700 hover:border-navy-600 rounded-md transition-all"
+      >
+        Knowledge Base
+      </a>
+      <button
+        type="button"
+        onClick={() => { window.location.hash = '#/admin/platform-credentials'; }}
+        className="btn-primary-operator"
+      >
+        Credential Validation
+      </button>
+      <button
+        type="button"
+        onClick={() => void reload()}
+        disabled={loading}
+        className="px-3 py-1.5 text-xs font-medium bg-navy-800 hover:bg-navy-700 text-silver-100 rounded-md transition-colors disabled:opacity-40"
+      >
+        {loading ? 'Refreshing…' : 'Refresh'}
+      </button>
+    </>
+  );
+
+  const TABS = [
+    { id: 'system'      as AdminSection, label: 'System Status',  count: null,                     alert: false },
+    { id: 'dealers'     as AdminSection, label: 'Dealerships',    count: allDealers.length || null, alert: false },
+    { id: 'platforms'   as AdminSection, label: 'Platforms',      count: platformOverview.length,   alert: false },
+    { id: 'triage'      as AdminSection, label: 'Dealer Triage',  count: dealerAttention.length,    alert: criticalCount > 0 },
+    { id: 'insights'    as AdminSection, label: 'Insights',       count: null,                      alert: false },
+    { id: 'blocked'     as AdminSection, label: 'Blocked',        count: null,                      alert: false },
+    { id: 'audit'       as AdminSection, label: 'Audit Log',      count: recentEvents.length,       alert: false },
+    { id: 'credentials' as AdminSection, label: 'Credentials',    count: null,                      alert: false },
+  ];
+
+  const activeTabId = showDealerDetail ? 'dealers' : section;
+
   const tabNav = (
     <nav className="flex overflow-x-auto">
-      {TABS.map(tab => (
+      {TABS.map(t => (
         <button
-          key={tab.id}
+          key={t.id}
           type="button"
-          onClick={() => navigate(tab.id)}
-          className={`px-4 py-2.5 text-xs font-semibold whitespace-nowrap border-b-2 transition-colors shrink-0 ${
-            section === tab.id
+          onClick={() => navigate(t.id)}
+          className={`px-5 py-3 text-sm font-semibold whitespace-nowrap border-b-2 transition-colors flex items-center gap-2 shrink-0 ${
+            activeTabId === t.id
               ? 'border-orange-500 text-white'
-              : 'border-transparent text-silver-400 hover:text-silver-200'
+              : 'border-transparent text-silver-400 hover:text-silver-200 hover:border-silver-600'
           }`}
         >
-          {tab.label}
+          <span className={t.alert && activeTabId !== t.id ? 'text-status-error-text' : ''}>{t.label}</span>
+          {t.count !== null && (
+            <span className={`px-1.5 py-0.5 rounded text-[10px] font-mono ${
+              t.alert
+                ? 'bg-status-error-bg text-status-error-text'
+                : activeTabId === t.id
+                ? 'bg-navy-800 text-silver-300'
+                : 'bg-navy-800 text-silver-400'
+            }`}>
+              {t.count}
+            </span>
+          )}
         </button>
       ))}
     </nav>
   );
 
   return (
-    <AdminShell nav={tabNav}>
+    <AdminShell nav={tabNav} action={adminAction}>
       {showOverview && (
-        <AdminOverviewPage />
+        <AdminOverviewPage
+          activeTab={section}
+          data={data}
+          loading={loading}
+          error={error}
+          dealersData={dealersData}
+          dealersLoading={dealersLoading}
+          dealersError={dealersError}
+        />
       )}
 
       {showDealerDetail && adminNav && (

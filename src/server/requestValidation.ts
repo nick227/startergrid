@@ -241,6 +241,15 @@ export const marketplaceLoginSchema = z.object({
 
 export type MarketplaceLoginBody = z.infer<typeof marketplaceLoginSchema>;
 
+// operationId: marketplaceRegister
+export const marketplaceRegisterSchema = z.object({
+  email:       z.string().trim().email().max(255),
+  password:    z.string().min(8).max(128),
+  displayName: optionalText(160),
+}).strict();
+
+export type MarketplaceRegisterBody = z.infer<typeof marketplaceRegisterSchema>;
+
 // ── VIN / Inventory schemas ───────────────────────────────────────────────────
 
 // operationId: decodeVin

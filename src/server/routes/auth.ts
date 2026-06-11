@@ -112,4 +112,49 @@ export function registerAuthRoutes(app: FastifyInstance, prisma: PrismaClient): 
       throw err;
     }
   });
+
+  // POST /api/auth/avatar
+  app.post('/api/auth/avatar', async (request, reply) => {
+    const rawToken = parseCookieHeader(
+      request.headers['cookie'] as string | undefined,
+      'op_session'
+    );
+    if (!rawToken) {
+      return reply.status(401).send({ error: 'Operator authentication required' });
+    }
+    
+    let identity;
+    try {
+      identity = await getOperatorFromSessionToken(prisma, rawToken);
+    } catch (err) {
+      return reply.status(401).send({ error: 'Operator authentication required' });
+    }
+
+    type MultipartPart = { type: string; fieldname: string; file: NodeJS.ReadableStream; resume(): void; mimetype: string };
+    const parts = (request as unknown as { parts(): AsyncIterable<MultipartPart> }).parts();
+    let fileStream: NodeJS.ReadableStream | null = null;
+    let mimeType = '';
+
+    for await (const part of parts) {
+      if (part.type === 'file' && part.fieldname === 'avatar') {
+        fileStream = part.file;
+        mimeType = part.mimetype;
+        break;
+      }
+    }
+
+    if (!fileStream) {
+      return reply.status(400).send({ error: 'No avatar file provided' });
+    }
+
+    const { fileUploadService } = await import('../../services/storage/fileUploadService.js');
+    const url = await fileUploadService.uploadFile(fileStream, mimeType);
+
+    const updated = await prisma.operatorAccount.update({
+      where: { id: identity.id },
+      data: { avatarUrl: url }
+    });
+
+    return reply.send({ avatarUrl: updated.avatarUrl });
+  });
 }

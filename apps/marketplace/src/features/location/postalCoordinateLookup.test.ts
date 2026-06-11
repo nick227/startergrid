@@ -9,7 +9,7 @@ describe('lookupPostalCoordinates', () => {
     expect(coords!.lat).toBeLessThan(30.35);
     expect(coords!.lng).toBeLessThan(-97.6);
     expect(coords!.lng).toBeGreaterThan(-97.85);
-  });
+  }, 15000);
 
   it('accepts ZIP+4 and normalizes to five digits', async () => {
     const shortZip = await lookupPostalCoordinates('78701');

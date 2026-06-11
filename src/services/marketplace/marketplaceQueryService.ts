@@ -44,7 +44,17 @@ import {
 //   1. Not sold (soldAt IS NULL)
 //   2. Not removed (removedAt IS NULL)
 //   3. Has a price set (priceCents > 0)
+//   4. Has an ACTIVE MarketplaceListing for consumer-marketplace (explicit publish gate)
 // Dealer-level suspension is deferred — DealershipProfile has no dealerStatus field yet.
+
+const CONSUMER_MARKETPLACE_SLUG = 'consumer-marketplace';
+
+// Added to every vehicle query so only explicitly published vehicles appear.
+const PUBLISHED_LISTING_GATE: Prisma.VehicleWhereInput = {
+  marketplaceListings: {
+    some: { platformSlug: CONSUMER_MARKETPLACE_SLUG, status: 'ACTIVE' },
+  },
+};
 
 const MAX_CARD_IMAGES = 8;
 const DEFAULT_FEED_LIMIT = 24;
@@ -477,6 +487,7 @@ function buildMarketplaceWhere(filters: MarketplaceListFilters): Prisma.VehicleW
     soldAt:     null,
     removedAt:  null,
     priceCents: priceFilter,
+    ...PUBLISHED_LISTING_GATE,
   };
 
   let dealershipWhere: Prisma.DealershipProfileWhereInput | undefined;
@@ -759,7 +770,7 @@ export async function getMarketplaceVehicle(
   category?: BusinessCategory,
 ): Promise<MarketplaceVehicleDetailResponse | null> {
   const row = await prisma.vehicle.findFirst({
-    where:  { id: listingId, soldAt: null, removedAt: null, priceCents: { gt: 0 } },
+    where:  { id: listingId, soldAt: null, removedAt: null, priceCents: { gt: 0 }, ...PUBLISHED_LISTING_GATE },
     select: VEHICLE_DETAIL_SELECT,
   });
   if (!row) return null;
@@ -794,7 +805,7 @@ export async function getMarketplaceFavoriteCards(
 
   const [availableRows, unavailableRows] = await Promise.all([
     prisma.vehicle.findMany({
-      where:   { ...baseWhere, soldAt: null, removedAt: null, priceCents: { gt: 0 } },
+      where:   { ...baseWhere, soldAt: null, removedAt: null, priceCents: { gt: 0 }, ...PUBLISHED_LISTING_GATE },
       select:  VEHICLE_CARD_SELECT,
       orderBy: [{ createdAt: 'desc' }, { id: 'asc' }],
     }),
@@ -830,7 +841,7 @@ export async function getMarketplaceDealerIndex(
   if (category && dealer.businessCategory !== category) return null;
 
   const rows = await prisma.vehicle.findMany({
-    where: { dealershipId: dealerId, soldAt: null, removedAt: null, priceCents: { gt: 0 } },
+    where: { dealershipId: dealerId, soldAt: null, removedAt: null, priceCents: { gt: 0 }, ...PUBLISHED_LISTING_GATE },
     select:  VEHICLE_CARD_SELECT,
     orderBy: [{ createdAt: 'desc' }, { id: 'asc' }],
   });

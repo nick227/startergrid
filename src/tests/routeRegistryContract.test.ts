@@ -42,6 +42,7 @@ function registryClassForGroup(group: string): string {
 
 /** OpenAPI x-route-classification per marketplace auth route (registry groups by mp_session domain). */
 const MARKETPLACE_AUTH_ROUTE_CLASS: Record<string, string> = {
+  'POST /api/marketplace/auth/register': 'public',
   'POST /api/marketplace/auth/login': 'public',
   'POST /api/marketplace/auth/logout': 'public',
   'GET /api/marketplace/auth/me': 'marketplace-auth',

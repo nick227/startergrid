@@ -14,9 +14,8 @@ import { Banner } from '@/components/ui';
 import { InfoButton } from '@/components/docs';
 import { BulkActionBar } from '@/components/generic';
 import {
-  IngressPanel,
+  VehicleAddControls,
   BenchmarkFreshnessBar,
-  InventoryWalkthroughBanner,
   bulkEditFieldDefs,
   applyCleanupFilter,
   InventoryDataGrid,
@@ -77,7 +76,6 @@ export default function InventoryPage({ dealerId, nav, activeTab }: Props) {
   useEffect(() => {
     if (route.assetRef) setSearch(route.assetRef);
   }, [route.assetRef]);
-  const [latestIngestRunId, setLatestIngestRunId] = useState<string | null>(null);
 
   const perf = useAsyncQuery(() => fetchVehiclePerformanceList(dealerId), [dealerId]);
   const platformPerf = useAsyncQuery(() => fetchPlatformPerformance(dealerId), [dealerId]);
@@ -143,7 +141,16 @@ export default function InventoryPage({ dealerId, nav, activeTab }: Props) {
         const parts = sortKey.split('.');
         let valA: any = a;
         let valB: any = b;
-        for (const p of parts) { valA = valA?.[p]; valB = valB?.[p]; }
+        for (const p of parts) { 
+          valA = valA == null ? undefined : valA[p]; 
+          valB = valB == null ? undefined : valB[p]; 
+        }
+        
+        // Push undefined/null to bottom
+        if (valA == null && valB != null) return 1;
+        if (valB == null && valA != null) return -1;
+        if (valA == null && valB == null) return 0;
+
         if (typeof valA === 'string' && typeof valB === 'string') {
           return sortDirection === 'asc' ? valA.localeCompare(valB) : valB.localeCompare(valA);
         }
@@ -220,7 +227,13 @@ export default function InventoryPage({ dealerId, nav, activeTab }: Props) {
           subtitle={operatorCopy.inventory.subtitle}
         />
 
-        <InventoryWalkthroughBanner />
+        <VehicleAddControls
+          dealerId={dealerId}
+          onVehicleCreated={(newId) => {
+            handleIntakeRefresh();
+            setDetailId(newId);
+          }}
+        />
 
         {(hasPerformanceData(perf.data?.computedAt) || isBenchmarksUpdating(autoSync.data) || !hasPerformanceData(perf.data?.computedAt)) && (
           <BenchmarkFreshnessBar
@@ -231,17 +244,6 @@ export default function InventoryPage({ dealerId, nav, activeTab }: Props) {
             compact
           />
         )}
-
-        <IngressPanel
-          dealerId={dealerId}
-          latestRunId={latestIngestRunId}
-          onShowBlockedVehicles={() => setFilter('Blocked')}
-          onIngestComplete={(ingressRunId) => {
-            setLatestIngestRunId(ingressRunId);
-            handleIntakeRefresh();
-          }}
-          onSnapshotCommitted={handleIntakeRefresh}
-        />
 
         {!isEmpty && summary && summary.blocked > 0 && (
           <InlineCallout
@@ -284,10 +286,6 @@ export default function InventoryPage({ dealerId, nav, activeTab }: Props) {
 
         <InventoryWorkspace
           dealerId={dealerId}
-          onVehicleCreated={(newId) => {
-            handleIntakeRefresh();
-            setDetailId(newId);
-          }}
           tabCounts={{
             attention: summaryCounts.blocked,
           }}

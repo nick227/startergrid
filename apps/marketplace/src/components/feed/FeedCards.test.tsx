@@ -11,11 +11,11 @@ vi.mock('../../hooks/useTrackVisibleMarketplaceItem.ts', () => ({
   useTrackVisibleMarketplaceItem: () => ({ current: null }),
 }));
 
-vi.mock('../ui/FavoriteButton.tsx', () => ({ FavoriteButton: () => null }));
+vi.mock('../../features/favorites/FavoriteButton.tsx', () => ({ FavoriteButton: () => null }));
 vi.mock('../ui/FeedMediaCarousel.tsx', () => ({ FeedMediaCarousel: () => <div data-testid="carousel" /> }));
-vi.mock('../listings/NewArrivalBadge.tsx', () => ({ NewArrivalBadge: () => null }));
-vi.mock('../listings/PriceDropBadge.tsx', () => ({ PriceDropBadge: () => null }));
-vi.mock('../listings/FulfillmentBadge.tsx', () => ({ FulfillmentBadge: () => null }));
+vi.mock('../listing/badges/NewArrivalBadge.tsx', () => ({ NewArrivalBadge: () => null }));
+vi.mock('../listing/badges/PriceDropBadge.tsx', () => ({ PriceDropBadge: () => null }));
+vi.mock('../listing/badges/FulfillmentBadge.tsx', () => ({ FulfillmentBadge: () => null }));
 
 const vehicleCard = {
   listingId: 'v1',

@@ -1,17 +1,16 @@
 import { useEffect, useMemo, useRef, useState, useCallback } from 'react';
 import { queryErrorMessage } from '../hooks/useQuery.ts';
 import { useInfiniteMarketplaceFeed } from '../hooks/useInfiniteMarketplaceFeed.ts';
+import { useListingFilters } from '../hooks/useListingFilters.ts';
 import { usePageMeta } from '../hooks/usePageMeta.ts';
-import { formatResultCount } from '../lib/display.ts';
 import { saveListReturn } from '../lib/listReturn.ts';
 import { listHref, parseRoute, type ListQuery } from '../lib/routes.ts';
-import { fromListQuery, toListQuery, type ListingQuery, type ListingSort } from '../features/listings/listingQuery.ts';
+import { fromListQuery, toListQuery } from '../features/listings/listingQuery.ts';
+import type { ListingSort } from '../features/listings/listingQuery.ts';
 import { isConsumerMarketplaceLive } from '@auto-dealer/category-schemas';
 import { useCategorySchema, useCategorySlug } from '../contexts/CategoryContext.tsx';
-import { buildListingFilterConfig, isListingFilterEnabled, listingSearchAriaLabel, sanitizeListingQuery } from '../features/listings/listingFilterConfig.ts';
-import { sanitizeListingFacets } from '../features/listings/listingFacetConfig.ts';
+import { buildListingFilterConfig, listingSearchAriaLabel } from '../features/listings/listingFilterConfig.ts';
 import { isCompareEnabled } from '../features/listings/listingCompareFields.ts';
-import { hasListingFilters } from '../features/listings/listingFilterChips.ts';
 import { buildListingSortOptions } from '../features/listings/listingSortOptions.ts';
 import { PageShell } from '../components/layout/PageShell.tsx';
 import { PageHeader } from '../components/ui/PageHeader.tsx';
@@ -19,6 +18,7 @@ import { ListingFilterBar } from '../components/listings/ListingFilterBar.tsx';
 import { ActiveListingFilterChips } from '../components/listings/ActiveListingFilterChips.tsx';
 import { NoResultsRelaxation } from '../components/listings/NoResultsRelaxation.tsx';
 import { SavedSearchesPanel } from '../components/listings/SavedSearchesPanel.tsx';
+import { FeedResultsToolbar } from '../components/listings/FeedResultsToolbar.tsx';
 import { ListingGrid, type ViewMode } from '../components/ui/ListingGrid.tsx';
 import { SectionCard } from '../components/ui/SectionCard.tsx';
 import { ErrorState } from '../components/ui/ErrorState.tsx';
@@ -34,12 +34,7 @@ import { GeoNoResultsRelaxation } from '../components/listings/GeoNoResultsRelax
 import { isGeoRadiusSearchActive } from '../features/location/listingGeoRelaxation.ts';
 import { saveBuyerLocationRadius } from '../features/location/buyerLocation.ts';
 import { useBuyerLocation } from '../features/location/useBuyerLocation.ts';
-import {
-  defaultAvailabilityFilter,
-  isAvailabilityFilterEnabled,
-} from '../features/availability/listingAvailabilityFilter.ts';
 import { pickNewArrivalCards } from '../features/listings/listingNewArrivals.ts';
-import type { MarketplaceAvailabilityFilter } from '@auto-dealer/category-schemas';
 
 type Props = { initialQuery?: ListQuery };
 
@@ -50,57 +45,25 @@ export default function ListingListPage({ initialQuery = {} }: Props) {
   const consumerLive = isConsumerMarketplaceLive(schema);
   const initial = useMemo(() => fromListQuery(initialQuery), [initialQuery]);
 
-  const [q, setQ] = useState(initial.q ?? '');
-  const [brand, setBrand] = useState(initial.brand ?? '');
-  const [model, setModel] = useState(initial.model ?? '');
-  const [condition, setCondition] = useState<ListingQuery['condition']>(initial.condition);
-  const [minPrice, setMinPrice] = useState(formatMoneyInput(initial.priceMin));
-  const [maxPrice, setMaxPrice] = useState(formatMoneyInput(initial.priceMax));
-  const [maxUsage, setMaxUsage] = useState(formatNumberInput(initial.usageMax));
-  const [minYear, setMinYear] = useState(formatNumberInput(initial.yearMin));
-  const [maxYear, setMaxYear] = useState(formatNumberInput(initial.yearMax));
-  const [sellerName, setSellerName] = useState(initial.sellerName ?? '');
-  const [facetValues, setFacetValues] = useState<Record<string, string>>(initial.facets ?? {});
-  const [sortBy, setSortBy] = useState<ListingSort | undefined>(initial.sortBy);
-  const [availability, setAvailability] = useState<MarketplaceAvailabilityFilter>(
-    () => initial.availability ?? defaultAvailabilityFilter(),
-  );
-  const showAvailabilityFilter = isAvailabilityFilterEnabled();
-  const [focusToken, setFocusToken] = useState(0);
+  const filters = useListingFilters(initial, filterConfig, schema);
+  const { listingQuery, hasActiveFilters, resetFilters, applyListingQuery } = filters;
+
   const [viewMode, setViewMode] = useState<ViewMode>(() => {
     try { return (sessionStorage.getItem('mp:viewMode') as ViewMode) || 'grid'; } catch { return 'grid'; }
   });
   const [quickViewListingId, setQuickViewListingId] = useState<string | null>(null);
   const [quickViewOpen, setQuickViewOpen] = useState(false);
-  const [filtersOpen, setFiltersOpen] = useState(() => hasListingFilters(initial));
+  const [filtersOpen, setFiltersOpen] = useState(() => hasActiveFilters);
   const [locationOpen, setLocationOpen] = useState(false);
   const [savedSearchesOpen, setSavedSearchesOpen] = useState(false);
 
-  const sortOptions = useMemo(() => buildListingSortOptions(filterConfig, Boolean(q.trim())), [filterConfig, q]);
+  const sortOptions = useMemo(
+    () => buildListingSortOptions(filterConfig, Boolean(filters.q.trim())),
+    [filterConfig, filters.q],
+  );
   const sentinelRef = useRef<HTMLDivElement | null>(null);
 
-  usePageMeta(
-    `Browse ${schema.asset.plural}`,
-    schema.marketplace.tagline,
-  );
-
-  const listingQuery = useMemo<ListingQuery>(() => sanitizeListingQuery({
-    q: q.trim() || undefined,
-    brand: brand.trim() || undefined,
-    sellerName: isListingFilterEnabled(filterConfig, 'sellerName')
-      ? sellerName.trim() || undefined
-      : undefined,
-    model: model.trim() || undefined,
-    condition,
-    priceMin: dollarsToCents(minPrice),
-    priceMax: dollarsToCents(maxPrice),
-    usageMax: parseNonNegative(maxUsage),
-    yearMin: parseNonNegative(minYear),
-    yearMax: parseNonNegative(maxYear),
-    facets: sanitizeListingFacets(schema, facetValues),
-    sortBy,
-    availability,
-  }, filterConfig), [availability, brand, condition, facetValues, filterConfig, maxPrice, maxUsage, maxYear, minPrice, minYear, model, q, schema, sellerName, sortBy]);
+  usePageMeta(`Browse ${schema.asset.plural}`, schema.marketplace.tagline);
 
   const buyerLocation = useBuyerLocation();
   const feed = useInfiniteMarketplaceFeed(listingQuery, buyerLocation.geoApiParams);
@@ -108,9 +71,7 @@ export default function ListingListPage({ initialQuery = {} }: Props) {
   useEffect(() => {
     saveListReturn(slug, listingQuery);
     const target = listHref(slug, toListQuery(listingQuery));
-    if (window.location.hash !== target) {
-      window.location.hash = target.slice(1);
-    }
+    if (window.location.hash !== target) window.location.hash = target.slice(1);
   }, [listingQuery, slug]);
 
   useEffect(() => {
@@ -121,14 +82,15 @@ export default function ListingListPage({ initialQuery = {} }: Props) {
     }
     window.addEventListener('hashchange', syncFromHash);
     return () => window.removeEventListener('hashchange', syncFromHash);
-  }, []);
+  }, [applyListingQuery]);
 
   useEffect(() => {
     const node = sentinelRef.current;
     if (!node || !feed.hasMore) return;
-    const observer = new IntersectionObserver(entries => {
-      if (entries.some(entry => entry.isIntersecting)) feed.loadMore();
-    }, { rootMargin: '900px 0px' });
+    const observer = new IntersectionObserver(
+      entries => { if (entries.some(e => e.isIntersecting)) feed.loadMore(); },
+      { rootMargin: '900px 0px' },
+    );
     observer.observe(node);
     return () => observer.disconnect();
   }, [feed]);
@@ -138,54 +100,16 @@ export default function ListingListPage({ initialQuery = {} }: Props) {
     try { sessionStorage.setItem('mp:viewMode', mode); } catch { /* ignore */ }
   }, []);
 
-  function resetFilters() {
-    setQ('');
-    setBrand('');
-    setSellerName('');
-    setModel('');
-    setCondition(undefined);
-    setMinPrice('');
-    setMaxPrice('');
-    setMaxUsage('');
-    setMinYear('');
-    setMaxYear('');
-    setFacetValues({});
-    setAvailability(defaultAvailabilityFilter());
-    setFocusToken(t => t + 1);
-  }
-
-  function handleFacetChange(key: string, value: string | undefined) {
-    setFacetValues(prev => {
-      const next = { ...prev };
-      if (!value) delete next[key];
-      else next[key] = value;
-      return next;
-    });
-  }
-
-  function applyListingQuery(query: ListingQuery) {
-    setQ(query.q ?? '');
-    setBrand(query.brand ?? '');
-    setSellerName(query.sellerName ?? '');
-    setModel(query.model ?? '');
-    setCondition(query.condition);
-    setMinPrice(formatMoneyInput(query.priceMin));
-    setMaxPrice(formatMoneyInput(query.priceMax));
-    setMaxUsage(formatNumberInput(query.usageMax));
-    setMinYear(formatNumberInput(query.yearMin));
-    setMaxYear(formatNumberInput(query.yearMax));
-    setFacetValues(query.facets ?? {});
-    setSortBy(query.sortBy);
-    setAvailability(query.availability ?? defaultAvailabilityFilter());
-  }
-
-  const hasActiveFilters = hasListingFilters(listingQuery);
-  const hasItems = feed.items.length > 0;
   const locationSummary = buyerLocation.preference?.nationwide
     ? 'Nationwide'
     : buyerLocation.preference?.postalCode
       ? `${buyerLocation.preference.postalCode} · ${buyerLocation.preference.radiusMiles} mi`
       : 'Set location';
+
+  const hasItems = feed.items.length > 0;
+  const initialError = feed.error && !hasItems;
+  const appendError = feed.error && hasItems;
+
   const newArrivalCards = useMemo(() => {
     if (hasActiveFilters) return [];
     const cards = feed.items
@@ -193,18 +117,14 @@ export default function ListingListPage({ initialQuery = {} }: Props) {
       .map(item => item.vehicle);
     return pickNewArrivalCards(cards);
   }, [feed.items, hasActiveFilters]);
-  const initialError = feed.error && !hasItems;
-  const appendError = feed.error && hasItems;
-  const resolvedSort = sortOptions.some(option => option.value === sortBy)
-    ? (sortBy ?? 'newest')
+
+  const resolvedSort: ListingSort = sortOptions.some(o => o.value === filters.sortBy)
+    ? (filters.sortBy ?? 'newest')
     : 'newest';
 
   return (
     <PageShell>
-      <PageHeader
-        title={`Browse ${schema.asset.plural}`}
-        subtitle={schema.marketplace.tagline}
-      />
+      <PageHeader title={`Browse ${schema.asset.plural}`} subtitle={schema.marketplace.tagline} />
 
       {consumerLive && (
         <div className="mb-6 space-y-3 sm:mb-8">
@@ -218,17 +138,15 @@ export default function ListingListPage({ initialQuery = {} }: Props) {
                 <span className="mp-label">Search</span>
                 <input
                   type="search"
-                  value={q}
-                  onChange={e => setQ(e.target.value)}
+                  value={filters.q}
+                  onChange={e => filters.setQ(e.target.value)}
                   placeholder={`Search ${schema.asset.plural.toLowerCase()}...`}
                   className="mp-input"
                   autoComplete="off"
                 />
               </label>
               <div className="flex flex-wrap gap-2">
-                <button type="submit" className="mp-btn-primary">
-                  Search
-                </button>
+                <button type="submit" className="mp-btn-primary">Search</button>
                 <button
                   type="button"
                   className={filtersOpen ? 'mp-btn-secondary' : 'mp-btn-ghost border border-silver-200 bg-white'}
@@ -270,35 +188,35 @@ export default function ListingListPage({ initialQuery = {} }: Props) {
             <ListingFilterBar
               config={filterConfig}
               facets={filterConfig.facets}
-              facetValues={facetValues}
-              onFacetChange={handleFacetChange}
-              q={q}
-              brand={brand}
-              model={model}
-              condition={condition}
-              minPrice={minPrice}
-              maxPrice={maxPrice}
-              maxUsage={maxUsage}
-              minYear={minYear}
-              maxYear={maxYear}
-              sellerName={sellerName}
-              onQChange={setQ}
-              onBrandChange={setBrand}
-              onSellerNameChange={setSellerName}
-              onModelChange={setModel}
-              onConditionChange={setCondition}
-              onMinPriceChange={setMinPrice}
-              onMaxPriceChange={setMaxPrice}
-              onMaxUsageChange={setMaxUsage}
-              onMinYearChange={setMinYear}
-              onMaxYearChange={setMaxYear}
+              facetValues={filters.facetValues}
+              onFacetChange={filters.handleFacetChange}
+              q={filters.q}
+              brand={filters.brand}
+              model={filters.model}
+              condition={filters.condition}
+              minPrice={filters.minPrice}
+              maxPrice={filters.maxPrice}
+              maxUsage={filters.maxUsage}
+              minYear={filters.minYear}
+              maxYear={filters.maxYear}
+              sellerName={filters.sellerName}
+              onQChange={filters.setQ}
+              onBrandChange={filters.setBrand}
+              onSellerNameChange={filters.setSellerName}
+              onModelChange={filters.setModel}
+              onConditionChange={filters.setCondition}
+              onMinPriceChange={filters.setMinPrice}
+              onMaxPriceChange={filters.setMaxPrice}
+              onMaxUsageChange={filters.setMaxUsage}
+              onMinYearChange={filters.setMinYear}
+              onMaxYearChange={filters.setMaxYear}
               onSubmit={feed.reload}
               onClear={resetFilters}
               hasActiveFilters={hasActiveFilters}
-              focusToken={focusToken}
-              showAvailabilityFilter={showAvailabilityFilter}
-              availability={availability}
-              onAvailabilityChange={setAvailability}
+              focusToken={filters.focusToken}
+              showAvailabilityFilter={filters.showAvailabilityFilter}
+              availability={filters.availability}
+              onAvailabilityChange={filters.setAvailability}
               showSearch={false}
             />
           )}
@@ -306,22 +224,22 @@ export default function ListingListPage({ initialQuery = {} }: Props) {
       )}
 
       {consumerLive && (
-      <ActiveListingFilterChips
-        query={listingQuery}
-        config={filterConfig}
-        facets={filterConfig.facets}
-        onChange={applyListingQuery}
-        onClearAll={resetFilters}
-      />
+        <ActiveListingFilterChips
+          query={listingQuery}
+          config={filterConfig}
+          facets={filterConfig.facets}
+          onChange={applyListingQuery}
+          onClearAll={resetFilters}
+        />
       )}
 
       {consumerLive && savedSearchesOpen && (
-      <SavedSearchesPanel
-        categorySlug={slug}
-        config={filterConfig}
-        currentQuery={listingQuery}
-        onApply={applyListingQuery}
-      />
+        <SavedSearchesPanel
+          categorySlug={slug}
+          config={filterConfig}
+          currentQuery={listingQuery}
+          onApply={applyListingQuery}
+        />
       )}
 
       {feed.loadingInitial ? (
@@ -343,60 +261,30 @@ export default function ListingListPage({ initialQuery = {} }: Props) {
             onClearAll={resetFilters}
           />
         ) : (
-        <EmptyState
-          title={consumerLive
-            ? 'No listings match your search'
-            : `${schema.label} marketplace coming soon`}
-          description={consumerLive
-            ? 'Try different brand or model keywords, or reset filters to browse everything available.'
-            : `Listings for ${schema.label.toLowerCase()} will appear here when sellers join this marketplace.`}
-          actionLabel={hasActiveFilters ? 'Reset filters' : undefined}
-          onAction={hasActiveFilters ? resetFilters : undefined}
-        />
+          <EmptyState
+            title={consumerLive
+              ? 'No listings match your search'
+              : `${schema.label} marketplace coming soon`}
+            description={consumerLive
+              ? 'Try different brand or model keywords, or reset filters to browse everything available.'
+              : `Listings for ${schema.label.toLowerCase()} will appear here when sellers join this marketplace.`}
+            actionLabel={hasActiveFilters ? 'Reset filters' : undefined}
+            onAction={hasActiveFilters ? resetFilters : undefined}
+          />
         )
       ) : (
         <>
           <NewArrivalsRail slug={slug} cards={newArrivalCards} />
 
-          <div className="mb-4 flex flex-wrap items-center justify-between gap-3 sm:mb-5">
-            <p className="text-sm font-medium text-slate-600">
-              {formatResultCount(feed.totalEstimate, schema.asset.singular)}
-            </p>
-            <div className="flex items-center gap-3">
-              <label className="flex items-center gap-2 text-sm">
-                <span className="mp-label">Sort</span>
-                <select
-                  value={resolvedSort}
-                  onChange={e => setSortBy((e.target.value as ListingSort) || undefined)}
-                  className="mp-input py-1"
-                >
-                  {sortOptions.map(option => (
-                    <option key={option.value} value={option.value}>{option.label}</option>
-                  ))}
-                </select>
-              </label>
-              <div className="flex rounded-lg border border-silver-200 overflow-hidden" role="group" aria-label="View mode">
-                <button
-                  type="button"
-                  onClick={() => toggleViewMode('grid')}
-                  aria-pressed={viewMode === 'grid'}
-                  className={['px-2.5 py-1.5 text-sm transition', viewMode === 'grid' ? 'bg-navy-700 text-white' : 'bg-white text-ink-muted hover:bg-surface-inset'].join(' ')}
-                  aria-label="Grid view"
-                >
-                  ⊞
-                </button>
-                <button
-                  type="button"
-                  onClick={() => toggleViewMode('list')}
-                  aria-pressed={viewMode === 'list'}
-                  className={['px-2.5 py-1.5 text-sm transition border-l border-silver-200', viewMode === 'list' ? 'bg-navy-700 text-white' : 'bg-white text-ink-muted hover:bg-surface-inset'].join(' ')}
-                  aria-label="List view"
-                >
-                  ☰
-                </button>
-              </div>
-            </div>
-          </div>
+          <FeedResultsToolbar
+            totalEstimate={feed.totalEstimate}
+            singular={schema.asset.singular}
+            sortOptions={sortOptions}
+            resolvedSort={resolvedSort}
+            onSortChange={filters.setSortBy}
+            viewMode={viewMode}
+            onViewModeChange={toggleViewMode}
+          />
 
           <ListingGrid viewMode={viewMode}>
             {feed.items.map((item, index) => (
@@ -405,10 +293,7 @@ export default function ListingListPage({ initialQuery = {} }: Props) {
                 item={item}
                 index={index}
                 compact={viewMode === 'list'}
-                onQuickView={(listingId) => {
-                  setQuickViewListingId(listingId);
-                  setQuickViewOpen(true);
-                }}
+                onQuickView={listingId => { setQuickViewListingId(listingId); setQuickViewOpen(true); }}
               />
             ))}
           </ListingGrid>
@@ -419,7 +304,11 @@ export default function ListingListPage({ initialQuery = {} }: Props) {
 
           {appendError && (
             <div className="mt-8">
-              <ErrorState message={queryErrorMessage(feed.error)} onRetry={feed.retry} title={`Could not load more ${schema.asset.plural}`} />
+              <ErrorState
+                message={queryErrorMessage(feed.error)}
+                onRetry={feed.retry}
+                title={`Could not load more ${schema.asset.plural}`}
+              />
             </div>
           )}
 
@@ -434,6 +323,7 @@ export default function ListingListPage({ initialQuery = {} }: Props) {
           <RecentlyViewedRail categorySlug={slug} />
         </>
       )}
+
       {consumerLive && isCompareEnabled(filterConfig) && (
         <CompareBar categorySlug={slug} config={filterConfig} />
       )}
@@ -445,23 +335,4 @@ export default function ListingListPage({ initialQuery = {} }: Props) {
       />
     </PageShell>
   );
-}
-
-function parseNonNegative(value: string): number | undefined {
-  if (!value.trim()) return undefined;
-  const parsed = Number(value);
-  return Number.isFinite(parsed) && parsed >= 0 ? parsed : undefined;
-}
-
-function dollarsToCents(value: string): number | undefined {
-  const dollars = parseNonNegative(value);
-  return dollars == null ? undefined : Math.round(dollars * 100);
-}
-
-function formatMoneyInput(cents: number | undefined): string {
-  return cents == null ? '' : String(Math.round(cents / 100));
-}
-
-function formatNumberInput(value: number | undefined): string {
-  return value == null ? '' : String(value);
 }

@@ -2,6 +2,8 @@
 
 This component tree is being migrated toward a layered marketplace UI system. New components should use these folders instead of adding to the legacy `ui`, `listings`, or `vdp` folders.
 
+> Future dev note: if you are about to add a component to `ui`, `listings`, or `vdp`, pause and choose a new-system folder instead. Those legacy folders should shrink over time; new work should make the tree easier to reason about, not keep the old junk drawer alive.
+
 ## Folders
 
 - `core`: low-level reusable UI primitives. No marketplace API, route, auth, category, listing, or feature-store imports.
@@ -26,4 +28,3 @@ Prefer new imports from barrels for new work:
 ```ts
 import { Badge, EmptyState } from '../components/core';
 ```
-

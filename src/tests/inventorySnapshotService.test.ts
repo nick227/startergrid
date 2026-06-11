@@ -115,6 +115,7 @@ describe('dbDealershipToPayload', () => {
     primaryContact: { name: 'Avery Morgan', email: 'avery@example.com', phone: '+19725550184' },
     inventorySize: 64,
     desiredChannels: ['google-vehicle-ads', 'meta-automotive-ads'],
+    logoUrl: null,
     documents: null,
     createdAt: new Date('2026-01-01'),
     updatedAt: new Date('2026-01-01')

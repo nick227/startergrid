@@ -32,6 +32,7 @@ export type { MarketplaceLogoutResponse } from './models/MarketplaceLogoutRespon
 export { MarketplaceMediaItem } from './models/MarketplaceMediaItem';
 export { MarketplaceNotice } from './models/MarketplaceNotice';
 export type { MarketplaceNoticeFeedItem } from './models/MarketplaceNoticeFeedItem';
+export type { MarketplaceRegisterRequest } from './models/MarketplaceRegisterRequest';
 export type { MarketplaceSitesResponse } from './models/MarketplaceSitesResponse';
 export { MarketplaceSiteSummary } from './models/MarketplaceSiteSummary';
 export type { MarketplaceUnavailableFavorite } from './models/MarketplaceUnavailableFavorite';

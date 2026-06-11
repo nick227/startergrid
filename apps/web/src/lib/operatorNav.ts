@@ -1,4 +1,4 @@
-export type OperatorTab = 'home' | 'platforms' | 'queue' | 'history' | 'reports' | 'inventory' | 'help';
+export type OperatorTab = 'home' | 'platforms' | 'queue' | 'history' | 'reports' | 'inventory' | 'leads' | 'help';
 
 import type { RowNavScope } from './rowNavScope.ts';
 
@@ -9,6 +9,7 @@ export type OperatorNavHandlers = {
   goToHistory: (scope?: RowNavScope) => void;
   goToReports: () => void;
   goToInventory: (scope?: RowNavScope) => void;
+  goToLeads: () => void;
   goToHelp: () => void;
   goToPlatformDetail: (platformSlug: string, scope?: RowNavScope) => void;
   goToPlatformQueue: (platformSlug: string, scope?: RowNavScope) => void;
@@ -31,6 +32,7 @@ export const OPERATOR_TABS: Array<{ id: OperatorTab; label: string; short: strin
   { id: 'history', label: 'History', short: 'History' },
   { id: 'reports', label: 'Reports', short: 'Reports' },
   { id: 'inventory', label: 'Inventory', short: 'Inventory' },
+  { id: 'leads', label: 'Leads', short: 'Leads' },
   { id: 'help', label: 'Help', short: 'Help' },
 ];
 
@@ -40,6 +42,7 @@ export type OperatorPageSegment =
   | 'history'
   | 'reports'
   | 'inventory'
+  | 'leads'
   | 'help'
   | 'knowledge'
   | 'admin';
@@ -50,6 +53,7 @@ export function tabFromPage(page: OperatorPageSegment | null): OperatorTab {
   if (page === 'history') return 'history';
   if (page === 'reports') return 'reports';
   if (page === 'inventory') return 'inventory';
+  if (page === 'leads') return 'leads';
   if (page === 'help' || page === 'knowledge') return 'help';
   return 'platforms';
 }

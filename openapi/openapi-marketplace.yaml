@@ -35,6 +35,43 @@ tags:
     description: Consumer authentication (mp_session cookie)
 
 paths:
+  /api/marketplace/auth/register:
+    post:
+      tags: [MarketplaceAuth]
+      security: []
+      x-route-classification: public
+      operationId: marketplaceRegister
+      summary: Consumer registration
+      description: |
+        Creates a new consumer account, returns a safe consumer identity, and sets an
+        `mp_session` HttpOnly cookie (30 days). Duplicate email returns 409.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/MarketplaceRegisterRequest'
+      responses:
+        '200':
+          description: Registration successful
+          headers:
+            Set-Cookie:
+              description: mp_session HttpOnly cookie (30-day lifetime)
+              schema:
+                type: string
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MarketplaceUserIdentity'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '409':
+          description: Email already registered
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MarketplaceErrorResponse'
+
   /api/marketplace/auth/login:
     post:
       tags: [MarketplaceAuth]
@@ -889,6 +926,23 @@ components:
           type: string
           minLength: 8
           maxLength: 128
+
+    MarketplaceRegisterRequest:
+      type: object
+      required: [email, password]
+      additionalProperties: false
+      properties:
+        email:
+          type: string
+          format: email
+          maxLength: 255
+        password:
+          type: string
+          minLength: 8
+          maxLength: 128
+        displayName:
+          type: string
+          maxLength: 160
 
     MarketplaceUserIdentity:
       type: object

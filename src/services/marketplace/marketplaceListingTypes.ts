@@ -26,8 +26,10 @@ export type MarketplaceListingRecord = {
 
 export interface MarketplaceListingBridge {
   readonly platformSlug: string;
-  readonly oauthProvider: OAuthProvider;
-  readonly oauthClient: OAuthClient;
+  /** When false the route skips OAuth token fetch. Defaults to true. */
+  readonly requiresOAuth: boolean;
+  readonly oauthProvider?: OAuthProvider;
+  readonly oauthClient?: OAuthClient;
   upsertListing(token: string, pkg: ContentPackage, ctx: DistributionContext): Promise<ListingResult>;
   endListing(token: string, externalOfferId: string): Promise<void>;
 }

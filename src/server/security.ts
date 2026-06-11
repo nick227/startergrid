@@ -34,6 +34,7 @@ export const marketplaceRouteClassifications = {
   ],
   // Consumer auth — mp_session only; never guarded by op_session.
   marketplaceAuth: [
+    'POST /api/marketplace/auth/register',
     'POST /api/marketplace/auth/login',
     'POST /api/marketplace/auth/logout',
     'GET /api/marketplace/auth/me',
@@ -194,6 +195,7 @@ export async function requireOperator(
     email:           'dev@local',
     role:            'SUPER_ADMIN',
     dealerAccessIds: [],
+    avatarUrl:       null,
     devHeader:       true,
   };
   request.operator = ctx;

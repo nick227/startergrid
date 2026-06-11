@@ -30,6 +30,7 @@ const REGISTERED_MARKETPLACE_ROUTES = new Set([
   'GET    /api/marketplace/dealers/{dealerId}',
   'GET    /api/marketplace/dealers/{dealerId}/stats',
   // Consumer auth routes (Phase C2)
+  'POST   /api/marketplace/auth/register',
   'POST   /api/marketplace/auth/login',
   'POST   /api/marketplace/auth/logout',
   'GET    /api/marketplace/auth/me',

@@ -8,11 +8,36 @@ import type { MarketplaceFavoriteRemoveResponse } from '../models/MarketplaceFav
 import type { MarketplaceFavoritesResponse } from '../models/MarketplaceFavoritesResponse';
 import type { MarketplaceLoginRequest } from '../models/MarketplaceLoginRequest';
 import type { MarketplaceLogoutResponse } from '../models/MarketplaceLogoutResponse';
+import type { MarketplaceRegisterRequest } from '../models/MarketplaceRegisterRequest';
 import type { MarketplaceUserIdentity } from '../models/MarketplaceUserIdentity';
 import type { CancelablePromise } from '../core/CancelablePromise';
 import { OpenAPI } from '../core/OpenAPI';
 import { request as __request } from '../core/request';
 export class MarketplaceAuthService {
+    /**
+     * Consumer registration
+     * Creates a new consumer account, returns a safe consumer identity, and sets an
+     * `mp_session` HttpOnly cookie (30 days). Duplicate email returns 409.
+     *
+     * @returns MarketplaceUserIdentity Registration successful
+     * @throws ApiError
+     */
+    public static marketplaceRegister({
+        requestBody,
+    }: {
+        requestBody: MarketplaceRegisterRequest,
+    }): CancelablePromise<MarketplaceUserIdentity> {
+        return __request(OpenAPI, {
+            method: 'POST',
+            url: '/api/marketplace/auth/register',
+            body: requestBody,
+            mediaType: 'application/json',
+            errors: {
+                400: `Bad request — invalid query parameter value`,
+                409: `Email already registered`,
+            },
+        });
+    }
     /**
      * Consumer login
      * Accepts email + password. Returns a safe consumer identity and sets an

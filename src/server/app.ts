@@ -1,5 +1,9 @@
 import Fastify, { type FastifyInstance } from 'fastify';
 import cors from '@fastify/cors';
+import fastifyMultipart from '@fastify/multipart';
+import fastifyStatic from '@fastify/static';
+import path from 'path';
+import fs from 'fs';
 import type { PrismaClient } from '@prisma/client';
 import { registerAuthRoutes }        from './routes/auth.js';
 import { registerDealerRoutes }     from './routes/dealers.js';
@@ -19,6 +23,7 @@ import { registerMarketplaceListingRoutes }  from './routes/marketplaceListings.
 import { registerCatalogSyncRoutes }          from './routes/catalogSync.js';
 import { registerLeadSyncRoutes }             from './routes/leadSync.js';
 import { registerAdminRoutes }                from './routes/admin.js';
+import { registerDealerLeadsRoutes }          from './routes/dealerLeads.js';
 import { demoFeedPayload }          from '../fixtures/scenarios/connectedInventoryDemo.fixture.js';
 
 export function buildApp(prisma: PrismaClient): FastifyInstance {
@@ -29,6 +34,24 @@ export function buildApp(prisma: PrismaClient): FastifyInstance {
   app.register(cors, {
     origin: allowedOrigins.length > 0 ? allowedOrigins : false,
     credentials: true,
+  });
+
+  app.register(fastifyMultipart, {
+    limits: {
+      fileSize: 15 * 1024 * 1024, // 15MB limit
+      files: 20, // Max 20 files per request
+    }
+  });
+
+  const uploadDir = path.join(process.cwd(), 'uploads');
+  if (!fs.existsSync(uploadDir)) {
+    fs.mkdirSync(uploadDir, { recursive: true });
+  }
+
+  app.register(fastifyStatic, {
+    root: uploadDir,
+    prefix: '/uploads/',
+    decorateReply: false,
   });
 
   app.get('/health', async (_req, reply) => {
@@ -60,6 +83,7 @@ export function buildApp(prisma: PrismaClient): FastifyInstance {
   registerCatalogSyncRoutes(app, prisma);
   registerLeadSyncRoutes(app, prisma);
   registerAdminRoutes(app, prisma);
+  registerDealerLeadsRoutes(app, prisma);
 
   return app;
 }

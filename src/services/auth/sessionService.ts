@@ -7,6 +7,7 @@ export type OperatorIdentity = {
   id: string;
   email: string;
   role: OperatorRole;
+  avatarUrl: string | null;
   dealerAccessIds: string[]; // dealershipId values; empty for SUPER_ADMIN (global access)
 };
 
@@ -84,6 +85,7 @@ export async function getOperatorFromSessionToken(
     id: session.account.id,
     email: session.account.email,
     role: session.account.role,
+    avatarUrl: session.account.avatarUrl,
     dealerAccessIds: session.account.dealerAccess.map(d => d.dealershipId),
   };
 }

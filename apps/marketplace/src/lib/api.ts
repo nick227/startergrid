@@ -213,6 +213,20 @@ export function login(email: string, password: string): Promise<MarketplaceUserI
   return call(() => MarketplaceAuthService.marketplaceLogin({ requestBody: { email, password } }));
 }
 
+export function register(
+  email: string,
+  password: string,
+  displayName?: string,
+): Promise<MarketplaceUserIdentity> {
+  return call(() => MarketplaceAuthService.marketplaceRegister({
+    requestBody: {
+      email,
+      password,
+      ...(displayName?.trim() ? { displayName: displayName.trim() } : {}),
+    },
+  }));
+}
+
 export function logout(): Promise<void> {
   return call(() => MarketplaceAuthService.marketplaceLogout().then(() => undefined));
 }

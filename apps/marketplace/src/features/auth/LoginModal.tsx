@@ -3,7 +3,9 @@ import { useAuth } from '../../contexts/AuthContext.tsx';
 import { FetchError } from '../../lib/api.ts';
 
 export function LoginModal() {
-  const { login, loginModalOpen, closeLoginModal } = useAuth();
+  const { login, register, loginModalOpen, closeLoginModal } = useAuth();
+  const [mode, setMode] = useState<'login' | 'register'>('login');
+  const [displayName, setDisplayName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [submitting, setSubmitting] = useState(false);
@@ -15,6 +17,8 @@ export function LoginModal() {
       setError(null);
       emailRef.current?.focus();
     } else {
+      setMode('login');
+      setDisplayName('');
       setEmail('');
       setPassword('');
       setError(null);
@@ -28,10 +32,16 @@ export function LoginModal() {
     setError(null);
     setSubmitting(true);
     try {
-      await login(email.trim(), password);
+      if (mode === 'login') {
+        await login(email.trim(), password);
+      } else {
+        await register(email.trim(), password, displayName.trim());
+      }
     } catch (err) {
       if (err instanceof FetchError && err.status === 401) {
         setError('Email or password is incorrect.');
+      } else if (err instanceof FetchError && err.status === 409) {
+        setError('An account with that email already exists.');
       } else {
         setError('Something went wrong. Please try again.');
       }
@@ -55,7 +65,7 @@ export function LoginModal() {
       <div className="mp-card w-full max-w-sm">
         <div className="flex items-center justify-between border-b border-silver-200 px-5 py-4">
           <h2 id="login-modal-title" className="text-base font-semibold text-ink-heading">
-            Sign in to your account
+            {mode === 'login' ? 'Sign in to your account' : 'Create your account'}
           </h2>
           <button
             type="button"
@@ -70,10 +80,49 @@ export function LoginModal() {
         </div>
 
         <form onSubmit={handleSubmit} noValidate className="space-y-4 px-5 py-5">
+          <div className="grid grid-cols-2 gap-2 rounded-lg bg-silver-100 p-1">
+            <button
+              type="button"
+              className={`rounded-md px-3 py-2 text-sm font-medium ${mode === 'login' ? 'bg-white text-ink-heading shadow-sm' : 'text-ink-muted'}`}
+              onClick={() => {
+                setMode('login');
+                setError(null);
+              }}
+              disabled={submitting}
+            >
+              Sign in
+            </button>
+            <button
+              type="button"
+              className={`rounded-md px-3 py-2 text-sm font-medium ${mode === 'register' ? 'bg-white text-ink-heading shadow-sm' : 'text-ink-muted'}`}
+              onClick={() => {
+                setMode('register');
+                setError(null);
+              }}
+              disabled={submitting}
+            >
+              Create account
+            </button>
+          </div>
+
           {error && (
             <p role="alert" className="rounded-lg bg-red-50 px-3 py-2 text-sm text-red-700">
               {error}
             </p>
+          )}
+
+          {mode === 'register' && (
+            <label className="flex flex-col gap-1.5">
+              <span className="mp-label">Display name <span className="font-normal normal-case text-ink-faint">(optional)</span></span>
+              <input
+                type="text"
+                autoComplete="nickname"
+                value={displayName}
+                onChange={e => setDisplayName(e.target.value)}
+                className="mp-input"
+                disabled={submitting}
+              />
+            </label>
           )}
 
           <label className="flex flex-col gap-1.5">
@@ -108,7 +157,9 @@ export function LoginModal() {
             disabled={submitting || !email.trim() || !password}
             className="mp-btn-primary w-full"
           >
-            {submitting ? 'Signing in…' : 'Sign in'}
+            {submitting
+              ? (mode === 'login' ? 'Signing in…' : 'Creating account…')
+              : (mode === 'login' ? 'Sign in' : 'Create account')}
           </button>
         </form>
       </div>

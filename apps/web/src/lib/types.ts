@@ -141,6 +141,7 @@ export type DealerSummary = {
   id: string;
   legalName: string;
   dbaName: string | null;
+  logoUrl?: string | null;
   businessCategory: string;
   createdAt: string;
 };

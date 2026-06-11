@@ -29,6 +29,7 @@ The cleanup should reduce cognitive load for engineers in the same way the UI cl
 - **2026-06-11**: Began Phase 2. Moved listing badge implementations into `components/listing/badges` and left compatibility shims at the legacy `ui` and `listings` paths.
 - **2026-06-11**: Began Phase 3. Moved listing result implementations into `components/listing/results`, moved the geo no-results state to `features/location`, and left compatibility shims at legacy paths.
 - **2026-06-11**: Began Phase 5 ahead of card consolidation because it is lower risk. Moved stateful workflow UI for auth, favorites, compare, saved searches, lead capture, sharing, and reporting into feature folders with legacy shims.
+- **2026-06-11**: Began Phase 4 carefully. Moved card implementations into `components/listing/cards` with legacy shims. Deferred rails because recently viewed and similar listings include state/data-fetching behavior.
 
 ---
 

@@ -1,7 +1,7 @@
-import type { FastifyInstance } from 'fastify';
+import type { FastifyInstance, FastifyReply, FastifyRequest } from 'fastify';
 import type { PrismaClient } from '@prisma/client';
-import { validateBody, marketplaceLoginSchema } from '../requestValidation.js';
-import { verifyPassword } from '../../services/auth/passwordService.js';
+import { validateBody, marketplaceLoginSchema, marketplaceRegisterSchema } from '../requestValidation.js';
+import { hashPassword, verifyPassword } from '../../services/auth/passwordService.js';
 import {
   createMarketplaceSession,
   revokeMarketplaceSession,
@@ -31,14 +31,68 @@ function makeClearCookieHeader(): string {
   return `mp_session=; HttpOnly; SameSite=${sameSite}; Path=/api/marketplace; Max-Age=0${secure}`;
 }
 
+function normalizeEmail(email: string): string {
+  return email.trim().toLowerCase();
+}
+
+async function issueMarketplaceAuthResponse(
+  prisma: PrismaClient,
+  user: { id: string; email: string; displayName: string | null },
+  request: FastifyRequest,
+  reply: FastifyReply,
+) {
+  const rawToken = await createMarketplaceSession(prisma, user.id, {
+    ipAddress: request.ip ?? undefined,
+    userAgent: typeof request.headers['user-agent'] === 'string'
+      ? request.headers['user-agent']
+      : undefined,
+  });
+
+  prisma.marketplaceUser.update({
+    where: { id: user.id },
+    data:  { lastLoginAt: new Date() },
+  }).catch(() => {});
+
+  reply.header('Set-Cookie', makeSessionCookieHeader(rawToken));
+  return reply.status(200).send({
+    id:          user.id,
+    email:       user.email,
+    displayName: user.displayName,
+  });
+}
+
 export function registerMarketplaceAuthRoutes(app: FastifyInstance, prisma: PrismaClient): void {
+
+  // POST /api/marketplace/auth/register
+  app.post('/api/marketplace/auth/register', async (request, reply) => {
+    const parsed = validateBody(marketplaceRegisterSchema, request.body);
+    if (!parsed.ok) return reply.status(400).send({ error: parsed.error });
+
+    const email = normalizeEmail(parsed.data.email);
+    const existing = await prisma.marketplaceUser.findUnique({ where: { email } });
+    if (existing) {
+      return reply.status(409).send({ error: 'An account with that email already exists' });
+    }
+
+    const user = await prisma.marketplaceUser.create({
+      data: {
+        email,
+        passwordHash: await hashPassword(parsed.data.password),
+        displayName: parsed.data.displayName ?? null,
+        isActive: true,
+      },
+    });
+
+    return issueMarketplaceAuthResponse(prisma, user, request, reply);
+  });
 
   // POST /api/marketplace/auth/login
   app.post('/api/marketplace/auth/login', async (request, reply) => {
     const parsed = validateBody(marketplaceLoginSchema, request.body);
     if (!parsed.ok) return reply.status(400).send({ error: parsed.error });
 
-    const { email, password } = parsed.data;
+    const email = normalizeEmail(parsed.data.email);
+    const { password } = parsed.data;
 
     const user = await prisma.marketplaceUser.findUnique({ where: { email } });
 
@@ -51,25 +105,7 @@ export function registerMarketplaceAuthRoutes(app: FastifyInstance, prisma: Pris
       return reply.status(401).send({ error: 'Account is inactive' });
     }
 
-    const rawToken = await createMarketplaceSession(prisma, user.id, {
-      ipAddress: request.ip ?? undefined,
-      userAgent: typeof request.headers['user-agent'] === 'string'
-        ? request.headers['user-agent']
-        : undefined,
-    });
-
-    // Fire-and-forget lastLoginAt update — not in the critical response path.
-    prisma.marketplaceUser.update({
-      where: { id: user.id },
-      data:  { lastLoginAt: new Date() },
-    }).catch(() => {}); // eslint-disable-line
-
-    reply.header('Set-Cookie', makeSessionCookieHeader(rawToken));
-    return reply.status(200).send({
-      id:          user.id,
-      email:       user.email,
-      displayName: user.displayName,
-    });
+    return issueMarketplaceAuthResponse(prisma, user, request, reply);
   });
 
   // POST /api/marketplace/auth/logout

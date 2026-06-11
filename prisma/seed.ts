@@ -4,7 +4,7 @@ import { prisma } from '../src/lib/prisma.js';
 import { platformProfiles } from '../src/data/platformProfiles.js';
 import { seedPlatformProfileVersions, seedPristineDealer, seedTrailersDealer, seedBoatsDealer } from '../src/services/platform/seedService.js';
 import { seedPerformanceBenchmarkDemo } from '../src/services/performance/performanceDemoSeed.js';
-import { seedSuperAdmin } from '../src/services/auth/authSeedService.js';
+import { seedSuperAdmin, seedMarketplaceConsumer } from '../src/services/auth/authSeedService.js';
 
 async function main() {
   for (const platform of platformProfiles) {
@@ -63,6 +63,7 @@ async function main() {
   console.log(`Boats dealer ready: ${boatsDealerId}`);
 
   await seedSuperAdmin(prisma);
+  await seedMarketplaceConsumer(prisma);
 }
 
 main().finally(async () => prisma.$disconnect());

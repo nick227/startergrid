@@ -5,6 +5,7 @@ import { CredentialStore } from '../../services/platform/clients/CredentialStore
 import { MarketplaceListingStore } from '../../services/marketplace/MarketplaceListingStore.js';
 import { ContentPackageBuilder } from '../../services/distribution/ContentPackageBuilder.js';
 import { EbayListingBridge } from '../../services/marketplace/bridges/EbayListingBridge.js';
+import { ConsumerMarketplaceBridge } from '../../services/marketplace/bridges/ConsumerMarketplaceBridge.js';
 import type { MarketplaceListingBridge } from '../../services/marketplace/marketplaceListingTypes.js';
 
 type DealerSlugParams = { dealershipId: string; platformSlug: string };
@@ -16,9 +17,14 @@ function listingBaseUrl(): string {
 
 const BRIDGE_REGISTRY: Record<string, MarketplaceListingBridge> = {
   'ebay-motors': new EbayListingBridge(),
+  'consumer-marketplace': new ConsumerMarketplaceBridge(),
 };
 
-export const LISTING_BRIDGE_SLUGS = Object.freeze(new Set(Object.keys(BRIDGE_REGISTRY)));
+// Only external (OAuth-gated) bridges are included; the owned consumer-marketplace is excluded
+// from platform manifest consistency checks since it has no external platform profile.
+export const LISTING_BRIDGE_SLUGS = Object.freeze(
+  new Set(Object.entries(BRIDGE_REGISTRY).filter(([, b]) => b.requiresOAuth).map(([slug]) => slug))
+);
 
 export function registerMarketplaceListingRoutes(app: FastifyInstance, prisma: PrismaClient): void {
 
@@ -44,13 +50,16 @@ export function registerMarketplaceListingRoutes(app: FastifyInstance, prisma: P
       if (!vehicle || vehicle.dealershipId !== dealershipId)
         return reply.status(404).send({ error: 'Vehicle not found' });
 
-      let token: string;
-      try {
-        token = await CredentialStore.withFreshToken(
-          prisma, dealershipId, bridge.oauthProvider, bridge.oauthClient,
-        );
-      } catch {
-        return reply.status(402).send({ error: `${platformSlug} not connected — reconnect OAuth first` });
+      // OAuth-gated platforms require a connected token; owned platforms skip this step.
+      let token = '';
+      if (bridge.requiresOAuth) {
+        try {
+          token = await CredentialStore.withFreshToken(
+            prisma, dealershipId, bridge.oauthProvider!, bridge.oauthClient!,
+          );
+        } catch {
+          return reply.status(402).send({ error: `${platformSlug} not connected — reconnect OAuth first` });
+        }
       }
 
       const pkg = ContentPackageBuilder.fromVehicle(vehicle, {
@@ -86,7 +95,7 @@ export function registerMarketplaceListingRoutes(app: FastifyInstance, prisma: P
   );
 
   // DELETE /api/dealers/:dealershipId/platforms/:platformSlug/listings/:vehicleId
-  // Withdraws the eBay offer and marks the listing as ENDED.
+  // Withdraws the offer and marks the listing as ENDED.
   app.delete<{ Params: DealerSlugVehicleParams }>(
     '/api/dealers/:dealershipId/platforms/:platformSlug/listings/:vehicleId',
     async (request, reply) => {
@@ -101,13 +110,19 @@ export function registerMarketplaceListingRoutes(app: FastifyInstance, prisma: P
       if (!existing || existing.dealershipId !== dealershipId)
         return reply.status(404).send({ error: 'Listing not found' });
 
+      // Owned platforms (no OAuth) — just mark ended, no external API call needed.
+      if (!bridge.requiresOAuth) {
+        await MarketplaceListingStore.markEnded(prisma, vehicleId, platformSlug);
+        return reply.status(204).send();
+      }
+
       if (!existing.externalOfferId)
         return reply.status(409).send({ error: 'No external offer ID — nothing to withdraw' });
 
       let token: string;
       try {
         token = await CredentialStore.withFreshToken(
-          prisma, dealershipId, bridge.oauthProvider, bridge.oauthClient,
+          prisma, dealershipId, bridge.oauthProvider!, bridge.oauthClient!,
         );
       } catch {
         return reply.status(402).send({ error: `${platformSlug} not connected — reconnect OAuth first` });

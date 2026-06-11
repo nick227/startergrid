@@ -4,7 +4,7 @@ import { previewBulkVins, commitBulkVins } from '@/lib/api/sdk.ts';
 import type { BulkVinPreviewRow } from '@/lib/api/sdk.ts';
 import { VinEntryPanel } from './VinEntryPanel.tsx';
 
-type Tab = 'browse' | 'add' | 'attention' | 'sources' | 'recent' | 'sold';
+type Tab = 'browse' | 'attention' | 'recent' | 'sold';
 
 type WorkspaceContextValue = {
   dealerId: string;
@@ -22,9 +22,7 @@ export function useInventoryWorkspace() {
 
 const TABS: { key: Tab; label: string; icon: string }[] = [
   { key: 'browse',    label: 'Browse',           icon: '◻' },
-  { key: 'add',       label: 'Add / Import',      icon: '+' },
   { key: 'attention', label: 'Needs Attention',   icon: '!' },
-  { key: 'sources',   label: 'Sources',           icon: '⟳' },
   { key: 'recent',    label: 'Recently Changed',  icon: '✎' },
   { key: 'sold',      label: 'Sold / Removed',    icon: '✕' },
 ];
@@ -36,14 +34,10 @@ type Props = {
   browseContent?: ReactNode;
   /** Slot for the attention tab */
   attentionContent?: ReactNode;
-  /** Slot for the sources tab */
-  sourcesContent?: ReactNode;
   /** Slot for the recently changed tab */
   recentContent?: ReactNode;
   /** Slot for the sold/removed tab */
   soldContent?: ReactNode;
-  /** Called when a vehicle is created via VIN entry */
-  onVehicleCreated?: (vehicleId: string, stockNumber: string) => void;
   /** Badge counts for tab indicators */
   tabCounts?: Partial<Record<Tab, number>>;
 };
@@ -53,10 +47,8 @@ export function InventoryWorkspace({
   initialTab = 'browse',
   browseContent,
   attentionContent,
-  sourcesContent,
   recentContent,
   soldContent,
-  onVehicleCreated,
   tabCounts,
 }: Props) {
   const [activeTab, setTab] = useState<Tab>(initialTab);
@@ -102,16 +94,8 @@ export function InventoryWorkspace({
             <div>{browseContent ?? <EmptySlot>Browse your inventory here.</EmptySlot>}</div>
           )}
 
-          {activeTab === 'add' && (
-            <AddImportTab dealerId={dealerId} onVehicleCreated={onVehicleCreated} onCreatedGoToBrowse={() => setTab('browse')} />
-          )}
-
           {activeTab === 'attention' && (
             <div>{attentionContent ?? <EmptySlot>Vehicles needing attention will appear here.</EmptySlot>}</div>
-          )}
-
-          {activeTab === 'sources' && (
-            <div>{sourcesContent ?? <EmptySlot>Inventory source feeds and ingress logs appear here.</EmptySlot>}</div>
           )}
 
           {activeTab === 'recent' && (
@@ -133,20 +117,20 @@ function EmptySlot({ children }: { children: ReactNode }) {
   );
 }
 
-type AddImportTabProps = {
+export type VehicleAddControlsProps = {
   dealerId: string;
   onVehicleCreated?: (vehicleId: string, stockNumber: string) => void;
-  onCreatedGoToBrowse: () => void;
+  onCreatedGoToBrowse?: () => void;
 };
 
 type AddMode = 'vin' | 'bulk' | 'csv';
 
-function AddImportTab({ dealerId, onVehicleCreated, onCreatedGoToBrowse }: AddImportTabProps) {
+export function VehicleAddControls({ dealerId, onVehicleCreated, onCreatedGoToBrowse }: VehicleAddControlsProps) {
   const [mode, setMode] = useState<AddMode>('vin');
 
   const handleCreated = (vehicleId: string, stockNumber: string) => {
     onVehicleCreated?.(vehicleId, stockNumber);
-    onCreatedGoToBrowse();
+    onCreatedGoToBrowse?.();
   };
 
   return (
@@ -184,7 +168,7 @@ function AddImportTab({ dealerId, onVehicleCreated, onCreatedGoToBrowse }: AddIm
         <div className="p-4 bg-white border border-silver-200 rounded-xl">
           <h3 className="text-sm font-semibold text-ink-body mb-1">Bulk VIN paste</h3>
           <p className="text-xs text-ink-muted mb-3">Paste one VIN per line — up to 500 at a time.</p>
-          <BulkVinPane dealerId={dealerId} onCommitted={onCreatedGoToBrowse} />
+          <BulkVinPane dealerId={dealerId} onCommitted={() => onCreatedGoToBrowse?.()} />
         </div>
       )}
 

@@ -839,6 +839,25 @@ export async function addVehicleMedia(
   );
 }
 
+export async function uploadVehicleMedia(dealershipId: string, vehicleId: string, files: File[], slotKey?: string): Promise<{ media: VehicleMediaItem[] }> {
+  const formData = new FormData();
+  if (slotKey) {
+    formData.append('slotKey', slotKey);
+  }
+  for (const file of files) {
+    formData.append('files', file);
+  }
+
+  return catalogFetch<{ media: VehicleMediaItem[] }>(
+    `/api/dealers/${dealershipId}/inventory/vehicles/${vehicleId}/media/upload`,
+    { 
+      method: 'POST', 
+      body: formData,
+      // Do not set Content-Type; browser sets it with multipart boundary automatically
+    },
+  );
+}
+
 export async function deleteVehicleMedia(
   dealershipId: string,
   vehicleId: string,
@@ -848,6 +867,22 @@ export async function deleteVehicleMedia(
     `/api/dealers/${dealershipId}/inventory/vehicles/${vehicleId}/media/${mediaId}`,
     { method: 'DELETE' },
   );
+}
+
+export async function uploadDealerLogo(dealershipId: string, file: File): Promise<{ logoUrl: string }> {
+  const formData = new FormData();
+  formData.append('logo', file);
+
+  const res = await fetch(`/api/dealers/${dealershipId}/logo`, {
+    method: 'POST',
+    body: formData,
+  });
+  
+  if (!res.ok) {
+    const data = await res.json().catch(() => ({}));
+    throw new Error(data.error || 'Failed to upload logo');
+  }
+  return res.json();
 }
 
 export async function markVehicleSold(dealershipId: string, vehicleId: string): Promise<void> {
@@ -868,5 +903,107 @@ export async function relistVehicle(dealershipId: string, vehicleId: string): Pr
   await catalogFetch<void>(
     `/api/dealers/${dealershipId}/inventory/vehicles/${vehicleId}/relist`,
     { method: 'POST' },
+  );
+}
+
+// ── Marketplace listing (consumer-marketplace platform) ───────────────────────
+
+export type MarketplaceListingRecord = {
+  id: string;
+  dealershipId: string;
+  vehicleId: string;
+  platformSlug: string;
+  status: 'DRAFT' | 'ACTIVE' | 'ENDED' | 'FAILED';
+  errorMessage: string | null;
+  listedAt: string | null;
+  endedAt: string | null;
+};
+
+export async function fetchMarketplaceListing(
+  dealershipId: string,
+  vehicleId: string,
+): Promise<MarketplaceListingRecord | null> {
+  const res = await fetch(
+    `/api/dealers/${dealershipId}/platforms/consumer-marketplace/listings/${vehicleId}`,
+    { credentials: 'include' },
+  );
+  if (res.status === 404) return null;
+  if (!res.ok) {
+    const body = await res.json().catch(() => ({})) as { error?: string };
+    throw new Error(body.error ?? `HTTP ${res.status}`);
+  }
+  const data = await res.json() as { listing: MarketplaceListingRecord };
+  return data.listing;
+}
+
+export async function publishToMarketplace(
+  dealershipId: string,
+  vehicleId: string,
+): Promise<MarketplaceListingRecord> {
+  const res = await fetch(
+    `/api/dealers/${dealershipId}/platforms/consumer-marketplace/listings`,
+    {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      credentials: 'include',
+      body: JSON.stringify({ vehicleId }),
+    },
+  );
+  if (!res.ok) {
+    const body = await res.json().catch(() => ({})) as { error?: string };
+    throw new Error(body.error ?? `HTTP ${res.status}`);
+  }
+  const data = await res.json() as { listing: MarketplaceListingRecord };
+  return data.listing;
+}
+
+export async function unpublishFromMarketplace(
+  dealershipId: string,
+  vehicleId: string,
+): Promise<void> {
+  const res = await fetch(
+    `/api/dealers/${dealershipId}/platforms/consumer-marketplace/listings/${vehicleId}`,
+    { method: 'DELETE', credentials: 'include' },
+  );
+  if (!res.ok && res.status !== 204) {
+    const body = await res.json().catch(() => ({})) as { error?: string };
+    throw new Error(body.error ?? `HTTP ${res.status}`);
+  }
+}
+
+// ── Dealer leads ──────────────────────────────────────────────────────────────
+
+export type DealerLeadVehicle = {
+  year: number;
+  make: string;
+  model: string;
+  stockNumber: string;
+  soldAt: string | null;
+};
+
+export type DealerLead = {
+  id: string;
+  vehicleId: string | null;
+  source: string;
+  platformSlug: string;
+  contactName: string | null;
+  contactEmail: string | null;
+  contactPhone: string | null;
+  message: string | null;
+  vehicleInterest: unknown;
+  createdAt: string;
+  vehicle: DealerLeadVehicle | null;
+};
+
+export async function fetchDealerLeads(
+  dealershipId: string,
+  opts?: { platformSlug?: string; limit?: number },
+): Promise<{ leads: DealerLead[]; total: number }> {
+  const params = new URLSearchParams();
+  if (opts?.platformSlug) params.set('platformSlug', opts.platformSlug);
+  if (opts?.limit) params.set('limit', String(opts.limit));
+  const qs = params.toString();
+  return catalogFetch<{ leads: DealerLead[]; total: number }>(
+    `/api/dealers/${dealershipId}/leads${qs ? `?${qs}` : ''}`,
   );
 }

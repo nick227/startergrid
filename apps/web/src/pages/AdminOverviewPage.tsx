@@ -1,12 +1,8 @@
 import { useCallback, useMemo, useState } from 'react';
-import { fetchAdminDashboard } from '@/lib/api/admin.ts';
-import { fetchDealers } from '@/lib/api/sdk.ts';
-import { useAsyncQuery } from '@/hooks/useAsyncQuery.ts';
 import { Skeleton } from '@/components/ui/Skeleton.tsx';
-import { AdminShell, ErrorState, SectionCard } from '@/components/operator/index.ts';
+import { ErrorState, SectionCard } from '@/components/operator/index.ts';
 import { adminDealerHash } from '@/lib/routes.ts';
 import { DealerDashboard } from '@/components/dashboard';
-import type { OperatorNavHandlers } from '@/lib/operatorNav.ts';
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 
@@ -130,8 +126,26 @@ function ResultCount({ shown, total, noun }: { shown: number; total: number; nou
 
 // ── Page component ────────────────────────────────────────────────────────────
 
-export default function AdminOverviewPage() {
-  const [tab, setTab] = useState<AdminTab>('system');
+type Props = {
+  activeTab: string;
+  data: any;
+  loading: boolean;
+  error: string | null;
+  dealersData: any;
+  dealersLoading: boolean;
+  dealersError: string | null;
+};
+
+export default function AdminOverviewPage({
+  activeTab,
+  data,
+  loading,
+  error,
+  dealersData,
+  dealersLoading,
+  dealersError,
+}: Props) {
+  const tab = activeTab;
 
   // Dealers tab
   const [dealerSearch, setDealerSearch]           = useState('');
@@ -156,10 +170,6 @@ export default function AdminOverviewPage() {
   // Audit tab
   const [auditSearch, setAuditSearch]             = useState('');
   const [auditDir, setAuditDir]                   = useState<SortDir>('desc');
-
-  // Data fetching
-  const { data, loading, error, reload }             = useAsyncQuery(() => fetchAdminDashboard(), []);
-  const { data: dealersData, loading: dealersLoading, error: dealersError } = useAsyncQuery(() => fetchDealers(), []);
 
   // Dashboard shape
   const health          = useMemo(() => data?.health, [data]);
@@ -306,79 +316,14 @@ export default function AdminOverviewPage() {
   // ── Render ────────────────────────────────────────────────────────────────
 
   return (
-    <AdminShell
-      action={
-        <>
-          {meta && (
-            <span className="text-[10px] text-ink-faint font-mono hidden md:block">
-              {meta.cached ? 'cached' : 'live'} · {meta.durationMs}ms
-            </span>
-          )}
-          <a
-            href="#/help"
-            className="px-3 py-1.5 text-xs font-medium text-ink-faint hover:text-white border border-navy-700 hover:border-navy-600 rounded-md transition-all"
-          >
-            Knowledge Base
-          </a>
-          <button
-            type="button"
-            onClick={() => { window.location.hash = '#/admin/platform-credentials'; }}
-            className="btn-primary-operator"
-          >
-            Credential Validation
-          </button>
-          <button
-            type="button"
-            onClick={() => void reload()}
-            disabled={loading}
-            className="px-3 py-1.5 text-xs font-medium bg-navy-800 hover:bg-navy-700 text-silver-100 rounded-md transition-colors disabled:opacity-40"
-          >
-            {loading ? 'Refreshing…' : 'Refresh'}
-          </button>
-        </>
-      }
-    >
+    <>
       {loading && !data && (
         <div className="surface-card-operator p-6"><Skeleton rows={12} /></div>
       )}
-      {error && <ErrorState message={error} onRetry={reload} />}
+      {error && <ErrorState message={error} />}
 
       {!loading && !error && data && (
         <>
-          {/* Tab Bar */}
-          <div className="flex border-b border-silver-200 mb-6 overflow-x-auto">
-            {([
-              { id: 'system'    as AdminTab, label: 'System Status',  count: null,                     alert: false },
-              { id: 'dealers'   as AdminTab, label: 'Dealerships',    count: allDealers.length || null, alert: false },
-              { id: 'platforms' as AdminTab, label: 'Platforms',      count: platformOverview.length,   alert: false },
-              { id: 'triage'    as AdminTab, label: 'Dealer Triage',  count: dealerAttention.length,    alert: criticalCount > 0 },
-              { id: 'audit'     as AdminTab, label: 'Audit Log',      count: recentEvents.length,       alert: false },
-            ]).map(t => (
-              <button
-                key={t.id}
-                type="button"
-                onClick={() => setTab(t.id)}
-                className={`px-5 py-3 text-sm font-semibold border-b-2 -mb-px whitespace-nowrap transition-colors flex items-center gap-2 ${
-                  tab === t.id
-                    ? 'border-orange-600 text-ink-heading'
-                    : 'border-transparent text-ink-muted hover:text-ink-body hover:border-silver-300'
-                }`}
-              >
-                <span className={t.alert && tab !== t.id ? 'text-status-error-text' : ''}>{t.label}</span>
-                {t.count !== null && (
-                  <span className={`px-1.5 py-0.5 rounded text-[10px] font-mono ${
-                    t.alert
-                      ? 'bg-status-error-bg text-status-error-text'
-                      : tab === t.id
-                      ? 'bg-silver-100 text-ink-muted'
-                      : 'bg-silver-100 text-ink-faint'
-                  }`}>
-                    {t.count}
-                  </span>
-                )}
-              </button>
-            ))}
-          </div>
 
           {/* ── System Status Tab ─────────────────────────────────────────── */}
           {tab === 'system' && (
@@ -873,9 +818,10 @@ export default function AdminOverviewPage() {
                   goToPlatforms: () => { window.location.hash = '#/admin/platforms' },
                   goToQueue: () => {},
                   goToHistory: () => {},
-                  goToReports: () => { window.location.hash = '#/admin' },
+                  goToReports: () => { window.location.hash = '#/admin/dealers' },
                   goToInventory: () => { window.location.hash = '#/admin/dealers' },
-                  goToHelp: () => {},
+                  goToLeads: () => { window.location.hash = '#/admin/dealers' },
+                  goToHelp: () => { window.location.hash = '#/admin/dealers' },
                   goToPlatformDetail: () => { window.location.hash = '#/admin/platforms' },
                   goToPlatformQueue: () => {},
                   goToPlatformHistory: () => {},
@@ -891,6 +837,6 @@ export default function AdminOverviewPage() {
 
         </>
       )}
-    </AdminShell>
+    </>
   );
 }

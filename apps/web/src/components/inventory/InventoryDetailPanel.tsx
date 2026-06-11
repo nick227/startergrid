@@ -10,6 +10,7 @@ import { VehicleReadinessChecklist } from './VehicleReadinessChecklist.tsx';
 import { VehiclePublishingSummary } from './VehiclePublishingSummary.tsx';
 import { VehiclePerformanceSummary } from './VehiclePerformanceSummary.tsx';
 import { AssetLifecycleHistory } from './AssetLifecycleHistory.tsx';
+import { MarketplacePublishPanel } from './MarketplacePublishPanel.tsx';
 
 type Props = {
   dealerId: string;
@@ -118,6 +119,14 @@ export function InventoryDetailPanel({
             <SectionHeader title="Publishing" />
             <div className="mt-3">
               <VehiclePublishingSummary distribution={vehicle.distribution} />
+            </div>
+          </section>
+
+          {/* ── Marketplace ───────────────────────────────────────────────── */}
+          <section>
+            <SectionHeader title="Marketplace" />
+            <div className="mt-3">
+              <MarketplacePublishPanel dealerId={dealerId} vehicleId={vehicleId} />
             </div>
           </section>
 

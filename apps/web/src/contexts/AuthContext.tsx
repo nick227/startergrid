@@ -20,6 +20,7 @@ type AuthState = {
   authReady: boolean;
   login: (email: string, password: string) => Promise<void>;
   logout: () => Promise<void>;
+  refresh: () => Promise<void>;
 };
 
 const AuthContext = createContext<AuthState | null>(null);
@@ -54,8 +55,17 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setUser(identity);
   }, []);
 
+  const refresh = useCallback(async () => {
+    try {
+      const identity = await fetchOperatorMe();
+      setUser(identity);
+    } catch (err) {
+      console.error('Failed to refresh user', err);
+    }
+  }, []);
+
   return (
-    <AuthContext.Provider value={{ user, authReady, login, logout }}>
+    <AuthContext.Provider value={{ user, authReady, login, logout, refresh }}>
       {children}
     </AuthContext.Provider>
   );

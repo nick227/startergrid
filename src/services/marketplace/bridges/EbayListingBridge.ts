@@ -16,6 +16,7 @@ function requirePolicyEnv(name: string): string {
 
 export class EbayListingBridge implements MarketplaceListingBridge {
   readonly platformSlug = 'ebay-motors';
+  readonly requiresOAuth = true;
   readonly oauthProvider: OAuthProvider = 'ebay';
   readonly oauthClient = new EbayOAuthClient();
 

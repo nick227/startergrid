@@ -108,13 +108,22 @@ export default function DealerPicker({ onSelect, forbiddenDealerId }: Props) {
                 key={d.id}
                 type="button"
                 onClick={() => trySelect(d.id)}
-                className="w-full text-left px-5 py-4 hover:bg-orange-100/60 border-b border-silver-100 last:border-0 transition-colors"
+                className="w-full text-left px-5 py-4 hover:bg-orange-100/60 border-b border-silver-100 last:border-0 transition-colors flex items-center gap-4 group"
               >
-                <div className="font-semibold text-ink-heading text-sm">{d.legalName}</div>
-                {d.dbaName && d.dbaName !== d.legalName && (
-                  <div className="text-ink-faint text-xs mt-0.5">dba {d.dbaName}</div>
+                {d.logoUrl ? (
+                  <img src={d.logoUrl} alt="Logo" className="w-10 h-10 rounded shadow-sm object-cover bg-white" />
+                ) : (
+                  <div className="w-10 h-10 rounded shadow-sm bg-silver-200 flex items-center justify-center text-silver-400 text-xs font-medium">
+                    {d.legalName.charAt(0).toUpperCase()}
+                  </div>
                 )}
-                <div className="text-ink-faint text-xs font-mono mt-1">{d.id}</div>
+                <div>
+                  <div className="font-semibold text-ink-heading text-sm">{d.legalName}</div>
+                  {d.dbaName && d.dbaName !== d.legalName && (
+                    <div className="text-ink-faint text-xs mt-0.5">dba {d.dbaName}</div>
+                  )}
+                  <div className="text-ink-faint text-xs font-mono mt-1">{d.id}</div>
+                </div>
               </button>
             ))}
           </div>

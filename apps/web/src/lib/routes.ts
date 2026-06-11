@@ -37,6 +37,7 @@ function parsePageSegment(segment: string | undefined): OperatorPageSegment | nu
     segment === 'history' ||
     segment === 'reports' ||
     segment === 'inventory' ||
+    segment === 'leads' ||
     segment === 'help'
   ) {
     return segment;
@@ -208,6 +209,7 @@ export function buildOperatorNav(dealerId: string): OperatorNavHandlers {
     goToHistory: scope => { window.location.hash = operatorHash(dealerId, 'history', scope); },
     goToReports: () => { window.location.hash = operatorHash(dealerId, 'reports'); },
     goToInventory: scope => { window.location.hash = operatorHash(dealerId, 'inventory', scope); },
+    goToLeads: () => { window.location.hash = operatorHash(dealerId, 'leads'); },
     goToHelp: () => { window.location.hash = operatorHash(dealerId, 'help'); },
     goToPlatformDetail: (slug, scope) => { window.location.hash = platformDetailHash(dealerId, slug, scope); },
     goToPlatformQueue: (slug, scope) => { window.location.hash = platformQueueHash(dealerId, slug, scope); },
