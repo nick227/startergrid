@@ -143,6 +143,53 @@ describe('validateEnv — DISPATCH_ENVIRONMENT', () => {
   });
 });
 
+describe('validateEnv — STORAGE_DRIVER', () => {
+  it('is optional — omitting it is fine in both envs', () => {
+    assert.doesNotThrow(() => validateEnv(dev()));
+    assert.doesNotThrow(() => validateEnv(prod()));
+  });
+
+  it('accepts STORAGE_DRIVER=local with no S3 vars', () => {
+    assert.doesNotThrow(() => validateEnv(dev({ STORAGE_DRIVER: 'local' })));
+  });
+
+  it('rejects an unknown STORAGE_DRIVER', () => {
+    const errs = errors(dev({ STORAGE_DRIVER: 'gcs' }));
+    assert.ok(errs.some(e => e.includes('STORAGE_DRIVER')));
+  });
+
+  it('requires S3 vars when STORAGE_DRIVER=s3', () => {
+    const errs = errors(dev({ STORAGE_DRIVER: 's3' }));
+    assert.ok(errs.some(e => e.includes('S3_BUCKET')));
+    assert.ok(errs.some(e => e.includes('S3_ACCESS_KEY_ID')));
+    assert.ok(errs.some(e => e.includes('S3_SECRET_ACCESS_KEY')));
+    assert.ok(errs.some(e => e.includes('S3_PUBLIC_BASE_URL')));
+  });
+
+  it('accepts a fully-configured s3 driver', () => {
+    assert.doesNotThrow(() => validateEnv(dev({
+      STORAGE_DRIVER: 's3',
+      S3_BUCKET: 'dealer-media',
+      S3_ACCESS_KEY_ID: 'AKIA123',
+      S3_SECRET_ACCESS_KEY: 'secret',
+      S3_PUBLIC_BASE_URL: 'https://media.example.com',
+      S3_ENDPOINT: 'https://accountid.r2.cloudflarestorage.com',
+    })));
+  });
+
+  it('rejects a malformed S3_ENDPOINT when set', () => {
+    const errs = errors(dev({
+      STORAGE_DRIVER: 's3',
+      S3_BUCKET: 'dealer-media',
+      S3_ACCESS_KEY_ID: 'AKIA123',
+      S3_SECRET_ACCESS_KEY: 'secret',
+      S3_PUBLIC_BASE_URL: 'https://media.example.com',
+      S3_ENDPOINT: 'not a url',
+    }));
+    assert.ok(errs.some(e => e.includes('S3_ENDPOINT')));
+  });
+});
+
 // ── Production-specific requirements ─────────────────────────────────────────
 
 describe('validateEnv — production SESSION_SECRET', () => {

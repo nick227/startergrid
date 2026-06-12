@@ -3,6 +3,7 @@ import type { Prisma } from '@prisma/client';
 import { prisma } from '../src/lib/prisma.js';
 import { platformProfiles } from '../src/data/platformProfiles.js';
 import { seedPlatformProfileVersions, seedPristineDealer, seedTrailersDealer, seedBoatsDealer } from '../src/services/platform/seedService.js';
+import { seedAutomotiveDemoDealers } from '../src/services/platform/demoDealerSeed.js';
 import { seedPerformanceBenchmarkDemo } from '../src/services/performance/performanceDemoSeed.js';
 import { seedSuperAdmin, seedMarketplaceConsumer } from '../src/services/auth/authSeedService.js';
 
@@ -61,6 +62,9 @@ async function main() {
 
   const boatsDealerId = await seedBoatsDealer(prisma);
   console.log(`Boats dealer ready: ${boatsDealerId}`);
+
+  const demoDealerIds = await seedAutomotiveDemoDealers(prisma);
+  console.log(`Automotive demo dealers ready: ${demoDealerIds.join(', ')}`);
 
   await seedSuperAdmin(prisma);
   await seedMarketplaceConsumer(prisma);

@@ -42,8 +42,8 @@ npm install
 # Copy and edit .env (MySQL credentials)
 cp .env.example .env
 
-# Push schema to DB, seed platform profiles + pristine demo dealer
-npm run db:push
+# Apply migrations, then seed platform profiles + demo dealers
+npm run db:migrate
 npm run db:seed
 
 # Full pipeline reset — use this to verify everything works

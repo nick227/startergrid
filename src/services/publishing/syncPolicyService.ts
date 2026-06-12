@@ -109,12 +109,24 @@ export function defaultAccountState(applicationStatus: string): PlatformAccountS
 
 // ── DB functions ─────────────────────────────────────────────────────────────
 
+// Platforms outside the dealer's business category get no default rows —
+// over-seeding them is how auto dealers ended up with boat/RV/resale accounts.
+async function categoryProfiles(prisma: PrismaClient, dealershipId: string) {
+  const dealer = await prisma.dealershipProfile.findUnique({
+    where: { id: dealershipId },
+    select: { businessCategory: true },
+  });
+  if (!dealer) return platformProfiles;
+  return platformProfiles.filter(p => p.supportedCategories.includes(dealer.businessCategory));
+}
+
 export async function upsertDefaultSyncPolicies(
   prisma: PrismaClient,
   dealershipId: string
 ): Promise<void> {
+  const profiles = await categoryProfiles(prisma, dealershipId);
   await prisma.$transaction(
-    platformProfiles.map(p =>
+    profiles.map(p =>
       prisma.syncPolicy.upsert({
         where: { dealershipId_platformSlug: { dealershipId, platformSlug: p.slug } },
         update: { minIntervalMinutes: defaultMinIntervalMinutes(p.integrationClass) },
@@ -140,9 +152,10 @@ export async function upsertDefaultPlatformAccounts(
   });
 
   const appBySlug = new Map(applications.map(a => [a.platform.slug, a.status]));
+  const profiles = await categoryProfiles(prisma, dealershipId);
 
   await prisma.$transaction(
-    platformProfiles.map(p => {
+    profiles.map(p => {
       const appStatus = appBySlug.get(p.slug) ?? 'NOT_STARTED';
       const state = defaultAccountState(appStatus) as any;
       return prisma.platformAccount.upsert({

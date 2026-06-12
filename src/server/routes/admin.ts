@@ -109,7 +109,7 @@ export function registerAdminRoutes(app: FastifyInstance, prisma: PrismaClient):
 
     try {
       const result = await createDealership(prisma, parsed.data, {
-        createdByOperatorId: operator.devHeader ? null : operator.id,px-3 py-2 text-xs font-semibold rounded-lg transition-all text-silver-200 hover:text-white hover:bg-navy-700/50
+        createdByOperatorId: operator.devHeader ? null : operator.id,
       });
       resetDashboardCache();
       return reply.status(201).send({

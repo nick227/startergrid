@@ -1,9 +1,13 @@
 [build]
 builder = "NIXPACKS"
-buildCommand = "npm ci && npx prisma generate && npx prisma db push && npm run build"
+buildCommand = "npm ci && npx prisma generate && npm run build"
 
 [deploy]
-startCommand = "node dist/src/scripts/server.js"
+# Migrations apply at deploy time (not build) so they run against the live DB
+# with the deploy's env. If the existing prod DB was created via `prisma db push`,
+# baseline it once before the first migrate-deploy release:
+#   npx prisma migrate resolve --applied <each existing migration name>
+startCommand = "npx prisma migrate deploy && node dist/src/scripts/server.js"
 healthcheckPath = "/health"
 healthcheckTimeout = 60
 restartPolicyType = "ON_FAILURE"

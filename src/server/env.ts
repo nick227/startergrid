@@ -48,6 +48,23 @@ export function validateEnv(env: Record<string, string | undefined> = process.en
     errors.push(`DISPATCH_ENVIRONMENT must be MOCK | SANDBOX | PRODUCTION, got: "${dispatchEnv}"`);
   }
 
+  // ── STORAGE_DRIVER — optional; 's3' pulls in object-storage requirements ────
+  const storageDriver = env['STORAGE_DRIVER']?.trim().toLowerCase();
+  if (storageDriver && !['local', 's3'].includes(storageDriver)) {
+    errors.push(`STORAGE_DRIVER must be local | s3, got: "${env['STORAGE_DRIVER']?.trim()}"`);
+  }
+  if (storageDriver === 's3') {
+    for (const varName of ['S3_BUCKET', 'S3_ACCESS_KEY_ID', 'S3_SECRET_ACCESS_KEY'] as const) {
+      if (!env[varName]?.trim()) {
+        errors.push(`${varName} is required when STORAGE_DRIVER=s3`);
+      }
+    }
+    requireUrl(errors, env['S3_PUBLIC_BASE_URL'], 'S3_PUBLIC_BASE_URL');
+    if (env['S3_ENDPOINT']?.trim()) {
+      requireUrl(errors, env['S3_ENDPOINT'], 'S3_ENDPOINT');
+    }
+  }
+
   // ── Production-only rules ───────────────────────────────────────────────────
   if (isProd) {
     // SESSION_SECRET: required, min 32 chars
