@@ -1,6 +1,0 @@
-{
-  "scripts": {
-    "seed:mock": "node scripts/seed-mock-data.mjs",
-    "seed:mock:dry": "DRY_RUN=1 node scripts/seed-mock-data.mjs"
-  }
-}
