@@ -17,7 +17,7 @@ export function registerDealerLeadsRoutes(app: FastifyInstance, prisma: PrismaCl
       const limit = Math.min(200, Math.max(1, parseInt(request.query.limit ?? '50', 10) || 50));
       const platformSlug = request.query.platformSlug || undefined;
 
-      const leads = await prisma.lead.findMany({
+      const rows = await prisma.lead.findMany({
         where: {
           dealershipId,
           ...(platformSlug ? { platformSlug } : {}),
@@ -40,12 +40,32 @@ export function registerDealerLeadsRoutes(app: FastifyInstance, prisma: PrismaCl
               model:       true,
               stockNumber: true,
               soldAt:      true,
+              media: {
+                select: { url: true },
+                where: { kind: 'IMAGE' },
+                orderBy: { sortOrder: 'asc' },
+                take: 1,
+              },
             },
           },
         },
         orderBy: { createdAt: 'desc' },
         take: limit,
       });
+
+      const leads = rows.map(({ vehicle, ...lead }) => ({
+        ...lead,
+        vehicle: vehicle
+          ? {
+              year: vehicle.year,
+              make: vehicle.make,
+              model: vehicle.model,
+              stockNumber: vehicle.stockNumber,
+              soldAt: vehicle.soldAt,
+              thumbnailUrl: vehicle.media[0]?.url ?? null,
+            }
+          : null,
+      }));
 
       return reply.send({ leads, total: leads.length });
     }

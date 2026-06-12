@@ -1,6 +1,7 @@
-import { useSyncExternalStore } from 'react';
+import { useMemo, useSyncExternalStore } from 'react';
 import {
-  recentListingsForCategory,
+  type RecentListing,
+  readRecentListings,
   subscribeRecentListings,
 } from '../../features/listings/recentlyViewed.ts';
 import { formatPrice } from '../../lib/display.ts';
@@ -22,15 +23,17 @@ function subscribe(onStoreChange: () => void) {
   };
 }
 
-function getSnapshot(categorySlug: string, excludeListingId: string | undefined, limit: number) {
-  return recentListingsForCategory(categorySlug, { excludeListingId, limit });
-}
+const EMPTY: RecentListing[] = [];
 
 export function RecentlyViewedRail({ categorySlug, excludeListingId, limit = 8 }: Props) {
-  const items = useSyncExternalStore(
-    subscribe,
-    () => getSnapshot(categorySlug, excludeListingId, limit),
-    () => [],
+  const allRecent = useSyncExternalStore(subscribe, readRecentListings, () => EMPTY);
+
+  const items = useMemo(
+    () => allRecent
+      .filter(item => item.categorySlug === categorySlug)
+      .filter(item => item.listingId !== excludeListingId)
+      .slice(0, limit),
+    [allRecent, categorySlug, excludeListingId, limit],
   );
 
   if (items.length === 0) return null;

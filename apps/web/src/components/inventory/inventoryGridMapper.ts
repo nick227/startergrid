@@ -28,7 +28,7 @@ export function mapLegacyVehicleToGridRow(
       priceCents: vehicle.priceCents,
     },
     media: {
-      thumbnailUrl: null, // we don't have thumbnail url in VehicleListItem directly, might need to extract elsewhere or leave null
+      thumbnailUrl: vehicle.thumbnailUrl,
       photoCount: vehicle.mediaCount,
       requiredShotsCoverage: '0/0', // not computed yet
       missingRequiredShots: vehicle.issues.filter(i => i.path === 'media').length,

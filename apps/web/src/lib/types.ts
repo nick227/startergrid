@@ -228,6 +228,7 @@ export type VehicleListItem = {
   condition: string;
   exteriorColor: string;
   mediaCount: number;
+  thumbnailUrl: string | null;
   readiness: 'READY' | 'BLOCKED' | 'WARNING';
   issues: VehicleIssue[];
   lifecycleState: VehicleLifecycleState;

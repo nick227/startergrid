@@ -5,6 +5,7 @@ import { InventoryRowCard } from './InventoryRowCard.tsx';
 import type { BusinessCategoryId } from '@auto-dealer/category-schemas';
 
 type Props = {
+  dealerId?: string;
   items: InventoryGridRowDto[];
   viewMode: 'table' | 'card';
   selectedIds: Set<string>;
@@ -69,7 +70,7 @@ function renderCell(item: InventoryGridRowDto, colKey: string) {
 }
 
 export function InventoryDataGrid({
-  items, viewMode, selectedIds, onToggleSelection, onToggleAll, onRowClick, activeColumns, sortKey, sortDir, onSort
+  dealerId, items, viewMode, selectedIds, onToggleSelection, onToggleAll, onRowClick, activeColumns, sortKey, sortDir, onSort
 }: Props) {
   const allSelected = items.length > 0 && items.every(i => selectedIds.has(i.id));
 
@@ -106,6 +107,7 @@ export function InventoryDataGrid({
           return (
             <InventoryRowCard
               key={item.id}
+              dealerId={dealerId}
               item={cardItem}
               selected={selectedIds.has(item.id)}
               selectable

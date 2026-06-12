@@ -85,8 +85,7 @@ export function InventoryDetailPanel({
         <div className="space-y-6 mx-auto w-full pb-24">
 
           {/* ── Readiness ─────────────────────────────────────────────────── */}
-          <section className="bg-white rounded-xl shadow-sm border border-silver-200 p-6">
-            <SectionHeader title="Readiness" />
+          <section className="bg-white px-6 pb-4">
             <div className="mt-4">
               <VehicleReadinessChecklist readiness={vehicle.readiness} />
             </div>

@@ -49,7 +49,7 @@ export function FeedMediaCarousel({ mediaItems, fallbackImageUrls = [], alt, eag
             alt={alt}
             className="h-full w-full object-cover transition-transform duration-200 group-hover:scale-105"
             loading={eager ? 'eager' : 'lazy'}
-            fetchPriority={eager ? 'high' : 'auto'}
+            {...{ fetchpriority: eager ? 'high' : 'auto' }}
             decoding="async"
           />
         )

@@ -119,6 +119,12 @@ export const routeClassifications = {
     'DELETE /api/dealers/:dealershipId/inventory/vehicles/:vehicleId/media/:mediaId',
     'PATCH /api/dealers/:dealershipId/inventory/vehicles/:vehicleId/media/:mediaId/slot',
     'PATCH /api/dealers/:dealershipId/inventory/vehicles/:vehicleId/media/:mediaId/label',
+    'GET /api/dealers/:dealershipId/leads',
+    'GET /api/dealers/:dealershipId/notifications',
+    'POST /api/dealers/:dealershipId/platforms/:platformSlug/listings',
+    'GET /api/dealers/:dealershipId/platforms/:platformSlug/listings',
+    'GET /api/dealers/:dealershipId/platforms/:platformSlug/listings/:vehicleId',
+    'DELETE /api/dealers/:dealershipId/platforms/:platformSlug/listings/:vehicleId',
   ],
   publicWrite: [
     'POST /api/dealers/signup',

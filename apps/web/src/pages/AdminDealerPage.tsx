@@ -268,7 +268,7 @@ export default function AdminDealerPage({ dealerId, nav, activeTab }: Props) {
               Phase 2: <code className="font-mono">getBlockedDealers</code> will accept a <code className="font-mono">dealerId</code> filter parameter.
               Until then, use the{' '}
               <a href="#/admin/triage" className="text-navy-600 hover:text-navy-500 underline">
-                Dealer Triage
+                Blocked Triage
               </a>{' '}
               screen and search by dealer name.
             </p>

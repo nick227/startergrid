@@ -29,16 +29,28 @@ function notifyRecentListings(): void {
   listeners.forEach(listener => listener());
 }
 
+const EMPTY_RECENT_LISTINGS: RecentListing[] = [];
+
+// Stable-identity cache so useSyncExternalStore snapshots only change when the
+// stored payload changes; a fresh array per read causes an infinite re-render loop.
+let cachedStorage: StorageLike | null = null;
+let cachedRaw: string | null = null;
+let cachedItems: RecentListing[] = EMPTY_RECENT_LISTINGS;
+
 function readStorage(storage: StorageLike | null | undefined): RecentListing[] {
-  if (!storage) return [];
+  if (!storage) return EMPTY_RECENT_LISTINGS;
   try {
     const raw = storage.getItem(RECENT_LISTINGS_STORAGE_KEY);
-    if (!raw) return [];
+    if (!raw) return EMPTY_RECENT_LISTINGS;
+    if (storage === cachedStorage && raw === cachedRaw) return cachedItems;
     const parsed = JSON.parse(raw) as unknown;
-    if (!Array.isArray(parsed)) return [];
-    return parsed.filter(isRecentListing);
+    const items = Array.isArray(parsed) ? parsed.filter(isRecentListing) : EMPTY_RECENT_LISTINGS;
+    cachedStorage = storage;
+    cachedRaw = raw;
+    cachedItems = items;
+    return items;
   } catch {
-    return [];
+    return EMPTY_RECENT_LISTINGS;
   }
 }
 

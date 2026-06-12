@@ -16,7 +16,7 @@ export function VehicleReadinessChecklist({ readiness }: Props) {
   const allClear = totalIssues === 0;
 
   return (
-    <div className="space-y-3">
+    <div className="space-y-3 w-full">
       <div className="flex items-center gap-2">
         <span className={`px-2.5 py-0.5 rounded-full text-[11px] font-bold border ${config.bg}`}>
           {config.label}
@@ -25,38 +25,38 @@ export function VehicleReadinessChecklist({ readiness }: Props) {
         {!allClear && <span className="text-[11px] text-ink-muted">{totalIssues} issue{totalIssues !== 1 ? 's' : ''}</span>}
       </div>
 
-      <ul className="space-y-1">
+      <ul className="space-y-1 flex flex-wrap gap-2">
         {/* Blockers */}
         {readiness.blockers.map((b, i) => (
-          <li key={`b${i}`} className="flex items-start gap-2 text-xs">
+          <li key={`b${i}`} className="flex items-start gap-2 text-xs whitespace-nowrap">
             <span className="shrink-0 mt-0.5 w-4 h-4 rounded-full bg-red-100 text-red-600 flex items-center justify-center text-[10px] font-bold">✕</span>
             <span className="text-red-700 font-medium">{b}</span>
           </li>
         ))}
         {/* Missing required media */}
         {readiness.missingRequiredMediaSlots.map(s => (
-          <li key={`ms${s}`} className="flex items-start gap-2 text-xs">
+          <li key={`ms${s}`} className="flex items-start gap-2 text-xs whitespace-nowrap">
             <span className="shrink-0 mt-0.5 w-4 h-4 rounded-full bg-red-100 text-red-600 flex items-center justify-center text-[10px] font-bold">✕</span>
             <span className="text-red-700">Missing photo: <span className="font-medium">{s}</span></span>
           </li>
         ))}
         {/* Invalid fields */}
         {readiness.invalidFields.map(f => (
-          <li key={`if${f}`} className="flex items-start gap-2 text-xs">
+          <li key={`if${f}`} className="flex items-start gap-2 text-xs whitespace-nowrap">
             <span className="shrink-0 mt-0.5 w-4 h-4 rounded-full bg-red-100 text-red-600 flex items-center justify-center text-[10px] font-bold">✕</span>
             <span className="text-red-700"><span className="font-medium">{f}</span> format is invalid</span>
           </li>
         ))}
         {/* Warnings */}
         {readiness.warnings.map((w, i) => (
-          <li key={`w${i}`} className="flex items-start gap-2 text-xs">
+          <li key={`w${i}`} className="flex items-start gap-2 text-xs whitespace-nowrap">
             <span className="shrink-0 mt-0.5 w-4 h-4 rounded-full bg-amber-100 text-amber-600 flex items-center justify-center text-[10px] font-bold">!</span>
             <span className="text-amber-700">{w}</span>
           </li>
         ))}
         {/* Recommended media hints */}
         {readiness.missingRecommendedMediaSlots.slice(0, 3).map(s => (
-          <li key={`rec${s}`} className="flex items-start gap-2 text-xs">
+          <li key={`rec${s}`} className="flex items-start gap-2 text-xs whitespace-nowrap">
             <span className="shrink-0 mt-0.5 w-4 h-4 rounded-full bg-silver-100 text-ink-faint flex items-center justify-center text-[10px]">·</span>
             <span className="text-ink-muted">Consider adding: <span className="font-medium">{s}</span></span>
           </li>
@@ -66,18 +66,13 @@ export function VehicleReadinessChecklist({ readiness }: Props) {
         )}
         {/* All clear */}
         {allClear && (
-          <li className="flex items-start gap-2 text-xs">
+          <li className="flex items-start gap-2 text-xs whitespace-nowrap">
             <span className="shrink-0 mt-0.5 w-4 h-4 rounded-full bg-green-100 text-green-600 flex items-center justify-center text-[10px] font-bold">✓</span>
             <span className="text-green-700 font-medium">All required fields and media complete</span>
           </li>
         )}
       </ul>
 
-      {readiness.nextAction && (
-        <div className="p-2.5 bg-amber-50 border border-amber-200 rounded-lg text-xs text-amber-700">
-          <span className="font-semibold">Next action: </span>{readiness.nextAction}
-        </div>
-      )}
     </div>
   );
 }

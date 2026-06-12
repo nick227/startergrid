@@ -15,6 +15,7 @@ import PlatformsPage from './PlatformsPage.tsx';
 import QueuePage from './QueuePage.tsx';
 import HistoryPage from './HistoryPage.tsx';
 import InventoryPage from './InventoryPage.tsx';
+import LeadsPage from './LeadsPage.tsx';
 import KnowledgeBasePage from './KnowledgeBasePage.tsx';
 import { Skeleton } from '@/components/ui/Skeleton.tsx';
 
@@ -125,6 +126,7 @@ export default function AdminApp({
     : adminDealerPage === 'history' ? 'history'
     : adminDealerPage === 'reports' ? 'reports'
     : adminDealerPage === 'inventory' ? 'inventory'
+    : adminDealerPage === 'leads'   ? 'leads'
     : adminDealerPage === 'help'    ? 'help'
     : 'platforms';
 
@@ -146,10 +148,10 @@ export default function AdminApp({
 
   const TABS = [
     { id: 'system'    as AdminSection, label: 'System Status', count: null,                     alert: false },
+    { id: 'insights'  as AdminSection, label: 'Finances',      count: null,                      alert: false },
     { id: 'dealers'   as AdminSection, label: 'Dealerships',   count: allDealers.length || null, alert: false },
     { id: 'platforms' as AdminSection, label: 'Platforms',     count: platformOverview.length,   alert: false },
-    { id: 'triage'    as AdminSection, label: 'Dealer Triage', count: null,                      alert: criticalCount > 0 },
-    { id: 'insights'  as AdminSection, label: 'Insights',      count: null,                      alert: false },
+    { id: 'triage'    as AdminSection, label: 'Blockers', count: criticalCount,                      alert: false },
     { id: 'audit'     as AdminSection, label: 'Audit Log',     count: recentEvents.length,       alert: false },
     { id: 'users'     as AdminSection, label: 'Users',         count: userCount,                 alert: false },
   ];
@@ -235,6 +237,9 @@ export default function AdminApp({
             )}
             {adminDealerPage === 'inventory' && (
               <InventoryPage dealerId={adminDealerId} nav={adminNav} activeTab="inventory" />
+            )}
+            {adminDealerPage === 'leads' && (
+              <LeadsPage dealerId={adminDealerId} nav={adminNav} activeTab="leads" />
             )}
             {adminDealerPage === 'help' && (
               <KnowledgeBasePage dealerId={adminDealerId} nav={adminNav} activeTab="help" />

@@ -619,6 +619,142 @@ paths:
                     items:
                       $ref: '#/components/schemas/SocialPost'
 
+  /api/dealers/{dealershipId}/platforms/{platformSlug}/listings:
+    post:
+      tags: [Listings]
+      security:
+        - OperatorAuth: []
+      x-route-classification: operator
+      operationId: publishMarketplaceListing
+      summary: Publish (or re-publish) a vehicle listing on a marketplace platform
+      description: |
+        Upserts the inventory item and publishes an offer via the platform's
+        listing bridge. Supported platforms: ebay-motors (OAuth-gated) and
+        consumer-marketplace (first-party — going ACTIVE here is what makes the
+        vehicle visible on the consumer marketplace, subject to the vehicle's
+        READY gate and channel opt-outs).
+      parameters:
+        - $ref: '#/components/parameters/dealershipId'
+        - $ref: '#/components/parameters/platformSlug'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [vehicleId]
+              properties:
+                vehicleId:
+                  type: string
+      responses:
+        '201':
+          description: Listing published
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [listing]
+                properties:
+                  listing:
+                    $ref: '#/components/schemas/MarketplaceListing'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '402':
+          description: Platform OAuth not connected — reconnect first
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '502':
+          description: Platform API error — listing stored with status FAILED
+    get:
+      tags: [Listings]
+      security:
+        - OperatorAuth: []
+      x-route-classification: operator
+      operationId: listMarketplaceListings
+      summary: List marketplace listings for a dealer platform
+      parameters:
+        - $ref: '#/components/parameters/dealershipId'
+        - $ref: '#/components/parameters/platformSlug'
+      responses:
+        '200':
+          description: Listings for this dealer + platform
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [listings]
+                properties:
+                  listings:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/MarketplaceListing'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+
+  /api/dealers/{dealershipId}/platforms/{platformSlug}/listings/{vehicleId}:
+    get:
+      tags: [Listings]
+      security:
+        - OperatorAuth: []
+      x-route-classification: operator
+      operationId: getMarketplaceListing
+      summary: Get the listing record for one vehicle on a platform
+      parameters:
+        - $ref: '#/components/parameters/dealershipId'
+        - $ref: '#/components/parameters/platformSlug'
+        - $ref: '#/components/parameters/vehicleId'
+      responses:
+        '200':
+          description: Listing record
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [listing]
+                properties:
+                  listing:
+                    $ref: '#/components/schemas/MarketplaceListing'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+    delete:
+      tags: [Listings]
+      security:
+        - OperatorAuth: []
+      x-route-classification: operator
+      operationId: endMarketplaceListing
+      summary: Withdraw the offer and mark the listing ENDED
+      parameters:
+        - $ref: '#/components/parameters/dealershipId'
+        - $ref: '#/components/parameters/platformSlug'
+        - $ref: '#/components/parameters/vehicleId'
+      responses:
+        '204':
+          description: Listing ended
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '402':
+          description: Platform OAuth not connected — reconnect first
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '409':
+          description: No external offer ID — nothing to withdraw
+        '502':
+          description: Platform API error withdrawing the offer
+
   /api/oauth/callback:
     get:
       tags: [Accounts]
@@ -1800,6 +1936,36 @@ paths:
           $ref: '#/components/responses/NotFound'
 
   /api/dealers/{dealershipId}/leads:
+    get:
+      tags: [Leads]
+      security:
+        - OperatorAuth: []
+      x-route-classification: operator
+      operationId: listDealerLeads
+      summary: List captured leads for a dealership
+      description: |
+        Returns leads for this dealership, most recent first. Includes leads
+        captured from the storefront and from marketplace listing inquiry forms
+        (platformSlug consumer-marketplace).
+      parameters:
+        - $ref: '#/components/parameters/dealershipId'
+        - name: limit
+          in: query
+          schema: { type: integer, minimum: 1, maximum: 200, default: 50 }
+        - name: platformSlug
+          in: query
+          schema: { type: string }
+      responses:
+        '200':
+          description: Lead list
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DealerLeadListResponse'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
     post:
       tags: [Storefront]
       security: []
@@ -1825,6 +1991,40 @@ paths:
           $ref: '#/components/responses/BadRequest'
         '404':
           $ref: '#/components/responses/NotFound'
+
+  /api/dealers/{dealershipId}/notifications:
+    get:
+      tags: [Leads]
+      security:
+        - OperatorAuth: []
+      x-route-classification: operator
+      operationId: listDealerNotifications
+      summary: List dealer notifications
+      description: |
+        Returns DealerNotification rows for this dealership, most recent first.
+        Covers LEAD_CAPTURED and VEHICLE_SOLD_MARKETPLACE events. deliveryStatus
+        reflects email delivery (PENDING | SENT | FAILED); this endpoint is the
+        operator read surface regardless of email outcome.
+      parameters:
+        - $ref: '#/components/parameters/dealershipId'
+        - name: limit
+          in: query
+          schema: { type: integer, minimum: 1, maximum: 200, default: 50 }
+        - name: type
+          in: query
+          description: Filter by notification type (e.g. VEHICLE_SOLD_MARKETPLACE)
+          schema: { type: string }
+      responses:
+        '200':
+          description: Notification list
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DealerNotificationListResponse'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
 
   /api/dealers/{dealershipId}/performance/vehicles:
     get:
@@ -4200,6 +4400,139 @@ components:
         leadId:
           type: string
           nullable: true
+
+    DealerLeadListResponse:
+      type: object
+      required: [leads, total]
+      properties:
+        total:
+          type: integer
+        leads:
+          type: array
+          items:
+            $ref: '#/components/schemas/DealerLeadItem'
+
+    DealerLeadItem:
+      type: object
+      required: [id, source, platformSlug, createdAt]
+      properties:
+        id:
+          type: string
+        vehicleId:
+          type: string
+          nullable: true
+        source:
+          type: string
+        platformSlug:
+          type: string
+        contactName:
+          type: string
+          nullable: true
+        contactEmail:
+          type: string
+          nullable: true
+        contactPhone:
+          type: string
+          nullable: true
+        message:
+          type: string
+          nullable: true
+        vehicleInterest:
+          type: string
+          nullable: true
+        createdAt:
+          type: string
+          format: date-time
+        vehicle:
+          type: object
+          nullable: true
+          properties:
+            year:
+              type: integer
+            make:
+              type: string
+            model:
+              type: string
+            stockNumber:
+              type: string
+            soldAt:
+              type: string
+              format: date-time
+              nullable: true
+
+    DealerNotificationListResponse:
+      type: object
+      required: [notifications, total]
+      properties:
+        total:
+          type: integer
+        notifications:
+          type: array
+          items:
+            $ref: '#/components/schemas/DealerNotificationItem'
+
+    DealerNotificationItem:
+      type: object
+      required: [id, type, payload, deliveryStatus, createdAt]
+      properties:
+        id:
+          type: string
+        type:
+          type: string
+          description: Notification kind, e.g. LEAD_CAPTURED or VEHICLE_SOLD_MARKETPLACE
+        payload:
+          type: object
+          additionalProperties: true
+        deliveryStatus:
+          type: string
+          enum: [PENDING, SENT, FAILED]
+          description: Email delivery outcome — not an operator read/unread state
+        deliveredAt:
+          type: string
+          format: date-time
+          nullable: true
+        createdAt:
+          type: string
+          format: date-time
+
+    MarketplaceListing:
+      type: object
+      required: [id, dealershipId, vehicleId, platformSlug, status, createdAt, updatedAt]
+      properties:
+        id:
+          type: string
+        dealershipId:
+          type: string
+        vehicleId:
+          type: string
+        platformSlug:
+          type: string
+        externalListingId:
+          type: string
+          nullable: true
+        externalOfferId:
+          type: string
+          nullable: true
+        status:
+          type: string
+          enum: [DRAFT, ACTIVE, ENDED, FAILED]
+        errorMessage:
+          type: string
+          nullable: true
+        listedAt:
+          type: string
+          format: date-time
+          nullable: true
+        endedAt:
+          type: string
+          format: date-time
+          nullable: true
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
 
     # ── Performance cache schemas ──────────────────────────────────────────────
 

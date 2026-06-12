@@ -1,5 +1,7 @@
+import { useEffect, useState } from 'react';
 import { getCategoryInventorySchema } from '@auto-dealer/category-schemas';
 import type { BusinessCategoryId } from '@auto-dealer/category-schemas';
+import { fetchVehicleDetail, type VehicleMediaItem } from '@/lib/api/sdk.ts';
 
 type ReadinessStatus = 'READY' | 'WARNING' | 'BLOCKED';
 
@@ -27,12 +29,34 @@ type InventoryRowItem = {
 };
 
 type Props = {
+  dealerId?: string;
   item: InventoryRowItem;
   selected?: boolean;
   selectable?: boolean;
   onToggle?: (id: string) => void;
   onClick?: (id: string) => void;
 };
+
+const THUMBNAIL_SLOT_PRIORITY = [
+  'main-photo',
+  'front',
+  'front-quarter-driver',
+  'front-quarter-passenger',
+];
+
+function selectThumbnailUrl(media: VehicleMediaItem[]): string | null {
+  if (media.length === 0) return null;
+  const sorted = [...media].sort((a, b) => a.sortOrder - b.sortOrder);
+  const images = sorted.filter(m => m.url && m.kind.toUpperCase() === 'IMAGE');
+
+  for (const slotKey of THUMBNAIL_SLOT_PRIORITY) {
+    const matches = images.filter(m => m.mediaSlotKey === slotKey);
+    const latest = matches[matches.length - 1];
+    if (latest) return latest.url;
+  }
+
+  return images[0]?.url ?? sorted.find(m => m.url)?.url ?? null;
+}
 
 const readinessBadge: Record<ReadinessStatus, { label: string; cls: string }> = {
   READY:   { label: 'Ready',   cls: 'bg-green-100 text-green-700 border-green-200' },
@@ -44,10 +68,32 @@ function formatPrice(cents: number) {
   return cents > 0 ? `$${(cents / 100).toLocaleString('en-US', { minimumFractionDigits: 0 })}` : '—';
 }
 
-export function InventoryRowCard({ item, selected, selectable, onToggle, onClick }: Props) {
+export function InventoryRowCard({ dealerId, item, selected, selectable, onToggle, onClick }: Props) {
   const schema = getCategoryInventorySchema(item.category);
   const primaryLabel = schema?.primaryIdentifier.label ?? 'ID';
   const badge = readinessBadge[item.readiness];
+  const [detailThumbnail, setDetailThumbnail] = useState<string | null>(null);
+  const thumbnail = item.mediaThumbnail ?? detailThumbnail;
+
+  useEffect(() => {
+    let active = true;
+    setDetailThumbnail(null);
+
+    if (item.mediaThumbnail || !dealerId || item.mediaCount <= 0) return () => { active = false; };
+
+    fetchVehicleDetail(dealerId, item.id)
+      .then(vehicle => {
+        if (!active) return;
+        setDetailThumbnail(selectThumbnailUrl(vehicle.media));
+      })
+      .catch(() => {
+        if (active) setDetailThumbnail(null);
+      });
+
+    return () => {
+      active = false;
+    };
+  }, [dealerId, item.id, item.mediaCount, item.mediaThumbnail]);
 
   return (
     <div
@@ -66,9 +112,9 @@ export function InventoryRowCard({ item, selected, selectable, onToggle, onClick
         />
       )}
 
-      {item.mediaThumbnail ? (
+      {thumbnail ? (
         <img
-          src={item.mediaThumbnail}
+          src={thumbnail}
           alt={item.displayTitle}
           className="w-16 h-12 object-cover rounded-lg shrink-0 border border-silver-100"
         />

@@ -37,7 +37,7 @@ export function ListingImage({
           alt={imgAlt}
           className={`h-full w-full object-cover ${imgClassName}`}
           loading={eager ? 'eager' : 'lazy'}
-          fetchPriority={eager ? 'high' : 'auto'}
+          {...{ fetchpriority: eager ? 'high' : 'auto' }}
           decoding="async"
         />
       </div>

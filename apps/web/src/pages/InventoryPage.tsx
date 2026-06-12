@@ -319,6 +319,7 @@ export default function InventoryPage({ dealerId, nav, activeTab }: Props) {
                     />
                     
                     <InventoryDataGrid
+                      dealerId={dealerId}
                       items={mappedVisible}
                       viewMode={viewMode}
                       selectedIds={selected}

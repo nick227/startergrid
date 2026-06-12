@@ -33,6 +33,7 @@
     "validate:pristine:db": "npm run -s build && node dist/src/scripts/dev/validatePristine.js --db",
     "smoke:test": "npm run -s build && node dist/src/scripts/dev/smokeTest.js",
     "smoke:marketplace": "node scripts/smoke-marketplace.mjs",
+    "smoke:connectivity": "node scripts/smoke-connectivity.mjs",
     "smoke:google-oauth": "npm run -s build && node dist/src/scripts/dev/googleOAuthSmoke.js",
     "smoke:meta-oauth": "npm run -s build && node dist/src/scripts/dev/metaOAuthSmoke.js",
     "smoke:meta-catalog": "npm run -s build && node dist/src/scripts/dev/metaCatalogSmoke.js",

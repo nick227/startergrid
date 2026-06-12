@@ -1102,6 +1102,7 @@ export type DealerLeadVehicle = {
   model: string;
   stockNumber: string;
   soldAt: string | null;
+  thumbnailUrl?: string | null;
 };
 
 export type DealerLead = {

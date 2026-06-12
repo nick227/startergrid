@@ -30,6 +30,7 @@ export type InventoryListItem = {
   condition: string;
   exteriorColor: string;
   mediaCount: number;
+  thumbnailUrl: string | null;
   readiness: 'READY' | 'BLOCKED' | 'WARNING';
   issues: Array<{ path: string; message: string; severity: 'FAIL' | 'WARN' }>;
   listingStatus: string;
@@ -52,6 +53,34 @@ export type InventoryListResult = {
   lifecycleScope: LifecycleScope;
 };
 
+type ThumbnailMedia = {
+  url: string;
+  kind: string;
+  sortOrder: number;
+  mediaSlotKey: string | null;
+};
+
+const THUMBNAIL_SLOT_PRIORITY = [
+  'main-photo',
+  'front',
+  'front-quarter-driver',
+  'front-quarter-passenger',
+];
+
+function selectThumbnailUrl(media: ThumbnailMedia[]): string | null {
+  if (media.length === 0) return null;
+  const sorted = [...media].sort((a, b) => a.sortOrder - b.sortOrder);
+  const images = sorted.filter(m => m.url && m.kind.toUpperCase() === 'IMAGE');
+
+  for (const slotKey of THUMBNAIL_SLOT_PRIORITY) {
+    const matches = images.filter(m => m.mediaSlotKey === slotKey);
+    const latest = matches[matches.length - 1];
+    if (latest) return latest.url;
+  }
+
+  return images[0]?.url ?? sorted.find(m => m.url)?.url ?? null;
+}
+
 export async function listInventoryVehicles(
   prisma: PrismaClient,
   dealershipId: string,
@@ -66,6 +95,10 @@ export async function listInventoryVehicles(
       bodyStyle: true, listingStatus: true,
       soldAt: true, removedAt: true, reactivatedAt: true,
       updatedAt: true,
+      media: {
+        select: { url: true, kind: true, sortOrder: true, mediaSlotKey: true },
+        orderBy: { sortOrder: 'asc' },
+      },
       _count: { select: { media: true } },
     },
     orderBy: { updatedAt: 'desc' },
@@ -92,6 +125,7 @@ export async function listInventoryVehicles(
       condition: v.condition,
       exteriorColor: v.exteriorColor,
       mediaCount: v._count.media,
+      thumbnailUrl: selectThumbnailUrl(v.media),
       readiness,
       issues,
       listingStatus: v.listingStatus,
