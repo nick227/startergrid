@@ -146,6 +146,40 @@ export type DealerSummary = {
   createdAt: string;
 };
 
+export type DealershipAddressInput = {
+  street: string;
+  city: string;
+  state: string;
+  postalCode: string;
+  country?: string;
+};
+
+export type DealershipContactInput = {
+  name: string;
+  email: string;
+  phone?: string;
+  role?: string;
+};
+
+export type CreateDealershipPayload = {
+  legalName: string;
+  dbaName?: string;
+  businessCategory: string;
+  dealerLicense?: string;
+  websiteUrl?: string;
+  rooftopAddress: DealershipAddressInput;
+  primaryContact: DealershipContactInput;
+  inventorySize?: number | null;
+  desiredChannels?: string[];
+  documents?: string[];
+};
+
+export type CreateDealershipResponse = {
+  dealer: DealerSummary;
+  nextHref: string;
+  mode: 'signup' | 'admin' | 'operator';
+};
+
 export type QueueItemView = {
   id: string;
   assetRef: string | null;

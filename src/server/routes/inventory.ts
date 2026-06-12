@@ -31,6 +31,8 @@ import {
 } from '../requestValidation.js';
 import { normalizeVin, validateVin, resolveVinDecoder } from '../../services/inventory/vin/index.js';
 import { createVehicleShell, BULK_VIN_SOURCE } from '../../services/inventory/vehicleShellService.js';
+import { buildVehicleChannelMatrix, STOREFRONT_CHANNEL_KEY } from '../../services/inventory/vehicleChannelService.js';
+import { platformProfiles } from '../../data/platformProfiles.js';
 import { getMediaGuide } from '@auto-dealer/category-schemas';
 
 type VehicleParams = { dealershipId: string; stockNumber: string };
@@ -543,6 +545,7 @@ export function registerInventoryRoutes(app: FastifyInstance, prisma: PrismaClie
               id: true, url: true, kind: true, sortOrder: true,
               width: true, height: true, mimeType: true,
               mediaSlotKey: true, mediaRole: true,
+              customLabel: true, customGroup: true,
             },
             orderBy: { sortOrder: 'asc' },
           },
@@ -591,6 +594,7 @@ export function registerInventoryRoutes(app: FastifyInstance, prisma: PrismaClie
         exteriorColor: vehicle.exteriorColor,
         interiorColor: vehicle.interiorColor,
         options: vehicle.options ?? [],
+        listingStatus: vehicle.listingStatus,
         soldAt: vehicle.soldAt?.toISOString() ?? null,
         removedAt: vehicle.removedAt?.toISOString() ?? null,
         reactivatedAt: vehicle.reactivatedAt?.toISOString() ?? null,
@@ -649,7 +653,7 @@ export function registerInventoryRoutes(app: FastifyInstance, prisma: PrismaClie
           mediaRole:    slotKey ? 'STRUCTURED_SHOT' : 'GALLERY_IMAGE',
           assignedBy:   operator.id,
         },
-        select: { id: true, mediaSlotKey: true, mediaRole: true, url: true, sortOrder: true },
+        select: { id: true, mediaSlotKey: true, mediaRole: true, url: true, sortOrder: true, customLabel: true, customGroup: true },
       });
 
       // Admin audit for privileged actions
@@ -663,6 +667,37 @@ export function registerInventoryRoutes(app: FastifyInstance, prisma: PrismaClie
           },
         });
       }
+
+      return reply.send(updated);
+    }
+  );
+
+  // ── Media label (custom card name) ────────────────────────────────────────────
+
+  app.patch<{ Params: MediaSlotParams }>(
+    '/api/dealers/:dealershipId/inventory/vehicles/:vehicleId/media/:mediaId/label',
+    async (request, reply) => {
+      const { dealershipId, vehicleId, mediaId } = request.params;
+      if (!await requireDealerAccess(prisma, request, reply, dealershipId)) return;
+
+      const body = request.body as Record<string, unknown> | null;
+      const raw = body?.['customLabel'];
+      if (raw !== null && typeof raw !== 'string') {
+        return reply.status(400).send({ error: 'customLabel must be a string or null' });
+      }
+      const customLabel = typeof raw === 'string' ? raw.trim().slice(0, 120) || null : null;
+
+      const media = await prisma.vehicleMedia.findFirst({
+        where: { id: mediaId, vehicleId, vehicle: { dealershipId } },
+        select: { id: true },
+      });
+      if (!media) return reply.status(404).send({ error: 'Media not found' });
+
+      const updated = await prisma.vehicleMedia.update({
+        where: { id: mediaId },
+        data: { customLabel },
+        select: { id: true, customLabel: true, customGroup: true, mediaSlotKey: true, url: true },
+      });
 
       return reply.send(updated);
     }
@@ -810,6 +845,85 @@ export function registerInventoryRoutes(app: FastifyInstance, prisma: PrismaClie
     }
   );
 
+  // ── Listing status (DRAFT | READY distribution gate) ──────────────────────────
+
+  app.patch<{ Params: VehicleActionParams }>(
+    '/api/dealers/:dealershipId/inventory/vehicles/:vehicleId/listing-status',
+    async (request, reply) => {
+      const { dealershipId, vehicleId } = request.params;
+      if (!await requireDealerAccess(prisma, request, reply, dealershipId)) return;
+
+      const body = request.body as Record<string, unknown> | null;
+      const listingStatus = body?.['listingStatus'];
+      if (listingStatus !== 'DRAFT' && listingStatus !== 'READY') {
+        return reply.status(400).send({ error: "listingStatus must be 'DRAFT' or 'READY'" });
+      }
+
+      const vehicle = await prisma.vehicle.findFirst({
+        where: { id: vehicleId, dealershipId },
+        select: { id: true },
+      });
+      if (!vehicle) return reply.status(404).send({ error: 'Vehicle not found' });
+
+      const updated = await prisma.vehicle.update({
+        where: { id: vehicleId },
+        data: { listingStatus },
+        select: { id: true, listingStatus: true },
+      });
+      return reply.send(updated);
+    }
+  );
+
+  // ── Channel matrix (connected / eligible / selected / live per channel) ───────
+
+  app.get<{ Params: VehicleActionParams }>(
+    '/api/dealers/:dealershipId/inventory/vehicles/:vehicleId/channels',
+    async (request, reply) => {
+      const { dealershipId, vehicleId } = request.params;
+      if (!await requireDealerAccess(prisma, request, reply, dealershipId)) return;
+
+      const matrix = await buildVehicleChannelMatrix(prisma, dealershipId, vehicleId);
+      if (!matrix) return reply.status(404).send({ error: 'Vehicle not found' });
+      return reply.send(matrix);
+    }
+  );
+
+  type ChannelSelectionParams = { dealershipId: string; vehicleId: string; channelKey: string };
+
+  app.put<{ Params: ChannelSelectionParams }>(
+    '/api/dealers/:dealershipId/inventory/vehicles/:vehicleId/channels/:channelKey/selection',
+    async (request, reply) => {
+      const { dealershipId, vehicleId, channelKey } = request.params;
+      if (!await requireDealerAccess(prisma, request, reply, dealershipId)) return;
+
+      const body = request.body as Record<string, unknown> | null;
+      const selected = body?.['selected'];
+      if (typeof selected !== 'boolean') {
+        return reply.status(400).send({ error: 'selected must be a boolean' });
+      }
+
+      const validChannel = channelKey === STOREFRONT_CHANNEL_KEY
+        || platformProfiles.some(p => p.slug === channelKey);
+      if (!validChannel) {
+        return reply.status(400).send({ error: `Unknown channel '${channelKey}'` });
+      }
+
+      const vehicle = await prisma.vehicle.findFirst({
+        where: { id: vehicleId, dealershipId },
+        select: { id: true },
+      });
+      if (!vehicle) return reply.status(404).send({ error: 'Vehicle not found' });
+
+      const row = await prisma.vehicleChannelSelection.upsert({
+        where: { vehicleId_channelKey: { vehicleId, channelKey } },
+        update: { selected },
+        create: { dealershipId, vehicleId, channelKey, selected },
+        select: { channelKey: true, selected: true },
+      });
+      return reply.send(row);
+    }
+  );
+
   // ── Add / remove vehicle media ────────────────────────────────────────────────
 
   type MediaParams = { dealershipId: string; vehicleId: string };
@@ -837,7 +951,7 @@ export function registerInventoryRoutes(app: FastifyInstance, prisma: PrismaClie
         urls.map(url =>
           prisma.vehicleMedia.create({
             data: { vehicleId, url, kind: 'IMAGE', sortOrder: nextOrder++, mediaRole: 'GALLERY_IMAGE' },
-            select: { id: true, url: true, kind: true, sortOrder: true, mediaSlotKey: true, mediaRole: true },
+            select: { id: true, url: true, kind: true, sortOrder: true, mediaSlotKey: true, mediaRole: true, customLabel: true, customGroup: true },
           })
         ),
       );
@@ -880,10 +994,14 @@ export function registerInventoryRoutes(app: FastifyInstance, prisma: PrismaClie
       
       const { fileUploadService } = await import('../../services/storage/fileUploadService.js');
 
+      let group: string | null = null;
+
       const parts = (request as unknown as { parts(): AsyncIterable<{ type: string; fieldname: string; value: string; file: NodeJS.ReadableStream; resume(): void; mimetype: string }> }).parts();
       for await (const part of parts) {
         if (part.type === 'field' && part.fieldname === 'slotKey') {
           slotKey = part.value;
+        } else if (part.type === 'field' && part.fieldname === 'group') {
+          group = part.value.trim() || null;
         } else if (part.type === 'file') {
           // Validation
           if (!['image/jpeg', 'image/png', 'image/webp'].includes(part.mimetype)) {
@@ -896,16 +1014,17 @@ export function registerInventoryRoutes(app: FastifyInstance, prisma: PrismaClie
             const url = await fileUploadService.uploadFile(part.file, part.mimetype);
             const mediaRole = slotKey ? 'STRUCTURED_SHOT' : 'GALLERY_IMAGE';
             const media = await prisma.vehicleMedia.create({
-              data: { 
-                vehicleId, 
-                url, 
-                kind: 'IMAGE', 
-                sortOrder: nextOrder++, 
-                mediaRole, 
+              data: {
+                vehicleId,
+                url,
+                kind: 'IMAGE',
+                sortOrder: nextOrder++,
+                mediaRole,
                 mediaSlotKey: slotKey,
-                mimeType: part.mimetype 
+                customGroup: slotKey ? null : group,
+                mimeType: part.mimetype
               },
-              select: { id: true, url: true, kind: true, sortOrder: true, mediaSlotKey: true, mediaRole: true },
+              select: { id: true, url: true, kind: true, sortOrder: true, mediaSlotKey: true, mediaRole: true, customLabel: true, customGroup: true },
             });
             createdMedia.push(media);
           } catch (e) {

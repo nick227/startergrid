@@ -54,6 +54,17 @@ export function buildApp(prisma: PrismaClient): FastifyInstance {
     decorateReply: false,
   });
 
+  // Committed demo sample images — referenced by seeded demo vehicles, so a
+  // fresh clone + db:seed renders photos without depending on local uploads/.
+  const demoAssetsDir = path.join(process.cwd(), 'assets', 'demo-vehicles');
+  if (fs.existsSync(demoAssetsDir)) {
+    app.register(fastifyStatic, {
+      root: demoAssetsDir,
+      prefix: '/demo-assets/',
+      decorateReply: false,
+    });
+  }
+
   app.get('/health', async (_req, reply) => {
     return reply.send({ ok: true, ts: new Date().toISOString() });
   });

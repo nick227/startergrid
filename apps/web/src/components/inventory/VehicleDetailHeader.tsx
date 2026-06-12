@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import type { VehicleDetailDto } from '@/lib/api/sdk.ts';
-import { markVehicleRemoved, relistVehicle } from '@/lib/api/sdk.ts';
+import { markVehicleSold, relistVehicle, setVehicleListingStatus } from '@/lib/api/sdk.ts';
 
 function formatPrice(cents: number) {
   return cents > 0 ? `$${(cents / 100).toLocaleString(undefined, { maximumFractionDigits: 0 })}` : '—';
@@ -26,6 +26,7 @@ export function VehicleDetailHeader({ vehicle, onClose, onReload }: Props) {
   const isSold = !!vehicle.soldAt;
   const isRemoved = !!vehicle.removedAt;
   const isActive = !isSold && !isRemoved;
+  const isDraft = vehicle.listingStatus === 'DRAFT';
   const readiness = vehicle.readiness.status;
 
   const run = async (action: string, fn: () => Promise<void>) => {
@@ -40,6 +41,18 @@ export function VehicleDetailHeader({ vehicle, onClose, onReload }: Props) {
       setBusy(null);
     }
   };
+
+  // Derived display state: Draft → Ready → Live on N → Sold/Removed
+  const liveCount = vehicle.distribution.liveCount;
+  const stateChip = isSold
+    ? { label: 'SOLD', cls: 'bg-navy-50 text-navy-600 border-navy-200' }
+    : isRemoved
+      ? { label: 'REMOVED', cls: 'bg-silver-100 text-ink-muted border-silver-200' }
+      : isDraft
+        ? { label: 'DRAFT', cls: 'bg-silver-100 text-ink-body border-silver-300' }
+        : liveCount > 0
+          ? { label: `LIVE ON ${liveCount}`, cls: 'bg-green-100 text-green-700 border-green-200' }
+          : { label: 'READY', cls: 'bg-blue-50 text-blue-700 border-blue-200' };
 
   return (
     <div className="sticky top-0 z-10 bg-white border-b border-silver-200 px-6 pt-5 pb-4 shrink-0 shadow-sm">
@@ -58,11 +71,12 @@ export function VehicleDetailHeader({ vehicle, onClose, onReload }: Props) {
           </div>
         </div>
         <div className="flex items-center gap-1.5 shrink-0">
+          <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold border ${stateChip.cls}`}>
+            {stateChip.label}
+          </span>
           <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold border ${readinessBg[readiness]}`}>
             {readiness}
           </span>
-          {isSold && <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold border bg-navy-50 text-navy-600 border-navy-200">SOLD</span>}
-          {isRemoved && !isSold && <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold border bg-silver-100 text-ink-muted border-silver-200">REMOVED</span>}
           <button
             type="button"
             onClick={onClose}
@@ -77,14 +91,45 @@ export function VehicleDetailHeader({ vehicle, onClose, onReload }: Props) {
       {/* Row 2: primary actions */}
       <div className="flex flex-wrap items-center gap-2 mt-3">
         {isActive && (
-          <button
-            type="button"
-            disabled={busy !== null}
-            onClick={() => run('removed', () => markVehicleRemoved(vehicle.dealershipId, vehicle.id))}
-            className="px-3 py-1.5 text-xs font-bold rounded-lg bg-white border border-silver-200 text-red-600 hover:bg-red-50 hover:border-red-200 disabled:opacity-50 transition-all shadow-sm"
-          >
-            {busy === 'removed' ? 'Removing…' : 'Remove Vehicle'}
-          </button>
+          <>
+            {/* Draft / Ready segmented toggle — distribution gate, not an action */}
+            <div className="inline-flex rounded-lg border border-silver-200 overflow-hidden shadow-sm" role="group" aria-label="Listing status">
+              <button
+                type="button"
+                disabled={busy !== null || isDraft}
+                onClick={() => run('status', () => setVehicleListingStatus(vehicle.dealershipId, vehicle.id, 'DRAFT'))}
+                className={`px-3 py-1.5 text-xs font-bold transition-colors disabled:cursor-default ${
+                  isDraft ? 'bg-silver-200 text-ink-heading' : 'bg-white text-ink-muted hover:bg-silver-50'
+                }`}
+              >
+                Draft
+              </button>
+              <button
+                type="button"
+                disabled={busy !== null || !isDraft}
+                onClick={() => run('status', () => setVehicleListingStatus(vehicle.dealershipId, vehicle.id, 'READY'))}
+                className={`px-3 py-1.5 text-xs font-bold transition-colors border-l border-silver-200 disabled:cursor-default ${
+                  !isDraft ? 'bg-green-600 text-white' : 'bg-white text-ink-muted hover:bg-green-50'
+                }`}
+              >
+                Ready
+              </button>
+            </div>
+            {isDraft && (
+              <span className="text-[11px] text-ink-muted">Internal only — not distributed to storefront or platforms.</span>
+            )}
+
+            <span className="grow" />
+
+            <button
+              type="button"
+              disabled={busy !== null}
+              onClick={() => run('sold', () => markVehicleSold(vehicle.dealershipId, vehicle.id))}
+              className="px-3 py-1.5 text-xs font-bold rounded-lg bg-navy-700 text-white hover:bg-navy-800 disabled:opacity-50 transition-all shadow-sm"
+            >
+              {busy === 'sold' ? 'Marking Sold…' : 'Mark Sold'}
+            </button>
+          </>
         )}
         {(isSold || isRemoved) && (
           <button

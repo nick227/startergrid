@@ -58,6 +58,7 @@ export const routeClassifications = {
   ],
   operator: [
     'GET /api/dealers',
+    'POST /api/dealers',
     'GET /api/dealers/:dealershipId/performance/vehicles',
     'GET /api/dealers/:dealershipId/performance/vehicles/:stockNumber',
     'GET /api/dealers/:dealershipId/performance/platforms',
@@ -110,19 +111,31 @@ export const routeClassifications = {
     'POST /api/dealers/:dealershipId/inventory/vehicles/:vehicleId/sold',
     'POST /api/dealers/:dealershipId/inventory/vehicles/:vehicleId/removed',
     'POST /api/dealers/:dealershipId/inventory/vehicles/:vehicleId/relist',
+    'PATCH /api/dealers/:dealershipId/inventory/vehicles/:vehicleId/listing-status',
+    'GET /api/dealers/:dealershipId/inventory/vehicles/:vehicleId/channels',
+    'PUT /api/dealers/:dealershipId/inventory/vehicles/:vehicleId/channels/:channelKey/selection',
     'POST /api/dealers/:dealershipId/inventory/vehicles/:vehicleId/media',
+    'POST /api/dealers/:dealershipId/inventory/vehicles/:vehicleId/media/upload',
     'DELETE /api/dealers/:dealershipId/inventory/vehicles/:vehicleId/media/:mediaId',
     'PATCH /api/dealers/:dealershipId/inventory/vehicles/:vehicleId/media/:mediaId/slot',
+    'PATCH /api/dealers/:dealershipId/inventory/vehicles/:vehicleId/media/:mediaId/label',
   ],
   publicWrite: [
+    'POST /api/dealers/signup',
+    'POST /api/dealers/signup/:dealershipId/logo',
     'POST /api/dealers/:dealershipId/leads',
   ],
   // Site-management routes — SUPER_ADMIN only (in-house operators).
   admin: [
     'GET /api/admin/dashboard',
+    'POST /api/admin/dealers',
     'GET /api/admin/platform-credentials',
     'POST /api/admin/platform-credentials/validate',
     'GET /api/admin/blocked-dealers',
+    'GET /api/admin/users',
+    'POST /api/admin/users',
+    'PATCH /api/admin/users/:userId',
+    'DELETE /api/admin/users/:userId',
   ],
 } as const;
 

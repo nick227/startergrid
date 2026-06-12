@@ -142,6 +142,13 @@ export function parseOperatorRoute(hash = window.location.hash): OperatorRoute {
     );
   }
 
+  if (path === '/signup' || path === 'signup') {
+    return routeWithReports(
+      { dealerId: null, page: 'signup', platformSlug: null, platformView: null, assetRef, assetId, adminDealerId: null, adminDealerPage: null },
+      hash,
+    );
+  }
+
   const match = path.match(/^\/([^/]+)(?:\/(.+))?$/);
   if (!match) return emptyRoute();
 

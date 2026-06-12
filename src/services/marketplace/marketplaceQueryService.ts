@@ -50,9 +50,15 @@ import {
 const CONSUMER_MARKETPLACE_SLUG = 'consumer-marketplace';
 
 // Added to every vehicle query so only explicitly published vehicles appear.
+// listingStatus DRAFT = internal inventory only; a channelSelections row with
+// selected=false is a dealer opt-out for this channel (no row = selected).
 const PUBLISHED_LISTING_GATE: Prisma.VehicleWhereInput = {
+  listingStatus: 'READY',
   marketplaceListings: {
     some: { platformSlug: CONSUMER_MARKETPLACE_SLUG, status: 'ACTIVE' },
+  },
+  channelSelections: {
+    none: { channelKey: CONSUMER_MARKETPLACE_SLUG, selected: false },
   },
 };
 

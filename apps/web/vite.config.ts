@@ -26,6 +26,14 @@ export default defineConfig({
       '/api': {
         target: 'http://127.0.0.1:3000',
         changeOrigin: true
+      },
+      '/uploads': {
+        target: 'http://127.0.0.1:3000',
+        changeOrigin: true
+      },
+      '/demo-assets': {
+        target: 'http://127.0.0.1:3000',
+        changeOrigin: true
       }
     }
   }

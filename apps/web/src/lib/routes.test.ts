@@ -71,6 +71,15 @@ describe('parseOperatorRoute', () => {
     });
   });
 
+  it('parses dealership signup route', () => {
+    const route = parseOperatorRoute('#/signup');
+    expect(route).toMatchObject({
+      dealerId: null,
+      page: 'signup',
+      platformSlug: null,
+    });
+  });
+
   it('parses admin credentials route', () => {
     const route = parseOperatorRoute('#/admin/platform-credentials');
     expect(route).toMatchObject({

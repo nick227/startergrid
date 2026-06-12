@@ -1,6 +1,6 @@
 import { useState, useMemo, useEffect, lazy, Suspense } from 'react';
 import { useAsyncQuery } from '@/hooks/useAsyncQuery.ts';
-import { fetchAdminDashboard } from '@/lib/api/admin.ts';
+import { fetchAdminDashboard, fetchAdminUsers } from '@/lib/api/admin.ts';
 import { fetchDealers } from '@/lib/api/sdk.ts';
 import { AdminShell } from '@/components/operator/AdminShell.tsx';
 import { AdminViewContext } from '@/contexts/AdminViewContext.tsx';
@@ -18,7 +18,6 @@ import InventoryPage from './InventoryPage.tsx';
 import KnowledgeBasePage from './KnowledgeBasePage.tsx';
 import { Skeleton } from '@/components/ui/Skeleton.tsx';
 
-const AdminBlockedDealersPage     = lazy(() => import('./AdminBlockedDealersPage.tsx'));
 const AdminPlatformDetailPage     = lazy(() => import('./AdminPlatformDetailPage.tsx'));
 const PlatformDetailPage          = lazy(() => import('./PlatformDetailPage.tsx'));
 const PlatformQueuePage     = lazy(() => import('./PlatformQueuePage.tsx'));
@@ -27,8 +26,8 @@ const ReportsRouter         = lazy(() => import('./ReportsRouter.tsx'));
 
 const LAZY_FALLBACK = <div className="surface-card-operator p-6"><Skeleton rows={6} /></div>;
 
-type AdminSection = 'system' | 'dealers' | 'platforms' | 'triage' | 'blocked' | 'audit' | 'insights';
-type OverviewTab = 'system' | 'dealers' | 'platforms' | 'triage' | 'audit' | 'insights';
+type AdminSection = 'system' | 'dealers' | 'platforms' | 'triage' | 'audit' | 'insights' | 'users';
+type OverviewTab = 'system' | 'dealers' | 'platforms' | 'triage' | 'audit' | 'insights' | 'users';
 
 const SECTION_HASHES: Record<AdminSection, string> = {
   system:    '#/admin',
@@ -36,13 +35,14 @@ const SECTION_HASHES: Record<AdminSection, string> = {
   platforms: '#/admin/platforms',
   triage:    '#/admin/triage',
   insights:  '#/admin/insights',
-  blocked:   '#/admin/blocked-dealers',
   audit:     '#/admin/audit',
+  users:     '#/admin/users',
 };
 
 function routeToSection(adminDealerId: string | null, platformSlug: string | null): AdminSection {
-  if (platformSlug === 'blocked-dealers')      return 'blocked';
+  if (platformSlug === 'blocked-dealers')      return 'triage';
   if (platformSlug === 'insights')             return 'insights';
+  if (platformSlug === 'users')                return 'users';
   if (platformSlug === 'dealers' || adminDealerId) return 'dealers';
   if (platformSlug === 'platforms') return 'platforms';
   if (platformSlug === 'triage')    return 'triage';
@@ -51,7 +51,7 @@ function routeToSection(adminDealerId: string | null, platformSlug: string | nul
 }
 
 function isOverviewTab(s: AdminSection): s is OverviewTab {
-  return s === 'system' || s === 'dealers' || s === 'platforms' || s === 'triage' || s === 'audit' || s === 'insights';
+  return s === 'system' || s === 'dealers' || s === 'platforms' || s === 'triage' || s === 'audit' || s === 'insights' || s === 'users';
 }
 
 function buildAdminDealerNav(dealerId: string): OperatorNavHandlers {
@@ -105,7 +105,7 @@ export default function AdminApp({
 
   function navigate(s: AdminSection) {
     setSection(s);
-    window.location.hash = SECTION_HASHES[s];
+    window.location.assign(SECTION_HASHES[s]);
   }
 
   const showDealerDetail  = section === 'dealers' && adminDealerId !== null;
@@ -129,15 +129,16 @@ export default function AdminApp({
     : 'platforms';
 
   // Data fetching
-  const { data, loading, error, reload }             = useAsyncQuery(() => fetchAdminDashboard(), []);
-  const { data: dealersData, loading: dealersLoading, error: dealersError } = useAsyncQuery(() => fetchDealers(), []);
+  const { data, loading, error }                     = useAsyncQuery(() => fetchAdminDashboard(), []);
+  const { data: dealersData, loading: dealersLoading, error: dealersError, reload: reloadDealers } = useAsyncQuery(() => fetchDealers(), []);
+  const { data: usersData, reload: reloadUsers }     = useAsyncQuery(() => fetchAdminUsers({ limit: 1 }), []);
 
-  const meta             = data?.meta;
   const allDealers       = dealersData?.dealers ?? [];
   const platformOverview = data?.platformOverview ?? [];
   const dealerAttention  = data?.dealerAttention ?? [];
   const recentEvents     = data?.recentEvents ?? [];
   const criticalCount    = dealerAttention.filter(d => d.severity === 'critical').length;
+  const userCount        = usersData?.pagination.total ?? null;
 
   const adminAction = (
     <></>
@@ -147,10 +148,10 @@ export default function AdminApp({
     { id: 'system'    as AdminSection, label: 'System Status', count: null,                     alert: false },
     { id: 'dealers'   as AdminSection, label: 'Dealerships',   count: allDealers.length || null, alert: false },
     { id: 'platforms' as AdminSection, label: 'Platforms',     count: platformOverview.length,   alert: false },
-    { id: 'triage'    as AdminSection, label: 'Dealer Triage', count: dealerAttention.length,    alert: criticalCount > 0 },
+    { id: 'triage'    as AdminSection, label: 'Dealer Triage', count: null,                      alert: criticalCount > 0 },
     { id: 'insights'  as AdminSection, label: 'Insights',      count: null,                      alert: false },
-    { id: 'blocked'   as AdminSection, label: 'Blocked',       count: null,                      alert: false },
     { id: 'audit'     as AdminSection, label: 'Audit Log',     count: recentEvents.length,       alert: false },
+    { id: 'users'     as AdminSection, label: 'Users',         count: userCount,                 alert: false },
   ];
 
   const activeTabId = showDealerDetail ? 'dealers' : section;
@@ -196,6 +197,8 @@ export default function AdminApp({
           dealersData={dealersData}
           dealersLoading={dealersLoading}
           dealersError={dealersError}
+          onDealersChanged={reloadDealers}
+          onUsersChanged={reloadUsers}
         />
       )}
 
@@ -253,11 +256,6 @@ export default function AdminApp({
         </Suspense>
       )}
 
-      {section === 'blocked' && (
-        <Suspense fallback={LAZY_FALLBACK}>
-          <AdminBlockedDealersPage />
-        </Suspense>
-      )}
     </AdminShell>
   );
 }

@@ -17,7 +17,7 @@ type Props = {
   isCommitting: boolean;
 };
 
-export function BulkVinReviewSidebar({ dealerId, previewRows, onClose, onCommit, isCommitting }: Props) {
+export function BulkVinReviewSidebar({ previewRows, onClose, onCommit, isCommitting }: Props) {
   const validRows = previewRows.filter(r => r.status === 'OK' && r.decoded);
   const invalidRows = previewRows.filter(r => r.status !== 'OK');
 

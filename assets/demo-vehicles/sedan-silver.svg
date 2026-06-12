@@ -1,0 +1,28 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 600" role="img" aria-label="Sedan sample photo">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#dde8f2"/>
+      <stop offset="70%" stop-color="#f2f6f9"/>
+      <stop offset="100%" stop-color="#e4e9ee"/>
+    </linearGradient>
+    <linearGradient id="paint" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#9aa6b2"/>
+      <stop offset="100%" stop-color="#76828e"/>
+    </linearGradient>
+  </defs>
+  <rect width="800" height="600" fill="url(#bg)"/>
+  <rect y="455" width="800" height="145" fill="#d3dae1"/>
+  <ellipse cx="400" cy="468" rx="300" ry="22" fill="#00000018"/>
+  <g>
+    <path fill="url(#paint)" d="M118 440 L126 384 Q132 352 176 344 L252 330 Q300 268 372 260 L478 260 Q548 266 588 326 L660 340 Q694 348 698 380 L702 440 Q702 452 688 452 L132 452 Q118 452 118 440 Z"/>
+    <path fill="#bcd6ea" opacity="0.9" d="M286 330 Q322 280 376 274 L460 274 Q516 280 552 326 L286 330 Z"/>
+    <line x1="416" y1="274" x2="416" y2="328" stroke="#76828e" stroke-width="6"/>
+    <rect x="120" y="394" width="34" height="14" rx="7" fill="#f5e08e"/>
+    <rect x="664" y="396" width="32" height="12" rx="6" fill="#d96a5b"/>
+    <circle cx="238" cy="450" r="52" fill="#1c1f24"/>
+    <circle cx="238" cy="450" r="24" fill="#aeb6bf"/>
+    <circle cx="576" cy="450" r="52" fill="#1c1f24"/>
+    <circle cx="576" cy="450" r="24" fill="#aeb6bf"/>
+  </g>
+  <text x="400" y="540" text-anchor="middle" font-family="Segoe UI, Arial, sans-serif" font-size="28" font-weight="700" fill="#5b6770">Sedan — sample photo</text>
+</svg>

@@ -216,15 +216,34 @@ export async function runPrepareAndPublish(
 ): Promise<PreparePublishResult> {
   const { dryRun = false } = opts;
 
-  // Load dealer + vehicles
+  // Load dealer + vehicles. DRAFT vehicles are internal-only: excluded from
+  // readiness, feeds, and publishing until the operator flips them to READY.
   const dbDealer = await prisma.dealershipProfile.findUniqueOrThrow({ where: { id: dealershipId } });
   const dbVehicles = await prisma.vehicle.findMany({
-    where: { dealershipId, soldAt: null, removedAt: null },
+    where: { dealershipId, soldAt: null, removedAt: null, listingStatus: 'READY' },
     include: { media: true }
   });
 
   const dealerPayload: DealershipPayload = dbDealershipToPayload(dbDealer);
   const vehiclePayloads: VehiclePayload[] = dbVehicles.map(dbVehicleToPayload);
+
+  // Per-channel opt-outs: dealer can exclude a specific vehicle from a platform.
+  const deselections = await prisma.vehicleChannelSelection.findMany({
+    where: { dealershipId, selected: false },
+    select: { vehicleId: true, channelKey: true },
+  });
+  const stockNumberById = new Map(dbVehicles.map(v => [v.id, v.stockNumber]));
+  const excludedStockNumbersByChannel = new Map<string, Set<string>>();
+  for (const d of deselections) {
+    const stockNumber = stockNumberById.get(d.vehicleId);
+    if (!stockNumber) continue;
+    if (!excludedStockNumbersByChannel.has(d.channelKey)) excludedStockNumbersByChannel.set(d.channelKey, new Set());
+    excludedStockNumbersByChannel.get(d.channelKey)!.add(stockNumber);
+  }
+  const vehiclesForPlatform = (slug: string): VehiclePayload[] => {
+    const excluded = excludedStockNumbersByChannel.get(slug);
+    return excluded ? vehiclePayloads.filter(v => !excluded.has(v.stockNumber)) : vehiclePayloads;
+  };
 
   // Platform filter
   const targets = opts.platformFilter?.length
@@ -264,7 +283,8 @@ export async function runPrepareAndPublish(
       const report = readinessMap.get(platform.slug)!;
       if (report.readiness === 'RED') continue;
 
-      const artifact = generateFeedForPlatform(platform, dealerPayload, vehiclePayloads);
+      const platformVehicles = vehiclesForPlatform(platform.slug);
+      const artifact = generateFeedForPlatform(platform, dealerPayload, platformVehicles);
       const { storagePath } = await writeAndRegisterArtifact(prisma, dealershipId, artifact, {});
 
       const platformDbId = platformIdBySlug.get(platform.slug);
@@ -274,7 +294,7 @@ export async function runPrepareAndPublish(
           dealershipId, applicationId, platform,
           feedArtifactPath: storagePath,
           dealership: dealerPayload,
-          vehicles: vehiclePayloads
+          vehicles: platformVehicles
         });
       }
     }

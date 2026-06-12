@@ -26,6 +26,7 @@ const baseDbVehicle: DbVehicle = {
   options: ['Adaptive Cruise Control', 'Apple CarPlay'],
   starCore: { Vehicle: { VIN: '1HGCV1F30JA000001', ModelYear: 2021 } },
   categoryPayload: null,
+  listingStatus: 'READY',
   soldAt: null,
   removedAt: null,
   reactivatedAt: null,
@@ -43,6 +44,8 @@ const baseDbVehicle: DbVehicle = {
       mimeType: 'image/jpeg',
       mediaSlotKey: null,
       mediaRole: null,
+      customLabel: null,
+      customGroup: null,
       assignedBy: null,
       createdAt: new Date('2026-01-01')
     }

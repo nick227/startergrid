@@ -87,6 +87,14 @@ export default function LoginPage() {
             {submitting ? operatorCopy.auth.signingIn : operatorCopy.auth.signInAction}
           </button>
 
+          <button
+            type="button"
+            onClick={() => { window.location.assign('#/signup'); }}
+            className="w-full rounded-md border border-silver-300 px-3 py-2.5 text-sm font-semibold text-ink-muted transition-colors hover:border-silver-400 hover:text-ink-heading"
+          >
+            Create dealership profile
+          </button>
+
           {isDevBypassConfigured() && (
             <p className="text-[11px] text-ink-faint text-center leading-relaxed">
               Dev bypass active via <span className="font-mono">VITE_DEV_OPERATOR_ID</span> — sign in optional for cookie sessions.

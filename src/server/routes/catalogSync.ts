@@ -127,7 +127,12 @@ export function registerCatalogSyncRoutes(app: FastifyInstance, prisma: PrismaCl
       }
 
       const vehicles = await prisma.vehicle.findMany({
-        where: { dealershipId, removedAt: null, soldAt: null },
+        where: {
+          dealershipId, removedAt: null, soldAt: null,
+          // DRAFT vehicles never sync; per-channel opt-outs are honored
+          listingStatus: 'READY',
+          channelSelections: { none: { channelKey: platformSlug, selected: false } },
+        },
         include: { media: { select: { url: true, sortOrder: true } } },
       });
 

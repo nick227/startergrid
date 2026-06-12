@@ -51,6 +51,7 @@ export function PageShell({
   const { user, logout, refresh } = useAuth();
   const categorySchema = useCategorySchema();
   const isAdminView = useAdminView();
+  const displayDealerName = dealerName?.trim() || dealerId;
 
   if (isAdminView) {
     const tabHandlers: Record<OperatorTab, () => void> = {
@@ -67,11 +68,7 @@ export function PageShell({
       <div className={footerPad ? 'pb-20' : ''}>
         <div className="flex items-center justify-between gap-4 py-3 border-b border-silver-200">
           <div className="flex items-center gap-3 min-w-0">
-            {dealerName ? (
-              <span className="text-sm font-semibold text-ink-heading truncate">{dealerName}</span>
-            ) : (
-              <div className="h-4 w-32 bg-silver-200 rounded animate-pulse" />
-            )}
+            <span className="text-sm font-semibold text-ink-heading truncate">{displayDealerName}</span>
             {!hideDealerId && (
               <span className="text-xs text-ink-faint font-mono hidden sm:block truncate max-w-[14rem]">{dealerId}</span>
             )}
@@ -124,11 +121,7 @@ export function PageShell({
               <div className="flex items-start gap-4 min-w-0">
                 <DealerLogo dealershipId={dealerId} />
                 <div className="min-w-0">
-                  {dealerName ? (
-                    <h1 className="font-bold text-base sm:text-lg tracking-tight truncate">{dealerName}</h1>
-                  ) : (
-                    <div className="h-5 w-40 bg-navy-800 rounded-md animate-pulse" />
-                  )}
+                  <h1 className="font-bold text-base sm:text-lg tracking-tight truncate">{displayDealerName}</h1>
                   {!hideDealerId && (
                     <p className="text-ink-faint text-xs font-mono mt-0.5 truncate">{dealerId}</p>
                   )}

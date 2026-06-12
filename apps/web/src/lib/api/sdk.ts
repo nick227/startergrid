@@ -29,6 +29,8 @@ import type {
   AccountsResponse,
   QueueView,
   DealerSummary,
+  CreateDealershipPayload,
+  CreateDealershipResponse,
   VehicleListResponse,
   LifecycleScope,
   VehicleLifecycleEventsResponse,
@@ -82,6 +84,35 @@ export async function fromSdk<T>(promise: Promise<T>): Promise<T> {
 
 export async function fetchDealers(): Promise<{ dealers: DealerSummary[] }> {
   return fromSdk(DealersService.listDealers());
+}
+
+async function createDealershipFetch(url: string, payload: CreateDealershipPayload): Promise<CreateDealershipResponse> {
+  const res = await fetch(url, {
+    method: 'POST',
+    credentials: 'include',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(payload),
+  });
+  if (!res.ok) {
+    const body = await res.json().catch(() => ({})) as { error?: string };
+    if (res.status === 404) {
+      throw new Error('Dealership creation endpoint was not found. Restart the API server so it picks up the latest backend routes.');
+    }
+    throw new Error(body.error ?? `HTTP ${res.status}`);
+  }
+  return res.json() as Promise<CreateDealershipResponse>;
+}
+
+export async function createDealershipSignup(payload: CreateDealershipPayload): Promise<CreateDealershipResponse> {
+  return createDealershipFetch('/api/dealers/signup', payload);
+}
+
+export async function createOperatorDealership(payload: CreateDealershipPayload): Promise<CreateDealershipResponse> {
+  return createDealershipFetch('/api/dealers', payload);
+}
+
+export async function createAdminDealership(payload: CreateDealershipPayload): Promise<CreateDealershipResponse> {
+  return createDealershipFetch('/api/admin/dealers', payload);
 }
 
 export async function fetchPublishStatus(dealershipId: string): Promise<PublishStatusResponse> {
@@ -643,6 +674,8 @@ export type VehicleMediaItem = {
   mimeType: string | null;
   mediaSlotKey: string | null;
   mediaRole: string | null;
+  customLabel: string | null;
+  customGroup: string | null;
 };
 
 export type VehicleReadinessDto = {
@@ -689,6 +722,7 @@ export type VehicleDetailDto = {
   interiorColor: string | null;
   options: string[];
   priceLastChangedAt: string | null;
+  listingStatus: string;
   soldAt: string | null;
   removedAt: string | null;
   reactivatedAt: string | null;
@@ -839,10 +873,13 @@ export async function addVehicleMedia(
   );
 }
 
-export async function uploadVehicleMedia(dealershipId: string, vehicleId: string, files: File[], slotKey?: string): Promise<{ media: VehicleMediaItem[] }> {
+export async function uploadVehicleMedia(dealershipId: string, vehicleId: string, files: File[], slotKey?: string, group?: string): Promise<{ media: VehicleMediaItem[] }> {
   const formData = new FormData();
   if (slotKey) {
     formData.append('slotKey', slotKey);
+  }
+  if (group) {
+    formData.append('group', group);
   }
   for (const file of files) {
     formData.append('files', file);
@@ -855,6 +892,18 @@ export async function uploadVehicleMedia(dealershipId: string, vehicleId: string
       body: formData,
       // Do not set Content-Type; browser sets it with multipart boundary automatically
     },
+  );
+}
+
+export async function renameVehicleMedia(
+  dealershipId: string,
+  vehicleId: string,
+  mediaId: string,
+  customLabel: string | null,
+): Promise<void> {
+  await catalogFetch<void>(
+    `/api/dealers/${dealershipId}/inventory/vehicles/${vehicleId}/media/${mediaId}/label`,
+    { method: 'PATCH', body: JSON.stringify({ customLabel }), headers: { 'Content-Type': 'application/json' } },
   );
 }
 
@@ -885,6 +934,22 @@ export async function uploadDealerLogo(dealershipId: string, file: File): Promis
   return res.json();
 }
 
+export async function uploadSignupDealerLogo(dealershipId: string, file: File): Promise<{ logoUrl: string }> {
+  const formData = new FormData();
+  formData.append('logo', file);
+
+  const res = await fetch(`/api/dealers/signup/${dealershipId}/logo`, {
+    method: 'POST',
+    body: formData,
+  });
+
+  if (!res.ok) {
+    const data = await res.json().catch(() => ({})) as { error?: string };
+    throw new Error(data.error || 'Failed to upload logo');
+  }
+  return res.json() as Promise<{ logoUrl: string }>;
+}
+
 export async function markVehicleSold(dealershipId: string, vehicleId: string): Promise<void> {
   await catalogFetch<void>(
     `/api/dealers/${dealershipId}/inventory/vehicles/${vehicleId}/sold`,
@@ -903,6 +968,64 @@ export async function relistVehicle(dealershipId: string, vehicleId: string): Pr
   await catalogFetch<void>(
     `/api/dealers/${dealershipId}/inventory/vehicles/${vehicleId}/relist`,
     { method: 'POST' },
+  );
+}
+
+// ── Listing status + channel matrix ───────────────────────────────────────────
+
+export type VehicleChannelLiveStatus =
+  | 'LIVE' | 'QUEUED' | 'NEEDS_APPROVAL' | 'HELD' | 'FAILED' | 'NOT_LIVE';
+
+export type VehicleChannelRow = {
+  channelKey: string;
+  channelName: string;
+  lanes: string[];
+  connected: boolean;
+  connectionState: string;
+  eligible: boolean;
+  eligibilityIssues: string[];
+  selected: boolean;
+  liveStatus: VehicleChannelLiveStatus;
+  statusDetail: string | null;
+  externalListingId: string | null;
+  lastActivityAt: string | null;
+};
+
+export type VehicleChannelMatrixDto = {
+  vehicleId: string;
+  listingStatus: string;
+  channels: VehicleChannelRow[];
+};
+
+export async function setVehicleListingStatus(
+  dealershipId: string,
+  vehicleId: string,
+  listingStatus: 'DRAFT' | 'READY',
+): Promise<void> {
+  await catalogFetch<void>(
+    `/api/dealers/${dealershipId}/inventory/vehicles/${vehicleId}/listing-status`,
+    { method: 'PATCH', body: JSON.stringify({ listingStatus }), headers: { 'Content-Type': 'application/json' } },
+  );
+}
+
+export async function fetchVehicleChannels(
+  dealershipId: string,
+  vehicleId: string,
+): Promise<VehicleChannelMatrixDto> {
+  return catalogFetch<VehicleChannelMatrixDto>(
+    `/api/dealers/${dealershipId}/inventory/vehicles/${vehicleId}/channels`,
+  );
+}
+
+export async function setVehicleChannelSelection(
+  dealershipId: string,
+  vehicleId: string,
+  channelKey: string,
+  selected: boolean,
+): Promise<void> {
+  await catalogFetch<void>(
+    `/api/dealers/${dealershipId}/inventory/vehicles/${vehicleId}/channels/${channelKey}/selection`,
+    { method: 'PUT', body: JSON.stringify({ selected }), headers: { 'Content-Type': 'application/json' } },
   );
 }
 

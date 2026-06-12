@@ -32,6 +32,7 @@ export type InventoryListItem = {
   mediaCount: number;
   readiness: 'READY' | 'BLOCKED' | 'WARNING';
   issues: Array<{ path: string; message: string; severity: 'FAIL' | 'WARN' }>;
+  listingStatus: string;
   lifecycleState: VehicleLifecycleState;
   soldAt: string | null;
   removedAt: string | null;
@@ -62,7 +63,7 @@ export async function listInventoryVehicles(
       id: true, stockNumber: true, vin: true, year: true,
       make: true, model: true, trim: true, mileage: true,
       priceCents: true, condition: true, exteriorColor: true,
-      bodyStyle: true,
+      bodyStyle: true, listingStatus: true,
       soldAt: true, removedAt: true, reactivatedAt: true,
       updatedAt: true,
       _count: { select: { media: true } },
@@ -93,6 +94,7 @@ export async function listInventoryVehicles(
       mediaCount: v._count.media,
       readiness,
       issues,
+      listingStatus: v.listingStatus,
       lifecycleState: resolveVehicleLifecycleState(v),
       soldAt: v.soldAt?.toISOString() ?? null,
       removedAt: v.removedAt?.toISOString() ?? null,

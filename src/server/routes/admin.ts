@@ -1,5 +1,6 @@
 import type { FastifyInstance } from 'fastify';
 import type { PrismaClient } from '@prisma/client';
+import { randomBytes } from 'crypto';
 import { requireSuperAdmin } from '../security.js';
 import {
   listProviderCredentials,
@@ -11,6 +12,8 @@ import { PlatformClientRegistry } from '../../services/platform/clients/Platform
 import { CATALOG_BRIDGE_SLUGS } from './catalogSync.js';
 import { LISTING_BRIDGE_SLUGS } from './marketplaceListings.js';
 import { isRegisteredCategory } from '@auto-dealer/category-schemas';
+import { createDealershipSchema, validateBody } from '../requestValidation.js';
+import { createDealership } from '../../services/dealer/createDealershipService.js';
 
 type DashboardCache = {
   data: any;
@@ -34,7 +37,95 @@ export function resetDashboardCache(): void {
   blockedDealersCache.clear();
 }
 
+const userSelectWithAccess = {
+  id:          true,
+  email:       true,
+  role:        true,
+  isActive:    true,
+  lastLoginAt: true,
+  createdAt:   true,
+  updatedAt:   true,
+  dealerAccess: {
+    select: {
+      dealership: {
+        select: {
+          id: true,
+          legalName: true,
+          dbaName: true,
+          logoUrl: true,
+          businessCategory: true,
+          createdAt: true,
+        },
+      },
+    },
+    orderBy: { dealership: { legalName: 'asc' } },
+  },
+} as const;
+
+function summarizeUser(account: any) {
+  const { dealerAccess, ...user } = account;
+  return {
+    ...user,
+    dealerAccess: (dealerAccess ?? []).map((row: any) => row.dealership),
+  };
+}
+
+function parseDealerAccessIds(body: any): string[] | null {
+  if (!Array.isArray(body?.dealerAccessIds)) return null;
+  const ids = body.dealerAccessIds
+    .map((id: unknown) => String(id).trim())
+    .filter((id: string) => id.length > 0);
+  return [...new Set<string>(ids)];
+}
+
+async function replaceUserDealerAccess(prisma: PrismaClient, userId: string, dealerIds: string[], actorId: string) {
+  const existing = await prisma.dealershipProfile.findMany({
+    where: { id: { in: dealerIds } },
+    select: { id: true },
+  });
+  if (existing.length !== dealerIds.length) {
+    const err = new Error('One or more selected dealerships do not exist');
+    (err as Error & { statusCode?: number }).statusCode = 400;
+    throw err;
+  }
+
+  await prisma.$transaction([
+    prisma.operatorDealerAccess.deleteMany({ where: { operatorAccountId: userId } }),
+    ...dealerIds.map(dealershipId =>
+      prisma.operatorDealerAccess.create({
+        data: { operatorAccountId: userId, dealershipId, grantedBy: actorId },
+      })
+    ),
+  ]);
+}
+
 export function registerAdminRoutes(app: FastifyInstance, prisma: PrismaClient): void {
+  app.post('/api/admin/dealers', async (request, reply) => {
+    const operator = await requireSuperAdmin(prisma, request, reply);
+    if (!operator) return;
+
+    const parsed = validateBody(createDealershipSchema, request.body);
+    if (!parsed.ok) return reply.status(400).send({ error: parsed.error });
+
+    try {
+      const result = await createDealership(prisma, parsed.data, {
+        createdByOperatorId: operator.devHeader ? null : operator.id,px-3 py-2 text-xs font-semibold rounded-lg transition-all text-silver-200 hover:text-white hover:bg-navy-700/50
+      });
+      resetDashboardCache();
+      return reply.status(201).send({
+        dealer: result.dealer,
+        nextHref: `#/admin/dealers/${result.dealer.id}`,
+        mode: 'admin',
+      });
+    } catch (err) {
+      const statusCode = typeof err === 'object' && err !== null && 'statusCode' in err
+        ? Number((err as { statusCode?: number }).statusCode)
+        : 500;
+      const message = err instanceof Error ? err.message : 'Failed to create dealership';
+      return reply.status(statusCode || 500).send({ error: message });
+    }
+  });
+
   app.get('/api/admin/platform-credentials', async (request, reply) => {
     if (!await requireSuperAdmin(prisma, request, reply)) return;
     return reply.send({ providers: listProviderCredentials() });
@@ -721,5 +812,214 @@ export function registerAdminRoutes(app: FastifyInstance, prisma: PrismaClient):
     } catch (err: any) {
       return reply.status(500).send({ error: `Failed to compile blocked dealers: ${err.message}` });
     }
+  });
+
+  // ── User Management ───────────────────────────────────────────────────────
+
+  function generateSecurePassword(): string {
+    // 18 random bytes → 24-char base64url string (no padding), always ≥ MIN_PASSWORD_LENGTH
+    return randomBytes(18).toString('base64url');
+  }
+
+  // GET /api/admin/users
+  app.get('/api/admin/users', async (request, reply) => {
+    if (!await requireSuperAdmin(prisma, request, reply)) return;
+
+    const query = request.query as any;
+    const page  = Math.max(1, parseInt(query.page  ?? '1',  10));
+    const limit = Math.min(100, Math.max(1, parseInt(query.limit ?? '20', 10)));
+    const q     = (query.q    ?? '').trim();
+    const role  = (query.role ?? '').trim();
+
+    const where: any = {};
+    if (q)    where.email = { contains: q, mode: 'insensitive' };
+    if (role) where.role  = role;
+
+    const [total, accounts] = await Promise.all([
+      prisma.operatorAccount.count({ where }),
+      prisma.operatorAccount.findMany({
+        where,
+        orderBy: { createdAt: 'desc' },
+        skip: (page - 1) * limit,
+        take: limit,
+        select: {
+          ...userSelectWithAccess,
+        },
+      }),
+    ]);
+
+    return reply.send({
+      users: accounts.map(summarizeUser),
+      pagination: { total, page, limit, pages: Math.ceil(total / limit) },
+    });
+  });
+
+  // POST /api/admin/users
+  app.post('/api/admin/users', async (request, reply) => {
+    const actor = await requireSuperAdmin(prisma, request, reply);
+    if (!actor) return;
+
+    const body = request.body as any;
+    const email = (body?.email ?? '').trim().toLowerCase();
+    const role  = body?.role === 'SUPER_ADMIN' ? 'SUPER_ADMIN' : 'OPERATOR';
+    const dealerAccessIds = parseDealerAccessIds(body) ?? [];
+
+    if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+      return reply.status(400).send({ error: 'A valid email address is required' });
+    }
+
+    const existing = await prisma.operatorAccount.findUnique({ where: { email } });
+    if (existing) {
+      return reply.status(409).send({ error: 'An account with this email already exists' });
+    }
+
+    const { hashPassword } = await import('../../services/auth/passwordService.js');
+    const plainPassword = generateSecurePassword();
+    const passwordHash  = await hashPassword(plainPassword);
+
+    const account = await prisma.operatorAccount.create({
+      data: { email, passwordHash, role },
+      select: userSelectWithAccess,
+    });
+
+    if (dealerAccessIds.length > 0) {
+      await replaceUserDealerAccess(prisma, account.id, dealerAccessIds, actor.id);
+    }
+
+    const created = await prisma.operatorAccount.findUnique({
+      where: { id: account.id },
+      select: userSelectWithAccess,
+    });
+
+    // Audit
+    await prisma.adminAuditLog.create({
+      data: {
+        action:     'USER_CREATED',
+        actorId:    actor.id,
+        actorEmail: actor.email,
+        detail:     { targetEmail: email, role, dealerAccessIds },
+      },
+    });
+
+    return reply.status(201).send({ user: summarizeUser(created), plainPassword });
+  });
+
+  // PATCH /api/admin/users/:userId
+  app.patch('/api/admin/users/:userId', async (request, reply) => {
+    const actor = await requireSuperAdmin(prisma, request, reply);
+    if (!actor) return;
+
+    const { userId } = request.params as { userId: string };
+    const body = request.body as any;
+
+    const target = await prisma.operatorAccount.findUnique({
+      where: { id: userId },
+      select: { id: true, email: true, role: true, isActive: true },
+    });
+    if (!target) return reply.status(404).send({ error: 'User not found' });
+
+    // Prevent self-lock
+    if (target.id === actor.id && body?.isActive === false) {
+      return reply.status(400).send({ error: 'You cannot suspend your own account' });
+    }
+
+    let plainPassword: string | undefined;
+
+    if (body?.resetPassword === true) {
+      // Generate and hash a new password
+      const { hashPassword } = await import('../../services/auth/passwordService.js');
+      plainPassword = generateSecurePassword();
+      const passwordHash = await hashPassword(plainPassword);
+
+      await prisma.operatorAccount.update({
+        where: { id: userId },
+        data: { passwordHash },
+      });
+
+      // Revoke all existing sessions for this user
+      await prisma.operatorSession.deleteMany({ where: { operatorAccountId: userId } });
+
+      await prisma.adminAuditLog.create({
+        data: {
+          action:     'USER_PASSWORD_RESET',
+          actorId:    actor.id,
+          actorEmail: actor.email,
+          detail:     { targetEmail: target.email },
+        },
+      });
+    }
+
+    if (typeof body?.isActive === 'boolean') {
+      await prisma.operatorAccount.update({
+        where: { id: userId },
+        data: { isActive: body.isActive },
+      });
+
+      if (!body.isActive) {
+        // Revoke all sessions on suspend
+        await prisma.operatorSession.deleteMany({ where: { operatorAccountId: userId } });
+      }
+
+      await prisma.adminAuditLog.create({
+        data: {
+          action:     body.isActive ? 'USER_REINSTATED' : 'USER_SUSPENDED',
+          actorId:    actor.id,
+          actorEmail: actor.email,
+          detail:     { targetEmail: target.email },
+        },
+      });
+    }
+
+    const dealerAccessIds = parseDealerAccessIds(body);
+    if (dealerAccessIds) {
+      await replaceUserDealerAccess(prisma, userId, dealerAccessIds, actor.id);
+      await prisma.adminAuditLog.create({
+        data: {
+          action:     'USER_DEALER_ACCESS_UPDATED',
+          actorId:    actor.id,
+          actorEmail: actor.email,
+          detail:     { targetEmail: target.email, dealerAccessIds },
+        },
+      });
+    }
+
+    const updated = await prisma.operatorAccount.findUnique({
+      where: { id: userId },
+      select: userSelectWithAccess,
+    });
+
+    return reply.send({ user: summarizeUser(updated), ...(plainPassword ? { plainPassword } : {}) });
+  });
+
+  // DELETE /api/admin/users/:userId
+  app.delete('/api/admin/users/:userId', async (request, reply) => {
+    const actor = await requireSuperAdmin(prisma, request, reply);
+    if (!actor) return;
+
+    const { userId } = request.params as { userId: string };
+
+    const target = await prisma.operatorAccount.findUnique({
+      where: { id: userId },
+      select: { id: true, email: true },
+    });
+    if (!target) return reply.status(404).send({ error: 'User not found' });
+
+    if (target.id === actor.id) {
+      return reply.status(400).send({ error: 'You cannot delete your own account' });
+    }
+
+    // Cascade: sessions and dealer-access rows are ON DELETE CASCADE in schema
+    await prisma.operatorAccount.delete({ where: { id: userId } });
+
+    await prisma.adminAuditLog.create({
+      data: {
+        action:     'USER_DELETED',
+        actorId:    actor.id,
+        actorEmail: actor.email,
+        detail:     { targetEmail: target.email },
+      },
+    });
+
+    return reply.status(200).send({ ok: true });
   });
 }

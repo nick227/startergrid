@@ -94,7 +94,12 @@ export async function fetchStorefrontFromDb(
   if (!dealer) return null;
 
   const dbVehicles = await prisma.vehicle.findMany({
-    where: { dealershipId, soldAt: null, removedAt: null },
+    where: {
+      dealershipId, soldAt: null, removedAt: null,
+      // DRAFT vehicles are internal-only; storefront opt-out hides without unpublishing
+      listingStatus: 'READY',
+      channelSelections: { none: { channelKey: 'storefront', selected: false } },
+    },
     include: { media: true },
     orderBy: { createdAt: 'asc' }
   });
@@ -115,9 +120,13 @@ export async function fetchVehicleDetailFromDb(
 
   const vehicle = await prisma.vehicle.findUnique({
     where: { dealershipId_stockNumber: { dealershipId, stockNumber } },
-    include: { media: true }
+    include: {
+      media: true,
+      channelSelections: { where: { channelKey: 'storefront', selected: false } },
+    }
   });
   if (!vehicle || vehicle.soldAt || vehicle.removedAt) return null;
+  if (vehicle.listingStatus !== 'READY' || vehicle.channelSelections.length > 0) return null;
 
   return shapeVehicleListing(
     dbDealershipToPayload(dealer),

@@ -1,5 +1,6 @@
 import { PageShell } from './PageShell.tsx';
 import type { OperatorPageBaseProps } from '@/lib/operatorPage.ts';
+import { useDealerSummary } from '@/hooks/useDealerSummary.ts';
 
 type Props = OperatorPageBaseProps & {
   dealerName?: string | null;
@@ -27,10 +28,13 @@ export function OperatorPage({
   sectionLabel,
   children,
 }: Props) {
+  const dealerSummary = useDealerSummary(dealerId);
+  const resolvedDealerName = dealerName ?? dealerSummary?.legalName ?? null;
+
   return (
     <PageShell
       dealerId={dealerId}
-      dealerName={dealerName}
+      dealerName={resolvedDealerName}
       activeTab={activeTab}
       nav={nav}
       onRefresh={onRefresh}

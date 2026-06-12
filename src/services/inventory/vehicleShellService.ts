@@ -82,6 +82,9 @@ export async function createVehicleShell(
       mileage,
       priceCents,
       condition,
+      // VIN-entry shells start as internal drafts — no photos, placeholder price.
+      // The operator flips to READY once the listing is merchandised.
+      listingStatus:  'DRAFT',
       exteriorColor:  '',
       options:        {},
       starCore:       {},

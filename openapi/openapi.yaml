@@ -114,6 +114,93 @@ paths:
                 $ref: '#/components/schemas/DealerListResponse'
         '401':
           $ref: '#/components/responses/Unauthorized'
+    post:
+      tags: [Dealers]
+      security:
+        - OperatorAuth: []
+      x-route-classification: operator
+      operationId: createOperatorDealership
+      summary: Create a dealership profile and grant the current operator access
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateDealershipRequest'
+      responses:
+        '201':
+          description: Created dealership profile
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CreateDealershipResponse'
+        '400':
+          $ref: '#/components/responses/ValidationError'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '409':
+          description: Duplicate dealership
+
+  /api/dealers/signup:
+    post:
+      tags: [Dealers]
+      security: []
+      x-route-classification: public-write
+      operationId: createDealershipSignup
+      summary: Create a dealership profile from the public signup flow
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateDealershipRequest'
+      responses:
+        '201':
+          description: Created dealership profile
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CreateDealershipResponse'
+        '400':
+          $ref: '#/components/responses/ValidationError'
+        '409':
+          description: Duplicate dealership
+
+  /api/dealers/signup/{dealershipId}/logo:
+    post:
+      tags: [Dealers]
+      security: []
+      x-route-classification: public-write
+      operationId: uploadSignupDealerLogo
+      summary: Upload logo image during public dealership signup
+      parameters:
+        - $ref: '#/components/parameters/dealershipId'
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              required: [logo]
+              properties:
+                logo:
+                  type: string
+                  format: binary
+      responses:
+        '200':
+          description: Uploaded logo URL
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [logoUrl]
+                properties:
+                  logoUrl:
+                    type: string
+        '400':
+          $ref: '#/components/responses/ValidationError'
+        '404':
+          $ref: '#/components/responses/NotFound'
 
   /api/dealers/{dealershipId}/publish/prepare:
     post:
@@ -1221,6 +1308,127 @@ paths:
         '404':
           $ref: '#/components/responses/NotFound'
 
+  /api/dealers/{dealershipId}/inventory/vehicles/{vehicleId}/listing-status:
+    patch:
+      tags: [Inventory]
+      security:
+        - OperatorAuth: []
+      x-route-classification: operator
+      operationId: setVehicleListingStatus
+      summary: Set the distribution gate on a vehicle (DRAFT = internal only, READY = distributable)
+      parameters:
+        - $ref: '#/components/parameters/dealershipId'
+        - $ref: '#/components/parameters/vehicleId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [listingStatus]
+              properties:
+                listingStatus:
+                  type: string
+                  enum: [DRAFT, READY]
+      responses:
+        '200':
+          description: Updated vehicle
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  id:            { type: string }
+                  listingStatus: { type: string }
+        '400':
+          description: Invalid listingStatus
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /api/dealers/{dealershipId}/inventory/vehicles/{vehicleId}/channels:
+    get:
+      tags: [Inventory]
+      security:
+        - OperatorAuth: []
+      x-route-classification: operator
+      operationId: getVehicleChannelMatrix
+      summary: Per-channel distribution state for a vehicle (connected / eligible / selected / live)
+      parameters:
+        - $ref: '#/components/parameters/dealershipId'
+        - $ref: '#/components/parameters/vehicleId'
+      responses:
+        '200':
+          description: Channel matrix
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  vehicleId:     { type: string }
+                  listingStatus: { type: string }
+                  channels:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        channelKey:        { type: string }
+                        channelName:       { type: string }
+                        lanes:
+                          type: array
+                          items: { type: string }
+                        connected:         { type: boolean }
+                        connectionState:   { type: string }
+                        eligible:          { type: boolean }
+                        eligibilityIssues:
+                          type: array
+                          items: { type: string }
+                        selected:          { type: boolean }
+                        liveStatus:
+                          type: string
+                          enum: [LIVE, QUEUED, NEEDS_APPROVAL, HELD, FAILED, NOT_LIVE]
+                        statusDetail:      { type: string, nullable: true }
+                        externalListingId: { type: string, nullable: true }
+                        lastActivityAt:    { type: string, nullable: true }
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /api/dealers/{dealershipId}/inventory/vehicles/{vehicleId}/channels/{channelKey}/selection:
+    put:
+      tags: [Inventory]
+      security:
+        - OperatorAuth: []
+      x-route-classification: operator
+      operationId: setVehicleChannelSelection
+      summary: Opt a vehicle in or out of a specific distribution channel
+      parameters:
+        - $ref: '#/components/parameters/dealershipId'
+        - $ref: '#/components/parameters/vehicleId'
+        - $ref: '#/components/parameters/channelKey'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [selected]
+              properties:
+                selected:
+                  type: boolean
+      responses:
+        '200':
+          description: Updated selection
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  channelKey: { type: string }
+                  selected:   { type: boolean }
+        '400':
+          description: Unknown channel or invalid body
+        '404':
+          $ref: '#/components/responses/NotFound'
+
   /api/dealers/{dealershipId}/inventory/vehicles/{vehicleId}/media:
     post:
       tags: [Inventory]
@@ -1258,6 +1466,55 @@ paths:
                       properties:
                         id:  { type: string }
                         url: { type: string }
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /api/dealers/{dealershipId}/inventory/vehicles/{vehicleId}/media/upload:
+    post:
+      tags: [Inventory]
+      security:
+        - OperatorAuth: []
+      x-route-classification: operator
+      operationId: uploadVehicleMedia
+      summary: Upload one or more media files (multipart) to a vehicle
+      parameters:
+        - $ref: '#/components/parameters/dealershipId'
+        - $ref: '#/components/parameters/vehicleId'
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                slotKey:
+                  type: string
+                  description: Optional media-guide slot to assign uploaded files to
+                group:
+                  type: string
+                  description: Optional media-guide group for unslotted uploads (custom cards)
+                files:
+                  type: array
+                  items: { type: string, format: binary }
+      responses:
+        '201':
+          description: Created media records
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  media:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        id:           { type: string }
+                        url:          { type: string }
+                        mediaSlotKey: { type: string, nullable: true }
+                        customGroup:  { type: string, nullable: true }
+        '400':
+          description: No valid files uploaded
         '404':
           $ref: '#/components/responses/NotFound'
 
@@ -1314,6 +1571,46 @@ paths:
                   id:           { type: string }
                   mediaSlotKey: { type: string, nullable: true }
                   mediaRole:    { type: string, nullable: true }
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /api/dealers/{dealershipId}/inventory/vehicles/{vehicleId}/media/{mediaId}/label:
+    patch:
+      tags: [Inventory]
+      security:
+        - OperatorAuth: []
+      x-route-classification: operator
+      operationId: renameVehicleMedia
+      summary: Set or clear the user-defined label on a vehicle media record
+      parameters:
+        - $ref: '#/components/parameters/dealershipId'
+        - $ref: '#/components/parameters/vehicleId'
+        - $ref: '#/components/parameters/mediaId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [customLabel]
+              properties:
+                customLabel:
+                  type: string
+                  nullable: true
+                  maxLength: 120
+                  description: Card name to set, or null to clear
+      responses:
+        '200':
+          description: Updated media record
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  id:          { type: string }
+                  customLabel: { type: string, nullable: true }
+        '400':
+          description: Invalid customLabel
         '404':
           $ref: '#/components/responses/NotFound'
 
@@ -1848,6 +2145,158 @@ paths:
                 $ref: '#/components/schemas/AdminDashboardResponse'
         '401':
           $ref: '#/components/responses/Unauthorized'
+  /api/admin/dealers:
+    post:
+      tags: [Admin]
+      security:
+        - OperatorAuth: []
+      x-route-classification: admin
+      operationId: createAdminDealership
+      summary: Create a dealership profile from the admin console (SUPER_ADMIN only)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateDealershipRequest'
+      responses:
+        '201':
+          description: Created dealership profile
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CreateDealershipResponse'
+        '400':
+          $ref: '#/components/responses/ValidationError'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '409':
+          description: Duplicate dealership
+  /api/admin/users:
+    get:
+      tags: [Admin]
+      security:
+        - OperatorAuth: []
+      x-route-classification: admin
+      operationId: listAdminUsers
+      summary: List operator accounts with paging and filters (SUPER_ADMIN only)
+      parameters:
+        - name: page
+          in: query
+          required: false
+          schema:
+            type: integer
+        - name: limit
+          in: query
+          required: false
+          schema:
+            type: integer
+        - name: q
+          in: query
+          required: false
+          schema:
+            type: string
+        - name: role
+          in: query
+          required: false
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Paginated operator accounts
+        '403':
+          description: Requires SUPER_ADMIN
+    post:
+      tags: [Admin]
+      security:
+        - OperatorAuth: []
+      x-route-classification: admin
+      operationId: createAdminUser
+      summary: Create an operator account with a generated password (SUPER_ADMIN only)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [email]
+              properties:
+                email: { type: string, format: email }
+                role:
+                  type: string
+                  enum: [OPERATOR, SUPER_ADMIN]
+                dealerAccessIds:
+                  type: array
+                  items:
+                    type: string
+      responses:
+        '201':
+          description: Created account with one-time plaintext password
+        '400':
+          description: Invalid email
+        '409':
+          description: Email already exists
+
+  /api/admin/users/{userId}:
+    patch:
+      tags: [Admin]
+      security:
+        - OperatorAuth: []
+      x-route-classification: admin
+      operationId: updateAdminUser
+      summary: Update role/active state or reset password for an operator account (SUPER_ADMIN only)
+      parameters:
+        - name: userId
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                role:
+                  type: string
+                  enum: [OPERATOR, SUPER_ADMIN]
+                isActive: { type: boolean }
+                resetPassword: { type: boolean }
+                dealerAccessIds:
+                  type: array
+                  items:
+                    type: string
+      responses:
+        '200':
+          description: Updated account
+        '400':
+          description: Invalid update (e.g. self-suspension)
+        '404':
+          description: User not found
+    delete:
+      tags: [Admin]
+      security:
+        - OperatorAuth: []
+      x-route-classification: admin
+      operationId: deleteAdminUser
+      summary: Delete an operator account (SUPER_ADMIN only; cannot delete self)
+      parameters:
+        - name: userId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Deleted
+        '400':
+          description: Cannot delete own account
+        '404':
+          description: User not found
+
   /api/admin/blocked-dealers:
     get:
       tags: [Admin]
@@ -1989,6 +2438,12 @@ components:
         type: string
     mediaId:
       name: mediaId
+      in: path
+      required: true
+      schema:
+        type: string
+    channelKey:
+      name: channelKey
       in: path
       required: true
       schema:
@@ -2821,6 +3276,63 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/DealerSummary'
+
+    DealershipAddressInput:
+      type: object
+      required: [street, city, state, postalCode]
+      properties:
+        street:     { type: string }
+        city:       { type: string }
+        state:      { type: string }
+        postalCode: { type: string }
+        country:    { type: string }
+
+    DealershipContactInput:
+      type: object
+      required: [name, email]
+      properties:
+        name:  { type: string }
+        email: { type: string, format: email }
+        phone: { type: string }
+        role:  { type: string }
+
+    CreateDealershipRequest:
+      type: object
+      required: [legalName, businessCategory, rooftopAddress, primaryContact]
+      properties:
+        legalName:        { type: string }
+        dbaName:          { type: string }
+        businessCategory:
+          $ref: '#/components/schemas/BusinessCategory'
+        dealerLicense:    { type: string }
+        websiteUrl:       { type: string, format: uri }
+        rooftopAddress:
+          $ref: '#/components/schemas/DealershipAddressInput'
+        primaryContact:
+          $ref: '#/components/schemas/DealershipContactInput'
+        inventorySize:
+          type: integer
+          nullable: true
+        desiredChannels:
+          type: array
+          items:
+            type: string
+        documents:
+          type: array
+          items:
+            type: string
+
+    CreateDealershipResponse:
+      type: object
+      required: [dealer, nextHref, mode]
+      properties:
+        dealer:
+          $ref: '#/components/schemas/DealerSummary'
+        nextHref:
+          type: string
+        mode:
+          type: string
+          enum: [signup, admin, operator]
 
     PlatformAccountDetail:
       type: object

@@ -45,7 +45,8 @@ export type OperatorPageSegment =
   | 'leads'
   | 'help'
   | 'knowledge'
-  | 'admin';
+  | 'admin'
+  | 'signup';
 
 export function tabFromPage(page: OperatorPageSegment | null): OperatorTab {
   if (!page) return 'home';

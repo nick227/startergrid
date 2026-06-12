@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { useAsyncQuery } from '@/hooks/useAsyncQuery.ts';
 import { fetchVehicleDetail } from '@/lib/api/sdk.ts';
 import type { VehiclePerformanceItem, PlatformPerformanceItem } from '@/lib/types.ts';
@@ -7,6 +8,8 @@ import { VehicleMetricStrip } from './VehicleMetricStrip.tsx';
 import { VehiclePhotoWorkspace } from './VehiclePhotoWorkspace.tsx';
 import { VehicleFieldGroups } from './VehicleFieldGroups.tsx';
 import { VehicleReadinessChecklist } from './VehicleReadinessChecklist.tsx';
+import { VehicleChannelMatrix } from './VehicleChannelMatrix.tsx';
+import { VehicleDangerZone } from './VehicleDangerZone.tsx';
 import { AssetLifecycleHistory } from './AssetLifecycleHistory.tsx';
 
 type Props = {
@@ -31,8 +34,6 @@ export function InventoryDetailPanel({
   dealerId,
   vehicleId,
   perf,
-  platformPerfBySlug,
-  benchmarksUpdating,
   onClose,
   onMediaAssigned,
 }: Props) {
@@ -40,6 +41,8 @@ export function InventoryDetailPanel({
     () => fetchVehicleDetail(dealerId, vehicleId),
     [dealerId, vehicleId],
   );
+  // Bumped on every reload so dependent sections (channel matrix) refetch too.
+  const [refreshKey, setRefreshKey] = useState(0);
 
   if (loading && !vehicle) {
     return (
@@ -61,6 +64,7 @@ export function InventoryDetailPanel({
 
   const handleReload = () => {
     reload();
+    setRefreshKey(k => k + 1);
     onMediaAssigned?.();
   };
 
@@ -78,13 +82,21 @@ export function InventoryDetailPanel({
 
       {/* Scrollable content */}
       <div className="flex-1 overflow-y-auto">
-        <div className="p-6 space-y-6 max-w-5xl mx-auto w-full pb-24">
+        <div className="space-y-6 mx-auto w-full pb-24">
 
           {/* ── Readiness ─────────────────────────────────────────────────── */}
           <section className="bg-white rounded-xl shadow-sm border border-silver-200 p-6">
             <SectionHeader title="Readiness" />
             <div className="mt-4">
               <VehicleReadinessChecklist readiness={vehicle.readiness} />
+            </div>
+          </section>
+
+          {/* ── Channels (connected / eligible / selected / live) ─────────── */}
+          <section className="bg-white rounded-xl shadow-sm border border-silver-200 p-6">
+            <SectionHeader title="Channels" />
+            <div className="mt-4">
+              <VehicleChannelMatrix dealerId={dealerId} vehicleId={vehicleId} refreshKey={refreshKey} />
             </div>
           </section>
 
@@ -97,7 +109,6 @@ export function InventoryDetailPanel({
                 vehicleId={vehicleId}
                 category={vehicle.category as BusinessCategoryId}
                 media={vehicle.media}
-                readiness={vehicle.readiness}
                 onAssigned={handleReload}
               />
             </div>
@@ -132,6 +143,9 @@ export function InventoryDetailPanel({
               </div>
             </section>
           )}
+
+          {/* ── Danger Zone — archive is a last resort, lives at the bottom ── */}
+          <VehicleDangerZone vehicle={vehicle} onReload={handleReload} />
         </div>
       </div>
     </div>

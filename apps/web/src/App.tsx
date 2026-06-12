@@ -10,6 +10,7 @@ import InventoryPage from './pages/InventoryPage.tsx';
 import LeadsPage from './pages/LeadsPage.tsx';
 import KnowledgeBasePage from './pages/KnowledgeBasePage.tsx';
 import HomePage from './pages/HomePage.tsx';
+import DealershipSignupPage from './pages/DealershipSignupPage.tsx';
 
 const PlatformDetailPage = lazy(() => import('./pages/PlatformDetailPage.tsx'));
 const ReportsRouter = lazy(() => import('./pages/ReportsRouter.tsx'));
@@ -29,6 +30,7 @@ function OperatorApp() {
   const categorySchema = useDealerCategorySchema(dealerId ?? null);
 
   const helpStandalone = (page === 'help' || page === 'knowledge') && !dealerId;
+  const signupStandalone = page === 'signup' && !dealerId;
   const superAdminHome = !dealerId && user?.role === 'SUPER_ADMIN';
 
   useEffect(() => {
@@ -43,6 +45,7 @@ function OperatorApp() {
   }, [user, page]);
 
   if (!authReady) return <AuthLoadingScreen />;
+  if (signupStandalone) return <DealershipSignupPage />;
   if (!user) return <LoginPage />;
 
   return (

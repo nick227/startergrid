@@ -1,150 +1,89 @@
-import { useState, useRef, useEffect } from 'react';
+import { useState, useRef } from 'react';
 import {
   DndContext,
   closestCenter,
-  KeyboardSensor,
   PointerSensor,
   useSensor,
   useSensors,
   DragOverlay,
   useDroppable,
+  useDraggable,
   defaultDropAnimationSideEffects,
 } from '@dnd-kit/core';
-import {
-  SortableContext,
-  sortableKeyboardCoordinates,
-  rectSortingStrategy,
-  useSortable,
-} from '@dnd-kit/sortable';
+import type { DragEndEvent, DragStartEvent } from '@dnd-kit/core';
 import { CSS } from '@dnd-kit/utilities';
 
 import { getMediaGuide } from '@auto-dealer/category-schemas';
 import type { MediaSlot, BusinessCategoryId } from '@auto-dealer/category-schemas';
-import type { VehicleMediaItem, VehicleReadinessDto } from '@/lib/api/sdk.ts';
-import { FileLibraryModal } from '../generic/FileLibraryModal.tsx';
-import { assignMediaSlot, uploadVehicleMedia } from '@/lib/api/sdk.ts';
+import type { VehicleMediaItem } from '@/lib/api/sdk.ts';
+import {
+  assignMediaSlot,
+  uploadVehicleMedia,
+  deleteVehicleMedia,
+  renameVehicleMedia,
+} from '@/lib/api/sdk.ts';
 
 type Props = {
   dealerId: string;
   vehicleId: string;
   category: BusinessCategoryId;
   media: VehicleMediaItem[];
-  readiness: VehicleReadinessDto;
   onAssigned: () => void;
 };
 
-type SlotTarget = { slot: MediaSlot; assigned: VehicleMediaItem | null } | { gallery: true };
+const MISC_GROUP = 'Miscellaneous';
 
-const levelBadge: Record<string, string> = {
-  REQUIRED:    'bg-red-50 text-red-600 border-red-200',
-  RECOMMENDED: 'bg-amber-50 text-amber-700 border-amber-200',
-  OPTIONAL:    'bg-silver-100 text-ink-muted border-silver-200',
-};
+type UploadProgress = {
+  group: string;
+  current: number;
+  total: number;
+} | null;
 
-const levelLabel: Record<string, string> = {
-  REQUIRED:    'Required',
-  RECOMMENDED: 'Rec.',
-  OPTIONAL:    'Optional',
-};
+// ── Shared card frame ───────────────────────────────────────────────────────
+// One visual card used by predefined slots and custom photos alike:
+// 4:3 image area on top, single-line label footer below, ✕ remove on hover.
 
-// ── Sortable Gallery Item ───────────────────────────────────────────────────
-
-function GalleryItem({
-  m,
-  onClick,
-  isDragging,
-}: {
-  m: VehicleMediaItem;
-  onClick?: () => void;
-  isDragging?: boolean;
-}) {
-  return (
-    <button
-      type="button"
-      onClick={onClick}
-      className={`relative group aspect-[4/3] rounded-xl overflow-hidden border-2 focus:outline-none transition-all ${
-        isDragging
-          ? 'border-navy-400 shadow-elevation-3 scale-105 z-50 opacity-90'
-          : 'border-silver-200 hover:border-navy-300 hover:shadow-sm bg-white'
-      }`}
-    >
-      <img src={m.url} alt="Gallery" className="w-full h-full object-cover" />
-      {!isDragging && (
-        <div className="absolute inset-0 bg-navy-950/0 group-hover:bg-navy-950/20 transition-colors flex items-center justify-center">
-          <span className="opacity-0 group-hover:opacity-100 text-xs font-bold bg-navy-900/90 text-white px-3 py-1.5 rounded-lg shadow-sm transition-all transform translate-y-2 group-hover:translate-y-0">
-            Edit
-          </span>
-        </div>
-      )}
-    </button>
-  );
-}
-
-function SortableGalleryItem({ m, onClick }: { m: VehicleMediaItem; onClick: () => void }) {
-  const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({ id: m.id });
-  const style = {
-    transform: CSS.Transform.toString(transform),
-    transition,
-    opacity: isDragging ? 0.3 : 1,
-  };
-
-  return (
-    <div ref={setNodeRef} style={style} {...attributes} {...listeners}>
-      <GalleryItem m={m} onClick={onClick} />
-    </div>
-  );
-}
-
-// ── Droppable Slot Item ─────────────────────────────────────────────────────
-
-function SlotItem({
-  slot,
-  assigned,
-  isRequired,
-  missingWarning,
-  onClick,
+function PhotoCardFrame({
+  url,
   isOver,
   isUploading,
-  optimisticUrl,
+  onImageClick,
+  imageClickHint,
+  onRemove,
+  dragHandle,
+  children,
 }: {
-  slot: MediaSlot;
-  assigned: VehicleMediaItem | null;
-  isRequired: boolean;
-  missingWarning: boolean;
-  onClick: () => void;
+  url: string | null;
   isOver?: boolean;
   isUploading?: boolean;
-  optimisticUrl?: string;
+  onImageClick?: () => void;
+  imageClickHint?: string;
+  onRemove?: () => void;
+  dragHandle?: Record<string, unknown>;
+  children: React.ReactNode; // footer content
 }) {
-  // Use optimistic blob URL if the API hasn't confirmed the slot yet
-  const displayUrl = assigned?.url ?? optimisticUrl ?? null;
-  const hasImage = !!displayUrl;
-
-  const missingRequired = !hasImage && isRequired;
-  const showWarning = missingRequired || (!hasImage && missingWarning);
-
   return (
-    <button
-      type="button"
-      onClick={onClick}
-      className={`group relative rounded-xl overflow-hidden border-2 transition-all focus:outline-none focus-visible:ring-2 focus-visible:ring-navy-400 flex flex-col bg-white ${
+    <div
+      className={`relative group/card w-full h-full flex flex-col rounded-xl overflow-hidden border-2 bg-white transition-all ${
         isOver
           ? 'border-navy-500 scale-105 shadow-elevation-3 z-10'
-          : hasImage
-            ? 'border-green-200 hover:border-green-300 hover:shadow-sm'
-            : showWarning
-              ? 'border-red-200 bg-red-50 hover:border-red-300'
-              : 'border-silver-200 border-dashed bg-surface-raised hover:border-silver-300 hover:border-solid'
+          : url
+            ? 'border-silver-200 hover:border-navy-300 hover:shadow-sm'
+            : 'border-silver-200 border-dashed bg-surface-raised hover:border-silver-300 hover:border-solid'
       }`}
     >
-      <div className="aspect-[4/3] w-full bg-silver-100 overflow-hidden relative">
-        {displayUrl ? (
-          <img src={displayUrl} alt={slot.label} className="w-full h-full object-cover" />
+      <button
+        type="button"
+        onClick={onImageClick}
+        disabled={!onImageClick}
+        {...(dragHandle ?? {})}
+        className="aspect-[4/3] w-full bg-silver-100 overflow-hidden relative block focus:outline-none focus-visible:ring-2 focus-visible:ring-navy-400"
+      >
+        {url ? (
+          <img src={url} alt="" className="w-full h-full object-cover" />
         ) : (
           <div className="w-full h-full flex flex-col items-center justify-center gap-2 p-2">
-            <span className={`text-2xl ${showWarning ? 'text-red-300' : 'text-silver-300'}`}>
-              {isOver ? '📥' : '📷'}
-            </span>
+            <span className="text-2xl text-silver-300">{isOver ? '📥' : '📷'}</span>
             {isOver && <span className="text-[10px] font-bold text-navy-600">Drop to assign</span>}
           </div>
         )}
@@ -153,157 +92,331 @@ function SlotItem({
             <div className="animate-spin rounded-full h-6 w-6 border-2 border-navy-600 border-t-transparent" />
           </div>
         )}
-        {/* Hover overlay */}
-        <div className="absolute inset-0 bg-navy-950/0 group-hover:bg-navy-950/10 transition-colors" />
-        <div className="absolute bottom-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity">
-          <span className="text-[10px] font-bold px-2 py-1 rounded-md bg-navy-900/90 backdrop-blur text-white shadow-sm">
-            {hasImage ? 'Change' : 'Add'}
-          </span>
-        </div>
+        {onImageClick && (
+          <>
+            <div className="absolute inset-0 bg-navy-950/0 group-hover/card:bg-navy-950/10 transition-colors" />
+            <div className="absolute bottom-2 right-2 opacity-0 group-hover/card:opacity-100 transition-opacity">
+              <span className="text-[10px] font-bold px-2 py-1 rounded-md bg-navy-900/90 backdrop-blur text-white shadow-sm">
+                {imageClickHint ?? (url ? 'Change' : 'Add')}
+              </span>
+            </div>
+          </>
+        )}
+      </button>
+      {url && onRemove && (
+        <button
+          type="button"
+          onClick={onRemove}
+          title="Remove photo"
+          className="absolute top-2 right-2 z-20 w-6 h-6 rounded-full bg-navy-900/80 text-white text-xs font-bold flex items-center justify-center opacity-0 group-hover/card:opacity-100 hover:bg-red-600 transition-all"
+        >
+          ✕
+        </button>
+      )}
+      <div className="px-3 py-2 border-t border-silver-100 bg-white grow w-full flex items-center min-h-[34px]">
+        {children}
       </div>
-      <div className="px-3 py-2 flex items-start justify-between gap-2 border-t border-silver-100 bg-white grow w-full">
-        <div className="min-w-0 text-left">
-          <p className="text-[11px] font-bold text-ink-heading leading-tight truncate">{slot.label}</p>
-          <p className="text-[9px] text-ink-muted mt-0.5 line-clamp-1">{slot.helpText ?? 'Best shot'}</p>
-        </div>
-        <span className={`shrink-0 text-[9px] font-bold px-1.5 py-0.5 rounded border uppercase tracking-wider ${levelBadge[slot.requiredLevel]}`}>
-          {levelLabel[slot.requiredLevel]}
-        </span>
-      </div>
-    </button>
+    </div>
   );
 }
 
-function DroppableSlot({
+// ── Predefined slot card ────────────────────────────────────────────────────
+
+function SlotCard({
   slot,
   assigned,
-  isRequired,
-  missingWarning,
-  onClick,
-  isUploading,
   optimisticUrl,
+  onUploadClick,
+  onRemove,
+  isUploading,
 }: {
   slot: MediaSlot;
   assigned: VehicleMediaItem | null;
-  isRequired: boolean;
-  missingWarning: boolean;
-  onClick: () => void;
-  isUploading?: boolean;
-  optimisticUrl?: string;
+  optimisticUrl: string | null;
+  onUploadClick: () => void;
+  onRemove: (mediaId: string) => void;
+  isUploading: boolean;
 }) {
   const { isOver, setNodeRef } = useDroppable({
     id: slot.key,
     data: { type: 'slot', slotKey: slot.key },
   });
+  const url = assigned?.url ?? optimisticUrl;
 
   return (
     <div ref={setNodeRef} className="h-full">
-      <SlotItem
-        slot={slot}
-        assigned={assigned}
-        isRequired={isRequired}
-        missingWarning={missingWarning}
-        onClick={onClick}
+      <PhotoCardFrame
+        url={url}
         isOver={isOver}
         isUploading={isUploading}
-        optimisticUrl={optimisticUrl}
-      />
+        onImageClick={onUploadClick}
+        onRemove={assigned ? () => onRemove(assigned.id) : undefined}
+      >
+        <p className="text-[11px] font-bold text-ink-heading leading-tight truncate">{slot.label}</p>
+      </PhotoCardFrame>
+    </div>
+  );
+}
+
+// ── Custom photo card (user-added, renamable, draggable onto slots) ─────────
+
+function CustomCard({
+  m,
+  onRename,
+  onRemove,
+}: {
+  m: VehicleMediaItem;
+  onRename: (mediaId: string, label: string) => void;
+  onRemove: (mediaId: string) => void;
+}) {
+  const [editing, setEditing] = useState(false);
+  const [draft, setDraft] = useState('');
+  const { attributes, listeners, setNodeRef, transform, isDragging } = useDraggable({ id: m.id });
+
+  const label = m.customLabel?.trim() || 'Untitled photo';
+
+  const startEdit = () => {
+    setDraft(m.customLabel ?? '');
+    setEditing(true);
+  };
+
+  const commit = () => {
+    setEditing(false);
+    const next = draft.trim();
+    if (next !== (m.customLabel ?? '')) onRename(m.id, next);
+  };
+
+  return (
+    <div
+      ref={setNodeRef}
+      style={{ transform: CSS.Translate.toString(transform), opacity: isDragging ? 0.3 : 1 }}
+      className="h-full"
+    >
+      <PhotoCardFrame
+        url={m.url}
+        onImageClick={() => {}}
+        imageClickHint="Drag to a slot"
+        onRemove={() => onRemove(m.id)}
+        dragHandle={{ ...attributes, ...listeners }}
+      >
+        {editing ? (
+          <input
+            autoFocus
+            value={draft}
+            onChange={e => setDraft(e.target.value)}
+            onBlur={commit}
+            onKeyDown={e => {
+              if (e.key === 'Enter') commit();
+              if (e.key === 'Escape') setEditing(false);
+            }}
+            maxLength={120}
+            placeholder="Name this photo…"
+            className="w-full text-[11px] font-bold text-ink-heading bg-silver-50 border border-silver-200 rounded px-1.5 py-0.5 focus:outline-none focus:border-navy-400"
+          />
+        ) : (
+          <button
+            type="button"
+            onClick={startEdit}
+            title="Rename photo"
+            className="flex items-center gap-1.5 min-w-0 text-left group/label"
+          >
+            <p className={`text-[11px] font-bold leading-tight truncate ${m.customLabel ? 'text-ink-heading' : 'text-ink-muted italic'}`}>
+              {label}
+            </p>
+            <span className="text-[10px] text-ink-muted opacity-0 group-hover/label:opacity-100 transition-opacity shrink-0">✎</span>
+          </button>
+        )}
+      </PhotoCardFrame>
     </div>
   );
 }
 
 // ── Main Component ──────────────────────────────────────────────────────────
 
-export function VehiclePhotoWorkspace({ dealerId, vehicleId, category, media, readiness, onAssigned }: Props) {
-  const [modalTarget, setModalTarget] = useState<SlotTarget | null>(null);
+export function VehiclePhotoWorkspace({ dealerId, vehicleId, category, media, onAssigned }: Props) {
   const [activeId, setActiveId] = useState<string | null>(null);
-  
-  const fileInputRef = useRef<HTMLInputElement>(null);
+
+  const slotFileInputRef = useRef<HTMLInputElement>(null);
+  const groupFileInputRef = useRef<HTMLInputElement>(null);
   const activeUploadSlotRef = useRef<MediaSlot | null>(null);
+  const activeUploadGroupRef = useRef<string | null>(null);
   const [uploadingSlotKey, setUploadingSlotKey] = useState<string | null>(null);
+  const [uploadingGroup, setUploadingGroup] = useState<string | null>(null);
+  const [uploadProgress, setUploadProgress] = useState<UploadProgress>(null);
   const [uploadError, setUploadError] = useState<string | null>(null);
 
-  // Optimistic preview: slotKey → temporary blob URL shown before server confirms
+  // Optimistic previews: slotKey → blob URL. Shown instantly on file select.
   const [optimisticPreviews, setOptimisticPreviews] = useState<Record<string, string>>({});
 
-  // Once the real media prop has the slot filled, revoke the blob and clear the entry
-  useEffect(() => {
-    setOptimisticPreviews(prev => {
-      const next = { ...prev };
-      let changed = false;
-      for (const slotKey of Object.keys(next)) {
-        if (media.some(m => m.mediaSlotKey === slotKey)) {
-          URL.revokeObjectURL(next[slotKey]);
-          delete next[slotKey];
-          changed = true;
-        }
-      }
-      return changed ? next : prev;
-    });
-  }, [media]);
+  const sensors = useSensors(
+    useSensor(PointerSensor, { activationConstraint: { distance: 5 } }),
+  );
+
+  const guide = getMediaGuide(category);
+  if (!guide) return <p className="text-sm text-ink-muted p-6 text-center border-2 border-dashed rounded-xl border-silver-200">No media guide available for this category.</p>;
+
+  // Latest media wins if multiple share a slot key (media arrives sorted by sortOrder asc).
+  const getSlotMedia = (slotKey: string): VehicleMediaItem | null => {
+    const matches = media.filter(m => m.mediaSlotKey === slotKey);
+    return matches.length > 0 ? matches[matches.length - 1] : null;
+  };
+
+  const getOptimisticUrl = (slotKey: string): string | null => {
+    if (getSlotMedia(slotKey) && optimisticPreviews[slotKey]) {
+      URL.revokeObjectURL(optimisticPreviews[slotKey]);
+      setTimeout(() => setOptimisticPreviews(prev => {
+        const next = { ...prev };
+        delete next[slotKey];
+        return next;
+      }), 0);
+      return null;
+    }
+    return optimisticPreviews[slotKey] ?? null;
+  };
+
+  // ── Slot upload (single file into one named slot) ─────────────────────────
 
   const handleSlotClick = (slot: MediaSlot) => {
     activeUploadSlotRef.current = slot;
     setUploadError(null);
-    fileInputRef.current?.click();
+    slotFileInputRef.current?.click();
   };
 
-  const handleFileSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleSlotFileSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = e.target.files;
     const slot = activeUploadSlotRef.current;
     if (!files || files.length === 0 || !slot) return;
 
-    // Show blob preview in the slot immediately — no waiting for the API
     const previewUrl = URL.createObjectURL(files[0]);
     setOptimisticPreviews(prev => ({ ...prev, [slot.key]: previewUrl }));
     setUploadingSlotKey(slot.key);
 
+    const replaced = getSlotMedia(slot.key);
+
     try {
-      const result = await uploadVehicleMedia(dealerId, vehicleId, Array.from(files), slot.key);
-      // Explicitly assign the returned media item to the slot, regardless of
-      // whether the upload endpoint honours slotKey server-side.
+      const result = await uploadVehicleMedia(dealerId, vehicleId, [files[0]], slot.key);
       const firstMedia = result.media[0];
       if (firstMedia) {
         await assignMediaSlot(dealerId, vehicleId, firstMedia.id, slot.key);
+        // Move the previous occupant out of the slot (it lands in Miscellaneous)
+        if (replaced) await assignMediaSlot(dealerId, vehicleId, replaced.id, null);
       }
-      // Triggers vehicle detail refetch; the useEffect above clears the
-      // optimistic entry once the real mediaSlotKey is confirmed in the response.
       onAssigned();
     } catch (err) {
       console.error('Failed to upload and assign slot', err);
       setUploadError('Upload failed — please try again.');
-      // Revert optimistic preview on error
+      URL.revokeObjectURL(previewUrl);
       setOptimisticPreviews(prev => {
         const next = { ...prev };
-        URL.revokeObjectURL(next[slot.key]);
         delete next[slot.key];
         return next;
       });
     } finally {
       setUploadingSlotKey(null);
       activeUploadSlotRef.current = null;
-      if (fileInputRef.current) fileInputRef.current.value = '';
+      if (slotFileInputRef.current) slotFileInputRef.current.value = '';
     }
   };
 
-  const guide = getMediaGuide(category);
-  if (!guide) return <p className="text-sm text-ink-muted p-6 text-center border-2 border-dashed rounded-xl border-silver-200">No media guide available for this category.</p>;
+  // ── Section batch upload (multi-select; fills empty slots, overflows to custom cards) ──
 
-  const minimumSet = new Set(guide.minimumPublishSet);
+  const handleAddPhotosClick = (group: string) => {
+    activeUploadGroupRef.current = group;
+    setUploadError(null);
+    groupFileInputRef.current?.click();
+  };
+
+  const handleGroupFileSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const fileList = e.target.files;
+    const group = activeUploadGroupRef.current;
+    if (!fileList || fileList.length === 0 || !group) return;
+    const files = Array.from(fileList);
+    const emptySlots = guide.slots.filter(s => s.group === group && !getSlotMedia(s.key));
+
+    setUploadingGroup(group);
+    setUploadProgress({ group, current: 1, total: files.length });
+    try {
+      for (let index = 0; index < files.length; index++) {
+        const file = files[index];
+        const targetSlot = emptySlots[index] ?? null;
+        setUploadProgress({ group, current: index + 1, total: files.length });
+
+        let previewUrl: string | null = null;
+        if (targetSlot) {
+          const nextPreviewUrl = URL.createObjectURL(file);
+          previewUrl = nextPreviewUrl;
+          setOptimisticPreviews(prev => ({ ...prev, [targetSlot.key]: nextPreviewUrl }));
+          setUploadingSlotKey(targetSlot.key);
+        } else {
+          setUploadingSlotKey(null);
+        }
+
+        try {
+          const result = await uploadVehicleMedia(dealerId, vehicleId, [file], targetSlot?.key, group);
+          const uploaded = result.media[0];
+          if (uploaded && targetSlot) {
+            await assignMediaSlot(dealerId, vehicleId, uploaded.id, targetSlot.key);
+          }
+          onAssigned();
+        } catch (err) {
+          if (previewUrl && targetSlot) {
+            URL.revokeObjectURL(previewUrl);
+            setOptimisticPreviews(prev => {
+              const next = { ...prev };
+              delete next[targetSlot.key];
+              return next;
+            });
+          }
+          throw err;
+        }
+      }
+    } catch (err) {
+      console.error('Failed to batch upload photos', err);
+      setUploadError('Upload failed — please try again.');
+    } finally {
+      setUploadingGroup(null);
+      setUploadingSlotKey(null);
+      setUploadProgress(null);
+      activeUploadGroupRef.current = null;
+      if (groupFileInputRef.current) groupFileInputRef.current.value = '';
+    }
+  };
+
+  // ── Remove / rename ────────────────────────────────────────────────────────
+
+  const handleRemove = async (mediaId: string) => {
+    try {
+      await deleteVehicleMedia(dealerId, vehicleId, mediaId);
+      onAssigned();
+    } catch (err) {
+      console.error('Failed to remove photo', err);
+      setUploadError('Could not remove photo — please try again.');
+    }
+  };
+
+  const handleRename = async (mediaId: string, label: string) => {
+    try {
+      await renameVehicleMedia(dealerId, vehicleId, mediaId, label || null);
+      onAssigned();
+    } catch (err) {
+      console.error('Failed to rename photo', err);
+      setUploadError('Could not rename photo — please try again.');
+    }
+  };
+
+  // ── Grouping ───────────────────────────────────────────────────────────────
 
   const mainSlot = guide.slots.find(s => s.key === 'main-photo');
-  const mainAssigned = media.find(m => m.mediaSlotKey === 'main-photo') ?? null;
 
-  // Grouping logic with explicit ordering
-  const explicitOrder = ['Exterior', 'Interior', 'Details', 'Condition'];
+  const explicitOrder = ['Exterior', 'Interior', 'Detail'];
   const grouped = guide.slots
     .filter(s => s.key !== 'main-photo')
     .reduce<Record<string, MediaSlot[]>>((acc, slot) => {
       (acc[slot.group] ??= []).push(slot);
       return acc;
     }, {});
-    
-  const groups = Object.entries(grouped).sort(([a], [b]) => {
+
+  const slotGroups = Object.entries(grouped).sort(([a], [b]) => {
     const ia = explicitOrder.indexOf(a);
     const ib = explicitOrder.indexOf(b);
     if (ia >= 0 && ib >= 0) return ia - ib;
@@ -312,194 +425,176 @@ export function VehiclePhotoWorkspace({ dealerId, vehicleId, category, media, re
     return a.localeCompare(b);
   });
 
-  const galleryImages = media.filter(m => !m.mediaSlotKey);
+  const knownGroups = new Set(Object.keys(grouped));
+  const customCardsFor = (group: string): VehicleMediaItem[] =>
+    media.filter(m => {
+      if (m.mediaSlotKey) return false;
+      const g = m.customGroup && knownGroups.has(m.customGroup) ? m.customGroup : MISC_GROUP;
+      return g === group;
+    });
 
-  const sensors = useSensors(
-    useSensor(PointerSensor, { activationConstraint: { distance: 5 } }),
-    useSensor(KeyboardSensor, { coordinateGetter: sortableKeyboardCoordinates })
-  );
+  // ── Drag & drop (custom cards → predefined slots) ──────────────────────────
 
-  const handleDragStart = (event: any) => {
-    setActiveId(event.active.id);
-  };
-
-  const handleDragEnd = async (event: any) => {
+  const handleDragEnd = async (event: DragEndEvent) => {
     const { active, over } = event;
     setActiveId(null);
-
     if (!over) return;
-
-    const mediaId = active.id;
-
     if (over.data.current?.type === 'slot') {
-      const slotKey = over.id;
       try {
-        await assignMediaSlot(dealerId, vehicleId, mediaId, slotKey);
+        const replaced = getSlotMedia(String(over.id));
+        await assignMediaSlot(dealerId, vehicleId, String(active.id), String(over.id));
+        if (replaced && replaced.id !== String(active.id)) {
+          await assignMediaSlot(dealerId, vehicleId, replaced.id, null);
+        }
         onAssigned();
       } catch (e) {
         console.error('Failed to assign media to slot', e);
       }
-    } else if (active.id !== over.id) {
-      console.log('Sort gallery items:', active.id, '->', over.id);
     }
   };
 
   const activeMedia = activeId ? media.find(m => m.id === activeId) : null;
+
+  // ── Render ─────────────────────────────────────────────────────────────────
+
+  const renderSection = (group: string, slots: MediaSlot[], description: string) => {
+    const customs = customCardsFor(group);
+    const isUploadingThisGroup = uploadingGroup === group;
+    const progressLabel = isUploadingThisGroup && uploadProgress?.group === group
+      ? `Uploading ${uploadProgress.current}/${uploadProgress.total}...`
+      : null;
+    return (
+      <section key={group} className="bg-silver-50 -mx-4 px-4 py-6 sm:-mx-6 sm:px-6 rounded-2xl border border-silver-100">
+        <div className="mb-4 flex items-end justify-between gap-3">
+          <div>
+            <h3 className="text-sm font-bold text-ink-heading uppercase tracking-widest">{group}</h3>
+            <p className="text-[11px] text-ink-muted mt-0.5">{description}</p>
+          </div>
+          <button
+            type="button"
+            onClick={() => handleAddPhotosClick(group)}
+            disabled={isUploadingThisGroup}
+            className="btn-primary-operator py-1.5 px-3 text-[11px] shrink-0 disabled:opacity-60"
+          >
+            {progressLabel ?? '+ Add Photos'}
+          </button>
+        </div>
+        {progressLabel && (
+          <div className="mb-3 rounded-lg border border-navy-100 bg-white px-3 py-2 text-[11px] font-semibold text-navy-700">
+            {progressLabel}
+          </div>
+        )}
+        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
+          {slots.map(slot => (
+            <SlotCard
+              key={slot.key}
+              slot={slot}
+              assigned={getSlotMedia(slot.key)}
+              optimisticUrl={getOptimisticUrl(slot.key)}
+              onUploadClick={() => handleSlotClick(slot)}
+              onRemove={handleRemove}
+              isUploading={uploadingSlotKey === slot.key}
+            />
+          ))}
+          {customs.map(m => (
+            <CustomCard key={m.id} m={m} onRename={handleRename} onRemove={handleRemove} />
+          ))}
+          {slots.length === 0 && customs.length === 0 && (
+            <button
+              type="button"
+              onClick={() => handleAddPhotosClick(group)}
+              disabled={isUploadingThisGroup}
+              className="col-span-full rounded-xl border-2 border-dashed border-silver-200 p-8 text-center hover:border-navy-300 hover:bg-surface-raised transition-all focus:outline-none focus-visible:ring-2 focus-visible:ring-navy-400 group disabled:cursor-not-allowed disabled:opacity-60"
+            >
+              <div className="text-3xl mb-2 opacity-50 group-hover:opacity-100 transition-opacity">📸</div>
+              <p className="text-sm font-bold text-ink-body group-hover:text-navy-700 transition-colors">No photos yet</p>
+              <p className="text-xs text-ink-muted mt-1">Click to upload photos to this section</p>
+            </button>
+          )}
+        </div>
+      </section>
+    );
+  };
+
+  const mainSlotMedia = mainSlot ? getSlotMedia(mainSlot.key) : null;
+  const mainSlotUrl = mainSlotMedia?.url ?? (mainSlot ? getOptimisticUrl(mainSlot.key) : null);
 
   return (
     <>
       <DndContext
         sensors={sensors}
         collisionDetection={closestCenter}
-        onDragStart={handleDragStart}
+        onDragStart={(event: DragStartEvent) => setActiveId(String(event.active.id))}
         onDragEnd={handleDragEnd}
       >
         <div className="space-y-10">
-          
-          {/* ── Main Photo ─────────────────────────────────────────────────────── */}
+
+          {/* ── Main Photo ─────────────────────────────────────────────────── */}
           <section>
             <div className="flex items-end justify-between mb-3 border-b border-silver-200 pb-2">
               <div>
                 <h3 className="text-sm font-bold text-ink-heading">Main Photo</h3>
                 <p className="text-[11px] text-ink-muted mt-0.5">The primary hero image shown on the storefront.</p>
               </div>
-              <span className={`text-[10px] font-bold px-2 py-1 rounded-md uppercase ${(mainAssigned || optimisticPreviews['main-photo']) ? 'bg-green-100 text-green-700' : 'bg-amber-100 text-amber-700'}`}>
-                {(mainAssigned || optimisticPreviews['main-photo']) ? 'Assigned' : 'Fallback'}
+              <span className={`text-[10px] font-bold px-2 py-1 rounded-md uppercase ${mainSlotUrl ? 'bg-green-100 text-green-700' : 'bg-amber-100 text-amber-700'}`}>
+                {mainSlotUrl ? 'Assigned' : 'Fallback'}
               </span>
             </div>
-            
             {mainSlot && (
               <div className="max-w-2xl">
-                <DroppableSlot
+                <SlotCard
                   slot={mainSlot}
-                  assigned={mainAssigned}
-                  isRequired={minimumSet.has('main-photo')}
-                  missingWarning={readiness.missingRequiredMediaSlots.includes('main-photo')}
-                  onClick={() => handleSlotClick(mainSlot)}
+                  assigned={mainSlotMedia}
+                  optimisticUrl={getOptimisticUrl(mainSlot.key)}
+                  onUploadClick={() => handleSlotClick(mainSlot)}
+                  onRemove={handleRemove}
                   isUploading={uploadingSlotKey === mainSlot.key}
-                  optimisticUrl={optimisticPreviews['main-photo']}
                 />
               </div>
             )}
           </section>
 
-          {/* ── Named slot groups ─────────────────────────────────────────────── */}
-          {groups.map(([group, slots]) => (
-            <section key={group} className="bg-silver-50 -mx-4 px-4 py-6 sm:-mx-6 sm:px-6 rounded-2xl border border-silver-100">
-              <div className="mb-4">
-                <h3 className="text-sm font-bold text-ink-heading uppercase tracking-widest">{group}</h3>
-                <p className="text-[11px] text-ink-muted mt-0.5">Structured shots to complete the {group.toLowerCase()} presentation.</p>
-              </div>
-              
-              <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
-                {slots.map(slot => {
-                  const assigned = media.find(m => m.mediaSlotKey === slot.key) ?? null;
-                  const isRequired = minimumSet.has(slot.key);
-                  const missingWarning = readiness.missingRequiredMediaSlots.includes(slot.key);
+          {/* ── Named slot groups ──────────────────────────────────────────── */}
+          {slotGroups.map(([group, slots]) =>
+            renderSection(group, slots, `Structured shots to complete the ${group.toLowerCase()} presentation.`)
+          )}
 
-                  return (
-                    <DroppableSlot
-                      key={slot.key}
-                      slot={slot}
-                      assigned={assigned}
-                      isRequired={isRequired}
-                      missingWarning={missingWarning}
-                      onClick={() => handleSlotClick(slot)}
-                      isUploading={uploadingSlotKey === slot.key}
-                      optimisticUrl={optimisticPreviews[slot.key]}
-                    />
-                  );
-                })}
-              </div>
-            </section>
-          ))}
+          {/* ── Miscellaneous ──────────────────────────────────────────────── */}
+          {renderSection(MISC_GROUP, [], 'Additional photos for this vehicle. Drag any card onto a slot above to assign it.')}
 
-          {/* ── Gallery Extras ────────────────────────────────────────────────── */}
-          <section>
-            <div className="flex items-end justify-between mb-4 border-b border-silver-200 pb-2">
-              <div>
-                <h3 className="text-sm font-bold text-ink-heading">
-                  Gallery Extras <span className="text-ink-muted font-normal ml-1">({galleryImages.length})</span>
-                </h3>
-                <p className="text-[11px] text-ink-muted mt-0.5">Additional photos not assigned to specific slots. Drag to a slot above to assign.</p>
-              </div>
-              <button
-                type="button"
-                onClick={() => setModalTarget({ gallery: true })}
-                className="btn-primary-operator py-1.5 px-3 text-[11px]"
-              >
-                + Add Photos
-              </button>
-            </div>
-
-            {galleryImages.length > 0 ? (
-              <SortableContext items={galleryImages.map(m => m.id)} strategy={rectSortingStrategy}>
-                <div className="grid grid-cols-3 sm:grid-cols-4 lg:grid-cols-5 gap-3">
-                  {galleryImages.map(m => (
-                    <SortableGalleryItem
-                      key={m.id}
-                      m={m}
-                      onClick={() => setModalTarget({ gallery: true })}
-                    />
-                  ))}
-                </div>
-              </SortableContext>
-            ) : (
-              <button
-                type="button"
-                onClick={() => setModalTarget({ gallery: true })}
-                className="w-full rounded-xl border-2 border-dashed border-silver-200 p-8 text-center hover:border-navy-300 hover:bg-surface-raised transition-all focus:outline-none focus-visible:ring-2 focus-visible:ring-navy-400 group"
-              >
-                <div className="text-3xl mb-2 opacity-50 group-hover:opacity-100 transition-opacity">📸</div>
-                <p className="text-sm font-bold text-ink-body group-hover:text-navy-700 transition-colors">No gallery photos yet</p>
-                <p className="text-xs text-ink-muted mt-1">Click to upload or drag files here</p>
-              </button>
-            )}
-          </section>
-
-          {/* Upload error banner */}
+          {/* Upload error */}
           {uploadError && (
             <div className="p-3 bg-red-50 border border-red-200 rounded-xl flex items-center justify-between gap-3">
               <p className="text-xs text-red-700 font-medium">{uploadError}</p>
-              <button type="button" onClick={() => setUploadError(null)} className="text-red-400 hover:text-red-600 text-sm leading-none">✕</button>
-            </div>
-          )}
-
-          {/* Readiness media hint */}
-          {readiness.missingRequiredMediaSlots.length > 0 && (
-            <div className="mt-8 p-4 bg-red-50 border border-red-200 rounded-xl">
-              <p className="text-xs text-red-700">
-                <span className="font-bold">Missing required shots to publish:</span>{' '}
-                {readiness.missingRequiredMediaSlots.join(', ')}
-              </p>
+              <button type="button" onClick={() => setUploadError(null)} className="text-red-400 hover:text-red-600 text-sm">✕</button>
             </div>
           )}
         </div>
 
         <DragOverlay dropAnimation={defaultDropAnimationSideEffects({ styles: { active: { opacity: '0.5' } } })}>
-          {activeMedia ? <GalleryItem m={activeMedia} isDragging /> : null}
+          {activeMedia ? (
+            <div className="aspect-[4/3] w-40 rounded-xl overflow-hidden border-2 border-navy-400 shadow-elevation-3 opacity-90">
+              <img src={activeMedia.url} alt="" className="w-full h-full object-cover" />
+            </div>
+          ) : null}
         </DragOverlay>
       </DndContext>
 
-      <input 
-        type="file" 
-        ref={fileInputRef}
+      <input
+        type="file"
+        ref={slotFileInputRef}
         className="hidden"
         accept="image/jpeg, image/png, image/webp"
-        onChange={handleFileSelect}
+        onChange={handleSlotFileSelect}
       />
-
-      {modalTarget && (
-        <FileLibraryModal
-          dealerId={dealerId}
-          vehicleId={vehicleId}
-          slot={'slot' in modalTarget ? modalTarget.slot : null}
-          assigned={'slot' in modalTarget ? modalTarget.assigned : null}
-          allMedia={media}
-          onAssigned={() => { setModalTarget(null); onAssigned(); }}
-          onClose={() => setModalTarget(null)}
-        />
-      )}
+      <input
+        type="file"
+        ref={groupFileInputRef}
+        className="hidden"
+        multiple
+        accept="image/jpeg, image/png, image/webp"
+        onChange={handleGroupFileSelect}
+      />
     </>
   );
 }

@@ -1,4 +1,5 @@
 import { z } from 'zod';
+import { BUSINESS_CATEGORY_IDS } from '@auto-dealer/category-schemas';
 
 const nonEmptyString = (max: number) => z.string().trim().min(1).max(max);
 const optionalText = (max: number) => z.string().trim().max(max).optional();
@@ -206,6 +207,37 @@ export const marketplaceLeadCaptureSchema = z.object({
 );
 
 export type MarketplaceLeadCaptureBody = z.infer<typeof marketplaceLeadCaptureSchema>;
+
+const dealershipAddressSchema = z.object({
+  street: nonEmptyString(160),
+  city: nonEmptyString(120),
+  state: nonEmptyString(40),
+  postalCode: nonEmptyString(20),
+  country: optionalText(60),
+}).strict();
+
+const dealershipContactSchema = z.object({
+  name: nonEmptyString(160),
+  email: z.string().trim().email().max(255),
+  phone: optionalText(40),
+  role: optionalText(80),
+}).strict();
+
+// operationId: createDealership
+export const createDealershipSchema = z.object({
+  legalName: nonEmptyString(160),
+  dbaName: optionalText(160),
+  businessCategory: z.enum(BUSINESS_CATEGORY_IDS),
+  dealerLicense: optionalText(80),
+  websiteUrl: z.string().trim().url().max(255).optional().or(z.literal('')),
+  rooftopAddress: dealershipAddressSchema,
+  primaryContact: dealershipContactSchema,
+  inventorySize: z.number().int().min(0).max(1_000_000).nullable().optional(),
+  desiredChannels: z.array(nonEmptyString(80)).max(50).optional(),
+  documents: z.array(nonEmptyString(160)).max(50).optional(),
+}).strict();
+
+export type CreateDealershipBody = z.infer<typeof createDealershipSchema>;
 
 export const LISTING_REPORT_REASONS = [
   'PRICE_MISMATCH',
