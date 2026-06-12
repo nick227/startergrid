@@ -46,6 +46,7 @@ function ChannelRow({
   const chip = liveStatusChip[row.liveStatus];
   const hasIssues = !row.eligible && row.eligibilityIssues.length > 0;
   const showDetail = row.statusDetail || hasIssues;
+  const selectionDisabled = toggling || (!row.connected && row.connectionState !== 'BUILT_IN');
 
   return (
     <>
@@ -66,7 +67,9 @@ function ChannelRow({
           </div>
         </td>
         <td className="py-2.5 px-2 text-center">
-          {row.eligible ? (
+          {!row.connected && row.connectionState !== 'BUILT_IN' ? (
+            <span className="text-[10px] font-bold text-amber-700">Connect first</span>
+          ) : row.eligible ? (
             <span className="text-green-600 text-xs font-bold">✓</span>
           ) : (
             <button
@@ -85,12 +88,18 @@ function ChannelRow({
             type="button"
             role="switch"
             aria-checked={row.selected}
-            disabled={toggling}
+            disabled={selectionDisabled}
             onClick={() => onToggle(row.channelKey, !row.selected)}
             className={`relative inline-flex h-4 w-7 items-center rounded-full transition-colors disabled:opacity-50 ${
               row.selected ? 'bg-green-600' : 'bg-silver-300'
             }`}
-            title={row.selected ? 'Click to exclude this vehicle from this channel' : 'Click to include this vehicle on this channel'}
+            title={
+              !row.connected && row.connectionState !== 'BUILT_IN'
+                ? 'Connect this platform before managing vehicle selection'
+                : row.selected
+                  ? 'Click to exclude this vehicle from this channel'
+                  : 'Click to include this vehicle on this channel'
+            }
           >
             <span className={`inline-block h-3 w-3 transform rounded-full bg-white shadow transition-transform ${
               row.selected ? 'translate-x-3.5' : 'translate-x-0.5'

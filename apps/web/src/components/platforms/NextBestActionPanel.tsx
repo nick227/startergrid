@@ -144,8 +144,6 @@ export function NextBestActionPanel({
   onDone,
   onSelectSlug,
 }: Props) {
-  const [expanded, setExpanded] = useState(false);
-
   const actionable: PlatformWithConn[] = [];
   for (const platform of platforms) {
     const account = accountBySlug.get(platform.platformSlug);
@@ -161,9 +159,6 @@ export function NextBestActionPanel({
 
   if (!actionable.length) return null;
 
-  const visible = expanded ? actionable : actionable.slice(0, 3);
-  const hasMore = actionable.length > 3;
-
   return (
     <div className="mb-5">
       <div className="flex items-center justify-between mb-2">
@@ -173,18 +168,9 @@ export function NextBestActionPanel({
             {actionable.length} platform{actionable.length !== 1 ? 's' : ''} need attention
           </span>
         </p>
-        {hasMore && (
-          <button
-            type="button"
-            onClick={() => setExpanded(e => !e)}
-            className="text-[11px] text-ink-faint hover:text-ink underline underline-offset-2"
-          >
-            {expanded ? 'Show less' : `+${actionable.length - 3} more`}
-          </button>
-        )}
       </div>
       <div className="space-y-1.5">
-        {visible.map(item => (
+        {actionable.map(item => (
           <ActionRow
             key={item.platform.platformSlug}
             item={item}

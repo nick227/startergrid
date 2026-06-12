@@ -23,7 +23,6 @@ import {
 } from '@/lib/queueRowPresentation.ts';
 import { operatorCopy } from '@/lib/copy/operator.ts';
 import type { OperatorTab } from '@/lib/operatorNav.ts';
-import { queueItemRowScope } from '@/lib/rowNavScope.ts';
 
 type Props = {
   dealerId: string;
@@ -156,21 +155,17 @@ export function QueueListPanel({
                   detailOpen={selectedId === item.id}
                   surfaceClassName={queueRowSurface(item.status)}
                   actions={[
-                    { label: actions.details, onClick: () => setSelectedId(item.id) },
                     {
-                      label: actions.history,
+                      label: actions.details,
                       onClick: () => {
-                        const scope = queueItemRowScope(item);
-                        if (item.platformSlug) nav.goToPlatformHistory(item.platformSlug, scope);
-                        else nav.goToHistory(scope);
-                      },
-                    },
-                    {
-                      label: actions.inventory,
-                      onClick: () => {
-                        const scope = queueItemRowScope(item);
-                        if (scope) nav.goToInventory(scope);
-                        else nav.goToInventory();
+                        if (item.assetTitle || item.assetRef || item.assetId) {
+                          nav.goToInventoryItem({
+                            assetTitle: item.assetTitle,
+                            assetRef: item.assetRef,
+                          });
+                        } else {
+                          setSelectedId(item.id);
+                        }
                       },
                     },
                   ]}

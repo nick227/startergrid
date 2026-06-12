@@ -72,19 +72,34 @@ describe('buildVehicleChannelMatrix', () => {
     assert.equal(matrix, null);
   });
 
-  it('always includes a built-in storefront channel, LIVE for an active READY vehicle', async () => {
-    const prisma = makePrisma({});
+  it('includes a storefront channel, LIVE for an active READY vehicle when connected', async () => {
+    const prisma = makePrisma({ accounts: [{ platformSlug: 'dealer-storefront', state: 'ACTIVE' }] });
     const matrix = await buildVehicleChannelMatrix(prisma as never, 'd-001', 'v-001');
     assert.ok(matrix);
     const storefront = matrix.channels.find(c => c.channelKey === STOREFRONT_CHANNEL_KEY);
     assert.ok(storefront);
     assert.equal(storefront.connected, true);
+    assert.equal(storefront.eligible, true);
     assert.equal(storefront.selected, true);
     assert.equal(storefront.liveStatus, 'LIVE');
   });
 
+  it('makes storefront ineligible until its platform account is connected', async () => {
+    const prisma = makePrisma({});
+    const matrix = await buildVehicleChannelMatrix(prisma as never, 'd-001', 'v-001');
+    const storefront = matrix!.channels.find(c => c.channelKey === STOREFRONT_CHANNEL_KEY)!;
+    assert.equal(storefront.connected, false);
+    assert.equal(storefront.eligible, false);
+    assert.equal(storefront.connectionState, 'ACCOUNT_NEEDED');
+    assert.equal(storefront.liveStatus, 'NOT_LIVE');
+    assert.match(storefront.statusDetail ?? '', /Connect Dealer Storefront/);
+  });
+
   it('storefront is NOT_LIVE with a Draft explanation for a DRAFT vehicle', async () => {
-    const prisma = makePrisma({ vehicle: { ...baseVehicle, listingStatus: 'DRAFT' } });
+    const prisma = makePrisma({
+      vehicle: { ...baseVehicle, listingStatus: 'DRAFT' },
+      accounts: [{ platformSlug: 'dealer-storefront', state: 'ACTIVE' }],
+    });
     const matrix = await buildVehicleChannelMatrix(prisma as never, 'd-001', 'v-001');
     const storefront = matrix!.channels.find(c => c.channelKey === STOREFRONT_CHANNEL_KEY)!;
     assert.equal(storefront.liveStatus, 'NOT_LIVE');
@@ -95,6 +110,7 @@ describe('buildVehicleChannelMatrix', () => {
   it('honors a storefront opt-out (selected=false row)', async () => {
     const prisma = makePrisma({
       vehicle: { ...baseVehicle, channelSelections: [{ channelKey: 'storefront', selected: false }] },
+      accounts: [{ platformSlug: 'dealer-storefront', state: 'ACTIVE' }],
     });
     const matrix = await buildVehicleChannelMatrix(prisma as never, 'd-001', 'v-001');
     const storefront = matrix!.channels.find(c => c.channelKey === STOREFRONT_CHANNEL_KEY)!;

@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import {
   adminDealerHash,
+  inventoryItemHash,
   operatorHash,
   parseOperatorRoute,
   platformHistoryHash,
@@ -38,6 +39,15 @@ describe('parseOperatorRoute', () => {
       dealerId: 'dealer-a',
       page: 'inventory',
       assetRef: 'STK3',
+    });
+  });
+
+  it('parses friendly inventory item route', () => {
+    const route = parseOperatorRoute('#/dealer-a/inventory/2020-chevrolet-silverado-1500-messy1019');
+    expect(route).toMatchObject({
+      dealerId: 'dealer-a',
+      page: 'inventory',
+      inventoryItemSlug: '2020-chevrolet-silverado-1500-messy1019',
     });
   });
 
@@ -152,6 +162,16 @@ describe('parseOperatorRoute', () => {
     });
   });
 
+  it('parses admin dealer friendly inventory item route', () => {
+    const route = parseOperatorRoute('#/admin/dealers/dealer-abc/inventory/2020-chevrolet-silverado-1500-messy1019');
+    expect(route).toMatchObject({
+      page: 'admin',
+      adminDealerId: 'dealer-abc',
+      adminDealerPage: 'inventory',
+      inventoryItemSlug: '2020-chevrolet-silverado-1500-messy1019',
+    });
+  });
+
   it('parses admin dealer reports sub-route', () => {
     const route = parseOperatorRoute('#/admin/dealers/dealer-abc/reports/inventory/movement?range=30d');
     expect(route).toMatchObject({
@@ -168,6 +188,13 @@ describe('parseOperatorRoute', () => {
 describe('hash builders', () => {
   it('operatorHash appends scope', () => {
     expect(operatorHash('d1', 'queue', { assetRef: 'STK1' })).toBe('#/d1/queue?ref=STK1');
+  });
+
+  it('inventoryItemHash builds a friendly item URL', () => {
+    expect(inventoryItemHash('d1', {
+      assetTitle: '2020 Chevrolet Silverado 1500',
+      assetRef: 'MESSY1019',
+    })).toBe('#/d1/inventory/2020-chevrolet-silverado-1500-messy1019');
   });
 
   it('platformQueueHash appends scope', () => {

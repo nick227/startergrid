@@ -68,7 +68,7 @@ export function PageShell({
       <div className={footerPad ? 'pb-20' : ''}>
         <div className="flex items-center justify-between gap-4 py-3 border-b border-silver-200">
           <div className="flex items-center gap-3 min-w-0">
-            <span className="text-sm font-semibold text-ink-heading truncate">{displayDealerName}</span>
+            <span className="text-4xl font-semibold text-ink-heading truncate">{displayDealerName}</span>
             {!hideDealerId && (
               <span className="text-xs text-ink-faint font-mono hidden sm:block truncate max-w-[14rem]">{dealerId}</span>
             )}

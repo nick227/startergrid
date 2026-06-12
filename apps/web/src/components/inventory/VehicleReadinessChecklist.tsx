@@ -25,14 +25,7 @@ export function VehicleReadinessChecklist({ readiness }: Props) {
         {!allClear && <span className="text-[11px] text-ink-muted">{totalIssues} issue{totalIssues !== 1 ? 's' : ''}</span>}
       </div>
 
-      <ul className="space-y-1 flex flex-wrap gap-2">
-        {/* Blockers */}
-        {readiness.blockers.map((b, i) => (
-          <li key={`b${i}`} className="flex items-start gap-2 text-xs whitespace-nowrap">
-            <span className="shrink-0 mt-0.5 w-4 h-4 rounded-full bg-red-100 text-red-600 flex items-center justify-center text-[10px] font-bold">✕</span>
-            <span className="text-red-700 font-medium">{b}</span>
-          </li>
-        ))}
+      <ul className="space-y-1 grid grid-cols-3 w-full gap-2">
         {/* Missing required media */}
         {readiness.missingRequiredMediaSlots.map(s => (
           <li key={`ms${s}`} className="flex items-start gap-2 text-xs whitespace-nowrap">

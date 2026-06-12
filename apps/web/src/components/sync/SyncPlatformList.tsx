@@ -98,7 +98,7 @@ function SyncPlatformRow({
           >
             {meta.label}
           </span>
-          <span className="text-sm font-semibold text-ink-heading truncate">{p.platformName}</span>
+          <span className="text-4xl font-semibold text-ink-heading truncate">{p.platformName}</span>
         </div>
         {exposureLine && (
           <p className="text-[11px] text-ink-muted pl-0.5 truncate">{exposureLine}</p>

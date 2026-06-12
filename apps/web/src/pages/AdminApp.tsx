@@ -6,7 +6,7 @@ import { AdminShell } from '@/components/operator/AdminShell.tsx';
 import { AdminViewContext } from '@/contexts/AdminViewContext.tsx';
 import { CategoryProvider } from '@/contexts/CategoryContext.tsx';
 import { useDealerCategorySchema } from '@/hooks/useDealerCategorySchema.ts';
-import { appendRowNavScope } from '@/lib/rowNavScope.ts';
+import { appendRowNavScope, inventoryItemSlug } from '@/lib/rowNavScope.ts';
 import type { OperatorNavHandlers } from '@/lib/operatorNav.ts';
 import type { ReportRangePreset } from '@/lib/reportsCatalog.ts';
 import AdminOverviewPage from './AdminOverviewPage.tsx';
@@ -64,6 +64,7 @@ function buildAdminDealerNav(dealerId: string): OperatorNavHandlers {
     goToHistory:        (scope)      => { window.location.hash = appendRowNavScope(`${base}/history`, scope); },
     goToReports:        ()           => { window.location.hash = `${base}/reports`; },
     goToInventory:      (scope)      => { window.location.hash = appendRowNavScope(`${base}/inventory`, scope); },
+    goToInventoryItem:  (item, scope) => { window.location.hash = appendRowNavScope(`${base}/inventory/${inventoryItemSlug(item)}`, scope); },
     goToHelp:           ()           => { window.location.hash = `${base}/help`; },
     goToPlatformDetail: (slug, scope) => { window.location.hash = appendRowNavScope(`${base}/platforms/${slug}`, scope); },
     goToPlatformQueue:  (slug, scope) => { window.location.hash = appendRowNavScope(`${base}/platforms/${slug}/queue`, scope); },

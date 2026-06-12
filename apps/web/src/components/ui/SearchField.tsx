@@ -14,7 +14,7 @@ export function SearchField({ value, onChange, placeholder, className, autoFocus
       onChange={e => onChange(e.target.value)}
       placeholder={placeholder}
       autoFocus={autoFocus}
-      className={className ?? 'field-input'}
+      className={className ?? 'field-input rounded-lg w-full p-2'}
     />
   );
 }

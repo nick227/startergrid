@@ -3,6 +3,7 @@ import {
   appendRowNavScope,
   assetRowScope,
   historyEventRowScope,
+  inventoryItemSlug,
   parseRowNavScope,
   performanceItemRowScope,
   queueItemRowScope,
@@ -55,6 +56,13 @@ describe('row scope helpers', () => {
       assetId: 'v-1',
     });
     expect(queueItemRowScope({ assetRef: null, assetId: null })).toBeUndefined();
+  });
+
+  it('builds a friendly inventory item slug from title and stock', () => {
+    expect(inventoryItemSlug({
+      assetTitle: '2020 Chevrolet Silverado 1500',
+      assetRef: 'MESSY1019',
+    })).toBe('2020-chevrolet-silverado-1500-messy1019');
   });
 
   it('builds performance item scope', () => {

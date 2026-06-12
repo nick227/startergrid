@@ -100,13 +100,13 @@ export async function enqueueFromVehicleUpdate(
     const scheduledFor = resolveScheduledFor(mode);
     const blockReason = resolveBlockReason(status, mode);
 
-    // Cancel any open (non-terminal) items for this vehicle × platform
+    // Cancel any open item for this vehicle × platform, including stale blockers.
     await prisma.publishQueueItem.updateMany({
       where: {
         dealershipId,
         vehicleId,
         platformSlug: prop.platformSlug,
-        status: { in: ['READY', 'SCHEDULED', 'NEEDS_APPROVAL', 'HELD'] as any }
+        status: { in: ['READY', 'SCHEDULED', 'NEEDS_APPROVAL', 'BLOCKED', 'HELD'] as any }
       },
       data: { status: 'CANCELLED' as any }
     });

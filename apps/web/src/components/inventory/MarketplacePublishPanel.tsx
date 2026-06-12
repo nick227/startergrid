@@ -89,7 +89,7 @@ export function MarketplacePublishPanel({ dealerId, vehicleId }: Props) {
     <div className="space-y-2">
       <div className="flex items-center justify-between gap-3">
         <div className="flex items-center gap-2">
-          <span className="text-xs text-ink-body font-medium">Our Marketplace</span>
+          <span className="text-xs text-ink-body font-medium">Dealer Storefront</span>
           {listing ? statusBadge(listing.status) : (
             <span className="text-[10px] text-ink-faint">Not published</span>
           )}
@@ -111,7 +111,7 @@ export function MarketplacePublishPanel({ dealerId, vehicleId }: Props) {
             disabled={working}
             className="text-xs px-2.5 py-1 rounded bg-navy-700 text-white hover:bg-navy-600 disabled:opacity-50 transition-colors font-semibold"
           >
-            {working ? 'Publishing…' : 'Publish'}
+            {working ? 'Publishing…' : 'Publish online'}
           </button>
         )}
       </div>

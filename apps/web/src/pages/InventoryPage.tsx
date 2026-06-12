@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
-import { fetchInventory, bulkEditVehicles, fetchVehiclePerformanceList, fetchPlatformPerformance } from '@/lib/api/sdk.ts';
-import type { BulkEditPayload, VehiclePerformanceItem, PlatformPerformanceItem, LifecycleScope } from '@/lib/types.ts';
+import { fetchInventory, bulkEditVehicles, fetchVehiclePerformanceList, fetchPlatformPerformance, fetchPublishStatus } from '@/lib/api/sdk.ts';
+import type { BulkEditPayload, VehiclePerformanceItem, PlatformPerformanceItem, LifecycleScope, PublishStatusResponse } from '@/lib/types.ts';
 import type { OperatorPageBaseProps } from '@/lib/operatorPage.ts';
 import { useAsyncQuery } from '@/hooks/useAsyncQuery.ts';
 import { useAutoSyncWatch } from '@/hooks/useAutoSyncWatch.ts';
@@ -10,6 +10,7 @@ import { hasPerformanceData, isBenchmarksUpdating } from '@/lib/performanceFresh
 import { isActiveLifecycleScope } from '@/lib/lifecycleDisplay.ts';
 import { countLowDataVehicles, staleStockNumbers } from '@/lib/movementBenchmark.ts';
 import { composeInventoryList, type InventoryListQuery, type MovementFilter } from '@/lib/inventoryAssetOps.ts';
+import { inventoryItemSlug } from '@/lib/rowNavScope.ts';
 import { Banner } from '@/components/ui';
 import { InfoButton } from '@/components/docs';
 import { BulkActionBar } from '@/components/generic';
@@ -35,6 +36,87 @@ import { useOperatorRoute } from '@/hooks/useOperatorRoute.ts';
 type Props = OperatorPageBaseProps;
 
 const DEFAULT_COLS = INVENTORY_COLUMN_PRESETS['Default'];
+
+function platformIsConnected(platform: PublishStatusResponse['platforms'][number]): boolean {
+  return platform.accountState === 'ACTIVE' || platform.state === 'Active' || platform.state === 'Ready' || platform.state === 'Scheduled';
+}
+
+function InventoryPublishingGuide({
+  status,
+  loading,
+  onOpenPlatforms,
+}: {
+  status?: PublishStatusResponse | null;
+  loading: boolean;
+  onOpenPlatforms: () => void;
+}) {
+  const platforms = status?.platforms ?? [];
+  const connectedCount = platforms.filter(platformIsConnected).length;
+  const storefront = platforms.find(p => p.platformSlug === 'dealer-storefront');
+  const storefrontConnected = storefront ? platformIsConnected(storefront) : false;
+  const storefrontLabel = loading && !status
+    ? 'Checking'
+    : storefrontConnected
+      ? 'Connected'
+      : storefront
+        ? 'Setup needed'
+        : 'Not configured';
+
+  return (
+    <SectionCard
+      title="Publishing management"
+      subtitle="Platform connection is the first gate for inventory-level controls."
+      action={
+        <button type="button" onClick={onOpenPlatforms} className="btn-primary-operator">
+          Dealership platforms
+        </button>
+      }
+    >
+      <div className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_320px]">
+        <div>
+          <div className="flex flex-wrap items-center gap-2">
+            <span className="text-xs font-semibold text-ink-heading">Dealer Storefront canary</span>
+            <span className={`text-[10px] font-bold uppercase tracking-wide px-2 py-0.5 rounded-full border ${
+              storefrontConnected
+                ? 'bg-green-100 text-green-800 border-green-200'
+                : 'bg-amber-50 text-amber-700 border-amber-200'
+            }`}>
+              {storefrontLabel}
+            </span>
+            <span className="text-[11px] text-ink-muted">
+              {platforms.length ? `${connectedCount} of ${platforms.length} signed-up platforms connected` : 'No platform status loaded'}
+            </span>
+          </div>
+          <p className="mt-2 text-sm text-ink-muted">
+            Inventory sync starts at Dealership Platforms. A dealer may be signed up for five platforms and only run three; only the connected running set is eligible in inventory and item controls.
+          </p>
+          <div className="mt-4 grid gap-2 sm:grid-cols-4">
+            {[
+              ['Connected', 'Platform can receive inventory for this rooftop.'],
+              ['Eligible', 'Vehicle passes required fields, price, photos, and status checks.'],
+              ['Selected', 'Vehicle is allowed on that channel; unchecking is an opt-out.'],
+              ['Live', 'A queue send, catalog sync, social post, or storefront publish has completed.'],
+            ].map(([label, detail]) => (
+              <div key={label} className="rounded-md border border-silver-200 bg-silver-50 p-3">
+                <p className="text-xs font-semibold text-ink-heading">{label}</p>
+                <p className="mt-1 text-[11px] leading-4 text-ink-muted">{detail}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+        <div className="rounded-md border border-navy-100 bg-navy-50 p-4">
+          <p className="text-xs font-semibold text-navy-800">Storefront online checklist</p>
+          <ol className="mt-2 space-y-1.5 text-[11px] leading-5 text-ink-body list-decimal list-inside">
+            <li>Connect Dealer Storefront on Platforms.</li>
+            <li>Open a vehicle and mark it Ready.</li>
+            <li>Leave Dealer Storefront selected for that vehicle.</li>
+            <li>Use Publish in the vehicle channel panel to create the live listing.</li>
+          </ol>
+        </div>
+      </div>
+    </SectionCard>
+  );
+}
 
 export default function InventoryPage({ dealerId, nav, activeTab }: Props) {
   const categorySchema = useCategorySchema();
@@ -78,11 +160,13 @@ export default function InventoryPage({ dealerId, nav, activeTab }: Props) {
 
   const perf = useAsyncQuery(() => fetchVehiclePerformanceList(dealerId), [dealerId]);
   const platformPerf = useAsyncQuery(() => fetchPlatformPerformance(dealerId), [dealerId]);
+  const publishStatus = useAsyncQuery(() => fetchPublishStatus(dealerId), [dealerId]);
 
   const reloadBenchmarks = useCallback(() => {
     perf.reload();
     platformPerf.reload();
-  }, [perf.reload, platformPerf.reload]);
+    publishStatus.reload();
+  }, [perf.reload, platformPerf.reload, publishStatus.reload]);
 
   const handleIntakeRefresh = useCallback(() => {
     load();
@@ -201,12 +285,29 @@ export default function InventoryPage({ dealerId, nav, activeTab }: Props) {
   const [detailId, setDetailId] = useState<string | null>(null);
   const detailVehicle = detailId ? vehicles.find(r => r.id === detailId) ?? null : null;
 
+  useEffect(() => {
+    const routeSlug = route.inventoryItemSlug;
+    if (!route.assetId && !routeSlug) return;
+    const target = route.assetId
+      ? vehicles.find(v => v.id === route.assetId)
+      : vehicles.find(v => inventoryItemSlug(v) === routeSlug);
+    if (target) setDetailId(target.id);
+  }, [route.assetId, route.inventoryItemSlug, vehicles]);
+
+  const handleCloseDetail = () => {
+    setDetailId(null);
+    if (route.inventoryItemSlug || route.assetId) nav.goToInventory();
+  };
+
   return (
     <OperatorPage
       dealerId={dealerId}
       activeTab={activeTab}
       nav={nav}
-      onRefresh={load}
+      onRefresh={() => {
+        load();
+        publishStatus.reload();
+      }}
       refreshing={loading}
       lastRefresh={lastRefresh ?? undefined}
       footerPad={selected.size > 0}
@@ -227,7 +328,7 @@ export default function InventoryPage({ dealerId, nav, activeTab }: Props) {
             perf={detailVehicle ? perfMap.get(detailVehicle.stockNumber) : undefined}
             platformPerfBySlug={platformPerfBySlug}
             benchmarksUpdating={benchmarksUpdating}
-            onClose={() => setDetailId(null)}
+            onClose={handleCloseDetail}
             onMediaAssigned={load}
           />
         </div>
@@ -256,6 +357,12 @@ export default function InventoryPage({ dealerId, nav, activeTab }: Props) {
               compact
             />
           )}
+
+          <InventoryPublishingGuide
+            status={publishStatus.data}
+            loading={publishStatus.loading}
+            onOpenPlatforms={nav.goToPlatforms}
+          />
 
           {!isEmpty && summary && summary.blocked > 0 && (
             <InlineCallout
@@ -329,7 +436,15 @@ export default function InventoryPage({ dealerId, nav, activeTab }: Props) {
                         setSelected(next);
                       }}
                       onToggleAll={toggleAll}
-                      onRowClick={(item) => setDetailId(item.id)}
+                      onRowClick={(item) => {
+                        nav.goToInventoryItem({
+                          year: item.specs.year,
+                          make: item.specs.make,
+                          model: item.specs.model,
+                          stockNumber: item.identity.stockNumber,
+                        });
+                        setDetailId(item.id);
+                      }}
                       activeColumns={activeColumns}
                       sortKey={sortKey}
                       sortDir={sortDirection}

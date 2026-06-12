@@ -5,6 +5,29 @@ export type RowNavScope = {
   assetId?: string;
 };
 
+function slugPart(value: string): string {
+  return value
+    .trim()
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/^-+|-+$/g, '');
+}
+
+export function inventoryItemSlug(item: {
+  assetTitle?: string | null;
+  assetRef?: string | null;
+  stockNumber?: string | null;
+  year?: number | null;
+  make?: string | null;
+  model?: string | null;
+}): string {
+  const title = item.assetTitle
+    ?? [item.year, item.make, item.model].filter(v => v !== null && v !== undefined && String(v).trim()).join(' ');
+  const ref = item.assetRef ?? item.stockNumber ?? '';
+  const slug = [title, ref].map(v => slugPart(String(v))).filter(Boolean).join('-');
+  return slug || 'item';
+}
+
 export function parseRowNavScope(queryString: string): RowNavScope {
   if (!queryString) return {};
   const params = new URLSearchParams(queryString.startsWith('?') ? queryString.slice(1) : queryString);

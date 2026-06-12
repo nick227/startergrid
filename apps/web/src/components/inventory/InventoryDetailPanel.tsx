@@ -9,6 +9,7 @@ import { VehiclePhotoWorkspace } from './VehiclePhotoWorkspace.tsx';
 import { VehicleFieldGroups } from './VehicleFieldGroups.tsx';
 import { VehicleReadinessChecklist } from './VehicleReadinessChecklist.tsx';
 import { VehicleChannelMatrix } from './VehicleChannelMatrix.tsx';
+import { MarketplacePublishPanel } from './MarketplacePublishPanel.tsx';
 import { VehicleDangerZone } from './VehicleDangerZone.tsx';
 import { AssetLifecycleHistory } from './AssetLifecycleHistory.tsx';
 
@@ -94,7 +95,20 @@ export function InventoryDetailPanel({
           {/* ── Channels (connected / eligible / selected / live) ─────────── */}
           <section className="bg-white rounded-xl shadow-sm border border-silver-200 p-6">
             <SectionHeader title="Channels" />
-            <div className="mt-4">
+            <div className="mt-4 space-y-4">
+              <div className="rounded-lg border border-navy-100 bg-navy-50 p-4">
+                <div className="flex items-start justify-between gap-3">
+                  <div>
+                    <p className="text-xs font-semibold text-navy-800">Dealer Storefront publish</p>
+                    <p className="mt-1 text-[11px] leading-5 text-ink-muted">
+                      Ready makes this vehicle eligible. Selected keeps the storefront allowed. Publish is the final on/off switch that creates the live owned-marketplace listing.
+                    </p>
+                  </div>
+                </div>
+                <div className="mt-3">
+                  <MarketplacePublishPanel dealerId={dealerId} vehicleId={vehicleId} />
+                </div>
+              </div>
               <VehicleChannelMatrix dealerId={dealerId} vehicleId={vehicleId} refreshKey={refreshKey} />
             </div>
           </section>

@@ -1,6 +1,6 @@
 import { useMemo, useState, useEffect } from 'react';
 import { fetchPublishStatus, fetchAccounts, fetchPlatformPerformance, fetchSelectedSocialPages } from '@/lib/api/sdk.ts';
-import type { PlatformAccountDetail, PlatformPerformanceItem, SelectedSocialPage } from '@/lib/types.ts';
+import type { PlatformAccountDetail, PlatformPerformanceItem, PlatformPublishResult, SelectedSocialPage } from '@/lib/types.ts';
 import type { OperatorPageBaseProps } from '@/lib/operatorPage.ts';
 import { useAsyncQuery } from '@/hooks/useAsyncQuery.ts';
 import { OperatorPage, ErrorState } from '@/components/operator';
@@ -11,6 +11,7 @@ import { OAuthConnectBanner } from '@/components/platforms/OAuthConnectBanner.ts
 import { NextBestActionPanel } from '@/components/platforms/NextBestActionPanel.tsx';
 import {
   PLATFORM_CONNECTION_FILTERS,
+  platformConnectionWithAccount,
   platformMatchesFilter,
   platformSituationSummary,
   sortPlatformsForDisplay,
@@ -23,10 +24,40 @@ type Props = OperatorPageBaseProps & {
   initialPlatformSlug?: string | null;
 };
 
-const SORT_OPTIONS = [
-  { value: 'urgency', label: 'Needs attention first' },
-  { value: 'name', label: 'Name A–Z' },
-];
+function DealerStorefrontFeature({
+  platform,
+  account,
+}: {
+  platform: PlatformPublishResult;
+  account: PlatformAccountDetail | null;
+}) {
+  const conn = platformConnectionWithAccount(platform, account);
+  const connected = conn.connection === 'connected' || conn.connection === 'updating';
+  const statusTone = connected
+    ? 'bg-green-100 text-green-800 border-green-200'
+    : conn.connection === 'blocked'
+      ? 'bg-red-100 text-red-700 border-red-200'
+      : 'bg-amber-50 text-amber-700 border-amber-200';
+
+  return (
+    <section className="pb-4">
+      <div className="grid gap-4 lg:grid-cols-[minmax(0,1.25fr)_minmax(320px,0.75fr)]">
+        <div className="">
+          <div className="flex flex-wrap items-center gap-2">
+            <span className="text-[10px] font-bold uppercase tracking-widest text-navy-700">Featured platform</span>
+            <span className={`text-[10px] font-bold uppercase tracking-wide px-2 py-0.5 rounded-full border ${statusTone}`}>
+              {conn.label}
+            </span>
+          </div>
+          <h2 className="mt-2 text-lg font-semibold text-ink-heading">Dealer Storefront</h2>
+          <p className="mt-1 text-sm text-ink-muted max-w-2xl">
+            Use the in-house marketplace storefront to get started publishing.
+          </p>
+        </div>
+      </div>
+    </section>
+  );
+}
 
 export default function PlatformsPage({ dealerId, nav, activeTab, initialPlatformSlug }: Props) {
   const categorySchema = useCategorySchema();
@@ -40,7 +71,7 @@ export default function PlatformsPage({ dealerId, nav, activeTab, initialPlatfor
 
   const [search, setSearch] = useState('');
   const [filter, setFilter] = useState<PlatformConnectionFilter>('ALL');
-  const [sort, setSort] = useState<'urgency' | 'name'>('urgency');
+  const [sort] = useState<'urgency' | 'name'>('urgency');
   const [selectedSlug, setSelectedSlug] = useState<string | null>(initialPlatformSlug ?? null);
 
   useEffect(() => {
@@ -70,8 +101,15 @@ export default function PlatformsPage({ dealerId, nav, activeTab, initialPlatfor
     [data, categorySchema.id]
   );
 
+  const featuredStorefront = useMemo(
+    () => platforms.find(p => p.platformSlug === 'dealer-storefront') ?? null,
+    [platforms]
+  );
+
   const visible = useMemo(() => {
-    let list = platforms.filter(p => platformMatchesFilter(p, filter));
+    let list = platforms
+      .filter(p => p.platformSlug !== featuredStorefront?.platformSlug)
+      .filter(p => platformMatchesFilter(p, filter));
     if (search.trim()) {
       const q = search.toLowerCase();
       list = list.filter(
@@ -121,13 +159,17 @@ export default function PlatformsPage({ dealerId, nav, activeTab, initialPlatfor
     >
       <PageSituation title={operatorCopy.platforms.title} line={situation} />
 
+      {featuredStorefront && (
+        <DealerStorefrontFeature
+          platform={featuredStorefront}
+          account={accountBySlug.get(featuredStorefront.platformSlug) ?? null}
+        />
+      )}
+
       <ControlBlock
         search={search}
         onSearchChange={setSearch}
         searchPlaceholder={operatorCopy.platforms.searchPlaceholder}
-        sort={sort}
-        sortOptions={SORT_OPTIONS}
-        onSortChange={v => setSort(v as 'urgency' | 'name')}
         filters={
           <FilterChips
             chips={PLATFORM_CONNECTION_FILTERS.map(f => ({ key: f.key, label: f.label }))}

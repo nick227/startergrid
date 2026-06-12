@@ -9,6 +9,17 @@ export type OperatorNavHandlers = {
   goToHistory: (scope?: RowNavScope) => void;
   goToReports: () => void;
   goToInventory: (scope?: RowNavScope) => void;
+  goToInventoryItem: (
+    item: {
+      assetTitle?: string | null;
+      assetRef?: string | null;
+      stockNumber?: string | null;
+      year?: number | null;
+      make?: string | null;
+      model?: string | null;
+    },
+    scope?: RowNavScope
+  ) => void;
   goToLeads: () => void;
   goToHelp: () => void;
   goToPlatformDetail: (platformSlug: string, scope?: RowNavScope) => void;

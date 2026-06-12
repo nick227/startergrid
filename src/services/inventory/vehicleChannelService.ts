@@ -114,21 +114,24 @@ export async function buildVehicleChannelMatrix(
 
   const channels: VehicleChannelRow[] = [];
 
-  // ── Storefront pseudo-channel (built-in, always connected) ──────────────────
+  // ── Storefront pseudo-channel ───────────────────────────────────────────────
+  const storefrontState = accountStateBySlug.get('dealer-storefront') ?? 'ACCOUNT_NEEDED';
+  const storefrontConnected = CONNECTED_STATES.has(storefrontState);
   const storefrontSelected = !deselected.has(STOREFRONT_CHANNEL_KEY);
   const storefrontLive =
-    vehicle.listingStatus === 'READY' && !vehicle.soldAt && !vehicle.removedAt && storefrontSelected;
+    storefrontConnected && vehicle.listingStatus === 'READY' && !vehicle.soldAt && !vehicle.removedAt && storefrontSelected;
   channels.push({
     channelKey: STOREFRONT_CHANNEL_KEY,
     channelName: 'Dealer Storefront',
     lanes: ['storefront'],
-    connected: true,
-    connectionState: 'BUILT_IN',
-    eligible: true,
-    eligibilityIssues: [],
+    connected: storefrontConnected,
+    connectionState: storefrontState,
+    eligible: storefrontConnected,
+    eligibilityIssues: storefrontConnected ? [] : ['Connect Dealer Storefront on Platforms'],
     selected: storefrontSelected,
     liveStatus: storefrontLive ? 'LIVE' : 'NOT_LIVE',
     statusDetail: storefrontLive ? null
+      : !storefrontConnected ? 'Connect Dealer Storefront on Platforms'
       : vehicle.listingStatus !== 'READY' ? 'Vehicle is in Draft'
       : !storefrontSelected ? 'Excluded by dealer'
       : 'Vehicle is sold or removed',
