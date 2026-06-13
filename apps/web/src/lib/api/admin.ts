@@ -48,6 +48,8 @@ export type CredentialStageResult = {
   checkedFields: string[];
 };
 
+export type ExternalLink = { label: string; url: string };
+
 export type AdminSetupGuide = {
   shortBlurb: string;
   portalUrl: string;
@@ -84,6 +86,8 @@ export type PlatformCredentialContractSummary = {
   lastCheckedAt: string | null;
   lastStatus: PlatformCredentialDisplayStatus;
   lastError: string | null;
+  description?: string | null;
+  externalLinks?: ExternalLink[] | null;
   adminSetup?: AdminSetupGuide | null;
   operatorSetup?: OperatorSetupGuide | null;
 };
@@ -167,9 +171,10 @@ export async function fetchAdminDashboard(): Promise<AdminDashboardResponse> {
 }
 
 export async function fetchBlockedDealers(params: {
-  severity?: string;
-  category?: string;
-  platform?: string;
+	  severity?: string;
+	  category?: string;
+	  dealerId?: string;
+	  platform?: string;
   source?: string;
   q?: string;
   page?: number;

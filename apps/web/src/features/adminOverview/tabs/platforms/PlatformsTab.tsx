@@ -9,7 +9,6 @@ import {
   type PlatformCredentialDisplayStatus,
   type ProviderCredentialResultWithContracts,
   type ProviderCredentialSummaryWithContracts,
-  type OperatorSetupGuide,
 } from '@/lib/api/admin.ts';
 import { adminPlatformHash } from '@/lib/routes.ts';
 import { ResultCount, SortableHeaderCell, type SortDir } from '@/features/adminOverview/components/index.ts';
@@ -208,6 +207,7 @@ export function PlatformsTab({ platformOverview }: Props) {
   const [platSearch, setPlatSearch] = useState('');
   const [platCap, setPlatCap] = useState('');
   const [platCategory, setPlatCategory] = useState('');
+  const [platConnectionModel, setPlatConnectionModel] = useState('');
   const [platValidation, setPlatValidation] = useState('');
   const [platSort, setPlatSort] = useState<PlatSortField>('platformName');
   const [platDir, setPlatDir] = useState<SortDir>('asc');
@@ -240,6 +240,12 @@ export function PlatformsTab({ platformOverview }: Props) {
     }
     if (platCap) list = list.filter(p => p.capabilities.includes(platCap));
     if (platCategory) list = list.filter(p => p.supportedCategories?.includes(platCategory));
+    if (platConnectionModel) {
+      list = list.filter(p => {
+        const model = credentialMap.get(p.platformSlug)?.connectionModel;
+        return model === platConnectionModel;
+      });
+    }
     if (platValidation) {
       list = list.filter(p => validationStatus(credentialMap.get(p.platformSlug)) === platValidation);
     }
@@ -254,9 +260,9 @@ export function PlatformsTab({ platformOverview }: Props) {
       return platDir === 'asc' ? cmp : -cmp;
     });
     return list;
-  }, [credentialMap, platformOverview, platSearch, platCap, platCategory, platValidation, platSort, platDir]);
+  }, [credentialMap, platformOverview, platSearch, platCap, platCategory, platConnectionModel, platValidation, platSort, platDir]);
 
-  const platActiveFilters = [platSearch, platCategory, platCap, platValidation].filter(Boolean).length;
+  const platActiveFilters = [platSearch, platCategory, platCap, platConnectionModel, platValidation].filter(Boolean).length;
 
   function togglePlat(field: PlatSortField) {
     if (platSort === field) setPlatDir(dir => (dir === 'asc' ? 'desc' : 'asc'));
@@ -350,62 +356,87 @@ export function PlatformsTab({ platformOverview }: Props) {
 
   return (
     <div className="space-y-4">
-      <div className="flex flex-wrap items-center gap-2">
-        <input
-          type="text"
-          value={platSearch}
-          onChange={e => setPlatSearch(e.target.value)}
-          placeholder="Search platforms…"
-          className={`${INPUT_CLS} w-44`}
-        />
-        <select value={platCategory} onChange={e => setPlatCategory(e.target.value)} className={SELECT_CLS}>
-          <option value="">All Categories</option>
-          {BUSINESS_CATEGORY_IDS.map(id => (
-            <option key={id} value={id}>{id.replace(/_/g, ' ')}</option>
-          ))}
-        </select>
-        <select value={platCap} onChange={e => setPlatCap(e.target.value)} className={SELECT_CLS}>
-          <option value="">All Capabilities</option>
-          <option value="catalogSync">Catalog Sync</option>
-          <option value="socialPosting">Social Posting</option>
-          <option value="marketplaceListing">Marketplace Listing</option>
-          <option value="partnerFeed">Partner Feed</option>
-          <option value="leadCapture">Lead Capture</option>
-        </select>
-        <select value={platValidation} onChange={e => setPlatValidation(e.target.value)} className={SELECT_CLS}>
-          <option value="">All Validation States</option>
-          <option value="VALID">Valid</option>
-          <option value="NOT_CONFIGURED">Not Configured</option>
-          <option value="READY_TO_VALIDATE">Ready to Validate</option>
-          <option value="VALIDATION_FAILED">Validation Failed</option>
-          <option value="MANUAL_SETUP">Manual Setup</option>
-          <option value="INTERNAL">Internal</option>
-          <option value="CONTRACT_MISSING">Contract Missing</option>
-        </select>
-        {platActiveFilters > 0 && (
-          <button type="button" onClick={() => { setPlatSearch(''); setPlatCategory(''); setPlatCap(''); setPlatValidation(''); }} className={CLEAR_CLS}>
-            Clear ({platActiveFilters})
-          </button>
-        )}
-        <div className="ml-auto flex items-center gap-3">
-          {validationMeta && (
-            <span className="text-[10px] text-ink-faint">
-              Validated {validationMeta.checkedAt.toLocaleTimeString()} · {validationMeta.durationMs}ms
-            </span>
+      <div className="space-y-2">
+        <div className="flex flex-wrap items-center gap-2">
+          <input
+            type="text"
+            value={platSearch}
+            onChange={e => setPlatSearch(e.target.value)}
+            placeholder="Search platforms…"
+            className={`${INPUT_CLS} w-44`}
+          />
+          <select value={platCap} onChange={e => setPlatCap(e.target.value)} className={SELECT_CLS}>
+            <option value="">All Capabilities</option>
+            <option value="catalogSync">Catalog Sync</option>
+            <option value="socialPosting">Social Posting</option>
+            <option value="marketplaceListing">Marketplace Listing</option>
+            <option value="partnerFeed">Partner Feed</option>
+            <option value="leadCapture">Lead Capture</option>
+          </select>
+          <select value={platConnectionModel} onChange={e => setPlatConnectionModel(e.target.value)} className={SELECT_CLS}>
+            <option value="">All Connection Models</option>
+            <option value="shared-system-oauth">Shared OAuth</option>
+            <option value="dealer-oauth">Dealer OAuth</option>
+            <option value="shared-system-api-key">Shared API Key</option>
+            <option value="partner-feed">Partner Feed</option>
+            <option value="manual-portal">Manual Portal</option>
+            <option value="internal-route">Internal</option>
+            <option value="none">None</option>
+          </select>
+          <select value={platValidation} onChange={e => setPlatValidation(e.target.value)} className={SELECT_CLS}>
+            <option value="">All Validation States</option>
+            <option value="VALID">Valid</option>
+            <option value="NOT_CONFIGURED">Not Configured</option>
+            <option value="READY_TO_VALIDATE">Ready to Validate</option>
+            <option value="VALIDATION_FAILED">Validation Failed</option>
+            <option value="MANUAL_SETUP">Manual Setup</option>
+            <option value="INTERNAL">Internal</option>
+            <option value="CONTRACT_MISSING">Contract Missing</option>
+          </select>
+          {platActiveFilters > 0 && (
+            <button type="button" onClick={() => { setPlatSearch(''); setPlatCategory(''); setPlatCap(''); setPlatConnectionModel(''); setPlatValidation(''); }} className={CLEAR_CLS}>
+              Clear ({platActiveFilters})
+            </button>
           )}
-          {!validationMeta && filteredPlatforms.filter(p => credentialMap.get(p.platformSlug)?.lastStatus === 'VALIDATION_FAILED').length > 0 && (
-            <span className="text-xs text-status-error-text">
-              {filteredPlatforms.filter(p => credentialMap.get(p.platformSlug)?.lastStatus === 'VALIDATION_FAILED').length} failed
-            </span>
-          )}
+          <div className="ml-auto flex items-center gap-3">
+            {validationMeta && (
+              <span className="text-[10px] text-ink-faint">
+                Validated {validationMeta.checkedAt.toLocaleTimeString()} · {validationMeta.durationMs}ms
+              </span>
+            )}
+            {!validationMeta && filteredPlatforms.filter(p => credentialMap.get(p.platformSlug)?.lastStatus === 'VALIDATION_FAILED').length > 0 && (
+              <span className="text-xs text-status-error-text">
+                {filteredPlatforms.filter(p => credentialMap.get(p.platformSlug)?.lastStatus === 'VALIDATION_FAILED').length} failed
+              </span>
+            )}
+            <button
+              type="button"
+              onClick={() => void runValidation()}
+              disabled={validating}
+              className="px-3 py-1.5 text-xs font-semibold bg-navy-800 hover:bg-navy-700 text-silver-100 rounded-md transition-colors disabled:opacity-40"
+            >
+              {validating ? 'Validating…' : 'Validate Credentials'}
+            </button>
+          </div>
+        </div>
+        <div className="flex flex-wrap gap-1.5">
           <button
             type="button"
-            onClick={() => void runValidation()}
-            disabled={validating}
-            className="px-3 py-1.5 text-xs font-semibold bg-navy-800 hover:bg-navy-700 text-silver-100 rounded-md transition-colors disabled:opacity-40"
+            onClick={() => setPlatCategory('')}
+            className={`px-2.5 py-1 rounded-full border text-[10px] font-semibold uppercase tracking-wide transition-colors ${platCategory === '' ? 'bg-navy-800 text-white border-navy-800' : 'bg-white text-ink-muted border-silver-200 hover:border-navy-300'}`}
           >
-            {validating ? 'Validating…' : 'Validate Credentials'}
+            All
           </button>
+          {BUSINESS_CATEGORY_IDS.map(id => (
+            <button
+              key={id}
+              type="button"
+              onClick={() => setPlatCategory(id === platCategory ? '' : id)}
+              className={`px-2.5 py-1 rounded-full border text-[10px] font-semibold uppercase tracking-wide transition-colors ${platCategory === id ? 'bg-navy-800 text-white border-navy-800' : 'bg-white text-ink-muted border-silver-200 hover:border-navy-300'}`}
+            >
+              {id.replace(/_/g, ' ')}
+            </button>
+          ))}
         </div>
       </div>
 

@@ -7,6 +7,7 @@ import {
   type AdminRecentEventItem,
   type AdminQueueSnapshot,
   type AdminSetupGuide,
+  type ExternalLink,
   type OperatorSetupGuide,
   type CredentialStageResult,
   type PlatformCredentialContractSummary,
@@ -369,6 +370,69 @@ function OperatorSetupPanel({ guide }: { guide: OperatorSetupGuide }) {
   );
 }
 
+function PlatformIntroCard({
+  description,
+  capabilities,
+  supportedCategories,
+  externalLinks,
+}: {
+  description: string | null | undefined;
+  capabilities: string[];
+  supportedCategories: string[] | null | undefined;
+  externalLinks: ExternalLink[] | null | undefined;
+}) {
+  const hasCategories = (supportedCategories?.length ?? 0) > 0;
+  const hasCaps = capabilities.length > 0;
+  const hasLinks = (externalLinks?.length ?? 0) > 0;
+  if (!description && !hasCategories && !hasCaps && !hasLinks) return null;
+  return (
+    <div className="surface-card-operator p-5 space-y-4">
+      {description && (
+        <p className="text-sm text-ink-body leading-relaxed">{description}</p>
+      )}
+
+      {hasCategories && (
+        <div className="flex flex-wrap items-center gap-2">
+          <span className="text-[10px] font-semibold text-ink-faint uppercase tracking-wide shrink-0">Categories</span>
+          {supportedCategories!.map(cat => (
+            <span key={cat} className="px-2.5 py-0.5 rounded-full text-[10px] font-semibold bg-navy-800 text-silver-300 border border-navy-700">
+              {cat.replace(/_/g, ' ')}
+            </span>
+          ))}
+        </div>
+      )}
+
+      {hasCaps && (
+        <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-2">
+          {capabilities.map(cap => (
+            <div key={cap} className="flex flex-col gap-0.5 px-3 py-2 rounded-md bg-surface-inset border border-silver-200">
+              <span className="text-[10px] font-bold text-ink-heading font-mono uppercase tracking-wide">{cap}</span>
+              <span className="text-[10px] text-ink-faint leading-snug">{CAP_DESCRIPTIONS[cap] ?? 'Integration capability enabled.'}</span>
+            </div>
+          ))}
+        </div>
+      )}
+
+      {hasLinks && (
+        <div className="flex flex-wrap items-center gap-x-4 gap-y-1 pt-1 border-t border-silver-100">
+          <span className="text-[10px] font-semibold text-ink-faint uppercase tracking-wide shrink-0">Reference</span>
+          {externalLinks!.map(link => (
+            <a
+              key={link.url}
+              href={link.url}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-xs font-medium text-navy-700 hover:underline"
+            >
+              {link.label} ↗
+            </a>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
 function RequirementList({ title, items, empty }: { title: string; items: string[]; empty: string }) {
   return (
     <div>
@@ -549,8 +613,6 @@ export default function AdminPlatformDetailPage({
   loading,
 }: Props) {
   const [contractOverride, setContractOverride] = useState<PlatformCredentialContractSummary | null>(null);
-  const [pageValidating, setPageValidating] = useState(false);
-  const [pageValidateError, setPageValidateError] = useState<string | null>(null);
 
   const platform = useMemo(
     () => platformOverview.find(p => p.platformSlug === slug),
@@ -566,20 +628,6 @@ export default function AdminPlatformDetailPage({
     if (!platform) return null;
     return contractOverride ?? (credData?.platforms ?? []).find(p => p.platformSlug === slug) ?? contractFallback(slug, platform, provider);
   }, [contractOverride, credData, platform, provider, slug]);
-
-  const runPageValidation = async () => {
-    setPageValidating(true);
-    setPageValidateError(null);
-    try {
-      const run = await validatePlatformCredential(slug);
-      const nextContract = (run.platforms ?? []).find(p => p.platformSlug === slug);
-      if (nextContract) setContractOverride(nextContract);
-    } catch (e) {
-      setPageValidateError(toErrorMessage(e));
-    } finally {
-      setPageValidating(false);
-    }
-  };
 
   const platformTriage = useMemo(
     () => dealerAttention.filter(a => a.platformSlug === slug),
@@ -636,11 +684,6 @@ export default function AdminPlatformDetailPage({
         <>
           {/* ── Platform header ── */}
           <div className="surface-card-operator p-5">
-            {pageValidateError && (
-              <div className="mb-4 px-3 py-2 bg-status-error-bg border border-status-error-border rounded text-xs text-status-error-text">
-                {pageValidateError}
-              </div>
-            )}
             <div className="flex flex-wrap items-start justify-between gap-4">
               <div className="min-w-0">
                 <div className="flex flex-wrap items-center gap-2.5 mb-1">
@@ -688,36 +731,17 @@ export default function AdminPlatformDetailPage({
                 )}
               </div>
 
-              <div className="flex flex-wrap gap-2 shrink-0 justify-end">
-                <button
-                  type="button"
-                  onClick={() => void runPageValidation()}
-                  disabled={pageValidating}
-                  className="px-3 py-1.5 rounded text-xs font-semibold bg-orange-600 hover:bg-orange-500 text-white disabled:opacity-40 transition-colors"
-                >
-                  {pageValidating ? 'Validating…' : credentialContract?.authType === 'internal' ? 'Validate Loop' : 'Validate'}
-                </button>
-                <a href="#/admin/platform-credentials" className="px-3 py-1.5 rounded text-xs font-semibold border border-silver-300 text-ink-muted hover:text-ink-heading hover:border-silver-400 transition-colors">
-                  Configure
-                </a>
-                <button
-                  type="button"
-                  disabled={(platform.recentFailures ?? 0) === 0}
-                  className="px-3 py-1.5 rounded text-xs font-semibold border border-silver-300 text-ink-muted hover:text-ink-heading hover:border-silver-400 transition-colors disabled:opacity-40"
-                  title={(platform.recentFailures ?? 0) === 0 ? 'No recent failed jobs to retry' : 'Retry action is handled from queue tooling'}
-                >
-                  Retry failed jobs
-                </button>
-                <a href="#setup-checklist" className="px-3 py-1.5 rounded text-xs font-semibold border border-silver-300 text-ink-muted hover:text-ink-heading hover:border-silver-400 transition-colors">
-                  View docs
-                </a>
-                <a href="#recent-history" className="px-3 py-1.5 rounded text-xs font-semibold border border-silver-300 text-ink-muted hover:text-ink-heading hover:border-silver-400 transition-colors">
-                  View history
-                </a>
-              </div>
 
             </div>
           </div>
+
+          {/* ── Platform intro ── */}
+          <PlatformIntroCard
+            description={credentialContract?.description}
+            capabilities={platform.capabilities}
+            supportedCategories={platform.supportedCategories}
+            externalLinks={credentialContract?.externalLinks}
+          />
 
           <div className="grid grid-cols-2 md:grid-cols-4 xl:grid-cols-7 gap-3">
             <StatCard value={platform.dealersUsing} label="Connected dealers" sub={`${platform.eligibleDealers ?? 0} eligible`} />
@@ -895,7 +919,7 @@ export default function AdminPlatformDetailPage({
               </div>
 
               {/* Activity feed */}
-              <div id="recent-history" className="surface-card-operator p-4">
+              <div className="surface-card-operator p-4">
                 <SectionHeader
                   title="Recent History"
                   count={platformEvents.length}
@@ -996,7 +1020,7 @@ export default function AdminPlatformDetailPage({
                 )}
               </div>
 
-              <div id="setup-checklist" className="surface-card-operator p-4 space-y-5">
+              <div className="surface-card-operator p-4 space-y-5">
                 <SectionHeader title="Setup Guide" />
                 {!credentialContract ? (
                   <div className="py-4 text-center text-xs text-ink-faint border border-dashed border-silver-200 rounded-md">
@@ -1052,8 +1076,7 @@ export default function AdminPlatformDetailPage({
                     </div>
 
                     <div className="flex flex-wrap gap-2 pt-3 border-t border-silver-200">
-                      <a href="#/admin/platform-credentials" className="text-xs font-semibold text-navy-700 hover:underline">Credential registry</a>
-                      <a href="#recent-history" className="text-xs font-semibold text-navy-700 hover:underline">History</a>
+                      <a href="#/admin/platforms" className="text-xs font-semibold text-navy-700 hover:underline">Platform Credentials</a>
                     </div>
                   </>
                 )}

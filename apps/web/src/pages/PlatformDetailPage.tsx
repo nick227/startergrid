@@ -10,6 +10,90 @@ import { platformOutcomeMeta } from '@/lib/syncPresentation.ts';
 import { operatorCopy } from '@/lib/copy/operator.ts';
 import { ConnectionSetupPanel } from '@/components/platforms/ConnectionSetupPanel.tsx';
 
+type ExternalLink = { label: string; url: string };
+type OperatorSetupGuide = {
+  shortBlurb: string;
+  connectionLabel: string;
+  steps: string[];
+  dealerPortalUrl?: string | null;
+  validationNote: string;
+};
+type RichPlatformAccount = {
+  description?: string | null;
+  externalLinks?: ExternalLink[] | null;
+  operatorSetup?: OperatorSetupGuide | null;
+  [key: string]: unknown;
+};
+
+function PlatformIntroCard({ description, externalLinks }: {
+  description?: string | null;
+  externalLinks?: ExternalLink[] | null;
+}) {
+  if (!description && (!externalLinks || externalLinks.length === 0)) return null;
+  return (
+    <div className="bg-white border border-silver-200 rounded-xl shadow-sm p-5 space-y-4">
+      {description && (
+        <p className="text-sm text-ink-body leading-relaxed">{description}</p>
+      )}
+      {externalLinks && externalLinks.length > 0 && (
+        <div className="flex flex-wrap gap-3 pt-1 border-t border-silver-100">
+          {externalLinks.map(link => (
+            <a
+              key={link.url}
+              href={link.url}
+              target="_blank"
+              rel="noreferrer"
+              className="text-xs font-semibold text-navy-600 hover:text-navy-800 flex items-center gap-1"
+            >
+              <span className="text-sm leading-none">↗</span> {link.label}
+            </a>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
+function OperatorSetupGuideCard({ guide }: { guide: OperatorSetupGuide }) {
+  return (
+    <div className="bg-white border border-silver-200 rounded-xl shadow-sm p-5 space-y-4">
+      <h2 className="text-[11px] font-bold uppercase tracking-widest text-ink-faint">How to Connect</h2>
+      {guide.shortBlurb && (
+        <p className="text-sm text-ink-body leading-relaxed">{guide.shortBlurb}</p>
+      )}
+      <div className="flex items-center gap-2">
+        <span className="text-[10px] font-bold uppercase tracking-wider text-ink-muted">Connection type</span>
+        <span className="px-2 py-0.5 bg-silver-50 border border-silver-200 rounded text-xs font-semibold text-ink-body">{guide.connectionLabel}</span>
+      </div>
+      {guide.steps.length > 0 && (
+        <ol className="space-y-2">
+          {guide.steps.map((step, i) => (
+            <li key={i} className="flex gap-3 text-sm text-ink-body">
+              <span className="flex-shrink-0 w-5 h-5 rounded-full bg-navy-800 text-white text-[10px] font-bold flex items-center justify-center mt-0.5">{i + 1}</span>
+              <span className="leading-snug">{step}</span>
+            </li>
+          ))}
+        </ol>
+      )}
+      {guide.dealerPortalUrl && (
+        <a
+          href={guide.dealerPortalUrl}
+          target="_blank"
+          rel="noreferrer"
+          className="inline-flex items-center gap-1.5 text-sm font-semibold text-navy-600 hover:text-navy-800"
+        >
+          <span className="text-base leading-none">↗</span> Open partner portal
+        </a>
+      )}
+      {guide.validationNote && (
+        <div className="p-3 bg-amber-50 border border-amber-200 rounded-lg">
+          <p className="text-xs text-amber-900/80 leading-snug">{guide.validationNote}</p>
+        </div>
+      )}
+    </div>
+  );
+}
+
 type Props = OperatorPageBaseProps & {
   platformSlug: string;
 };
@@ -33,6 +117,7 @@ export default function PlatformDetailPage({ dealerId, nav, activeTab, platformS
     () => accountsData?.accounts?.find(a => a.platformSlug === platformSlug) ?? null,
     [accountsData, platformSlug]
   );
+  const richAccount = account as (typeof account & RichPlatformAccount) | null;
 
   const loading = statusLoading || accountsLoading;
   const error = statusError || accountsError;
@@ -117,7 +202,7 @@ export default function PlatformDetailPage({ dealerId, nav, activeTab, platformS
             </div>
           </div>
         </div>
-        
+
         <div className="flex gap-2">
           <button
             type="button"
@@ -136,7 +221,12 @@ export default function PlatformDetailPage({ dealerId, nav, activeTab, platformS
         </div>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+      <PlatformIntroCard
+        description={richAccount?.description}
+        externalLinks={richAccount?.externalLinks}
+      />
+
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mt-6">
         {/* Left Column */}
         <div className="lg:col-span-2 space-y-6">
           
@@ -245,6 +335,11 @@ export default function PlatformDetailPage({ dealerId, nav, activeTab, platformS
             account={account || undefined}
             onRefresh={reloadAccounts}
           />
+
+          {/* Operator Setup Guide */}
+          {richAccount?.operatorSetup && (
+            <OperatorSetupGuideCard guide={richAccount.operatorSetup as OperatorSetupGuide} />
+          )}
 
           {/* Required Fields Card */}
           {(account?.requiredDealershipFields?.length || account?.requiredVehicleFields?.length) ? (

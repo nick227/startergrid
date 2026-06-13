@@ -1,7 +1,7 @@
 import { useState, useMemo } from 'react';
 import { fetchDealers } from '@/lib/api/sdk.ts';
-import { fetchAdminDashboard } from '@/lib/api/admin.ts';
-import type { AdminDealerAttentionItem } from '@/lib/api/admin.ts';
+import { fetchAdminDashboard, fetchBlockedDealers } from '@/lib/api/admin.ts';
+import type { AdminBlockedDealerItem, AdminDealerAttentionItem, AdminRecentEventItem } from '@/lib/api/admin.ts';
 import { useAsyncQuery } from '@/hooks/useAsyncQuery.ts';
 import { ErrorState, SectionCard, OperatorPage } from '@/components/operator/index.ts';
 import type { OperatorNavHandlers, OperatorTab } from '@/lib/operatorNav.ts';
@@ -65,6 +65,9 @@ export default function AdminDealerPage({ dealerId, nav, activeTab }: Props) {
   const { data: dashboard, loading: dashLoading, error: dashError, reload: reloadDash } =
     useAsyncQuery(() => fetchAdminDashboard(), []);
 
+  const { data: blockers, loading: blockersLoading, error: blockersError, reload: reloadBlockers } =
+    useAsyncQuery(() => fetchBlockedDealers({ dealerId, limit: 50 }), [dealerId]);
+
   const dealer = useMemo(
     () => dealersData?.dealers.find(d => d.id === dealerId) ?? null,
     [dealersData, dealerId],
@@ -75,9 +78,16 @@ export default function AdminDealerPage({ dealerId, nav, activeTab }: Props) {
     [dashboard, dealerId],
   );
 
-  const loading = dealersLoading || dashLoading;
-  const error   = dealersError || dashError;
-  const reload  = () => { reloadDealers(); reloadDash(); };
+  const auditItems: AdminRecentEventItem[] = useMemo(
+    () => (dashboard?.recentEvents ?? []).filter(i => i.dealerId === dealerId),
+    [dashboard, dealerId],
+  );
+
+  const blockedItems: AdminBlockedDealerItem[] = blockers?.items ?? [];
+
+  const loading = dealersLoading || dashLoading || blockersLoading;
+  const error   = dealersError || dashError || blockersError;
+  const reload  = () => { reloadDealers(); reloadDash(); reloadBlockers(); };
 
   if (loading) {
     return <div className="surface-card-operator p-6"><Skeleton rows={6} /></div>;
@@ -259,37 +269,59 @@ export default function AdminDealerPage({ dealerId, nav, activeTab }: Props) {
 
       {tab === 'blocked' && (
         <SectionCard title="Blocked Configurations">
-          <div className="py-4 space-y-2">
-            <p className="text-sm text-ink-muted">
-              Per-dealer blocked configuration filtering is not yet available from the API.
-            </p>
-            <p className="text-xs text-ink-faint">
-              Phase 2: <code className="font-mono">getBlockedDealers</code> will accept a <code className="font-mono">dealerId</code> filter parameter.
-              Until then, use the{' '}
-              <a href="#/admin/triage" className="text-navy-600 hover:text-navy-500 underline">
-                Blocked Triage
-              </a>{' '}
-              screen and search by dealer name.
-            </p>
-          </div>
+          {blockedItems.length === 0 ? (
+            <p className="text-sm text-ink-faint py-2">No blocked configurations for this dealer.</p>
+          ) : (
+            <ul className="divide-y divide-silver-100">
+              {blockedItems.map(item => {
+                const sev = SEVERITY_CFG[item.severity] ?? SEVERITY_CFG.info;
+                return (
+                  <li key={item.id} className="py-3 space-y-2">
+                    <div className="flex flex-wrap items-center gap-2">
+                      <span className={`px-2 py-0.5 rounded text-[10px] font-bold border ${sev.cls}`}>
+                        {sev.label}
+                      </span>
+                      <span className="px-2 py-0.5 rounded text-[10px] font-semibold font-mono bg-surface-inset text-ink-muted border border-silver-200">
+                        {item.platformSlug}
+                      </span>
+                      <span className="text-xs text-ink-faint">{item.source}</span>
+                    </div>
+                    <p className="text-sm text-ink-heading">{item.reason}</p>
+                    {item.nextAction && (
+                      <p className="text-xs text-orange-600 bg-orange-100/40 border border-orange-100 p-2 rounded-md">
+                        <span className="font-bold">Next Action:</span> {item.nextAction}
+                      </p>
+                    )}
+                  </li>
+                );
+              })}
+            </ul>
+          )}
         </SectionCard>
       )}
 
       {tab === 'audit' && (
         <SectionCard title="Audit Log">
-          <div className="py-4 space-y-2">
-            <p className="text-sm text-ink-muted">
-              Per-dealer audit log filtering is not yet available from the API.
-            </p>
-            <p className="text-xs text-ink-faint">
-              Phase 2: <code className="font-mono">AdminRecentEventItem</code> will include a <code className="font-mono">dealerId</code> field
-              to enable per-dealer filtering. Until then, the full audit log is visible on the{' '}
-              <a href="#/admin" className="text-navy-600 hover:text-navy-500 underline">
-                Admin Overview
-              </a>{' '}
-              → Audit tab.
-            </p>
-          </div>
+          {auditItems.length === 0 ? (
+            <p className="text-sm text-ink-faint py-2">No recent audit events for this dealer.</p>
+          ) : (
+            <ul className="divide-y divide-silver-100">
+              {auditItems.map(item => (
+                <li key={item.id} className="py-3">
+                  <div className="flex flex-wrap items-center justify-between gap-2">
+                    <p className="text-sm font-semibold text-ink-heading">{item.action}</p>
+                    <time className="text-xs text-ink-faint">{new Date(item.createdAt).toLocaleString()}</time>
+                  </div>
+                  <p className="mt-1 text-xs text-ink-muted">{item.actorEmail}</p>
+                  {item.detailString && (
+                    <p className="mt-2 text-xs text-ink-muted bg-surface-inset border border-silver-100 rounded p-2">
+                      {item.detailString}
+                    </p>
+                  )}
+                </li>
+              ))}
+            </ul>
+          )}
         </SectionCard>
       )}
     </OperatorPage>
