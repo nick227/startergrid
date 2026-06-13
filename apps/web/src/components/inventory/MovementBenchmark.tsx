@@ -8,7 +8,9 @@ import {
   movementBenchmarkParts,
   movementTaskHint,
 } from '../../lib/movementBenchmark.ts';
-import { MovementSignalBadge } from './inventoryConfig.tsx';
+import { Badge } from '../ui/Badge.tsx';
+import type { MovementSignal } from '../../lib/types.ts';
+import { movementSignalVisual } from '../../lib/statusRegistry.ts';
 
 type CellProps = { perf: VehiclePerformanceItem };
 
@@ -32,6 +34,13 @@ export function MovementBenchmarkCell({ perf }: CellProps) {
       </span>
     </span>
   );
+}
+
+// ── Movement signal badge ─────────────────────────────────────────────────────
+
+export function MovementSignalBadge({ signal }: { signal: MovementSignal | string }) {
+  const meta = movementSignalVisual(signal);
+  return <Badge color={meta.badgeColor}>{meta.label}</Badge>;
 }
 
 type ExpandProps = {

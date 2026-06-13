@@ -69,6 +69,32 @@ function buildPatch(original: VehicleDetailDto, state: FieldState): VehicleField
 const inputCls = 'w-full text-xs border border-silver-200 rounded-md px-2 py-1.5 focus:outline-none focus:border-navy-400 bg-white';
 const readonlyCls = 'w-full text-xs px-2 py-1.5 bg-silver-50 text-ink-muted rounded-md border border-silver-100 cursor-default';
 
+const BODY_STYLE_OPTIONS = ['Sedan', 'SUV', 'Truck', 'Coupe', 'Convertible', 'Hatchback', 'Wagon', 'Van', 'Minivan', 'Crossover'];
+const DRIVETRAIN_OPTIONS  = ['FWD', 'RWD', 'AWD', '4WD', '2WD'];
+const FUEL_TYPE_OPTIONS   = ['Gasoline', 'Diesel', 'Electric', 'Hybrid', 'Plug-in Hybrid', 'Flex Fuel', 'Natural Gas', 'Hydrogen'];
+const TRANSMISSION_OPTIONS = ['Automatic', 'Manual', 'CVT', 'Semi-Automatic', 'Dual-Clutch'];
+
+function SpecSelect({
+  value,
+  options,
+  onChange,
+  placeholder,
+}: {
+  value: string;
+  options: string[];
+  onChange: React.ChangeEventHandler<HTMLSelectElement>;
+  placeholder: string;
+}) {
+  const isKnown = value === '' || options.includes(value);
+  return (
+    <select className={inputCls} value={value} onChange={onChange}>
+      <option value="">{placeholder}</option>
+      {!isKnown && <option value={value}>{value}</option>}
+      {options.map(o => <option key={o} value={o}>{o}</option>)}
+    </select>
+  );
+}
+
 type FieldRowProps = { label: string; children: React.ReactNode };
 function FieldRow({ label, children }: FieldRowProps) {
   return (
@@ -168,16 +194,16 @@ export function VehicleFieldGroups({ vehicle, onSaved }: Props) {
             <input className={inputCls} value={state.trim} onChange={set('trim')} maxLength={120} placeholder="Optional" />
           </FieldRow>
           <FieldRow label="Body Style">
-            <input className={inputCls} value={state.bodyStyle} onChange={set('bodyStyle')} placeholder="Sedan, SUV, Truck…" />
+            <SpecSelect value={state.bodyStyle} options={BODY_STYLE_OPTIONS} onChange={set('bodyStyle')} placeholder="— Not set —" />
           </FieldRow>
           <FieldRow label="Drivetrain">
-            <input className={inputCls} value={state.drivetrain} onChange={set('drivetrain')} placeholder="AWD, FWD, RWD…" />
+            <SpecSelect value={state.drivetrain} options={DRIVETRAIN_OPTIONS} onChange={set('drivetrain')} placeholder="— Not set —" />
           </FieldRow>
           <FieldRow label="Fuel Type">
-            <input className={inputCls} value={state.fuelType} onChange={set('fuelType')} placeholder="Gas, Electric, Hybrid…" />
+            <SpecSelect value={state.fuelType} options={FUEL_TYPE_OPTIONS} onChange={set('fuelType')} placeholder="— Not set —" />
           </FieldRow>
           <FieldRow label="Transmission">
-            <input className={inputCls} value={state.transmission} onChange={set('transmission')} placeholder="Automatic, Manual…" />
+            <SpecSelect value={state.transmission} options={TRANSMISSION_OPTIONS} onChange={set('transmission')} placeholder="— Not set —" />
           </FieldRow>
         </div>
         <p className="text-[10px] text-ink-faint mt-2 pl-[128px]">Specs are auto-filled from VIN decode where available.</p>

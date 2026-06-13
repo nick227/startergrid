@@ -8,7 +8,7 @@ export { ImportModal } from './ImportModal.tsx';
 export { IngressPanel } from './IngressPanel.tsx';
 export { CleanupFilterBar } from './CleanupFilterBar.tsx';
 export { ImportBatchHistory } from './ImportBatchHistory.tsx';
-export { MovementBenchmarkCell, MovementBenchmarkExpand } from './MovementBenchmark.tsx';
+export { MovementBenchmarkCell, MovementBenchmarkExpand, MovementSignalBadge } from './MovementBenchmark.tsx';
 export { AssetDetailPanel } from './AssetDetailPanel.tsx';
 export { InventoryDetailPanel } from './InventoryDetailPanel.tsx';
 export { VehicleDetailHeader } from './VehicleDetailHeader.tsx';
@@ -35,7 +35,6 @@ export {
   cleanupFilterDefs,
   IMPORT_WIZARD_STEPS,
   applyCleanupFilter,
-  MovementSignalBadge,
   ReadinessBadge,
   LifecycleStateBadge,
   vehicleReadinessRowBg,

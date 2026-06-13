@@ -9,7 +9,8 @@ import {
   movementTaskHint,
 } from '@/lib/movementBenchmark.ts';
 import { EMPTY_STATE_COPY } from '@/lib/statusRegistry.ts';
-import { ReadinessBadge, MovementSignalBadge, LifecycleStateBadge } from './inventoryConfig.tsx';
+import { ReadinessBadge, LifecycleStateBadge } from './inventoryConfig.tsx';
+import { MovementSignalBadge } from './MovementBenchmark.tsx';
 import { PlatformMovementCompare } from './PlatformMovementCompare.tsx';
 import { MarketplacePreviewCard } from './MarketplacePreviewCard.tsx';
 import { AssetLifecycleHistory } from './AssetLifecycleHistory.tsx';
@@ -62,6 +63,42 @@ export function AssetDetailPanel({
 
       <div className="p-3 sm:p-4 flex flex-col gap-5 lg:grid lg:grid-cols-2 lg:gap-6 lg:items-start">
         <div className="space-y-5 min-w-0 order-2 lg:order-1">
+          <section>
+            <h4 className="text-[10px] font-bold text-ink-faint uppercase tracking-widest mb-2">Vehicle details</h4>
+            <dl className="grid grid-cols-2 gap-x-4 gap-y-1 text-xs">
+              {vehicle.trim && (
+                <>
+                  <dt className="text-ink-faint">Trim</dt>
+                  <dd className="text-ink-body font-medium">{vehicle.trim}</dd>
+                </>
+              )}
+              {vehicle.mileage > 0 && (
+                <>
+                  <dt className="text-ink-faint">Mileage</dt>
+                  <dd className="text-ink-body font-medium">{vehicle.mileage.toLocaleString()} mi</dd>
+                </>
+              )}
+              {vehicle.condition && (
+                <>
+                  <dt className="text-ink-faint">Condition</dt>
+                  <dd className="text-ink-body font-medium capitalize">{vehicle.condition.toLowerCase()}</dd>
+                </>
+              )}
+              {vehicle.exteriorColor && (
+                <>
+                  <dt className="text-ink-faint">Ext. color</dt>
+                  <dd className="text-ink-body font-medium">{vehicle.exteriorColor}</dd>
+                </>
+              )}
+              {vehicle.vin && (
+                <>
+                  <dt className="text-ink-faint">VIN</dt>
+                  <dd className="text-ink-body font-mono truncate">{vehicle.vin}</dd>
+                </>
+              )}
+            </dl>
+          </section>
+
           {vehicle.issues.length > 0 && (
             <section>
               <h4 className="text-[10px] font-bold text-ink-faint uppercase tracking-widest mb-2">Readiness issues</h4>

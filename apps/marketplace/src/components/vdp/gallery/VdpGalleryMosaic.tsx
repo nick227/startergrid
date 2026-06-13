@@ -42,7 +42,7 @@ export function VdpGalleryMosaic({ map, alt, onOpenItem }: Props) {
   const remainingCount = totalItems - 1 - thumbnails.length;
 
   return (
-    <section aria-label="Vehicle gallery" className="flex flex-col gap-2 md:flex-row md:h-[450px] lg:h-[550px] xl:h-[600px]">
+    <section aria-label="Vehicle gallery" className="flex flex-col gap-2 md:flex-row md:h-[550px] lg:h-[700px] xl:h-[800px]">
       {/* Main Active Viewer */}
       <button 
         type="button"
@@ -71,7 +71,7 @@ export function VdpGalleryMosaic({ map, alt, onOpenItem }: Props) {
 
       {/* Thumbnails Grid */}
       {thumbnails.length > 0 && (
-        <div className="grid grid-cols-3 content-start gap-1 overflow-y-auto pr-1 md:w-[400px] lg:w-[500px] xl:w-[600px]">
+        <div className="grid grid-cols-3 grid-rows-6 gap-2 h-full md:w-[400px] lg:w-[500px] xl:w-[600px]">
           {thumbnails.map((thumb, index) => {
             const isLast = index === thumbnails.length - 1;
             const item = thumb.item!;
@@ -82,7 +82,7 @@ export function VdpGalleryMosaic({ map, alt, onOpenItem }: Props) {
               <button 
                 key={item.id} 
                 type="button"
-                className={`mp-focus relative aspect-[4/3] overflow-hidden bg-black transition-all ${isActive ? 'ring-2 ring-blue-500 ring-offset-2 ring-offset-white' : 'hover:opacity-90'}`}
+                className={`mp-focus relative h-full w-full overflow-hidden bg-black transition-all ${isActive ? 'ring-2 ring-blue-500 ring-offset-2 ring-offset-white' : 'hover:opacity-90'}`}
                 aria-label={showOverlay ? 'View all photos' : `View ${thumb.label}`}
                 onMouseEnter={() => setActiveItemId(item.id)}
                 onClick={() => {

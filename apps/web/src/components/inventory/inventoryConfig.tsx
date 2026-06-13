@@ -46,12 +46,7 @@ export function ReadinessBadge({ readiness, style = 'dot' }: { readiness: Readin
   return <Badge color={READINESS_BADGE_COLOR[readiness]}>{meta.label}</Badge>;
 }
 
-// ── Movement signal badge ─────────────────────────────────────────────────────
 
-export function MovementSignalBadge({ signal }: { signal: MovementSignal | string }) {
-  const meta = movementSignalVisual(signal);
-  return <Badge color={meta.badgeColor}>{meta.label}</Badge>;
-}
 
 // ── Action badge (import preview) ─────────────────────────────────────────────
 

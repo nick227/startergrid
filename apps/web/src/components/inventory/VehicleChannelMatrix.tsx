@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useAsyncQuery } from '@/hooks/useAsyncQuery.ts';
 import {
   fetchVehicleChannels,
@@ -11,6 +11,7 @@ type Props = {
   vehicleId: string;
   /** Bumped by the parent when vehicle state changes so the matrix refetches. */
   refreshKey?: number;
+  onStatusChange?: (status: 'complete' | 'needs_attention' | 'incomplete') => void;
 };
 
 const liveStatusChip: Record<VehicleChannelLiveStatus, { label: string; cls: string }> = {
@@ -138,13 +139,26 @@ function ChannelRow({
   );
 }
 
-export function VehicleChannelMatrix({ dealerId, vehicleId, refreshKey = 0 }: Props) {
+export function VehicleChannelMatrix({ dealerId, vehicleId, refreshKey = 0, onStatusChange }: Props) {
   const { data, loading, error, reload } = useAsyncQuery(
     () => fetchVehicleChannels(dealerId, vehicleId),
     [dealerId, vehicleId, refreshKey],
   );
   const [togglingKey, setTogglingKey] = useState<string | null>(null);
   const [toggleError, setToggleError] = useState<string | null>(null);
+  const liveCount = data?.channels.filter(c => c.liveStatus === 'LIVE').length ?? 0;
+  const failedCount = data?.channels.filter(c => c.liveStatus === 'FAILED').length ?? 0;
+  const selectedChannels = data?.channels.filter(c => c.selected) ?? [];
+  const selectedBlockedCount = selectedChannels.filter(c => !c.eligible || (!c.connected && c.connectionState !== 'BUILT_IN')).length;
+
+  useEffect(() => {
+    if (!onStatusChange || !data) return;
+    if (failedCount > 0 || selectedBlockedCount > 0) {
+      onStatusChange('needs_attention');
+      return;
+    }
+    onStatusChange(selectedChannels.length > 0 ? 'complete' : 'incomplete');
+  }, [data, failedCount, onStatusChange, selectedBlockedCount, selectedChannels.length]);
 
   const handleToggle = async (channelKey: string, selected: boolean) => {
     setTogglingKey(channelKey);
@@ -168,8 +182,6 @@ export function VehicleChannelMatrix({ dealerId, vehicleId, refreshKey = 0 }: Pr
   if (!data) return null;
 
   const isDraft = data.listingStatus === 'DRAFT';
-  const liveCount = data.channels.filter(c => c.liveStatus === 'LIVE').length;
-  const failedCount = data.channels.filter(c => c.liveStatus === 'FAILED').length;
 
   return (
     <div>

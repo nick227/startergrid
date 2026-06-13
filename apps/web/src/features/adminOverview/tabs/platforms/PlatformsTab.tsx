@@ -215,6 +215,7 @@ export function PlatformsTab({ platformOverview }: Props) {
   const [validating, setValidating] = useState(false);
   const [validatingSlug, setValidatingSlug] = useState<string | null>(null);
   const [validationMeta, setValidationMeta] = useState<{ checkedAt: Date; durationMs: number } | null>(null);
+  const [validationError, setValidationError] = useState<string | null>(null);
 
   useEffect(() => {
     let cancelled = false;
@@ -273,18 +274,24 @@ export function PlatformsTab({ platformOverview }: Props) {
   }
 
   async function runValidation() {
+    if (validating || validatingSlug) return;
     setValidating(true);
+    setValidationError(null);
     try {
       const valRes = await validatePlatformCredentials();
       setCredentialMap(buildCredentialMap(platformOverview, valRes.platforms, [], valRes.results));
       setValidationMeta({ checkedAt: new Date(), durationMs: valRes.meta?.durationMs ?? 0 });
+    } catch (err) {
+      setValidationError(err instanceof Error ? err.message : 'Credential validation failed.');
     } finally {
       setValidating(false);
     }
   }
 
   async function runRowValidation(platformSlug: string) {
+    if (validating || validatingSlug) return;
     setValidatingSlug(platformSlug);
+    setValidationError(null);
     try {
       const valRes = await validatePlatformCredential(platformSlug);
       setCredentialMap(prev => {
@@ -300,6 +307,8 @@ export function PlatformsTab({ platformOverview }: Props) {
         return next;
       });
       setValidationMeta({ checkedAt: new Date(), durationMs: valRes.meta?.durationMs ?? 0 });
+    } catch (err) {
+      setValidationError(err instanceof Error ? err.message : `Credential validation failed for ${platformSlug}.`);
     } finally {
       setValidatingSlug(null);
     }
@@ -342,10 +351,9 @@ export function PlatformsTab({ platformOverview }: Props) {
   }
 
   function operationalStatus(platform: PlatformOverviewItemWithCategories, validation: PlatformCredentialDisplayStatus): 'green' | 'yellow' | 'red' {
-    if (platform.operationalStatus) return platform.operationalStatus;
     if (validation === 'VALIDATION_FAILED' || validation === 'CONTRACT_MISSING' || (platform.recentFailures ?? 0) > 0) return 'red';
     if ((validation !== 'VALID' && validation !== 'INTERNAL' && validation !== 'MANUAL_SETUP') || platform.blockedDealers > 0 || (platform.blockedItems ?? 0) > 0) return 'yellow';
-    return 'green';
+    return platform.operationalStatus ?? 'green';
   }
 
   function statusDotClass(status: 'green' | 'yellow' | 'red'): string {
@@ -412,13 +420,18 @@ export function PlatformsTab({ platformOverview }: Props) {
             <button
               type="button"
               onClick={() => void runValidation()}
-              disabled={validating}
+              disabled={validating || Boolean(validatingSlug)}
               className="px-3 py-1.5 text-xs font-semibold bg-navy-800 hover:bg-navy-700 text-silver-100 rounded-md transition-colors disabled:opacity-40"
             >
               {validating ? 'Validating…' : 'Validate Credentials'}
             </button>
           </div>
         </div>
+        {validationError && (
+          <div className="rounded-md border border-status-error-border bg-status-error-bg px-3 py-2 text-xs text-status-error-text">
+            {validationError}
+          </div>
+        )}
         <div className="flex flex-wrap gap-1.5">
           <button
             type="button"
@@ -516,7 +529,7 @@ export function PlatformsTab({ platformOverview }: Props) {
                         <button
                           type="button"
                           onClick={() => void runRowValidation(platform.platformSlug)}
-                          disabled={validating || validatingSlug === platform.platformSlug}
+                          disabled={validating || Boolean(validatingSlug)}
                           className="px-2 py-1 text-[10px] font-semibold text-navy-700 border border-silver-300 hover:border-navy-300 hover:bg-navy-50 rounded transition-colors disabled:opacity-40"
                         >
                           {validatingSlug === platform.platformSlug ? 'Checking…' : 'Validate'}
