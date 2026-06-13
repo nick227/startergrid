@@ -1,5 +1,6 @@
 import type { PrismaClient, Prisma, PlatformAccountState } from '@prisma/client';
 import { platformProfiles } from '../../data/platformProfiles.js';
+import { platformsForCategory } from '../../data/platformCategoryMap.js';
 import type { PlatformProfileSeed, ConnectionField } from '../../lib/types.js';
 
 type ProfileConfidence = 'HIGH' | 'MEDIUM' | 'LOW';
@@ -107,8 +108,8 @@ export function validateAccountUpdatePayload(payload: AccountUpdatePayload): str
   return null;
 }
 
-export function profilesForCategory(category: string): PlatformProfileSeed[] {
-  return platformProfiles.filter(p => p.supportedCategories.includes(category));
+export function profilesForCategory(category: string | null | undefined): PlatformProfileSeed[] {
+  return platformsForCategory(category);
 }
 
 async function ensureAccountRows(prisma: PrismaClient, dealershipId: string, profiles: PlatformProfileSeed[]) {
@@ -182,8 +183,9 @@ export async function listPlatformAccounts(
     where: { id: dealershipId },
     select: { businessCategory: true },
   });
-  const category = dealer?.businessCategory ?? 'AUTOMOTIVE';
-  const profiles = profilesForCategory(category);
+  // Fail closed: an unknown dealer (or one with no category) gets zero platforms,
+  // never an AUTOMOTIVE default that would leak car platforms into the account list.
+  const profiles = profilesForCategory(dealer?.businessCategory ?? null);
 
   await ensureAccountRows(prisma, dealershipId, profiles);
 

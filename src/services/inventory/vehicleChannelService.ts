@@ -1,5 +1,6 @@
 import type { PrismaClient } from '@prisma/client';
 import { platformProfiles } from '../../data/platformProfiles.js';
+import { isPlatformAllowedForCategory } from '../../data/platformCategoryMap.js';
 import { dbVehicleToPayload } from './inventorySnapshotService.js';
 import { validateVehiclePayloads } from '../../validators/vehicle/vehiclePayloadValidator.js';
 
@@ -148,7 +149,7 @@ export async function buildVehicleChannelMatrix(
     if (account.platformSlug === 'dealer-storefront') continue;
     const profile = platformProfiles.find(p => p.slug === account.platformSlug);
     if (!profile) continue;
-    if (!profile.supportedCategories.includes(dealer.businessCategory)) continue;
+    if (!isPlatformAllowedForCategory(account.platformSlug, dealer.businessCategory)) continue;
 
     const failIssues = validateVehiclePayloads(
       [vehiclePayload],

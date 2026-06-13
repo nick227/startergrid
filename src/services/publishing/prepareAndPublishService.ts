@@ -8,7 +8,7 @@ import type {
   ValidationIssue,
   VehiclePayload
 } from '../../lib/types.js';
-import { platformProfiles } from '../../data/platformProfiles.js';
+import { platformsForCategory } from '../../data/platformCategoryMap.js';
 import { validatePlatformReadiness } from '../../validators/platform/platformReadinessValidator.js';
 import { dbDealershipToPayload } from '../platform/readinessRunService.js';
 import { dbVehicleToPayload } from '../inventory/inventorySnapshotService.js';
@@ -57,6 +57,27 @@ export function classifyVehicleReadiness(
     label: hasFail ? 'blocked' : hasWarn ? 'warning' : 'ready',
     issues: allPlatformIssues.filter(i => i.path.includes(vehicle.stockNumber))
   };
+}
+
+/**
+ * Resolve the set of platforms a prepare/publish run may touch.
+ *
+ * Category scoping is the hard boundary: only platforms that support the dealer's
+ * business category are eligible. A caller-supplied `platformFilter` can narrow
+ * that set further but can NEVER widen it — the result is the intersection. This
+ * is what stops an EBOOKS dealer from generating Cars.com / AutoTrader artifacts
+ * even when an automotive slug is passed explicitly in the filter.
+ *
+ * Fail closed: an unknown/absent category yields [] (see platformsForCategory).
+ */
+export function resolvePublishTargets(
+  category: string | null | undefined,
+  platformFilter?: string[],
+): PlatformProfileSeed[] {
+  const allowed = platformsForCategory(category);
+  if (!platformFilter?.length) return allowed;
+  const requested = new Set(platformFilter);
+  return allowed.filter(p => requested.has(p.slug));
 }
 
 export function derivePublishState(opts: {
@@ -245,10 +266,10 @@ export async function runPrepareAndPublish(
     return excluded ? vehiclePayloads.filter(v => !excluded.has(v.stockNumber)) : vehiclePayloads;
   };
 
-  // Platform filter
-  const targets = opts.platformFilter?.length
-    ? platformProfiles.filter(p => opts.platformFilter!.includes(p.slug))
-    : platformProfiles;
+  // Platform targets: scoped to the dealer's business category, then narrowed by
+  // any caller-supplied filter (intersection only — the filter cannot add a
+  // platform outside the dealer's category).
+  const targets = resolvePublishTargets(dbDealer.businessCategory, opts.platformFilter);
 
   // Run baseline readiness for all target platforms
   const readinessMap = new Map<string, PlatformReadinessReport>();

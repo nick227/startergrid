@@ -1,5 +1,5 @@
 import type { PrismaClient, Prisma } from '@prisma/client';
-import { platformProfiles } from '../../data/platformProfiles.js';
+import { platformSlugsForCategory } from '../../data/platformCategoryMap.js';
 
 // ─── Automotive demo dealers ──────────────────────────────────────────────────
 // Three reproducible demo dealers covering the full merchandising spectrum, so
@@ -259,11 +259,7 @@ export const DEMO_DEALERS: DemoDealer[] = [
 
 // ─── Seeding ──────────────────────────────────────────────────────────────────
 
-const automotiveSlugs = new Set(
-  platformProfiles
-    .filter(p => p.supportedCategories.includes(AUTOMOTIVE))
-    .map(p => p.slug),
-);
+const automotiveSlugs = new Set(platformSlugsForCategory(AUTOMOTIVE));
 
 async function seedDealerProfile(prisma: PrismaClient, d: DemoDealer): Promise<void> {
   await prisma.dealershipProfile.upsert({

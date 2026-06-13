@@ -1,6 +1,6 @@
 ﻿import type { PrismaClient, Prisma } from '@prisma/client';
 import type { IntegrationClass, VehicleUpdateKind } from '../../lib/types.js';
-import { platformProfiles } from '../../data/platformProfiles.js';
+import { platformsForCategory } from '../../data/platformCategoryMap.js';
 
 export type SyncMode = 'REAL_TIME' | 'SCHEDULED' | 'MANUAL' | 'APPROVAL_REQUIRED';
 export type PublishQueueStatus = 'READY' | 'BLOCKED' | 'NEEDS_APPROVAL' | 'SCHEDULED' | 'SENT' | 'FAILED' | 'CANCELLED';
@@ -116,8 +116,9 @@ async function categoryProfiles(prisma: PrismaClient, dealershipId: string) {
     where: { id: dealershipId },
     select: { businessCategory: true },
   });
-  if (!dealer) return platformProfiles;
-  return platformProfiles.filter(p => p.supportedCategories.includes(dealer.businessCategory));
+  // Fail closed: a missing dealer resolves to zero platforms, never the full
+  // registry. Over-seeding is how auto dealers ended up with boat/RV accounts.
+  return platformsForCategory(dealer?.businessCategory ?? null);
 }
 
 export async function upsertDefaultSyncPolicies(
