@@ -25,6 +25,7 @@ export type {
   InventoryImportFieldDef,
   AttributeGroup,
   InventoryReadinessRule,
+  ExternalIdentifierDef,
   CategoryInventorySchema,
 } from './types.js';
 
@@ -65,6 +66,7 @@ export type { MarketplaceAvailabilityFilter } from './marketplace/availabilityFi
 export type { MarketplaceFacetDef, MarketplaceFacetKind } from './marketplace/facets.js';
 export { automotiveSchema } from './automotive/schema.js';
 export { automotiveInventorySchema, AUTO_SHOT_GUIDE } from './automotive/inventorySchema.js';
+export { ebooksInventorySchema, EBOOK_MEDIA_GUIDE } from './ebooks/inventorySchema.js';
 export { createPlaceholderSchema, createUnknownFallbackSchema, genericOperatorFallback } from './generic/schema.js';
 export {
   getCategoryInventorySchema,

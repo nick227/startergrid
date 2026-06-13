@@ -12,7 +12,8 @@ export type ListingResult = {
 export type MarketplaceListingRecord = {
   id: string;
   dealershipId: string;
-  vehicleId: string;
+  vehicleId: string | null;
+  categoryItemId: string | null;
   platformSlug: string;
   externalListingId: string | null;
   externalOfferId: string | null;

@@ -415,6 +415,141 @@ paths:
                 $ref: '#/components/schemas/MarketplaceFeedResponse'
         '400':
           $ref: '#/components/responses/BadRequest'
+  /api/marketplace/facets:
+    get:
+      tags: [Marketplace]
+      security: []
+      x-route-classification: public
+      operationId: getMarketplaceFacets
+      summary: Get dynamic marketplace filter facets
+      description: |
+        Returns filter facets (dropdown options and counts) based on current 
+        published marketplace inventory for the active filters.
+      parameters:
+        - name: category
+          in: query
+          description: Business category slug or enum. Defaults to AUTOMOTIVE.
+          schema:
+            $ref: '#/components/schemas/MarketplaceBusinessCategory'
+        - name: make
+          in: query
+          schema:
+            type: string
+            maxLength: 80
+        - name: sellerName
+          in: query
+          description: |
+            Seller-name text filter (property manager, broker, host, etc.).
+            Only applied for categories whose schema declares marketplaceFilter seller.
+            Ignored for automotive and other brand-filter categories.
+          schema:
+            type: string
+            maxLength: 80
+        - name: model
+          in: query
+          schema:
+            type: string
+            maxLength: 80
+        - name: condition
+          in: query
+          schema:
+            type: string
+            enum: [NEW, USED, CPO]
+        - name: minPrice
+          in: query
+          description: Minimum priceCents (inclusive)
+          schema:
+            type: integer
+            minimum: 0
+        - name: maxPrice
+          in: query
+          description: Maximum priceCents (inclusive)
+          schema:
+            type: integer
+            minimum: 0
+        - name: maxMileage
+          in: query
+          description: Maximum mileage (inclusive). Omit to include all mileages.
+          schema:
+            type: integer
+            minimum: 0
+        - name: minYear
+          in: query
+          description: Minimum model year (inclusive).
+          schema:
+            type: integer
+            minimum: 1900
+        - name: maxYear
+          in: query
+          description: Maximum model year (inclusive).
+          schema:
+            type: integer
+            minimum: 1900
+        - name: dealer
+          in: query
+          description: Filter by dealer ID
+          schema:
+            type: string
+        - name: q
+          in: query
+          description: Keyword search across make, model, and trim.
+          schema:
+            type: string
+            maxLength: 120
+        - name: facets
+          in: query
+          description: |
+            Comma-separated schema-backed facet filters encoded as fieldKey:value.
+            Only enum/boolean facets declared for the active category are applied.
+          schema:
+            type: string
+            maxLength: 500
+        - name: buyerLat
+          in: query
+          description: Buyer latitude for nearby radius filtering. Never echoed in responses.
+          schema:
+            type: number
+            format: double
+            minimum: -90
+            maximum: 90
+        - name: buyerLng
+          in: query
+          description: Buyer longitude for nearby radius filtering. Never echoed in responses.
+          schema:
+            type: number
+            format: double
+            minimum: -180
+            maximum: 180
+        - name: radiusMiles
+          in: query
+          description: Search radius in miles when buyerLat and buyerLng are set. Clamped to 1–500; defaults to 50.
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 500
+            default: 50
+        - name: nationwide
+          in: query
+          description: When true, ignore buyer location and return nationwide results.
+          schema:
+            type: boolean
+            default: true
+        - name: availability
+          in: query
+          description: Availability filter. MVP supports available-only (not sold or removed).
+          schema:
+            type: string
+            enum: [available]
+            default: available
+      responses:
+        '200':
+          description: Filter facets based on current inventory
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MarketplaceFacetsResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
 
   /api/marketplace/vehicles:
     get:
@@ -814,6 +949,78 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/MarketplaceDealerStatsResponse'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /api/marketplace/category-items:
+    get:
+      tags: [Marketplace]
+      security: []
+      x-route-classification: public
+      operationId: listMarketplaceCategoryItems
+      summary: Browse category inventory items (e-books and other digital categories)
+      description: |
+        Returns paginated marketplace-eligible category inventory items.
+        Supports filtering by categoryId, dealer, page, and pageSize.
+        Items must be READY with an active consumer-marketplace listing and a price set.
+      parameters:
+        - name: categoryId
+          in: query
+          description: Business category ID (e.g. EBOOKS). Required.
+          schema:
+            type: string
+        - name: dealer
+          in: query
+          description: Filter by dealer ID
+          schema:
+            type: string
+        - name: page
+          in: query
+          schema:
+            type: integer
+            minimum: 1
+            default: 1
+        - name: pageSize
+          in: query
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 100
+            default: 24
+      responses:
+        '200':
+          description: Category item listing page
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MarketplaceCategoryItemListResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+
+  /api/marketplace/category-items/{listingId}:
+    get:
+      tags: [Marketplace]
+      security: []
+      x-route-classification: public
+      operationId: getMarketplaceCategoryItem
+      summary: Single category item detail
+      description: |
+        Returns detail for one marketplace-eligible category inventory item by listing ID.
+        Returns 404 for sold, removed, non-existent, or unpriced items.
+      parameters:
+        - name: listingId
+          in: path
+          required: true
+          description: Opaque listing identifier from MarketplaceCategoryItemCard.listingId
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Category item detail
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MarketplaceCategoryItemDetail'
         '404':
           $ref: '#/components/responses/NotFound'
 
@@ -1699,6 +1906,66 @@ components:
           type: string
           nullable: true
 
+    MarketplaceFacetOption:
+      type: object
+      required: [value, count]
+      properties:
+        value:
+          type: string
+        count:
+          type: integer
+          minimum: 0
+
+    MarketplaceFacetRange:
+      type: object
+      required: [value, count]
+      properties:
+        value:
+          type: string
+        count:
+          type: integer
+          minimum: 0
+        label:
+          type: string
+        min:
+          type: integer
+          nullable: true
+        max:
+          type: integer
+          nullable: true
+
+
+    MarketplaceFacetsResponse:
+      type: object
+      required: [priceRanges, yearRanges, mileageRanges]
+      properties:
+        brandFacets:
+          type: array
+          items:
+            $ref: '#/components/schemas/MarketplaceFacetOption'
+        modelFacets:
+          type: array
+          items:
+            $ref: '#/components/schemas/MarketplaceFacetOption'
+        customFacets:
+          type: object
+          additionalProperties:
+            type: array
+            items:
+              $ref: '#/components/schemas/MarketplaceFacetOption'
+        priceRanges:
+          type: array
+          items:
+            $ref: '#/components/schemas/MarketplaceFacetRange'
+        yearRanges:
+          type: array
+          items:
+            $ref: '#/components/schemas/MarketplaceFacetRange'
+        mileageRanges:
+          type: array
+          items:
+            $ref: '#/components/schemas/MarketplaceFacetRange'
+
     MarketplaceFeedResponse:
       type: object
       required: [items, nextCursor, totalEstimate, appliedFilters]
@@ -1923,6 +2190,104 @@ components:
       properties:
         accepted:
           type: boolean
+
+    MarketplaceCategoryItemCard:
+      type: object
+      description: Consumer-safe category item card for browse lists (e-books, digital items).
+      required:
+        - listingId
+        - categoryId
+        - stockNumber
+        - title
+        - priceCents
+        - mediaUrls
+        - dealerId
+        - dealerName
+        - listingUrl
+        - listedAt
+      properties:
+        listingId:
+          type: string
+          description: Opaque stable identifier for the detail route.
+        categoryId:
+          type: string
+          description: Business category enum (e.g. EBOOKS).
+        stockNumber:
+          type: string
+          nullable: true
+        title:
+          type: string
+          nullable: true
+        author:
+          type: string
+          nullable: true
+        format:
+          type: string
+          nullable: true
+        priceCents:
+          type: integer
+          minimum: 0
+        mediaUrls:
+          type: array
+          items:
+            type: string
+        dealerId:
+          type: string
+        dealerName:
+          type: string
+        dealerCity:
+          type: string
+          nullable: true
+        dealerState:
+          type: string
+          nullable: true
+        listingUrl:
+          type: string
+        listedAt:
+          type: string
+          format: date-time
+
+    MarketplaceCategoryItemDetail:
+      allOf:
+        - $ref: '#/components/schemas/MarketplaceCategoryItemCard'
+        - type: object
+          properties:
+            publisher:
+              type: string
+              nullable: true
+            language:
+              type: string
+              nullable: true
+            pageCount:
+              type: integer
+              nullable: true
+            isbn:
+              type: string
+              nullable: true
+            asin:
+              type: string
+              nullable: true
+            data:
+              type: object
+              additionalProperties: true
+
+    MarketplaceCategoryItemListResponse:
+      type: object
+      required: [items, total, page, pageSize]
+      properties:
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/MarketplaceCategoryItemCard'
+        total:
+          type: integer
+          minimum: 0
+        page:
+          type: integer
+          minimum: 1
+        pageSize:
+          type: integer
+          minimum: 1
 
     MarketplaceDealerIndexResponse:
       type: object

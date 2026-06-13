@@ -1,15 +1,25 @@
 /** Typed categoryPayload shapes for non-automotive inventory categories. */
 
 export type SongsCategoryPayload = {
+  isrc?: string;
+  artist?: string;
+  title?: string;
+  releaseYear?: number;
   format?: string;
   genre?: string;
   trackCount?: number;
+  label?: string;
 };
 
 export type EbooksCategoryPayload = {
+  isbn?: string;
+  author?: string;
+  title?: string;
   format?: string;
   pageCount?: number;
   language?: string;
+  publisher?: string;
+  publishYear?: number;
 };
 
 export type ApparelCategoryPayload = {
@@ -18,13 +28,22 @@ export type ApparelCategoryPayload = {
 };
 
 export type DigitalArtCategoryPayload = {
+  editionId?: string;
+  artist?: string;
+  title?: string;
+  series?: string;
   medium?: string;
   editionSize?: number;
+  createdYear?: number;
 };
 
 export type VideoCategoryPayload = {
+  creator?: string;
+  title?: string;
+  genre?: string;
   durationSec?: number;
   resolution?: string;
+  publishYear?: number;
 };
 
 export type PawnCategoryPayload = {
@@ -116,9 +135,14 @@ export function parseSongsCategoryPayload(raw: unknown): SongsCategoryPayload {
   const record = parseRecord(raw);
   if (!record) return {};
   return {
-    format: asOptionalString(record['format']),
-    genre: asOptionalString(record['genre']),
-    trackCount: asOptionalNumber(record['trackCount']),
+    isrc:        asOptionalString(record['isrc']),
+    artist:      asOptionalString(record['artist']),
+    title:       asOptionalString(record['title']),
+    releaseYear: asOptionalNumber(record['releaseYear']),
+    format:      asOptionalString(record['format']),
+    genre:       asOptionalString(record['genre']),
+    trackCount:  asOptionalNumber(record['trackCount']),
+    label:       asOptionalString(record['label']),
   };
 }
 
@@ -126,9 +150,14 @@ export function parseEbooksCategoryPayload(raw: unknown): EbooksCategoryPayload 
   const record = parseRecord(raw);
   if (!record) return {};
   return {
-    format: asOptionalString(record['format']),
-    pageCount: asOptionalNumber(record['pageCount']),
-    language: asOptionalString(record['language']),
+    isbn:        asOptionalString(record['isbn']),
+    author:      asOptionalString(record['author']),
+    title:       asOptionalString(record['title']),
+    format:      asOptionalString(record['format']),
+    pageCount:   asOptionalNumber(record['pageCount']),
+    language:    asOptionalString(record['language']),
+    publisher:   asOptionalString(record['publisher']),
+    publishYear: asOptionalNumber(record['publishYear']),
   };
 }
 
@@ -145,8 +174,13 @@ export function parseDigitalArtCategoryPayload(raw: unknown): DigitalArtCategory
   const record = parseRecord(raw);
   if (!record) return {};
   return {
-    medium: asOptionalString(record['medium']),
+    editionId:   asOptionalString(record['editionId']),
+    artist:      asOptionalString(record['artist']),
+    title:       asOptionalString(record['title']),
+    series:      asOptionalString(record['series']),
+    medium:      asOptionalString(record['medium']),
     editionSize: asOptionalNumber(record['editionSize']),
+    createdYear: asOptionalNumber(record['createdYear']),
   };
 }
 
@@ -154,8 +188,12 @@ export function parseVideoCategoryPayload(raw: unknown): VideoCategoryPayload {
   const record = parseRecord(raw);
   if (!record) return {};
   return {
+    creator:     asOptionalString(record['creator']),
+    title:       asOptionalString(record['title']),
+    genre:       asOptionalString(record['genre']),
     durationSec: asOptionalNumber(record['durationSec']),
-    resolution: asOptionalString(record['resolution']),
+    resolution:  asOptionalString(record['resolution']),
+    publishYear: asOptionalNumber(record['publishYear']),
   };
 }
 
@@ -256,11 +294,11 @@ export function parseHeavyEquipmentCategoryPayload(raw: unknown): HeavyEquipment
 
 /** Expected categoryPayload keys per non-vehicle category — used by contract tests. */
 export const NON_VEHICLE_PAYLOAD_KEYS = {
-  SONGS: ['format', 'genre', 'trackCount'],
-  EBOOKS: ['format', 'pageCount', 'language'],
+  SONGS: ['isrc', 'artist', 'title', 'format', 'genre', 'trackCount'],
+  EBOOKS: ['isbn', 'author', 'title', 'format', 'pageCount', 'language'],
   APPAREL: ['material', 'gender'],
-  DIGITAL_ART: ['medium', 'editionSize'],
-  VIDEO_DISTRIBUTION: ['durationSec', 'resolution'],
+  DIGITAL_ART: ['editionId', 'artist', 'title', 'medium', 'editionSize'],
+  VIDEO_DISTRIBUTION: ['creator', 'title', 'durationSec', 'resolution'],
   PAWN: ['itemCategory'],
   WATCHES: ['movement', 'caseMaterial', 'caseSizeMm'],
   SNEAKERS: ['size', 'colorway'],

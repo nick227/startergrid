@@ -21,6 +21,7 @@ const REGISTERED_MARKETPLACE_ROUTES = new Set([
   // Public browse routes (Phase A/B + multi-site Phase 2)
   'GET    /api/marketplace/sites',
   'GET    /api/marketplace/feed',
+  'GET    /api/marketplace/facets',
   'GET    /api/marketplace/vehicles',
   'GET    /api/marketplace/vehicles/{listingId}',
   'POST   /api/marketplace/vehicles/{listingId}/leads',
@@ -29,6 +30,9 @@ const REGISTERED_MARKETPLACE_ROUTES = new Set([
   'GET    /api/marketplace/sellers/{sellerId}',
   'GET    /api/marketplace/dealers/{dealerId}',
   'GET    /api/marketplace/dealers/{dealerId}/stats',
+  // Generic category item browse routes (EBOOKS and future digital categories)
+  'GET    /api/marketplace/category-items',
+  'GET    /api/marketplace/category-items/{listingId}',
   // Consumer auth routes (Phase C2)
   'POST   /api/marketplace/auth/register',
   'POST   /api/marketplace/auth/login',

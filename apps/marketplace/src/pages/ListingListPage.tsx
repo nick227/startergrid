@@ -187,6 +187,7 @@ export default function ListingListPage({ initialQuery = {} }: Props) {
           {filtersOpen && (
             <ListingFilterBar
               config={filterConfig}
+              category={schema.id}
               facets={filterConfig.facets}
               facetValues={filters.facetValues}
               onFacetChange={filters.handleFacetChange}
@@ -214,9 +215,7 @@ export default function ListingListPage({ initialQuery = {} }: Props) {
               onClear={resetFilters}
               hasActiveFilters={hasActiveFilters}
               focusToken={filters.focusToken}
-              showAvailabilityFilter={filters.showAvailabilityFilter}
-              availability={filters.availability}
-              onAvailabilityChange={filters.setAvailability}
+              query={listingQuery}
               showSearch={false}
             />
           )}

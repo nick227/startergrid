@@ -149,12 +149,16 @@ describe('resolveCategorySchema — placeholders', () => {
     'AUTOMOTIVE',
     'TRAILERS_POWERSPORTS_RV',
     'BOATS',
+    'EBOOKS',
+    'SONGS',
+    'DIGITAL_ART',
+    'VIDEO_DISTRIBUTION',
   ]);
 
   /** Minimal placeholders built via createPlaceholderSchema — generic shell labels only. */
   const genericPlaceholderIds = BUSINESS_CATEGORY_IDS.filter(
     id => !activeIds.has(id) && ![
-      'SONGS', 'EBOOKS', 'APPAREL', 'SNEAKERS', 'PAWN', 'DIGITAL_ART', 'VIDEO_DISTRIBUTION',
+      'APPAREL', 'SNEAKERS', 'PAWN',
       'WATCHES', 'COLLECTIBLES', 'FURNITURE', 'VACATION_RENTALS',
       'APARTMENTS', 'HOMES', 'COMMERCIAL_PROPERTY', 'HEAVY_EQUIPMENT',
     ].includes(id),
@@ -162,7 +166,7 @@ describe('resolveCategorySchema — placeholders', () => {
 
   /** Rich placeholder schemas with category-specific field labels but not yet active. */
   const richPlaceholderIds = [
-    'SONGS', 'EBOOKS', 'APPAREL', 'SNEAKERS', 'PAWN', 'DIGITAL_ART', 'VIDEO_DISTRIBUTION',
+    'APPAREL', 'SNEAKERS', 'PAWN',
     'WATCHES', 'COLLECTIBLES', 'FURNITURE', 'VACATION_RENTALS',
     'APARTMENTS', 'HOMES', 'COMMERCIAL_PROPERTY', 'HEAVY_EQUIPMENT',
   ] as const;

@@ -7,6 +7,7 @@ import {
   MarketplaceAuthService,
   MarketplaceBusinessCategory,
   type MarketplaceFeedResponse,
+  type MarketplaceFacetsResponse,
   type MarketplaceVehicleListResponse,
   type MarketplaceVehicleDetailResponse,
   type MarketplaceDealerIndexResponse,
@@ -24,6 +25,7 @@ export type {
   MarketplaceVehicleCard,
   MarketplaceCardMediaItem,
   MarketplaceFeedResponse,
+  MarketplaceFacetsResponse,
   MarketplaceFeedItem,
   MarketplaceVehicleListResponse,
   MarketplaceVehicleDetailResponse,
@@ -52,6 +54,10 @@ function toApiCategory(category?: BusinessCategoryId): MarketplaceBusinessCatego
   return category as MarketplaceBusinessCategory | undefined;
 }
 
+function toFacetsString(facets?: string | string[]): string | undefined {
+  return Array.isArray(facets) ? facets.join(',') : facets;
+}
+
 export type ListFilters = CategoryScope & {
   make?:       string;
   sellerName?: string;
@@ -65,7 +71,7 @@ export type ListFilters = CategoryScope & {
   sortBy?:     SortBy;
   dealer?:     string;
   q?:             string;
-  facets?:        string;
+  facets?:        string | string[];
   availability?:  'available';
   buyerLat?:      number;
   buyerLng?:      number;
@@ -132,12 +138,33 @@ export function fetchFeed(filters: FeedFilters = {}): Promise<MarketplaceFeedRes
     sortBy:     filters.sortBy,
     dealer:     filters.dealer,
     q:            filters.q,
-    facets:       filters.facets,
+    facets:       toFacetsString(filters.facets),
     availability: filters.availability ?? 'available',
     buyerLat:     filters.buyerLat,
     buyerLng:     filters.buyerLng,
     radiusMiles:  filters.radiusMiles,
     nationwide:   filters.nationwide,
+  }));
+}
+
+export function fetchFacets(filters: ListFilters = {}): Promise<MarketplaceFacetsResponse> {
+  return call(() => MarketplaceService.getMarketplaceFacets({
+    category:   toApiCategory(filters.category),
+    make:       filters.make,
+    sellerName: filters.sellerName,
+    model:      filters.model,
+    condition:  filters.condition,
+    minPrice:   filters.minPrice,
+    maxPrice:   filters.maxPrice,
+    maxMileage: filters.maxMileage,
+    minYear:    filters.minYear,
+    maxYear:    filters.maxYear,
+    dealer:     filters.dealer,
+    q:          filters.q,
+    facets:     toFacetsString(filters.facets),
+    buyerLat:   filters.buyerLat,
+    buyerLng:   filters.buyerLng,
+    radiusMiles: filters.radiusMiles,
   }));
 }
 

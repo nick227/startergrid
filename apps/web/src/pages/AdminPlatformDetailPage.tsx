@@ -1,11 +1,14 @@
 import { useMemo, useState } from 'react';
 import {
   fetchPlatformCredentials,
-  validatePlatformCredentials,
+  validatePlatformCredential,
   type AdminPlatformOverviewItem,
   type AdminDealerAttentionItem,
   type AdminRecentEventItem,
   type AdminQueueSnapshot,
+  type CredentialStageResult,
+  type PlatformCredentialContractSummary,
+  type PlatformCredentialDisplayStatus,
   type ProviderCredentialResult,
   type ProviderCredentialSummary,
 } from '@/lib/api/admin.ts';
@@ -35,12 +38,13 @@ const MATURITY_CFG: Record<string, { label: string; cls: string; desc: string }>
 };
 
 const CRED_STATUS: Record<string, { label: string; cls: string }> = {
-  'valid':          { label: 'Valid',          cls: 'bg-status-success-bg text-status-success-text border-status-success-border' },
-  'invalid':        { label: 'Invalid',        cls: 'bg-status-error-bg text-status-error-text border-status-error-border' },
-  'unknown':        { label: 'Not checked',    cls: 'bg-surface-inset text-ink-faint border-silver-200' },
-  'unreachable':    { label: 'Unreachable',    cls: 'bg-status-warning-bg text-status-warning-text border-status-warning-border' },
-  'not-configured': { label: 'Not configured', cls: 'bg-surface-inset text-ink-faint border-silver-200' },
-  'unsupported':    { label: 'No live check',  cls: 'bg-surface-inset text-ink-faint border-silver-200' },
+  VALID:              { label: 'Valid',                cls: 'bg-status-success-bg text-status-success-text border-status-success-border' },
+  NOT_CONFIGURED:     { label: 'Not configured',       cls: 'bg-status-warning-bg text-status-warning-text border-status-warning-border' },
+  READY_TO_VALIDATE:  { label: 'Ready to validate',    cls: 'bg-status-info-bg text-status-info-text border-status-info-border' },
+  VALIDATION_FAILED:  { label: 'Validation failed',    cls: 'bg-status-error-bg text-status-error-text border-status-error-border' },
+  MANUAL_SETUP:       { label: 'Manual setup',         cls: 'bg-surface-inset text-ink-muted border-silver-200' },
+  INTERNAL:           { label: 'Internal',             cls: 'bg-status-success-bg text-status-success-text border-status-success-border' },
+  CONTRACT_MISSING:   { label: 'Contract missing',     cls: 'bg-status-error-bg text-status-error-text border-status-error-border' },
 };
 
 const SEV_CFG: Record<string, { cls: string; label: string }> = {
@@ -76,6 +80,168 @@ function formatDuration(sec: number | null): string {
   return `${Math.floor(sec / 60)}m ${sec % 60}s`;
 }
 
+function formatList(items: string[]): string {
+  if (items.length === 0) return 'none';
+  return items.join(' + ');
+}
+
+function describeSystemCredentialGap(platform: AdminPlatformOverviewItem, providerName: string): string {
+  if (platform.platformType === 'internal') {
+    return 'Internal platform: validate first-party routes and event loops. No external developer keys.';
+  }
+  if (providerName === 'unregistered') {
+    return 'No shared system credential contract was returned. This platform likely uses dealer credentials, partner feed credentials, or a manual portal workflow.';
+  }
+  return 'Provider is registered, but no required system fields were returned. Add platform credential contract metadata before live validation.';
+}
+
+function configDetail(
+  slug: string,
+  platform: AdminPlatformOverviewItem,
+  providerName: string,
+  requiredFields: string[],
+  missingFields: string[],
+): string {
+  if (slug === 'consumer-marketplace' || platform.platformType === 'internal') {
+    return 'No external secrets required. Checks cover first-party route and event-loop health.';
+  }
+  if (missingFields.length > 0) return `Missing ${formatList(missingFields)}.`;
+  if (requiredFields.length > 0) return `Requires ${formatList(requiredFields)}.`;
+  return describeSystemCredentialGap(platform, providerName);
+}
+
+function statusFromProviderFallback(
+  slug: string,
+  platform: AdminPlatformOverviewItem,
+  provider: ProviderCredentialSummary | undefined,
+  requiredFields: string[],
+  missingFields: string[],
+): PlatformCredentialDisplayStatus {
+  if (slug === 'consumer-marketplace' || platform.platformType === 'internal') return 'INTERNAL';
+  if (!provider) return 'CONTRACT_MISSING';
+  if (requiredFields.length === 0) return 'MANUAL_SETUP';
+  if (missingFields.length > 0 || provider.configured === false) return 'NOT_CONFIGURED';
+  return 'READY_TO_VALIDATE';
+}
+
+function credentialActionText(contract: PlatformCredentialContractSummary | null, status: PlatformCredentialDisplayStatus): string {
+  if (!contract) return 'Credential contract was not returned by the API.';
+  if (status === 'READY_TO_VALIDATE') {
+    const required = contract.requiredFields.length > 0
+      ? formatList(contract.requiredFields)
+      : formatList(contract.requiredCapabilities);
+    return required !== 'none'
+      ? `Ready to validate — requires ${required}.`
+      : contract.notes;
+  }
+  if (status === 'NOT_CONFIGURED') {
+    return contract.missingFields.length > 0
+      ? `Missing ${formatList(contract.missingFields)}.`
+      : 'Missing required credential configuration.';
+  }
+  if (status === 'VALIDATION_FAILED') return contract.lastError ?? 'Auth, permission, or capability probe failed.';
+  if (status === 'VALID') {
+    const checked = contract.checkedFields.length > 0 ? formatList(contract.checkedFields) : contract.authType;
+    return `Checked ${checked}.`;
+  }
+  if (status === 'MANUAL_SETUP') return contract.notes || 'Partner/feed credentials are configured outside shared system developer keys.';
+  if (status === 'INTERNAL') return contract.notes || 'Owned platform uses first-party route validation.';
+  if (status === 'CONTRACT_MISSING') return 'Platform credential contract is not defined yet.';
+  return contract.lastError ?? contract.notes;
+}
+
+function stageLabel(status: PlatformCredentialDisplayStatus): string {
+  if (status === 'VALID') return 'OK';
+  if (status === 'NOT_CONFIGURED') return 'Missing';
+  if (status === 'READY_TO_VALIDATE') return 'Ready';
+  if (status === 'VALIDATION_FAILED') return 'Failed';
+  if (status === 'MANUAL_SETUP') return 'Manual';
+  if (status === 'INTERNAL') return 'Internal';
+  return 'Missing';
+}
+
+function stageClass(status: PlatformCredentialDisplayStatus): string {
+  if (status === 'VALID' || status === 'INTERNAL') return 'bg-status-success-bg text-status-success-text border-status-success-border';
+  if (status === 'VALIDATION_FAILED' || status === 'CONTRACT_MISSING') return 'bg-status-error-bg text-status-error-text border-status-error-border';
+  if (status === 'NOT_CONFIGURED') return 'bg-status-warning-bg text-status-warning-text border-status-warning-border';
+  if (status === 'READY_TO_VALIDATE') return 'bg-status-info-bg text-status-info-text border-status-info-border';
+  return 'bg-surface-inset text-ink-faint border-silver-200';
+}
+
+function healthClass(status: string): string {
+  if (status === 'green') return 'bg-status-success-text';
+  if (status === 'yellow') return 'bg-status-warning-text';
+  return 'bg-status-error-text';
+}
+
+function contractFallback(
+  slug: string,
+  platform: AdminPlatformOverviewItem,
+  provider: ProviderCredentialSummary | undefined,
+): PlatformCredentialContractSummary {
+  const isInternal = slug === 'consumer-marketplace' || platform.platformType === 'internal';
+  const requiredCapabilities = isInternal
+    ? ['Marketplace route', 'Publish endpoint', 'Listing visibility', 'Lead capture', 'Buyer event flow', 'Sold notification flow']
+    : platform.capabilities;
+  const missingFields = provider?.configured === false ? provider.envVars : [];
+  const requiredFields = isInternal ? [] : provider?.envVars ?? [];
+  const providerName = isInternal ? 'internal' : provider?.provider ?? 'unregistered';
+  const status = statusFromProviderFallback(slug, platform, provider, requiredFields, missingFields);
+  const notes = isInternal
+    ? 'Internal platform: validate marketplace route, publish, lead capture, buyer events, and sold notifications.'
+    : requiredFields.length > 0
+      ? 'System credential requirements are known; run Validate to test provider auth and permissions.'
+      : describeSystemCredentialGap(platform, providerName);
+
+  return {
+    platformSlug: slug,
+    provider: providerName,
+    authType: isInternal ? 'internal' : 'oauth',
+    requiredFields,
+    requiredSecrets: requiredFields,
+    requiredScopes: [],
+    requiredPermissions: [],
+    requiredCapabilities,
+    capabilityChecks: requiredCapabilities,
+    docsUrl: null,
+    connectionModel: isInternal ? 'internal-route' : requiredFields.length > 0 ? 'shared-system-oauth' : 'manual-portal',
+    validationDepth: isInternal ? 'internal' : requiredFields.length > 0 ? 'auth' : 'config',
+    checkedFields: isInternal ? requiredCapabilities : requiredFields,
+    stages: [
+      {
+        stage: 'config',
+        status,
+        detail: configDetail(slug, platform, providerName, requiredFields, missingFields),
+        checkedFields: isInternal ? [] : requiredFields,
+      },
+      {
+        stage: 'auth',
+        status: requiredFields.length > 0 ? 'READY_TO_VALIDATE' : status,
+        detail: isInternal ? 'Internal route authorization has not been checked.' : 'Provider auth has not been checked.',
+        checkedFields: [],
+      },
+      {
+        stage: 'permissions',
+        status: requiredFields.length > 0 ? 'READY_TO_VALIDATE' : status,
+        detail: isInternal ? 'Internal workflow permissions have not been checked.' : 'Required scopes and permissions have not been checked.',
+        checkedFields: [],
+      },
+      {
+        stage: 'capability',
+        status: requiredFields.length > 0 ? 'READY_TO_VALIDATE' : status,
+        detail: `Capability checks: ${formatList(requiredCapabilities)}.`,
+        checkedFields: requiredCapabilities,
+      },
+    ],
+    notes,
+    configured: isInternal || Boolean(provider?.configured),
+    missingFields,
+    lastCheckedAt: null,
+    lastStatus: status,
+    lastError: missingFields.length > 0 ? `Missing ${formatList(missingFields)}.` : null,
+  };
+}
+
 // ── Sub-components ────────────────────────────────────────────────────────────
 
 function StatCard({ value, label, sub, valueClass = 'text-ink-heading' }: {
@@ -104,24 +270,71 @@ function SectionHeader({ title, count }: { title: string; count?: number }) {
   );
 }
 
-function CredentialPanel({ slug, provider, initialStatus }: {
+function StageBadge({ stage }: { stage: CredentialStageResult }) {
+  return (
+    <div className="p-3 rounded-md border border-silver-200 bg-surface-inset">
+      <div className="flex items-center justify-between gap-2 mb-1.5">
+        <span className="text-[10px] font-bold text-ink-muted uppercase tracking-wide">{stage.stage}</span>
+        <span className={`px-2 py-0.5 rounded-full border text-[10px] font-semibold ${stageClass(stage.status)}`}>
+          {stageLabel(stage.status)}
+        </span>
+      </div>
+      <p className="text-[11px] leading-snug text-ink-muted">{stage.detail}</p>
+      {stage.checkedFields.length > 0 && (
+        <div className="flex flex-wrap gap-1 mt-2">
+          {stage.checkedFields.map(field => (
+            <span key={field} className="px-1.5 py-0.5 rounded bg-silver-100 border border-silver-200 text-[9px] font-mono text-ink-muted">
+              {field}
+            </span>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
+function RequirementList({ title, items, empty }: { title: string; items: string[]; empty: string }) {
+  return (
+    <div>
+      <div className="text-[10px] text-ink-faint uppercase tracking-wide font-semibold mb-1">{title}</div>
+      {items.length === 0 ? (
+        <div className="text-xs text-ink-faint">{empty}</div>
+      ) : (
+        <div className="flex flex-wrap gap-1">
+          {items.map(item => (
+            <span key={item} className="px-1.5 py-0.5 rounded bg-surface-inset border border-silver-200 text-[9px] font-mono text-ink-muted">
+              {item}
+            </span>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
+function CredentialPanel({ slug, provider, contract: initialContract, onContractUpdate }: {
   slug: string;
   provider: ProviderCredentialSummary | undefined;
-  initialStatus: string | undefined;
+  contract: PlatformCredentialContractSummary;
+  onContractUpdate?: (contract: PlatformCredentialContractSummary) => void;
 }) {
   const [result, setResult]       = useState<ProviderCredentialResult | null>(null);
+  const [contract, setContract] = useState<PlatformCredentialContractSummary>(initialContract);
   const [validating, setValidating] = useState(false);
   const [validateError, setValidateError] = useState<string | null>(null);
-  const [validatedAt, setValidatedAt] = useState<Date | null>(null);
 
   const runValidation = async () => {
     setValidating(true);
     setValidateError(null);
     try {
-      const run = await validatePlatformCredentials();
+      const run = await validatePlatformCredential(slug);
       const r = provider ? (run.results.find(r => r.provider === provider.provider) ?? null) : null;
       setResult(r);
-      setValidatedAt(new Date());
+      const nextContract = (run.platforms ?? []).find(p => p.platformSlug === slug);
+      if (nextContract) {
+        setContract(nextContract);
+        onContractUpdate?.(nextContract);
+      }
     } catch (e) {
       setValidateError(toErrorMessage(e));
     } finally {
@@ -129,26 +342,26 @@ function CredentialPanel({ slug, provider, initialStatus }: {
     }
   };
 
-  const effectiveStatus = result?.status ?? initialStatus;
-  const pill = CRED_STATUS[effectiveStatus ?? ''] ?? { label: 'Not checked', cls: 'bg-surface-inset text-ink-faint border-silver-200' };
+  const effectiveStatus = (contract.lastStatus ?? 'CONTRACT_MISSING') as PlatformCredentialDisplayStatus;
+  const pill = CRED_STATUS[effectiveStatus ?? ''] ?? CRED_STATUS.CONTRACT_MISSING;
   const pillLabel = result?.status === 'valid' && result.checkMethod === 'client-auth-inference'
     ? 'Client auth inferred'
     : pill.label;
+  const isInternal = contract.authType === 'internal' || contract.provider === 'internal';
+  const missing = contract.missingFields;
 
   return (
-    <div className="surface-card-operator p-4 space-y-3">
+    <div className="surface-card-operator p-4 space-y-4">
       <div className="flex items-center justify-between gap-2">
-        <SectionHeader title="Developer Credentials" />
-        {provider && (
-          <button
-            type="button"
-            onClick={() => void runValidation()}
-            disabled={validating}
-            className="shrink-0 px-3 py-1.5 rounded text-xs font-semibold bg-orange-600 hover:bg-orange-500 text-white disabled:opacity-40 transition-colors"
-          >
-            {validating ? 'Validating…' : 'Validate Keys'}
-          </button>
-        )}
+        <SectionHeader title="Credential Validation" />
+        <button
+          type="button"
+          onClick={() => void runValidation()}
+          disabled={validating}
+          className="shrink-0 px-3 py-1.5 rounded text-xs font-semibold bg-orange-600 hover:bg-orange-500 text-white disabled:opacity-40 transition-colors"
+        >
+          {validating ? 'Validating…' : isInternal ? 'Validate Loop' : 'Validate'}
+        </button>
       </div>
 
       {validateError && (
@@ -157,56 +370,83 @@ function CredentialPanel({ slug, provider, initialStatus }: {
         </div>
       )}
 
-      {!provider ? (
-        <div className="space-y-1">
-          <p className="text-xs text-ink-muted">
-            No OAuth app credentials for this platform.
-          </p>
-          <p className="text-[10px] text-ink-faint leading-relaxed">
-            This platform may use API keys, partner feeds, or other non-OAuth authentication
-            that isn't tracked in the credential registry. Check the platform's integration
-            documentation or env var configuration directly.
-          </p>
+      <div className="flex flex-wrap items-center gap-2">
+        <span className={`px-2 py-0.5 rounded-full border text-xs font-semibold ${pill.cls}`}>{pillLabel}</span>
+        <span className="font-mono text-[10px] text-ink-faint">{contract.provider}</span>
+        <span className="px-1.5 py-0.5 rounded bg-surface-inset border border-silver-200 text-[9px] font-semibold uppercase tracking-wide text-ink-muted">
+          {contract.authType}
+        </span>
+        {contract.lastCheckedAt && (
+          <span className="text-[10px] text-ink-faint">Last checked {timeAgo(contract.lastCheckedAt)}</span>
+        )}
+      </div>
+
+      <div className={`px-3 py-2 rounded border text-xs leading-relaxed ${
+        effectiveStatus === 'VALID' || effectiveStatus === 'INTERNAL'
+          ? 'bg-status-success-bg border-status-success-border text-status-success-text'
+          : effectiveStatus === 'VALIDATION_FAILED' || effectiveStatus === 'CONTRACT_MISSING'
+            ? 'bg-status-error-bg border-status-error-border text-status-error-text'
+            : 'bg-surface-inset border-silver-200 text-ink-muted'
+      }`}>
+        {credentialActionText(contract, effectiveStatus)}
+      </div>
+
+      {missing.length > 0 && (
+        <div className="px-3 py-2 rounded border bg-status-warning-bg border-status-warning-border text-status-warning-text text-xs">
+          Missing {formatList(missing)}.
         </div>
-      ) : (
-        <div className="space-y-3">
-          <div>
-            <div className="text-[10px] text-ink-faint uppercase tracking-wide font-semibold mb-0.5">Provider</div>
-            <div className="font-mono text-xs text-ink-heading">{provider.provider}</div>
-          </div>
-          <div>
-            <div className="text-[10px] text-ink-faint uppercase tracking-wide font-semibold mb-0.5">Env Vars</div>
-            <div className="font-mono text-[10px] text-ink-muted leading-relaxed break-all">{provider.envVars.join('\n')}</div>
-          </div>
-          <div>
-            <div className="text-[10px] text-ink-faint uppercase tracking-wide font-semibold mb-1">Status</div>
-            <div className="flex flex-wrap items-center gap-2">
-              <span className={`px-2 py-0.5 rounded-full border text-xs font-semibold ${pill.cls}`}>{pillLabel}</span>
-              {validatedAt && (
-                <span className="text-[10px] text-ink-faint">{validatedAt.toLocaleTimeString()}</span>
-              )}
-            </div>
-            {result?.detail && (
-              <div className="text-[10px] text-ink-faint mt-1 break-words">{result.detail}</div>
+      )}
+
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+        <RequirementList
+          title={isInternal ? 'Internal checks' : 'Required secrets'}
+          items={isInternal ? contract.requiredCapabilities : contract.requiredFields}
+          empty={isInternal ? 'No internal checks registered.' : 'No shared system secrets required.'}
+        />
+        <RequirementList
+          title="Required scopes"
+          items={contract.requiredScopes}
+          empty={isInternal ? 'Internal platform does not use OAuth scopes.' : 'No OAuth scopes registered.'}
+        />
+        <RequirementList
+          title="Permissions"
+          items={contract.requiredPermissions}
+          empty={isInternal ? 'Controlled by first-party route permissions.' : 'No provider permission notes registered.'}
+        />
+        <RequirementList
+          title="Capability probe"
+          items={contract.requiredCapabilities}
+          empty="No capability checks registered."
+        />
+      </div>
+
+      <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-3">
+        {contract.stages.map(stage => (
+          <StageBadge key={stage.stage} stage={stage} />
+        ))}
+      </div>
+
+      {(result?.detail || contract.lastError || result?.checkMethod) && (
+        <div className="pt-3 border-t border-silver-200 space-y-1 text-[10px] text-ink-faint">
+          {result?.checkMethod && <div>Check method: <span className="font-mono text-ink-muted">{result.checkMethod}</span></div>}
+          {result?.detail && <div>Detail: {result.detail}</div>}
+          {contract.lastError && <div>Last error: {contract.lastError}</div>}
+        </div>
+      )}
+
+      {provider && provider.platformSlugs.length > 1 && (
+        <div className="pt-3 border-t border-silver-200">
+          <div className="text-[10px] text-ink-faint uppercase tracking-wide font-semibold mb-1">Shared provider platforms</div>
+          <div className="flex flex-wrap gap-1.5">
+            {provider.platformSlugs.filter(s => s !== slug).map(s => (
+              <a key={s} href={`#/admin/platforms/${s}`} className="font-mono text-[10px] text-navy-700 hover:underline">
+                {s}
+              </a>
+            ))}
+            {provider.platformSlugs.filter(s => s !== slug).length === 0 && (
+              <span className="text-xs text-ink-faint">No other platforms share this provider.</span>
             )}
           </div>
-          <div>
-            <div className="text-[10px] text-ink-faint uppercase tracking-wide font-semibold mb-0.5">Live Probe</div>
-            <div className="text-xs text-ink-muted">{provider.probeSupported ? 'Supported' : 'Not available'}</div>
-          </div>
-          {provider.platformSlugs.length > 1 && (
-            <div className="pt-2 border-t border-silver-200">
-              <div className="text-[10px] text-ink-faint uppercase tracking-wide font-semibold mb-1">Shared with</div>
-              <div className="flex flex-wrap gap-1.5">
-                {provider.platformSlugs.filter(s => s !== slug).map(s => (
-                  <a key={s} href={`#/admin/platforms/${s}`}
-                    className="font-mono text-[10px] text-navy-700 hover:underline">
-                    {s}
-                  </a>
-                ))}
-              </div>
-            </div>
-          )}
         </div>
       )}
     </div>
@@ -232,6 +472,10 @@ export default function AdminPlatformDetailPage({
   queueSnapshot,
   loading,
 }: Props) {
+  const [contractOverride, setContractOverride] = useState<PlatformCredentialContractSummary | null>(null);
+  const [pageValidating, setPageValidating] = useState(false);
+  const [pageValidateError, setPageValidateError] = useState<string | null>(null);
+
   const platform = useMemo(
     () => platformOverview.find(p => p.platformSlug === slug),
     [platformOverview, slug],
@@ -242,6 +486,24 @@ export default function AdminPlatformDetailPage({
     () => credData?.providers.find(p => p.platformSlugs.includes(slug)),
     [credData, slug],
   );
+  const credentialContract = useMemo(() => {
+    if (!platform) return null;
+    return contractOverride ?? (credData?.platforms ?? []).find(p => p.platformSlug === slug) ?? contractFallback(slug, platform, provider);
+  }, [contractOverride, credData, platform, provider, slug]);
+
+  const runPageValidation = async () => {
+    setPageValidating(true);
+    setPageValidateError(null);
+    try {
+      const run = await validatePlatformCredential(slug);
+      const nextContract = (run.platforms ?? []).find(p => p.platformSlug === slug);
+      if (nextContract) setContractOverride(nextContract);
+    } catch (e) {
+      setPageValidateError(toErrorMessage(e));
+    } finally {
+      setPageValidating(false);
+    }
+  };
 
   const platformTriage = useMemo(
     () => dealerAttention.filter(a => a.platformSlug === slug),
@@ -257,15 +519,23 @@ export default function AdminPlatformDetailPage({
   }, [recentEvents, slug]);
 
   const triageCritical = platformTriage.filter(a => a.severity === 'critical').length;
-  const triageWarning  = platformTriage.filter(a => a.severity === 'warning').length;
+  const lastActivity = platformEvents[0]?.createdAt ?? queueSnapshot?.lastSuccessSyncAt ?? null;
 
   const matCfg = MATURITY_CFG[platform?.integrationMaturity ?? ''] ?? {
     label: 'Unknown', cls: 'bg-status-neutral-bg text-status-neutral-text border-status-neutral-border', desc: '',
   };
 
-  const credStatusPill = CRED_STATUS[platform?.liveValidationStatus ?? ''] ?? {
-    label: 'Not checked', cls: 'bg-surface-inset text-ink-faint border-silver-200',
+  const effectiveCredentialStatus = credentialContract?.lastStatus ?? 'CONTRACT_MISSING';
+  const credStatusPill = CRED_STATUS[effectiveCredentialStatus] ?? {
+    label: 'Contract missing', cls: 'bg-surface-inset text-ink-faint border-silver-200',
   };
+  const finalHealth = platform?.operationalStatus ?? (
+    (effectiveCredentialStatus === 'VALID' || effectiveCredentialStatus === 'INTERNAL' || effectiveCredentialStatus === 'MANUAL_SETUP') && triageCritical === 0 && (platform?.recentFailures ?? 0) === 0
+      ? 'green'
+      : triageCritical > 0 || effectiveCredentialStatus === 'VALIDATION_FAILED' || effectiveCredentialStatus === 'CONTRACT_MISSING' || (platform?.recentFailures ?? 0) > 0
+        ? 'red'
+        : 'yellow'
+  );
 
   return (
     <div className="space-y-5">
@@ -290,12 +560,24 @@ export default function AdminPlatformDetailPage({
         <>
           {/* ── Platform header ── */}
           <div className="surface-card-operator p-5">
+            {pageValidateError && (
+              <div className="mb-4 px-3 py-2 bg-status-error-bg border border-status-error-border rounded text-xs text-status-error-text">
+                {pageValidateError}
+              </div>
+            )}
             <div className="flex flex-wrap items-start justify-between gap-4">
               <div className="min-w-0">
                 <div className="flex flex-wrap items-center gap-2.5 mb-1">
                   <h2 className="text-2xl font-bold text-ink-heading">{platform.platformName}</h2>
-                  <span className={`px-2 py-0.5 rounded text-[10px] font-semibold border ${matCfg.cls}`}>
-                    {matCfg.label}
+                  <span className={`inline-flex items-center gap-1.5 px-2 py-0.5 rounded text-[10px] font-semibold border ${
+                    finalHealth === 'green'
+                      ? 'bg-status-success-bg text-status-success-text border-status-success-border'
+                      : finalHealth === 'yellow'
+                        ? 'bg-status-warning-bg text-status-warning-text border-status-warning-border'
+                        : 'bg-status-error-bg text-status-error-text border-status-error-border'
+                  }`}>
+                    <span className={`h-2 w-2 rounded-full ${healthClass(finalHealth)}`} />
+                    {finalHealth}
                   </span>
                   <span className={`px-2 py-0.5 rounded text-[10px] font-semibold border ${
                     platform.configured
@@ -309,6 +591,9 @@ export default function AdminPlatformDetailPage({
                       Cred: {credStatusPill.label}
                     </span>
                   )}
+                  <span className={`px-2 py-0.5 rounded text-[10px] font-semibold border ${matCfg.cls}`}>
+                    {matCfg.label}
+                  </span>
                   {triageCritical > 0 && (
                     <span className="px-2 py-0.5 rounded text-[10px] font-semibold border bg-status-error-bg text-status-error-text border-status-error-border">
                       {triageCritical} critical
@@ -327,26 +612,45 @@ export default function AdminPlatformDetailPage({
                 )}
               </div>
 
-              {/* Quick stats inline */}
-              <div className="flex gap-3 shrink-0">
-                <div className="text-center px-4 py-2 bg-surface-inset rounded-md border border-silver-200">
-                  <div className="text-2xl font-bold font-mono text-ink-heading">{platform.dealersUsing}</div>
-                  <div className="text-[10px] text-ink-muted uppercase tracking-wide font-semibold">Dealers</div>
-                </div>
-                <div className="text-center px-4 py-2 bg-surface-inset rounded-md border border-silver-200">
-                  <div className={`text-2xl font-bold font-mono ${platform.blockedDealers > 0 ? 'text-status-error-text' : 'text-ink-heading'}`}>
-                    {platform.blockedDealers}
-                  </div>
-                  <div className="text-[10px] text-ink-muted uppercase tracking-wide font-semibold">Blocked</div>
-                </div>
-                <div className="text-center px-4 py-2 bg-surface-inset rounded-md border border-silver-200">
-                  <div className={`text-2xl font-bold font-mono ${triageCritical > 0 ? 'text-status-error-text' : triageWarning > 0 ? 'text-status-warning-text' : 'text-ink-heading'}`}>
-                    {platformTriage.length}
-                  </div>
-                  <div className="text-[10px] text-ink-muted uppercase tracking-wide font-semibold">Issues</div>
-                </div>
+              <div className="flex flex-wrap gap-2 shrink-0 justify-end">
+                <button
+                  type="button"
+                  onClick={() => void runPageValidation()}
+                  disabled={pageValidating}
+                  className="px-3 py-1.5 rounded text-xs font-semibold bg-orange-600 hover:bg-orange-500 text-white disabled:opacity-40 transition-colors"
+                >
+                  {pageValidating ? 'Validating…' : credentialContract?.authType === 'internal' ? 'Validate Loop' : 'Validate'}
+                </button>
+                <a href="#/admin/platform-credentials" className="px-3 py-1.5 rounded text-xs font-semibold border border-silver-300 text-ink-muted hover:text-ink-heading hover:border-silver-400 transition-colors">
+                  Configure
+                </a>
+                <button
+                  type="button"
+                  disabled={(platform.recentFailures ?? 0) === 0}
+                  className="px-3 py-1.5 rounded text-xs font-semibold border border-silver-300 text-ink-muted hover:text-ink-heading hover:border-silver-400 transition-colors disabled:opacity-40"
+                  title={(platform.recentFailures ?? 0) === 0 ? 'No recent failed jobs to retry' : 'Retry action is handled from queue tooling'}
+                >
+                  Retry failed jobs
+                </button>
+                <a href="#setup-checklist" className="px-3 py-1.5 rounded text-xs font-semibold border border-silver-300 text-ink-muted hover:text-ink-heading hover:border-silver-400 transition-colors">
+                  View docs
+                </a>
+                <a href="#recent-history" className="px-3 py-1.5 rounded text-xs font-semibold border border-silver-300 text-ink-muted hover:text-ink-heading hover:border-silver-400 transition-colors">
+                  View history
+                </a>
               </div>
+
             </div>
+          </div>
+
+          <div className="grid grid-cols-2 md:grid-cols-4 xl:grid-cols-7 gap-3">
+            <StatCard value={platform.dealersUsing} label="Connected dealers" sub={`${platform.eligibleDealers ?? 0} eligible`} />
+            <StatCard value={platform.liveInventory ?? 0} label="Live inventory" sub="active evidence" />
+            <StatCard value={platform.outboundToday ?? 0} label="Outbound 24h" sub={`${platform.outbound7d ?? 0} in 7d`} />
+            <StatCard value={platform.outboundAllTime ?? 0} label="Outbound all" />
+            <StatCard value={platform.recentFailures ?? 0} label="Failures 24h" valueClass={(platform.recentFailures ?? 0) > 0 ? 'text-status-error-text' : 'text-ink-heading'} />
+            <StatCard value={`${platform.blockedDealers}/${platform.blockedItems ?? 0}`} label="Blocked" sub="dealers/items" valueClass={platform.blockedDealers + (platform.blockedItems ?? 0) > 0 ? 'text-status-error-text' : 'text-ink-heading'} />
+            <StatCard value={lastActivity ? timeAgo(lastActivity) : 'Never'} label="Last activity" />
           </div>
 
           {/* ── Main two-column layout ── */}
@@ -355,10 +659,67 @@ export default function AdminPlatformDetailPage({
             {/* Left: 2/3 */}
             <div className="lg:col-span-2 space-y-5">
 
+              {credLoading || !credentialContract ? (
+                <div className="surface-card-operator p-4"><Skeleton rows={6} /></div>
+              ) : (
+                <CredentialPanel
+                  slug={slug}
+                  provider={provider}
+                  contract={credentialContract}
+                  onContractUpdate={setContractOverride}
+                />
+              )}
+
+              <div className="surface-card-operator p-4">
+                <SectionHeader title="Dealer Connections" />
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                  <StatCard value={platform.dealersUsing} label="Connected" sub="started applications" />
+                  <StatCard value={platform.eligibleDealers ?? 0} label="Eligible" sub="active for outbound" />
+                  <StatCard
+                    value={platform.blockedDealers}
+                    label="Blocked dealers"
+                    sub={platform.blockedDealers > 0 ? 'needs admin action' : 'none blocked'}
+                    valueClass={platform.blockedDealers > 0 ? 'text-status-error-text' : 'text-ink-heading'}
+                  />
+                </div>
+                {platform.dealersUsing === 0 ? (
+                  <div className="mt-3 py-4 text-center text-xs text-ink-faint border border-dashed border-silver-200 rounded-md">
+                    No dealers have started using this platform. Configure credentials first, then onboard a dealer connection.
+                  </div>
+                ) : platform.blockedDealers > 0 ? (
+                  <p className="mt-3 text-xs text-status-warning-text">
+                    {platform.blockedDealers} dealer connection{platform.blockedDealers === 1 ? '' : 's'} need review before outbound traffic can run.
+                  </p>
+                ) : (
+                  <p className="mt-3 text-xs text-ink-muted">
+                    Dealer connections are not currently blocking this platform.
+                  </p>
+                )}
+              </div>
+
+              <div className="surface-card-operator p-4">
+                <SectionHeader title="Inventory & Publishing" />
+                <div className="grid grid-cols-1 sm:grid-cols-4 gap-3">
+                  <StatCard value={platform.liveInventory ?? 0} label="Live" sub="listing/post/sent evidence" />
+                  <StatCard value={platform.outboundToday ?? 0} label="Today" sub="sent in 24h" />
+                  <StatCard value={platform.outbound7d ?? 0} label="7 days" sub="sent outbound" />
+                  <StatCard value={platform.outboundAllTime ?? 0} label="All time" sub="sent outbound" />
+                </div>
+                {(platform.liveInventory ?? 0) === 0 ? (
+                  <div className="mt-3 py-4 text-center text-xs text-ink-faint border border-dashed border-silver-200 rounded-md">
+                    No live inventory evidence yet. Validate credentials, confirm eligible dealers, then publish or sync inventory.
+                  </div>
+                ) : (
+                  <p className="mt-3 text-xs text-ink-muted">
+                    This platform has active outbound evidence. Use Recent History below for the event timeline.
+                  </p>
+                )}
+              </div>
+
               {/* Pipeline health */}
               {queueSnapshot && (
                 <div className="surface-card-operator p-4">
-                  <SectionHeader title="System Pipeline" />
+                  <SectionHeader title="Queue & Sync Health" />
                   <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-3">
                     <StatCard
                       value={queueSnapshot.pending}
@@ -405,10 +766,26 @@ export default function AdminPlatformDetailPage({
 
               {/* Active triage for this platform */}
               <div className="surface-card-operator p-4">
-                <SectionHeader title={`Active Issues — ${platform.platformName}`} count={platformTriage.length} />
+                <SectionHeader title="Active Failures & Blockers" count={platformTriage.length + (platform.recentFailures ?? 0) + (platform.blockedItems ?? 0)} />
+                {((platform.recentFailures ?? 0) > 0 || (platform.blockedItems ?? 0) > 0) && (
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-3">
+                    <StatCard
+                      value={platform.recentFailures ?? 0}
+                      label="Recent failures"
+                      sub="failed jobs/events in 24h"
+                      valueClass={(platform.recentFailures ?? 0) > 0 ? 'text-status-error-text' : 'text-ink-heading'}
+                    />
+                    <StatCard
+                      value={platform.blockedItems ?? 0}
+                      label="Blocked items"
+                      sub="held or blocked queue items"
+                      valueClass={(platform.blockedItems ?? 0) > 0 ? 'text-status-error-text' : 'text-ink-heading'}
+                    />
+                  </div>
+                )}
                 {platformTriage.length === 0 ? (
                   <div className="py-6 text-center text-xs text-ink-faint border border-dashed border-silver-200 rounded-md">
-                    No active triage items for this platform.
+                    No active triage rows for this platform. If failures exist above, use queue tooling to inspect failed jobs.
                   </div>
                 ) : (
                   <div className="space-y-2">
@@ -442,14 +819,14 @@ export default function AdminPlatformDetailPage({
               </div>
 
               {/* Activity feed */}
-              <div className="surface-card-operator p-4">
+              <div id="recent-history" className="surface-card-operator p-4">
                 <SectionHeader
-                  title={`Recent Activity — ${platform.platformName}`}
+                  title="Recent History"
                   count={platformEvents.length}
                 />
                 {platformEvents.length === 0 ? (
                   <div className="py-6 text-center text-xs text-ink-faint border border-dashed border-silver-200 rounded-md">
-                    No recent events found for this platform.
+                    No recent events found for this platform. Validate credentials or run a sync to create fresh history.
                   </div>
                 ) : (
                   <div className="divide-y divide-silver-200">
@@ -479,17 +856,6 @@ export default function AdminPlatformDetailPage({
 
             {/* Right: 1/3 */}
             <div className="space-y-5">
-
-              {/* Credentials */}
-              {credLoading ? (
-                <div className="surface-card-operator p-4"><Skeleton rows={5} /></div>
-              ) : (
-                <CredentialPanel
-                  slug={slug}
-                  provider={provider}
-                  initialStatus={platform.liveValidationStatus}
-                />
-              )}
 
               {/* Classification */}
               <div className="surface-card-operator p-4 space-y-4">
@@ -523,6 +889,21 @@ export default function AdminPlatformDetailPage({
                   </div>
                 )}
 
+                {(platform.supportedCategories?.length ?? 0) > 0 && (
+                  <div>
+                    <div className="text-[10px] text-ink-faint uppercase tracking-wide font-semibold mb-1.5">
+                      Supported Categories
+                    </div>
+                    <div className="flex flex-wrap gap-1.5">
+                      {platform.supportedCategories?.map(cat => (
+                        <span key={cat} className="px-2 py-0.5 rounded text-[10px] font-semibold bg-status-neutral-bg text-status-neutral-text border border-status-neutral-border">
+                          {cat.replace(/_/g, ' ')}
+                        </span>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
                 {platformTriage.length > 0 && (
                   <div>
                     <div className="text-[10px] text-ink-faint uppercase tracking-wide font-semibold mb-1.5">
@@ -535,6 +916,70 @@ export default function AdminPlatformDetailPage({
                         </span>
                       ))}
                     </div>
+                  </div>
+                )}
+              </div>
+
+              <div id="setup-checklist" className="surface-card-operator p-4 space-y-4">
+                <SectionHeader title="Docs & Setup Checklist" />
+                {!credentialContract ? (
+                  <div className="py-4 text-center text-xs text-ink-faint border border-dashed border-silver-200 rounded-md">
+                    Credential contract is still loading.
+                  </div>
+                ) : (
+                  <>
+                    <div>
+                      <div className="text-[10px] text-ink-faint uppercase tracking-wide font-semibold mb-1">Connection model</div>
+                      <div className="text-xs text-ink-muted">
+                        {credentialContract.authType === 'internal'
+                          ? 'Internal first-party platform. Validate routes, publish loop, visibility, leads, buyer events, and sold notifications.'
+                          : `External ${credentialContract.authType} platform. System credentials are separate from dealer connections.`}
+                      </div>
+                    </div>
+                    <div className="space-y-2">
+                      {credentialContract.requiredFields.length > 0 && (
+                        <div className="text-xs text-ink-muted">
+                          <span className="font-semibold text-ink-heading">Secrets:</span> {formatList(credentialContract.requiredFields)}
+                        </div>
+                      )}
+                      {credentialContract.requiredScopes.length > 0 && (
+                        <div className="text-xs text-ink-muted">
+                          <span className="font-semibold text-ink-heading">Scopes:</span> {credentialContract.requiredScopes.join(', ')}
+                        </div>
+                      )}
+                      {credentialContract.requiredPermissions.length > 0 && (
+                        <div className="text-xs text-ink-muted">
+                          <span className="font-semibold text-ink-heading">Permissions:</span> {credentialContract.requiredPermissions.join(', ')}
+                        </div>
+                      )}
+                      {credentialContract.requiredCapabilities.length > 0 && (
+                        <div className="text-xs text-ink-muted">
+                          <span className="font-semibold text-ink-heading">Capability checks:</span> {credentialContract.requiredCapabilities.join(', ')}
+                        </div>
+                      )}
+                    </div>
+                    <p className="text-[10px] text-ink-faint leading-relaxed">{credentialContract.notes}</p>
+                    <div className="flex flex-wrap gap-2 pt-2 border-t border-silver-200">
+                      <a href="#/admin/platform-credentials" className="text-xs font-semibold text-navy-700 hover:underline">Credential registry</a>
+                      <a href="#recent-history" className="text-xs font-semibold text-navy-700 hover:underline">History</a>
+                    </div>
+                  </>
+                )}
+              </div>
+
+              <div className="surface-card-operator p-4">
+                <SectionHeader title="Related Platforms" />
+                {provider && provider.platformSlugs.filter(s => s !== slug).length > 0 ? (
+                  <div className="flex flex-wrap gap-1.5">
+                    {provider.platformSlugs.filter(s => s !== slug).map(s => (
+                      <a key={s} href={`#/admin/platforms/${s}`} className="font-mono text-[10px] text-navy-700 hover:underline">
+                        {s}
+                      </a>
+                    ))}
+                  </div>
+                ) : (
+                  <div className="py-4 text-center text-xs text-ink-faint border border-dashed border-silver-200 rounded-md">
+                    No other platform rows share this provider contract.
                   </div>
                 )}
               </div>

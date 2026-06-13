@@ -41,6 +41,11 @@ function marketplacePrisma(): PrismaClient {
       groupBy:   async () => [],
       findFirst: async () => null,
     },
+    categoryInventoryItem: {
+      findMany:  async () => [],
+      findFirst: async () => null,
+      count:     async () => 0,
+    },
   } as unknown as PrismaClient;
 }
 

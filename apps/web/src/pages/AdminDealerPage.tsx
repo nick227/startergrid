@@ -6,12 +6,11 @@ import { useAsyncQuery } from '@/hooks/useAsyncQuery.ts';
 import { ErrorState, SectionCard, OperatorPage } from '@/components/operator/index.ts';
 import type { OperatorNavHandlers, OperatorTab } from '@/lib/operatorNav.ts';
 import { Skeleton } from '@/components/ui/Skeleton.tsx';
+import { resolveCategorySchema } from '@auto-dealer/category-schemas';
 
-const BUSINESS_CATEGORY_LABELS: Record<string, string> = {
-  AUTOMOTIVE: 'Automotive',
-  BOAT: 'Marine / Boats',
-  TRAILER_RV_POWERSPORTS: 'Trailers, RV & Powersports',
-};
+function categoryLabel(id: string): string {
+  return resolveCategorySchema(id).label;
+}
 
 const SEVERITY_CFG: Record<string, { label: string; cls: string }> = {
   critical: { label: 'CRITICAL', cls: 'bg-status-error-bg text-status-error-text border-status-error-border' },
@@ -159,7 +158,7 @@ export default function AdminDealerPage({ dealerId, nav, activeTab }: Props) {
               <div>
                 <dt className="text-xs text-ink-muted font-semibold uppercase tracking-wider mb-0.5">Category</dt>
                 <dd className="text-ink-heading">
-                  {BUSINESS_CATEGORY_LABELS[dealer.businessCategory] ?? dealer.businessCategory}
+                  {categoryLabel(dealer.businessCategory)}
                 </dd>
               </div>
               <div>

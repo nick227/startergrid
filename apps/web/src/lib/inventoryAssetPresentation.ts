@@ -70,7 +70,7 @@ export function assetDesktopFields(
   ];
 
   if (vehicle.mileage > 0) {
-    fields.splice(2, 0, { label: 'Usage', value: formatMileage(vehicle.mileage) });
+    fields.splice(2, 0, { label: 'Mileage', value: formatMileage(vehicle.mileage) });
   }
 
   const movement = assetMovementSummary(perf);

@@ -1,6 +1,5 @@
 import { useCallback, useMemo, useState } from 'react';
-import type { CategorySchema, MarketplaceAvailabilityFilter } from '@auto-dealer/category-schemas';
-import { defaultAvailabilityFilter, isAvailabilityFilterEnabled } from '../features/availability/listingAvailabilityFilter.ts';
+import type { CategorySchema } from '@auto-dealer/category-schemas';
 import { sanitizeListingFacets } from '../features/listings/listingFacetConfig.ts';
 import { hasListingFilters } from '../features/listings/listingFilterChips.ts';
 import { type ListingFilterConfig, isListingFilterEnabled, sanitizeListingQuery } from '../features/listings/listingFilterConfig.ts';
@@ -19,11 +18,9 @@ export type UseListingFiltersResult = {
   sellerName: string;
   facetValues: Record<string, string>;
   sortBy: ListingSort | undefined;
-  availability: MarketplaceAvailabilityFilter;
   listingQuery: ListingQuery;
   hasActiveFilters: boolean;
   focusToken: number;
-  showAvailabilityFilter: boolean;
   setQ: (v: string) => void;
   setBrand: (v: string) => void;
   setModel: (v: string) => void;
@@ -35,7 +32,6 @@ export type UseListingFiltersResult = {
   setMaxYear: (v: string) => void;
   setSellerName: (v: string) => void;
   setSortBy: (v: ListingSort | undefined) => void;
-  setAvailability: (v: MarketplaceAvailabilityFilter) => void;
   resetFilters: () => void;
   handleFacetChange: (key: string, value: string | undefined) => void;
   applyListingQuery: (query: ListingQuery) => void;
@@ -58,11 +54,7 @@ export function useListingFilters(
   const [sellerName, setSellerName] = useState(initial.sellerName ?? '');
   const [facetValues, setFacetValues] = useState<Record<string, string>>(initial.facets ?? {});
   const [sortBy, setSortBy] = useState<ListingSort | undefined>(initial.sortBy);
-  const [availability, setAvailability] = useState<MarketplaceAvailabilityFilter>(
-    () => initial.availability ?? defaultAvailabilityFilter(),
-  );
   const [focusToken, setFocusToken] = useState(0);
-  const showAvailabilityFilter = isAvailabilityFilterEnabled();
 
   const listingQuery = useMemo<ListingQuery>(() => sanitizeListingQuery({
     q: q.trim() || undefined,
@@ -79,8 +71,7 @@ export function useListingFilters(
     yearMax: parseNonNegative(maxYear),
     facets: sanitizeListingFacets(schema, facetValues),
     sortBy,
-    availability,
-  }, filterConfig), [availability, brand, condition, facetValues, filterConfig, maxPrice, maxUsage, maxYear, minPrice, minYear, model, q, schema, sellerName, sortBy]);
+  }, filterConfig), [brand, condition, facetValues, filterConfig, maxPrice, maxUsage, maxYear, minPrice, minYear, model, q, schema, sellerName, sortBy]);
 
   const hasActiveFilters = hasListingFilters(listingQuery);
 
@@ -96,7 +87,6 @@ export function useListingFilters(
     setMinYear('');
     setMaxYear('');
     setFacetValues({});
-    setAvailability(defaultAvailabilityFilter());
     setFocusToken(t => t + 1);
   }, []);
 
@@ -122,15 +112,14 @@ export function useListingFilters(
     setMaxYear(formatNumberInput(query.yearMax));
     setFacetValues(query.facets ?? {});
     setSortBy(query.sortBy);
-    setAvailability(query.availability ?? defaultAvailabilityFilter());
   }, []);
 
   return {
     q, brand, model, condition, minPrice, maxPrice, maxUsage, minYear, maxYear,
-    sellerName, facetValues, sortBy, availability,
-    listingQuery, hasActiveFilters, focusToken, showAvailabilityFilter,
+    sellerName, facetValues, sortBy,
+    listingQuery, hasActiveFilters, focusToken,
     setQ, setBrand, setModel, setCondition, setMinPrice, setMaxPrice, setMaxUsage,
-    setMinYear, setMaxYear, setSellerName, setSortBy, setAvailability,
+    setMinYear, setMaxYear, setSellerName, setSortBy,
     resetFilters, handleFacetChange, applyListingQuery,
   };
 }

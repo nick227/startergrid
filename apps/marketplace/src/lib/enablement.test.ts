@@ -14,7 +14,9 @@ describe('consumer marketplace enablement', () => {
 
   it('does not use operator status for consumer browse', () => {
     const songs = resolveCategorySchema('SONGS');
-    expect(songs.status).toBe('placeholder');
+    // SONGS is operator-active but not consumer-marketplace-enabled
+    expect(songs.status).toBe('active');
+    expect(songs.marketplace.consumerEnabled).toBe(false);
     expect(isConsumerMarketplaceLive(songs)).toBe(false);
   });
 });

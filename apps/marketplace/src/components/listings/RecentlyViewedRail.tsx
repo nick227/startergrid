@@ -48,7 +48,7 @@ export function RecentlyViewedRail({ categorySlug, excludeListingId, limit = 8 }
         {items.map(item => (
           <a
             key={item.listingId}
-            href={listingHref(item.categorySlug, item.listingId)}
+            href={listingHref(item.categorySlug, item.listingId, item.title)}
             className="mp-card mp-focus flex gap-3 p-3 transition hover:border-navy-500/40 hover:shadow-elevation-2"
           >
             <div className="size-20 shrink-0 overflow-hidden rounded-lg bg-surface-inset">

@@ -21,11 +21,14 @@ export const marketplaceRouteClassifications = {
   public: [
     'GET /api/marketplace/sites',
     'GET /api/marketplace/feed',
+    'GET /api/marketplace/facets',
     'GET /api/marketplace/vehicles',
     'GET /api/marketplace/vehicles/:listingId',
     'GET /api/marketplace/sellers/:sellerId',
     'GET /api/marketplace/dealers/:dealerId',
     'GET /api/marketplace/dealers/:dealerId/stats',
+    'GET /api/marketplace/category-items',
+    'GET /api/marketplace/category-items/:listingId',
   ],
   publicWrite: [
     'POST /api/marketplace/vehicles/:listingId/leads',
@@ -137,6 +140,7 @@ export const routeClassifications = {
     'POST /api/admin/dealers',
     'GET /api/admin/platform-credentials',
     'POST /api/admin/platform-credentials/validate',
+    'POST /api/admin/platform-credentials/:platformSlug/validate',
     'GET /api/admin/blocked-dealers',
     'GET /api/admin/users',
     'POST /api/admin/users',

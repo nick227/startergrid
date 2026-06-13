@@ -6,13 +6,21 @@ import type {
   MediaSlot,
 } from '../types.js';
 import { automotiveInventorySchema } from '../automotive/inventorySchema.js';
+import { ebooksInventorySchema } from '../ebooks/inventorySchema.js';
+import { songsInventorySchema } from '../songs/inventorySchema.js';
+import { digitalArtInventorySchema } from '../digital_art/inventorySchema.js';
+import { videoDistributionInventorySchema } from '../video_distribution/inventorySchema.js';
 
 // ── Registry ──────────────────────────────────────────────────────────────────
-// Only categories with a committed CategoryInventorySchema appear here.
-// Non-auto verticals will be added as their asset storage + ingress is ready.
+// Add a CategoryInventorySchema here when a category is ready for
+// CategoryInventoryItem-backed inventory (asset storage + ingress in place).
 
 const CATEGORY_INVENTORY_REGISTRY: Partial<Record<BusinessCategoryId, CategoryInventorySchema>> = {
   AUTOMOTIVE: automotiveInventorySchema,
+  EBOOKS: ebooksInventorySchema,
+  SONGS: songsInventorySchema,
+  DIGITAL_ART: digitalArtInventorySchema,
+  VIDEO_DISTRIBUTION: videoDistributionInventorySchema,
 };
 
 // ── Helpers ───────────────────────────────────────────────────────────────────

@@ -137,7 +137,25 @@ function parseCategoryPath(path: string, search: string): MarketplaceRoute | nul
   }
 
   if (segments[1] === 'listing' && segments[2]) {
-    return { page: 'listing', slug, listingId: segments[2]! };
+    let rawId = segments[2];
+    let listingId = rawId;
+
+    const params = new URLSearchParams(search.startsWith('?') ? search.slice(1) : search);
+    if (params.get('id')) {
+      listingId = params.get('id')!;
+    } else {
+      const uuidMatch = rawId.match(/-([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12})$/);
+      if (uuidMatch) {
+        listingId = uuidMatch[1]!;
+      } else {
+        const lastDash = rawId.lastIndexOf('-');
+        if (lastDash !== -1) {
+          listingId = rawId.slice(lastDash + 1);
+        }
+      }
+    }
+
+    return { page: 'listing', slug, listingId: decodeURIComponent(listingId) };
   }
 
   if (segments[1] === 'seller' && segments[2]) {
@@ -195,7 +213,13 @@ export function listHref(slug: string, query: ListQuery = {}): string {
   return qs ? `#/${slug}/?${qs}` : `#/${slug}/`;
 }
 
-export function listingHref(slug: string, listingId: string): string {
+export function listingHref(slug: string, listingId: string, title?: string): string {
+  if (title) {
+    const titleSlug = title.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
+    if (titleSlug) {
+      return `#/${slug}/listing/${titleSlug}-${encodeURIComponent(listingId)}`;
+    }
+  }
   return `#/${slug}/listing/${encodeURIComponent(listingId)}`;
 }
 

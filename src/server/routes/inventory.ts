@@ -27,13 +27,19 @@ import {
   bulkVinPreviewSchema,
   bulkVinCommitSchema,
   mediaSlotAssignSchema,
+  decodeCategoryIdentifierSchema,
+  createCategoryItemSchema,
   validateBody,
 } from '../requestValidation.js';
 import { normalizeVin, validateVin, resolveVinDecoder } from '../../services/inventory/vin/index.js';
 import { createVehicleShell, BULK_VIN_SOURCE } from '../../services/inventory/vehicleShellService.js';
 import { buildVehicleChannelMatrix, STOREFRONT_CHANNEL_KEY } from '../../services/inventory/vehicleChannelService.js';
 import { platformProfiles } from '../../data/platformProfiles.js';
-import { getMediaGuide } from '@auto-dealer/category-schemas';
+import { getCategoryInventorySchema, getMediaGuide } from '@auto-dealer/category-schemas';
+import type { BusinessCategoryId } from '@auto-dealer/category-schemas';
+import { resolveIdentifierDecoder } from '../../services/inventory/identifiers/index.js';
+import { createCategoryItemShell } from '../../services/inventory/categoryItemShellService.js';
+import { categoryItemToInventoryRecord } from '../../services/inventory/inventoryRecordAdapter.js';
 
 type VehicleParams = { dealershipId: string; stockNumber: string };
 type DealerParams = { dealershipId: string };
@@ -1038,6 +1044,204 @@ export function registerInventoryRoutes(app: FastifyInstance, prisma: PrismaClie
       }
 
       return reply.status(201).send({ media: createdMedia });
+    }
+  );
+
+  // ── Generic category item: decode identifier ──────────────────────────────────
+  // Decodes an identifier (ISBN, SKU, etc.) for any non-automotive category.
+  // Returns decoded fields and a duplicate check against existing items.
+
+  app.post<{ Params: DealerParams }>(
+    '/api/dealers/:dealershipId/inventory/items/decode',
+    async (request, reply) => {
+      const { dealershipId } = request.params;
+      if (!await requireDealerAccess(prisma, request, reply, dealershipId)) return;
+      if (!await findDealer(prisma, dealershipId))
+        return reply.status(404).send({ error: 'Dealer not found' });
+
+      const body = validateBody(decodeCategoryIdentifierSchema, request.body);
+      if (!body.ok) return reply.status(400).send({ error: body.error });
+
+      const { categoryId, identifier } = body.data;
+
+      const decoder = resolveIdentifierDecoder(categoryId as BusinessCategoryId);
+      const decoded = await decoder.decode(identifier);
+
+      if (!decoded.valid) {
+        return reply.status(400).send({
+          error: decoded.warnings[0] ?? 'Invalid identifier',
+          identifier,
+          valid: false,
+        });
+      }
+
+      const existing = await prisma.categoryInventoryItem.findFirst({
+        where: { dealershipId, primaryIdentifier: identifier, categoryId },
+        select: { id: true, stockNumber: true },
+      });
+
+      return reply.send({
+        identifier: decoded.identifier,
+        categoryId,
+        valid: decoded.valid,
+        decoded: decoded.decoded,
+        provider: decoded.provider,
+        fields: decoded.fields,
+        warnings: decoded.warnings,
+        duplicate: existing !== null,
+        existingItemId: existing?.id ?? null,
+        existingStockNumber: existing?.stockNumber ?? null,
+      });
+    }
+  );
+
+  // ── Generic category item: create ─────────────────────────────────────────────
+
+  app.post<{ Params: DealerParams }>(
+    '/api/dealers/:dealershipId/inventory/items',
+    async (request, reply) => {
+      const { dealershipId } = request.params;
+      if (!await requireDealerAccess(prisma, request, reply, dealershipId)) return;
+      if (!await findDealer(prisma, dealershipId))
+        return reply.status(404).send({ error: 'Dealer not found' });
+
+      const body = validateBody(createCategoryItemSchema, request.body);
+      if (!body.ok) return reply.status(400).send({ error: body.error });
+
+      // Block duplicate primary identifiers when one is provided
+      if (body.data.primaryIdentifier) {
+        const existing = await prisma.categoryInventoryItem.findFirst({
+          where: {
+            dealershipId,
+            categoryId: body.data.categoryId,
+            primaryIdentifier: body.data.primaryIdentifier,
+          },
+          select: { id: true, stockNumber: true },
+        });
+        if (existing) {
+          return reply.status(409).send({
+            error: 'An item with this identifier already exists in your inventory',
+            itemId: existing.id,
+            stockNumber: existing.stockNumber,
+          });
+        }
+      }
+
+      const operator = await requireOperator(prisma, request, reply);
+      if (!operator) return;
+
+      const result = await createCategoryItemShell(prisma, {
+        dealershipId,
+        categoryId:        body.data.categoryId as BusinessCategoryId,
+        primaryIdentifier: body.data.primaryIdentifier,
+        stockNumber:       body.data.stockNumber,
+        priceCents:        body.data.priceCents,
+        condition:         body.data.condition,
+        data:              body.data.data as Record<string, unknown>,
+        adminActorId: operator.role === 'SUPER_ADMIN' ? operator.id : undefined,
+      });
+
+      return reply.status(201).send(result);
+    }
+  );
+
+  // ── Generic category item: list ───────────────────────────────────────────────
+
+  app.get<{ Params: DealerParams; Querystring: { categoryId?: string; lifecycleScope?: string } }>(
+    '/api/dealers/:dealershipId/inventory/items',
+    async (request, reply) => {
+      const { dealershipId } = request.params;
+      if (!await requireDealerAccess(prisma, request, reply, dealershipId)) return;
+      if (!await findDealer(prisma, dealershipId))
+        return reply.status(404).send({ error: 'Dealer not found' });
+
+      const { categoryId, lifecycleScope } = request.query;
+
+      const where: import('@prisma/client').Prisma.CategoryInventoryItemWhereInput = { dealershipId };
+      if (categoryId) where.categoryId = categoryId;
+
+      if (lifecycleScope === 'sold') {
+        where.soldAt = { not: null };
+        where.removedAt = null;
+      } else if (lifecycleScope === 'removed') {
+        where.removedAt = { not: null };
+      } else if (lifecycleScope !== 'all') {
+        // default: active — not sold or removed
+        where.soldAt = null;
+        where.removedAt = null;
+      }
+
+      const items = await prisma.categoryInventoryItem.findMany({
+        where,
+        orderBy: { createdAt: 'desc' },
+        select: {
+          id: true, categoryId: true, stockNumber: true, primaryIdentifier: true,
+          priceCents: true, condition: true, listingStatus: true,
+          soldAt: true, removedAt: true, createdAt: true, updatedAt: true,
+          data: true,
+        },
+      });
+
+      return reply.send({ items, total: items.length });
+    }
+  );
+
+  // ── Generic category item: detail ─────────────────────────────────────────────
+
+  type ItemDetailParams = { dealershipId: string; itemId: string };
+
+  app.get<{ Params: ItemDetailParams }>(
+    '/api/dealers/:dealershipId/inventory/items/:itemId',
+    async (request, reply) => {
+      const { dealershipId, itemId } = request.params;
+      if (!await requireDealerAccess(prisma, request, reply, dealershipId)) return;
+
+      const item = await prisma.categoryInventoryItem.findFirst({
+        where: { id: itemId, dealershipId },
+        include: {
+          media: {
+            select: {
+              id: true, url: true, kind: true, sortOrder: true,
+              width: true, height: true, mimeType: true,
+              mediaSlotKey: true, mediaRole: true,
+              customLabel: true, customGroup: true,
+            },
+            orderBy: { sortOrder: 'asc' },
+          },
+        },
+      });
+      if (!item) return reply.status(404).send({ error: 'Item not found' });
+
+      const record = categoryItemToInventoryRecord(item);
+
+      const schema = getCategoryInventorySchema(item.categoryId as BusinessCategoryId);
+      const assignedSlotKeys = item.media
+        .filter(m => m.mediaSlotKey)
+        .map(m => m.mediaSlotKey as string);
+
+      // Flatten top-level fields + data for readiness evaluation
+      const fields: Record<string, unknown> = {
+        stockNumber: item.stockNumber,
+        priceCents:  item.priceCents,
+        condition:   item.condition,
+        ...(item.data as Record<string, unknown>),
+      };
+      if (schema && item.primaryIdentifier) {
+        fields[schema.primaryIdentifier.fieldKey] = item.primaryIdentifier;
+      }
+
+      const readiness = buildInventoryReadiness({
+        category: item.categoryId as BusinessCategoryId,
+        fields,
+        assignedMediaSlotKeys: assignedSlotKeys,
+        totalMediaCount: item.media.length,
+      });
+
+      return reply.send({
+        ...record,
+        media: item.media,
+        readiness,
+      });
     }
   );
 

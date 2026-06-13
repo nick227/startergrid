@@ -76,6 +76,7 @@ const REGISTERED_ROUTES = new Set([
   'GET    /api/admin/dashboard',
   'GET    /api/admin/platform-credentials',
   'POST   /api/admin/platform-credentials/validate',
+  'POST   /api/admin/platform-credentials/{platformSlug}/validate',
   'GET    /api/admin/blocked-dealers',
   'GET    /api/admin/users',
   'POST   /api/admin/users',

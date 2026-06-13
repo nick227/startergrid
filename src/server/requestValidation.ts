@@ -321,6 +321,26 @@ export const mediaSlotAssignSchema = z.object({
 }).strict();
 export type MediaSlotAssignBody = z.infer<typeof mediaSlotAssignSchema>;
 
+// ── Generic category item schemas ─────────────────────────────────────────────
+
+// operationId: decodeCategoryIdentifier
+export const decodeCategoryIdentifierSchema = z.object({
+  categoryId:  z.string().trim().min(1).max(40),
+  identifier:  z.string().trim().min(1).max(80),
+}).strict();
+export type DecodeCategoryIdentifierBody = z.infer<typeof decodeCategoryIdentifierSchema>;
+
+// operationId: createCategoryItem
+export const createCategoryItemSchema = z.object({
+  categoryId:         z.string().trim().min(1).max(40),
+  primaryIdentifier:  z.string().trim().min(1).max(80).optional(),
+  stockNumber:        z.string().trim().min(1).max(80).optional(),
+  priceCents:         z.number().int().min(0).optional(),
+  condition:          z.string().trim().min(1).max(24).optional(),
+  data:               z.record(z.string(), z.unknown()),
+}).strict();
+export type CreateCategoryItemBody = z.infer<typeof createCategoryItemSchema>;
+
 // operationId: captureMarketplaceChannelEvent
 export const marketplaceChannelEventSchema = z.object({
   eventType: z.enum(['vehicle_impression', 'vehicle_detail_view', 'dealer_page_view']),

@@ -200,16 +200,47 @@ export type InventoryReadinessRule = {
   message: string;
 };
 
+/**
+ * A platform- or distribution-specific identifier for an inventory item.
+ * These are stored alongside the item (in data JSON) but are not the
+ * primary internal reference. Platform requirement enforcement (e.g. "ISBN
+ * required for IngramSpark print distribution") is handled by
+ * PlatformRequirementRegistry, not by global readiness rules.
+ */
+export type ExternalIdentifierDef = {
+  fieldKey: string;
+  label: string;
+  /** Regex pattern for format validation. */
+  pattern?: string;
+  /** Human-readable note on when this identifier is typically assigned or needed. */
+  helpText?: string;
+};
+
 export type CategoryInventorySchema = {
   categoryId: BusinessCategoryId;
   /** Semver-style version string to detect schema drift in debug/readiness output. */
   schemaVersion: string;
+  /**
+   * Valid values for the condition field on this category's inventory items.
+   * Single entry → UI auto-fills and hides the field.
+   * Multiple entries → UI shows as a select.
+   * Omitted → field is hidden and stored as null.
+   */
+  validConditionValues?: readonly string[];
+  /** The universal internal identifier for items in this category (e.g. SKU, VIN). */
   primaryIdentifier: {
     fieldKey: string;
     label: string;
     /** Regex pattern used for format validation (server-side). */
     pattern?: string;
   };
+  /**
+   * Optional platform- or distribution-specific identifiers beyond the primary.
+   * These are stored in data JSON and surfaced by the UI when relevant.
+   * Platform requirement enforcement (e.g. ISBN required for IngramSpark)
+   * is deferred to PlatformRequirementRegistry.
+   */
+  externalIdentifiers?: readonly ExternalIdentifierDef[];
   displayFields: {
     /** Ordered field keys shown on the browse row card. */
     browseRow: string[];

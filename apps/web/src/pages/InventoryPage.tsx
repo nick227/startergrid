@@ -16,6 +16,10 @@ import { InfoButton } from '@/components/docs';
 import { BulkActionBar } from '@/components/generic';
 import {
   VehicleAddControls,
+  EbookAddControls,
+  SongAddControls,
+  DigitalArtAddControls,
+  VideoAddControls,
   BenchmarkFreshnessBar,
   bulkEditFieldDefs,
   applyCleanupFilter,
@@ -27,6 +31,8 @@ import {
   InventoryDetailPanel,
   InventoryWorkspace
 } from '@/components/inventory';
+import { CategoryItemsBrowse } from '@/components/inventory/CategoryItemsBrowse.tsx';
+import { CategoryItemDetailPanel } from '@/components/inventory/CategoryItemDetailPanel.tsx';
 import type { CleanupFilter } from '@/components/inventory/inventoryConfig.tsx';
 import { CreatePostModal } from '@/components/social/index.ts';
 import { operatorCopy } from '@/lib/copy/index.ts';
@@ -285,6 +291,10 @@ export default function InventoryPage({ dealerId, nav, activeTab }: Props) {
   const [detailId, setDetailId] = useState<string | null>(null);
   const detailVehicle = detailId ? vehicles.find(r => r.id === detailId) ?? null : null;
 
+  const isPhysicalInventory = categorySchema.lifecycleMode === 'physical_inventory';
+  const [categoryItemDetailId, setCategoryItemDetailId] = useState<string | null>(null);
+  const [categoryItemRefreshKey, setCategoryItemRefreshKey] = useState(0);
+
   useEffect(() => {
     const routeSlug = route.inventoryItemSlug;
     if (!route.assetId && !routeSlug) return;
@@ -320,7 +330,15 @@ export default function InventoryPage({ dealerId, nav, activeTab }: Props) {
         </span>
       }
     >
-      {detailId ? (
+      {categoryItemDetailId ? (
+        <div className="mt-4 flex-1 bg-white rounded-xl shadow-sm border border-silver-200 overflow-hidden flex flex-col">
+          <CategoryItemDetailPanel
+            dealerId={dealerId}
+            itemId={categoryItemDetailId}
+            onClose={() => setCategoryItemDetailId(null)}
+          />
+        </div>
+      ) : detailId ? (
         <div className="mt-4 flex-1 bg-white rounded-xl shadow-sm border border-silver-200 overflow-hidden flex flex-col">
           <InventoryDetailPanel
             dealerId={dealerId}
@@ -340,13 +358,35 @@ export default function InventoryPage({ dealerId, nav, activeTab }: Props) {
             subtitle={operatorCopy.inventory.subtitle}
           />
 
-          <VehicleAddControls
-            dealerId={dealerId}
-            onVehicleCreated={(newId) => {
-              handleIntakeRefresh();
-              setDetailId(newId);
-            }}
-          />
+          {isPhysicalInventory ? (
+            <VehicleAddControls
+              dealerId={dealerId}
+              onVehicleCreated={(newId) => {
+                handleIntakeRefresh();
+                setDetailId(newId);
+              }}
+            />
+          ) : categorySchema.id === 'SONGS' ? (
+            <SongAddControls
+              dealerId={dealerId}
+              onItemCreated={() => setCategoryItemRefreshKey(k => k + 1)}
+            />
+          ) : categorySchema.id === 'DIGITAL_ART' ? (
+            <DigitalArtAddControls
+              dealerId={dealerId}
+              onItemCreated={() => setCategoryItemRefreshKey(k => k + 1)}
+            />
+          ) : categorySchema.id === 'VIDEO_DISTRIBUTION' ? (
+            <VideoAddControls
+              dealerId={dealerId}
+              onItemCreated={() => setCategoryItemRefreshKey(k => k + 1)}
+            />
+          ) : (
+            <EbookAddControls
+              dealerId={dealerId}
+              onItemCreated={() => setCategoryItemRefreshKey(k => k + 1)}
+            />
+          )}
 
           {(hasPerformanceData(perf.data?.computedAt) || isBenchmarksUpdating(autoSync.data) || !hasPerformanceData(perf.data?.computedAt)) && (
             <BenchmarkFreshnessBar
@@ -406,60 +446,72 @@ export default function InventoryPage({ dealerId, nav, activeTab }: Props) {
           <InventoryWorkspace
             dealerId={dealerId}
             tabCounts={{
-              attention: summaryCounts.blocked,
+              attention: isPhysicalInventory ? summaryCounts.blocked : 0,
             }}
             browseContent={
-              <>
-                {!isEmpty && (
-                  <InventorySummaryStrip counts={summaryCounts} activeFilter={filter} onFilterChange={setFilter} />
-                )}
+              isPhysicalInventory ? (
+                <>
+                  {!isEmpty && (
+                    <InventorySummaryStrip counts={summaryCounts} activeFilter={filter} onFilterChange={setFilter} />
+                  )}
+                  <SectionCard noPadding>
+                    <div className="p-4 bg-white rounded-xl shadow-sm border border-silver-200">
+                      <InventoryGridToolbar
+                        viewMode={viewMode}
+                        onChangeViewMode={handleSetViewMode}
+                        activeColumns={activeColumns}
+                        onChangeColumns={handleSetColumns}
+                        search={search}
+                        onSearchChange={setSearch}
+                        selectedCount={selected.size}
+                      />
+                      <InventoryDataGrid
+                        dealerId={dealerId}
+                        items={mappedVisible}
+                        viewMode={viewMode}
+                        selectedIds={selected}
+                        onToggleSelection={(id) => {
+                          const next = new Set(selected);
+                          if (next.has(id)) next.delete(id); else next.add(id);
+                          setSelected(next);
+                        }}
+                        onToggleAll={toggleAll}
+                        onRowClick={(item) => {
+                          nav.goToInventoryItem({
+                            year: item.specs.year,
+                            make: item.specs.make,
+                            model: item.specs.model,
+                            stockNumber: item.identity.stockNumber,
+                          });
+                          setDetailId(item.id);
+                        }}
+                        activeColumns={activeColumns}
+                        sortKey={sortKey}
+                        sortDir={sortDirection}
+                        onSort={(key) => {
+                          if (sortKey === key) {
+                            setSortDirection(sortDirection === 'asc' ? 'desc' : 'asc');
+                          } else {
+                            setSortKey(key);
+                            setSortDirection('asc');
+                          }
+                        }}
+                      />
+                    </div>
+                  </SectionCard>
+                </>
+              ) : (
                 <SectionCard noPadding>
                   <div className="p-4 bg-white rounded-xl shadow-sm border border-silver-200">
-                    <InventoryGridToolbar
-                      viewMode={viewMode}
-                      onChangeViewMode={handleSetViewMode}
-                      activeColumns={activeColumns}
-                      onChangeColumns={handleSetColumns}
-                      search={search}
-                      onSearchChange={setSearch}
-                      selectedCount={selected.size}
-                    />
-                    
-                    <InventoryDataGrid
+                    <CategoryItemsBrowse
                       dealerId={dealerId}
-                      items={mappedVisible}
-                      viewMode={viewMode}
-                      selectedIds={selected}
-                      onToggleSelection={(id) => {
-                        const next = new Set(selected);
-                        if (next.has(id)) next.delete(id); else next.add(id);
-                        setSelected(next);
-                      }}
-                      onToggleAll={toggleAll}
-                      onRowClick={(item) => {
-                        nav.goToInventoryItem({
-                          year: item.specs.year,
-                          make: item.specs.make,
-                          model: item.specs.model,
-                          stockNumber: item.identity.stockNumber,
-                        });
-                        setDetailId(item.id);
-                      }}
-                      activeColumns={activeColumns}
-                      sortKey={sortKey}
-                      sortDir={sortDirection}
-                      onSort={(key) => {
-                        if (sortKey === key) {
-                          setSortDirection(sortDirection === 'asc' ? 'desc' : 'asc');
-                        } else {
-                          setSortKey(key);
-                          setSortDirection('asc');
-                        }
-                      }}
+                      categoryId={categorySchema.id}
+                      refreshKey={categoryItemRefreshKey}
+                      onItemClick={setCategoryItemDetailId}
                     />
                   </div>
                 </SectionCard>
-              </>
+              )
             }
           />
 

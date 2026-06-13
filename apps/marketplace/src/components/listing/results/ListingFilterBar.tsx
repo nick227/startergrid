@@ -1,17 +1,15 @@
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useMemo } from 'react';
 import type { MarketplaceFacetDef } from '@auto-dealer/category-schemas';
 import type { ListFilters } from '../../../lib/api.ts';
-import type { MarketplaceAvailabilityFilter } from '@auto-dealer/category-schemas';
 import {
   isListingFilterEnabled,
   listingSearchAriaLabel,
   type ListingFilterConfig,
 } from '../../../features/listings/listingFilterConfig.ts';
-import {
-  AVAILABILITY_FILTER_LABEL,
-  AVAILABILITY_FILTER_OPTIONS,
-} from '../../../features/availability/listingAvailabilityFilter.ts';
 import { SectionCard } from '../../core/SectionCard.tsx';
+import { useMarketplaceFacets } from '../../../hooks/useMarketplaceFacets.ts';
+import { toListQuery, type ListingQuery } from '../../../features/listings/listingQuery.ts';
+import type { BusinessCategoryId } from '@auto-dealer/category-schemas';
 
 type Props = {
   config: ListingFilterConfig;
@@ -28,9 +26,6 @@ type Props = {
   minYear: string;
   maxYear: string;
   sellerName: string;
-  showAvailabilityFilter?: boolean;
-  availability?: MarketplaceAvailabilityFilter;
-  onAvailabilityChange?: (value: MarketplaceAvailabilityFilter) => void;
   onQChange: (value: string) => void;
   onBrandChange: (value: string) => void;
   onModelChange: (value: string) => void;
@@ -46,6 +41,8 @@ type Props = {
   hasActiveFilters: boolean;
   focusToken?: number;
   showSearch?: boolean;
+  query: ListingQuery;
+  category: BusinessCategoryId;
 };
 
 export function ListingFilterBar({
@@ -63,9 +60,6 @@ export function ListingFilterBar({
   minYear,
   maxYear,
   sellerName,
-  showAvailabilityFilter = false,
-  availability = 'available',
-  onAvailabilityChange,
   onQChange,
   onBrandChange,
   onModelChange,
@@ -81,12 +75,26 @@ export function ListingFilterBar({
   hasActiveFilters,
   focusToken = 0,
   showSearch = true,
+  query,
+  category,
 }: Props) {
   const searchRef = useRef<HTMLInputElement>(null);
-  const brandRef = useRef<HTMLInputElement>(null);
-  const brandLabel = config.labels.brand ?? 'Brand';
-  const modelLabel = config.labels.model ?? 'Model / Type';
-  const usageLabel = config.labels.usage ?? 'Usage';
+  const brandRef = useRef<HTMLSelectElement & HTMLInputElement>(null);
+
+  const apiFilters = useMemo(() => {
+    const listQuery = toListQuery(query);
+    return {
+      ...listQuery,
+      facets: listQuery.facetsParam,
+      category,
+    };
+  }, [query, category]);
+
+  const { data: facetsData } = useMarketplaceFacets(apiFilters as any);
+
+  const brandLabel = config.labels.brand ?? 'Make';
+  const modelLabel = config.labels.model ?? 'Model';
+  const usageLabel = 'Mileage';
   const conditionLabel = config.labels.condition ?? 'Condition';
   const yearLabel = config.labels.year ?? 'Year';
   const sellerNameLabel = config.labels.sellerName ?? 'Seller';
@@ -94,6 +102,62 @@ export function ListingFilterBar({
   useEffect(() => {
     if (focusToken > 0) (searchRef.current ?? brandRef.current)?.focus();
   }, [focusToken]);
+
+  const handleMakeChange = (val: string) => {
+    onBrandChange(val);
+    onModelChange(''); // cascade clear
+  };
+
+  const handlePriceChange = (val: string) => {
+    const range = facetsData?.priceRanges?.find(r => r.value === val);
+    if (range) {
+      onMinPriceChange(range.min != null ? String(range.min) : '');
+      onMaxPriceChange(range.max != null ? String(range.max) : '');
+    } else {
+      onMinPriceChange('');
+      onMaxPriceChange('');
+    }
+  };
+
+  const handleYearChange = (val: string) => {
+    const range = facetsData?.yearRanges?.find(r => r.value === val);
+    if (range) {
+      onMinYearChange(range.min != null ? String(range.min) : '');
+      onMaxYearChange(range.max != null ? String(range.max) : '');
+    } else {
+      onMinYearChange('');
+      onMaxYearChange('');
+    }
+  };
+
+  const handleMileageChange = (val: string) => {
+    const range = facetsData?.mileageRanges?.find(r => r.value === val);
+    if (range) {
+      onMaxUsageChange(range.max != null ? String(range.max) : '');
+    } else {
+      onMaxUsageChange('');
+    }
+  };
+
+  const getSelectedPriceRange = () => {
+    const min = minPrice ? Number(minPrice) : null;
+    const max = maxPrice ? Number(maxPrice) : null;
+    const match = facetsData?.priceRanges?.find(r => r.min === min && r.max === max);
+    return match?.value ?? '';
+  };
+
+  const getSelectedYearRange = () => {
+    const min = minYear ? Number(minYear) : null;
+    const max = maxYear ? Number(maxYear) : null;
+    const match = facetsData?.yearRanges?.find(r => r.min === min && r.max === max);
+    return match?.value ?? '';
+  };
+
+  const getSelectedMileageRange = () => {
+    const max = maxUsage ? Number(maxUsage) : null;
+    const match = facetsData?.mileageRanges?.find(r => r.max === max);
+    return match?.value ?? '';
+  };
 
   return (
     <SectionCard padded={false} className="p-4 sm:p-5">
@@ -120,29 +184,61 @@ export function ListingFilterBar({
         {isListingFilterEnabled(config, 'brand') && (
           <label className="flex flex-col gap-1.5">
             <span className="mp-label">{brandLabel}</span>
-            <input
-              ref={brandRef}
-              type="search"
-              value={brand}
-              onChange={e => onBrandChange(e.target.value)}
-              placeholder={`Any ${brandLabel.toLowerCase()}`}
-              className="mp-input"
-              autoComplete="off"
-            />
+            {facetsData?.brandFacets ? (
+              <select
+                ref={brandRef as any}
+                value={brand}
+                onChange={e => handleMakeChange(e.target.value)}
+                className="mp-input"
+              >
+                <option value="">Any {brandLabel.toLowerCase()}</option>
+                {facetsData.brandFacets.map(b => (
+                  <option key={b.value} value={b.value}>
+                    {b.value} ({b.count})
+                  </option>
+                ))}
+              </select>
+            ) : (
+              <input
+                ref={brandRef as any}
+                type="search"
+                value={brand}
+                onChange={e => handleMakeChange(e.target.value)}
+                placeholder={`Any ${brandLabel.toLowerCase()}`}
+                className="mp-input"
+                autoComplete="off"
+              />
+            )}
           </label>
         )}
 
         {isListingFilterEnabled(config, 'model') && (
           <label className="flex flex-col gap-1.5">
             <span className="mp-label">{modelLabel}</span>
-            <input
-              type="search"
-              value={model}
-              onChange={e => onModelChange(e.target.value)}
-              placeholder={`Any ${modelLabel.toLowerCase()}`}
-              className="mp-input"
-              autoComplete="off"
-            />
+            {facetsData?.modelFacets ? (
+              <select
+                value={model}
+                onChange={e => onModelChange(e.target.value)}
+                className="mp-input"
+                disabled={!brand}
+              >
+                <option value="">Any {modelLabel.toLowerCase()}</option>
+                {facetsData.modelFacets.map(m => (
+                  <option key={m.value} value={m.value}>
+                    {m.value} ({m.count})
+                  </option>
+                ))}
+              </select>
+            ) : (
+              <input
+                type="search"
+                value={model}
+                onChange={e => onModelChange(e.target.value)}
+                placeholder={`Any ${modelLabel.toLowerCase()}`}
+                className="mp-input"
+                autoComplete="off"
+              />
+            )}
           </label>
         )}
 
@@ -157,21 +253,6 @@ export function ListingFilterBar({
               className="mp-input"
               autoComplete="off"
             />
-          </label>
-        )}
-
-        {showAvailabilityFilter && (
-          <label className="flex flex-col gap-1.5">
-            <span className="mp-label">{AVAILABILITY_FILTER_LABEL}</span>
-            <select
-              value={availability}
-              onChange={e => onAvailabilityChange?.(e.target.value as MarketplaceAvailabilityFilter)}
-              className="mp-input"
-            >
-              {AVAILABILITY_FILTER_OPTIONS.map(option => (
-                <option key={option.value} value={option.value}>{option.label}</option>
-              ))}
-            </select>
           </label>
         )}
 
@@ -192,103 +273,92 @@ export function ListingFilterBar({
         )}
 
         {isListingFilterEnabled(config, 'price') && (
-          <>
-            <label className="flex flex-col gap-1.5">
-              <span className="mp-label">Min price</span>
-              <input
-                type="number"
-                min="0"
-                inputMode="numeric"
-                value={minPrice}
-                onChange={e => onMinPriceChange(e.target.value)}
-                placeholder="$"
-                className="mp-input"
-              />
-            </label>
+          <label className="flex flex-col gap-1.5">
+            <span className="mp-label">Price Range</span>
+            <select
+              value={getSelectedPriceRange()}
+              onChange={e => handlePriceChange(e.target.value)}
+              className="mp-input"
+            >
+              <option value="">Any price</option>
+              {facetsData?.priceRanges?.map(r => (
+                <option key={r.value} value={r.value}>
+                  {r.label} ({r.count})
+                </option>
+              ))}
+            </select>
+          </label>
+        )}
 
-            <label className="flex flex-col gap-1.5">
-              <span className="mp-label">Max price</span>
-              <input
-                type="number"
-                min="0"
-                inputMode="numeric"
-                value={maxPrice}
-                onChange={e => onMaxPriceChange(e.target.value)}
-                placeholder="$"
-                className="mp-input"
-              />
-            </label>
-          </>
+        {isListingFilterEnabled(config, 'year') && (
+          <label className="flex flex-col gap-1.5">
+            <span className="mp-label">Year Range</span>
+            <select
+              value={getSelectedYearRange()}
+              onChange={e => handleYearChange(e.target.value)}
+              className="mp-input"
+            >
+              <option value="">Any year</option>
+              {facetsData?.yearRanges?.map(r => (
+                <option key={r.value} value={r.value}>
+                  {r.label} ({r.count})
+                </option>
+              ))}
+            </select>
+          </label>
         )}
 
         {isListingFilterEnabled(config, 'usage') && (
           <label className="flex flex-col gap-1.5">
-            <span className="mp-label">Max {usageLabel.toLowerCase()}</span>
-            <input
-              type="number"
-              min="0"
-              inputMode="numeric"
-              value={maxUsage}
-              onChange={e => onMaxUsageChange(e.target.value)}
-              placeholder="Any"
-              className="mp-input"
-            />
-          </label>
-        )}
-
-        {facets.map(facet => (
-          <label key={facet.key} className="flex flex-col gap-1.5">
-            <span className="mp-label">{facet.label}</span>
+            <span className="mp-label">{usageLabel}</span>
             <select
-              value={facetValues[facet.key] ?? ''}
-              onChange={e => onFacetChange?.(facet.key, e.target.value || undefined)}
+              value={getSelectedMileageRange()}
+              onChange={e => handleMileageChange(e.target.value)}
               className="mp-input"
             >
-              <option value="">Any {facet.label.toLowerCase()}</option>
-              {facet.options.map(option => (
-                <option key={option.value} value={option.value}>{option.label}</option>
+              <option value="">Any mileage</option>
+              {facetsData?.mileageRanges?.map(r => (
+                <option key={r.value} value={r.value}>
+                  {r.label} ({r.count})
+                </option>
               ))}
             </select>
           </label>
-        ))}
-
-        {isListingFilterEnabled(config, 'year') && (
-          <>
-            <label className="flex flex-col gap-1.5">
-              <span className="mp-label">Min {yearLabel.toLowerCase()}</span>
-              <input
-                type="number"
-                min="1900"
-                max="2099"
-                inputMode="numeric"
-                value={minYear}
-                onChange={e => onMinYearChange(e.target.value)}
-                placeholder="e.g. 2020"
-                className="mp-input"
-              />
-            </label>
-            <label className="flex flex-col gap-1.5">
-              <span className="mp-label">Max {yearLabel.toLowerCase()}</span>
-              <input
-                type="number"
-                min="1900"
-                max="2099"
-                inputMode="numeric"
-                value={maxYear}
-                onChange={e => onMaxYearChange(e.target.value)}
-                placeholder="e.g. 2024"
-                className="mp-input"
-              />
-            </label>
-          </>
         )}
+
+        {facets.map(facet => {
+          const customOptions = facetsData?.customFacets?.[facet.key];
+          return (
+            <label key={facet.key} className="flex flex-col gap-1.5">
+              <span className="mp-label">{facet.label}</span>
+              <select
+                value={facetValues[facet.key] ?? ''}
+                onChange={e => onFacetChange?.(facet.key, e.target.value || undefined)}
+                className="mp-input"
+              >
+                <option value="">Any {facet.label.toLowerCase()}</option>
+                {facet.options.map(option => {
+                  const match = customOptions?.find(o => o.value === option.value);
+                  const countLabel = match ? ` (${match.count})` : '';
+                  if (facetsData && !match) return null;
+                  
+                  return (
+                    <option key={option.value} value={option.value}>
+                      {option.label}{countLabel}
+                    </option>
+                  );
+                })}
+              </select>
+            </label>
+          );
+        })}
 
         <div className="flex flex-col gap-2 sm:col-span-2 sm:flex-row sm:items-end lg:col-span-full xl:col-span-1">
           <button type="submit" className="mp-btn-primary w-full sm:w-auto">
             Search
           </button>
           {hasActiveFilters && (
-            <button type="button" onClick={onClear} className="mp-btn-ghost w-full sm:w-auto">
+            <button type="button" onClick={onClear} className="mp-btn-ghost w-full sm:w-auto whitespace-nowrap">
               Clear filters
             </button>
           )}

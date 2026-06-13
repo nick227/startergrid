@@ -6,7 +6,7 @@ import { videoFormatters } from './formatters.js';
 
 export const videoDistributionSchema: CategorySchema = {
   id: 'VIDEO_DISTRIBUTION',
-  status: 'placeholder',
+  status: 'active',
   lifecycleMode: 'digital_distribution',
   label: 'Video',
   copy: videoCopy,
@@ -20,11 +20,12 @@ export const videoDistributionSchema: CategorySchema = {
   },
   channel: { ...genericChannel },
   fields: [
-    { key: 'stockNumber', label: 'Video ID',     kind: 'identifier' },
-    { key: 'year',        label: 'Publish Year', kind: 'number' },
-    { key: 'make',        label: 'Creator',      kind: 'text' },
-    { key: 'model',       label: 'Title',        kind: 'text' },
-    { key: 'priceCents',  label: 'Price',        kind: 'currency' },
+    { key: 'stockNumber', label: 'Video ID', kind: 'identifier' },
+    { key: 'creator',     label: 'Creator',  kind: 'text', marketplaceFilter: 'brand',
+      filterStorage: { storage: 'categoryPayload', payloadKey: 'creator' } },
+    { key: 'title',       label: 'Title',    kind: 'text', marketplaceFilter: 'model',
+      filterStorage: { storage: 'categoryPayload', payloadKey: 'title' } },
+    { key: 'priceCents',  label: 'Price',    kind: 'currency', marketplaceFilter: 'price' },
   ],
   lifecycle: { active: 'Published', sold: 'Licensed', removed: 'Delisted' },
   readiness: { ...genericReadiness },

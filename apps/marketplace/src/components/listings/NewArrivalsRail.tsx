@@ -27,7 +27,7 @@ export function NewArrivalsRail({ slug, cards }: Props) {
           return (
             <a
               key={card.listingId}
-              href={listingHref(slug, card.listingId)}
+              href={listingHref(slug, card.listingId, title)}
               className="mp-card mp-focus w-56 shrink-0 overflow-hidden transition hover:border-navy-500/40 hover:shadow-elevation-2"
             >
               <div className="aspect-[4/3] bg-surface-inset">

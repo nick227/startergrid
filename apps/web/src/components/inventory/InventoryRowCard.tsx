@@ -44,6 +44,27 @@ const THUMBNAIL_SLOT_PRIORITY = [
   'front-quarter-passenger',
 ];
 
+const CATEGORY_ICON: Partial<Record<string, string>> = {
+  AUTOMOTIVE:             '🚗',
+  EBOOKS:                 '📚',
+  SONGS:                  '🎵',
+  BOATS:                  '⛵',
+  TRAILERS_POWERSPORTS_RV:'🏕',
+  HEAVY_EQUIPMENT:        '🏗',
+  WATCHES:                '⌚',
+  SNEAKERS:               '👟',
+  APPAREL:                '👕',
+  COLLECTIBLES:           '🏆',
+  FURNITURE:              '🪑',
+  DIGITAL_ART:            '🎨',
+  HOMES:                  '🏠',
+  APARTMENTS:             '🏢',
+  COMMERCIAL_PROPERTY:    '🏬',
+  VACATION_RENTALS:       '🏖',
+  VIDEO_DISTRIBUTION:     '🎬',
+  PAWN:                   '💰',
+};
+
 function selectThumbnailUrl(media: VehicleMediaItem[]): string | null {
   if (media.length === 0) return null;
   const sorted = [...media].sort((a, b) => a.sortOrder - b.sortOrder);
@@ -120,7 +141,7 @@ export function InventoryRowCard({ dealerId, item, selected, selectable, onToggl
         />
       ) : (
         <div className="w-16 h-12 rounded-lg bg-silver-100 border border-silver-200 flex items-center justify-center text-xl shrink-0">
-          🚗
+          {CATEGORY_ICON[item.category] ?? '📦'}
         </div>
       )}
 

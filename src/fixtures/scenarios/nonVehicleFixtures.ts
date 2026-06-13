@@ -36,7 +36,14 @@ export const songsDealerInventory: VehiclePayload[] = [
     trim: 'Digital Album',
     priceCents: 999,
     media: [image('https://media.indiewave.example.com/releases/neon-horizons/cover.jpg')],
-    categoryPayload: { format: 'Digital Album', genre: 'Synthwave', trackCount: 12 },
+    categoryPayload: {
+      isrc: 'USRC17607839',
+      artist: 'The Midnight Echoes',
+      title: 'Neon Horizons',
+      format: 'Digital Album',
+      genre: 'Synthwave',
+      trackCount: 12,
+    },
   },
   {
     stockNumber: '602498642322',
@@ -47,7 +54,14 @@ export const songsDealerInventory: VehiclePayload[] = [
     trim: 'EP',
     priceCents: 499,
     media: [image('https://media.indiewave.example.com/releases/acoustic-v2/cover.jpg')],
-    categoryPayload: { format: 'EP', genre: 'Folk', trackCount: 6 },
+    categoryPayload: {
+      isrc: 'USRC17607840',
+      artist: 'River & Stone',
+      title: 'Acoustic Sessions Vol. 2',
+      format: 'EP',
+      genre: 'Folk',
+      trackCount: 6,
+    },
   },
 ];
 
@@ -73,7 +87,7 @@ export const ebooksDealerInventory: VehiclePayload[] = [
     trim: '2nd Edition',
     priceCents: 3999,
     media: [image('https://media.harborlight.example.com/titles/clean-architecture/cover.jpg')],
-    categoryPayload: { format: 'Kindle', pageCount: 432, language: 'en' },
+    categoryPayload: { isbn: '9780134685991', author: 'Robert C. Martin', title: 'Clean Architecture', format: 'Kindle', pageCount: 432, language: 'en', publishYear: 2017 },
   },
   {
     stockNumber: 'B0D1XK2P4R',
@@ -84,7 +98,7 @@ export const ebooksDealerInventory: VehiclePayload[] = [
     trim: '1st Edition',
     priceCents: 4999,
     media: [image('https://media.harborlight.example.com/titles/ddia/cover.jpg')],
-    categoryPayload: { format: 'ePub', pageCount: 616, language: 'en' },
+    categoryPayload: { isbn: '9781492052586', author: 'Luc Perkins', title: 'Designing Data-Intensive Applications', format: 'ePub', pageCount: 616, language: 'en', publishYear: 2017 },
   },
 ];
 
@@ -149,7 +163,14 @@ export const digitalArtDealerInventory: VehiclePayload[] = [
     trim: 'Neon Series',
     priceCents: 15000,
     media: [image('https://media.pixelcanvas.example.com/art/chromatic-drift.jpg')],
-    categoryPayload: { medium: 'Digital Print', editionSize: 100 },
+    categoryPayload: {
+      editionId: 'ED42ED0100',
+      artist: 'Lena Voss',
+      title: 'Chromatic Drift',
+      series: 'Neon Series',
+      medium: 'Digital Print',
+      editionSize: 100,
+    },
   },
   {
     stockNumber: 'PC-ART-2024-002',
@@ -160,7 +181,14 @@ export const digitalArtDealerInventory: VehiclePayload[] = [
     trim: 'Neon Series',
     priceCents: 25000,
     media: [image('https://media.pixelcanvas.example.com/art/midnight-bloom.jpg')],
-    categoryPayload: { medium: 'Digital Print', editionSize: 50 },
+    categoryPayload: {
+      editionId: 'ED07ED0050',
+      artist: 'Lena Voss',
+      title: 'Midnight Bloom',
+      series: 'Neon Series',
+      medium: 'Digital Print',
+      editionSize: 50,
+    },
   },
 ];
 
@@ -184,7 +212,12 @@ export const videoDealerInventory: VehiclePayload[] = [
     model: 'Building Better Workflows',
     priceCents: 0,
     media: [image('https://media.frameshift.example.com/videos/building-workflows/thumb.jpg')],
-    categoryPayload: { durationSec: 720, resolution: '4K' },
+    categoryPayload: {
+      creator: 'Riley Chen',
+      title: 'Building Better Workflows',
+      durationSec: 720,
+      resolution: '4K',
+    },
   },
   {
     stockNumber: 'FS-VID-002',
@@ -193,7 +226,12 @@ export const videoDealerInventory: VehiclePayload[] = [
     model: 'Creator Toolkit Series: Lighting',
     priceCents: 499,
     media: [image('https://media.frameshift.example.com/videos/lighting-series/thumb.jpg')],
-    categoryPayload: { durationSec: 1840, resolution: '1080p' },
+    categoryPayload: {
+      creator: 'FrameShift Media',
+      title: 'Creator Toolkit Series: Lighting',
+      durationSec: 1840,
+      resolution: '1080p',
+    },
   },
 ];
 

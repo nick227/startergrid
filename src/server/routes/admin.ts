@@ -4,7 +4,9 @@ import { randomBytes } from 'crypto';
 import { requireSuperAdmin } from '../security.js';
 import {
   listProviderCredentials,
+  listPlatformCredentialSummaries,
   runCredentialValidation,
+  runPlatformCredentialValidation,
   getCachedCredentialValidationRun,
 } from '../../services/platform/credentialHealthService.js';
 import { platformProfiles } from '../../data/platformProfiles.js';
@@ -128,13 +130,23 @@ export function registerAdminRoutes(app: FastifyInstance, prisma: PrismaClient):
 
   app.get('/api/admin/platform-credentials', async (request, reply) => {
     if (!await requireSuperAdmin(prisma, request, reply)) return;
-    return reply.send({ providers: listProviderCredentials() });
+    return reply.send({
+      providers: listProviderCredentials(),
+      platforms: listPlatformCredentialSummaries(),
+    });
   });
 
   app.post('/api/admin/platform-credentials/validate', async (request, reply) => {
     const operator = await requireSuperAdmin(prisma, request, reply);
     if (!operator) return;
     return reply.send(await runCredentialValidation(prisma, { id: operator.id, email: operator.email }));
+  });
+
+  app.post('/api/admin/platform-credentials/:platformSlug/validate', async (request, reply) => {
+    const operator = await requireSuperAdmin(prisma, request, reply);
+    if (!operator) return;
+    const { platformSlug } = request.params as { platformSlug: string };
+    return reply.send(await runPlatformCredentialValidation(prisma, { id: operator.id, email: operator.email }, platformSlug));
   });
 
   app.get('/api/admin/dashboard', async (request, reply) => {
@@ -276,6 +288,8 @@ export function registerAdminRoutes(app: FastifyInstance, prisma: PrismaClient):
       };
 
       // 4. Platform Overview
+      const dayAgo = new Date(startedAt - 24 * 60 * 60 * 1000);
+      const weekAgo = new Date(startedAt - 7 * 24 * 60 * 60 * 1000);
       const platformOverview = await Promise.all(platformProfiles.map(async p => {
         const capabilities: string[] = [];
         if (p.catalogSync) capabilities.push('catalogSync');
@@ -299,18 +313,80 @@ export function registerAdminRoutes(app: FastifyInstance, prisma: PrismaClient):
           where: { platform: { slug: p.slug }, status: { not: 'NOT_STARTED' } }
         });
 
+        const eligibleDealers = await prisma.platformApplication.count({
+          where: { platform: { slug: p.slug }, status: 'ACTIVE' }
+        });
+
         const blockedDealers = await prisma.platformApplication.count({
           where: { platform: { slug: p.slug }, status: { in: ['DEALER_ACTION_NEEDED', 'REJECTED', 'PARTNER_REQUIRED'] } }
         });
 
+        const [
+          activeMarketplaceListings,
+          publishedSocialPosts,
+          sentQueueItems,
+          outboundToday,
+          outbound7d,
+          outboundAllTime,
+          failedQueueItems24h,
+          dispatchFailures24h,
+          blockedQueueItems,
+        ] = await Promise.all([
+          prisma.marketplaceListing.count({
+            where: { platformSlug: p.slug, status: 'ACTIVE' },
+          }),
+          prisma.socialPost.count({
+            where: { platformSlug: p.slug, status: 'PUBLISHED' },
+          }),
+          prisma.publishQueueItem.count({
+            where: { platformSlug: p.slug, status: 'SENT' },
+          }),
+          prisma.publishQueueItem.count({
+            where: { platformSlug: p.slug, sentAt: { gte: dayAgo } },
+          }),
+          prisma.publishQueueItem.count({
+            where: { platformSlug: p.slug, sentAt: { gte: weekAgo } },
+          }),
+          prisma.publishQueueItem.count({
+            where: { platformSlug: p.slug, sentAt: { not: null } },
+          }),
+          prisma.publishQueueItem.count({
+            where: { platformSlug: p.slug, status: 'FAILED', updatedAt: { gte: dayAgo } },
+          }),
+          prisma.syncEvent.count({
+            where: { platformSlug: p.slug, kind: 'DISPATCH_FAILED', createdAt: { gte: dayAgo } },
+          }),
+          prisma.publishQueueItem.count({
+            where: { platformSlug: p.slug, status: { in: ['BLOCKED', 'HELD'] } },
+          }),
+        ]);
+
+        const liveInventory = activeMarketplaceListings + publishedSocialPosts + sentQueueItems;
+        const recentFailures = failedQueueItems24h + dispatchFailures24h;
+        const blockedItems = blockedQueueItems;
+        const operationalStatus = !configured || liveValidationStatus === 'invalid' || recentFailures > 0
+          ? 'red'
+          : blockedDealers > 0 || blockedItems > 0 || liveValidationStatus === 'unknown' || liveValidationStatus === 'not-configured'
+            ? 'yellow'
+            : 'green';
+
         return {
           platformName: p.name,
           platformSlug: p.slug,
+          platformType: p.integrationClass === 'OWNED' ? 'internal' : 'external',
           capabilities,
           configured,
           liveValidationStatus,
           dealersUsing,
+          eligibleDealers,
           blockedDealers,
+          liveInventory,
+          outboundToday,
+          outbound7d,
+          outboundAllTime,
+          recentFailures,
+          blockedItems,
+          operationalStatus,
           integrationMaturity: p.integrationMaturity || 'UNKNOWN',
           supportedCategories: p.supportedCategories,
         };

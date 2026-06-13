@@ -28,7 +28,7 @@ export function SimilarListingsRail({ listingId, categoryId, categorySlug, make 
         {items.map(item => (
           <a
             key={item.listingId}
-            href={listingHref(categorySlug, item.listingId)}
+            href={listingHref(categorySlug, item.listingId, `${item.year} ${item.make} ${item.model}`)}
             className="mp-card mp-focus flex gap-3 p-3 transition hover:border-navy-500/40 hover:shadow-elevation-2"
           >
             <div className="size-20 shrink-0 overflow-hidden rounded-lg bg-surface-inset">

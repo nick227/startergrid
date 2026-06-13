@@ -23,6 +23,7 @@ const CONSUMER_LIVE_IDS = new Set([
   'AUTOMOTIVE',
   'BOATS',
   'TRAILERS_POWERSPORTS_RV',
+  'EBOOKS',
 ]);
 
 function emptyBrowsePrisma(): PrismaClient {

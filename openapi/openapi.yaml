@@ -2595,6 +2595,32 @@ paths:
         '403':
           $ref: '#/components/responses/Forbidden'
 
+  /api/admin/platform-credentials/{platformSlug}/validate:
+    post:
+      tags: [Admin]
+      security:
+        - OperatorAuth: []
+      x-route-classification: admin
+      operationId: validatePlatformCredential
+      summary: Live-validate developer API credential contract for one platform (SUPER_ADMIN only)
+      parameters:
+        - name: platformSlug
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Validation outcome for one platform
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PlatformCredentialValidationResponse'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+
 components:
   securitySchemes:
     OperatorAuth:
@@ -2718,6 +2744,14 @@ components:
         probeSupported:
           type: boolean
           description: Whether a live token-endpoint probe is available for this provider
+        contracts:
+          type: array
+          items:
+            $ref: '#/components/schemas/PlatformCredentialContractSummary'
+        missingFields:
+          type: array
+          items:
+            type: string
 
     ProviderCredentialResult:
       allOf:
@@ -2738,15 +2772,133 @@ components:
             detail:
               type: string
               description: Sanitized summary — never contains raw provider response bodies or secrets
+            stages:
+              type: array
+              items:
+                $ref: '#/components/schemas/CredentialStageResult'
+
+    CredentialStageResult:
+      type: object
+      required: [stage, status, detail, checkedFields]
+      properties:
+        stage:
+          type: string
+          enum: [config, auth, permissions, capability]
+        status:
+          type: string
+          enum: [VALID, NOT_CONFIGURED, READY_TO_VALIDATE, VALIDATION_FAILED, MANUAL_SETUP, INTERNAL, CONTRACT_MISSING]
+        detail:
+          type: string
+        checkedFields:
+          type: array
+          items:
+            type: string
+
+    PlatformCredentialContractSummary:
+      type: object
+      required:
+        - platformSlug
+        - provider
+        - authType
+        - requiredFields
+        - requiredSecrets
+        - requiredScopes
+        - requiredPermissions
+        - requiredCapabilities
+        - capabilityChecks
+        - docsUrl
+        - connectionModel
+        - validationDepth
+        - checkedFields
+        - stages
+        - notes
+        - configured
+        - missingFields
+        - lastCheckedAt
+        - lastStatus
+        - lastError
+      properties:
+        platformSlug:
+          type: string
+        provider:
+          type: string
+        authType:
+          type: string
+          enum: [oauth, api-key, sftp, internal, manual, none]
+        requiredFields:
+          type: array
+          items:
+            type: string
+          description: Environment variable names or internal route names, never secret values
+        requiredSecrets:
+          type: array
+          items:
+            type: string
+          description: System secret/env-var labels required by this platform contract; values are never returned
+        requiredScopes:
+          type: array
+          items:
+            type: string
+        requiredPermissions:
+          type: array
+          items:
+            type: string
+        requiredCapabilities:
+          type: array
+          items:
+            type: string
+        capabilityChecks:
+          type: array
+          items:
+            type: string
+        docsUrl:
+          type: string
+          nullable: true
+        connectionModel:
+          type: string
+          enum: [shared-system-oauth, shared-system-api-key, dealer-oauth, partner-feed, manual-portal, internal-route, none]
+        validationDepth:
+          type: string
+          enum: [config, auth, permissions, capability, internal]
+        checkedFields:
+          type: array
+          items:
+            type: string
+        stages:
+          type: array
+          items:
+            $ref: '#/components/schemas/CredentialStageResult'
+        notes:
+          type: string
+        configured:
+          type: boolean
+        missingFields:
+          type: array
+          items:
+            type: string
+        lastCheckedAt:
+          type: string
+          format: date-time
+          nullable: true
+        lastStatus:
+          type: string
+          enum: [VALID, NOT_CONFIGURED, READY_TO_VALIDATE, VALIDATION_FAILED, MANUAL_SETUP, INTERNAL, CONTRACT_MISSING]
+        lastError:
+          type: string
+          nullable: true
 
     PlatformCredentialListResponse:
       type: object
-      required: [providers]
+      required: [providers, platforms]
       properties:
         providers:
           type: array
           items:
             $ref: '#/components/schemas/ProviderCredentialSummary'
+        platforms:
+          type: array
+          items:
+            $ref: '#/components/schemas/PlatformCredentialContractSummary'
 
     CredentialValidationMeta:
       type: object
@@ -2766,12 +2918,16 @@ components:
 
     PlatformCredentialValidationResponse:
       type: object
-      required: [results, meta]
+      required: [results, platforms, meta]
       properties:
         results:
           type: array
           items:
             $ref: '#/components/schemas/ProviderCredentialResult'
+        platforms:
+          type: array
+          items:
+            $ref: '#/components/schemas/PlatformCredentialContractSummary'
         meta:
           $ref: '#/components/schemas/CredentialValidationMeta'
 
@@ -5308,12 +5464,32 @@ components:
 
     AdminPlatformOverviewItem:
       type: object
-      required: [platformName, platformSlug, capabilities, configured, liveValidationStatus, dealersUsing, blockedDealers, integrationMaturity]
+      required:
+        - platformName
+        - platformSlug
+        - platformType
+        - capabilities
+        - configured
+        - liveValidationStatus
+        - dealersUsing
+        - eligibleDealers
+        - blockedDealers
+        - liveInventory
+        - outboundToday
+        - outbound7d
+        - outboundAllTime
+        - recentFailures
+        - blockedItems
+        - operationalStatus
+        - integrationMaturity
       properties:
         platformName:
           type: string
         platformSlug:
           type: string
+        platformType:
+          type: string
+          enum: [internal, external]
         capabilities:
           type: array
           items:
@@ -5324,10 +5500,40 @@ components:
           type: string
         dealersUsing:
           type: integer
+          description: Dealers with any non-not-started application state
+        eligibleDealers:
+          type: integer
+          description: Dealers currently active/eligible for outbound use
         blockedDealers:
           type: integer
+          description: Dealers blocked by partner, rejection, or dealer action state
+        liveInventory:
+          type: integer
+          description: Active listing/post/sent queue evidence for this platform
+        outboundToday:
+          type: integer
+          description: Sent outbound items in the last 24 hours
+        outbound7d:
+          type: integer
+          description: Sent outbound items in the last 7 days
+        outboundAllTime:
+          type: integer
+          description: Sent outbound items all time
+        recentFailures:
+          type: integer
+          description: Failed queue items plus dispatch failures in the last 24 hours
+        blockedItems:
+          type: integer
+          description: Queue items blocked or held from outbound dispatch
+        operationalStatus:
+          type: string
+          enum: [green, yellow, red]
         integrationMaturity:
           type: string
+        supportedCategories:
+          type: array
+          items:
+            type: string
 
     AdminDealerAttentionItem:
       type: object

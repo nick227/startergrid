@@ -151,6 +151,7 @@ export const AUTO_SHOT_GUIDE: MediaGuide = {
 export const automotiveInventorySchema: CategoryInventorySchema = {
   categoryId: 'AUTOMOTIVE',
   schemaVersion: '1.0.0',
+  validConditionValues: ['NEW', 'USED', 'CPO'],
 
   primaryIdentifier: {
     fieldKey: 'vin',

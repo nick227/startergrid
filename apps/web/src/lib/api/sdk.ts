@@ -1131,3 +1131,165 @@ export async function fetchDealerLeads(
     `/api/dealers/${dealershipId}/leads${qs ? `?${qs}` : ''}`,
   );
 }
+
+// ── Category Inventory Items ───────────────────────────────────────────────────
+
+export type CategoryIdentifierDecodeResponse = {
+  identifier: string;
+  categoryId: string;
+  valid: boolean;
+  decoded: boolean;
+  provider: string;
+  fields: Record<string, unknown>;
+  warnings: string[];
+  duplicate: boolean;
+  existingItemId: string | null;
+  existingStockNumber: string | null;
+};
+
+export type CreateCategoryItemPayload = {
+  categoryId: string;
+  primaryIdentifier?: string;
+  stockNumber?: string;
+  priceCents?: number;
+  condition?: string;
+  data: Record<string, unknown>;
+};
+
+export type CreateCategoryItemResponse = {
+  itemId: string;
+  stockNumber: string;
+};
+
+export type CategoryInventoryItemSummary = {
+  id: string;
+  categoryId: string;
+  stockNumber: string | null;
+  primaryIdentifier: string | null;
+  priceCents: number | null;
+  condition: string | null;
+  listingStatus: string;
+  soldAt: string | null;
+  removedAt: string | null;
+  createdAt: string;
+  updatedAt: string;
+  data: Record<string, unknown>;
+};
+
+export type CategoryInventoryItemDetail = {
+  id: string;
+  source: 'category_item';
+  dealershipId: string;
+  categoryId: string;
+  stockNumber: string | null;
+  primaryIdentifier: string | null;
+  priceCents: number | null;
+  originalPriceCents: number | null;
+  condition: string | null;
+  listingStatus: string;
+  lifecycleStatus: 'AVAILABLE' | 'SOLD' | 'REMOVED';
+  data: Record<string, unknown>;
+  soldAt: string | null;
+  removedAt: string | null;
+  createdAt: string;
+  updatedAt: string;
+  media: VehicleMediaItem[];
+  readiness: VehicleReadinessDto;
+};
+
+export async function decodeCategoryIdentifier(
+  dealershipId: string,
+  categoryId: string,
+  identifier: string,
+): Promise<CategoryIdentifierDecodeResponse> {
+  return catalogFetch<CategoryIdentifierDecodeResponse>(
+    `/api/dealers/${dealershipId}/inventory/items/decode`,
+    { method: 'POST', body: JSON.stringify({ categoryId, identifier }), headers: { 'Content-Type': 'application/json' } },
+  );
+}
+
+export async function createCategoryItem(
+  dealershipId: string,
+  payload: CreateCategoryItemPayload,
+): Promise<CreateCategoryItemResponse> {
+  return catalogFetch<CreateCategoryItemResponse>(
+    `/api/dealers/${dealershipId}/inventory/items`,
+    { method: 'POST', body: JSON.stringify(payload), headers: { 'Content-Type': 'application/json' } },
+  );
+}
+
+export async function fetchCategoryItems(
+  dealershipId: string,
+  opts?: { categoryId?: string; lifecycleScope?: string },
+): Promise<{ items: CategoryInventoryItemSummary[]; total: number }> {
+  const params = new URLSearchParams();
+  if (opts?.categoryId) params.set('categoryId', opts.categoryId);
+  if (opts?.lifecycleScope) params.set('lifecycleScope', opts.lifecycleScope);
+  const qs = params.toString();
+  return catalogFetch<{ items: CategoryInventoryItemSummary[]; total: number }>(
+    `/api/dealers/${dealershipId}/inventory/items${qs ? `?${qs}` : ''}`,
+  );
+}
+
+export async function fetchCategoryItemDetail(
+  dealershipId: string,
+  itemId: string,
+): Promise<CategoryInventoryItemDetail> {
+  return catalogFetch<CategoryInventoryItemDetail>(
+    `/api/dealers/${dealershipId}/inventory/items/${itemId}`,
+  );
+}
+
+// ── Category item marketplace publishing ──────────────────────────────────────
+
+export type CategoryItemListingRecord = {
+  id: string;
+  dealershipId: string;
+  categoryItemId: string;
+  platformSlug: string;
+  status: 'DRAFT' | 'ACTIVE' | 'ENDED' | 'FAILED';
+  errorMessage: string | null;
+  listedAt: string | null;
+  endedAt: string | null;
+  createdAt: string;
+  updatedAt: string;
+};
+
+export async function fetchCategoryItemMarketplaceListing(
+  dealershipId: string,
+  categoryItemId: string,
+  platformSlug = 'consumer-marketplace',
+): Promise<CategoryItemListingRecord | null> {
+  try {
+    const res = await catalogFetch<{ listing: CategoryItemListingRecord }>(
+      `/api/dealers/${dealershipId}/platforms/${platformSlug}/category-listings/${categoryItemId}`,
+    );
+    return res.listing;
+  } catch (err) {
+    if (err instanceof Error && err.message.includes('404')) return null;
+    throw err;
+  }
+}
+
+export async function publishCategoryItemToMarketplace(
+  dealershipId: string,
+  categoryItemId: string,
+  platformSlug = 'consumer-marketplace',
+): Promise<CategoryItemListingRecord> {
+  const res = await catalogFetch<{ listing: CategoryItemListingRecord }>(
+    `/api/dealers/${dealershipId}/platforms/${platformSlug}/category-listings`,
+    { method: 'POST', body: JSON.stringify({ categoryItemId }), headers: { 'Content-Type': 'application/json' } },
+  );
+  return res.listing;
+}
+
+export async function unpublishCategoryItemFromMarketplace(
+  dealershipId: string,
+  categoryItemId: string,
+  platformSlug = 'consumer-marketplace',
+): Promise<void> {
+  await catalogFetch<void>(
+    `/api/dealers/${dealershipId}/platforms/${platformSlug}/category-listings/${categoryItemId}`,
+    { method: 'DELETE' },
+  );
+}

@@ -32,14 +32,17 @@ export const READINESS_DEFAULT: StatusConfig = {
 };
 
 export const VALIDATION_CFG: Record<string, StatusConfig> = {
-  valid:            { label: 'Valid',          cls: 'bg-status-success-bg text-status-success-text border-status-success-border' },
-  invalid:          { label: 'Invalid',        cls: 'bg-status-error-bg text-status-error-text border-status-error-border' },
-  'not-configured': { label: 'Not Configured', cls: 'bg-surface-inset text-ink-faint border-silver-200' },
-  unsupported:      { label: 'No Live Check',  cls: 'bg-surface-inset text-ink-faint border-silver-200' },
+  VALID:              { label: 'Valid',               cls: 'bg-status-success-bg text-status-success-text border-status-success-border' },
+  NOT_CONFIGURED:     { label: 'Not Configured',      cls: 'bg-status-warning-bg text-status-warning-text border-status-warning-border' },
+  READY_TO_VALIDATE:  { label: 'Ready to Validate',   cls: 'bg-status-info-bg text-status-info-text border-status-info-border' },
+  VALIDATION_FAILED:  { label: 'Validation Failed',   cls: 'bg-status-error-bg text-status-error-text border-status-error-border' },
+  MANUAL_SETUP:       { label: 'Manual Setup',        cls: 'bg-surface-inset text-ink-muted border-silver-200' },
+  INTERNAL:           { label: 'Internal',            cls: 'bg-status-success-bg text-status-success-text border-status-success-border' },
+  CONTRACT_MISSING:   { label: 'Contract Missing',    cls: 'bg-status-error-bg text-status-error-text border-status-error-border' },
 };
 
 export const VALIDATION_DEFAULT: StatusConfig = {
-  label: 'Not Checked',
+  label: 'Contract Missing',
   cls: 'bg-surface-inset text-ink-faint border-silver-200',
 };
 

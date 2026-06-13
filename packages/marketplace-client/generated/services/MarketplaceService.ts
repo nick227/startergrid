@@ -3,10 +3,13 @@
 /* tslint:disable */
 /* eslint-disable */
 import type { MarketplaceBusinessCategory } from '../models/MarketplaceBusinessCategory';
+import type { MarketplaceCategoryItemDetail } from '../models/MarketplaceCategoryItemDetail';
+import type { MarketplaceCategoryItemListResponse } from '../models/MarketplaceCategoryItemListResponse';
 import type { MarketplaceChannelEventRequest } from '../models/MarketplaceChannelEventRequest';
 import type { MarketplaceChannelEventResponse } from '../models/MarketplaceChannelEventResponse';
 import type { MarketplaceDealerIndexResponse } from '../models/MarketplaceDealerIndexResponse';
 import type { MarketplaceDealerStatsResponse } from '../models/MarketplaceDealerStatsResponse';
+import type { MarketplaceFacetsResponse } from '../models/MarketplaceFacetsResponse';
 import type { MarketplaceFeedResponse } from '../models/MarketplaceFeedResponse';
 import type { MarketplaceLeadCaptureRequest } from '../models/MarketplaceLeadCaptureRequest';
 import type { MarketplaceLeadCaptureResponse } from '../models/MarketplaceLeadCaptureResponse';
@@ -160,6 +163,131 @@ export class MarketplaceService {
                 'minYear': minYear,
                 'maxYear': maxYear,
                 'sortBy': sortBy,
+                'dealer': dealer,
+                'q': q,
+                'facets': facets,
+                'buyerLat': buyerLat,
+                'buyerLng': buyerLng,
+                'radiusMiles': radiusMiles,
+                'nationwide': nationwide,
+                'availability': availability,
+            },
+            errors: {
+                400: `Bad request — invalid query parameter value`,
+            },
+        });
+    }
+    /**
+     * Get dynamic marketplace filter facets
+     * Returns filter facets (dropdown options and counts) based on current
+     * published marketplace inventory for the active filters.
+     *
+     * @returns MarketplaceFacetsResponse Filter facets based on current inventory
+     * @throws ApiError
+     */
+    public static getMarketplaceFacets({
+        category,
+        make,
+        sellerName,
+        model,
+        condition,
+        minPrice,
+        maxPrice,
+        maxMileage,
+        minYear,
+        maxYear,
+        dealer,
+        q,
+        facets,
+        buyerLat,
+        buyerLng,
+        radiusMiles = 50,
+        nationwide = true,
+        availability = 'available',
+    }: {
+        /**
+         * Business category slug or enum. Defaults to AUTOMOTIVE.
+         */
+        category?: MarketplaceBusinessCategory,
+        make?: string,
+        /**
+         * Seller-name text filter (property manager, broker, host, etc.).
+         * Only applied for categories whose schema declares marketplaceFilter seller.
+         * Ignored for automotive and other brand-filter categories.
+         *
+         */
+        sellerName?: string,
+        model?: string,
+        condition?: 'NEW' | 'USED' | 'CPO',
+        /**
+         * Minimum priceCents (inclusive)
+         */
+        minPrice?: number,
+        /**
+         * Maximum priceCents (inclusive)
+         */
+        maxPrice?: number,
+        /**
+         * Maximum mileage (inclusive). Omit to include all mileages.
+         */
+        maxMileage?: number,
+        /**
+         * Minimum model year (inclusive).
+         */
+        minYear?: number,
+        /**
+         * Maximum model year (inclusive).
+         */
+        maxYear?: number,
+        /**
+         * Filter by dealer ID
+         */
+        dealer?: string,
+        /**
+         * Keyword search across make, model, and trim.
+         */
+        q?: string,
+        /**
+         * Comma-separated schema-backed facet filters encoded as fieldKey:value.
+         * Only enum/boolean facets declared for the active category are applied.
+         *
+         */
+        facets?: string,
+        /**
+         * Buyer latitude for nearby radius filtering. Never echoed in responses.
+         */
+        buyerLat?: number,
+        /**
+         * Buyer longitude for nearby radius filtering. Never echoed in responses.
+         */
+        buyerLng?: number,
+        /**
+         * Search radius in miles when buyerLat and buyerLng are set. Clamped to 1–500; defaults to 50.
+         */
+        radiusMiles?: number,
+        /**
+         * When true, ignore buyer location and return nationwide results.
+         */
+        nationwide?: boolean,
+        /**
+         * Availability filter. MVP supports available-only (not sold or removed).
+         */
+        availability?: 'available',
+    }): CancelablePromise<MarketplaceFacetsResponse> {
+        return __request(OpenAPI, {
+            method: 'GET',
+            url: '/api/marketplace/facets',
+            query: {
+                'category': category,
+                'make': make,
+                'sellerName': sellerName,
+                'model': model,
+                'condition': condition,
+                'minPrice': minPrice,
+                'maxPrice': maxPrice,
+                'maxMileage': maxMileage,
+                'minYear': minYear,
+                'maxYear': maxYear,
                 'dealer': dealer,
                 'q': q,
                 'facets': facets,
@@ -528,6 +656,73 @@ export class MarketplaceService {
             url: '/api/marketplace/dealers/{dealerId}/stats',
             path: {
                 'dealerId': dealerId,
+            },
+            errors: {
+                404: `Not found`,
+            },
+        });
+    }
+    /**
+     * Browse category inventory items (e-books and other digital categories)
+     * Returns paginated marketplace-eligible category inventory items.
+     * Supports filtering by categoryId, dealer, page, and pageSize.
+     * Items must be READY with an active consumer-marketplace listing and a price set.
+     *
+     * @returns MarketplaceCategoryItemListResponse Category item listing page
+     * @throws ApiError
+     */
+    public static listMarketplaceCategoryItems({
+        categoryId,
+        dealer,
+        page = 1,
+        pageSize = 24,
+    }: {
+        /**
+         * Business category ID (e.g. EBOOKS). Required.
+         */
+        categoryId?: string,
+        /**
+         * Filter by dealer ID
+         */
+        dealer?: string,
+        page?: number,
+        pageSize?: number,
+    }): CancelablePromise<MarketplaceCategoryItemListResponse> {
+        return __request(OpenAPI, {
+            method: 'GET',
+            url: '/api/marketplace/category-items',
+            query: {
+                'categoryId': categoryId,
+                'dealer': dealer,
+                'page': page,
+                'pageSize': pageSize,
+            },
+            errors: {
+                400: `Bad request — invalid query parameter value`,
+            },
+        });
+    }
+    /**
+     * Single category item detail
+     * Returns detail for one marketplace-eligible category inventory item by listing ID.
+     * Returns 404 for sold, removed, non-existent, or unpriced items.
+     *
+     * @returns MarketplaceCategoryItemDetail Category item detail
+     * @throws ApiError
+     */
+    public static getMarketplaceCategoryItem({
+        listingId,
+    }: {
+        /**
+         * Opaque listing identifier from MarketplaceCategoryItemCard.listingId
+         */
+        listingId: string,
+    }): CancelablePromise<MarketplaceCategoryItemDetail> {
+        return __request(OpenAPI, {
+            method: 'GET',
+            url: '/api/marketplace/category-items/{listingId}',
+            path: {
+                'listingId': listingId,
             },
             errors: {
                 404: `Not found`,

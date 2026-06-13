@@ -114,14 +114,19 @@ describe('non-vehicle payload shapes — fixtures match category schema fields',
       assert.ok(inventory.length >= 2);
 
       const identifierFields = schema.fields
-        .filter(f => f.kind === 'identifier' || f.kind === 'text' || f.kind === 'number' || f.kind === 'currency')
-        .map(f => f.key);
+        .filter(f => f.kind === 'identifier' || f.kind === 'text' || f.kind === 'number' || f.kind === 'currency');
 
       for (const item of inventory) {
-        for (const key of identifierFields) {
-          if (key === 'vin' && !schema.asset.idFieldKey) continue;
-          const value = item[key as keyof typeof item];
-          assert.ok(value != null && value !== '', `${category} item ${item.stockNumber} missing ${key}`);
+        for (const field of identifierFields) {
+          if (field.key === 'vin' && !schema.asset.idFieldKey) continue;
+          let value: unknown;
+          if (field.filterStorage?.storage === 'categoryPayload') {
+            const payload = item.categoryPayload as Record<string, unknown> | undefined;
+            value = payload?.[field.filterStorage.payloadKey];
+          } else {
+            value = item[field.key as keyof typeof item];
+          }
+          assert.ok(value != null && value !== '', `${category} item ${item.stockNumber} missing ${field.key}`);
         }
       }
     });

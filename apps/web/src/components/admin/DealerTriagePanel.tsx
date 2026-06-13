@@ -1,4 +1,4 @@
-import { useMemo, useState, type FormEvent } from 'react';
+import { Fragment, useMemo, useState, type FormEvent } from 'react';
 import { BUSINESS_CATEGORY_IDS } from '@auto-dealer/category-schemas';
 import { useAsyncQuery } from '@/hooks/useAsyncQuery.ts';
 import { fetchBlockedDealers, type AdminBlockedDealerItem } from '@/lib/api/admin.ts';
@@ -67,6 +67,134 @@ const PLATFORMS_LIST = [
   { slug: 'all', name: 'All Platforms' },
 ];
 
+// ── View model ─────────────────────────────────────────────────────────────────
+
+type ActionEntry = { label: string; href: string; highlight: boolean };
+
+export type AdminTriageWorkItem = {
+  id: string;
+  dealerName: string;
+  dealerHref?: string;
+  dealerId: string;
+  platformName: string;
+  platformHref?: string;
+  severity: string;
+  blockerLabel: string;
+  impactLabel: string;
+  durationLabel: string;
+  actions: ActionEntry[];
+  technicalDetails: {
+    source: string;
+    status?: string | null;
+    reason: string;
+    nextAction?: string | null;
+    platformSlug: string;
+    affectedCount?: number | null;
+  };
+};
+
+function formatDuration(firstSeenAt?: string | null): string {
+  if (!firstSeenAt) return '—';
+  const diffMs = Date.now() - new Date(firstSeenAt).getTime();
+  const mins = Math.floor(diffMs / 60000);
+  if (mins < 60) return `${mins}m`;
+  const hours = Math.floor(mins / 60);
+  if (hours < 24) return `${hours}h`;
+  const days = Math.floor(hours / 24);
+  if (days < 7) return `${days}d`;
+  const weeks = Math.floor(days / 7);
+  if (weeks < 4) return `${weeks}w`;
+  const months = Math.floor(days / 30);
+  if (months < 12) return `${months}mo`;
+  return '1y+';
+}
+
+function getBlockerLabel(source: string): string {
+  const map: Record<string, string> = {
+    partner_setup:               'Partner setup incomplete',
+    dealer_partner_credentials:  'Missing partner credentials',
+    feed_validation:             'Feed validation failed',
+    geo_readiness:               'Missing rooftop coordinates',
+    developer_credentials:       'Missing developer credentials',
+  };
+  return map[source] ?? 'Configuration required';
+}
+
+function getImpactLabel(item: AdminBlockedDealerItem): string {
+  const { source, affectedCount } = item;
+  if (source === 'geo_readiness') return 'Hidden from local search';
+  if (source === 'feed_validation') {
+    return affectedCount != null ? `${affectedCount} listings rejected` : 'Listings rejected';
+  }
+  if (affectedCount != null && affectedCount > 0) return `${affectedCount} vehicles held`;
+  return 'Platform unavailable';
+}
+
+function getActions(item: AdminBlockedDealerItem): ActionEntry[] {
+  const dealerUrl   = item.dealerHref   || `#/${item.dealerId}`;
+  const platformUrl = item.platformHref || `#/${item.dealerId}/platforms/${item.platformSlug}`;
+
+  switch (item.source) {
+    case 'partner_setup':
+      return [
+        { label: 'Reconnect',   href: platformUrl, highlight: true  },
+        { label: 'Edit dealer', href: dealerUrl,   highlight: false },
+      ];
+    case 'dealer_partner_credentials':
+      return [
+        { label: 'Add key',    href: platformUrl, highlight: true  },
+        { label: 'Reconnect',  href: platformUrl, highlight: false },
+      ];
+    case 'feed_validation':
+      return [
+        { label: 'View errors', href: platformUrl, highlight: true  },
+        { label: 'Retry',       href: platformUrl, highlight: false },
+      ];
+    case 'geo_readiness':
+      return [
+        { label: 'Edit dealer', href: dealerUrl, highlight: true },
+      ];
+    case 'developer_credentials':
+      return [
+        { label: 'Add key',     href: platformUrl, highlight: true  },
+        { label: 'Edit dealer', href: dealerUrl,   highlight: false },
+      ];
+    default:
+      return [
+        { label: 'Open', href: dealerUrl, highlight: false },
+      ];
+  }
+}
+
+export function mapBlockedDealerToWorkItem(
+  item: AdminBlockedDealerItem,
+  index: number,
+): AdminTriageWorkItem {
+  return {
+    id: item.id || `${item.dealerId}-${item.platformSlug}-${item.source}-${index}`,
+    dealerName:   item.dealerName,
+    dealerHref:   item.dealerHref,
+    dealerId:     item.dealerId,
+    platformName: item.platformName,
+    platformHref: item.platformHref,
+    severity:     item.severity,
+    blockerLabel: getBlockerLabel(item.source),
+    impactLabel:  getImpactLabel(item),
+    durationLabel: formatDuration(item.firstSeenAt),
+    actions:      getActions(item),
+    technicalDetails: {
+      source:        item.source,
+      status:        item.status,
+      reason:        item.reason,
+      nextAction:    item.nextAction,
+      platformSlug:  item.platformSlug,
+      affectedCount: item.affectedCount,
+    },
+  };
+}
+
+// ── Sub-components ─────────────────────────────────────────────────────────────
+
 function ResultCount({ shown, total }: { shown: number; total: number }) {
   return (
     <p className="text-xs text-ink-faint">
@@ -75,22 +203,61 @@ function ResultCount({ shown, total }: { shown: number; total: number }) {
   );
 }
 
-function formatLastSeen(value?: string | null) {
-  return value ? new Date(value).toLocaleString() : 'N/A';
+function DetailsRow({ item }: { item: AdminTriageWorkItem }) {
+  const d = item.technicalDetails;
+  return (
+    <tr className="bg-surface-inset border-b border-silver-200">
+      <td colSpan={7} className="px-4 py-3">
+        <div className="flex flex-wrap gap-x-6 gap-y-2 text-[11px]">
+          <div>
+            <span className="text-ink-faint uppercase tracking-wider font-semibold mr-1">Source</span>
+            <span className="text-ink-muted">{SOURCE_LABELS[d.source] ?? d.source}</span>
+          </div>
+          {d.status && (
+            <div>
+              <span className="text-ink-faint uppercase tracking-wider font-semibold mr-1">Status</span>
+              <span className="font-mono text-ink-muted">{d.status}</span>
+            </div>
+          )}
+          {d.platformSlug !== 'all' && (
+            <div>
+              <span className="text-ink-faint uppercase tracking-wider font-semibold mr-1">Slug</span>
+              <span className="font-mono text-ink-muted">{d.platformSlug}</span>
+            </div>
+          )}
+          {d.affectedCount != null && (
+            <div>
+              <span className="text-ink-faint uppercase tracking-wider font-semibold mr-1">Affected</span>
+              <span className="text-status-error-text font-semibold">{d.affectedCount}</span>
+            </div>
+          )}
+          <div className="w-full">
+            <span className="text-ink-faint uppercase tracking-wider font-semibold mr-1">Reason</span>
+            <span className="text-ink-body">{d.reason}</span>
+          </div>
+          {d.nextAction && (
+            <div className="w-full">
+              <span className="text-ink-faint uppercase tracking-wider font-semibold mr-1">Next action</span>
+              <span className="text-orange-600">{d.nextAction}</span>
+            </div>
+          )}
+        </div>
+      </td>
+    </tr>
+  );
 }
 
-function issueKey(item: AdminBlockedDealerItem, index: number) {
-  return item.id || `${item.dealerId}-${item.platformSlug}-${item.source}-${index}`;
-}
+// ── Main component ─────────────────────────────────────────────────────────────
 
 export function DealerTriagePanel() {
-  const [severity, setSeverity] = useState('');
-  const [category, setCategory] = useState('');
-  const [platform, setPlatform] = useState('');
-  const [source, setSource] = useState('');
-  const [searchInput, setSearchInput] = useState('');
-  const [searchQuery, setSearchQuery] = useState('');
-  const [page, setPage] = useState(1);
+  const [severity, setSeverity]         = useState('');
+  const [category, setCategory]         = useState('');
+  const [platform, setPlatform]         = useState('');
+  const [source, setSource]             = useState('');
+  const [searchInput, setSearchInput]   = useState('');
+  const [searchQuery, setSearchQuery]   = useState('');
+  const [page, setPage]                 = useState(1);
+  const [expanded, setExpanded]         = useState<Set<string>>(new Set());
   const limit = 20;
 
   const { data, loading, error, reload } = useAsyncQuery(
@@ -98,18 +265,21 @@ export function DealerTriagePanel() {
       severity: severity || undefined,
       category: category || undefined,
       platform: platform || undefined,
-      source: source || undefined,
-      q: searchQuery || undefined,
+      source:   source   || undefined,
+      q:        searchQuery || undefined,
       page,
       limit,
     }),
     [severity, category, platform, source, searchQuery, page],
   );
 
-  const items = useMemo(() => data?.items ?? [], [data]);
-  const pagination = data?.pagination;
-  const summary = data?.summary;
-  const meta = data?.meta;
+  const workItems = useMemo(
+    () => (data?.items ?? []).map((item, i) => mapBlockedDealerToWorkItem(item, i)),
+    [data],
+  );
+  const pagination    = data?.pagination;
+  const summary       = data?.summary;
+  const meta          = data?.meta;
   const activeFilters = [severity, category, platform, source, searchQuery].filter(Boolean).length;
 
   function submitSearch(e: FormEvent) {
@@ -124,13 +294,16 @@ export function DealerTriagePanel() {
   }
 
   function resetFilters() {
-    setSeverity('');
-    setCategory('');
-    setPlatform('');
-    setSource('');
-    setSearchInput('');
-    setSearchQuery('');
-    setPage(1);
+    setSeverity(''); setCategory(''); setPlatform(''); setSource('');
+    setSearchInput(''); setSearchQuery(''); setPage(1);
+  }
+
+  function toggleDetails(id: string) {
+    setExpanded(prev => {
+      const next = new Set(prev);
+      next.has(id) ? next.delete(id) : next.add(id);
+      return next;
+    });
   }
 
   return (
@@ -206,74 +379,84 @@ export function DealerTriagePanel() {
 
       {!loading && !error && (
         <>
-          <ResultCount shown={items.length} total={pagination?.total ?? items.length} />
+          <ResultCount shown={workItems.length} total={pagination?.total ?? workItems.length} />
 
-          {items.length === 0 ? (
+          {workItems.length === 0 ? (
             <div className="p-12 text-center border border-dashed border-silver-200 rounded-md text-ink-faint text-sm">
               All dealers are fully operational. No triage actions required.
             </div>
           ) : (
             <div className="surface-card-operator overflow-x-auto">
-              <table className="w-full text-left border-collapse min-w-[980px]">
+              <table className="w-full text-left border-collapse min-w-[900px]">
                 <thead>
                   <tr className="bg-silver-100 border-b border-silver-200 text-[10px] text-ink-muted uppercase tracking-wider">
                     <th className="px-4 py-3 font-semibold">Dealer</th>
                     <th className="px-4 py-3 font-semibold">Platform</th>
+                    <th className="px-4 py-3 font-semibold">Blocker</th>
+                    <th className="px-4 py-3 font-semibold">Impact</th>
+                    <th className="px-4 py-3 font-semibold">Duration</th>
                     <th className="px-4 py-3 font-semibold">Severity</th>
-                    <th className="px-4 py-3 font-semibold">Source</th>
-                    <th className="px-4 py-3 font-semibold">Issue</th>
-                    <th className="px-4 py-3 font-semibold">Next Action</th>
-                    <th className="px-4 py-3 font-semibold">Last Seen</th>
                     <th className="px-4 py-3 font-semibold">Actions</th>
                   </tr>
                 </thead>
                 <tbody>
-                  {items.map((item, index) => {
-                    const sevCfg = SEV_CFG[item.severity] ?? SEV_DEFAULT;
+                  {workItems.map(item => {
+                    const sevCfg    = SEV_CFG[item.severity] ?? SEV_DEFAULT;
+                    const isExpanded = expanded.has(item.id);
                     return (
-                      <tr key={issueKey(item, index)} className="border-b border-silver-200 last:border-0 hover:bg-surface-inset transition-colors">
-                        <td className="px-4 py-3">
-                          <a href={item.dealerHref || `#/${item.dealerId}/platforms`} className="font-semibold text-navy-700 hover:text-navy-600 hover:underline text-sm">
-                            {item.dealerName}
-                          </a>
-                          <div className="text-[10px] text-ink-faint mt-0.5">{item.category}</div>
-                        </td>
-                        <td className="px-4 py-3">
-                          <div className="text-xs font-semibold text-ink-heading">{item.platformName}</div>
-                          <div className="text-[10px] text-ink-faint font-mono mt-0.5">{item.platformSlug}</div>
-                        </td>
-                        <td className="px-4 py-3">
-                          <span className={`px-2 py-0.5 rounded text-[10px] font-semibold border ${sevCfg.cls}`}>{sevCfg.label}</span>
-                        </td>
-                        <td className="px-4 py-3">
-                          <span className="px-2 py-0.5 rounded text-[10px] font-semibold bg-surface-inset text-ink-muted border border-silver-200">
-                            {SOURCE_LABELS[item.source] || item.source}
-                          </span>
-                          {item.affectedCount !== null && item.affectedCount !== undefined && (
-                            <div className="text-[10px] text-status-error-text font-semibold mt-1">
-                              {item.affectedCount} affected
-                            </div>
-                          )}
-                        </td>
-                        <td className="px-4 py-3 text-xs text-ink-body max-w-xs">{item.reason}</td>
-                        <td className="px-4 py-3 text-xs text-orange-600 font-medium max-w-[14rem]">{item.nextAction}</td>
-                        <td className="px-4 py-3 text-[11px] text-ink-muted font-mono whitespace-nowrap">
-                          {formatLastSeen(item.lastSeenAt)}
-                          <div className="text-[10px] text-ink-faint mt-0.5">{item.status}</div>
-                        </td>
-                        <td className="px-4 py-3">
-                          <div className="flex gap-2">
-                            <a href={item.dealerHref || `#/${item.dealerId}/platforms`} className="px-2.5 py-1 text-[10px] font-semibold text-ink-muted hover:text-ink-heading border border-silver-300 hover:border-silver-400 rounded transition-all">
-                              Dealer
+                      <Fragment key={item.id}>
+                        <tr
+                          className="border-b border-silver-200 last:border-0 hover:bg-surface-inset transition-colors"
+                        >
+                          <td className="px-4 py-3">
+                            <a
+                              href={item.dealerHref || `#/${item.dealerId}/platforms`}
+                              className="font-semibold text-navy-700 hover:text-navy-600 hover:underline text-sm"
+                            >
+                              {item.dealerName}
                             </a>
-                            {item.platformSlug !== 'all' && (
-                              <a href={item.platformHref || `#/${item.dealerId}/platforms/${item.platformSlug}`} className="px-2.5 py-1 text-[10px] font-semibold text-orange-600 hover:text-orange-500 border border-orange-100 hover:border-orange-100 rounded transition-all">
-                                Platform
-                              </a>
-                            )}
-                          </div>
-                        </td>
-                      </tr>
+                          </td>
+                          <td className="px-4 py-3">
+                            <div className="text-xs font-semibold text-ink-heading">{item.platformName}</div>
+                          </td>
+                          <td className="px-4 py-3 text-xs text-ink-body font-medium">{item.blockerLabel}</td>
+                          <td className="px-4 py-3 text-xs text-ink-muted">{item.impactLabel}</td>
+                          <td className="px-4 py-3">
+                            <span className="text-xs font-mono text-ink-muted tabular-nums">{item.durationLabel}</span>
+                          </td>
+                          <td className="px-4 py-3">
+                            <span className={`px-2 py-0.5 rounded text-[10px] font-semibold border ${sevCfg.cls}`}>
+                              {sevCfg.label}
+                            </span>
+                          </td>
+                          <td className="px-4 py-3">
+                            <div className="flex items-center gap-1.5 flex-wrap">
+                              {item.actions.map(action => (
+                                <a
+                                  key={action.label}
+                                  href={action.href}
+                                  className={
+                                    action.highlight
+                                      ? 'px-2.5 py-1 text-[10px] font-semibold text-orange-600 hover:text-orange-500 border border-orange-200 hover:border-orange-300 rounded transition-all'
+                                      : 'px-2.5 py-1 text-[10px] font-semibold text-ink-muted hover:text-ink-heading border border-silver-300 hover:border-silver-400 rounded transition-all'
+                                  }
+                                >
+                                  {action.label}
+                                </a>
+                              ))}
+                              <button
+                                type="button"
+                                onClick={() => toggleDetails(item.id)}
+                                className="px-2 py-1 text-[10px] text-ink-faint hover:text-ink-muted border border-silver-200 hover:border-silver-300 rounded transition-all"
+                                aria-expanded={isExpanded}
+                              >
+                                {isExpanded ? '▲' : '▾'}
+                              </button>
+                            </div>
+                          </td>
+                        </tr>
+                        {isExpanded && <DetailsRow item={item} />}
+                      </Fragment>
                     );
                   })}
                 </tbody>

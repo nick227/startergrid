@@ -1,8 +1,6 @@
 import {
   AdminService,
   type CredentialValidationMeta,
-  type PlatformCredentialListResponse,
-  type PlatformCredentialValidationResponse,
   type ProviderCredentialResult,
   type ProviderCredentialSummary,
   type AdminDashboardResponse,
@@ -32,6 +30,67 @@ export type {
   AdminDashboardMeta,
   AdminBlockedDealersResponse,
   AdminBlockedDealerItem,
+};
+
+export type PlatformCredentialDisplayStatus =
+  | 'VALID'
+  | 'NOT_CONFIGURED'
+  | 'READY_TO_VALIDATE'
+  | 'VALIDATION_FAILED'
+  | 'MANUAL_SETUP'
+  | 'INTERNAL'
+  | 'CONTRACT_MISSING';
+
+export type CredentialStageResult = {
+  stage: 'config' | 'auth' | 'permissions' | 'capability';
+  status: PlatformCredentialDisplayStatus;
+  detail: string;
+  checkedFields: string[];
+};
+
+export type PlatformCredentialContractSummary = {
+  platformSlug: string;
+  provider: string;
+  authType: 'oauth' | 'api-key' | 'sftp' | 'internal' | 'manual' | 'none';
+  requiredFields: string[];
+  requiredSecrets?: string[];
+  requiredScopes: string[];
+  requiredPermissions: string[];
+  requiredCapabilities: string[];
+  capabilityChecks?: string[];
+  docsUrl?: string | null;
+  connectionModel?: string;
+  validationDepth?: string;
+  checkedFields: string[];
+  stages: CredentialStageResult[];
+  notes: string;
+  configured: boolean;
+  missingFields: string[];
+  lastCheckedAt: string | null;
+  lastStatus: PlatformCredentialDisplayStatus;
+  lastError: string | null;
+};
+
+export type ProviderCredentialSummaryWithContracts = ProviderCredentialSummary & {
+  contracts?: PlatformCredentialContractSummary[];
+  missingFields?: string[];
+};
+
+export type ProviderCredentialResultWithContracts = ProviderCredentialResult & {
+  contracts?: PlatformCredentialContractSummary[];
+  missingFields?: string[];
+  stages?: CredentialStageResult[];
+};
+
+export type PlatformCredentialListResponse = {
+  providers: ProviderCredentialSummaryWithContracts[];
+  platforms: PlatformCredentialContractSummary[];
+};
+
+export type PlatformCredentialValidationResponse = {
+  results: ProviderCredentialResultWithContracts[];
+  platforms: PlatformCredentialContractSummary[];
+  meta: CredentialValidationMeta;
 };
 
 // ── Operator-user management types ────────────────────────────────────────────
@@ -75,11 +134,15 @@ export interface AdminUserActionResponse {
 // ── Platform credential helpers ───────────────────────────────────────────────
 
 export async function fetchPlatformCredentials(): Promise<PlatformCredentialListResponse> {
-  return fromSdk(AdminService.listPlatformCredentials());
+  return fromSdk(AdminService.listPlatformCredentials()) as unknown as Promise<PlatformCredentialListResponse>;
 }
 
 export async function validatePlatformCredentials(): Promise<PlatformCredentialValidationResponse> {
-  return fromSdk(AdminService.validatePlatformCredentials());
+  return fromSdk(AdminService.validatePlatformCredentials()) as unknown as Promise<PlatformCredentialValidationResponse>;
+}
+
+export async function validatePlatformCredential(platformSlug: string): Promise<PlatformCredentialValidationResponse> {
+  return fromSdk(AdminService.validatePlatformCredential({ platformSlug })) as unknown as Promise<PlatformCredentialValidationResponse>;
 }
 
 export async function fetchAdminDashboard(): Promise<AdminDashboardResponse> {

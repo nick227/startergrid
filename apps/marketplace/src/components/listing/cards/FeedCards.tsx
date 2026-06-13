@@ -106,14 +106,14 @@ function VehicleFeedCardCompact({
 }: CardSharedProps) {
   return (
     <article ref={articleRef} className="group mp-card flex flex-row gap-3 p-3 transition hover:border-navy-500/40 hover:shadow-elevation-2 sm:gap-4 sm:p-4">
-      <a href={listingHref(slug, card.listingId)} className="mp-focus shrink-0 overflow-hidden rounded-lg w-24 h-20 sm:w-32 sm:h-24 bg-surface-inset">
+      <a href={listingHref(slug, card.listingId, title)} className="mp-focus shrink-0 overflow-hidden rounded-lg w-24 h-20 sm:w-32 sm:h-24 bg-surface-inset">
         {card.mediaUrls[0]
           ? <img src={card.mediaUrls[0]} alt={title} className="h-full w-full object-cover" loading={index < 6 ? 'eager' : 'lazy'} decoding="async" />
           : <div className="h-full w-full" />}
       </a>
       <div className="min-w-0 flex-1">
         <div className="flex items-start justify-between gap-2">
-          <a href={listingHref(slug, card.listingId)} className="mp-focus min-w-0 text-sm font-semibold leading-snug text-ink-heading hover:text-cta line-clamp-2">
+          <a href={listingHref(slug, card.listingId, title)} className="mp-focus min-w-0 text-sm font-semibold leading-snug text-ink-heading hover:text-cta line-clamp-2">
             {title}
           </a>
           <FavoriteButton listingId={card.listingId} />
@@ -158,7 +158,7 @@ function VehicleFeedCardGrid({
   return (
     <article ref={articleRef} className="group mp-card flex h-full flex-col transition hover:border-navy-500/40 hover:shadow-elevation-3">
       <div className="relative">
-        <a href={listingHref(slug, card.listingId)} className="mp-focus block rounded-t-xl">
+        <a href={listingHref(slug, card.listingId, title)} className="mp-focus block rounded-t-xl">
           <FeedMediaCarousel mediaItems={card.mediaItems} fallbackImageUrls={card.mediaUrls} alt={title} eager={index < 6} />
         </a>
         <div className="absolute right-2 top-2 z-10">
@@ -169,7 +169,7 @@ function VehicleFeedCardGrid({
       <div className="flex flex-1 flex-col gap-4 p-5">
         <div className="space-y-2">
           <div className="flex items-start justify-between gap-3">
-            <a href={listingHref(slug, card.listingId)} className="mp-focus min-w-0 text-lg font-semibold leading-snug text-ink-heading hover:text-cta">
+            <a href={listingHref(slug, card.listingId, title)} className="mp-focus min-w-0 text-lg font-semibold leading-snug text-ink-heading hover:text-cta">
               {title}
             </a>
             <ConditionBadge condition={card.condition} className="shrink-0" />

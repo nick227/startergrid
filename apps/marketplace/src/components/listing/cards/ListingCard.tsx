@@ -39,7 +39,7 @@ export function ListingCard({ card, onQuickView }: Props) {
   return (
     <article className="group mp-card flex h-full flex-col overflow-hidden transition hover:border-navy-500/40 hover:shadow-elevation-3">
       <div className="relative">
-        <a href={listingHref(slug, card.listingId)} className="mp-focus block rounded-t-2xl overflow-hidden">
+        <a href={listingHref(slug, card.listingId, title)} className="mp-focus block rounded-t-2xl overflow-hidden">
           <ListingImage
             src={card.mediaUrls[0]}
             alt={title}
@@ -51,7 +51,7 @@ export function ListingCard({ card, onQuickView }: Props) {
         </div>
       </div>
 
-      <a href={listingHref(slug, card.listingId)} className="mp-focus block flex-1">
+      <a href={listingHref(slug, card.listingId, title)} className="mp-focus block flex-1">
         <div className="space-y-3 p-4">
           <div className="space-y-1">
             <h3 className="text-base font-semibold leading-snug text-ink-heading">{title}</h3>

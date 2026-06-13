@@ -1,6 +1,6 @@
 import { useState, useMemo, useEffect, lazy, Suspense } from 'react';
 import { useAsyncQuery } from '@/hooks/useAsyncQuery.ts';
-import { fetchAdminDashboard, fetchAdminUsers } from '@/lib/api/admin.ts';
+import { fetchAdminDashboard, fetchAdminUsers, fetchBlockedDealers } from '@/lib/api/admin.ts';
 import { fetchDealers } from '@/lib/api/sdk.ts';
 import { AdminShell } from '@/components/operator/AdminShell.tsx';
 import { AdminViewContext } from '@/contexts/AdminViewContext.tsx';
@@ -135,12 +135,13 @@ export default function AdminApp({
   const { data, loading, error }                     = useAsyncQuery(() => fetchAdminDashboard(), []);
   const { data: dealersData, loading: dealersLoading, error: dealersError, reload: reloadDealers } = useAsyncQuery(() => fetchDealers(), []);
   const { data: usersData, reload: reloadUsers }     = useAsyncQuery(() => fetchAdminUsers({ limit: 1 }), []);
+  const { data: blockersData }                        = useAsyncQuery(() => fetchBlockedDealers({ limit: 1 }), []);
 
   const allDealers       = dealersData?.dealers ?? [];
   const platformOverview = data?.platformOverview ?? [];
   const dealerAttention  = data?.dealerAttention ?? [];
   const recentEvents     = data?.recentEvents ?? [];
-  const criticalCount    = dealerAttention.filter(d => d.severity === 'critical').length;
+  const blockerCount     = blockersData?.summary.total ?? null;
   const userCount        = usersData?.pagination.total ?? null;
 
   const adminAction = (
@@ -152,7 +153,7 @@ export default function AdminApp({
     { id: 'insights'  as AdminSection, label: 'Finances',      count: null,                      alert: false },
     { id: 'dealers'   as AdminSection, label: 'Dealerships',   count: allDealers.length || null, alert: false },
     { id: 'platforms' as AdminSection, label: 'Platforms',     count: platformOverview.length,   alert: false },
-    { id: 'triage'    as AdminSection, label: 'Blockers', count: criticalCount,                      alert: false },
+    { id: 'triage'    as AdminSection, label: 'Blockers', count: blockerCount,                       alert: false },
     { id: 'audit'     as AdminSection, label: 'Audit Log',     count: recentEvents.length,       alert: false },
     { id: 'users'     as AdminSection, label: 'Users',         count: userCount,                 alert: false },
   ];

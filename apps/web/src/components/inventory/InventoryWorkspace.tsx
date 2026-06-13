@@ -4,6 +4,10 @@ import { previewBulkVins, commitBulkVins } from '@/lib/api/sdk.ts';
 import type { BulkVinPreviewRow } from '@/lib/api/sdk.ts';
 import { VinEntryPanel } from './VinEntryPanel.tsx';
 import { BulkVinReviewSidebar } from './BulkVinReviewSidebar.tsx';
+import { EbookEntryPanel } from './EbookEntryPanel.tsx';
+import { SongEntryPanel } from './SongEntryPanel.tsx';
+import { DigitalArtEntryPanel } from './DigitalArtEntryPanel.tsx';
+import { VideoEntryPanel } from './VideoEntryPanel.tsx';
 
 type Tab = 'browse' | 'attention' | 'recent' | 'sold';
 
@@ -171,6 +175,71 @@ export function VehicleAddControls({ dealerId, onVehicleCreated, onCreatedGoToBr
                Import CSV
              </button>
           </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+export type DigitalAddControlsProps = {
+  dealerId: string;
+  onItemCreated?: (itemId: string, stockNumber: string) => void;
+};
+
+export function EbookAddControls({ dealerId, onItemCreated }: DigitalAddControlsProps) {
+  return (
+    <div className="w-full mb-8">
+      <div className="max-w-lg">
+        <div className="p-4 bg-white border border-silver-200 rounded-xl shadow-sm">
+          <h3 className="text-sm font-semibold text-ink-body mb-3 flex items-center gap-2">
+            <span>📚</span> Add Ebook
+          </h3>
+          <EbookEntryPanel dealerId={dealerId} onCreated={onItemCreated} />
+        </div>
+      </div>
+    </div>
+  );
+}
+
+export function SongAddControls({ dealerId, onItemCreated }: DigitalAddControlsProps) {
+  return (
+    <div className="w-full mb-8">
+      <div className="max-w-lg">
+        <div className="p-4 bg-white border border-silver-200 rounded-xl shadow-sm">
+          <h3 className="text-sm font-semibold text-ink-body mb-3 flex items-center gap-2">
+            <span>🎵</span> Add Release
+          </h3>
+          <SongEntryPanel dealerId={dealerId} onCreated={onItemCreated} />
+        </div>
+      </div>
+    </div>
+  );
+}
+
+export function DigitalArtAddControls({ dealerId, onItemCreated }: DigitalAddControlsProps) {
+  return (
+    <div className="w-full mb-8">
+      <div className="max-w-lg">
+        <div className="p-4 bg-white border border-silver-200 rounded-xl shadow-sm">
+          <h3 className="text-sm font-semibold text-ink-body mb-3 flex items-center gap-2">
+            <span>🎨</span> Add Artwork
+          </h3>
+          <DigitalArtEntryPanel dealerId={dealerId} onCreated={onItemCreated} />
+        </div>
+      </div>
+    </div>
+  );
+}
+
+export function VideoAddControls({ dealerId, onItemCreated }: DigitalAddControlsProps) {
+  return (
+    <div className="w-full mb-8">
+      <div className="max-w-lg">
+        <div className="p-4 bg-white border border-silver-200 rounded-xl shadow-sm">
+          <h3 className="text-sm font-semibold text-ink-body mb-3 flex items-center gap-2">
+            <span>🎬</span> Add Video
+          </h3>
+          <VideoEntryPanel dealerId={dealerId} onCreated={onItemCreated} />
         </div>
       </div>
     </div>

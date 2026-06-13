@@ -3,8 +3,11 @@ import type { PrismaClient, BusinessCategory } from '@prisma/client';
 import {
   listMarketplaceVehicles,
   getMarketplaceFeed,
+  getMarketplaceFacets,
   getMarketplaceVehicle,
   getMarketplaceDealerIndex,
+  listMarketplaceCategoryItems,
+  getMarketplaceCategoryItemDetail,
   type MarketplaceListFilters,
 } from '../../services/marketplace/marketplaceQueryService.js';
 import { listMarketplaceSites } from '../../services/marketplace/marketplaceSitesService.js';
@@ -156,6 +159,17 @@ export function registerMarketplaceRoutes(app: FastifyInstance, prisma: PrismaCl
     }
   );
 
+  // GET /api/marketplace/facets
+  app.get<{ Querystring: ListQuery }>(
+    '/api/marketplace/facets',
+    async (request, reply) => {
+      const category = resolveEnabledMarketplaceCategory(request.query.category, reply);
+      if (!category) return;
+      const filters = listFiltersFromQuery(request.query, category);
+      return reply.send(await getMarketplaceFacets(prisma, filters));
+    }
+  );
+
   // GET /api/marketplace/vehicles
   app.get<{ Querystring: ListQuery }>(
     '/api/marketplace/vehicles',
@@ -290,7 +304,7 @@ export function registerMarketplaceRoutes(app: FastifyInstance, prisma: PrismaCl
         data: { soldAt },
       });
 
-      await MarketplaceListingStore.markEnded(prisma, listingId, 'consumer-marketplace');
+      await MarketplaceListingStore.markEndedByItem(prisma, { vehicleId: listingId }, 'consumer-marketplace');
 
       // Notify operator so the leads page and dashboard can surface the event.
       await prisma.dealerNotification.create({
@@ -311,6 +325,34 @@ export function registerMarketplaceRoutes(app: FastifyInstance, prisma: PrismaCl
       });
 
       return reply.status(200).send({ ok: true, soldAt: soldAt.toISOString() });
+    }
+  );
+
+  // ── Category item marketplace routes ──────────────────────────────────────
+
+  // GET /api/marketplace/category-items
+  app.get<{ Querystring: { categoryId?: string; dealer?: string; page?: string; pageSize?: string } }>(
+    '/api/marketplace/category-items',
+    async (request, reply) => {
+      const q = request.query;
+      const items = await listMarketplaceCategoryItems(prisma, {
+        categoryId: q.categoryId || undefined,
+        dealerId:   q.dealer    || undefined,
+        page:       parsePosIntParam(q.page, 1),
+        pageSize:   parsePosIntParam(q.pageSize, 24),
+      });
+      return reply.send(items);
+    }
+  );
+
+  // GET /api/marketplace/category-items/:listingId
+  app.get<{ Params: { listingId: string } }>(
+    '/api/marketplace/category-items/:listingId',
+    async (request, reply) => {
+      const { listingId } = request.params;
+      const item = await getMarketplaceCategoryItemDetail(prisma, listingId);
+      if (!item) return reply.status(404).send({ error: 'Item not found or not published' });
+      return reply.send(item);
     }
   );
 }

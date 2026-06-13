@@ -126,7 +126,7 @@ function QuickDetailContent({
   const slug = useCategorySlug();
   const schema = useCategorySchema();
   const location = formatLocation(detail.location.dealerCity, detail.location.dealerState);
-  const shareUrl = buildListingShareUrl(slug, listingId);
+  const shareUrl = buildListingShareUrl(slug, listingId, detail.core.title);
   const primary = ctasToPrimaryAction(ctas, { inquiryHref });
 
   return (

@@ -10,6 +10,7 @@ import type { MarketplaceListingBridge } from '../../services/marketplace/market
 
 type DealerSlugParams = { dealershipId: string; platformSlug: string };
 type DealerSlugVehicleParams = DealerSlugParams & { vehicleId: string };
+type DealerSlugItemParams = DealerSlugParams & { categoryItemId: string };
 
 function listingBaseUrl(): string {
   return process.env['APP_BASE_URL'] ?? process.env['OAUTH_REDIRECT_BASE_URL'] ?? 'http://localhost:3000';
@@ -28,8 +29,9 @@ export const LISTING_BRIDGE_SLUGS = Object.freeze(
 
 export function registerMarketplaceListingRoutes(app: FastifyInstance, prisma: PrismaClient): void {
 
+  // ── Vehicle listing routes (existing) ──────────────────────────────────────
+
   // POST /api/dealers/:dealershipId/platforms/:platformSlug/listings
-  // Upserts an inventory item and publishes/re-publishes an offer on the platform.
   app.post<{ Params: DealerSlugParams; Body: { vehicleId: string } }>(
     '/api/dealers/:dealershipId/platforms/:platformSlug/listings',
     async (request, reply) => {
@@ -50,7 +52,6 @@ export function registerMarketplaceListingRoutes(app: FastifyInstance, prisma: P
       if (!vehicle || vehicle.dealershipId !== dealershipId)
         return reply.status(404).send({ error: 'Vehicle not found' });
 
-      // OAuth-gated platforms require a connected token; owned platforms skip this step.
       let token = '';
       if (bridge.requiresOAuth) {
         try {
@@ -73,14 +74,14 @@ export function registerMarketplaceListingRoutes(app: FastifyInstance, prisma: P
       } catch (err: unknown) {
         const errorMessage = err instanceof Error ? err.message : 'Platform API error';
         const listing = await MarketplaceListingStore.upsert(
-          prisma, dealershipId, vehicleId, platformSlug,
+          prisma, dealershipId, { vehicleId }, platformSlug,
           { status: 'FAILED', errorMessage },
         );
         return reply.status(502).send({ error: errorMessage, listing });
       }
 
       const listing = await MarketplaceListingStore.upsert(
-        prisma, dealershipId, vehicleId, platformSlug,
+        prisma, dealershipId, { vehicleId }, platformSlug,
         {
           externalListingId: result.externalListingId,
           externalOfferId: result.externalOfferId,
@@ -95,7 +96,6 @@ export function registerMarketplaceListingRoutes(app: FastifyInstance, prisma: P
   );
 
   // DELETE /api/dealers/:dealershipId/platforms/:platformSlug/listings/:vehicleId
-  // Withdraws the offer and marks the listing as ENDED.
   app.delete<{ Params: DealerSlugVehicleParams }>(
     '/api/dealers/:dealershipId/platforms/:platformSlug/listings/:vehicleId',
     async (request, reply) => {
@@ -106,13 +106,12 @@ export function registerMarketplaceListingRoutes(app: FastifyInstance, prisma: P
       if (!bridge)
         return reply.status(400).send({ error: `Platform ${platformSlug} does not support marketplace listings` });
 
-      const existing = await MarketplaceListingStore.findOne(prisma, vehicleId, platformSlug);
+      const existing = await MarketplaceListingStore.findOneByItem(prisma, { vehicleId }, platformSlug);
       if (!existing || existing.dealershipId !== dealershipId)
         return reply.status(404).send({ error: 'Listing not found' });
 
-      // Owned platforms (no OAuth) — just mark ended, no external API call needed.
       if (!bridge.requiresOAuth) {
-        await MarketplaceListingStore.markEnded(prisma, vehicleId, platformSlug);
+        await MarketplaceListingStore.markEndedByItem(prisma, { vehicleId }, platformSlug);
         return reply.status(204).send();
       }
 
@@ -135,13 +134,12 @@ export function registerMarketplaceListingRoutes(app: FastifyInstance, prisma: P
         return reply.status(502).send({ error: msg });
       }
 
-      await MarketplaceListingStore.markEnded(prisma, vehicleId, platformSlug);
+      await MarketplaceListingStore.markEndedByItem(prisma, { vehicleId }, platformSlug);
       return reply.status(204).send();
     }
   );
 
   // GET /api/dealers/:dealershipId/platforms/:platformSlug/listings
-  // Returns all marketplace listings for this dealer + platform.
   app.get<{ Params: DealerSlugParams }>(
     '/api/dealers/:dealershipId/platforms/:platformSlug/listings',
     async (request, reply) => {
@@ -154,14 +152,89 @@ export function registerMarketplaceListingRoutes(app: FastifyInstance, prisma: P
   );
 
   // GET /api/dealers/:dealershipId/platforms/:platformSlug/listings/:vehicleId
-  // Returns the listing record for one vehicle on this platform.
   app.get<{ Params: DealerSlugVehicleParams }>(
     '/api/dealers/:dealershipId/platforms/:platformSlug/listings/:vehicleId',
     async (request, reply) => {
       const { dealershipId, platformSlug, vehicleId } = request.params;
       if (!await requireDealerAccess(prisma, request, reply, dealershipId)) return;
 
-      const listing = await MarketplaceListingStore.findOne(prisma, vehicleId, platformSlug);
+      const listing = await MarketplaceListingStore.findOneByItem(prisma, { vehicleId }, platformSlug);
+      if (!listing || listing.dealershipId !== dealershipId)
+        return reply.status(404).send({ error: 'Listing not found' });
+
+      return reply.send({ listing });
+    }
+  );
+
+  // ── Category item listing routes (new) ────────────────────────────────────
+
+  // POST /api/dealers/:dealershipId/platforms/:platformSlug/category-listings
+  app.post<{ Params: DealerSlugParams; Body: { categoryItemId: string } }>(
+    '/api/dealers/:dealershipId/platforms/:platformSlug/category-listings',
+    async (request, reply) => {
+      const { dealershipId, platformSlug } = request.params;
+      if (!await requireDealerAccess(prisma, request, reply, dealershipId)) return;
+
+      const bridge = BRIDGE_REGISTRY[platformSlug];
+      if (!bridge)
+        return reply.status(400).send({ error: `Platform ${platformSlug} does not support marketplace listings` });
+
+      // External OAuth bridges don't yet have category-item adapters
+      if (bridge.requiresOAuth)
+        return reply.status(400).send({ error: `Platform ${platformSlug} does not support non-vehicle listings` });
+
+      const { categoryItemId } = request.body ?? {};
+      if (!categoryItemId) return reply.status(400).send({ error: 'categoryItemId required' });
+
+      const item = await prisma.categoryInventoryItem.findUnique({
+        where: { id: categoryItemId },
+      });
+      if (!item || item.dealershipId !== dealershipId)
+        return reply.status(404).send({ error: 'Category item not found' });
+
+      // Consumer marketplace is first-party — write DB state directly, no bridge call.
+      const listing = await MarketplaceListingStore.upsert(
+        prisma, dealershipId, { categoryItemId }, platformSlug,
+        { status: 'ACTIVE', errorMessage: null, listedAt: new Date() },
+      );
+
+      return reply.status(201).send({ listing });
+    }
+  );
+
+  // DELETE /api/dealers/:dealershipId/platforms/:platformSlug/category-listings/:categoryItemId
+  app.delete<{ Params: DealerSlugItemParams }>(
+    '/api/dealers/:dealershipId/platforms/:platformSlug/category-listings/:categoryItemId',
+    async (request, reply) => {
+      const { dealershipId, platformSlug, categoryItemId } = request.params;
+      if (!await requireDealerAccess(prisma, request, reply, dealershipId)) return;
+
+      const bridge = BRIDGE_REGISTRY[platformSlug];
+      if (!bridge)
+        return reply.status(400).send({ error: `Platform ${platformSlug} does not support marketplace listings` });
+
+      const existing = await MarketplaceListingStore.findOneByItem(prisma, { categoryItemId }, platformSlug);
+      if (!existing || existing.dealershipId !== dealershipId)
+        return reply.status(404).send({ error: 'Listing not found' });
+
+      if (!bridge.requiresOAuth) {
+        await MarketplaceListingStore.markEndedByItem(prisma, { categoryItemId }, platformSlug);
+        return reply.status(204).send();
+      }
+
+      // External bridges don't support category items yet
+      return reply.status(400).send({ error: 'External platform withdrawal not supported for this item type' });
+    }
+  );
+
+  // GET /api/dealers/:dealershipId/platforms/:platformSlug/category-listings/:categoryItemId
+  app.get<{ Params: DealerSlugItemParams }>(
+    '/api/dealers/:dealershipId/platforms/:platformSlug/category-listings/:categoryItemId',
+    async (request, reply) => {
+      const { dealershipId, platformSlug, categoryItemId } = request.params;
+      if (!await requireDealerAccess(prisma, request, reply, dealershipId)) return;
+
+      const listing = await MarketplaceListingStore.findOneByItem(prisma, { categoryItemId }, platformSlug);
       if (!listing || listing.dealershipId !== dealershipId)
         return reply.status(404).send({ error: 'Listing not found' });
 
