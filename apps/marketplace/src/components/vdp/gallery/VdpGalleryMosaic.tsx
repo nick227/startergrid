@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import type { VdpMediaSlotMap } from '../../../lib/vdpMediaSlotMap.ts';
 import { kindBadge } from '../../../lib/vdpMediaLabels.ts';
 import { ListingImage } from '../../ui/ListingImage.tsx';
@@ -8,83 +9,109 @@ type Props = {
   onOpenItem: (itemId: string) => void;
 };
 
-function MosaicCell({
-  label,
-  item,
-  alt,
-  className,
-  onOpen,
-}: {
-  label: string;
-  item: VdpMediaSlotMap['mosaic'][number]['item'];
-  alt: string;
-  className: string;
-  onOpen: () => void;
-}) {
-  const badge = item ? kindBadge(item.kind) : null;
+export function VdpGalleryMosaic({ map, alt, onOpenItem }: Props) {
+  const [activeItemId, setActiveItemId] = useState<string | null>(null);
 
-  if (!item) {
+  // Filter out slots that have no item to avoid showing empty boxes on the front page
+  const validItems = map.mosaic.filter(m => m.item !== null);
+  const totalItems = validItems.length + map.overflow.length;
+
+  if (validItems.length === 0) {
     return (
-      <div className={`relative overflow-hidden rounded-xl border border-dashed border-silver-300 bg-surface-inset ${className}`}>
-        <div className="flex h-full w-full flex-col items-center justify-center gap-1 p-2 text-center">
-          <span className="text-[10px] font-semibold uppercase tracking-wide text-ink-faint">{label}</span>
-          <span className="text-xs text-ink-muted">Not available</span>
-        </div>
+      <div className="flex aspect-video w-full items-center justify-center rounded-2xl bg-silver-100 text-ink-muted">
+        No media available
       </div>
     );
   }
 
-  return (
-    <button
-      type="button"
-      className={`mp-focus relative overflow-hidden rounded-xl border border-silver-200 bg-surface-inset ${className}`}
-      aria-label={`View ${label}`}
-      onClick={onOpen}
-    >
-      <ListingImage src={item.posterUrl ?? item.url} alt={`${alt} — ${label}`} variant="thumb" className="h-full w-full rounded-xl" imgClassName="h-full w-full" />
-      {badge && (
-        <span className="absolute left-2 top-2 rounded-pill bg-black/70 px-2 py-0.5 text-[10px] font-semibold text-white">
-          {badge}
-        </span>
-      )}
-    </button>
-  );
-}
+  const heroSlot = validItems[0]!;
+  const activeSlot = validItems.find(m => m.item!.id === activeItemId) ?? heroSlot;
+  const activeItem = activeSlot.item!;
+  const activeBadge = kindBadge(activeItem.kind);
 
-export function VdpGalleryMosaic({ map, alt, onOpenItem }: Props) {
-  const [hero, s2, s3, s4, s5, s6, s7, s8, s9, s10] = map.mosaic;
+  // We show up to 6 thumbnails on the right
+  const thumbnails = validItems.slice(1, 7);
+  const remainingCount = totalItems - 1 - thumbnails.length;
 
   return (
-    <section aria-label="Vehicle gallery">
-      <div className="grid grid-cols-4 grid-rows-2 gap-2">
-        <MosaicCell label={hero!.label} item={hero!.item} alt={alt} className="col-span-2 row-span-2" onOpen={() => hero!.item && onOpenItem(hero!.item.id)} />
-        <MosaicCell label={s2!.label} item={s2!.item} alt={alt} className="" onOpen={() => s2!.item && onOpenItem(s2!.item.id)} />
-        <MosaicCell label={s3!.label} item={s3!.item} alt={alt} className="" onOpen={() => s3!.item && onOpenItem(s3!.item.id)} />
-        <MosaicCell label={s4!.label} item={s4!.item} alt={alt} className="" onOpen={() => s4!.item && onOpenItem(s4!.item.id)} />
-        <MosaicCell label={s5!.label} item={s5!.item} alt={alt} className="" onOpen={() => s5!.item && onOpenItem(s5!.item.id)} />
-        <MosaicCell label={s6!.label} item={s6!.item} alt={alt} className="" onOpen={() => s6!.item && onOpenItem(s6!.item.id)} />
-        <MosaicCell label={s7!.label} item={s7!.item} alt={alt} className="" onOpen={() => s7!.item && onOpenItem(s7!.item.id)} />
-        <MosaicCell label={s8!.label} item={s8!.item} alt={alt} className="" onOpen={() => s8!.item && onOpenItem(s8!.item.id)} />
-        <MosaicCell label={s9!.label} item={s9!.item} alt={alt} className="" onOpen={() => s9!.item && onOpenItem(s9!.item.id)} />
-        <MosaicCell label={s10!.label} item={s10!.item} alt={alt} className="col-span-4" onOpen={() => s10!.item && onOpenItem(s10!.item.id)} />
-      </div>
+    <section aria-label="Vehicle gallery" className="flex flex-col gap-2 md:flex-row h-[50vh] min-h-[300px] md:min-h-[450px] lg:h-[65vh] lg:max-h-[750px]">
+      {/* Main Active Viewer */}
+      <button 
+        type="button"
+        className="mp-focus relative flex-1 overflow-hidden rounded-2xl bg-black group" 
+        aria-label={`View ${activeSlot.label}`}
+        onClick={() => onOpenItem(activeItem.id)}
+      >
+        <img 
+          src={activeItem.url} 
+          alt={`${alt} — ${activeSlot.label}`} 
+          className="h-full w-full object-cover transition-opacity duration-300"
+          loading="eager"
+          decoding="async"
+        />
+        {activeBadge && (
+          <span className="absolute left-4 top-4 rounded-pill bg-black/70 px-3 py-1 text-xs font-semibold text-white">
+            {activeBadge}
+          </span>
+        )}
+        <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/60 to-transparent p-4 opacity-0 transition-opacity group-hover:opacity-100">
+          <span className="text-sm font-semibold text-white">
+            {activeSlot.label}
+          </span>
+        </div>
+      </button>
 
-      {map.overflow.length > 0 && (
-        <div className="mt-3">
-          <p className="mp-label mb-2 text-ink-faint">Additional media</p>
-          <div className="flex snap-x snap-mandatory gap-2 overflow-x-auto pb-1">
-            {map.overflow.map(item => (
-              <button
-                key={item.id}
+      {/* Thumbnails Grid */}
+      {thumbnails.length > 0 && (
+        <div className="grid grid-cols-3 gap-2 md:w-[320px] md:grid-cols-2 md:grid-rows-3 lg:w-[400px]">
+          {thumbnails.map((thumb, index) => {
+            const isLast = index === thumbnails.length - 1;
+            const item = thumb.item!;
+            const isActive = item.id === activeItem.id;
+            const showOverlay = isLast && remainingCount > 0;
+
+            return (
+              <button 
+                key={item.id} 
                 type="button"
-                className="mp-focus relative h-20 w-28 shrink-0 snap-start overflow-hidden rounded-lg border border-silver-200"
-                aria-label={`View additional ${kindBadge(item.kind) ?? 'media'}`}
-                onClick={() => onOpenItem(item.id)}
+                className={`mp-focus relative overflow-hidden rounded-xl bg-silver-100 transition-all ${isActive ? 'ring-2 ring-blue-500 ring-offset-2 ring-offset-white' : 'hover:opacity-90'}`}
+                aria-label={showOverlay ? 'View all photos' : `View ${thumb.label}`}
+                onMouseEnter={() => setActiveItemId(item.id)}
+                onClick={() => {
+                  if (showOverlay) {
+                    onOpenItem(heroSlot.item!.id);
+                  } else {
+                    onOpenItem(item.id);
+                  }
+                }}
               >
-                <ListingImage src={item.posterUrl ?? item.url} alt="" decorative variant="thumb" className="h-full w-full" imgClassName="h-full w-full" />
+                <ListingImage 
+                  src={item.posterUrl ?? item.url} 
+                  alt={thumb.label} 
+                  variant="thumb" 
+                  className="h-full w-full" 
+                  imgClassName="h-full w-full object-cover" 
+                />
+                
+                {/* Kind Badge for thumbnails */}
+                {kindBadge(item.kind) && !showOverlay && (
+                  <span className="absolute left-2 top-2 rounded-pill bg-black/70 px-2 py-0.5 text-[10px] font-semibold text-white">
+                    {kindBadge(item.kind)}
+                  </span>
+                )}
+
+                {/* 'View All' Overlay on the last thumbnail if there are more items */}
+                {showOverlay && (
+                  <div className="absolute inset-0 flex items-center justify-center bg-black/60 text-white transition-colors hover:bg-black/70">
+                    <div className="text-center">
+                      <span className="block text-xl font-bold">+{remainingCount}</span>
+                      <span className="text-xs font-medium uppercase tracking-wider">Photos</span>
+                    </div>
+                  </div>
+                )}
               </button>
-            ))}
-          </div>
+            );
+          })}
         </div>
       )}
     </section>

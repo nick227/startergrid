@@ -96,7 +96,6 @@ export function ListingFilterBar({
   const modelLabel = config.labels.model ?? 'Model';
   const usageLabel = 'Mileage';
   const conditionLabel = config.labels.condition ?? 'Condition';
-  const yearLabel = config.labels.year ?? 'Year';
   const sellerNameLabel = config.labels.sellerName ?? 'Seller';
 
   useEffect(() => {

@@ -9,9 +9,9 @@ import {
 import { GALLERY_FIXTURES } from './vdpGalleryFixtures.ts';
 
 describe('buildVdpMediaSlotMap', () => {
-  it('always returns ten fixed mosaic cells in canonical slot order', () => {
+  it('always returns fixed mosaic cells in canonical slot order', () => {
     const map = buildVdpMediaSlotMap(GALLERY_FIXTURES.sparseMosaic);
-    expect(map.mosaic).toHaveLength(10);
+    expect(map.mosaic).toHaveLength(VDP_MOSAIC_SLOT_ORDER.length);
     expect(map.mosaic.map(cell => cell.slot)).toEqual(VDP_MOSAIC_SLOT_ORDER.map(s => s.slot));
   });
 

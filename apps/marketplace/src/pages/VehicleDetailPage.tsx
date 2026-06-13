@@ -193,11 +193,37 @@ function ListingDetailContent({
   return (
     <PageShell backHref={backHref} backLabel="Back to results">
       <div className="pb-24 lg:pb-0">
-        <div className="grid grid-cols-1 gap-8 lg:grid-cols-2 lg:gap-10">
-          <MediaSection media={vehicle.media} alt={vehicle.core.title} />
+        
+        {/* Main Branding Heading */}
+        <div className="mb-6">
+          <CoreHeaderSection core={vehicle.core} commerce={vehicle.commerce} location={vehicle.location} />
+        </div>
 
-          <div className="space-y-6 lg:sticky lg:top-20 lg:self-start">
-            <CoreHeaderSection core={vehicle.core} commerce={vehicle.commerce} />
+        {/* Full-width Photo Grid */}
+        <div className="mb-8 w-screen relative left-1/2 -translate-x-1/2 bg-black/5">
+          <div className="mx-auto max-w-[1920px]">
+            <MediaSection media={vehicle.media} alt={vehicle.core.title} />
+          </div>
+        </div>
+
+        {/* Two Column Layout for Details */}
+        <div className="grid grid-cols-1 gap-8 lg:grid-cols-[1fr_360px] lg:gap-10">
+          
+          {/* Main Column */}
+          <div className="space-y-6 lg:order-1">
+            <FulfillmentSection />
+            <ClassificationSection classification={vehicle.classification} />
+            <ColorsSection colors={vehicle.colors} />
+            {isAuto && <EngineSection engine={vehicle.engine} />}
+            {isAuto && <EfficiencySection efficiency={vehicle.efficiency} />}
+            <ConditionHistorySection conditionHistory={vehicle.conditionHistory} />
+            <FeaturesSection features={vehicle.features} />
+            <WarrantySection warranty={vehicle.warranty} />
+            <ContentSection content={vehicle.content} />
+          </div>
+
+          {/* Right Sidebar Column */}
+          <div className="space-y-6 lg:sticky lg:top-20 lg:self-start lg:order-2">
             <div className="flex flex-wrap items-center gap-2">
               <FavoriteButton listingId={vehicle.core.listingId} />
               <span className="text-sm text-ink-muted">Save this listing</span>
@@ -232,17 +258,7 @@ function ListingDetailContent({
           </div>
         </div>
 
-        <div className="mt-10 space-y-6">
-          <FulfillmentSection />
-          <ClassificationSection classification={vehicle.classification} />
-          <ColorsSection colors={vehicle.colors} />
-          {isAuto && <EngineSection engine={vehicle.engine} />}
-          {isAuto && <EfficiencySection efficiency={vehicle.efficiency} />}
-          <ConditionHistorySection conditionHistory={vehicle.conditionHistory} />
-          <FeaturesSection features={vehicle.features} />
-          <WarrantySection warranty={vehicle.warranty} />
-          <ContentSection content={vehicle.content} />
-        </div>
+
 
         <SimilarListingsRail
           listingId={listingId}

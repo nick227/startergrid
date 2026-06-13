@@ -16,6 +16,21 @@ export const VDP_MOSAIC_SLOT_ORDER: ReadonlyArray<{
   { slot: MediaEnums.slot.SLOT_8, angle: MediaEnums.angle.INTERIOR_REAR },
   { slot: MediaEnums.slot.SLOT_9, angle: MediaEnums.angle.INTERIOR_DASH },
   { slot: MediaEnums.slot.SLOT_10, angle: MediaEnums.angle.INTERIOR_CARGO },
+  { slot: MediaEnums.slot.SLOT_11, angle: MediaEnums.angle.DETAIL },
+  { slot: MediaEnums.slot.SLOT_12, angle: MediaEnums.angle.DETAIL },
+  { slot: MediaEnums.slot.SLOT_13, angle: MediaEnums.angle.DETAIL },
+  { slot: MediaEnums.slot.SLOT_14, angle: MediaEnums.angle.DETAIL },
+  { slot: MediaEnums.slot.SLOT_15, angle: MediaEnums.angle.DETAIL },
+  { slot: MediaEnums.slot.SLOT_16, angle: MediaEnums.angle.DETAIL },
+  { slot: MediaEnums.slot.SLOT_17, angle: MediaEnums.angle.DETAIL },
+  { slot: MediaEnums.slot.SLOT_18, angle: MediaEnums.angle.DETAIL },
+  { slot: MediaEnums.slot.SLOT_19, angle: MediaEnums.angle.DETAIL },
+  { slot: MediaEnums.slot.SLOT_20, angle: MediaEnums.angle.DETAIL },
+  { slot: MediaEnums.slot.SLOT_21, angle: MediaEnums.angle.DETAIL },
+  { slot: MediaEnums.slot.SLOT_22, angle: MediaEnums.angle.DETAIL },
+  { slot: MediaEnums.slot.SLOT_23, angle: MediaEnums.angle.DETAIL },
+  { slot: MediaEnums.slot.SLOT_24, angle: MediaEnums.angle.DETAIL },
+  { slot: MediaEnums.slot.SLOT_25, angle: MediaEnums.angle.DETAIL },
 ];
 
 const MOSAIC_SLOT_SET = new Set<MarketplaceMediaItem['slot']>(
@@ -56,6 +71,11 @@ export function buildVdpMediaSlotMap(items: MarketplaceMediaItem[]): VdpMediaSlo
   const sorted = [...items].sort((a, b) => a.sortOrder - b.sortOrder);
 
   for (const item of sorted) {
+    // Explicit OVERFLOW marker always goes to overflow — check before angle fallback.
+    if (item.slot === MediaEnums.slot.OVERFLOW) {
+      overflow.push(item);
+      continue;
+    }
     if (item.slot && MOSAIC_SLOT_SET.has(item.slot) && assignToCell(mosaic, item, item.slot)) {
       continue;
     }
@@ -66,11 +86,7 @@ export function buildVdpMediaSlotMap(items: MarketplaceMediaItem[]): VdpMediaSlo
         continue;
       }
     }
-    if (item.slot === MediaEnums.slot.OVERFLOW || !item.slot || !MOSAIC_SLOT_SET.has(item.slot)) {
-      overflow.push(item);
-      continue;
-    }
-    assignToCell(mosaic, item, item.slot);
+    overflow.push(item);
   }
 
   overflow.sort((a, b) => a.sortOrder - b.sortOrder);

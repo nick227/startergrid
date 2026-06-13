@@ -2516,6 +2516,11 @@ paths:
           required: false
           schema:
             type: string
+        - name: dealerId
+          in: query
+          required: false
+          schema:
+            type: string
         - name: platform
           in: query
           required: false
@@ -5568,6 +5573,9 @@ components:
           type: string
         actorEmail:
           type: string
+        dealerId:
+          type: string
+          nullable: true
         detailString:
           type: string
         createdAt:

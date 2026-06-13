@@ -104,44 +104,55 @@ export const AUTO_SHOT_GUIDE: MediaGuide = {
       requiredLevel: 'OPTIONAL', sortOrder: 15,
       aliases: ['trunk', 'cargo', 'cargo area', 'boot'],
     },
+    {
+      key: 'center-console', label: 'Center Console', group: 'Interior',
+      requiredLevel: 'OPTIONAL', sortOrder: 16,
+      aliases: ['console', 'shifter', 'infotainment'],
+    },
     // ── Detail / Mechanical ──────────────────────────────────────────────────
     {
       key: 'engine', label: 'Engine Bay', group: 'Detail',
-      requiredLevel: 'RECOMMENDED', sortOrder: 16,
+      requiredLevel: 'RECOMMENDED', sortOrder: 17,
       aliases: ['engine', 'engine bay', 'motor', 'under hood'],
       helpText: 'Open hood, engine bay visible.',
     },
     {
       key: 'vin-plate', label: 'VIN Plate', group: 'Detail',
-      requiredLevel: 'RECOMMENDED', sortOrder: 17,
+      requiredLevel: 'RECOMMENDED', sortOrder: 18,
       aliases: ['vin', 'vin plate', 'vin tag', 'vehicle id plate'],
       helpText: 'Dashboard VIN plate clearly readable.',
     },
     {
       key: 'window-sticker', label: 'Window Sticker / Monroney', group: 'Detail',
-      requiredLevel: 'OPTIONAL', sortOrder: 18,
+      requiredLevel: 'OPTIONAL', sortOrder: 19,
       aliases: ['sticker', 'monroney', 'window sticker', 'msrp sticker'],
     },
     {
       key: 'keys', label: 'Keys / Fobs', group: 'Detail',
-      requiredLevel: 'OPTIONAL', sortOrder: 19,
+      requiredLevel: 'OPTIONAL', sortOrder: 20,
       aliases: ['key', 'keys', 'key fob', 'fob'],
     },
     {
       key: 'wheels', label: 'Wheels / Rims', group: 'Detail',
-      requiredLevel: 'OPTIONAL', sortOrder: 20,
+      requiredLevel: 'OPTIONAL', sortOrder: 21,
       aliases: ['wheel', 'rim', 'alloy wheel', 'wheels'],
     },
     {
       key: 'tires', label: 'Tires', group: 'Detail',
-      requiredLevel: 'OPTIONAL', sortOrder: 21,
+      requiredLevel: 'OPTIONAL', sortOrder: 22,
       aliases: ['tire', 'tyres', 'tread'],
     },
     {
       key: 'damage-detail', label: 'Damage / Blemish Detail', group: 'Detail',
-      requiredLevel: 'OPTIONAL', sortOrder: 22,
+      requiredLevel: 'OPTIONAL', sortOrder: 23,
       aliases: ['damage', 'scratch', 'dent', 'blemish', 'condition detail'],
       helpText: 'Disclose any notable cosmetic damage transparently.',
+    },
+    {
+      key: 'undercarriage', label: 'Undercarriage / Suspension', group: 'Detail',
+      requiredLevel: 'OPTIONAL', sortOrder: 24,
+      aliases: ['undercarriage', 'underbody', 'suspension', 'exhaust'],
+      helpText: 'Condition of the underbody, frame, and suspension.',
     },
   ],
 };

@@ -1,6 +1,5 @@
 import { useMemo } from 'react';
 import type { MarketplaceMediaItem, VehicleMediaTour } from '@dealer-marketplace/client';
-import { VehicleTourStep } from '@dealer-marketplace/client';
 import { VdpMediaLightbox } from './VdpMediaLightbox.tsx';
 
 type Props = {
@@ -13,11 +12,6 @@ type Props = {
   onInquiry: () => void;
 };
 
-const STEP_TONE: Record<VehicleTourStep.stepType, string> = {
-  [VehicleTourStep.stepType.HIGHLIGHT]: 'bg-status-info-bg text-status-info-text border-status-info-border',
-  [VehicleTourStep.stepType.ISSUE]: 'bg-status-warning-bg text-status-warning-text border-status-warning-border',
-  [VehicleTourStep.stepType.NEUTRAL]: 'bg-silver-100 text-ink-muted border-silver-200',
-};
 
 export function VdpTourMode({ tour, items, stepIndex, alt, onStepIndexChange, onExit, onInquiry }: Props) {
   const steps = useMemo(
@@ -52,9 +46,6 @@ export function VdpTourMode({ tour, items, stepIndex, alt, onStepIndexChange, on
       footer={(
         <div className="space-y-3 text-white">
           <div className="flex flex-wrap items-center gap-2">
-            <span className={`rounded-pill border px-2.5 py-0.5 text-xs font-semibold ${STEP_TONE[current.step.stepType]}`}>
-              {current.step.stepType}
-            </span>
             <span className="text-xs text-slate-300">{safeIndex + 1} / {resolved.length}</span>
           </div>
           {current.step.note && <p className="text-sm text-slate-200">{current.step.note}</p>}

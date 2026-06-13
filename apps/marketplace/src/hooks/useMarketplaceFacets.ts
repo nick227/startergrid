@@ -1,4 +1,3 @@
-import { useMemo } from 'react';
 import type { MarketplaceFacetsResponse } from '@dealer-marketplace/client';
 import { fetchFacets, type ListFilters } from '../lib/api.ts';
 import { useQuery } from './useQuery.ts';

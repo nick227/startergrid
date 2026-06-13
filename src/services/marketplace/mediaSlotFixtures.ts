@@ -36,6 +36,21 @@ export const MOSAIC_SLOT_SPECS: ReadonlyArray<{
   { slot: 'SLOT_8', angle: 'INTERIOR_REAR' },
   { slot: 'SLOT_9', angle: 'INTERIOR_DASH' },
   { slot: 'SLOT_10', angle: 'INTERIOR_CARGO' },
+  { slot: 'SLOT_11', angle: 'DETAIL' },
+  { slot: 'SLOT_12', angle: 'DETAIL' },
+  { slot: 'SLOT_13', angle: 'DETAIL' },
+  { slot: 'SLOT_14', angle: 'DETAIL' },
+  { slot: 'SLOT_15', angle: 'DETAIL' },
+  { slot: 'SLOT_16', angle: 'DETAIL' },
+  { slot: 'SLOT_17', angle: 'DETAIL' },
+  { slot: 'SLOT_18', angle: 'DETAIL' },
+  { slot: 'SLOT_19', angle: 'DETAIL' },
+  { slot: 'SLOT_20', angle: 'DETAIL' },
+  { slot: 'SLOT_21', angle: 'DETAIL' },
+  { slot: 'SLOT_22', angle: 'DETAIL' },
+  { slot: 'SLOT_23', angle: 'DETAIL' },
+  { slot: 'SLOT_24', angle: 'DETAIL' },
+  { slot: 'SLOT_25', angle: 'DETAIL' },
 ];
 
 function detailMediaKind(kind: string | undefined): MarketplaceMediaItem['kind'] {
