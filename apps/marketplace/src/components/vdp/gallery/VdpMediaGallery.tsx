@@ -1,5 +1,5 @@
 import { useMemo, useState } from 'react';
-import type { VehicleMedia } from '@dealer-marketplace/client';
+import type { VehicleMedia, VehicleLocation } from '@dealer-marketplace/client';
 import {
   buildVdpMediaSlotMap,
   collectLightboxItems,
@@ -12,10 +12,11 @@ import { VdpTourMode } from './VdpTourMode.tsx';
 type Props = {
   media: VehicleMedia;
   alt: string;
+  location?: VehicleLocation;
   onInquiry?: () => void;
 };
 
-export function VdpMediaGallery({ media, alt, onInquiry }: Props) {
+export function VdpMediaGallery({ media, alt, location, onInquiry }: Props) {
   const slotMap = useMemo(() => buildVdpMediaSlotMap(media.items), [media.items]);
   const lightboxItems = useMemo(() => collectLightboxItems(slotMap), [slotMap]);
   const [lightboxIndex, setLightboxIndex] = useState<number | null>(null);
@@ -61,6 +62,7 @@ export function VdpMediaGallery({ media, alt, onInquiry }: Props) {
           items={lightboxItems}
           index={lightboxIndex}
           alt={alt}
+          location={location}
           onIndexChange={setLightboxIndex}
           onClose={() => setLightboxIndex(null)}
         />

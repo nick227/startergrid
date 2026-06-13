@@ -6,22 +6,27 @@ export const VDP_MOSAIC_SLOT_ORDER: ReadonlyArray<{
   slot: MarketplaceMediaItem['slot'];
   angle: MarketplaceMediaItem['angle'];
 }> = [
+  // 8 Exterior
   { slot: MediaEnums.slot.HERO, angle: MediaEnums.angle.EXTERIOR_FRONT_34 },
   { slot: MediaEnums.slot.SLOT_2, angle: MediaEnums.angle.EXTERIOR_FRONT },
   { slot: MediaEnums.slot.SLOT_3, angle: MediaEnums.angle.EXTERIOR_REAR_34 },
   { slot: MediaEnums.slot.SLOT_4, angle: MediaEnums.angle.EXTERIOR_REAR },
   { slot: MediaEnums.slot.SLOT_5, angle: MediaEnums.angle.EXTERIOR_SIDE },
   { slot: MediaEnums.slot.SLOT_6, angle: MediaEnums.angle.EXTERIOR_DOORS_OPEN },
-  { slot: MediaEnums.slot.SLOT_7, angle: MediaEnums.angle.INTERIOR_FRONT },
-  { slot: MediaEnums.slot.SLOT_8, angle: MediaEnums.angle.INTERIOR_REAR },
-  { slot: MediaEnums.slot.SLOT_9, angle: MediaEnums.angle.INTERIOR_DASH },
-  { slot: MediaEnums.slot.SLOT_10, angle: MediaEnums.angle.INTERIOR_CARGO },
-  { slot: MediaEnums.slot.SLOT_11, angle: MediaEnums.angle.DETAIL },
-  { slot: MediaEnums.slot.SLOT_12, angle: MediaEnums.angle.DETAIL },
-  { slot: MediaEnums.slot.SLOT_13, angle: MediaEnums.angle.DETAIL },
-  { slot: MediaEnums.slot.SLOT_14, angle: MediaEnums.angle.DETAIL },
-  { slot: MediaEnums.slot.SLOT_15, angle: MediaEnums.angle.DETAIL },
-  { slot: MediaEnums.slot.SLOT_16, angle: MediaEnums.angle.DETAIL },
+  { slot: MediaEnums.slot.SLOT_7, angle: MediaEnums.angle.EXTERIOR_SIDE },
+  { slot: MediaEnums.slot.SLOT_8, angle: MediaEnums.angle.EXTERIOR_SIDE },
+
+  // 8 Interior
+  { slot: MediaEnums.slot.SLOT_9, angle: MediaEnums.angle.INTERIOR_FRONT },
+  { slot: MediaEnums.slot.SLOT_10, angle: MediaEnums.angle.INTERIOR_REAR },
+  { slot: MediaEnums.slot.SLOT_11, angle: MediaEnums.angle.INTERIOR_DASH },
+  { slot: MediaEnums.slot.SLOT_12, angle: MediaEnums.angle.INTERIOR_CARGO },
+  { slot: MediaEnums.slot.SLOT_13, angle: MediaEnums.angle.INTERIOR_CARGO },
+  { slot: MediaEnums.slot.SLOT_14, angle: MediaEnums.angle.INTERIOR_CARGO },
+  { slot: MediaEnums.slot.SLOT_15, angle: MediaEnums.angle.INTERIOR_CARGO },
+  { slot: MediaEnums.slot.SLOT_16, angle: MediaEnums.angle.INTERIOR_CARGO },
+
+  // 8 Detail
   { slot: MediaEnums.slot.SLOT_17, angle: MediaEnums.angle.DETAIL },
   { slot: MediaEnums.slot.SLOT_18, angle: MediaEnums.angle.DETAIL },
   { slot: MediaEnums.slot.SLOT_19, angle: MediaEnums.angle.DETAIL },
@@ -30,7 +35,6 @@ export const VDP_MOSAIC_SLOT_ORDER: ReadonlyArray<{
   { slot: MediaEnums.slot.SLOT_22, angle: MediaEnums.angle.DETAIL },
   { slot: MediaEnums.slot.SLOT_23, angle: MediaEnums.angle.DETAIL },
   { slot: MediaEnums.slot.SLOT_24, angle: MediaEnums.angle.DETAIL },
-  { slot: MediaEnums.slot.SLOT_25, angle: MediaEnums.angle.DETAIL },
 ];
 
 const MOSAIC_SLOT_SET = new Set<MarketplaceMediaItem['slot']>(

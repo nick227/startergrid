@@ -202,7 +202,7 @@ function ListingDetailContent({
         {/* Full-width Photo Grid */}
         <div className="mb-8 w-screen relative left-1/2 -translate-x-1/2 bg-black/5">
           <div className="mx-auto max-w-[1920px]">
-            <MediaSection media={vehicle.media} alt={vehicle.core.title} />
+            <MediaSection media={vehicle.media} alt={vehicle.core.title} location={vehicle.location} />
           </div>
         </div>
 

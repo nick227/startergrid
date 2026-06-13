@@ -13,10 +13,18 @@ export function VdpGalleryMosaic({ map, alt, onOpenItem }: Props) {
   const [activeItemId, setActiveItemId] = useState<string | null>(null);
 
   // Filter out slots that have no item to avoid showing empty boxes on the front page
-  const validItems = map.mosaic.filter(m => m.item !== null);
-  const totalItems = validItems.length + map.overflow.length;
+  const validMosaicItems = map.mosaic.filter(m => m.item !== null);
+  const overflowCells = map.overflow.map(item => ({
+    slot: item.slot ?? 'OVERFLOW',
+    angle: item.angle ?? 'MISC',
+    label: 'Additional Photo',
+    item
+  }));
+  
+  const allAvailableItems = [...validMosaicItems, ...overflowCells];
+  const totalItems = allAvailableItems.length;
 
-  if (validItems.length === 0) {
+  if (allAvailableItems.length === 0) {
     return (
       <div className="flex aspect-video w-full items-center justify-center rounded-2xl bg-silver-100 text-ink-muted">
         No media available
@@ -24,17 +32,17 @@ export function VdpGalleryMosaic({ map, alt, onOpenItem }: Props) {
     );
   }
 
-  const heroSlot = validItems[0]!;
-  const activeSlot = validItems.find(m => m.item!.id === activeItemId) ?? heroSlot;
+  const heroSlot = allAvailableItems[0]!;
+  const activeSlot = allAvailableItems.find(m => m.item!.id === activeItemId) ?? heroSlot;
   const activeItem = activeSlot.item!;
   const activeBadge = kindBadge(activeItem.kind);
 
-  // We show up to 6 thumbnails on the right
-  const thumbnails = validItems.slice(1, 7);
+  // We show up to 18 thumbnails on the right (3 columns, 6 rows)
+  const thumbnails = allAvailableItems.slice(1, 19);
   const remainingCount = totalItems - 1 - thumbnails.length;
 
   return (
-    <section aria-label="Vehicle gallery" className="flex flex-col gap-2 md:flex-row h-[50vh] min-h-[300px] md:min-h-[450px] lg:h-[65vh] lg:max-h-[750px]">
+    <section aria-label="Vehicle gallery" className="flex flex-col gap-2 md:flex-row md:h-[450px] lg:h-[550px] xl:h-[600px]">
       {/* Main Active Viewer */}
       <button 
         type="button"
@@ -45,7 +53,7 @@ export function VdpGalleryMosaic({ map, alt, onOpenItem }: Props) {
         <img 
           src={activeItem.url} 
           alt={`${alt} — ${activeSlot.label}`} 
-          className="h-full w-full object-cover transition-opacity duration-300"
+          className="h-full w-full object-contain transition-opacity duration-300"
           loading="eager"
           decoding="async"
         />
@@ -63,7 +71,7 @@ export function VdpGalleryMosaic({ map, alt, onOpenItem }: Props) {
 
       {/* Thumbnails Grid */}
       {thumbnails.length > 0 && (
-        <div className="grid grid-cols-3 gap-2 md:w-[320px] md:grid-cols-2 md:grid-rows-3 lg:w-[400px]">
+        <div className="grid grid-cols-3 content-start gap-1 overflow-y-auto pr-1 md:w-[400px] lg:w-[500px] xl:w-[600px]">
           {thumbnails.map((thumb, index) => {
             const isLast = index === thumbnails.length - 1;
             const item = thumb.item!;
@@ -74,7 +82,7 @@ export function VdpGalleryMosaic({ map, alt, onOpenItem }: Props) {
               <button 
                 key={item.id} 
                 type="button"
-                className={`mp-focus relative overflow-hidden rounded-xl bg-silver-100 transition-all ${isActive ? 'ring-2 ring-blue-500 ring-offset-2 ring-offset-white' : 'hover:opacity-90'}`}
+                className={`mp-focus relative aspect-[4/3] overflow-hidden bg-black transition-all ${isActive ? 'ring-2 ring-blue-500 ring-offset-2 ring-offset-white' : 'hover:opacity-90'}`}
                 aria-label={showOverlay ? 'View all photos' : `View ${thumb.label}`}
                 onMouseEnter={() => setActiveItemId(item.id)}
                 onClick={() => {
