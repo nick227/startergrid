@@ -62,6 +62,18 @@ const PUBLISHED_LISTING_GATE: Prisma.VehicleWhereInput = {
   },
 };
 
+const CATEGORY_ITEM_CONSUMER_SLUG = 'consumer-marketplace';
+
+const CATEGORY_ITEM_PUBLISHED_GATE: Prisma.CategoryInventoryItemWhereInput = {
+  listingStatus: 'READY',
+  soldAt:        null,
+  removedAt:     null,
+  priceCents:    { gt: 0 },
+  marketplaceListings: {
+    some: { platformSlug: CATEGORY_ITEM_CONSUMER_SLUG, status: 'ACTIVE' },
+  },
+};
+
 const MAX_CARD_IMAGES = 8;
 const DEFAULT_FEED_LIMIT = 24;
 const MAX_FEED_LIMIT = 60;
@@ -182,6 +194,18 @@ export type MarketplaceFeedResponse = {
   nextCursor:     string | null;
   totalEstimate:  number;
   appliedFilters: MarketplaceFeedAppliedFilters;
+};
+
+export type MarketplaceFacetOption = { value: string; count: number };
+export type MarketplaceFacetRange = { value: string; label: string; count: number; min: number | null; max: number | null };
+
+export type MarketplaceFacetsResponse = {
+  brandFacets?: MarketplaceFacetOption[];
+  modelFacets?: MarketplaceFacetOption[];
+  customFacets?: Record<string, MarketplaceFacetOption[]>;
+  priceRanges: MarketplaceFacetRange[];
+  yearRanges: MarketplaceFacetRange[];
+  mileageRanges: MarketplaceFacetRange[];
 };
 
 export type MarketplaceListFilters = {
@@ -770,6 +794,137 @@ export async function getMarketplaceFeed(
   };
 }
 
+export async function getMarketplaceFacets(
+  prisma: PrismaClient,
+  filters: MarketplaceListFilters = {},
+): Promise<MarketplaceFacetsResponse> {
+  const isAutomotive = !filters.category || filters.category === 'AUTOMOTIVE';
+
+  const priceRangesDef = [
+    { value: 'under-10k', label: 'Under $10k', min: 0, max: 999999 },
+    { value: '10k-20k', label: '$10k–$20k', min: 1000000, max: 1999999 },
+    { value: '20k-30k', label: '$20k–$30k', min: 2000000, max: 2999999 },
+    { value: '30k-50k', label: '$30k–$50k', min: 3000000, max: 4999999 },
+    { value: '50k-plus', label: '$50k+', min: 5000000, max: null },
+  ];
+
+  if (isAutomotive) {
+    const makesWhere = buildMarketplaceWhere({ ...filters, make: undefined, model: undefined });
+    const modelsWhere = buildMarketplaceWhere({ ...filters, model: undefined });
+    const bodyStylesWhere = buildMarketplaceWhere({ 
+      ...filters, 
+      facets: filters.facets ? Object.fromEntries(Object.entries(filters.facets).filter(([k]) => k !== 'bodyStyle')) : undefined 
+    });
+    const pricesWhere = buildMarketplaceWhere({ ...filters, minPrice: undefined, maxPrice: undefined });
+    const yearsWhere = buildMarketplaceWhere({ ...filters, minYear: undefined, maxYear: undefined });
+    const mileagesWhere = buildMarketplaceWhere({ ...filters, maxMileage: undefined });
+
+    const [makesGroup, modelsGroup, bodyStylesGroup] = await Promise.all([
+      prisma.vehicle.groupBy({ by: ['make'], where: makesWhere, _count: true }),
+      prisma.vehicle.groupBy({ by: ['model'], where: modelsWhere, _count: true }),
+      prisma.vehicle.groupBy({ by: ['bodyStyle'], where: bodyStylesWhere, _count: true }),
+    ]);
+
+    const makes = makesGroup.map(g => ({ value: g.make, count: g._count })).sort((a, b) => b.count - a.count);
+    const models = modelsGroup.map(g => ({ value: g.model, count: g._count })).sort((a, b) => b.count - a.count);
+    const bodyStyles = bodyStylesGroup
+      .filter(g => g.bodyStyle != null && g.bodyStyle !== '')
+      .map(g => ({ value: g.bodyStyle!, count: g._count }))
+      .sort((a, b) => b.count - a.count);
+
+    const priceRanges = await Promise.all(priceRangesDef.map(async r => {
+      const count = await prisma.vehicle.count({
+        where: { ...pricesWhere, priceCents: { gte: r.min, ...(r.max != null ? { lte: r.max } : {}) } },
+      });
+      return { value: r.value, label: r.label, count, min: r.min, max: r.max };
+    }));
+
+    const yearRangesDef = [
+      { value: '2024-newer', label: '2024 & newer', min: 2024, max: null },
+      { value: '2020-newer', label: '2020 & newer', min: 2020, max: null },
+      { value: '2016-newer', label: '2016 & newer', min: 2016, max: null },
+      { value: '2012-newer', label: '2012 & newer', min: 2012, max: null },
+      { value: 'older-2012', label: 'Older than 2012', min: null, max: 2011 },
+    ];
+    const yearRanges = await Promise.all(yearRangesDef.map(async r => {
+      const count = await prisma.vehicle.count({
+        where: { ...yearsWhere, year: { ...(r.min != null ? { gte: r.min } : {}), ...(r.max != null ? { lte: r.max } : {}) } },
+      });
+      return { value: r.value, label: r.label, count, min: r.min, max: r.max };
+    }));
+
+    const mileageRangesDef = [
+      { value: 'under-10k', label: 'Under 10k miles', min: 0, max: 9999 },
+      { value: 'under-30k', label: 'Under 30k miles', min: 0, max: 29999 },
+      { value: 'under-60k', label: 'Under 60k miles', min: 0, max: 59999 },
+      { value: 'under-100k', label: 'Under 100k miles', min: 0, max: 99999 },
+      { value: '100k-plus', label: '100k+ miles', min: 100000, max: null },
+    ];
+    const mileageRanges = await Promise.all(mileageRangesDef.map(async r => {
+      const count = await prisma.vehicle.count({
+        where: { ...mileagesWhere, mileage: { gte: r.min, ...(r.max != null ? { lte: r.max } : {}) } },
+      });
+      return { value: r.value, label: r.label, count, min: r.min, max: r.max };
+    }));
+
+    return {
+      brandFacets: makes,
+      modelFacets: models,
+      customFacets: { bodyStyle: bodyStyles },
+      priceRanges: priceRanges.filter(r => r.count > 0),
+      yearRanges: yearRanges.filter(r => r.count > 0),
+      mileageRanges: mileageRanges.filter(r => r.count > 0),
+    };
+  }
+
+  // --- GENERIC CATEGORY LOGIC ---
+  const schema = resolveCategorySchema(filters.category!);
+  const customFacets: Record<string, MarketplaceFacetOption[]> = {};
+
+  const baseWhere = {
+    categoryId: filters.category!,
+    ...CATEGORY_ITEM_PUBLISHED_GATE,
+  };
+
+  const priceRanges = await Promise.all(priceRangesDef.map(async r => {
+    const count = await prisma.categoryInventoryItem.count({
+      where: { ...baseWhere, priceCents: { gte: r.min, ...(r.max != null ? { lte: r.max } : {}) } },
+    });
+    return { value: r.value, label: r.label, count, min: r.min, max: r.max };
+  }));
+
+  const facetDefs = buildMarketplaceFacets(schema);
+  for (const facet of facetDefs) {
+    if (facet.options && facet.options.length > 0 && facet.filterStorage.storage === 'categoryPayload') {
+      // Hoist the narrowed payloadKey before the async closure: TypeScript drops
+      // the `storage === 'categoryPayload'` narrowing inside the .map callback, and
+      // payloadKey does not exist on the 'column' variant of the facet contract.
+      const payloadKey = facet.filterStorage.payloadKey;
+      const optionsWithCounts = await Promise.all(facet.options.map(async opt => {
+        const count = await prisma.categoryInventoryItem.count({
+          where: {
+            ...baseWhere,
+            data: { path: [payloadKey], equals: opt.value }
+          }
+        });
+        return { value: opt.value, count };
+      }));
+      customFacets[facet.key] = optionsWithCounts.filter(o => o.count > 0).sort((a, b) => b.count - a.count);
+    }
+  }
+
+  // Note: we intentionally skip brandFacets and modelFacets for generic categories
+  // since they are high-cardinality text fields. We rely on the frontend
+  // gracefully falling back to a free-text <input type="search"> if omitted.
+
+  return {
+    customFacets,
+    priceRanges: priceRanges.filter(r => r.count > 0),
+    yearRanges: [],
+    mileageRanges: [],
+  };
+}
+
 export async function getMarketplaceVehicle(
   prisma: PrismaClient,
   listingId: string,
@@ -861,5 +1016,162 @@ export async function getMarketplaceDealerIndex(
     state:      addr.state,
     websiteUrl: dealer.websiteUrl,
     vehicles:   (rows as unknown as DbVehicleRow[]).map(row => shapeCard(row)),
+  };
+}
+
+// ── CategoryInventoryItem marketplace queries ─────────────────────────────────
+// Items must be READY-listed, unremoved/unsold, priced, and have an ACTIVE
+// consumer-marketplace listing — same gate semantics as vehicles above.
+
+export type MarketplaceCategoryItemCard = {
+  listingId:   string;        // CategoryInventoryItem.id
+  categoryId:  string;
+  stockNumber: string | null;
+  title:       string | null;
+  author:      string | null;
+  format:      string | null;
+  priceCents:  number;
+  mediaUrls:   string[];
+  dealerId:    string;
+  dealerName:  string;
+  dealerCity:  string | null;
+  dealerState: string | null;
+  listingUrl:  string;
+  listedAt:    string;
+};
+
+export type MarketplaceCategoryItemDetail = MarketplaceCategoryItemCard & {
+  publisher:   string | null;
+  language:    string | null;
+  pageCount:   number | null;
+  isbn:        string | null;
+  asin:        string | null;
+  data:        Record<string, unknown>;
+};
+
+export type MarketplaceCategoryItemListResponse = {
+  items:    MarketplaceCategoryItemCard[];
+  total:    number;
+  page:     number;
+  pageSize: number;
+};
+
+function safeStr(data: Record<string, unknown>, key: string): string | null {
+  const v = data[key];
+  return typeof v === 'string' && v.length > 0 ? v : null;
+}
+
+function safeNum(data: Record<string, unknown>, key: string): number | null {
+  const v = data[key];
+  return typeof v === 'number' ? v : null;
+}
+
+function shapeCategoryItemCard(
+  row: {
+    id: string; categoryId: string; stockNumber: string | null; priceCents: number | null;
+    createdAt: Date; data: unknown;
+    media: { url: string; sortOrder: number }[];
+    dealership: DbDealership;
+  },
+): MarketplaceCategoryItemCard {
+  const data = (row.data && typeof row.data === 'object' && !Array.isArray(row.data))
+    ? row.data as Record<string, unknown>
+    : {};
+  const addr = extractAddress(row.dealership.rooftopAddress);
+
+  return {
+    listingId:   row.id,
+    categoryId:  row.categoryId,
+    stockNumber: row.stockNumber,
+    title:       safeStr(data, 'title'),
+    author:      safeStr(data, 'author'),
+    format:      safeStr(data, 'format'),
+    priceCents:  row.priceCents ?? 0,
+    mediaUrls:   row.media.map(m => m.url),
+    dealerId:    row.dealership.id,
+    dealerName:  dealerDisplayName(row.dealership),
+    dealerCity:  addr.city,
+    dealerState: addr.state,
+    listingUrl:  `/marketplace/category-items/${row.id}`,
+    listedAt:    row.createdAt.toISOString(),
+  };
+}
+
+const CATEGORY_ITEM_CARD_SELECT = {
+  id:          true,
+  categoryId:  true,
+  stockNumber: true,
+  priceCents:  true,
+  data:        true,
+  createdAt:   true,
+  media: {
+    select:  { url: true, sortOrder: true },
+    orderBy: { sortOrder: 'asc' as const },
+    take:    MAX_CARD_IMAGES,
+  },
+  dealership: { select: DEALER_SELECT },
+} as const;
+
+export async function listMarketplaceCategoryItems(
+  prisma: PrismaClient,
+  filters: { dealerId?: string; categoryId?: string; page?: number; pageSize?: number } = {},
+): Promise<MarketplaceCategoryItemListResponse> {
+  const page     = Math.max(1, filters.page     ?? 1);
+  const pageSize = Math.min(100, Math.max(1, filters.pageSize ?? 24));
+
+  const where = {
+    ...CATEGORY_ITEM_PUBLISHED_GATE,
+    ...(filters.dealerId   ? { dealershipId: filters.dealerId }   : {}),
+    ...(filters.categoryId ? { categoryId:   filters.categoryId } : {}),
+  };
+
+  const [total, rows] = await Promise.all([
+    prisma.categoryInventoryItem.count({ where }),
+    prisma.categoryInventoryItem.findMany({
+      where,
+      select:  CATEGORY_ITEM_CARD_SELECT,
+      orderBy: [{ createdAt: 'desc' }, { id: 'asc' }],
+      skip:    (page - 1) * pageSize,
+      take:    pageSize,
+    }),
+  ]);
+
+  return {
+    items: (rows as Parameters<typeof shapeCategoryItemCard>[0][]).map(shapeCategoryItemCard),
+    total,
+    page,
+    pageSize,
+  };
+}
+
+export async function getMarketplaceCategoryItemDetail(
+  prisma: PrismaClient,
+  listingId: string,
+): Promise<MarketplaceCategoryItemDetail | null> {
+  const row = await prisma.categoryInventoryItem.findFirst({
+    where: { id: listingId, ...CATEGORY_ITEM_PUBLISHED_GATE },
+    select: {
+      ...CATEGORY_ITEM_CARD_SELECT,
+      media: {
+        select:  { url: true, sortOrder: true },
+        orderBy: { sortOrder: 'asc' as const },
+      },
+    },
+  });
+  if (!row) return null;
+
+  const card = shapeCategoryItemCard(row as Parameters<typeof shapeCategoryItemCard>[0]);
+  const data = (row.data && typeof row.data === 'object' && !Array.isArray(row.data))
+    ? row.data as Record<string, unknown>
+    : {};
+
+  return {
+    ...card,
+    publisher:  safeStr(data, 'publisher'),
+    language:   safeStr(data, 'language'),
+    pageCount:  safeNum(data, 'pageCount'),
+    isbn:       safeStr(data, 'isbn'),
+    asin:       safeStr(data, 'asin'),
+    data,
   };
 }

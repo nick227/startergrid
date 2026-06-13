@@ -43,9 +43,24 @@ describe('buildListingFacetConfig', () => {
   });
 
   it('fails closed for categories without enum or boolean facet fields', () => {
-    const schema = resolveCategorySchema('EBOOKS');
+    // SONGS has only text/identifier/currency fields — no facetable enum or boolean.
+    const schema = resolveCategorySchema('SONGS');
     expect(buildListingFacetConfig(schema).facets).toEqual([]);
-    expect(buildListingFilterConfig('ebooks', schema).facets).toEqual([]);
+    expect(buildListingFilterConfig('songs', schema).facets).toEqual([]);
+  });
+
+  it('exposes ebooks format enum facet backed by category payload', () => {
+    const schema = resolveCategorySchema('EBOOKS');
+    const { facets } = buildListingFacetConfig(schema);
+
+    expect(facets).toHaveLength(1);
+    expect(facets[0]).toMatchObject({
+      key: 'format',
+      label: 'Format',
+      kind: 'enum',
+      filterStorage: { storage: 'categoryPayload', payloadKey: 'format' },
+    });
+    expect(facets[0].options.map((o: { value: string }) => o.value)).toContain('epub');
   });
 
   it('drops unknown or invalid facet values', () => {

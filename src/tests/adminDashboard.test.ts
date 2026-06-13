@@ -58,19 +58,26 @@ function makeApp(role: 'SUPER_ADMIN' | 'OPERATOR'): {
       ]
     },
     publishQueueItem: {
-      count: async () => 5,
+      count: async () => 0,
       findFirst: async () => null,
       findMany: async () => []
     },
     platformApplication: {
-      count: async () => 1,
+      count: async () => 0,
       findMany: async () => []
+    },
+    marketplaceListing: {
+      count: async () => 0,
+    },
+    socialPost: {
+      count: async () => 0,
     },
     syncRun: {
       findFirst: async () => null,
       findMany: async () => []
     },
     syncEvent: {
+      count: async () => 0,
       findMany: async () => []
     },
     platformAccount: {
