@@ -1,6 +1,7 @@
 ﻿import type { PrismaClient, Prisma } from '@prisma/client';
 import type { IntegrationClass, VehicleUpdateKind, VehicleUpdatePropagation } from '../../lib/types.js';
 import { platformProfiles } from '../../data/platformProfiles.js';
+import { isPlatformAllowedForCategory } from '../../data/platformCategoryMap.js';
 import {
   defaultSyncMode,
   resolveQueueStatus,
@@ -68,6 +69,15 @@ export async function enqueueFromVehicleUpdate(
   kind: VehicleUpdateKind,
   propagations: VehicleUpdatePropagation[]
 ): Promise<{ queued: number; syncEventId: string }> {
+  // Guard: scope propagations to platforms allowed for this dealer's business category.
+  const dealer = await prisma.dealershipProfile.findUnique({
+    where: { id: dealershipId },
+    select: { businessCategory: true },
+  });
+  const allowedPropagations = propagations.filter(
+    prop => isPlatformAllowedForCategory(prop.platformSlug, dealer?.businessCategory ?? null),
+  );
+
   // Pick the right SyncEventKind
   const syncEventKind = kind === 'SOLD'
     ? 'VEHICLE_SOLD'
@@ -79,7 +89,7 @@ export async function enqueueFromVehicleUpdate(
     dealershipId,
     vehicleId,
     kind: syncEventKind as any,
-    payload: { triggerKind: kind, platformCount: propagations.length, action: propagations.map(p => p.action) }
+    payload: { triggerKind: kind, platformCount: allowedPropagations.length, action: allowedPropagations.map(p => p.action) }
   });
 
   // Load persisted policies; fall back to defaults
@@ -88,7 +98,7 @@ export async function enqueueFromVehicleUpdate(
 
   let queued = 0;
 
-  for (const prop of propagations) {
+  for (const prop of allowedPropagations) {
     if (prop.action === 'NO_ACTION') continue;
 
     const policy = policyMap.get(prop.platformSlug);

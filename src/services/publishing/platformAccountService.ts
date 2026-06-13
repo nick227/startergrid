@@ -1,6 +1,6 @@
 import type { PrismaClient, Prisma, PlatformAccountState } from '@prisma/client';
 import { platformProfiles } from '../../data/platformProfiles.js';
-import { platformsForCategory } from '../../data/platformCategoryMap.js';
+import { platformsForCategory, isPlatformAllowedForCategory } from '../../data/platformCategoryMap.js';
 import type { PlatformProfileSeed, ConnectionField } from '../../lib/types.js';
 
 type ProfileConfidence = 'HIGH' | 'MEDIUM' | 'LOW';
@@ -297,6 +297,15 @@ export async function updatePlatformAccount(
   payload: AccountUpdatePayload,
   actor?: { id: string; email: string }
 ): Promise<PlatformAccountDetail> {
+  const dealer = await prisma.dealershipProfile.findUnique({
+    where: { id: dealershipId },
+    select: { businessCategory: true },
+  });
+  if (!isPlatformAllowedForCategory(platformSlug, dealer?.businessCategory ?? null)) {
+    throw new Error(
+      `Cross-category write rejected: platform '${platformSlug}' is not permitted for category '${dealer?.businessCategory ?? 'unknown'}'`,
+    );
+  }
   const current = await prisma.platformAccount.findUnique({
     where: { dealershipId_platformSlug: { dealershipId, platformSlug } }
   });

@@ -404,6 +404,9 @@ describe('MarketplaceListingStore.upsert', () => {
   it('calls prisma.marketplaceListing.upsert with correct where clause', async () => {
     let capturedWhere: unknown = null;
     const fakePrisma = {
+      dealershipProfile: {
+        findUnique: async () => ({ businessCategory: 'AUTOMOTIVE' }),
+      },
       marketplaceListing: {
         upsert: async (args: { where: unknown }) => {
           capturedWhere = args.where;
@@ -412,13 +415,13 @@ describe('MarketplaceListingStore.upsert', () => {
       },
     } as unknown as PrismaClient;
 
-    await MarketplaceListingStore.upsert(fakePrisma, DEALER_ID, VEHICLE_ID, 'ebay-motors', { status: 'ACTIVE' });
+    await MarketplaceListingStore.upsert(fakePrisma, DEALER_ID, { vehicleId: VEHICLE_ID }, 'ebay-motors', { status: 'ACTIVE' });
     assert.deepEqual(capturedWhere, { vehicleId_platformSlug: { vehicleId: VEHICLE_ID, platformSlug: 'ebay-motors' } });
   });
 });
 
-describe('MarketplaceListingStore.findOne', () => {
-  it('calls findUnique with composite key', async () => {
+describe('MarketplaceListingStore.findOneByItem', () => {
+  it('calls findUnique with vehicleId composite key', async () => {
     let capturedWhere: unknown = null;
     const fakePrisma = {
       marketplaceListing: {
@@ -429,8 +432,23 @@ describe('MarketplaceListingStore.findOne', () => {
       },
     } as unknown as PrismaClient;
 
-    await MarketplaceListingStore.findOne(fakePrisma, VEHICLE_ID, 'ebay-motors');
+    await MarketplaceListingStore.findOneByItem(fakePrisma, { vehicleId: VEHICLE_ID }, 'ebay-motors');
     assert.deepEqual(capturedWhere, { vehicleId_platformSlug: { vehicleId: VEHICLE_ID, platformSlug: 'ebay-motors' } });
+  });
+
+  it('calls findUnique with categoryItemId composite key', async () => {
+    let capturedWhere: unknown = null;
+    const fakePrisma = {
+      marketplaceListing: {
+        findUnique: async (args: { where: unknown }) => {
+          capturedWhere = args.where;
+          return null;
+        },
+      },
+    } as unknown as PrismaClient;
+
+    await MarketplaceListingStore.findOneByItem(fakePrisma, { categoryItemId: 'item-001' }, 'consumer-marketplace');
+    assert.deepEqual(capturedWhere, { categoryItemId_platformSlug: { categoryItemId: 'item-001', platformSlug: 'consumer-marketplace' } });
   });
 });
 
