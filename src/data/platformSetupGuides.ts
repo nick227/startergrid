@@ -409,6 +409,11 @@ export const PLATFORM_SETUP_GUIDES: Record<string, PlatformSetupGuide> = {
     },
   },
   'facebook-business-page': {
+    description: 'Facebook Business Page posting publishes inventory highlights, new arrivals, and promotional content directly to a dealer\'s Facebook Page feed and followers. Posts are generated automatically from live inventory and can include photos, pricing, and VDP links. This channel builds organic reach and follower engagement without paid ad spend, complementing paid catalog campaigns on the same platform.',
+    externalLinks: [
+      { label: 'Pages API docs', url: 'https://developers.facebook.com/docs/pages-api/' },
+      { label: 'Meta Business Suite', url: 'https://business.facebook.com' },
+    ],
     admin: META_PAGE_ADMIN,
     operator: {
       ...SHARED_OAUTH_OPERATOR,
@@ -422,6 +427,12 @@ export const PLATFORM_SETUP_GUIDES: Record<string, PlatformSetupGuide> = {
     },
   },
   'microsoft-automotive-ads': {
+    description: 'Microsoft Advertising (formerly Bing Ads) runs vehicle catalog ads across Bing, Yahoo, and the Microsoft Audience Network, reaching buyers who tend to be older, higher-income, and less reached by Google-only campaigns. Inventory is delivered as a vehicle feed and processed into catalog-driven dynamic search ads. Microsoft\'s automotive ad format closely mirrors Google Vehicle Ads and supports the same feed schema with minor differences.',
+    externalLinks: [
+      { label: 'Microsoft Advertising API', url: 'https://learn.microsoft.com/en-us/advertising/guides/' },
+      { label: 'Automotive Ads', url: 'https://about.ads.microsoft.com/en-us/solutions/industry/automotive' },
+      { label: 'Ads Manager', url: 'https://ui.ads.microsoft.com' },
+    ],
     admin: MICROSOFT_ADMIN,
     operator: {
       ...SHARED_OAUTH_OPERATOR,
@@ -435,6 +446,12 @@ export const PLATFORM_SETUP_GUIDES: Record<string, PlatformSetupGuide> = {
     },
   },
   'linkedin-lead-gen-forms': {
+    description: 'LinkedIn Lead Gen Forms capture buyer and fleet-purchase leads from sponsored posts and InMail campaigns on LinkedIn, targeting professionals by job title, industry, company size, and seniority. When a prospect clicks a sponsored ad, a pre-filled form appears inside LinkedIn — no landing page required — dramatically lowering drop-off rates. Submitted leads are routed in real time into the dealer\'s CRM via the platform\'s lead sync pipeline. The system shares the same Azure OAuth app as Microsoft Advertising.',
+    externalLinks: [
+      { label: 'LinkedIn Marketing Developer Platform', url: 'https://learn.microsoft.com/en-us/linkedin/marketing/' },
+      { label: 'Lead Gen Forms', url: 'https://business.linkedin.com/marketing-solutions/linkedin-lead-gen-forms' },
+      { label: 'Campaign Manager', url: 'https://www.linkedin.com/campaignmanager' },
+    ],
     admin: MICROSOFT_ADMIN,
     operator: {
       ...SHARED_OAUTH_OPERATOR,
@@ -448,6 +465,11 @@ export const PLATFORM_SETUP_GUIDES: Record<string, PlatformSetupGuide> = {
     },
   },
   'tiktok-automotive-ads': {
+    description: 'TikTok Automotive Ads run video and catalog-driven ad units through TikTok for Business, reaching an engaged mobile audience that skews younger and increasingly in-market for vehicles. Dynamic catalog ads surface individual vehicle listings based on user interest signals, while video creatives run in-feed alongside organic content. TikTok\'s automotive advertising is expanding rapidly and represents a fast-growing channel for dealers targeting millennial and Gen Z buyers.',
+    externalLinks: [
+      { label: 'TikTok Marketing API', url: 'https://ads.tiktok.com/marketing_api/docs' },
+      { label: 'TikTok Ads Manager', url: 'https://ads.tiktok.com' },
+    ],
     admin: TIKTOK_ADMIN,
     operator: {
       ...SHARED_OAUTH_OPERATOR,
@@ -461,6 +483,11 @@ export const PLATFORM_SETUP_GUIDES: Record<string, PlatformSetupGuide> = {
     },
   },
   'tiktok-shop': {
+    description: 'TikTok Shop brings e-commerce directly into the TikTok app, letting buyers discover and purchase products without leaving the platform. For dealers, TikTok Shop enables listing vehicles, accessories, and merchandise directly in their TikTok Shop storefront, powered by TikTok\'s Seller Center API. This channel is separate from TikTok Ads and uses different credentials — the Seller Center App Key and Secret rather than the Marketing API.',
+    externalLinks: [
+      { label: 'TikTok Shop API', url: 'https://partner.tiktokshop.com/docv2/' },
+      { label: 'Seller Center', url: 'https://seller.tiktokglobalshop.com' },
+    ],
     admin: TIKTOK_SHOP_ADMIN,
     operator: {
       shortBlurb: 'Dealer connects their TikTok Shop seller account using Seller Center API keys.',
@@ -475,10 +502,22 @@ export const PLATFORM_SETUP_GUIDES: Record<string, PlatformSetupGuide> = {
     },
   },
   'ebay-motors': {
+    description: 'eBay Motors is one of the largest online vehicle marketplaces in the United States, with tens of millions of active buyers browsing cars, trucks, SUVs, motorcycles, and parts. Unlike most advertising-driven platforms, eBay Motors allows dealers to list vehicles for direct sale — buyers can make offers, use Buy It Now pricing, or bid in auction format. Each dealer authenticates with their own eBay seller account via OAuth; the system\'s developer credentials (App ID + Cert ID) handle app-level auth while per-dealer OAuth tokens authorize listing and inventory management.',
+    externalLinks: [
+      { label: 'Sell Inventory API', url: 'https://developer.ebay.com/api-docs/sell/inventory/static/overview.html' },
+      { label: 'eBay Developer Program', url: 'https://developer.ebay.com' },
+      { label: 'eBay Motors', url: 'https://www.ebay.com/motors' },
+    ],
     admin: EBAY_ADMIN,
     operator: DEALER_OAUTH_OPERATOR,
   },
   'pinterest-shopping-ads': {
+    description: 'Pinterest Shopping Ads use Dynamic Product Ads to surface vehicle listings to Pinterest users who are actively researching purchases, planning home moves, or browsing automotive content. Because Pinterest is a high-intent discovery platform — users save and return to ideas over weeks or months — automotive ads here reach buyers earlier in the purchase funnel than search-based formats. Inventory syncs to a Pinterest catalog; ads are auto-generated per-listing based on catalog data.',
+    externalLinks: [
+      { label: 'Pinterest Catalogs API', url: 'https://developers.pinterest.com/docs/api/v5/catalogs-introduction/' },
+      { label: 'Pinterest Ads Manager', url: 'https://ads.pinterest.com' },
+      { label: 'Shopping Ads', url: 'https://business.pinterest.com/en/shopping-ads/' },
+    ],
     admin: PINTEREST_ADMIN,
     operator: {
       ...SHARED_OAUTH_OPERATOR,
@@ -492,6 +531,12 @@ export const PLATFORM_SETUP_GUIDES: Record<string, PlatformSetupGuide> = {
     },
   },
   'reddit-dynamic-product-ads': {
+    description: 'Reddit Dynamic Product Ads target automotive subreddits — r/askcarsales, r/cars, r/whatcarshouldIbuy, and others — as well as in-market audience segments defined by Reddit\'s interest graph. Ads appear in-feed alongside organic posts and are generated dynamically from the dealer\'s product catalog. Reddit\'s community-based targeting is uniquely effective for reaching buyers who actively seek peer advice before purchasing.',
+    externalLinks: [
+      { label: 'Reddit Ads API', url: 'https://ads-api.reddit.com/docs/' },
+      { label: 'Reddit Ads', url: 'https://ads.reddit.com' },
+      { label: 'Dynamic Product Ads', url: 'https://www.redditforbusiness.com/product/dynamic-product-ads' },
+    ],
     admin: REDDIT_ADMIN,
     operator: {
       ...SHARED_OAUTH_OPERATOR,
@@ -505,6 +550,12 @@ export const PLATFORM_SETUP_GUIDES: Record<string, PlatformSetupGuide> = {
     },
   },
   'snapchat-dynamic-product-ads': {
+    description: 'Snapchat Dynamic Product Ads deliver vehicle catalog ads to Snapchat\'s highly engaged mobile audience using full-screen vertical creative formats. Snap DPA retargets users based on web browsing signals and Snap\'s own interest graph, surfacing relevant vehicle listings in Stories, Discover, and the between-content ad breaks. Snapchat\'s audience skews younger than traditional automotive media, making it effective for reaching first-time buyers and younger upgrade shoppers.',
+    externalLinks: [
+      { label: 'Marketing API docs', url: 'https://developers.snap.com/api/marketing-api/' },
+      { label: 'Snap Ads Manager', url: 'https://ads.snapchat.com' },
+      { label: 'Dynamic Ads guide', url: 'https://businesshelp.snapchat.com/s/article/dynamic-ads' },
+    ],
     admin: SNAPCHAT_ADMIN,
     operator: {
       ...SHARED_OAUTH_OPERATOR,
@@ -518,6 +569,11 @@ export const PLATFORM_SETUP_GUIDES: Record<string, PlatformSetupGuide> = {
     },
   },
   'x-dynamic-product-ads': {
+    description: 'X (formerly Twitter) Dynamic Product Ads serve vehicle listings to automotive buyers on X using catalog-driven creative generated from the dealer\'s inventory feed. Ads appear in the home timeline and search results, targeting users who follow automotive accounts, have recently searched for vehicles, or match the dealer\'s uploaded customer list. X\'s Ads API provides programmatic catalog management and campaign optimization.',
+    externalLinks: [
+      { label: 'X Ads API', url: 'https://developer.x.com/en/docs/x-ads-api' },
+      { label: 'X Ads Manager', url: 'https://ads.x.com' },
+    ],
     admin: X_ADMIN,
     operator: {
       ...SHARED_OAUTH_OPERATOR,
@@ -531,6 +587,10 @@ export const PLATFORM_SETUP_GUIDES: Record<string, PlatformSetupGuide> = {
     },
   },
   'nextdoor-ads': {
+    description: 'Nextdoor Ads reach buyers within a defined neighborhood radius, making this platform uniquely effective for local dealerships trying to reach in-market shoppers who live close to their lot. Ads appear in the Nextdoor feed alongside neighborhood posts and local business recommendations — an environment where community trust is high and local businesses are actively sought. Nextdoor\'s audience targeting is based on verified residential address, not demographic proxies.',
+    externalLinks: [
+      { label: 'Nextdoor Business', url: 'https://business.nextdoor.com' },
+    ],
     admin: NEXTDOOR_ADMIN,
     operator: {
       ...SHARED_OAUTH_OPERATOR,
@@ -544,10 +604,21 @@ export const PLATFORM_SETUP_GUIDES: Record<string, PlatformSetupGuide> = {
     },
   },
   'apple-business-connect': {
+    description: 'Apple Business Connect controls how a dealer\'s business appears across the Apple ecosystem — Apple Maps, Siri, Spotlight Search, Safari, and Wallet. Claiming and managing a Business Connect listing improves visibility when iPhone and Mac users search for nearby dealers or specific vehicle brands. The platform also supports showcasing hours, photos, and special offers. Integration is managed manually through Apple\'s partner portal; the Apple Business Connect API is available but requires Apple Developer Program enrollment and a signed JWT for authentication, which is pending in our integration.',
+    externalLinks: [
+      { label: 'Business Connect API', url: 'https://developer.apple.com/documentation/applebusinessconnectapi' },
+      { label: 'Register on Maps', url: 'https://register.apple.com/placesonmaps' },
+      { label: 'Apple Developer', url: 'https://developer.apple.com/account' },
+    ],
     admin: APPLE_ADMIN,
     operator: MANUAL_PORTAL_OPERATOR,
   },
   'cargurus-dealer': {
+    description: 'CarGurus is one of the most-visited automotive marketplaces in the US, known for its "Deal Rating" system that scores every listing as Great, Good, Fair, or Overpriced based on real-time price analysis relative to comparable vehicles in the market. Buyers search CarGurus specifically to find value, so competitive pricing and complete vehicle data (photos, history, features) directly impact listing performance. Inventory is delivered as a structured XML feed on a scheduled basis.',
+    externalLinks: [
+      { label: 'CarGurus for Dealers', url: 'https://www.cargurus.com/Cars/dealers/' },
+      { label: 'CarGurus', url: 'https://www.cargurus.com' },
+    ],
     admin: null,
     operator: {
       ...PARTNER_FEED_OPERATOR,
@@ -562,6 +633,12 @@ export const PLATFORM_SETUP_GUIDES: Record<string, PlatformSetupGuide> = {
     },
   },
   'autotrader-cox': {
+    description: 'AutoTrader is one of the oldest and most recognized vehicle marketplace brands in the US, operating under Cox Automotive alongside Kelley Blue Book, Dealertrack, and vAuto. Buyers on AutoTrader tend to be highly qualified — the platform\'s research tools, price-check features, and saved search functionality attract shoppers who are close to making a purchase decision. As a Cox Automotive integration, the feed and credentials flow through the broader Cox dealer network.',
+    externalLinks: [
+      { label: 'AutoTrader for Dealers', url: 'https://www.autotrader.com/dealers/' },
+      { label: 'Cox Automotive', url: 'https://www.coxautoinc.com' },
+      { label: 'AutoTrader', url: 'https://www.autotrader.com' },
+    ],
     admin: null,
     operator: {
       ...PARTNER_FEED_OPERATOR,
@@ -576,6 +653,11 @@ export const PLATFORM_SETUP_GUIDES: Record<string, PlatformSetupGuide> = {
     },
   },
   'cars-com': {
+    description: 'Cars.com is a major automotive marketplace featuring consumer vehicle listings alongside dealer reviews, price history, expert editorial content, and financing tools. It ranks well in organic search for vehicle-specific queries, drawing buyers who arrive from Google with high purchase intent. The platform places significant weight on dealer reputation — reviews and ratings factor into listing visibility — making it a channel where dealer customer satisfaction directly impacts lead volume.',
+    externalLinks: [
+      { label: 'Cars.com for Dealers', url: 'https://dealer.cars.com/' },
+      { label: 'Cars.com', url: 'https://www.cars.com' },
+    ],
     admin: null,
     operator: {
       ...PARTNER_FEED_OPERATOR,
@@ -590,6 +672,11 @@ export const PLATFORM_SETUP_GUIDES: Record<string, PlatformSetupGuide> = {
     },
   },
   'truecar-dealer-network': {
+    description: 'TrueCar connects in-market buyers with dealers by showing upfront, market-calibrated pricing before the buyer contacts the dealer. Because buyers arrive having already seen what the car should cost, TrueCar leads tend to convert at higher rates with less negotiation friction — but the model requires dealers to commit to transparent, competitive pricing. TrueCar charges per-sale rather than per-lead, aligning its incentives with actual deal closings rather than just inquiry volume.',
+    externalLinks: [
+      { label: 'TrueCar for Dealers', url: 'https://dealer.truecar.com/' },
+      { label: 'TrueCar', url: 'https://www.truecar.com' },
+    ],
     admin: null,
     operator: {
       ...PARTNER_FEED_OPERATOR,
@@ -604,6 +691,11 @@ export const PLATFORM_SETUP_GUIDES: Record<string, PlatformSetupGuide> = {
     },
   },
   'carfax-for-dealers': {
+    description: 'CARFAX for Dealers enables dealers to display the CARFAX vehicle history badge on their listings — a strong consumer trust signal that increases buyer confidence and reduces time to purchase. CARFAX also provides dealers with unlimited vehicle history reports, window sticker data, and market valuation tools. The CARFAX badge on a listing communicates "this dealer stands behind the vehicle\'s history," which measurably improves click-through and lead conversion rates compared to unverified listings.',
+    externalLinks: [
+      { label: 'CARFAX for Dealers', url: 'https://www.carfax.com/carfax-dealers/' },
+      { label: 'CARFAX', url: 'https://www.carfax.com' },
+    ],
     admin: null,
     operator: {
       ...PARTNER_FEED_OPERATOR,
@@ -618,6 +710,11 @@ export const PLATFORM_SETUP_GUIDES: Record<string, PlatformSetupGuide> = {
     },
   },
   'rv-trader': {
+    description: 'RV Trader is the leading online marketplace for recreational vehicles in North America, operated by Trader Interactive. Dealers list their RV inventory — motorhomes, travel trailers, fifth wheels, campers, and toy haulers — to reach millions of active RV shoppers each month. Inventory reaches RV Trader via a structured data feed, meaning the dealer\'s stock stays synchronized automatically without manual re-entry. For dealers who sell recreational vehicles alongside automobiles, RV Trader is the category-specific destination that serious RV buyers check first.',
+    externalLinks: [
+      { label: 'RV Trader Dealer Services', url: 'https://www.rvtrader.com/dealer-services' },
+      { label: 'Trader Interactive', url: 'https://www.traderinteractive.com' },
+    ],
     admin: null,
     operator: {
       ...PARTNER_FEED_OPERATOR,
@@ -632,6 +729,11 @@ export const PLATFORM_SETUP_GUIDES: Record<string, PlatformSetupGuide> = {
     },
   },
   'cycle-trader': {
+    description: 'Cycle Trader, also part of the Trader Interactive family, is North America\'s largest powersports marketplace — connecting buyers with motorcycles, scooters, mopeds, and street bikes from dealers and private sellers alike. For dealers with a powersports line, Cycle Trader offers access to a highly targeted audience of enthusiast buyers who search by brand, engine size, and style. Inventory is delivered via a managed feed, keeping listings current without manual intervention.',
+    externalLinks: [
+      { label: 'Cycle Trader Dealer Services', url: 'https://www.cycletrader.com/dealer-services' },
+      { label: 'Trader Interactive', url: 'https://www.traderinteractive.com' },
+    ],
     admin: null,
     operator: {
       ...PARTNER_FEED_OPERATOR,
@@ -646,6 +748,11 @@ export const PLATFORM_SETUP_GUIDES: Record<string, PlatformSetupGuide> = {
     },
   },
   'atv-trader': {
+    description: 'ATV Trader is Trader Interactive\'s vertical marketplace dedicated to all-terrain vehicles — ATVs, UTVs, side-by-sides, and off-road recreational vehicles. Buyers shopping for sport, utility, or youth ATVs come to ATV Trader specifically, making it a high-intent destination for dealers carrying off-road inventory. Like other Trader Interactive properties, listings are delivered via a structured feed so inventory stays accurate and up-to-date across channels automatically.',
+    externalLinks: [
+      { label: 'ATV Trader Dealer Services', url: 'https://www.atvtrader.com/dealer-services' },
+      { label: 'Trader Interactive', url: 'https://www.traderinteractive.com' },
+    ],
     admin: null,
     operator: {
       ...PARTNER_FEED_OPERATOR,
@@ -660,6 +767,11 @@ export const PLATFORM_SETUP_GUIDES: Record<string, PlatformSetupGuide> = {
     },
   },
   'trailer-trader': {
+    description: 'Trailer Trader is the Trader Interactive marketplace for commercial and recreational trailers — cargo trailers, flatbeds, horse trailers, livestock trailers, utility trailers, and more. Dealers who stock trailers alongside other vehicle types can extend their reach to buyers who shop specifically for hauling and transport equipment. Inventory is synchronized via the same partner feed infrastructure used across the Trader Interactive network.',
+    externalLinks: [
+      { label: 'Trader Interactive Dealer Services', url: 'https://www.traderinteractive.com/dealer-services' },
+      { label: 'Trader Interactive', url: 'https://www.traderinteractive.com' },
+    ],
     admin: null,
     operator: {
       ...PARTNER_FEED_OPERATOR,
@@ -674,6 +786,11 @@ export const PLATFORM_SETUP_GUIDES: Record<string, PlatformSetupGuide> = {
     },
   },
   'adf-xml-lead-routing': {
+    description: 'ADF/XML Lead Routing is not an external platform — it is a standardized protocol for delivering sales leads directly into a dealer\'s CRM. ADF stands for Automotive Data Format (also called XML Lead Format or ADF/XML). When a buyer submits an inquiry on any connected platform, the system packages that inquiry as an ADF/XML-formatted email and routes it to the CRM inbound email address the dealer\'s CRM vendor provides. Most major dealer CRMs — including VinSolutions, DealerSocket, elead, and CDK — accept ADF/XML leads this way. No external platform account is required; the "credential" is simply the dealer\'s CRM email endpoint. This integration ensures that every lead generated across all connected channels lands inside the dealer\'s CRM automatically, with structured data the CRM can parse and route to the right salesperson.',
+    externalLinks: [
+      { label: 'NADA ADF Standard Reference', url: 'https://www.nada.org/nadafront/pdf/NADA_ADF_Standard.pdf' },
+      { label: 'ADF/XML Overview (Automotive Standards)', url: 'https://www.autosoft-inc.com/lead-management/adf-xml/' },
+    ],
     admin: null,
     operator: {
       shortBlurb: 'ADF/XML lead routing — no external platform account. Configure the dealer\'s CRM email endpoint.',
@@ -688,6 +805,12 @@ export const PLATFORM_SETUP_GUIDES: Record<string, PlatformSetupGuide> = {
     },
   },
   'google-business-profile': {
+    description: 'Google Business Profile (formerly Google My Business) is the free listing that appears when someone searches for a dealership by name on Google Search or Google Maps. It shows the dealer\'s address, hours, phone number, photos, and customer reviews — and it is often the first impression a buyer gets before visiting. Beyond the static profile, Business Profile supports Posts: short updates, offers, and event announcements that appear directly in the listing. This integration uses Google\'s Business Profile API to publish inventory highlights and promotional content as posts, keeping the dealer\'s Google presence current without manual effort. Dealers connect their own Business Profile account via OAuth, granting the platform permission to post on their behalf.',
+    externalLinks: [
+      { label: 'Google Business Profile', url: 'https://business.google.com' },
+      { label: 'Business Profile API Docs', url: 'https://developers.google.com/my-business/content/basic-setup' },
+      { label: 'Google Cloud Console', url: 'https://console.cloud.google.com/apis/credentials' },
+    ],
     admin: GOOGLE_PROFILE_ADMIN,
     operator: {
       ...SHARED_OAUTH_OPERATOR,
@@ -699,5 +822,446 @@ export const PLATFORM_SETUP_GUIDES: Record<string, PlatformSetupGuide> = {
         'System posts inventory highlights and business updates to their Business Profile.',
       ],
     },
+  },
+
+  // ── Marine ────────────────────────────────────────────────────────────────────
+
+  'boat-trader': {
+    description: 'Boat Trader is the leading US marketplace for new and used recreational boats — powerboats, sailboats, pontoon boats, PWC, fishing boats, and more — operated by Trader Interactive. With millions of monthly shoppers browsing by hull type, length, engine configuration, and price, it is the first destination for serious marine buyers. Inventory is submitted via a structured partner feed, keeping dealer stock synchronized automatically.',
+    externalLinks: [
+      { label: 'Boat Trader Dealer Services', url: 'https://www.boattrader.com/' },
+      { label: 'Trader Interactive', url: 'https://www.traderinteractive.com' },
+    ],
+    admin: null,
+    operator: null,
+  },
+  'yachtworld': {
+    description: 'YachtWorld is the global standard marketplace for yacht and superyacht listings, operated by Boats Group. It serves professional brokers and dealers listing sailing yachts, motor yachts, catamarans, and commercial vessels at the higher end of the marine market. Buyers on YachtWorld tend to be serious international purchasers — many transactions involve brokerage, surveying, and cross-border documentation. Listing activation requires brokerage onboarding and account approval.',
+    externalLinks: [
+      { label: 'YachtWorld', url: 'https://www.yachtworld.com' },
+      { label: 'Boats Group', url: 'https://boatsgroup.com' },
+    ],
+    admin: null,
+    operator: null,
+  },
+  'boats-com': {
+    description: 'Boats.com is the broader consumer-facing companion to YachtWorld — also operated by Boats Group — covering recreational powerboats, fishing boats, and watercraft alongside premium brokerage inventory. It reaches buyers across a wider price range and boat type than YachtWorld alone. Both platforms share a unified listing infrastructure, so inventory submitted to Boats Group\'s network typically appears across both.',
+    externalLinks: [
+      { label: 'Boats.com', url: 'https://www.boats.com' },
+      { label: 'Boats Group', url: 'https://boatsgroup.com' },
+    ],
+    admin: null,
+    operator: null,
+  },
+
+  // ── Music / Songs ─────────────────────────────────────────────────────────────
+
+  'distrokid': {
+    description: 'DistroKid is the most widely used independent music distribution service, delivering releases from artists and labels to Spotify, Apple Music, Amazon Music, Tidal, and 100+ streaming and download platforms worldwide for a flat annual fee. For music catalog operators, DistroKid is the fastest and most cost-effective path to global distribution without per-release or per-store fees. UPC barcodes and ISRC codes are managed through the release packet.',
+    externalLinks: [
+      { label: 'DistroKid', url: 'https://distrokid.com' },
+      { label: 'DistroKid Help', url: 'https://distrokid.com/help/' },
+    ],
+    admin: null,
+    operator: null,
+  },
+  'spotify-for-artists': {
+    description: 'Spotify for Artists is the official management portal for artists and their teams on the world\'s largest music streaming platform. Beyond streaming, it enables editorial playlist pitching, Canvas video loop uploads, fundraiser links, and real-time listener analytics. For operators managing artist catalogs, this integration surfaces Spotify-specific metadata management and release coordination through the central portal.',
+    externalLinks: [
+      { label: 'Spotify for Artists', url: 'https://artists.spotify.com' },
+      { label: 'Artists Help', url: 'https://artists.spotify.com/help' },
+    ],
+    admin: null,
+    operator: null,
+  },
+  'tunecore': {
+    description: 'TuneCore is an independent music distribution and publishing administration service that charges per release rather than a flat annual fee. Its detailed per-platform royalty reporting and publishing rights administration tools make it popular with professional artists and small labels who want granular financial breakdowns across stores and streaming platforms.',
+    externalLinks: [
+      { label: 'TuneCore', url: 'https://www.tunecore.com' },
+      { label: 'Distribution Guides', url: 'https://www.tunecore.com/guides' },
+    ],
+    admin: null,
+    operator: null,
+  },
+  'bandcamp': {
+    description: 'Bandcamp is a direct-to-fan music marketplace where artists sell downloads, vinyl, merchandise, and CDs — and where fans can stream, follow, and financially support artists they care about. Unlike subscription streaming platforms, Bandcamp pays artists the majority of each sale immediately. It is the dominant channel for independent artists who prioritize owning their fan relationship and monetizing directly rather than through algorithmic streams.',
+    externalLinks: [
+      { label: 'Bandcamp for Artists', url: 'https://bandcamp.com/artists' },
+      { label: 'Bandcamp Help', url: 'https://get.bandcamp.help/hc/en-us' },
+    ],
+    admin: null,
+    operator: null,
+  },
+
+  // ── E-books ───────────────────────────────────────────────────────────────────
+
+  'amazon-kdp': {
+    description: 'Amazon Kindle Direct Publishing (KDP) is the dominant self-publishing platform for e-books, reaching Kindle device owners and the Kindle app across every platform. KDP Select enrollment unlocks Kindle Unlimited — the subscription reading program with tens of millions of subscribers — in exchange for exclusivity. For any e-book publisher or catalog operator, KDP is the highest-volume, highest-reach channel and is effectively non-optional.',
+    externalLinks: [
+      { label: 'Kindle Direct Publishing', url: 'https://kdp.amazon.com' },
+      { label: 'KDP Help', url: 'https://kdp.amazon.com/en_US/help/topic/G200635650' },
+    ],
+    admin: null,
+    operator: null,
+  },
+  'apple-books': {
+    description: 'Apple Books distributes e-books and audiobooks to the native Books app on iPhone, iPad, and Mac — reaching hundreds of millions of Apple device users without requiring a separate app. It is the second-largest e-book storefront globally after Amazon. Publishers and authors upload through Apple Books Connect; pricing and metadata are managed per-title.',
+    externalLinks: [
+      { label: 'Apple Books for Authors', url: 'https://authors.apple.com' },
+      { label: 'Books Connect Support', url: 'https://authors.apple.com/support' },
+    ],
+    admin: null,
+    operator: null,
+  },
+  'google-play-books': {
+    description: 'Google Play Books is Google\'s e-book and audiobook store, available on Android, iOS, and any web browser via a Google account. It is the primary e-book destination for Android-first markets and reaches a different segment from Kindle and Apple Books — particularly valuable in emerging markets where Android dominates. Distribution is managed through the Google Play Books Partner Center.',
+    externalLinks: [
+      { label: 'Play Books Partner Center', url: 'https://play.google.com/books/publish/' },
+      { label: 'Partner Center Help', url: 'https://support.google.com/books/partner/answer/3324396' },
+    ],
+    admin: null,
+    operator: null,
+  },
+  'barnes-noble-press': {
+    description: 'Barnes & Noble Press is the self-publishing imprint of Barnes & Noble, distributing e-books to Nook device owners and the Nook app. While the Nook platform is smaller than Kindle or Apple, B&N Press readers tend to be loyal to the platform and B&N\'s physical retail presence gives publishers access to in-store print-on-demand options alongside digital distribution.',
+    externalLinks: [
+      { label: 'Barnes & Noble Press', url: 'https://press.barnesandnoble.com' },
+      { label: 'Press Help', url: 'https://press.barnesandnoble.com/help' },
+    ],
+    admin: null,
+    operator: null,
+  },
+
+  // ── Apparel ───────────────────────────────────────────────────────────────────
+
+  'shopify-catalog': {
+    description: 'Shopify Catalog integration connects the central inventory platform directly to an operator\'s or dealer\'s Shopify storefront, keeping product listings, pricing, and availability synchronized automatically. Unlike a consumer marketplace, Shopify powers the operator\'s own branded store — this channel manages product data, variant options, and inventory counts within the Shopify admin via the Storefront and Admin APIs.',
+    externalLinks: [
+      { label: 'Shopify Admin API', url: 'https://shopify.dev/docs/api/admin-rest/latest/resources/product' },
+      { label: 'Shopify Partner Portal', url: 'https://www.shopify.com' },
+    ],
+    admin: null,
+    operator: null,
+  },
+  'etsy': {
+    description: 'Etsy is the leading marketplace for handmade, vintage, and craft goods, with tens of millions of active buyers who specifically seek unique, non-mass-market products. For dealers in art, handmade apparel, vintage clothing, and craft supplies, Etsy provides a pre-qualified audience that is actively looking for distinctive items. Shop setup and listing approval are required before inventory goes live.',
+    externalLinks: [
+      { label: 'Etsy Seller Hub', url: 'https://www.etsy.com/sell' },
+      { label: 'Etsy Developer API', url: 'https://developers.etsy.com/documentation/' },
+    ],
+    admin: null,
+    operator: null,
+  },
+  'poshmark': {
+    description: 'Poshmark is the largest social commerce platform for fashion resale in the US, where buyers browse by brand, size, and style from individual seller closets and professional resellers. Its social features — following, sharing, offers — create a shopping experience more like Instagram than a traditional marketplace. For apparel dealers, Poshmark provides access to a large, engaged fashion audience that actively shops secondhand.',
+    externalLinks: [
+      { label: 'Sell on Poshmark', url: 'https://poshmark.com/sell_on_poshmark' },
+    ],
+    admin: null,
+    operator: null,
+  },
+  'depop': {
+    description: 'Depop is a fashion resale marketplace with a heavily Gen Z and millennial user base, known for vintage, streetwear, and Y2K fashion. Owned by Etsy, it combines social media aesthetics with peer-to-peer resale — sellers build a following, buyers discover through feeds and search. For apparel dealers targeting younger shoppers with curated vintage or contemporary fashion, Depop is the primary channel.',
+    externalLinks: [
+      { label: 'Depop Sell', url: 'https://www.depop.com/sell/' },
+      { label: 'Depop Help', url: 'https://help.depop.com/hc/en-us' },
+    ],
+    admin: null,
+    operator: null,
+  },
+
+  // ── Digital Art ───────────────────────────────────────────────────────────────
+
+  'opensea': {
+    description: 'OpenSea is the largest NFT marketplace, where digital art, collectibles, game items, virtual real estate, and domain names are bought, sold, and auctioned as blockchain-backed tokens on Ethereum, Polygon, and other chains. For digital art operators, OpenSea is the primary distribution and discovery channel for NFT-based creative work, with the deepest liquidity and the largest collector base.',
+    externalLinks: [
+      { label: 'OpenSea', url: 'https://opensea.io' },
+      { label: 'OpenSea Docs', url: 'https://docs.opensea.io' },
+    ],
+    admin: null,
+    operator: null,
+  },
+  'artstation-marketplace': {
+    description: 'ArtStation Marketplace (owned by Epic Games) is the dominant platform for professional digital artists selling high-quality assets — production brushes, 3D models, concept art tutorials, texture packs, and environment assets — to game developers, VFX artists, and other professionals. The audience is composed of working artists and studios who pay a premium for production-ready work.',
+    externalLinks: [
+      { label: 'ArtStation Marketplace', url: 'https://www.artstation.com/marketplace' },
+    ],
+    admin: null,
+    operator: null,
+  },
+  'saatchi-art': {
+    description: 'Saatchi Art is the world\'s largest online art gallery, connecting collectors with original paintings, drawings, sculpture, photography, and prints from artists worldwide. Unlike peer-to-peer resale platforms, Saatchi Art functions as a curated gallery — editorial discovery, white-glove packaging, and a collector audience willing to spend on original and limited-edition work.',
+    externalLinks: [
+      { label: 'Sell on Saatchi Art', url: 'https://www.saatchiart.com/sell' },
+      { label: 'Saatchi Art Artist Help', url: 'https://www.saatchiart.com/artisthelp' },
+    ],
+    admin: null,
+    operator: null,
+  },
+  'redbubble': {
+    description: 'Redbubble is a print-on-demand marketplace where artists upload original designs that are printed on demand across a wide range of products — t-shirts, phone cases, stickers, wall art, mugs, and more — whenever a customer places an order. Artists set their own margin on top of Redbubble\'s base price; Redbubble handles all production, fulfillment, and customer service.',
+    externalLinks: [
+      { label: 'Redbubble Artist Shop', url: 'https://www.redbubble.com/shop/dashboard' },
+      { label: 'Redbubble Help', url: 'https://help.redbubble.com/hc/en-us' },
+    ],
+    admin: null,
+    operator: null,
+  },
+
+  // ── Video Distribution ────────────────────────────────────────────────────────
+
+  'youtube-creator': {
+    description: 'YouTube Creator Studio integration manages video content publishing, metadata, and channel configuration for YouTube channels via the YouTube Data API. For operators managing large video catalogs or multi-channel networks, this integration automates title, description, thumbnail, and chapter metadata at publish time — keeping channel content consistent and searchable without manual video-by-video editing.',
+    externalLinks: [
+      { label: 'YouTube Creator Studio', url: 'https://studio.youtube.com' },
+      { label: 'YouTube Data API', url: 'https://support.google.com/youtube/topic/9257498' },
+    ],
+    admin: null,
+    operator: null,
+  },
+  'vimeo-ott': {
+    description: 'Vimeo OTT (Over The Top) is a white-label subscription and rental video platform for creators and businesses who want a branded streaming channel without building on YouTube. It supports paywalled content, live streaming, subscriber management, and built-in payment processing — giving operators a direct revenue relationship with their audience rather than sharing it with a platform\'s ad model.',
+    externalLinks: [
+      { label: 'Vimeo OTT', url: 'https://vimeo.com/ott' },
+      { label: 'Vimeo OTT Help', url: 'https://help.vimeo.com/hc/en-us/categories/200950527-Vimeo-OTT' },
+    ],
+    admin: null,
+    operator: null,
+  },
+  'tiktok-creator': {
+    description: 'TikTok Creator Portal integration manages organic content publishing and analytics for TikTok creator accounts — distinct from TikTok Ads (paid media) and TikTok Shop (e-commerce). For operators producing short-form video content at scale, this channel enables scheduled publishing, metadata management, and cross-account consistency through the central platform.',
+    externalLinks: [
+      { label: 'TikTok Creator Portal', url: 'https://www.tiktok.com/creators/creator-portal/' },
+    ],
+    admin: null,
+    operator: null,
+  },
+  'rumble-creator': {
+    description: 'Rumble is a video hosting and monetization platform that has emerged as a significant alternative to YouTube, with strong creator economics and a politically diverse audience. For content operators distributing video across multiple platforms, Rumble provides a growing distribution point with its own ad network, subscription program, and live streaming infrastructure — and its audience is meaningfully different from YouTube\'s.',
+    externalLinks: [
+      { label: 'Rumble Upload', url: 'https://rumble.com/upload.php' },
+      { label: 'Rumble Help', url: 'https://rumble.com/help' },
+    ],
+    admin: null,
+    operator: null,
+  },
+
+  // ── Pawn / Resale ─────────────────────────────────────────────────────────────
+
+  'ebay-resale': {
+    description: 'eBay Seller Hub is eBay\'s general resale marketplace — covering electronics, clothing, collectibles, art, tools, and nearly every consumer category — powered by the same Sell Inventory API used for eBay Motors. Unlike eBay Motors (which is a separate automotive integration), this channel handles non-vehicle categories through the standard eBay listing and inventory management pipeline. eBay\'s global reach makes it the largest general resale marketplace in the world by transaction volume.',
+    externalLinks: [
+      { label: 'eBay Sell', url: 'https://www.ebay.com/sl/sell' },
+      { label: 'Sell Inventory API', url: 'https://developer.ebay.com/api-docs/sell/inventory/overview.html' },
+    ],
+    admin: null,
+    operator: null,
+  },
+  'mercari': {
+    description: 'Mercari is a peer-to-peer resale app with tens of millions of active users in the US and Japan, known for its frictionless listing experience and broad category coverage — electronics, clothing, collectibles, toys, and accessories. It is a mobile-first platform with strong buyer protections and a growing base of professional resellers. For dealers in pre-owned goods across categories, Mercari provides a fast-moving, high-traffic secondhand marketplace.',
+    externalLinks: [
+      { label: 'Sell on Mercari', url: 'https://www.mercari.com/sell/' },
+    ],
+    admin: null,
+    operator: null,
+  },
+  'offerup': {
+    description: 'OfferUp is a local-first marketplace that merged with Letgo to become one of the largest buy-sell-trade apps in North America. It combines local pickup listings with shipping-enabled national sales, covering furniture, electronics, clothing, tools, and general goods. For dealers in pre-owned and refurbished goods, OfferUp\'s local buyer pool provides low-friction transactions without the shipping overhead of national platforms.',
+    externalLinks: [
+      { label: 'OfferUp Sell', url: 'https://offerup.com/sell/' },
+    ],
+    admin: null,
+    operator: null,
+  },
+  'facebook-marketplace-resale': {
+    description: 'Facebook Marketplace Resale uses the Meta Catalog API to push general-category inventory — furniture, electronics, clothing, appliances, and household goods — into Facebook\'s Marketplace browse experience for local and national buyers. This is a distinct integration from the automotive-focused Facebook Marketplace General channel; it targets non-vehicle resale categories through a separate catalog feed pipeline.',
+    externalLinks: [
+      { label: 'Facebook Marketplace', url: 'https://www.facebook.com/marketplace/' },
+      { label: 'Catalog API Reference', url: 'https://developers.facebook.com/docs/marketing-api/catalog/reference' },
+    ],
+    admin: null,
+    operator: null,
+  },
+
+  // ── Watches ───────────────────────────────────────────────────────────────────
+
+  'chrono24-dealer': {
+    description: 'Chrono24 is the world\'s leading marketplace for luxury and pre-owned watches, with listings from authorized dealers, grey-market sellers, and private collectors across more than 100 countries. Serious watch buyers research, compare, and transact on Chrono24 more than any other platform — making it the essential listing destination for watch dealers at any price point. Watch serial numbers map to the VIN field; reference numbers use the stock number.',
+    externalLinks: [
+      { label: 'Chrono24 Dealer Info', url: 'https://www.chrono24.com/dealerinfo.htm' },
+      { label: 'Chrono24', url: 'https://www.chrono24.com' },
+    ],
+    admin: null,
+    operator: null,
+  },
+  'watchbox': {
+    description: 'WatchBox is a curated pre-owned luxury watch dealer and marketplace specializing in authenticated, serviced timepieces. It operates as both a wholesale buyer (purchasing watches from dealers and individuals) and a retail platform (selling to collectors). For high-end watch dealers, WatchBox provides access to a vetted collector audience that prioritizes authenticity and provenance over price alone.',
+    externalLinks: [
+      { label: 'WatchBox', url: 'https://www.thewatchbox.com' },
+      { label: 'Sell Your Watch', url: 'https://www.thewatchbox.com/sell-your-watch' },
+    ],
+    admin: null,
+    operator: null,
+  },
+
+  // ── Sneakers ──────────────────────────────────────────────────────────────────
+
+  'stockx': {
+    description: 'StockX is a live bid-ask marketplace for sneakers, streetwear, electronics, trading cards, and collectibles — operating like a stock exchange with real-time bid and ask prices for every product. Every item is authenticated by StockX before delivery to the buyer. For dealers in high-demand sneakers and limited-release goods, StockX provides transparent market price discovery and access to a large pool of verified buyers who trust the authentication process.',
+    externalLinks: [
+      { label: 'Sell on StockX', url: 'https://stockx.com/sell' },
+      { label: 'StockX Selling Guide', url: 'https://stockx.com/help/selling' },
+    ],
+    admin: null,
+    operator: null,
+  },
+  'goat-sneakers': {
+    description: 'GOAT is the world\'s largest authenticated marketplace for sneakers and luxury goods — operating globally with millions of buyers in over 170 countries. Alongside StockX, it is the primary secondhand channel for limited-release sneakers, luxury fashion, and streetwear. GOAT\'s authentication service and "buy now or best offer" mechanics make it attractive to buyers who want guaranteed legitimate product at market prices.',
+    externalLinks: [
+      { label: 'Sell on GOAT', url: 'https://www.goat.com/sell' },
+    ],
+    admin: null,
+    operator: null,
+  },
+
+  // ── Collectibles ──────────────────────────────────────────────────────────────
+
+  'tcgplayer': {
+    description: 'TCGplayer is the dominant US marketplace for trading card game singles and sealed product — Magic: The Gathering, Pokémon, Yu-Gi-Oh!, and dozens of other TCG titles. Buyers search for specific cards by name, set, and condition and compare prices across hundreds of individual sellers. For card dealers, TCGplayer is effectively the industry\'s price index as well as its primary B2C sales channel.',
+    externalLinks: [
+      { label: 'TCGplayer Seller', url: 'https://seller.tcgplayer.com' },
+      { label: 'Seller Help', url: 'https://help.tcgplayer.com/hc/en-us' },
+    ],
+    admin: null,
+    operator: null,
+  },
+  'pwcc-marketplace': {
+    description: 'PWCC Marketplace is the largest sports card and memorabilia auction platform, handling weekly and premier auction consignments of graded and raw cards from Pokémon, basketball, baseball, football, and other categories. PWCC functions like a major auction house — items are consigned, graded by PSA/BGS/SGC if not already, and offered to a global collector base that bids competitively on authenticated material.',
+    externalLinks: [
+      { label: 'PWCC Marketplace', url: 'https://www.pwccmarketplace.com' },
+      { label: 'PWCC FAQ', url: 'https://www.pwccmarketplace.com/faq' },
+    ],
+    admin: null,
+    operator: null,
+  },
+
+  // ── Furniture / Home Goods ────────────────────────────────────────────────────
+
+  'chairish': {
+    description: 'Chairish is a curated marketplace for vintage and antique furniture, art, rugs, and home décor, serving interior designers, collectors, and discerning home buyers. Unlike general resale platforms, Chairish vets listings for quality and design integrity — sellers apply, and items are reviewed before going live. This makes it the destination for estate dealers, antique shops, and design-focused resellers targeting the interior design trade and luxury home market.',
+    externalLinks: [
+      { label: 'Sell on Chairish', url: 'https://www.chairish.com/sell' },
+      { label: 'Seller FAQ', url: 'https://www.chairish.com/page/seller-faq' },
+    ],
+    admin: null,
+    operator: null,
+  },
+  'wayfair-seller': {
+    description: 'Wayfair Supplier integration connects manufacturers and wholesale distributors of home goods, furniture, lighting, and housewares directly to Wayfair\'s storefront and its sister sites — AllModern, Joss & Main, Birch Lane, and Perigold. Wayfair operates on a drop-ship model; inventory is synced via catalog feed and orders are fulfilled by the supplier. For home goods operators, Wayfair\'s traffic scale makes it one of the highest-volume retail channels available.',
+    externalLinks: [
+      { label: 'Wayfair Seller Portal', url: 'https://sell.wayfair.com' },
+      { label: 'Seller Resources', url: 'https://sell.wayfair.com/resources' },
+    ],
+    admin: null,
+    operator: null,
+  },
+
+  // ── Vacation Rentals ──────────────────────────────────────────────────────────
+
+  'airbnb-host': {
+    description: 'Airbnb is the world\'s largest short-term rental platform, connecting property hosts with travelers for stays ranging from a single night to several months. For property operators managing short-term rental portfolios, Airbnb integration syncs listing availability, pricing, and property details through the Airbnb API — reducing manual calendar management and keeping rates consistent with other channels.',
+    externalLinks: [
+      { label: 'Airbnb Host', url: 'https://www.airbnb.com/host/homes' },
+    ],
+    admin: null,
+    operator: null,
+  },
+  'vrbo-owner': {
+    description: 'Vrbo (Vacation Rentals by Owner), owned by Expedia Group, is the leading vacation rental platform for whole-home stays — cabins, beach houses, mountain retreats, and family-sized properties. Vrbo\'s audience skews toward families and groups booking longer stays, making it a complementary channel to Airbnb for property operators who want maximum reach across the short-term rental market.',
+    externalLinks: [
+      { label: 'Vrbo Owner', url: 'https://www.vrbo.com/owner/' },
+      { label: 'Vrbo Help', url: 'https://help.vrbo.com' },
+    ],
+    admin: null,
+    operator: null,
+  },
+
+  // ── Apartments / Residential Rentals ──────────────────────────────────────────
+
+  'zillow-rental-manager': {
+    description: 'Zillow Rental Manager is the primary portal for independent landlords and property managers to list rental properties — apartments, condos, townhomes, and single-family homes — on Zillow, Trulia, and HotPads simultaneously. It also provides tools for online rental applications, tenant screening, lease signing, and rent collection, making it a full rental management platform rather than just a listing syndication channel.',
+    externalLinks: [
+      { label: 'Zillow Rental Manager', url: 'https://www.zillow.com/rental-manager/' },
+    ],
+    admin: null,
+    operator: null,
+  },
+  'apartments-com': {
+    description: 'Apartments.com, owned by CoStar Group, is the largest professionally managed rental listing network in the US, covering apartments, condos, townhomes, and single-family rentals. It holds the dominant share of rental search traffic among property management companies and multi-family operators. Listings on Apartments.com also syndicate to sister sites including ApartmentFinder.com and ForRent.com.',
+    externalLinks: [
+      { label: 'Apartments.com Rental Tools', url: 'https://www.apartments.com/rental-tools/' },
+    ],
+    admin: null,
+    operator: null,
+  },
+
+  // ── Residential For-Sale ──────────────────────────────────────────────────────
+
+  'zillow-homes': {
+    description: 'Zillow Premier Agent connects real estate agents and brokers to buyers browsing for-sale listings on Zillow and Trulia — the most visited real estate sites in the US. For brokerages and property operators managing active sale listings, Zillow integration keeps listing data, photos, price changes, and status synchronized across the Zillow network, reaching the largest residential buyer audience online.',
+    externalLinks: [
+      { label: 'Zillow Agent Resources', url: 'https://www.zillow.com/agent-resources/' },
+    ],
+    admin: null,
+    operator: null,
+  },
+  'realtor-com': {
+    description: 'Realtor.com is the official listing site of the National Association of Realtors, sourcing listings directly from MLS feeds to provide the most accurate and complete for-sale inventory data. Buyers who use Realtor.com tend to be further along in the purchase process and highly motivated — they trust the data accuracy because it comes from the same MLS systems brokers use. For brokerage operators, Realtor.com integration ensures accurate syndication of MLS-originated listings.',
+    externalLinks: [
+      { label: 'Realtor.com Marketing', url: 'https://www.realtor.com/marketing/' },
+    ],
+    admin: null,
+    operator: null,
+  },
+
+  // ── Commercial Real Estate ────────────────────────────────────────────────────
+
+  'loopnet': {
+    description: 'LoopNet is the largest commercial real estate marketplace in the US, serving investors, tenants, and brokers looking for office, retail, industrial, multifamily, and land listings. Operated by CoStar Group, LoopNet is the standard destination for commercial brokers listing properties for lease or sale, and for investors searching deal flow. Premium listings gain exposure to CoStar\'s professional research subscriber base in addition to LoopNet\'s public audience.',
+    externalLinks: [
+      { label: 'LoopNet Solutions', url: 'https://www.loopnet.com/solutions/' },
+      { label: 'LoopNet', url: 'https://www.loopnet.com' },
+    ],
+    admin: null,
+    operator: null,
+  },
+  'crexi': {
+    description: 'Crexi (Commercial Real Estate Exchange) is the fastest-growing commercial real estate platform, offering listings, transaction management tools, auction capabilities, and market data analytics. It has gained significant traction among smaller commercial brokers and regional investors as a modern alternative to LoopNet, with a more intuitive interface and lower listing costs. Crexi supports sale and lease listings across office, retail, industrial, land, and multifamily.',
+    externalLinks: [
+      { label: 'Crexi', url: 'https://www.crexi.com/sell' },
+      { label: 'Crexi Help', url: 'https://www.crexi.com/help' },
+    ],
+    admin: null,
+    operator: null,
+  },
+
+  // ── Heavy Equipment ───────────────────────────────────────────────────────────
+
+  'machinery-trader': {
+    description: 'MachineryTrader is the leading US marketplace for new and used heavy construction and agriculture equipment — excavators, cranes, bulldozers, backhoes, farm tractors, combines, and attachments. It serves equipment dealers, rental companies, and fleet operators listing to a professional buyer audience that shops by machine type, hours, condition, and location. Serial numbers map to the VIN field; equipment hours map to mileage.',
+    externalLinks: [
+      { label: 'MachineryTrader', url: 'https://www.machinerytrader.com' },
+    ],
+    admin: null,
+    operator: null,
+  },
+  'ironplanet': {
+    description: 'IronPlanet, owned by Ritchie Bros. Auctioneers, is the leading online auction platform for used heavy equipment. Every item listed on IronPlanet is independently inspected and graded with a detailed condition report before going to auction — giving buyers confidence to bid remotely on equipment they haven\'t physically inspected. For dealers and fleet operators liquidating large equipment inventories, IronPlanet provides access to a global pool of qualified buyers and transparent market pricing.',
+    externalLinks: [
+      { label: 'IronPlanet Sell', url: 'https://www.ironplanet.com/sell' },
+      { label: 'IronPlanet', url: 'https://www.ironplanet.com' },
+    ],
+    admin: null,
+    operator: null,
   },
 };

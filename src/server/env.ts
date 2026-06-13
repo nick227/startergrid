@@ -91,7 +91,7 @@ export function validateEnv(env: Record<string, string | undefined> = process.en
       errors.push(`PUBLIC_WRITE_RATE_WINDOW_MS must be a positive integer, got: "${window}"`);
     }
 
-    // SMTP vars required only when SMTP_ENABLED=true (transport not yet wired — opt-in)
+    // SMTP vars required only when SMTP_ENABLED=true.
     const smtpEnabled = env['SMTP_ENABLED']?.trim().toLowerCase() === 'true';
     if (smtpEnabled) {
       const SMTP_VARS = ['SMTP_HOST', 'SMTP_PORT', 'SMTP_USER', 'SMTP_PASS', 'SMTP_FROM'] as const;

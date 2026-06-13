@@ -46,10 +46,10 @@ function makeApp(role: 'SUPER_ADMIN' | 'OPERATOR'): {
         auditEntries.push(data);
         return { id: 'audit-1', ...data, createdAt: new Date() };
       },
-      findMany: async () => [
-        { id: 'audit-1', action: 'platform-credentials.validate', actorId: 'acct-admin', actorEmail: 'operator@example.local', detail: { durationMs: 120 }, createdAt: new Date() }
-      ]
-    },
+	      findMany: async () => [
+	        { id: 'audit-1', action: 'platform-credentials.validate', actorId: 'acct-admin', actorEmail: 'operator@example.local', detail: { dealershipId: 'dl-2', durationMs: 120 }, createdAt: new Date() }
+	      ]
+	    },
     dealershipProfile: {
       count: async () => 2,
       findMany: async () => [
@@ -121,9 +121,10 @@ describe('admin dashboard — access controls & gating', () => {
     assert.ok(body.queueSnapshot, 'queueSnapshot section present');
     assert.ok(body.platformOverview, 'platformOverview section present');
     assert.ok(body.dealerAttention, 'dealerAttention section present');
-    assert.ok(body.recentEvents, 'recentEvents section present');
-    assert.ok(body.meta, 'meta section present');
-  });
+	    assert.ok(body.recentEvents, 'recentEvents section present');
+	    assert.ok(body.meta, 'meta section present');
+	    assert.equal(body.recentEvents[0].dealerId, 'dl-2');
+	  });
 });
 
 describe('admin dashboard — operational behaviors & cache', () => {
@@ -248,7 +249,7 @@ describe('admin blocked dealers — access controls, gating & functionality', ()
     assert.equal(body.meta.cached, false);
   });
 
-  it('filters by severity, category, source, platform, and search query', async () => {
+	  it('filters by severity, category, source, platform, and search query', async () => {
     const { app, token } = makeApp('SUPER_ADMIN');
     
     // Filter by severity critical
@@ -279,8 +280,22 @@ describe('admin blocked dealers — access controls, gating & functionality', ()
     }) as unknown as InjectResult;
     assert.equal(resQ.statusCode, 200);
     const bodyQ = resQ.json() as Record<string, any>;
-    assert.ok(bodyQ.items.every((item: any) => item.dealerName.includes('Dealer') || item.reason.includes('Dealer')));
-  });
+	    assert.ok(bodyQ.items.every((item: any) => item.dealerName.includes('Dealer') || item.reason.includes('Dealer')));
+	  });
+
+	  it('filters by dealerId', async () => {
+	    const { app, token } = makeApp('SUPER_ADMIN');
+	    const res = await app.inject({
+	      method: 'GET',
+	      url: '/api/admin/blocked-dealers?dealerId=dl-2',
+	      headers: { Cookie: `op_session=${token}` }
+	    }) as unknown as InjectResult;
+	    assert.equal(res.statusCode, 200);
+	    const body = res.json() as Record<string, any>;
+	    assert.ok(body.items.length > 0, 'expected mock dealer dl-2 to have at least one blocker');
+	    assert.ok(body.items.every((item: any) => item.dealerId === 'dl-2'));
+	    assert.equal(body.summary.total, body.items.length);
+	  });
 
   it('serves from cache on repeated requests', async () => {
     const { app, token } = makeApp('SUPER_ADMIN');

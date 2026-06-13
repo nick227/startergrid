@@ -2,6 +2,7 @@ import type { PrismaClient, Prisma, PlatformAccountState } from '@prisma/client'
 import { platformProfiles } from '../../data/platformProfiles.js';
 import { platformsForCategory, isPlatformAllowedForCategory } from '../../data/platformCategoryMap.js';
 import type { PlatformProfileSeed, ConnectionField } from '../../lib/types.js';
+import { PLATFORM_SETUP_GUIDES, type ExternalLink, type OperatorSetupGuide } from '../../data/platformSetupGuides.js';
 
 type ProfileConfidence = 'HIGH' | 'MEDIUM' | 'LOW';
 
@@ -72,6 +73,9 @@ export type PlatformAccountDetail = {
   lastValidationNote: string | null;
   lastValidatedAt: string | null;
   highestConfirmedLevel: string | null;
+  description: string | null;
+  externalLinks: ExternalLink[] | null;
+  operatorSetup: OperatorSetupGuide | null;
 };
 
 export type AccountUpdatePayload = {
@@ -208,6 +212,7 @@ export async function listPlatformAccounts(
 
   const accounts: PlatformAccountDetail[] = profiles.map(p => {
     const r = bySlug.get(p.slug);
+    const guide = PLATFORM_SETUP_GUIDES[p.slug];
       let connectionConfig = (r as any)?.connectionConfig as Record<string, unknown> | null ?? null;
       const secrets = secretsBySlug.get(p.slug);
       if (secrets && secrets.length > 0) {
@@ -260,6 +265,9 @@ export async function listPlatformAccounts(
         lastValidationNote: (r as any)?.lastValidationNote ?? null,
         lastValidatedAt: (r as any)?.lastValidatedAt?.toISOString() ?? null,
         highestConfirmedLevel: (r as any)?.highestConfirmedLevel ?? null,
+        description: guide?.description ?? null,
+        externalLinks: guide?.externalLinks?.length ? guide.externalLinks : null,
+        operatorSetup: guide?.operator ?? null,
       };
 
       if (!r) return { ...base, readinessScore: computeReadinessScore(base).score };

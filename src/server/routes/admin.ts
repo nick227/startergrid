@@ -64,6 +64,13 @@ const userSelectWithAccess = {
   },
 } as const;
 
+function extractAuditDealerId(detail: unknown): string | null {
+  if (!detail || typeof detail !== 'object') return null;
+  const detailObj = detail as Record<string, unknown>;
+  const raw = detailObj['dealerId'] ?? detailObj['dealershipId'];
+  return typeof raw === 'string' && raw.trim() ? raw : null;
+}
+
 function summarizeUser(account: any) {
   const { dealerAccess, ...user } = account;
   return {
@@ -475,15 +482,16 @@ export function registerAdminRoutes(app: FastifyInstance, prisma: PrismaClient):
           );
           detailString = keys.map(k => `${k}: ${typeof detailObj[k] === 'object' ? JSON.stringify(detailObj[k]) : detailObj[k]}`).join(', ');
         }
-        return {
-          id: log.id,
-          action: log.action,
-          actorId: log.actorId,
-          actorEmail: log.actorEmail,
-          detailString,
-          createdAt: log.createdAt.toISOString(),
-        };
-      });
+	        return {
+	          id: log.id,
+	          action: log.action,
+	          actorId: log.actorId,
+	          actorEmail: log.actorEmail,
+	          dealerId: extractAuditDealerId(log.detail),
+	          detailString,
+	          createdAt: log.createdAt.toISOString(),
+	        };
+	      });
 
       const durationMs = Date.now() - startedAt;
       const meta = {
@@ -800,20 +808,24 @@ export function registerAdminRoutes(app: FastifyInstance, prisma: PrismaClient):
       // 8. Filters
       let filtered = blockedDealers;
       const severityFilter = query.severity;
-      const categoryFilter = query.category;
-      const platformFilter = query.platform;
-      const sourceFilter = query.source;
-      const searchFilter = query.q;
+	      const categoryFilter = query.category;
+	      const dealerFilter = query.dealerId;
+	      const platformFilter = query.platform;
+	      const sourceFilter = query.source;
+	      const searchFilter = query.q;
 
       if (severityFilter) {
         filtered = filtered.filter(item => item.severity === severityFilter);
       }
-      if (categoryFilter) {
-        filtered = filtered.filter(item => item.category === categoryFilter);
-      }
-      if (platformFilter) {
-        filtered = filtered.filter(item => item.platformSlug === platformFilter);
-      }
+	      if (categoryFilter) {
+	        filtered = filtered.filter(item => item.category === categoryFilter);
+	      }
+	      if (dealerFilter) {
+	        filtered = filtered.filter(item => item.dealerId === dealerFilter);
+	      }
+	      if (platformFilter) {
+	        filtered = filtered.filter(item => item.platformSlug === platformFilter);
+	      }
       if (sourceFilter) {
         filtered = filtered.filter(item => item.source === sourceFilter);
       }
@@ -834,9 +846,10 @@ export function registerAdminRoutes(app: FastifyInstance, prisma: PrismaClient):
       });
 
       // 10. Summary counts based on search filters *except* severity filter
-      let summaryFiltered = blockedDealers;
-      if (categoryFilter) summaryFiltered = summaryFiltered.filter(item => item.category === categoryFilter);
-      if (platformFilter) summaryFiltered = summaryFiltered.filter(item => item.platformSlug === platformFilter);
+	      let summaryFiltered = blockedDealers;
+	      if (categoryFilter) summaryFiltered = summaryFiltered.filter(item => item.category === categoryFilter);
+	      if (dealerFilter) summaryFiltered = summaryFiltered.filter(item => item.dealerId === dealerFilter);
+	      if (platformFilter) summaryFiltered = summaryFiltered.filter(item => item.platformSlug === platformFilter);
       if (sourceFilter) summaryFiltered = summaryFiltered.filter(item => item.source === sourceFilter);
       if (searchFilter) {
         const q = searchFilter.toLowerCase();

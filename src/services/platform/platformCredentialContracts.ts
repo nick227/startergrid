@@ -3,6 +3,7 @@ import { platformProfiles } from '../../data/platformProfiles.js';
 import {
   PLATFORM_SETUP_GUIDES,
   type AdminSetupGuide,
+  type ExternalLink,
   type OperatorSetupGuide,
 } from '../../data/platformSetupGuides.js';
 
@@ -26,6 +27,8 @@ export type PlatformCredentialContract = {
   checkedFields: string[];
   stages: CredentialValidationStage[];
   notes: string;
+  description: string | null;
+  externalLinks: ExternalLink[] | null;
   adminSetup: AdminSetupGuide | null;
   operatorSetup: OperatorSetupGuide | null;
 };
@@ -207,6 +210,8 @@ function capabilitiesForProfile(profile: PlatformProfileSeed): string[] {
 
 function contractFromProfile(profile: PlatformProfileSeed): PlatformCredentialContract {
   const guide = PLATFORM_SETUP_GUIDES[profile.slug] ?? null;
+  const description = guide?.description ?? null;
+  const externalLinks = guide?.externalLinks ?? null;
 
   if (profile.slug === 'consumer-marketplace' || profile.integrationClass === 'OWNED') {
     const isMarketplace = profile.slug === 'consumer-marketplace';
@@ -262,6 +267,8 @@ function contractFromProfile(profile: PlatformProfileSeed): PlatformCredentialCo
           ],
       stages: ['config', 'auth', 'permissions', 'capability'],
       notes: 'Owned channel uses first-party routes and database state, not external developer keys.',
+      description,
+      externalLinks,
       adminSetup: guide?.admin ?? null,
       operatorSetup: guide?.operator ?? null,
     };
@@ -286,6 +293,8 @@ function contractFromProfile(profile: PlatformProfileSeed): PlatformCredentialCo
         checkedFields: provider.requiredFields,
         stages: ['config', 'auth', 'permissions', 'capability'],
         notes: provider.notes,
+        description,
+        externalLinks,
         adminSetup: guide?.admin ?? null,
         operatorSetup: guide?.operator ?? null,
       };
@@ -309,6 +318,8 @@ function contractFromProfile(profile: PlatformProfileSeed): PlatformCredentialCo
       checkedFields: ['Dealer or partner feed credentials'],
       stages: ['config'],
       notes: 'No shared system developer keys are required; credentials are handled per dealer or partner feed account.',
+      description,
+      externalLinks,
       adminSetup: guide?.admin ?? null,
       operatorSetup: guide?.operator ?? null,
     };
@@ -331,6 +342,8 @@ function contractFromProfile(profile: PlatformProfileSeed): PlatformCredentialCo
       checkedFields: ['Manual partner portal access'],
       stages: ['config'],
       notes: 'No shared system developer key is configured for this platform; operator workflow depends on partner portal access.',
+      description,
+      externalLinks,
       adminSetup: guide?.admin ?? null,
       operatorSetup: guide?.operator ?? null,
     };
@@ -352,6 +365,8 @@ function contractFromProfile(profile: PlatformProfileSeed): PlatformCredentialCo
     checkedFields: [],
     stages: ['config'],
     notes: 'No external system credential is required for this platform.',
+    description,
+    externalLinks,
     adminSetup: guide?.admin ?? null,
     operatorSetup: guide?.operator ?? null,
   };

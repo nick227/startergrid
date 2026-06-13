@@ -235,6 +235,9 @@ describe('PlatformAccountDetail shape', () => {
     requiredVehicleFields: [],
     profileConfidence: null,
     connectionConfig: null,
+    description: null,
+    externalLinks: null,
+    operatorSetup: null,
   };
 
   it('has all required fields', () => {

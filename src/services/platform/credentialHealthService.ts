@@ -23,7 +23,7 @@ import {
 
 // How each provider's developer credentials can be live-validated.
 // Absent = the provider has a non-standard token API with no app-level probe
-// (Apple JWT stub, TikTok JSON APIs) — only env presence can be reported.
+// (Apple JWT auth, TikTok JSON APIs) — only env presence can be reported.
 const PROBE_SPECS: Partial<Record<OAuthProvider, CredentialProbeSpec>> = {
   'meta-catalog-ads':        { grant: 'client_credentials', auth: 'form' },
   'facebook-business-page':  { grant: 'client_credentials', auth: 'form' },
@@ -48,7 +48,7 @@ const CREDENTIAL_ENV_VARS: Partial<Record<OAuthProvider, string[]>> = {
   'ebay':                    ['EBAY_CLIENT_ID', 'EBAY_CLIENT_SECRET'],
   'tiktok':                  ['TIKTOK_CLIENT_ID', 'TIKTOK_CLIENT_SECRET'],
   'tiktok-shop':             ['TIKTOK_SHOP_APP_KEY', 'TIKTOK_SHOP_APP_SECRET'],
-  'apple':                   ['APPLE_CLIENT_ID', 'APPLE_PRIVATE_KEY'],
+  'apple':                   ['APPLE_CLIENT_ID', 'APPLE_KEY_ID', 'APPLE_TEAM_ID', 'APPLE_PRIVATE_KEY'],
   'pinterest':               ['PINTEREST_CLIENT_ID', 'PINTEREST_CLIENT_SECRET'],
   'reddit':                  ['REDDIT_CLIENT_ID', 'REDDIT_CLIENT_SECRET'],
   'snapchat':                ['SNAPCHAT_CLIENT_ID', 'SNAPCHAT_CLIENT_SECRET'],

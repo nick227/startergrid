@@ -150,10 +150,10 @@ describe('OAUTH_PROFILE_SLUGS', () => {
     }
   });
 
-  it('apple-business-connect is NOT in OAUTH_PROFILE_SLUGS (oauthProvider suppressed)', () => {
+  it('apple-business-connect is in OAUTH_PROFILE_SLUGS', () => {
     assert.ok(
-      !OAUTH_PROFILE_SLUGS.has('apple-business-connect'),
-      'apple-business-connect should not be in OAUTH_PROFILE_SLUGS until jose JWT ships',
+      OAUTH_PROFILE_SLUGS.has('apple-business-connect'),
+      'apple-business-connect should be in OAUTH_PROFILE_SLUGS now that Apple JWT client secrets are supported',
     );
   });
 

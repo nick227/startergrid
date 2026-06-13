@@ -2,12 +2,11 @@
 //
 // Proves that:
 //   1. Development/test routes to mock outbox (writes a file)
-//   2. Production routes to SMTP path (throws SmtpNotImplementedError)
-//   3. SmtpNotImplementedError has the expected shape
-//   4. notifyLeadCaptured: transport failure marks notification FAILED
-//   5. notifyLeadCaptured: triggering operation does not throw because email failed
-//   6. notifyLeadCaptured: no dealer email address marks notification FAILED
-//   7. notifyLeadCaptured: successful transport marks notification SENT with deliveredAt
+//   2. Production routes to SMTP path when SMTP_ENABLED=true
+//   3. notifyLeadCaptured: transport failure marks notification FAILED
+//   4. notifyLeadCaptured: triggering operation does not throw because email failed
+//   5. notifyLeadCaptured: no dealer email address marks notification FAILED
+//   6. notifyLeadCaptured: successful transport marks notification SENT with deliveredAt
 
 import assert from 'node:assert/strict';
 import { describe, it } from 'node:test';
@@ -15,7 +14,7 @@ import os from 'node:os';
 import path from 'node:path';
 import fs from 'node:fs/promises';
 import type { PrismaClient } from '@prisma/client';
-import { emailTransport, SmtpNotImplementedError, type EmailMessage } from '../services/dealer/emailTransport.js';
+import { emailTransport, type EmailMessage } from '../services/dealer/emailTransport.js';
 import { notifyLeadCaptured } from '../services/dealer/dealerNotificationService.js';
 
 // ── Fixture ───────────────────────────────────────────────────────────────────
@@ -106,10 +105,9 @@ describe('emailTransport — production', () => {
     }
   });
 
-  it('throws SmtpNotImplementedError when SMTP_ENABLED=true (SMTP not yet wired)', async () => {
-    await assert.rejects(
-      () => emailTransport(SAMPLE_MSG, { ...PROD_ENV, SMTP_ENABLED: 'true' }),
-      SmtpNotImplementedError
+  it('sends through SMTP when SMTP_ENABLED=true', async () => {
+    await assert.doesNotReject(() =>
+      emailTransport(SAMPLE_MSG, { ...PROD_ENV, SMTP_ENABLED: 'true', SMTP_JSON_TRANSPORT: 'true' })
     );
   });
 
@@ -118,7 +116,7 @@ describe('emailTransport — production', () => {
     const prevDir = process.env['MOCK_OUTBOX_DIR'];
     process.env['MOCK_OUTBOX_DIR'] = tmpDir;
     try {
-      await emailTransport(SAMPLE_MSG, { ...PROD_ENV, SMTP_ENABLED: 'true' }).catch(() => {});
+      await emailTransport(SAMPLE_MSG, { ...PROD_ENV, SMTP_ENABLED: 'true', SMTP_JSON_TRANSPORT: 'true' });
       let files: string[] = [];
       try { files = await fs.readdir(tmpDir); } catch { /* dir may not exist */ }
       assert.equal(files.length, 0, 'production must not write to mock outbox');
@@ -127,22 +125,6 @@ describe('emailTransport — production', () => {
       else process.env['MOCK_OUTBOX_DIR'] = prevDir;
       await fs.rm(tmpDir, { recursive: true, force: true });
     }
-  });
-});
-
-// ── SmtpNotImplementedError ───────────────────────────────────────────────────
-
-describe('SmtpNotImplementedError', () => {
-  it('is instanceof Error', () => {
-    assert.ok(new SmtpNotImplementedError() instanceof Error);
-  });
-
-  it('name is SmtpNotImplementedError', () => {
-    assert.equal(new SmtpNotImplementedError().name, 'SmtpNotImplementedError');
-  });
-
-  it('message includes "not yet implemented"', () => {
-    assert.ok(new SmtpNotImplementedError().message.toLowerCase().includes('not yet implemented'));
   });
 });
 

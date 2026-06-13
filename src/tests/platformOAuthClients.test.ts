@@ -1,11 +1,13 @@
 import assert from 'node:assert/strict';
 import { describe, it } from 'node:test';
+import { createVerify, generateKeyPairSync } from 'node:crypto';
 import type { PrismaClient } from '@prisma/client';
 import { OAuthClient } from '../services/platform/clients/OAuthClient.js';
 import type { OAuthTokenPayload, AuthUrlParams } from '../services/platform/clients/types.js';
 import { OAuthError } from '../services/platform/clients/types.js';
 import { CredentialStore } from '../services/platform/clients/CredentialStore.js';
 import { PlatformClientRegistry } from '../services/platform/clients/PlatformClientRegistry.js';
+import { buildAppleClientSecret } from '../services/platform/clients/providers/AppleOAuthClient.js';
 import { OAUTH_PROFILE_SLUGS } from '../lib/platformCapabilityManifest.js';
 import type { OAuthProvider } from '../lib/types.js';
 
@@ -131,11 +133,46 @@ describe('OAuthError', () => {
   });
 });
 
+// ── Apple client secret JWT ───────────────────────────────────────────────────
+
+describe('buildAppleClientSecret', () => {
+  it('creates an ES256 JWT signed with the Apple private key', () => {
+    const { privateKey, publicKey } = generateKeyPairSync('ec', { namedCurve: 'P-256' });
+    const privatePem = privateKey.export({ type: 'pkcs8', format: 'pem' }).toString();
+    const publicPem = publicKey.export({ type: 'spki', format: 'pem' }).toString();
+
+    const jwt = buildAppleClientSecret({
+      clientId: 'com.example.service',
+      keyId: 'KEY1234567',
+      teamId: 'TEAM123456',
+      privateKey: privatePem,
+      now: new Date('2026-06-13T12:00:00.000Z'),
+    });
+
+    const [headerPart, payloadPart, signaturePart] = jwt.split('.');
+    assert.ok(headerPart && payloadPart && signaturePart, 'JWT must have header, payload, and signature');
+
+    const header = JSON.parse(Buffer.from(headerPart, 'base64url').toString('utf8')) as Record<string, unknown>;
+    const payload = JSON.parse(Buffer.from(payloadPart, 'base64url').toString('utf8')) as Record<string, unknown>;
+    assert.equal(header['alg'], 'ES256');
+    assert.equal(header['kid'], 'KEY1234567');
+    assert.equal(payload['iss'], 'TEAM123456');
+    assert.equal(payload['sub'], 'com.example.service');
+    assert.equal(payload['aud'], 'https://appleid.apple.com');
+
+    const verifier = createVerify('sha256');
+    verifier.update(`${headerPart}.${payloadPart}`);
+    verifier.end();
+    assert.equal(
+      verifier.verify({ key: publicPem, dsaEncoding: 'ieee-p1363' }, Buffer.from(signaturePart, 'base64url')),
+      true,
+    );
+  });
+});
+
 // ── PlatformClientRegistry ────────────────────────────────────────────────────
 
 describe('PlatformClientRegistry.forSlug', () => {
-  // Derived from platform profiles — apple-business-connect excluded because its
-  // oauthProvider is suppressed until jose JWT ships (AppleOAuthClient is NOT_IMPLEMENTED).
   const oauthSlugs = [...OAUTH_PROFILE_SLUGS];
 
   for (const slug of oauthSlugs) {
@@ -167,6 +204,11 @@ describe('PlatformClientRegistry.forSlug', () => {
     const b = PlatformClientRegistry.forSlug('linkedin-lead-gen-forms');
     assert.equal(a!.provider, 'microsoft');
     assert.equal(b!.provider, 'microsoft');
+  });
+
+  it('returns the Apple OAuth client for apple-business-connect', () => {
+    const client = PlatformClientRegistry.forSlug('apple-business-connect');
+    assert.equal(client?.provider, 'apple');
   });
 
   it('allClients() returns unique instances', () => {

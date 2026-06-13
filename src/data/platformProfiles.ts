@@ -1046,7 +1046,7 @@ export const platformProfiles: PlatformProfileSeed[] = [
       { field: 'platformRepName', label: 'Apple Business Connect Rep' },
       { field: 'platformRepEmail', label: 'Rep Email' },
     ],
-    // oauthProvider: 'apple', -- stub until jose JWT library ships (AppleOAuthClient throws NOT_IMPLEMENTED)
+    oauthProvider: 'apple',
     tier: 3,
     connectionType: 'MANUAL_PORTAL',
     integrationMaturity: 'OAUTH_READY',
