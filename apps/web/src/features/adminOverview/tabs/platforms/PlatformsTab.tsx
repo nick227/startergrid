@@ -9,6 +9,7 @@ import {
   type PlatformCredentialDisplayStatus,
   type ProviderCredentialResultWithContracts,
   type ProviderCredentialSummaryWithContracts,
+  type OperatorSetupGuide,
 } from '@/lib/api/admin.ts';
 import { adminPlatformHash } from '@/lib/routes.ts';
 import { ResultCount, SortableHeaderCell, type SortDir } from '@/features/adminOverview/components/index.ts';
@@ -39,6 +40,26 @@ const INTERNAL_MARKETPLACE_CHECKS = [
 
 function formatList(items: string[]): string {
   return items.length > 0 ? items.join(' + ') : 'none';
+}
+
+function connectionModelLabel(model: string | undefined): string {
+  if (model === 'shared-system-oauth') return 'Shared OAuth';
+  if (model === 'dealer-oauth') return 'Dealer OAuth';
+  if (model === 'shared-system-api-key') return 'Shared API Key';
+  if (model === 'partner-feed') return 'Partner Feed';
+  if (model === 'manual-portal') return 'Manual Portal';
+  if (model === 'internal-route') return 'Internal';
+  if (model === 'none') return 'None';
+  return model ?? '—';
+}
+
+function connectionModelClass(model: string | undefined): string {
+  if (model === 'shared-system-oauth' || model === 'shared-system-api-key') return 'bg-status-info-bg text-status-info-text border-status-info-border';
+  if (model === 'dealer-oauth') return 'bg-blue-50 text-blue-700 border-blue-200';
+  if (model === 'partner-feed') return 'bg-status-neutral-bg text-status-neutral-text border-status-neutral-border';
+  if (model === 'manual-portal') return 'bg-status-warning-bg text-status-warning-text border-status-warning-border';
+  if (model === 'internal-route') return 'bg-status-success-bg text-status-success-text border-status-success-border';
+  return 'bg-surface-inset text-ink-faint border-silver-200';
 }
 
 function describeSystemCredentialGap(platform: PlatformOverviewItemWithCategories, providerName: string): string {
@@ -391,10 +412,11 @@ export function PlatformsTab({ platformOverview }: Props) {
       <ResultCount shown={filteredPlatforms.length} total={platformOverview.length} noun="platform" />
 
       <div className="surface-card-operator overflow-x-auto">
-        <table className="w-full text-left border-collapse min-w-[980px]">
+        <table className="w-full text-left border-collapse min-w-[1100px]">
           <thead>
             <tr className="bg-silver-100 border-b border-silver-200 text-[10px] text-ink-muted uppercase tracking-wider">
               <SortableHeaderCell isActive={platSort === 'platformName'} dir={platDir} onClick={() => togglePlat('platformName')}>Platform</SortableHeaderCell>
+              <th className="px-4 py-3 font-semibold">Connection</th>
               <th className="px-4 py-3 font-semibold">Validation</th>
               <SortableHeaderCell isActive={platSort === 'dealersUsing'} dir={platDir} onClick={() => togglePlat('dealersUsing')}>Dealers</SortableHeaderCell>
               <SortableHeaderCell isActive={platSort === 'liveInventory'} dir={platDir} onClick={() => togglePlat('liveInventory')}>Live</SortableHeaderCell>
@@ -413,7 +435,7 @@ export function PlatformsTab({ platformOverview }: Props) {
               const opStatus = operationalStatus(platform, status);
               return (
                 <tr key={platform.platformSlug} className="border-b border-silver-200 last:border-0 hover:bg-surface-inset transition-colors">
-                  <td className="px-4 py-3 min-w-[300px]">
+                  <td className="px-4 py-3 min-w-[280px]">
                     <a href={adminPlatformHash(platform.platformSlug)} className="font-semibold text-navy-700 hover:text-navy-600 hover:underline text-sm">
                       {platform.platformName}
                     </a>
@@ -439,6 +461,22 @@ export function PlatformsTab({ platformOverview }: Props) {
                         <span className="text-xs text-ink-faint bg-pink-100">No linked categories or capabilities</span>
                       )}
                     </div>
+                  </td>
+                  <td className="px-4 py-3 min-w-[180px]">
+                    {(() => {
+                      const model = contract?.connectionModel;
+                      const opGuide = contract?.operatorSetup;
+                      return (
+                        <div className="space-y-1">
+                          <span className={`inline-block px-1.5 py-0.5 rounded border text-[9px] font-semibold uppercase tracking-wide ${connectionModelClass(model)}`}>
+                            {connectionModelLabel(model)}
+                          </span>
+                          {opGuide && (
+                            <p className="text-[10px] text-ink-faint leading-snug">{opGuide.shortBlurb}</p>
+                          )}
+                        </div>
+                      );
+                    })()}
                   </td>
                   <td className="px-4 py-3">
                     <div className="max-w-[320px] space-y-2">
@@ -502,7 +540,7 @@ export function PlatformsTab({ platformOverview }: Props) {
               );
             })}
             {filteredPlatforms.length === 0 && (
-              <tr><td colSpan={8} className="px-4 py-10 text-center text-ink-faint text-sm">No platforms match the selected filters.</td></tr>
+              <tr><td colSpan={9} className="px-4 py-10 text-center text-ink-faint text-sm">No platforms match the selected filters.</td></tr>
             )}
           </tbody>
         </table>

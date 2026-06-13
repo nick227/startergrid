@@ -48,6 +48,21 @@ export type CredentialStageResult = {
   checkedFields: string[];
 };
 
+export type AdminSetupGuide = {
+  shortBlurb: string;
+  portalUrl: string;
+  steps: string[];
+  envVarDescriptions: Partial<Record<string, string>>;
+};
+
+export type OperatorSetupGuide = {
+  shortBlurb: string;
+  connectionLabel: string;
+  steps: string[];
+  dealerPortalUrl?: string | null;
+  validationNote: string;
+};
+
 export type PlatformCredentialContractSummary = {
   platformSlug: string;
   provider: string;
@@ -69,6 +84,8 @@ export type PlatformCredentialContractSummary = {
   lastCheckedAt: string | null;
   lastStatus: PlatformCredentialDisplayStatus;
   lastError: string | null;
+  adminSetup?: AdminSetupGuide | null;
+  operatorSetup?: OperatorSetupGuide | null;
 };
 
 export type ProviderCredentialSummaryWithContracts = ProviderCredentialSummary & {

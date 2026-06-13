@@ -6,6 +6,8 @@ import {
   type AdminDealerAttentionItem,
   type AdminRecentEventItem,
   type AdminQueueSnapshot,
+  type AdminSetupGuide,
+  type OperatorSetupGuide,
   type CredentialStageResult,
   type PlatformCredentialContractSummary,
   type PlatformCredentialDisplayStatus,
@@ -289,6 +291,80 @@ function StageBadge({ stage }: { stage: CredentialStageResult }) {
           ))}
         </div>
       )}
+    </div>
+  );
+}
+
+function AdminSetupPanel({ guide, requiredFields }: { guide: AdminSetupGuide; requiredFields: string[] }) {
+  return (
+    <div className="space-y-3">
+      <p className="text-[11px] leading-relaxed text-ink-muted">{guide.shortBlurb}</p>
+      <a
+        href={guide.portalUrl}
+        target="_blank"
+        rel="noopener noreferrer"
+        className="inline-flex items-center gap-1 text-xs font-semibold text-navy-700 hover:underline"
+      >
+        Open developer portal ↗
+      </a>
+      {guide.steps.length > 0 && (
+        <ol className="space-y-1.5 text-[11px] text-ink-muted list-decimal list-inside">
+          {guide.steps.map((step, i) => (
+            <li key={i} className="leading-snug">{step}</li>
+          ))}
+        </ol>
+      )}
+      {requiredFields.length > 0 && (
+        <div className="space-y-1.5 pt-2 border-t border-silver-200">
+          <div className="text-[10px] font-semibold text-ink-faint uppercase tracking-wide">Env vars to set</div>
+          {requiredFields.map(field => (
+            <div key={field} className="flex flex-col gap-0.5">
+              <code className="text-[10px] font-mono font-bold text-ink-heading bg-surface-inset border border-silver-200 px-1.5 py-0.5 rounded w-fit">
+                {field}
+              </code>
+              {guide.envVarDescriptions[field] && (
+                <span className="text-[10px] text-ink-faint leading-snug pl-1">
+                  {guide.envVarDescriptions[field]}
+                </span>
+              )}
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
+function OperatorSetupPanel({ guide }: { guide: OperatorSetupGuide }) {
+  return (
+    <div className="space-y-3">
+      <p className="text-[11px] leading-relaxed text-ink-muted">{guide.shortBlurb}</p>
+      <div className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded bg-surface-inset border border-silver-200">
+        <span className="text-[9px] font-semibold text-ink-faint uppercase tracking-wide">Model</span>
+        <span className="text-[10px] font-mono text-ink-muted">{guide.connectionLabel}</span>
+      </div>
+      {guide.dealerPortalUrl && (
+        <div>
+          <a
+            href={guide.dealerPortalUrl}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-xs font-semibold text-navy-700 hover:underline"
+          >
+            Dealer signup portal ↗
+          </a>
+        </div>
+      )}
+      {guide.steps.length > 0 && (
+        <ol className="space-y-1.5 text-[11px] text-ink-muted list-decimal list-inside">
+          {guide.steps.map((step, i) => (
+            <li key={i} className="leading-snug">{step}</li>
+          ))}
+        </ol>
+      )}
+      <div className="px-2 py-1.5 rounded bg-surface-inset border border-silver-200 text-[10px] text-ink-faint leading-relaxed">
+        <span className="font-semibold">Validation: </span>{guide.validationNote}
+      </div>
     </div>
   );
 }
@@ -920,46 +996,62 @@ export default function AdminPlatformDetailPage({
                 )}
               </div>
 
-              <div id="setup-checklist" className="surface-card-operator p-4 space-y-4">
-                <SectionHeader title="Docs & Setup Checklist" />
+              <div id="setup-checklist" className="surface-card-operator p-4 space-y-5">
+                <SectionHeader title="Setup Guide" />
                 {!credentialContract ? (
                   <div className="py-4 text-center text-xs text-ink-faint border border-dashed border-silver-200 rounded-md">
                     Credential contract is still loading.
                   </div>
                 ) : (
                   <>
+                    {/* Admin track */}
                     <div>
-                      <div className="text-[10px] text-ink-faint uppercase tracking-wide font-semibold mb-1">Connection model</div>
-                      <div className="text-xs text-ink-muted">
-                        {credentialContract.authType === 'internal'
-                          ? 'Internal first-party platform. Validate routes, publish loop, visibility, leads, buyer events, and sold notifications.'
-                          : `External ${credentialContract.authType} platform. System credentials are separate from dealer connections.`}
+                      <div className="flex items-center gap-2 mb-2">
+                        <span className="text-[10px] font-bold text-ink-muted uppercase tracking-wider">Admin — Developer Credentials</span>
+                        {credentialContract.docsUrl && (
+                          <a href={credentialContract.docsUrl} target="_blank" rel="noopener noreferrer" className="text-[10px] text-navy-700 hover:underline">API docs ↗</a>
+                        )}
                       </div>
+                      {credentialContract.adminSetup ? (
+                        <AdminSetupPanel
+                          guide={credentialContract.adminSetup}
+                          requiredFields={credentialContract.requiredFields}
+                        />
+                      ) : (
+                        <div className="space-y-2">
+                          <p className="text-[11px] text-ink-muted">
+                            {credentialContract.authType === 'internal'
+                              ? 'Owned first-party platform. No external developer keys required.'
+                              : 'No developer key setup guide is registered for this platform.'}
+                          </p>
+                          {credentialContract.requiredFields.length > 0 && (
+                            <div className="flex flex-wrap gap-1">
+                              {credentialContract.requiredFields.map(field => (
+                                <code key={field} className="text-[10px] font-mono font-bold text-ink-heading bg-surface-inset border border-silver-200 px-1.5 py-0.5 rounded">
+                                  {field}
+                                </code>
+                              ))}
+                            </div>
+                          )}
+                        </div>
+                      )}
                     </div>
-                    <div className="space-y-2">
-                      {credentialContract.requiredFields.length > 0 && (
-                        <div className="text-xs text-ink-muted">
-                          <span className="font-semibold text-ink-heading">Secrets:</span> {formatList(credentialContract.requiredFields)}
-                        </div>
-                      )}
-                      {credentialContract.requiredScopes.length > 0 && (
-                        <div className="text-xs text-ink-muted">
-                          <span className="font-semibold text-ink-heading">Scopes:</span> {credentialContract.requiredScopes.join(', ')}
-                        </div>
-                      )}
-                      {credentialContract.requiredPermissions.length > 0 && (
-                        <div className="text-xs text-ink-muted">
-                          <span className="font-semibold text-ink-heading">Permissions:</span> {credentialContract.requiredPermissions.join(', ')}
-                        </div>
-                      )}
-                      {credentialContract.requiredCapabilities.length > 0 && (
-                        <div className="text-xs text-ink-muted">
-                          <span className="font-semibold text-ink-heading">Capability checks:</span> {credentialContract.requiredCapabilities.join(', ')}
-                        </div>
+
+                    {/* Operator track */}
+                    <div className="pt-4 border-t border-silver-200">
+                      <div className="text-[10px] font-bold text-ink-muted uppercase tracking-wider mb-2">Operator — Dealer Connection</div>
+                      {credentialContract.operatorSetup ? (
+                        <OperatorSetupPanel guide={credentialContract.operatorSetup} />
+                      ) : (
+                        <p className="text-[11px] text-ink-muted">
+                          {credentialContract.connectionModel
+                            ? `Connection model: ${credentialContract.connectionModel}.`
+                            : 'No dealer connection guide is registered for this platform.'}
+                        </p>
                       )}
                     </div>
-                    <p className="text-[10px] text-ink-faint leading-relaxed">{credentialContract.notes}</p>
-                    <div className="flex flex-wrap gap-2 pt-2 border-t border-silver-200">
+
+                    <div className="flex flex-wrap gap-2 pt-3 border-t border-silver-200">
                       <a href="#/admin/platform-credentials" className="text-xs font-semibold text-navy-700 hover:underline">Credential registry</a>
                       <a href="#recent-history" className="text-xs font-semibold text-navy-700 hover:underline">History</a>
                     </div>
