@@ -29,6 +29,7 @@ import {
   mediaSlotAssignSchema,
   decodeCategoryIdentifierSchema,
   createCategoryItemSchema,
+  updateCategoryItemSchema,
   validateBody,
 } from '../requestValidation.js';
 import { normalizeVin, validateVin, resolveVinDecoder } from '../../services/inventory/vin/index.js';
@@ -1240,6 +1241,81 @@ export function registerInventoryRoutes(app: FastifyInstance, prisma: PrismaClie
       return reply.send({
         ...record,
         media: item.media,
+        readiness,
+      });
+    }
+  );
+
+  // ── Generic category item: update ─────────────────────────────────────────────
+
+  app.patch<{ Params: ItemDetailParams }>(
+    '/api/dealers/:dealershipId/inventory/items/:itemId',
+    async (request, reply) => {
+      const { dealershipId, itemId } = request.params;
+      if (!await requireDealerAccess(prisma, request, reply, dealershipId)) return;
+
+      const existing = await prisma.categoryInventoryItem.findFirst({
+        where: { id: itemId, dealershipId },
+        select: { id: true, categoryId: true },
+      });
+      if (!existing) return reply.status(404).send({ error: 'Item not found' });
+
+      const body = validateBody(updateCategoryItemSchema, request.body);
+      if (!body.ok) return reply.status(400).send({ error: body.error });
+
+      const { stockNumber, priceCents, condition, data } = body.data;
+      if (stockNumber === undefined && priceCents === undefined && condition === undefined && data === undefined) {
+        return reply.status(400).send({ error: 'No fields to update' });
+      }
+
+      const updated = await prisma.categoryInventoryItem.update({
+        where: { id: itemId },
+        data: {
+          ...(stockNumber !== undefined && { stockNumber }),
+          ...(priceCents !== undefined && { priceCents }),
+          ...(condition !== undefined && { condition }),
+          ...(data !== undefined && { data: data as import('@prisma/client').Prisma.InputJsonValue }),
+        },
+        include: {
+          media: {
+            select: {
+              id: true, url: true, kind: true, sortOrder: true,
+              width: true, height: true, mimeType: true,
+              mediaSlotKey: true, mediaRole: true,
+              customLabel: true, customGroup: true,
+            },
+            orderBy: { sortOrder: 'asc' },
+          },
+        },
+      });
+
+      const record = categoryItemToInventoryRecord(updated);
+
+      const schema = getCategoryInventorySchema(updated.categoryId as BusinessCategoryId);
+      const assignedSlotKeys = updated.media
+        .filter(m => m.mediaSlotKey)
+        .map(m => m.mediaSlotKey as string);
+
+      const fields: Record<string, unknown> = {
+        stockNumber: updated.stockNumber,
+        priceCents:  updated.priceCents,
+        condition:   updated.condition,
+        ...(updated.data as Record<string, unknown>),
+      };
+      if (schema && updated.primaryIdentifier) {
+        fields[schema.primaryIdentifier.fieldKey] = updated.primaryIdentifier;
+      }
+
+      const readiness = buildInventoryReadiness({
+        category: updated.categoryId as BusinessCategoryId,
+        fields,
+        assignedMediaSlotKeys: assignedSlotKeys,
+        totalMediaCount: updated.media.length,
+      });
+
+      return reply.send({
+        ...record,
+        media: updated.media,
         readiness,
       });
     }

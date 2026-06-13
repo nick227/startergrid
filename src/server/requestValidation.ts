@@ -341,6 +341,14 @@ export const createCategoryItemSchema = z.object({
 }).strict();
 export type CreateCategoryItemBody = z.infer<typeof createCategoryItemSchema>;
 
+export const updateCategoryItemSchema = z.object({
+  stockNumber: z.string().trim().min(1).max(80).optional(),
+  priceCents:  z.number().int().min(0).optional(),
+  condition:   z.string().trim().min(1).max(24).optional(),
+  data:        z.record(z.string(), z.unknown()).optional(),
+}).strict();
+export type UpdateCategoryItemBody = z.infer<typeof updateCategoryItemSchema>;
+
 // operationId: captureMarketplaceChannelEvent
 export const marketplaceChannelEventSchema = z.object({
   eventType: z.enum(['vehicle_impression', 'vehicle_detail_view', 'dealer_page_view']),

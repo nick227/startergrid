@@ -1240,6 +1240,24 @@ export async function fetchCategoryItemDetail(
   );
 }
 
+export type PatchCategoryItemPayload = {
+  stockNumber?: string;
+  priceCents?: number;
+  condition?: string;
+  data?: Record<string, unknown>;
+};
+
+export async function patchCategoryItem(
+  dealershipId: string,
+  itemId: string,
+  payload: PatchCategoryItemPayload,
+): Promise<CategoryInventoryItemDetail> {
+  return catalogFetch<CategoryInventoryItemDetail>(
+    `/api/dealers/${dealershipId}/inventory/items/${itemId}`,
+    { method: 'PATCH', body: JSON.stringify(payload), headers: { 'Content-Type': 'application/json' } },
+  );
+}
+
 // ── Category item marketplace publishing ──────────────────────────────────────
 
 export type CategoryItemListingRecord = {

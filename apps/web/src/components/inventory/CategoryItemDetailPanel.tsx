@@ -1,13 +1,14 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 import {
   fetchCategoryItemDetail,
+  patchCategoryItem,
   type CategoryInventoryItemDetail,
 } from '@/lib/api/sdk.ts';
 import { VehicleReadinessChecklist } from './VehicleReadinessChecklist.tsx';
-import { EbookItemFields, ebookFieldsFromData, type EbookFields } from './EbookItemFields.tsx';
-import { SongItemFields, songFieldsFromData, type SongFields } from './SongItemFields.tsx';
-import { DigitalArtItemFields, digitalArtFieldsFromData, type DigitalArtFields } from './DigitalArtItemFields.tsx';
-import { VideoItemFields, videoFieldsFromData, type VideoFields } from './VideoItemFields.tsx';
+import { EbookItemFields, ebookFieldsFromData, ebookFieldsToData, type EbookFields } from './EbookItemFields.tsx';
+import { SongItemFields, songFieldsFromData, songFieldsToData, type SongFields } from './SongItemFields.tsx';
+import { DigitalArtItemFields, digitalArtFieldsFromData, digitalArtFieldsToData, type DigitalArtFields } from './DigitalArtItemFields.tsx';
+import { VideoItemFields, videoFieldsFromData, videoFieldsToData, type VideoFields } from './VideoItemFields.tsx';
 import { CategoryItemPublishPanel } from './CategoryItemPublishPanel.tsx';
 
 type Props = {
@@ -32,16 +33,29 @@ function listingBadge(status: string) {
   return <span className="px-2 py-0.5 text-[11px] font-semibold rounded-full bg-amber-100 text-amber-700">DRAFT</span>;
 }
 
+type SaveState = 'idle' | 'saving' | 'saved' | 'error';
+
 export function CategoryItemDetailPanel({ dealerId, itemId, onClose }: Props) {
   const [item, setItem] = useState<CategoryInventoryItemDetail | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+
+  // Per-category editable fields
   const [ebookFields, setEbookFields] = useState<EbookFields | null>(null);
   const [songFields, setSongFields] = useState<SongFields | null>(null);
   const [artFields, setArtFields] = useState<DigitalArtFields | null>(null);
   const [videoFields, setVideoFields] = useState<VideoFields | null>(null);
 
-  useEffect(() => {
+  // Top-level editable fields
+  const [priceInput, setPriceInput] = useState('');
+  const [conditionInput, setConditionInput] = useState('');
+
+  // Save state
+  const [saveState, setSaveState] = useState<SaveState>('idle');
+  const [saveError, setSaveError] = useState<string | null>(null);
+  const [isDirty, setIsDirty] = useState(false);
+
+  const loadItem = useCallback((id: string) => {
     let cancelled = false;
     setLoading(true);
     setError(null);
@@ -50,34 +64,73 @@ export function CategoryItemDetailPanel({ dealerId, itemId, onClose }: Props) {
     setSongFields(null);
     setArtFields(null);
     setVideoFields(null);
-    fetchCategoryItemDetail(dealerId, itemId)
+    setIsDirty(false);
+    setSaveState('idle');
+    fetchCategoryItemDetail(dealerId, id)
       .then(data => {
         if (cancelled) return;
         setItem(data);
-        if (data.categoryId === 'EBOOKS') {
-          setEbookFields(ebookFieldsFromData(data.data));
-        } else if (data.categoryId === 'SONGS') {
-          setSongFields(songFieldsFromData(data.data));
-        } else if (data.categoryId === 'DIGITAL_ART') {
-          setArtFields(digitalArtFieldsFromData(data.data));
-        } else if (data.categoryId === 'VIDEO_DISTRIBUTION') {
-          setVideoFields(videoFieldsFromData(data.data));
-        }
+        setPriceInput(data.priceCents != null ? String(data.priceCents / 100) : '');
+        setConditionInput(data.condition ?? '');
+        if (data.categoryId === 'EBOOKS') setEbookFields(ebookFieldsFromData(data.data));
+        else if (data.categoryId === 'SONGS') setSongFields(songFieldsFromData(data.data));
+        else if (data.categoryId === 'DIGITAL_ART') setArtFields(digitalArtFieldsFromData(data.data));
+        else if (data.categoryId === 'VIDEO_DISTRIBUTION') setVideoFields(videoFieldsFromData(data.data));
       })
       .catch(err => {
         if (cancelled) return;
         setError(err instanceof Error ? err.message : String(err));
       })
-      .finally(() => {
-        if (!cancelled) setLoading(false);
-      });
+      .finally(() => { if (!cancelled) setLoading(false); });
     return () => { cancelled = true; };
-  }, [dealerId, itemId]);
+  }, [dealerId]);
+
+  useEffect(() => loadItem(itemId), [itemId, loadItem]);
+
+  const markDirty = useCallback(() => setIsDirty(true), []);
+
+  const handleSave = async () => {
+    if (!item || saveState === 'saving') return;
+    setSaveState('saving');
+    setSaveError(null);
+
+    try {
+      // Build data payload from whichever category fields are active
+      let data: Record<string, unknown> | undefined;
+      if (item.categoryId === 'EBOOKS' && ebookFields) data = ebookFieldsToData(ebookFields);
+      else if (item.categoryId === 'SONGS' && songFields) data = songFieldsToData(songFields);
+      else if (item.categoryId === 'DIGITAL_ART' && artFields) data = digitalArtFieldsToData(artFields);
+      else if (item.categoryId === 'VIDEO_DISTRIBUTION' && videoFields) data = videoFieldsToData(videoFields);
+
+      const priceCents = priceInput.trim()
+        ? Math.round(parseFloat(priceInput) * 100)
+        : undefined;
+
+      const updated = await patchCategoryItem(dealerId, item.id, {
+        ...(priceCents !== undefined && { priceCents }),
+        ...(conditionInput.trim() && { condition: conditionInput.trim() }),
+        ...(data !== undefined && { data }),
+      });
+
+      setItem(updated);
+      setPriceInput(updated.priceCents != null ? String(updated.priceCents / 100) : '');
+      setConditionInput(updated.condition ?? '');
+      if (updated.categoryId === 'EBOOKS') setEbookFields(ebookFieldsFromData(updated.data));
+      else if (updated.categoryId === 'SONGS') setSongFields(songFieldsFromData(updated.data));
+      else if (updated.categoryId === 'DIGITAL_ART') setArtFields(digitalArtFieldsFromData(updated.data));
+      else if (updated.categoryId === 'VIDEO_DISTRIBUTION') setVideoFields(videoFieldsFromData(updated.data));
+
+      setIsDirty(false);
+      setSaveState('saved');
+      setTimeout(() => setSaveState('idle'), 2500);
+    } catch (err) {
+      setSaveError(err instanceof Error ? err.message : 'Save failed');
+      setSaveState('error');
+    }
+  };
 
   if (loading) {
-    return (
-      <div className="p-6 text-xs text-ink-muted animate-pulse">Loading item details…</div>
-    );
+    return <div className="p-6 text-xs text-ink-muted animate-pulse">Loading item details…</div>;
   }
 
   if (error || !item) {
@@ -92,6 +145,8 @@ export function CategoryItemDetailPanel({ dealerId, itemId, onClose }: Props) {
   }
 
   const title = (item.data['title'] as string | undefined) ?? item.primaryIdentifier ?? item.stockNumber ?? item.id;
+  const isEditable = item.lifecycleStatus === 'AVAILABLE';
+  const inputCls = 'w-full text-sm px-3 py-1.5 border border-silver-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-navy-500 disabled:bg-silver-50 disabled:text-ink-muted';
 
   return (
     <div className="flex flex-col h-full">
@@ -150,29 +205,103 @@ export function CategoryItemDetailPanel({ dealerId, itemId, onClose }: Props) {
           </section>
         )}
 
-        {/* Category-specific fields (read-only view; editing needs a PATCH endpoint) */}
+        {/* Core fields (price + condition) */}
+        {isEditable && (
+          <section>
+            <h3 className="text-xs font-semibold text-ink-body mb-2">Core Details</h3>
+            <div className="grid grid-cols-2 gap-3">
+              <div>
+                <label className="block text-[11px] font-semibold text-ink-muted mb-1">Price ($)</label>
+                <input
+                  type="number"
+                  min={0}
+                  step={0.01}
+                  value={priceInput}
+                  onChange={e => { setPriceInput(e.target.value); markDirty(); }}
+                  placeholder="0.00"
+                  className={inputCls}
+                />
+              </div>
+              <div>
+                <label className="block text-[11px] font-semibold text-ink-muted mb-1">Condition</label>
+                <select
+                  value={conditionInput}
+                  onChange={e => { setConditionInput(e.target.value); markDirty(); }}
+                  className={`${inputCls} bg-white`}
+                >
+                  <option value="">—</option>
+                  <option value="NEW">New</option>
+                  <option value="USED">Used</option>
+                  <option value="LIKE_NEW">Like new</option>
+                  <option value="GOOD">Good</option>
+                  <option value="FAIR">Fair</option>
+                </select>
+              </div>
+            </div>
+          </section>
+        )}
+
+        {/* Category-specific fields */}
         {item.categoryId === 'EBOOKS' && ebookFields && (
           <section>
             <h3 className="text-xs font-semibold text-ink-body mb-2">Book Details</h3>
-            <EbookItemFields fields={ebookFields} onChange={setEbookFields} readOnly />
+            <EbookItemFields
+              fields={ebookFields}
+              onChange={f => { setEbookFields(f); markDirty(); }}
+              readOnly={!isEditable}
+            />
           </section>
         )}
         {item.categoryId === 'SONGS' && songFields && (
           <section>
             <h3 className="text-xs font-semibold text-ink-body mb-2">Release Details</h3>
-            <SongItemFields fields={songFields} onChange={setSongFields} readOnly />
+            <SongItemFields
+              fields={songFields}
+              onChange={f => { setSongFields(f); markDirty(); }}
+              readOnly={!isEditable}
+            />
           </section>
         )}
         {item.categoryId === 'DIGITAL_ART' && artFields && (
           <section>
             <h3 className="text-xs font-semibold text-ink-body mb-2">Artwork Details</h3>
-            <DigitalArtItemFields fields={artFields} onChange={setArtFields} readOnly />
+            <DigitalArtItemFields
+              fields={artFields}
+              onChange={f => { setArtFields(f); markDirty(); }}
+              readOnly={!isEditable}
+            />
           </section>
         )}
         {item.categoryId === 'VIDEO_DISTRIBUTION' && videoFields && (
           <section>
             <h3 className="text-xs font-semibold text-ink-body mb-2">Video Details</h3>
-            <VideoItemFields fields={videoFields} onChange={setVideoFields} readOnly />
+            <VideoItemFields
+              fields={videoFields}
+              onChange={f => { setVideoFields(f); markDirty(); }}
+              readOnly={!isEditable}
+            />
+          </section>
+        )}
+
+        {/* Save bar */}
+        {isEditable && (
+          <section className="sticky bottom-0 -mx-5 px-5 py-3 bg-white border-t border-silver-100">
+            <div className="flex items-center gap-3">
+              <button
+                type="button"
+                onClick={() => void handleSave()}
+                disabled={!isDirty || saveState === 'saving'}
+                className="px-4 py-1.5 text-sm font-semibold rounded-lg bg-navy-700 text-white hover:bg-navy-800 disabled:opacity-40 transition-colors"
+              >
+                {saveState === 'saving' ? 'Saving…' : 'Save changes'}
+              </button>
+              {saveState === 'saved' && (
+                <span className="text-xs text-green-700 font-semibold">Saved</span>
+              )}
+              {saveState === 'error' && saveError && (
+                <span className="text-xs text-red-700">{saveError}</span>
+              )}
+            </div>
           </section>
         )}
 
