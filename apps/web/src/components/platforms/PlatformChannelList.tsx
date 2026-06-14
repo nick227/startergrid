@@ -1,28 +1,25 @@
+import { useState } from 'react';
 import type { PlatformPublishResult, PlatformAccountDetail, PlatformPerformanceItem, SelectedSocialPage } from '@/lib/types.ts';
 import type { OperatorNavHandlers } from '@/lib/operatorNav.ts';
+import { updateAccount } from '@/lib/api/sdk.ts';
 import { OpsRowCard } from '@/components/layout/OpsRowCard.tsx';
 import { PanelSkeleton } from '@/components/operator';
 import { PlatformDetailDrawer } from './PlatformDetailDrawer.tsx';
 import { PlatformLogo } from './PlatformLogo.tsx';
 import { OAuthConnectButton } from './OAuthConnectButton.tsx';
+import { Button } from '@/components/ui/Button.tsx';
 import {
   platformConnectionWithAccount,
   oauthProviderDisplayName,
   platformBenefitLine,
-  effortBadge,
   feedHealthLine,
   type PlatformConnection,
+  type PlatformConnectionMeta,
 } from '@/lib/platformPresentation.ts';
 import { socialRowSubtitle } from '@/lib/platformPanelGuards.ts';
-import {
-  channelSecondaryMeta,
-  channelDesktopFields,
-  channelRowSurface,
-} from '@/lib/channelRowPresentation.ts';
-import { operatorCopy } from '@/lib/copy/operator.ts';
-import { getValidationBadge } from '@/lib/validationPresentation.ts';
+import { channelSecondaryMeta, channelRowSurface } from '@/lib/channelRowPresentation.ts';
+import { platformDisplayName } from '@/lib/marketplaceBrand.ts';
 import { getSetupReadiness, severityToPill } from '@/lib/setupReadiness.ts';
-
 
 type Props = {
   platforms: PlatformPublishResult[];
@@ -46,7 +43,8 @@ function groupOrder(conn: PlatformConnection): number {
   if (conn === 'partner_pending') return 2;
   if (conn === 'inactive') return 3;
   if (conn === 'updating') return 4;
-  return 5; // connected
+  if (conn === 'paused') return 5;
+  return 6; // connected
 }
 
 const GROUP_LABELS: Record<string, string> = {
@@ -55,6 +53,7 @@ const GROUP_LABELS: Record<string, string> = {
   partner_pending: 'Partner approval pending',
   inactive: 'Setup needed',
   updating: 'Syncing',
+  paused: 'Paused',
   connected: 'Active',
 };
 
@@ -71,6 +70,7 @@ function buildGroups(
       : conn.connection === 'needs_oauth' ? 'needs_oauth'
       : conn.connection === 'partner_pending' ? 'partner_pending'
       : conn.connection === 'blocked' ? 'blocked'
+      : conn.connection === 'paused' ? 'paused'
       : 'inactive';
     const list = buckets.get(key) ?? [];
     list.push(p);
@@ -80,6 +80,231 @@ function buildGroups(
   return [...buckets.entries()]
     .sort(([a], [b]) => groupOrder(a as PlatformConnection) - groupOrder(b as PlatformConnection))
     .map(([key, items]) => ({ key, label: GROUP_LABELS[key] ?? key, items }));
+}
+
+const CTA_W = 'min-w-[8rem] justify-center';
+
+function PlatformCta({
+  platform,
+  account,
+  conn,
+  dealerId,
+  onAccountSaved,
+  onSelectSlug,
+  nav,
+}: {
+  platform: PlatformPublishResult;
+  account: PlatformAccountDetail | undefined;
+  conn: PlatformConnectionMeta;
+  dealerId: string;
+  onAccountSaved: () => void;
+  onSelectSlug: (slug: string | null) => void;
+  nav: OperatorNavHandlers;
+}) {
+  const slug = platform.platformSlug;
+  const [pausing, setPausing] = useState(false);
+  const [resuming, setResuming] = useState(false);
+
+  const handlePause = async () => {
+    setPausing(true);
+    try {
+      await updateAccount(dealerId, slug, { state: 'SUSPENDED' });
+      onAccountSaved();
+    } catch {
+      setPausing(false);
+    }
+  };
+
+  const handleResume = async () => {
+    setResuming(true);
+    try {
+      await updateAccount(dealerId, slug, { state: 'ACTIVE' });
+      onAccountSaved();
+    } catch {
+      setResuming(false);
+    }
+  };
+
+  if (conn.connection === 'paused') {
+    return (
+      <Button size="sm" variant="secondary" loading={resuming} className={CTA_W} onClick={() => void handleResume()}>
+        Resume
+      </Button>
+    );
+  }
+
+  if (conn.connection === 'needs_oauth' && account?.oauthProvider) {
+    return (
+      <OAuthConnectButton
+        dealerId={dealerId}
+        platformSlug={slug}
+        providerDisplayName={oauthProviderDisplayName(account.oauthProvider)}
+        isReconnect={account.oauthExpired}
+        onDone={onAccountSaved}
+        label={account.oauthExpired ? 'Re-connect' : 'Connect'}
+        className={CTA_W}
+      />
+    );
+  }
+
+  if (account?.partnerSignup && (account.state === 'ACCOUNT_NEEDED' || account.state === 'PARTNER_REQUIRED')) {
+    return (
+      <a
+        href={account.partnerSignup.applyUrl}
+        target="_blank"
+        rel="noopener noreferrer"
+        className={`inline-flex items-center px-3 py-1.5 text-xs font-semibold rounded-md bg-orange-600 hover:bg-orange-500 text-white transition-colors ${CTA_W}`}
+      >
+        Apply →
+      </a>
+    );
+  }
+
+  if (conn.connection === 'partner_pending') {
+    return (
+      <span className={`inline-flex items-center px-3 py-1.5 text-[11px] font-semibold rounded-md bg-blue-50 text-blue-700 border border-blue-200 ${CTA_W}`}>
+        Applied
+      </span>
+    );
+  }
+
+  if (conn.connection === 'connected' || conn.connection === 'updating') {
+    return (
+      <div className="flex flex-col items-end gap-1">
+        <button
+          type="button"
+          onClick={() => nav.goToPlatformDetail(slug)}
+          className={`inline-flex items-center px-3 py-1.5 text-xs font-semibold rounded-md text-ink-muted hover:text-ink-heading transition-colors ${CTA_W}`}
+        >
+          Manage →
+        </button>
+        {platform.integrationClass !== 'OWNED' && (
+          <button
+            type="button"
+            disabled={pausing}
+            onClick={() => void handlePause()}
+            className="text-[10px] text-ink-faint hover:text-ink-muted disabled:opacity-50 transition-colors"
+          >
+            {pausing ? 'Pausing…' : 'Pause syncing'}
+          </button>
+        )}
+      </div>
+    );
+  }
+
+  if (platform.integrationClass === 'OWNED') {
+    return (
+      <button
+        type="button"
+        onClick={() => nav.goToPlatformDetail(slug)}
+        className={`inline-flex items-center px-3 py-1.5 text-xs font-semibold rounded-md text-ink-muted hover:text-ink-heading transition-colors ${CTA_W}`}
+      >
+        Manage →
+      </button>
+    );
+  }
+
+  return (
+    <Button
+      size="sm"
+      variant="secondary"
+      className={CTA_W}
+      onClick={() => onSelectSlug(slug)}
+    >
+      Set up
+    </Button>
+  );
+}
+
+function PlatformRowFields({
+  account,
+  dealerId,
+  onSaved,
+}: {
+  account: PlatformAccountDetail;
+  dealerId: string;
+  onSaved: () => void;
+}) {
+  const allFields = account.connectionFields ?? [];
+  const fields = allFields.filter(f => !f.isSecret);
+
+  const [form, setForm] = useState<Record<string, string>>(() => {
+    const init: Record<string, string> = {};
+    for (const f of fields) {
+      init[f.field] = String(account.connectionConfig?.[f.field] ?? '');
+    }
+    return init;
+  });
+  const [saving, setSaving] = useState(false);
+  const [err, setErr] = useState<string | null>(null);
+  const [lastSaved, setLastSaved] = useState(0);
+
+  if (!fields.length || account.integrationClass === 'OWNED') return null;
+
+  const origValues = Object.fromEntries(
+    fields.map(f => [f.field, String(account.connectionConfig?.[f.field] ?? '')])
+  );
+  const isDirty = fields.some(f => form[f.field] !== origValues[f.field]);
+
+  const handleSave = async () => {
+    setSaving(true);
+    setErr(null);
+    try {
+      await updateAccount(dealerId, account.platformSlug, {
+        accountId: form['accountId'] || undefined,
+        membershipStatus: form['membershipStatus'] || undefined,
+        platformRepName: form['platformRepName'] || undefined,
+        platformRepEmail: form['platformRepEmail'] || undefined,
+      });
+      setLastSaved(Date.now());
+      onSaved();
+    } catch (e: unknown) {
+      setErr(e instanceof Error ? e.message : 'Save failed');
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  return (
+    <div className="pt-2.5 border-t border-silver-100 space-y-2">
+      {err && <p className="text-[11px] text-red-600">{err}</p>}
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+        {fields.map(f => (
+          <div key={f.field} className="min-w-0">
+            <label className="text-[10px] font-bold uppercase tracking-wide text-ink-faint block mb-0.5">
+              {f.label}
+              {f.helpUrl && (
+                <a
+                  href={f.helpUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="ml-1.5 normal-case font-normal tracking-normal text-ink-faint/60 hover:text-ink-muted"
+                >
+                  (where do I find this?)
+                </a>
+              )}
+            </label>
+            <input
+              type="text"
+              value={form[f.field] ?? ''}
+              onChange={e => setForm(prev => ({ ...prev, [f.field]: e.target.value }))}
+              placeholder={f.placeholder ?? ''}
+              className="w-full field-input text-xs"
+            />
+          </div>
+        ))}
+      </div>
+      <div className="flex items-center gap-3 min-h-[2rem]">
+        {isDirty ? (
+          <Button size="sm" variant="primary" loading={saving} onClick={() => void handleSave()}>
+            Save changes
+          </Button>
+        ) : (
+          lastSaved > 0 && <span className="text-xs text-green-700 font-medium">Saved ✓</span>
+        )}
+      </div>
+    </div>
+  );
 }
 
 export function PlatformChannelList({
@@ -111,7 +336,6 @@ export function PlatformChannelList({
     const account = accountBySlug.get(platform.platformSlug);
     const conn = platformConnectionWithAccount(platform, account);
     const perf = perfBySlug.get(platform.platformSlug);
-    const badge = effortBadge(account);
 
     const socialSubtitle = socialRowSubtitle(
       platform.socialPosting,
@@ -121,63 +345,42 @@ export function PlatformChannelList({
 
     const readiness = getSetupReadiness(platform, account || null);
 
+    const inlineContent = account ? (
+      <PlatformRowFields
+        key={account.updatedAt}
+        account={account}
+        dealerId={dealerId}
+        onSaved={onAccountSaved}
+      />
+    ) : undefined;
+
+    const displayName = platformDisplayName(platform.platformSlug, platform.platformName);
+
     return (
       <OpsRowCard
         key={platform.platformSlug}
-        title={platform.platformName}
+        title={displayName}
+        onTitleClick={() => nav.goToPlatformDetail(platform.platformSlug)}
         statusLabel={readiness.statusLabel}
         statusClassName={severityToPill(readiness.severity)}
         secondaryMeta={channelSecondaryMeta(platform)}
-        desktopFields={channelDesktopFields(platform, perf)}
         detailOpen={selectedSlug === platform.platformSlug}
         surfaceClassName={channelRowSurface(conn.connection)}
-        logoNode={<PlatformLogo slug={platform.platformSlug} name={platform.platformName} />}
+        logoNode={<PlatformLogo slug={platform.platformSlug} name={displayName} />}
         subtitleLine={socialSubtitle ?? platformBenefitLine(platform.platformSlug)}
-        effortNode={badge ? (
-          <span className={`shrink-0 px-1.5 py-0.5 rounded text-[10px] font-semibold border ${badge.pill}`}>
-            {badge.label}
-          </span>
-        ) : (
-          (() => {
-            const valBadge = getValidationBadge(account);
-            if (valBadge.state === 'NOT_TESTED') return undefined;
-            return (
-              <span className={`shrink-0 px-1.5 py-0.5 rounded text-[10px] font-semibold border ${valBadge.pillClass}`}>
-                {valBadge.label}
-              </span>
-            );
-          })()
-        )}
         healthLine={feedHealthLine(perf, conn.connection)}
+        inlineContent={inlineContent}
         ctaNode={
-          conn.connection === 'needs_oauth' && account?.oauthProvider ? (
-            <OAuthConnectButton
-              dealerId={dealerId}
-              platformSlug={platform.platformSlug}
-              providerDisplayName={oauthProviderDisplayName(account.oauthProvider)}
-              isReconnect={account.oauthExpired}
-              onDone={onAccountSaved}
-            />
-          ) : undefined
+          <PlatformCta
+            platform={platform}
+            account={account}
+            conn={conn}
+            dealerId={dealerId}
+            onAccountSaved={onAccountSaved}
+            onSelectSlug={onSelectSlug}
+            nav={nav}
+          />
         }
-        actions={[
-          {
-            label: operatorCopy.channels.rowActions.details,
-            onClick: () => onSelectSlug(platform.platformSlug),
-          },
-          {
-            label: 'Full profile',
-            onClick: () => nav.goToPlatformDetail(platform.platformSlug),
-          },
-          {
-            label: operatorCopy.channels.rowActions.queue,
-            onClick: () => nav.goToPlatformQueue(platform.platformSlug),
-          },
-          {
-            label: operatorCopy.channels.rowActions.history,
-            onClick: () => nav.goToPlatformHistory(platform.platformSlug),
-          },
-        ]}
       />
     );
   };

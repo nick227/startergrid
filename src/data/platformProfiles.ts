@@ -42,7 +42,7 @@ export const platformProfiles: PlatformProfileSeed[] = [
   // ── First-party owned marketplace ───────────────────────────────────────
   {
     slug: 'consumer-marketplace',
-    name: 'Consumer Marketplace (First-Party Channel)',
+    name: 'Auto Marketplace',
     kind: 'MARKETPLACE',
     integrationClass: 'OWNED',
     schemaVersion: 'v4.3.0-owned-marketplace',

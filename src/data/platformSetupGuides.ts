@@ -334,7 +334,7 @@ const TRAILER_TRADER_DEALER_URL = 'https://www.traderinteractive.com/';
 
 export const PLATFORM_SETUP_GUIDES: Record<string, PlatformSetupGuide> = {
   'consumer-marketplace': {
-    description: 'The Consumer Marketplace is our own first-party buyer-facing browse experience, surfacing active inventory from all connected dealers in a single searchable index. Listings are filtered in real time — only priced, unsold, unpublished items appear — and no internal fields such as VIN are ever exposed to the public. Lead capture, saved searches, and recently-viewed history are all first-party, with no dependency on external platforms.',
+    description: 'Auto Marketplace is our first-party buyer-facing browse experience, surfacing active inventory from all connected dealers in a single searchable index. Listings are filtered in real time — only priced, unsold, unpublished items appear — and no internal fields such as VIN are ever exposed to the public. Lead capture, saved searches, and recently-viewed history are all first-party, with no dependency on external platforms.',
     externalLinks: [
       { label: 'Marketplace browse', url: '/marketplace/' },
       { label: 'OpenAPI spec', url: '/openapi/openapi-marketplace.yaml' },

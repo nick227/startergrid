@@ -19,6 +19,7 @@ import { useAsyncQuery } from '@/hooks/useAsyncQuery.ts';
 import { Skeleton } from '@/components/ui/Skeleton.tsx';
 import { toErrorMessage } from '@/lib/errors.ts';
 import { adminDealerHash } from '@/lib/routes.ts';
+import { platformDisplayName } from '@/lib/marketplaceBrand.ts';
 
 // ── Config tables ─────────────────────────────────────────────────────────────
 
@@ -687,7 +688,9 @@ export default function AdminPlatformDetailPage({
             <div className="flex flex-wrap items-start justify-between gap-4">
               <div className="min-w-0">
                 <div className="flex flex-wrap items-center gap-2.5 mb-1">
-                  <h2 className="text-2xl font-bold text-ink-heading">{platform.platformName}</h2>
+                  <h2 className="text-2xl font-bold text-ink-heading">
+                    {platformDisplayName(platform.platformSlug, platform.platformName)}
+                  </h2>
                   <span className={`inline-flex items-center gap-1.5 px-2 py-0.5 rounded text-[10px] font-semibold border ${
                     finalHealth === 'green'
                       ? 'bg-status-success-bg text-status-success-text border-status-success-border'

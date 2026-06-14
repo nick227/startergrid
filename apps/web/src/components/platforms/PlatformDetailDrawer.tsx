@@ -12,6 +12,7 @@ import { CatalogSyncPanel } from './CatalogSyncPanel.tsx';
 import { LeadSyncPanel } from './LeadSyncPanel.tsx';
 import { MarketplaceListingPanel } from './MarketplaceListingPanel.tsx';
 import { operatorCopy } from '@/lib/copy/operator.ts';
+import { platformDisplayName } from '@/lib/marketplaceBrand.ts';
 import { RowDetailDrawer } from '@/components/layout';
 import { fetchPublishHistory, updateAccount } from '@/lib/api/sdk.ts';
 import { useAsyncQuery } from '@/hooks/useAsyncQuery.ts';
@@ -195,15 +196,16 @@ export function PlatformDetailDrawer({
   const publish = platformOutcomeMeta(platform);
   const detail = friendlyPlatformDetail(platform);
   const readiness = getSetupReadiness(platform, account || null);
+  const displayName = platformDisplayName(platform.platformSlug, platform.platformName);
 
   return (
-    <RowDetailDrawer open={open} title={platform.platformName} onClose={onClose}>
+    <RowDetailDrawer open={open} title={displayName} onClose={onClose}>
       <div className="space-y-4">
 
         {/* Header summary */}
         <div className="flex items-start justify-between gap-4">
           <div className="flex items-center gap-3">
-            <PlatformLogo slug={platform.platformSlug} name={platform.platformName} size="sm" />
+            <PlatformLogo slug={platform.platformSlug} name={displayName} size="sm" />
             <div className="min-w-0">
               <div className="flex flex-wrap items-center gap-1.5">
                 <span className={`px-1.5 py-0.5 rounded text-[10px] font-bold border ${severityToPill(readiness.severity)}`}>

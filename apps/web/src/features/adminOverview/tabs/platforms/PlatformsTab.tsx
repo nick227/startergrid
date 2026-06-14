@@ -17,6 +17,11 @@ import {
   VALIDATION_CFG,
   VALIDATION_DEFAULT,
 } from '@/features/adminOverview/constants/statusConfig.ts';
+import {
+  AUTO_MARKETPLACE_SLUG,
+  DEALER_STOREFRONT_FEED_SLUG,
+  platformDisplayName,
+} from '@/lib/marketplaceBrand.ts';
 
 type PlatformOverviewItemWithCategories = AdminDashboardResponse['platformOverview'][number] & {
   supportedCategories?: string[];
@@ -77,7 +82,7 @@ function statusFromProviderFallback(
   requiredFields: string[],
   missingFields: string[],
 ): PlatformCredentialDisplayStatus {
-  if (platform.platformSlug === 'consumer-marketplace' || platform.platformType === 'internal') return 'INTERNAL';
+  if (platform.platformSlug === AUTO_MARKETPLACE_SLUG || platform.platformType === 'internal') return 'INTERNAL';
   if (!provider) return 'CONTRACT_MISSING';
   if (requiredFields.length === 0) return 'MANUAL_SETUP';
   if (missingFields.length > 0 || provider.configured === false) return 'NOT_CONFIGURED';
@@ -95,7 +100,7 @@ function configDetail(
   requiredFields: string[],
   missingFields: string[],
 ): string {
-  if (platform.platformSlug === 'consumer-marketplace' || platform.platformType === 'internal') {
+  if (platform.platformSlug === AUTO_MARKETPLACE_SLUG || platform.platformType === 'internal') {
     return 'No external secrets required. Checks cover first-party route and event-loop health.';
   }
   if (missingFields.length > 0) return `Missing ${formatList(missingFields)}.`;
@@ -115,7 +120,7 @@ function fallbackContract(
   provider?: ProviderCredentialSummaryWithContracts | ProviderCredentialResultWithContracts,
 ): PlatformCredentialContractSummary {
   const isResult = provider && 'status' in provider;
-  const isInternal = platform.platformSlug === 'consumer-marketplace' || platform.platformType === 'internal';
+  const isInternal = platform.platformSlug === AUTO_MARKETPLACE_SLUG || platform.platformType === 'internal';
   const missingFields = provider?.missingFields ?? (provider?.configured === false ? provider.envVars : []);
   const requiredFields = isInternal ? [] : provider?.envVars ?? [];
   const providerName = isInternal ? 'internal' : provider?.provider ?? 'unregistered';
@@ -231,11 +236,11 @@ export function PlatformsTab({ platformOverview }: Props) {
   }, [platformOverview]);
 
   const filteredPlatforms = useMemo(() => {
-    let list = [...platformOverview];
+    let list = platformOverview.filter(p => p.platformSlug !== DEALER_STOREFRONT_FEED_SLUG);
     if (platSearch) {
       const q = platSearch.toLowerCase();
       list = list.filter(p =>
-        p.platformName.toLowerCase().includes(q) ||
+        platformDisplayName(p.platformSlug, p.platformName).toLowerCase().includes(q) ||
         p.platformSlug.toLowerCase().includes(q),
       );
     }
@@ -252,7 +257,11 @@ export function PlatformsTab({ platformOverview }: Props) {
     }
     list.sort((a, b) => {
       let cmp = 0;
-      if (platSort === 'platformName') cmp = a.platformName.localeCompare(b.platformName);
+      if (platSort === 'platformName') {
+        cmp = platformDisplayName(a.platformSlug, a.platformName).localeCompare(
+          platformDisplayName(b.platformSlug, b.platformName),
+        );
+      }
       else if (platSort === 'dealersUsing') cmp = a.dealersUsing - b.dealersUsing;
       else if (platSort === 'liveInventory') cmp = (a.liveInventory ?? 0) - (b.liveInventory ?? 0);
       else if (platSort === 'outbound7d') cmp = (a.outbound7d ?? 0) - (b.outbound7d ?? 0);
@@ -453,7 +462,11 @@ export function PlatformsTab({ platformOverview }: Props) {
         </div>
       </div>
 
-      <ResultCount shown={filteredPlatforms.length} total={platformOverview.length} noun="platform" />
+      <ResultCount
+        shown={filteredPlatforms.length}
+        total={platformOverview.filter(p => p.platformSlug !== DEALER_STOREFRONT_FEED_SLUG).length}
+        noun="platform"
+      />
 
       <div className="surface-card-operator overflow-x-auto">
         <table className="w-full text-left border-collapse min-w-[1100px]">
@@ -481,7 +494,7 @@ export function PlatformsTab({ platformOverview }: Props) {
                 <tr key={platform.platformSlug} className="border-b border-silver-200 last:border-0 hover:bg-surface-inset transition-colors">
                   <td className="px-4 py-3 min-w-[280px]">
                     <a href={adminPlatformHash(platform.platformSlug)} className="font-semibold text-navy-700 hover:text-navy-600 hover:underline text-sm">
-                      {platform.platformName}
+                      {platformDisplayName(platform.platformSlug, platform.platformName)}
                     </a>
                     <div className="flex flex-wrap items-center gap-1.5 text-[10px] text-ink-faint font-mono mt-0.5">
                       {platform.platformSlug}

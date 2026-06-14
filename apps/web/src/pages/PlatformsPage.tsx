@@ -21,6 +21,12 @@ import {
 import { getSetupReadiness, severityToPill } from '@/lib/setupReadiness.ts';
 import { operatorCopy } from '@/lib/copy/operator.ts';
 import { useCategorySchema } from '@/contexts/CategoryContext.tsx';
+import {
+  AUTO_MARKETPLACE_NAME,
+  AUTO_MARKETPLACE_SLUG,
+  hideFromPlatformsChannelList,
+  platformDisplayName,
+} from '@/lib/marketplaceBrand.ts';
 
 const MARKETPLACE_URL = (import.meta.env['VITE_MARKETPLACE_URL'] as string | undefined) ?? 'http://localhost:5174';
 
@@ -49,7 +55,7 @@ function FeaturedMarketplaceSection({
       <article className="surface-card-operator p-4 ring-1 ring-navy-500/20">
         <div className="flex gap-3 items-start">
           <div className="pt-0.5 shrink-0">
-            <PlatformLogo slug={platform.platformSlug} name="Auto Marketplace" />
+            <PlatformLogo slug={platform.platformSlug} name={AUTO_MARKETPLACE_NAME} />
           </div>
           <div className="min-w-0 flex-1 space-y-1.5">
             <div className="flex items-start gap-3">
@@ -61,7 +67,7 @@ function FeaturedMarketplaceSection({
                     onClick={() => nav.goToPlatformDetail(platform.platformSlug)}
                     className="text-sm font-semibold text-ink-heading hover:text-orange-600 hover:underline text-left"
                   >
-                    Auto Marketplace
+                    {platformDisplayName(platform.platformSlug, platform.platformName)}
                   </button>
                   <span className={`shrink-0 px-2 py-0.5 rounded-md text-[11px] font-bold border ${severityToPill(readiness.severity)}`}>
                     {readiness.statusLabel}
@@ -140,7 +146,7 @@ export default function PlatformsPage({ dealerId, nav, activeTab, initialPlatfor
   const platforms = useMemo(() => data?.platforms ?? [], [data]);
 
   const featuredMarketplace = useMemo(
-    () => platforms.find(p => p.platformSlug === 'consumer-marketplace') ?? null,
+    () => platforms.find(p => p.platformSlug === AUTO_MARKETPLACE_SLUG) ?? null,
     [platforms]
   );
 
@@ -152,7 +158,7 @@ export default function PlatformsPage({ dealerId, nav, activeTab, initialPlatfor
 
   const visible = useMemo(() => {
     const list = platforms
-      .filter(p => p.platformSlug !== featuredMarketplace?.platformSlug)
+      .filter(p => !hideFromPlatformsChannelList(p.platformSlug))
       .filter(p => platformMatchesFilter(p, filter));
     return sortPlatformsForDisplay(list, sort);
   }, [platforms, filter, sort]);

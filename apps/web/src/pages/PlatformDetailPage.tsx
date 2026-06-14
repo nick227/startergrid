@@ -8,6 +8,7 @@ import { oauthProviderDisplayName } from '@/lib/platformPresentation.ts';
 import { getSetupReadiness, severityToPill } from '@/lib/setupReadiness.ts';
 import { platformOutcomeMeta } from '@/lib/syncPresentation.ts';
 import { operatorCopy } from '@/lib/copy/operator.ts';
+import { platformDisplayName } from '@/lib/marketplaceBrand.ts';
 import { ConnectionSetupPanel } from '@/components/platforms/ConnectionSetupPanel.tsx';
 
 type ExternalLink = { label: string; url: string };
@@ -98,6 +99,28 @@ type Props = OperatorPageBaseProps & {
   platformSlug: string;
 };
 
+function ownedMarketplaceStateCopy(platform: { state: string; detail?: string | null }) {
+  if (platform.state === 'Blocked') {
+    return {
+      label: 'Marketplace publishing needs inventory fixes',
+      detail: platform.detail || 'One or more ready listings are missing required marketplace data.',
+      tone: 'text-status-error-text',
+    };
+  }
+  if (platform.state === 'Failed') {
+    return {
+      label: 'Marketplace update failed',
+      detail: platform.detail || 'The last marketplace update did not complete.',
+      tone: 'text-status-error-text',
+    };
+  }
+  return {
+    label: `Marketplace publishing is ${platform.state.toLowerCase()}`,
+    detail: platform.detail || null,
+    tone: 'text-ink-muted',
+  };
+}
+
 export default function PlatformDetailPage({ dealerId, nav, activeTab, platformSlug }: Props) {
   const { data: statusData, loading: statusLoading, error: statusError, reload: reloadStatus } = useAsyncQuery(
     () => fetchPublishStatus(dealerId),
@@ -170,6 +193,8 @@ export default function PlatformDetailPage({ dealerId, nav, activeTab, platformS
 
   const publishMeta = platformOutcomeMeta(platform);
   const readiness = getSetupReadiness(platform, account || null);
+  const ownedState = platform.integrationClass === 'OWNED' ? ownedMarketplaceStateCopy(platform) : null;
+  const displayName = platformDisplayName(platform.platformSlug, platform.platformName);
 
   return (
     <OperatorPage
@@ -189,9 +214,9 @@ export default function PlatformDetailPage({ dealerId, nav, activeTab, platformS
 
       <div className="bg-white border border-silver-200 rounded-xl shadow-sm mb-6 p-6 flex flex-col md:flex-row md:items-center justify-between gap-6">
         <div className="flex items-center gap-4">
-          <PlatformLogo slug={platform.platformSlug} name={platform.platformName} size="md" />
+          <PlatformLogo slug={platform.platformSlug} name={displayName} size="md" />
           <div>
-            <h1 className="text-2xl font-bold text-ink-heading">{platform.platformName}</h1>
+            <h1 className="text-2xl font-bold text-ink-heading">{displayName}</h1>
             <div className="flex flex-wrap items-center gap-2 mt-2">
               <span className={`px-2 py-0.5 rounded text-xs font-bold border ${severityToPill(readiness.severity)}`}>
                 {readiness.statusLabel}
@@ -245,96 +270,120 @@ export default function PlatformDetailPage({ dealerId, nav, activeTab, platformS
             </div>
           </div>
 
-          {/* Validation Readiness Card */}
-          <div className="bg-white border border-silver-200 rounded-xl shadow-sm p-5 space-y-4">
-            <h2 className="text-[11px] font-bold uppercase tracking-widest text-ink-faint mb-2">Validation Readiness</h2>
-            
-            <div className="grid grid-cols-2 md:grid-cols-3 gap-4 mb-4 pb-4 border-b border-silver-100">
-              <div>
-                <div className="text-[10px] text-ink-muted uppercase font-bold tracking-wide">Sync State</div>
-                <div className="font-semibold text-ink-body mt-0.5">{platform.state}</div>
+          {/* Validation Readiness — not applicable for first-party (OWNED) channels */}
+          {platform.integrationClass !== 'OWNED' && (
+            <div className="bg-white border border-silver-200 rounded-xl shadow-sm p-5 space-y-4">
+              <h2 className="text-[11px] font-bold uppercase tracking-widest text-ink-faint mb-2">Validation Readiness</h2>
+
+              <div className="grid grid-cols-2 md:grid-cols-3 gap-4 mb-4 pb-4 border-b border-silver-100">
+                <div>
+                  <div className="text-[10px] text-ink-muted uppercase font-bold tracking-wide">Sync State</div>
+                  <div className="font-semibold text-ink-body mt-0.5">{platform.state}</div>
+                </div>
+                <div>
+                  <div className="text-[10px] text-ink-muted uppercase font-bold tracking-wide">Account State</div>
+                  <div className="font-semibold text-ink-body mt-0.5">{account?.state || 'Unknown'}</div>
+                </div>
+                <div>
+                  <div className="text-[10px] text-ink-muted uppercase font-bold tracking-wide">Membership</div>
+                  <div className="font-semibold text-ink-body mt-0.5">{account?.membershipStatus || 'Unknown'}</div>
+                </div>
               </div>
-              <div>
-                <div className="text-[10px] text-ink-muted uppercase font-bold tracking-wide">Account State</div>
-                <div className="font-semibold text-ink-body mt-0.5">{account?.state || 'Unknown'}</div>
+
+              <div className="space-y-3">
+                <div className="flex items-center justify-between">
+                  <span className="text-sm font-semibold text-ink-body">Config Present</span>
+                  {account?.connectionConfig && Object.keys(account.connectionConfig).length > 0 ? (
+                    <span className="text-[10px] font-bold text-status-success-text bg-status-success-bg px-2 py-0.5 rounded border border-status-success-border">YES</span>
+                  ) : (
+                    <span className="text-[10px] font-bold text-ink-muted bg-silver-100 px-2 py-0.5 rounded border border-silver-200">NO</span>
+                  )}
+                </div>
+                <div className="flex items-center justify-between">
+                  <span className="text-sm font-semibold text-ink-body">Secret Present</span>
+                  {account?.state !== 'ACCOUNT_NEEDED' && account?.state !== 'CREDENTIALS_NEEDED' && account?.state !== 'NOT_STARTED' ? (
+                    <span className="text-[10px] font-bold text-status-success-text bg-status-success-bg px-2 py-0.5 rounded border border-status-success-border">YES</span>
+                  ) : (
+                    <span className="text-[10px] font-bold text-ink-muted bg-silver-100 px-2 py-0.5 rounded border border-silver-200">NO</span>
+                  )}
+                </div>
+                <div className="flex items-center justify-between">
+                  <span className="text-sm font-semibold text-ink-body">Connection Tested</span>
+                  {account?.state && account.state !== 'ACCOUNT_NEEDED' && account.state !== 'CREDENTIALS_NEEDED' && account.state !== 'FAILED' ? (
+                    <span className="text-[10px] font-bold text-status-success-text bg-status-success-bg px-2 py-0.5 rounded border border-status-success-border">YES</span>
+                  ) : (
+                    <span className="text-[10px] font-bold text-ink-muted bg-silver-100 px-2 py-0.5 rounded border border-silver-200">NO</span>
+                  )}
+                </div>
+                <div className="flex items-center justify-between">
+                  <span className="text-sm font-semibold text-ink-body">Feed Accepted</span>
+                  {platform.state === 'Active' ? (
+                    <span className="text-[10px] font-bold text-status-success-text bg-status-success-bg px-2 py-0.5 rounded border border-status-success-border">YES</span>
+                  ) : (
+                    <span className="text-[10px] font-bold text-amber-700 bg-amber-100 px-2 py-0.5 rounded border border-amber-200">PENDING</span>
+                  )}
+                </div>
+                <div className="flex items-center justify-between">
+                  <span className="text-sm font-semibold text-ink-body">Listings Confirmed</span>
+                  {platform.state === 'Active' ? (
+                    <span className="text-[10px] font-bold text-status-success-text bg-status-success-bg px-2 py-0.5 rounded border border-status-success-border">YES</span>
+                  ) : (
+                    <span className="text-[10px] font-bold text-amber-700 bg-amber-100 px-2 py-0.5 rounded border border-amber-200">PENDING</span>
+                  )}
+                </div>
+                <div className="flex items-center justify-between">
+                  <span className="text-sm font-semibold text-ink-body">Status Sync Confirmed</span>
+                  {platform.state === 'Active' ? (
+                    <span className="text-[10px] font-bold text-status-success-text bg-status-success-bg px-2 py-0.5 rounded border border-status-success-border">YES</span>
+                  ) : (
+                    <span className="text-[10px] font-bold text-amber-700 bg-amber-100 px-2 py-0.5 rounded border border-amber-200">PENDING</span>
+                  )}
+                </div>
               </div>
-              <div>
-                <div className="text-[10px] text-ink-muted uppercase font-bold tracking-wide">Membership</div>
-                <div className="font-semibold text-ink-body mt-0.5">{account?.membershipStatus || 'Unknown'}</div>
-              </div>
+
+              {account?.liveValidationNote && (
+                <div className="mt-4 p-3 bg-amber-50 border border-amber-200 rounded-lg">
+                  <p className="text-xs font-bold text-amber-800 mb-1">Live Validation Blocked</p>
+                  <p className="text-xs text-amber-900/80">{account.liveValidationNote}</p>
+                </div>
+              )}
+              {platform.detail && (
+                <div className="mt-2 text-sm text-ink-muted">
+                  {platform.detail}
+                </div>
+              )}
             </div>
+          )}
 
-            <div className="space-y-3">
-              <div className="flex items-center justify-between">
-                <span className="text-sm font-semibold text-ink-body">Config Present</span>
-                {account?.connectionConfig && Object.keys(account.connectionConfig).length > 0 ? (
-                  <span className="text-[10px] font-bold text-status-success-text bg-status-success-bg px-2 py-0.5 rounded border border-status-success-border">YES</span>
-                ) : (
-                  <span className="text-[10px] font-bold text-ink-muted bg-silver-100 px-2 py-0.5 rounded border border-silver-200">NO</span>
-                )}
-              </div>
-              <div className="flex items-center justify-between">
-                <span className="text-sm font-semibold text-ink-body">Secret Present</span>
-                {account?.state !== 'ACCOUNT_NEEDED' && account?.state !== 'CREDENTIALS_NEEDED' && account?.state !== 'NOT_STARTED' ? (
-                  <span className="text-[10px] font-bold text-status-success-text bg-status-success-bg px-2 py-0.5 rounded border border-status-success-border">YES</span>
-                ) : (
-                  <span className="text-[10px] font-bold text-ink-muted bg-silver-100 px-2 py-0.5 rounded border border-silver-200">NO</span>
-                )}
-              </div>
-              <div className="flex items-center justify-between">
-                <span className="text-sm font-semibold text-ink-body">Connection Tested</span>
-                {account?.state && account.state !== 'ACCOUNT_NEEDED' && account.state !== 'CREDENTIALS_NEEDED' && account.state !== 'FAILED' ? (
-                  <span className="text-[10px] font-bold text-status-success-text bg-status-success-bg px-2 py-0.5 rounded border border-status-success-border">YES</span>
-                ) : (
-                  <span className="text-[10px] font-bold text-ink-muted bg-silver-100 px-2 py-0.5 rounded border border-silver-200">NO</span>
-                )}
-              </div>
-              <div className="flex items-center justify-between">
-                <span className="text-sm font-semibold text-ink-body">Feed Accepted</span>
-                {platform.state === 'Active' ? (
-                  <span className="text-[10px] font-bold text-status-success-text bg-status-success-bg px-2 py-0.5 rounded border border-status-success-border">YES</span>
-                ) : (
-                  <span className="text-[10px] font-bold text-amber-700 bg-amber-100 px-2 py-0.5 rounded border border-amber-200">PENDING</span>
-                )}
-              </div>
-              <div className="flex items-center justify-between">
-                <span className="text-sm font-semibold text-ink-body">Listings Confirmed</span>
-                {platform.state === 'Active' ? (
-                  <span className="text-[10px] font-bold text-status-success-text bg-status-success-bg px-2 py-0.5 rounded border border-status-success-border">YES</span>
-                ) : (
-                  <span className="text-[10px] font-bold text-amber-700 bg-amber-100 px-2 py-0.5 rounded border border-amber-200">PENDING</span>
-                )}
-              </div>
-              <div className="flex items-center justify-between">
-                <span className="text-sm font-semibold text-ink-body">Status Sync Confirmed</span>
-                {platform.state === 'Active' ? (
-                  <span className="text-[10px] font-bold text-status-success-text bg-status-success-bg px-2 py-0.5 rounded border border-status-success-border">YES</span>
-                ) : (
-                  <span className="text-[10px] font-bold text-amber-700 bg-amber-100 px-2 py-0.5 rounded border border-amber-200">PENDING</span>
-                )}
-              </div>
+          {/* First-party channel notice — replaces credential/validation UI for OWNED platforms */}
+          {platform.integrationClass === 'OWNED' && (
+            <div className="bg-white border border-silver-200 rounded-xl shadow-sm p-5">
+              <h2 className="text-[11px] font-bold uppercase tracking-widest text-ink-faint mb-3">First-party channel</h2>
+              <p className="text-sm text-ink-body leading-relaxed">
+                This is a first-party channel operated directly by the platform — no external account, credentials, or partner approval required. Inventory published here goes live as soon as it meets readiness criteria.
+              </p>
+              {platform.state === 'Active' ? (
+                <p className="mt-3 text-xs font-semibold text-status-success-text">Channel is active and publishing.</p>
+              ) : (
+                ownedState && (
+                  <div className="mt-3 rounded-lg border border-silver-200 bg-silver-50 px-3 py-2">
+                    <p className={`text-xs font-semibold ${ownedState.tone}`}>{ownedState.label}</p>
+                    {ownedState.detail && <p className="mt-1 text-xs text-ink-muted">{ownedState.detail}</p>}
+                  </div>
+                )
+              )}
             </div>
+          )}
 
-            {account?.liveValidationNote && (
-              <div className="mt-4 p-3 bg-amber-50 border border-amber-200 rounded-lg">
-                <p className="text-xs font-bold text-amber-800 mb-1">Live Validation Blocked</p>
-                <p className="text-xs text-amber-900/80">{account.liveValidationNote}</p>
-              </div>
-            )}
-            {platform.detail && (
-              <div className="mt-2 text-sm text-ink-muted">
-                {platform.detail}
-              </div>
-            )}
-          </div>
-
-          {/* Data-Driven Setup Engine */}
-          <ConnectionSetupPanel
-            dealerId={dealerId!}
-            platform={platform}
-            account={account || undefined}
-            onRefresh={reloadAccounts}
-          />
+          {/* Data-Driven Setup Engine — not applicable for OWNED platforms */}
+          {platform.integrationClass !== 'OWNED' && (
+            <ConnectionSetupPanel
+              dealerId={dealerId!}
+              platform={platform}
+              account={account || undefined}
+              onRefresh={reloadAccounts}
+            />
+          )}
 
           {/* Operator Setup Guide */}
           {richAccount?.operatorSetup && (

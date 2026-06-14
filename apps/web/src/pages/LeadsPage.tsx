@@ -6,6 +6,7 @@ import { OperatorPage, PageHeader } from '@/components/operator';
 import { NotificationChannelsPanel } from '@/components/operator/NotificationChannelsPanel.tsx';
 import { InfoButton } from '@/components/docs/index.ts';
 import { Banner, SearchField, Select } from '@/components/ui';
+import { AUTO_MARKETPLACE_NAME, AUTO_MARKETPLACE_SLUG } from '@/lib/marketplaceBrand.ts';
 
 type Props = OperatorPageBaseProps;
 
@@ -49,7 +50,7 @@ function relativeTime(iso: string): string {
 }
 
 function platformLabel(slug: string): string {
-  if (slug === 'consumer-marketplace') return 'Marketplace';
+  if (slug === AUTO_MARKETPLACE_SLUG) return AUTO_MARKETPLACE_NAME;
   return slug
     .split('-')
     .filter(Boolean)

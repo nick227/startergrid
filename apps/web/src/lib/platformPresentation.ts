@@ -3,7 +3,7 @@ import { friendlyPlatformDetail, platformOutcomeMeta, sortPlatformsForSync } fro
 import { operatorCopy } from './copy/operator.ts';
 import { timeAgo } from './timeAgo.ts';
 
-export type PlatformConnection = 'inactive' | 'connected' | 'blocked' | 'updating' | 'needs_oauth' | 'partner_pending';
+export type PlatformConnection = 'inactive' | 'connected' | 'blocked' | 'paused' | 'updating' | 'needs_oauth' | 'partner_pending';
 
 // ── Static benefit copy ──────────────────────────────────────────────────────
 
@@ -29,7 +29,7 @@ const PLATFORM_BENEFIT_LINES: Record<string, string> = {
   'cars-com':                    'Shoppers comparing vehicles with real verified reviews',
   'truecar-dealer-network':      'Price-certain buyers ready to transact today',
   'dealer-storefront':           'Your own branded inventory website',
-  'consumer-marketplace':        'First-party discovery across your full inventory',
+  'consumer-marketplace':        'Your public Auto Marketplace storefront',
   'apple-business-connect':      'Apple Maps location presence and local discovery',
   'adf-xml-lead-routing':        'Route every platform lead directly into your CRM',
 };
@@ -116,22 +116,36 @@ const CONNECTION_PILL: Record<PlatformConnection, string> = {
   inactive: 'bg-silver-100 text-ink-muted border-silver-200',
   needs_oauth: 'bg-amber-50 text-amber-700 border-amber-200',
   partner_pending: 'bg-blue-50 text-blue-700 border-blue-200',
+  paused: 'bg-silver-100 text-ink-muted border-silver-200',
   updating: 'bg-status-info-bg text-status-info-text border-status-info-border',
   connected: 'bg-status-success-bg text-status-success-text border-status-success-border',
 };
 
 export function platformConnection(p: PlatformPublishResult): PlatformConnectionMeta {
+  // OWNED channels do not need external setup, but inventory blockers still
+  // prevent listings from appearing to shoppers.
+  if (p.integrationClass === 'OWNED') {
+    if (p.state === 'Blocked' || p.state === 'Failed' || p.readiness === 'RED') {
+      return { connection: 'blocked', label: operatorCopy.connection.blocked, sort: 0, pill: CONNECTION_PILL.blocked };
+    }
+    if (p.state === 'Active') {
+      return { connection: 'connected', label: operatorCopy.connection.connected, sort: 5, pill: CONNECTION_PILL.connected };
+    }
+    return { connection: 'updating', label: operatorCopy.connection.updating, sort: 4, pill: CONNECTION_PILL.updating };
+  }
+
   const acct = p.accountState;
+  if (acct === 'SUSPENDED') {
+    return { connection: 'paused', label: 'Paused', sort: 5, pill: CONNECTION_PILL.paused };
+  }
   if (
     acct === 'BLOCKED' ||
-    acct === 'SUSPENDED' ||
-    acct === 'PARTNER_REQUIRED' ||
     p.state === 'Blocked' ||
     p.state === 'Failed'
   ) {
     return { connection: 'blocked', label: operatorCopy.connection.blocked, sort: 0, pill: CONNECTION_PILL.blocked };
   }
-  if (acct === 'ACCOUNT_NEEDED' || acct === 'CREDENTIALS_NEEDED') {
+  if (acct === 'PARTNER_REQUIRED' || acct === 'ACCOUNT_NEEDED' || acct === 'CREDENTIALS_NEEDED') {
     return { connection: 'inactive', label: operatorCopy.connection.setupNeeded, sort: 1, pill: CONNECTION_PILL.inactive };
   }
   if (p.state === 'Scheduled' || p.state === 'Ready' || p.state === 'Needs Approval') {
@@ -186,6 +200,7 @@ export function platformSituationSummary(platforms: PlatformPublishResult[]): st
   let setup = 0;
   let blocked = 0;
   let updating = 0;
+  let paused = 0;
 
   for (const p of platforms) {
     const c = platformConnection(p).connection;
@@ -193,12 +208,14 @@ export function platformSituationSummary(platforms: PlatformPublishResult[]): st
     else if (c === 'inactive' || c === 'needs_oauth' || c === 'partner_pending') setup++;
     else if (c === 'blocked') blocked++;
     else if (c === 'updating') updating++;
+    else if (c === 'paused') paused++;
   }
 
   const parts: string[] = [`${connected} of ${total} connected`];
   if (setup) parts.push(`${setup} need setup`);
   if (blocked) parts.push(`${blocked} blocked`);
   if (updating) parts.push(`${updating} updating`);
+  if (paused) parts.push(`${paused} paused`);
   return parts.join(' · ');
 }
 
@@ -216,6 +233,7 @@ export const PLATFORM_CONNECTION_FILTERS: Array<{ key: PlatformConnectionFilter;
   { key: 'ALL', label: 'All' },
   { key: 'connected', label: operatorCopy.connection.connected },
   { key: 'inactive', label: operatorCopy.connection.setupNeeded },
+  { key: 'paused', label: 'Paused' },
   { key: 'blocked', label: operatorCopy.connection.blocked },
   { key: 'updating', label: operatorCopy.connection.updating },
 ];
