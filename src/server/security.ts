@@ -63,6 +63,9 @@ export const routeClassifications = {
   operator: [
     'GET /api/dealers',
     'POST /api/dealers',
+    'GET /api/dealers/:dealershipId/profile',
+    'PATCH /api/dealers/:dealershipId/profile',
+    'POST /api/dealers/:dealershipId/logo',
     'GET /api/dealers/:dealershipId/performance/vehicles',
     'GET /api/dealers/:dealershipId/performance/vehicles/:stockNumber',
     'GET /api/dealers/:dealershipId/performance/platforms',

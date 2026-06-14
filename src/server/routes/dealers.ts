@@ -2,8 +2,9 @@ import type { FastifyInstance, FastifyReply } from 'fastify';
 import type { PrismaClient } from '@prisma/client';
 import { requireOperator, requireDealerAccess } from '../security.js';
 import { fileUploadService } from '../../services/storage/fileUploadService.js';
-import { createDealershipSchema, validateBody } from '../requestValidation.js';
+import { createDealershipSchema, updateDealershipProfileSchema, validateBody } from '../requestValidation.js';
 import { createDealership } from '../../services/dealer/createDealershipService.js';
+import { getDealershipProfile, updateDealershipProfile } from '../../services/dealer/dealershipProfileService.js';
 
 function sendCreateDealershipError(reply: FastifyReply, err: unknown) {
   const statusCode = typeof err === 'object' && err !== null && 'statusCode' in err
@@ -102,6 +103,27 @@ export function registerDealerRoutes(app: FastifyInstance, prisma: PrismaClient)
     });
 
     return reply.send({ logoUrl: updated.logoUrl });
+  });
+
+  app.get<{ Params: { dealershipId: string } }>('/api/dealers/:dealershipId/profile', async (request, reply) => {
+    const { dealershipId } = request.params;
+    if (!await requireDealerAccess(prisma, request, reply, dealershipId)) return;
+
+    const profile = await getDealershipProfile(prisma, dealershipId);
+    if (!profile) return reply.status(404).send({ error: 'Dealer not found' });
+    return reply.send({ profile });
+  });
+
+  app.patch<{ Params: { dealershipId: string } }>('/api/dealers/:dealershipId/profile', async (request, reply) => {
+    const { dealershipId } = request.params;
+    if (!await requireDealerAccess(prisma, request, reply, dealershipId)) return;
+
+    const parsed = validateBody(updateDealershipProfileSchema, request.body);
+    if (!parsed.ok) return reply.status(400).send({ error: parsed.error });
+
+    const profile = await updateDealershipProfile(prisma, dealershipId, parsed.data);
+    if (!profile) return reply.status(404).send({ error: 'Dealer not found' });
+    return reply.send({ profile });
   });
 
   app.post<{ Params: { dealershipId: string } }>('/api/dealers/:dealershipId/logo', async (request, reply) => {

@@ -239,6 +239,34 @@ export const createDealershipSchema = z.object({
 
 export type CreateDealershipBody = z.infer<typeof createDealershipSchema>;
 
+const updateDealershipAddressSchema = z.object({
+  street: nonEmptyString(160).optional(),
+  city: nonEmptyString(120).optional(),
+  state: nonEmptyString(40).optional(),
+  postalCode: nonEmptyString(20).optional(),
+  country: optionalText(60),
+}).strict();
+
+const updateDealershipContactSchema = z.object({
+  name: nonEmptyString(160).optional(),
+  email: z.string().trim().email().max(255).optional(),
+  phone: optionalText(40).or(z.literal('')),
+  role: optionalText(80).or(z.literal('')),
+}).strict();
+
+export const updateDealershipProfileSchema = z.object({
+  legalName: nonEmptyString(160).optional(),
+  dbaName: optionalText(160).or(z.literal('')),
+  websiteUrl: z.string().trim().url().max(255).optional().or(z.literal('')),
+  primaryContact: updateDealershipContactSchema.optional(),
+  rooftopAddress: updateDealershipAddressSchema.optional(),
+}).strict().refine(
+  body => Object.keys(body).length > 0,
+  'At least one profile field must be provided',
+);
+
+export type UpdateDealershipProfileBody = z.infer<typeof updateDealershipProfileSchema>;
+
 export const LISTING_REPORT_REASONS = [
   'PRICE_MISMATCH',
   'SOLD_OR_UNAVAILABLE',

@@ -4,13 +4,9 @@ import { fetchAdminDashboard, fetchBlockedDealers } from '@/lib/api/admin.ts';
 import type { AdminBlockedDealerItem, AdminDealerAttentionItem, AdminRecentEventItem } from '@/lib/api/admin.ts';
 import { useAsyncQuery } from '@/hooks/useAsyncQuery.ts';
 import { ErrorState, SectionCard, OperatorPage } from '@/components/operator/index.ts';
+import { DealershipProfilePanel } from '@/components/dealers/DealershipProfilePanel.tsx';
 import type { OperatorNavHandlers, OperatorTab } from '@/lib/operatorNav.ts';
 import { Skeleton } from '@/components/ui/Skeleton.tsx';
-import { resolveCategorySchema } from '@auto-dealer/category-schemas';
-
-function categoryLabel(id: string): string {
-  return resolveCategorySchema(id).label;
-}
 
 const SEVERITY_CFG: Record<string, { label: string; cls: string }> = {
   critical: { label: 'CRITICAL', cls: 'bg-status-error-bg text-status-error-text border-status-error-border' },
@@ -19,29 +15,6 @@ const SEVERITY_CFG: Record<string, { label: string; cls: string }> = {
 };
 
 type Tab = 'overview' | 'triage' | 'blocked' | 'audit';
-
-function CopyableId({ value }: { value: string }) {
-  const [copied, setCopied] = useState(false);
-  const copy = () => {
-    navigator.clipboard.writeText(value).then(() => {
-      setCopied(true);
-      setTimeout(() => setCopied(false), 1500);
-    });
-  };
-  return (
-    <button
-      type="button"
-      onClick={copy}
-      title="Copy dealer ID"
-      className="group inline-flex items-center gap-1.5 font-mono text-xs text-ink-faint hover:text-ink-muted transition-colors"
-    >
-      {value}
-      <span className={`text-[10px] transition-colors ${copied ? 'text-green-600' : 'text-silver-400 group-hover:text-ink-faint'}`}>
-        {copied ? 'copied' : '⎘'}
-      </span>
-    </button>
-  );
-}
 
 const TAB_LIST: { key: Tab; label: string }[] = [
   { key: 'overview', label: 'Overview' },
@@ -113,10 +86,6 @@ export default function AdminDealerPage({ dealerId, nav, activeTab }: Props) {
     );
   }
 
-  const memberSince = new Date(dealer.createdAt).toLocaleDateString('en-US', {
-    month: 'long', year: 'numeric',
-  });
-
   return (
     <OperatorPage
       dealerId={dealerId}
@@ -153,34 +122,7 @@ export default function AdminDealerPage({ dealerId, nav, activeTab }: Props) {
       {/* Tab content */}
       {tab === 'overview' && (
         <div className="space-y-4">
-          <SectionCard title="Dealer Identity">
-            <dl className="grid grid-cols-1 sm:grid-cols-2 gap-x-8 gap-y-3 text-sm">
-              <div>
-                <dt className="text-xs text-ink-muted font-semibold uppercase tracking-wider mb-0.5">Legal Name</dt>
-                <dd className="text-ink-heading font-medium">{dealer.legalName}</dd>
-              </div>
-              {dealer.dbaName && dealer.dbaName !== dealer.legalName && (
-                <div>
-                  <dt className="text-xs text-ink-muted font-semibold uppercase tracking-wider mb-0.5">DBA Name</dt>
-                  <dd className="text-ink-heading">{dealer.dbaName}</dd>
-                </div>
-              )}
-              <div>
-                <dt className="text-xs text-ink-muted font-semibold uppercase tracking-wider mb-0.5">Category</dt>
-                <dd className="text-ink-heading">
-                  {categoryLabel(dealer.businessCategory)}
-                </dd>
-              </div>
-              <div>
-                <dt className="text-xs text-ink-muted font-semibold uppercase tracking-wider mb-0.5">Member Since</dt>
-                <dd className="text-ink-heading">{memberSince}</dd>
-              </div>
-              <div>
-                <dt className="text-xs text-ink-muted font-semibold uppercase tracking-wider mb-0.5">Dealer ID</dt>
-                <dd><CopyableId value={dealer.id} /></dd>
-              </div>
-            </dl>
-          </SectionCard>
+          <DealershipProfilePanel dealerId={dealerId} nav={nav} mode="admin" />
 
           <SectionCard title="Open Triage Items">
             {triageItems.length === 0 ? (

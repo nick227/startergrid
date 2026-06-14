@@ -31,6 +31,9 @@ import type {
   DealerSummary,
   CreateDealershipPayload,
   CreateDealershipResponse,
+  DealershipProfile,
+  DealershipContactInput,
+  DealershipAddressInput,
   VehicleListResponse,
   LifecycleScope,
   VehicleLifecycleEventsResponse,
@@ -1166,6 +1169,42 @@ export type BuyerOutreachRecord = {
   platformSlug:     string | null;
   vehicle:          { year: number; make: string; model: string; stockNumber: string } | null;
 };
+
+export async function fetchDealershipProfile(dealershipId: string): Promise<DealershipProfile> {
+  const res = await fetch(`/api/dealers/${dealershipId}/profile`, { credentials: 'include' });
+  if (!res.ok) {
+    const body = await res.json().catch(() => ({})) as { error?: string };
+    throw new Error(body.error ?? `HTTP ${res.status}`);
+  }
+  const body = await res.json() as { profile: DealershipProfile };
+  return body.profile;
+}
+
+export type DealershipProfilePatch = {
+  legalName?: string;
+  dbaName?: string;
+  websiteUrl?: string;
+  primaryContact?: Partial<DealershipContactInput>;
+  rooftopAddress?: Partial<DealershipAddressInput>;
+};
+
+export async function updateDealershipProfile(
+  dealershipId: string,
+  patch: DealershipProfilePatch,
+): Promise<DealershipProfile> {
+  const res = await fetch(`/api/dealers/${dealershipId}/profile`, {
+    method: 'PATCH',
+    headers: { 'Content-Type': 'application/json' },
+    credentials: 'include',
+    body: JSON.stringify(patch),
+  });
+  if (!res.ok) {
+    const body = await res.json().catch(() => ({})) as { error?: string };
+    throw new Error(body.error ?? `HTTP ${res.status}`);
+  }
+  const body = await res.json() as { profile: DealershipProfile };
+  return body.profile;
+}
 
 export async function fetchNotificationChannels(
   dealershipId: string,

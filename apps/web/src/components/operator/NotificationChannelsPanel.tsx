@@ -7,7 +7,7 @@ import {
 } from '@/lib/api/sdk.ts';
 import { InfoButton } from '@/components/docs/index.ts';
 
-type Props = { dealerId: string };
+type Props = { dealerId: string; defaultOpen?: boolean };
 
 type SaveState = 'idle' | 'saving' | 'saved' | 'error';
 
@@ -68,8 +68,8 @@ function toSavePayload(local: Required<NotificationChannelsConfig>): Notificatio
   return out;
 }
 
-export function NotificationChannelsPanel({ dealerId }: Props) {
-  const [open, setOpen]       = useState(false);
+export function NotificationChannelsPanel({ dealerId, defaultOpen = false }: Props) {
+  const [open, setOpen]       = useState(defaultOpen);
   const [cfg, setCfg]         = useState<Required<NotificationChannelsConfig>>(merge(EMPTY));
   const [saveState, setSave]  = useState<SaveState>('idle');
   const [loadErr, setLoadErr] = useState<string | null>(null);

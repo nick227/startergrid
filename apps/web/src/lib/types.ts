@@ -180,6 +180,38 @@ export type CreateDealershipResponse = {
   mode: 'signup' | 'admin' | 'operator';
 };
 
+export type NotificationChannelSummary = {
+  email: { enabled: boolean };
+  webhook: { configured: boolean };
+  discord: { configured: boolean };
+  telegram: { configured: boolean };
+  sms: { configured: boolean };
+  autoResponse: { enabled: boolean };
+};
+
+export type ProfileReadinessWarning = {
+  field: string;
+  label: string;
+  severity: 'warning' | 'critical';
+  message: string;
+};
+
+export type DealershipProfile = {
+  id: string;
+  legalName: string;
+  dbaName: string | null;
+  businessCategory: string;
+  websiteUrl: string | null;
+  logoUrl: string | null;
+  dealerLicense: string | null;
+  primaryContact: DealershipContactInput;
+  rooftopAddress: DealershipAddressInput;
+  notificationChannels: NotificationChannelSummary;
+  publishingWarnings: ProfileReadinessWarning[];
+  createdAt: string;
+  updatedAt: string;
+};
+
 export type QueueItemView = {
   id: string;
   assetRef: string | null;
