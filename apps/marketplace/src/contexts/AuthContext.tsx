@@ -16,6 +16,7 @@ import {
   logout as apiLogout,
   register as apiRegister,
   removeFavorite,
+  updateMe,
 } from '../lib/api.ts';
 
 type AuthState = {
@@ -27,6 +28,7 @@ type AuthState = {
   closeLoginModal: () => void;
   login: (email: string, password: string) => Promise<void>;
   register: (email: string, password: string, displayName?: string) => Promise<void>;
+  updateProfile: (input: { displayName?: string | null; currentPassword?: string; newPassword?: string }) => Promise<void>;
   logout: () => Promise<void>;
   toggleFavorite: (listingId: string, category: BusinessCategoryId) => Promise<void>;
   isFavorited: (listingId: string) => boolean;
@@ -70,6 +72,15 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     const identity = await apiRegister(email, password, displayName);
     setUser(identity);
     setLoginModalOpen(false);
+  }, []);
+
+  const updateProfile = useCallback(async (input: {
+    displayName?: string | null;
+    currentPassword?: string;
+    newPassword?: string;
+  }) => {
+    const identity = await updateMe(input);
+    setUser(identity);
   }, []);
 
   const logout = useCallback(async () => {
@@ -117,7 +128,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       loginModalOpen,
       openLoginModal: () => setLoginModalOpen(true),
       closeLoginModal: () => setLoginModalOpen(false),
-      login, register, logout, toggleFavorite, isFavorited, syncFavorites,
+      login, register, updateProfile, logout, toggleFavorite, isFavorited, syncFavorites,
     }}>
       {children}
     </AuthContext.Provider>

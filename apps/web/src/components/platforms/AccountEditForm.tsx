@@ -1,5 +1,6 @@
 import type { PlatformAccountDetail, AccountUpdatePayload, ConnectionField } from '@/lib/types.ts';
 import { updateAccount, deleteOAuthToken } from '@/lib/api/sdk.ts';
+import { InfoButton } from '@/components/docs/index.ts';
 import {
   ACCOUNT_STATE_REGISTRY,
   type AccountStateKey,
@@ -115,7 +116,7 @@ export function AccountEditForm({ account, dealerId, onSaved, onCancel }: Props)
       {err && <div className="text-xs text-status-error-text bg-status-error-bg px-3 py-2 rounded-md border border-status-error-border">{err}</div>}
       <div className="grid grid-cols-1 gap-4">
 
-        <FormField label="Account state">
+        <FormField label="Account state" docId="platforms/account-states">
           <select value={form.state ?? ''} onChange={set('state')} className="field-input">
             {STATE_OPTIONS.map(o => <option key={o.value} value={o.value}>{o.label}</option>)}
           </select>
@@ -262,17 +263,22 @@ function FormField({
   label,
   hint,
   helpUrl,
+  docId,
   children,
 }: {
   label: string;
   hint?: string;
   helpUrl?: string;
+  docId?: string;
   children: React.ReactNode;
 }) {
   return (
     <div>
       <div className="flex items-center justify-between mb-1">
-        <label className="block text-xs font-semibold text-ink-muted">{label}</label>
+        <div className="flex items-center gap-1.5">
+          <label className="block text-xs font-semibold text-ink-muted">{label}</label>
+          {docId && <InfoButton docId={docId} />}
+        </div>
         {helpUrl && (
           <a
             href={helpUrl}

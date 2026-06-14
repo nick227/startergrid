@@ -54,12 +54,23 @@ describe('mediaSlotFixtures — slot assignment', () => {
 });
 
 describe('mediaSlotFixtures — tour builder', () => {
-  it('builds highlight, issue, and neutral steps when enough media exists', () => {
+  it('suppresses placeholder tours in mapped detail media', () => {
     const { items, tour } = mapDbMediaToDetailMedia([
       media('m1', 0),
       media('m2', 1, 'DOORS_OPEN'),
       media('m3', 2),
     ]);
+    assert.ok(items.length >= 3);
+    assert.equal(tour, null);
+  });
+
+  it('can still build highlight, issue, and neutral steps for a future walkthrough', () => {
+    const items = assignDetailMediaSlots([
+      media('m1', 0),
+      media('m2', 1, 'DOORS_OPEN'),
+      media('m3', 2),
+    ]);
+    const tour = buildDefaultMediaTour(items);
     assert.ok(tour);
     assert.equal(tour!.enabled, true);
     assert.ok(tour!.steps.some(step => step.stepType === 'NEUTRAL'));

@@ -1,8 +1,10 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useAsyncQuery } from '@/hooks/useAsyncQuery.ts';
-import { fetchDealerLeads, type DealerLead } from '@/lib/api/sdk.ts';
+import { fetchDealerLeads, fetchBuyerOutreach, type DealerLead, type BuyerOutreachRecord } from '@/lib/api/sdk.ts';
 import type { OperatorPageBaseProps } from '@/lib/operatorPage.ts';
 import { OperatorPage, PageHeader } from '@/components/operator';
+import { NotificationChannelsPanel } from '@/components/operator/NotificationChannelsPanel.tsx';
+import { InfoButton } from '@/components/docs/index.ts';
 import { Banner, SearchField, Select } from '@/components/ui';
 
 type Props = OperatorPageBaseProps;
@@ -111,6 +113,91 @@ function LeadThumbnail({ lead, title }: { lead: DealerLead; title: string }) {
   );
 }
 
+const CHANNEL_LABELS: Record<string, string> = { email: 'Email', sms: 'SMS' };
+
+function OutreachRow({ row }: { row: BuyerOutreachRecord }) {
+  const vehicleTitle = row.vehicle
+    ? `${row.vehicle.year} ${row.vehicle.make} ${row.vehicle.model}`
+    : 'Unknown vehicle';
+
+  return (
+    <div className="grid gap-4 border-b border-silver-100 px-4 py-3 last:border-0 hover:bg-silver-50/70 transition-colors lg:grid-cols-[minmax(14rem,1.2fr)_minmax(12rem,1fr)_6rem_6rem_8rem] lg:items-center">
+      <div className="min-w-0">
+        <p className="truncate text-sm font-semibold text-ink-heading">{vehicleTitle}</p>
+        {row.vehicle?.stockNumber && (
+          <span className="text-[11px] font-mono text-ink-muted">#{row.vehicle.stockNumber}</span>
+        )}
+      </div>
+      <div className="min-w-0">
+        <p className="truncate text-sm text-ink-heading">{row.contactName ?? 'Anonymous'}</p>
+        <p className="truncate text-xs text-ink-muted">{row.recipientAddress}</p>
+      </div>
+      <div>
+        <span className="inline-flex rounded border border-navy-100 bg-navy-50 px-2 py-0.5 text-[11px] font-semibold text-navy-700">
+          {CHANNEL_LABELS[row.channel] ?? row.channel}
+        </span>
+      </div>
+      <div>
+        {row.status === 'SENT' ? (
+          <span className="inline-flex rounded border border-green-200 bg-green-50 px-2 py-0.5 text-[11px] font-semibold text-green-700">Sent</span>
+        ) : (
+          <span className="inline-flex rounded border border-red-200 bg-red-50 px-2 py-0.5 text-[11px] font-semibold text-red-700" title={row.errorMessage ?? undefined}>Failed</span>
+        )}
+      </div>
+      <div className="text-xs text-ink-muted lg:text-right">
+        <p className="font-semibold text-ink-body">{relativeTime(row.createdAt)}</p>
+        <p>{new Date(row.createdAt).toLocaleDateString()}</p>
+      </div>
+    </div>
+  );
+}
+
+function CommunicationsPanel({ dealerId }: { dealerId: string }) {
+  const { data, loading, error, reload } = useAsyncQuery(
+    () => fetchBuyerOutreach(dealerId),
+    [dealerId],
+  );
+  const rows = data?.outreach ?? [];
+
+  return (
+    <div className="rounded-xl border border-silver-200 bg-white shadow-sm">
+      <div className="flex items-center justify-between border-b border-silver-200 px-4 py-3">
+        <div>
+          <p className="text-sm font-semibold text-ink-heading">Auto-response history</p>
+          <p className="text-xs text-ink-muted">Messages sent to buyers by the auto-response system</p>
+        </div>
+        <button type="button" onClick={reload} className="text-xs text-ink-muted underline underline-offset-2 hover:text-ink">Refresh</button>
+      </div>
+
+      {error && (
+        <div className="p-4 text-xs text-red-600">{error}</div>
+      )}
+
+      {loading && rows.length === 0 ? (
+        <div className="p-8 text-center text-sm text-ink-muted">Loading…</div>
+      ) : rows.length === 0 ? (
+        <div className="p-8 text-center">
+          <p className="text-sm font-semibold text-ink-heading">No messages sent yet</p>
+          <p className="mt-1 text-xs text-ink-muted">
+            Enable auto-response in the Notification channels panel above, then messages will appear here when buyers submit inquiries.
+          </p>
+        </div>
+      ) : (
+        <div>
+          <div className="hidden border-b border-silver-200 bg-silver-50 px-4 py-2 text-[10px] font-bold uppercase tracking-wide text-ink-faint lg:grid lg:grid-cols-[minmax(14rem,1.2fr)_minmax(12rem,1fr)_6rem_6rem_8rem] lg:gap-4">
+            <span>Vehicle</span>
+            <span>Buyer</span>
+            <span>Channel</span>
+            <span>Status</span>
+            <span className="text-right">Sent</span>
+          </div>
+          {rows.map(row => <OutreachRow key={row.id} row={row} />)}
+        </div>
+      )}
+    </div>
+  );
+}
+
 function LeadRow({
   lead,
   status,
@@ -185,7 +272,11 @@ function LeadRow({
   );
 }
 
+type PageView = 'leads' | 'communications';
+
 export default function LeadsPage({ dealerId, nav, activeTab }: Props) {
+  const [view, setView] = useState<PageView>('leads');
+
   const { data, loading, error, reload } = useAsyncQuery(
     () => fetchDealerLeads(dealerId),
     [dealerId],
@@ -273,13 +364,35 @@ export default function LeadsPage({ dealerId, nav, activeTab }: Props) {
           subtitle="Buyer inquiries received from the marketplace and other channels."
         />
 
-        {error && (
+        <NotificationChannelsPanel dealerId={dealerId} />
+
+        {/* Sub-tab bar */}
+        <div className="flex gap-1 border-b border-silver-200">
+          {(['leads', 'communications'] as PageView[]).map(v => (
+            <button
+              key={v}
+              type="button"
+              onClick={() => setView(v)}
+              className={`px-4 py-2 text-sm font-semibold border-b-2 transition-colors capitalize ${
+                view === v
+                  ? 'border-orange-500 text-orange-700'
+                  : 'border-transparent text-ink-muted hover:text-ink-body hover:border-silver-400'
+              }`}
+            >
+              {v === 'leads' ? 'Leads' : 'Communications'}
+            </button>
+          ))}
+        </div>
+
+        {view === 'communications' && <CommunicationsPanel dealerId={dealerId} />}
+
+        {view === 'leads' && error && (
           <Banner variant="error" action={<button type="button" onClick={reload} className="text-xs underline">Retry</button>}>
             {error}
           </Banner>
         )}
 
-        <div className="rounded-xl border border-silver-200 bg-white shadow-sm">
+        {view === 'leads' && <div className="rounded-xl border border-silver-200 bg-white shadow-sm">
           <div className="border-b border-silver-200 p-4">
             <div className="flex flex-col gap-3 xl:flex-row xl:items-center">
               <SearchField
@@ -337,7 +450,7 @@ export default function LeadsPage({ dealerId, nav, activeTab }: Props) {
                 <span>Vehicle</span>
                 <span>Buyer</span>
                 <span>Source</span>
-                <span>Status</span>
+                <span className="flex items-center gap-1">Status <InfoButton docId="app/lead-status" /></span>
                 <span className="text-right">Received</span>
               </div>
               {visibleLeads.map(lead => (
@@ -351,7 +464,7 @@ export default function LeadsPage({ dealerId, nav, activeTab }: Props) {
               ))}
             </div>
           )}
-        </div>
+        </div>}
       </div>
     </OperatorPage>
   );

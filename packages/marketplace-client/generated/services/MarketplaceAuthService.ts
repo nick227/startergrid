@@ -8,6 +8,7 @@ import type { MarketplaceFavoriteRemoveResponse } from '../models/MarketplaceFav
 import type { MarketplaceFavoritesResponse } from '../models/MarketplaceFavoritesResponse';
 import type { MarketplaceLoginRequest } from '../models/MarketplaceLoginRequest';
 import type { MarketplaceLogoutResponse } from '../models/MarketplaceLogoutResponse';
+import type { MarketplaceProfileUpdateRequest } from '../models/MarketplaceProfileUpdateRequest';
 import type { MarketplaceRegisterRequest } from '../models/MarketplaceRegisterRequest';
 import type { MarketplaceUserIdentity } from '../models/MarketplaceUserIdentity';
 import type { CancelablePromise } from '../core/CancelablePromise';
@@ -94,6 +95,30 @@ export class MarketplaceAuthService {
             method: 'GET',
             url: '/api/marketplace/auth/me',
             errors: {
+                401: `Authentication required or session invalid`,
+            },
+        });
+    }
+    /**
+     * Update current consumer account
+     * Updates the authenticated consumer's display name and optionally changes
+     * their password after verifying the current password.
+     *
+     * @returns MarketplaceUserIdentity Updated consumer identity
+     * @throws ApiError
+     */
+    public static updateMarketplaceMe({
+        requestBody,
+    }: {
+        requestBody: MarketplaceProfileUpdateRequest,
+    }): CancelablePromise<MarketplaceUserIdentity> {
+        return __request(OpenAPI, {
+            method: 'PATCH',
+            url: '/api/marketplace/auth/me',
+            body: requestBody,
+            mediaType: 'application/json',
+            errors: {
+                400: `Bad request — invalid query parameter value`,
                 401: `Authentication required or session invalid`,
             },
         });

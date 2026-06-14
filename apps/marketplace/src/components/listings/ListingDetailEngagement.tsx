@@ -30,7 +30,7 @@ export function useListingDetailEngagement({
 
   useTrackRecentListing(snapshot);
 
-  const shareUrl = buildListingShareUrl(categorySlug, listingId, vehicle.core.title);
+  const shareUrl = buildListingShareUrl(categorySlug, listingId);
   const sellerLocation = formatLocation(vehicle.location.dealerCity, vehicle.location.dealerState);
 
   return {

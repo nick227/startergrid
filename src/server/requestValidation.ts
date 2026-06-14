@@ -282,6 +282,23 @@ export const marketplaceRegisterSchema = z.object({
 
 export type MarketplaceRegisterBody = z.infer<typeof marketplaceRegisterSchema>;
 
+// operationId: updateMarketplaceMe
+export const marketplaceProfileUpdateSchema = z.object({
+  displayName: optionalText(160),
+  currentPassword: z.string().min(8).max(128).optional(),
+  newPassword: z.string().min(8).max(128).optional(),
+}).strict().superRefine((value, ctx) => {
+  if (value.newPassword && !value.currentPassword) {
+    ctx.addIssue({
+      code: z.ZodIssueCode.custom,
+      path: ['currentPassword'],
+      message: 'Current password is required to change password',
+    });
+  }
+});
+
+export type MarketplaceProfileUpdateBody = z.infer<typeof marketplaceProfileUpdateSchema>;
+
 // ── VIN / Inventory schemas ───────────────────────────────────────────────────
 
 // operationId: decodeVin

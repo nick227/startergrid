@@ -1,0 +1,10 @@
+Dealer storefront API listening at http://10.255.255.254:3000
+  GET  http://10.255.255.254:3000/health
+  GET  http://10.255.255.254:3000/api/dealers
+  GET  http://10.255.255.254:3000/api/dealers/:dealershipId/storefront
+  GET  http://10.255.255.254:3000/api/dealers/:dealershipId/vehicles/:stockNumber
+  POST http://10.255.255.254:3000/api/dealers/:dealershipId/leads
+  POST http://10.255.255.254:3000/api/dealers/:dealershipId/publish/prepare
+  GET  http://10.255.255.254:3000/api/dealers/:dealershipId/publish/status
+  GET  http://10.255.255.254:3000/api/dealers/:dealershipId/publish/history
+  GET  http://10.255.255.254:3000/api/dealers/:dealershipId/publish/accounts

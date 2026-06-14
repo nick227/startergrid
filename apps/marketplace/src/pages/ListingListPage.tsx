@@ -5,6 +5,7 @@ import { useListingFilters } from '../hooks/useListingFilters.ts';
 import { usePageMeta } from '../hooks/usePageMeta.ts';
 import { saveListReturn } from '../lib/listReturn.ts';
 import { listHref, parseRoute, type ListQuery } from '../lib/routes.ts';
+import { listRoutePageMeta } from '../lib/routePageMeta.ts';
 import { fromListQuery, toListQuery } from '../features/listings/listingQuery.ts';
 import type { ListingSort } from '../features/listings/listingQuery.ts';
 import { isConsumerMarketplaceLive } from '@auto-dealer/category-schemas';
@@ -63,7 +64,11 @@ export default function ListingListPage({ initialQuery = {} }: Props) {
   );
   const sentinelRef = useRef<HTMLDivElement | null>(null);
 
-  usePageMeta(`Browse ${schema.asset.plural}`, schema.marketplace.tagline);
+  const pageMeta = useMemo(
+    () => listRoutePageMeta(slug, toListQuery(listingQuery)),
+    [listingQuery, slug],
+  );
+  usePageMeta(pageMeta.title, pageMeta.description);
 
   const buyerLocation = useBuyerLocation();
   const feed = useInfiniteMarketplaceFeed(listingQuery, buyerLocation.geoApiParams);

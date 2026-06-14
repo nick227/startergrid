@@ -6,11 +6,13 @@
 //   #/{slug}/listing/{id}       → item detail (automotive VDP in Phase 2)
 //   #/{slug}/seller/{id}        → seller storefront
 //   #/{slug}/favorites          → saved listings (category-scoped)
+//   #/{slug}/profile            → signed-in shopper profile
 //
 // Legacy redirects:
 //   #/listing/:id               → #/automotive/listing/:id
 //   #/dealer/:id                → #/automotive/seller/:id
 //   #/favorites                 → #/automotive/favorites
+//   #/profile                   → #/automotive/profile
 //   #/?filters                  → #/automotive/?filters
 
 import {
@@ -27,6 +29,7 @@ export type MarketplaceRoute =
   | { page: 'listing'; slug: string; listingId: string }
   | { page: 'seller'; slug: string; sellerId: string }
   | { page: 'favorites'; slug: string }
+  | { page: 'profile'; slug: string }
   | { page: 'redirect'; href: string };
 
 export type SortBy = 'newest' | 'price-asc' | 'price-desc' | 'mileage-asc' | 'year-asc' | 'year-desc' | 'relevance';
@@ -116,6 +119,10 @@ function legacyRedirect(path: string, search: string): MarketplaceRoute | null {
     return { page: 'redirect', href: favoritesHref(DEFAULT_CATEGORY_SLUG) };
   }
 
+  if (path === 'profile') {
+    return { page: 'redirect', href: profileHref(DEFAULT_CATEGORY_SLUG) };
+  }
+
   if (path === '' && search) {
     return { page: 'redirect', href: listHref(DEFAULT_CATEGORY_SLUG, parseHashQuery(search)) };
   }
@@ -164,6 +171,10 @@ function parseCategoryPath(path: string, search: string): MarketplaceRoute | nul
 
   if (segments[1] === 'favorites' && segments.length === 2) {
     return { page: 'favorites', slug };
+  }
+
+  if (segments[1] === 'profile' && segments.length === 2) {
+    return { page: 'profile', slug };
   }
 
   return null;
@@ -217,7 +228,7 @@ export function listingHref(slug: string, listingId: string, title?: string): st
   if (title) {
     const titleSlug = title.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
     if (titleSlug) {
-      return `#/${slug}/listing/${titleSlug}-${encodeURIComponent(listingId)}`;
+      return `#/${slug}/listing/${titleSlug}?id=${encodeURIComponent(listingId)}`;
     }
   }
   return `#/${slug}/listing/${encodeURIComponent(listingId)}`;
@@ -229,6 +240,10 @@ export function sellerHref(slug: string, sellerId: string): string {
 
 export function favoritesHref(slug: string): string {
   return `#/${slug}/favorites`;
+}
+
+export function profileHref(slug: string): string {
+  return `#/${slug}/profile`;
 }
 
 

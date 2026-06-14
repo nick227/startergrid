@@ -1,7 +1,7 @@
 import type { ReactNode } from 'react';
 import { useAuth } from '../../contexts/AuthContext.tsx';
 import { useOptionalCategoryContext } from '../../contexts/CategoryContext.tsx';
-import { favoritesHref, listHref, sitesHref } from '../../lib/routes.ts';
+import { favoritesHref, listHref, profileHref, sitesHref } from '../../lib/routes.ts';
 
 type Props = {
   children: ReactNode;
@@ -21,6 +21,7 @@ export function PageShell({
   const homeHref = category && showCategoryNav ? listHref(category.slug) : sitesHref();
   const siteTitle = category ? `${category.schema.label} Marketplace` : 'Marketplaces';
   const savedHref = category ? favoritesHref(category.slug) : favoritesHref('automotive');
+  const accountHref = category ? profileHref(category.slug) : profileHref('automotive');
 
   return (
     <div className="min-h-screen bg-surface-page-bright">
@@ -64,9 +65,13 @@ export function PageShell({
                     <span className="hidden sm:inline">Saved</span>
                   </a>
 
-                  <span className="hidden text-sm text-ink-muted sm:block" aria-hidden="true">
+                  <a
+                    href={accountHref}
+                    className="mp-focus hidden rounded-lg px-2 py-1.5 text-sm font-medium text-ink-muted hover:bg-silver-100 hover:text-ink-heading sm:block"
+                    aria-label="Your profile"
+                  >
                     {user.displayName ?? user.email}
-                  </span>
+                  </a>
 
                   <button
                     type="button"

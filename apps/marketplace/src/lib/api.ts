@@ -15,6 +15,7 @@ import {
   type MarketplaceListingReportRequest,
   type MarketplaceListingReportResponse,
   type MarketplaceUserIdentity,
+  type MarketplaceProfileUpdateRequest,
   type MarketplaceFavoritesResponse,
   type MarketplaceSitesResponse,
 } from '@dealer-marketplace/client';
@@ -34,6 +35,7 @@ export type {
   MarketplaceListingReportRequest,
   MarketplaceListingReportResponse,
   MarketplaceUserIdentity,
+  MarketplaceProfileUpdateRequest,
   MarketplaceFavoritesResponse,
   MarketplaceSitesResponse,
   MarketplaceVehicleCtas,
@@ -211,6 +213,10 @@ export function submitVehicleLead(
 
 export function fetchMe(): Promise<MarketplaceUserIdentity> {
   return call(() => MarketplaceAuthService.getMarketplaceMe());
+}
+
+export function updateMe(body: MarketplaceProfileUpdateRequest): Promise<MarketplaceUserIdentity> {
+  return call(() => MarketplaceAuthService.updateMarketplaceMe({ requestBody: body }));
 }
 
 export function login(email: string, password: string): Promise<MarketplaceUserIdentity> {

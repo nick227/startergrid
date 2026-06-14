@@ -25,6 +25,7 @@ import { registerLeadSyncRoutes }             from './routes/leadSync.js';
 import { registerAdminRoutes }                from './routes/admin.js';
 import { registerDealerLeadsRoutes }          from './routes/dealerLeads.js';
 import { registerDealerNotificationsRoutes }  from './routes/dealerNotifications.js';
+import { registerBuyerOutreachRoutes }         from './routes/buyerOutreach.js';
 import { demoFeedPayload }          from '../fixtures/scenarios/connectedInventoryDemo.fixture.js';
 
 export function buildApp(prisma: PrismaClient): FastifyInstance {
@@ -97,6 +98,7 @@ export function buildApp(prisma: PrismaClient): FastifyInstance {
   registerAdminRoutes(app, prisma);
   registerDealerLeadsRoutes(app, prisma);
   registerDealerNotificationsRoutes(app, prisma);
+  registerBuyerOutreachRoutes(app, prisma);
 
   return app;
 }

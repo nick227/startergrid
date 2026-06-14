@@ -1,4 +1,5 @@
 import type { VehicleReadinessDto } from '@/lib/api/sdk.ts';
+import { InfoButton } from '@/components/docs/index.ts';
 
 type Props = {
   readiness: VehicleReadinessDto;
@@ -23,6 +24,7 @@ export function VehicleReadinessChecklist({ readiness }: Props) {
         </span>
         {allClear && <span className="text-xs text-green-600 font-medium">All checks pass — ready to publish</span>}
         {!allClear && <span className="text-[11px] text-ink-muted">{totalIssues} issue{totalIssues !== 1 ? 's' : ''}</span>}
+        <InfoButton docId="inventory/warnings-vs-blocked" />
       </div>
 
       <ul className="space-y-1 grid grid-cols-3 w-full gap-2">

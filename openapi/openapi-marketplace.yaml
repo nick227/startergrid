@@ -152,6 +152,33 @@ paths:
                 $ref: '#/components/schemas/MarketplaceUserIdentity'
         '401':
           $ref: '#/components/responses/Unauthorized'
+    patch:
+      tags: [MarketplaceAuth]
+      security:
+        - MarketplaceCookieAuth: []
+      x-route-classification: marketplace-auth
+      operationId: updateMarketplaceMe
+      summary: Update current consumer account
+      description: |
+        Updates the authenticated consumer's display name and optionally changes
+        their password after verifying the current password.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/MarketplaceProfileUpdateRequest'
+      responses:
+        '200':
+          description: Updated consumer identity
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MarketplaceUserIdentity'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
 
   /api/marketplace/me/favorites:
     get:
@@ -415,7 +442,8 @@ paths:
                 $ref: '#/components/schemas/MarketplaceFeedResponse'
         '400':
           $ref: '#/components/responses/BadRequest'
-  /api/marketplace/facets:
+
+  /api/marketplace/facets:
     get:
       tags: [Marketplace]
       security: []
@@ -1150,6 +1178,24 @@ components:
         displayName:
           type: string
           maxLength: 160
+
+    MarketplaceProfileUpdateRequest:
+      type: object
+      additionalProperties: false
+      minProperties: 1
+      properties:
+        displayName:
+          type: string
+          maxLength: 160
+          nullable: true
+        currentPassword:
+          type: string
+          minLength: 8
+          maxLength: 128
+        newPassword:
+          type: string
+          minLength: 8
+          maxLength: 128
 
     MarketplaceUserIdentity:
       type: object

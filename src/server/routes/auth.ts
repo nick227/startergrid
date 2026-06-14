@@ -10,8 +10,9 @@ import {
   SESSION_LIFETIME_MS,
 } from '../../services/auth/sessionService.js';
 
-function parseCookieHeader(header: string | undefined, name: string): string | undefined {
-  if (!header) return undefined;
+function parseCookieHeader(header: string | string[] | undefined, name: string): string | undefined {
+  if (Array.isArray(header)) header = header.join(';');
+  if (!header || typeof header !== 'string') return undefined;
   const match = header.match(new RegExp(`(?:^|;\\s*)${name}=([^;]+)`));
   return match?.[1];
 }
@@ -83,7 +84,7 @@ export function registerAuthRoutes(app: FastifyInstance, prisma: PrismaClient): 
   // Succeeds even when no session exists — safe to call unconditionally.
   app.post('/api/auth/logout', async (request, reply) => {
     const rawToken = parseCookieHeader(
-      request.headers['cookie'] as string | undefined,
+      request.headers['cookie'],
       'op_session'
     );
     if (rawToken) {
@@ -96,7 +97,7 @@ export function registerAuthRoutes(app: FastifyInstance, prisma: PrismaClient): 
   // GET /api/auth/me
   app.get('/api/auth/me', async (request, reply) => {
     const rawToken = parseCookieHeader(
-      request.headers['cookie'] as string | undefined,
+      request.headers['cookie'],
       'op_session'
     );
     if (!rawToken) {
@@ -106,7 +107,7 @@ export function registerAuthRoutes(app: FastifyInstance, prisma: PrismaClient): 
       const identity = await getOperatorFromSessionToken(prisma, rawToken);
       return reply.status(200).send(identity);
     } catch (err) {
-      if (err instanceof OperatorAuthError) {
+      if (err instanceof Error && err.name === 'OperatorAuthError') {
         return reply.status(401).send({ error: 'Operator authentication required' });
       }
       throw err;
@@ -116,7 +117,7 @@ export function registerAuthRoutes(app: FastifyInstance, prisma: PrismaClient): 
   // POST /api/auth/avatar
   app.post('/api/auth/avatar', async (request, reply) => {
     const rawToken = parseCookieHeader(
-      request.headers['cookie'] as string | undefined,
+      request.headers['cookie'],
       'op_session'
     );
     if (!rawToken) {

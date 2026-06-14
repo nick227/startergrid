@@ -29,6 +29,7 @@ type DemoQueueItem = {
 type DemoListing = { platformSlug: string; externalListingId?: string };
 
 type DemoVehicle = {
+  id?: string;
   stockNumber: string;
   vin: string;
   year: number;
@@ -74,6 +75,13 @@ const standardPhotoSet = (heroFile: string): DemoPhoto[] => [
   { file: 'detail-odometer.svg', slot: 'odometer' },
 ];
 
+function stableMarketplaceListingId(vehicleId: string, platformSlug: string): string {
+  const platformKey = platformSlug === 'consumer-marketplace'
+    ? 'consumer'
+    : platformSlug.replace(/[^a-zA-Z0-9]+/g, '_').replace(/(^_|_$)/g, '');
+  return `mp_listing_${vehicleId}_${platformKey}`;
+}
+
 export const DEMO_DEALERS: DemoDealer[] = [
   {
     id: 'dealer_austin_auto',
@@ -96,6 +104,7 @@ export const DEMO_DEALERS: DemoDealer[] = [
     },
     vehicles: [
       {
+        id: 'cmqapsg6d004mutrcqeumjxux',
         stockNumber: 'AUS-1001', vin: '1HGCV1F34LA001001',
         year: 2022, make: 'Honda', model: 'Accord', trim: 'EX-L',
         mileage: 24180, priceCents: 2789500, condition: 'USED',
@@ -153,6 +162,17 @@ export const DEMO_DEALERS: DemoDealer[] = [
       'google-vehicle-ads': 'FAILED',
     },
     vehicles: [
+      {
+        id: 'veh_0069',
+        stockNumber: 'MESSY1012', vin: '3GCUYDED1NG100069',
+        year: 2022, make: 'Chevrolet', model: 'Silverado 1500', trim: 'LT',
+        mileage: 31840, priceCents: 3899500, condition: 'USED',
+        exteriorColor: 'Summit White', interiorColor: 'Jet Black',
+        bodyStyle: 'Truck', drivetrain: '4WD', fuelType: 'Gasoline', transmission: 'Automatic',
+        listingStatus: 'READY',
+        photos: standardPhotoSet('truck-red.svg'),
+        liveListings: [{ platformSlug: 'consumer-marketplace' }],
+      },
       {
         // Draft: VIN-decoded shell, no photos, no price yet
         stockNumber: 'MES-2001', vin: '2C3CDXBG5LH002001',
@@ -216,6 +236,7 @@ export const DEMO_DEALERS: DemoDealer[] = [
     },
     vehicles: [
       {
+        id: 'cmqapsgk8008outrc5cs89w45',
         stockNumber: 'PRE-3001', vin: 'WBA5R1C58LF003001',
         year: 2021, make: 'BMW', model: '330i', trim: 'M Sport',
         mileage: 19850, priceCents: 4289500, condition: 'CERTIFIED',
@@ -313,6 +334,7 @@ async function seedVehicle(prisma: PrismaClient, d: DemoDealer, v: DemoVehicle):
       soldAt,
     },
     create: {
+      ...(v.id ? { id: v.id } : {}),
       dealershipId: d.id,
       vin: v.vin,
       stockNumber: v.stockNumber,
@@ -384,10 +406,12 @@ async function seedVehicle(prisma: PrismaClient, d: DemoDealer, v: DemoVehicle):
   }
 
   for (const listing of v.liveListings ?? []) {
+    const listingId = stableMarketplaceListingId(vehicle.id, listing.platformSlug);
     await prisma.marketplaceListing.upsert({
       where: { vehicleId_platformSlug: { vehicleId: vehicle.id, platformSlug: listing.platformSlug } },
-      update: { status: 'ACTIVE', externalListingId: listing.externalListingId ?? null },
+      update: { id: listingId, status: 'ACTIVE', externalListingId: listing.externalListingId ?? null },
       create: {
+        id: listingId,
         dealershipId: d.id,
         vehicleId: vehicle.id,
         platformSlug: listing.platformSlug,

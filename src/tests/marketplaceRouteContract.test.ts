@@ -38,6 +38,7 @@ const REGISTERED_MARKETPLACE_ROUTES = new Set([
   'POST   /api/marketplace/auth/login',
   'POST   /api/marketplace/auth/logout',
   'GET    /api/marketplace/auth/me',
+  'PATCH  /api/marketplace/auth/me',
   // Favorites routes (Phase C3)
   'GET    /api/marketplace/me/favorites',
   'POST   /api/marketplace/me/favorites/{listingId}',

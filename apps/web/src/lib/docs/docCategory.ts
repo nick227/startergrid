@@ -1,5 +1,6 @@
 const CATEGORY_LABELS: Record<string, string> = {
   app: 'Application',
+  connections: 'Connections',
   dealerships: 'Dealerships',
   industry: 'Industry',
   inventory: 'Inventory',

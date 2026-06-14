@@ -264,8 +264,9 @@ model DealershipProfile {
   rooftopLat      Float?
   rooftopLng      Float?
   websiteUrl      String?  @db.VarChar(255)
-  primaryContact  Json
-  inventorySize   Int?
+  primaryContact       Json
+  notificationChannels Json?
+  inventorySize        Int?
   desiredChannels Json
   documents       Json?
   createdAt       DateTime @default(now())
@@ -298,8 +299,10 @@ model DealershipProfile {
   socialPageAccounts           SocialPageAccount[]
   socialPosts                  SocialPost[]
   marketplaceListings          MarketplaceListing[]
+  categoryInventoryItems       CategoryInventoryItem[]
   platformCatalogSyncs         PlatformCatalogSync[]
   leadDeliveryAttempts         LeadDeliveryAttempt[]
+  buyerOutreach                BuyerOutreach[]
 }
 
 model Vehicle {
@@ -406,6 +409,55 @@ model VehicleMedia {
 
   @@index([vehicleId])
   @@index([vehicleId, mediaSlotKey])
+}
+
+model CategoryInventoryItem {
+  id                  String    @id @default(cuid())
+  dealershipId        String
+  categoryId          String    @db.VarChar(40)
+  stockNumber         String?   @db.VarChar(80)
+  primaryIdentifier   String?   @db.VarChar(80)
+  priceCents          Int?
+  originalPriceCents  Int?
+  priceLastChangedAt  DateTime?
+  condition           String?   @db.VarChar(24)
+  listingStatus       String    @default("DRAFT") @db.VarChar(16)
+  data                Json
+  soldAt              DateTime?
+  removedAt           DateTime?
+  reactivatedAt       DateTime?
+  createdAt           DateTime  @default(now())
+  updatedAt           DateTime  @updatedAt
+
+  dealership          DealershipProfile           @relation(fields: [dealershipId], references: [id], onDelete: Cascade)
+  media               CategoryInventoryItemMedia[]
+  marketplaceListings MarketplaceListing[]
+
+  @@index([dealershipId])
+  @@index([dealershipId, categoryId])
+  @@unique([dealershipId, stockNumber])
+}
+
+model CategoryInventoryItemMedia {
+  id            String   @id @default(cuid())
+  itemId        String
+  url           String   @db.VarChar(512)
+  kind          String   @db.VarChar(32)
+  sortOrder     Int
+  width         Int?
+  height        Int?
+  mimeType      String?  @db.VarChar(80)
+  mediaSlotKey  String?  @db.VarChar(80)
+  mediaRole     String?  @db.VarChar(24)
+  customLabel   String?  @db.VarChar(120)
+  customGroup   String?  @db.VarChar(80)
+  assignedBy    String?  @db.VarChar(30)
+  createdAt     DateTime @default(now())
+
+  item          CategoryInventoryItem @relation(fields: [itemId], references: [id], onDelete: Cascade)
+
+  @@index([itemId])
+  @@index([itemId, mediaSlotKey])
 }
 
 // ─── Platform models ─────────────────────────────────────────────────────────
@@ -530,6 +582,7 @@ model Lead {
   dealership      DealershipProfile @relation(fields: [dealershipId], references: [id], onDelete: Cascade)
   vehicle         Vehicle?          @relation(fields: [vehicleId], references: [id])
   deliveryAttempts LeadDeliveryAttempt[]
+  buyerOutreach   BuyerOutreach[]
 
   @@index([dealershipId])
   @@index([platformSlug])
@@ -715,6 +768,28 @@ model LeadDeliveryAttempt {
   @@index([leadId])
   @@index([dealershipId])
   @@index([status, nextAttemptAt])
+}
+
+// Tracks every automated outbound message sent to a buyer (auto-response feature).
+// Opt-in per dealership via notificationChannels.autoResponse.enabled.
+model BuyerOutreach {
+  id               String    @id @default(cuid())
+  leadId           String
+  dealershipId     String
+  channel          String    @db.VarChar(20)   // 'email' | 'sms'
+  recipientAddress String    @db.VarChar(255)
+  status           String    @db.VarChar(20)   // 'SENT' | 'FAILED'
+  messagePreview   String    @db.VarChar(500)
+  errorMessage     String?   @db.VarChar(500)
+  sentAt           DateTime?
+  createdAt        DateTime  @default(now())
+
+  lead       Lead              @relation(fields: [leadId], references: [id], onDelete: Cascade)
+  dealership DealershipProfile @relation(fields: [dealershipId], references: [id], onDelete: Cascade)
+
+  @@index([leadId])
+  @@index([dealershipId])
+  @@index([dealershipId, createdAt])
 }
 
 // ─── Event + Publishing Control models ───────────────────────────────────────
@@ -1204,7 +1279,8 @@ enum MarketplaceListingStatus {
 model MarketplaceListing {
   id                String                   @id @default(cuid())
   dealershipId      String
-  vehicleId         String
+  vehicleId         String?
+  categoryItemId    String?
   platformSlug      String                   @db.VarChar(80)
   externalListingId String?                  @db.VarChar(120)
   externalOfferId   String?                  @db.VarChar(120)
@@ -1215,13 +1291,16 @@ model MarketplaceListing {
   createdAt         DateTime                 @default(now())
   updatedAt         DateTime                 @updatedAt
 
-  dealership  DealershipProfile @relation(fields: [dealershipId], references: [id], onDelete: Cascade)
-  vehicle     Vehicle           @relation(fields: [vehicleId], references: [id], onDelete: Cascade)
+  dealership   DealershipProfile      @relation(fields: [dealershipId], references: [id], onDelete: Cascade)
+  vehicle      Vehicle?               @relation(fields: [vehicleId], references: [id], onDelete: Cascade)
+  categoryItem CategoryInventoryItem? @relation(fields: [categoryItemId], references: [id], onDelete: Cascade)
 
   @@unique([vehicleId, platformSlug])
+  @@unique([categoryItemId, platformSlug])
   @@index([dealershipId, platformSlug])
   @@index([dealershipId, platformSlug, status])
   @@index([vehicleId])
+  @@index([categoryItemId])
 }
 
 // ── Platform Catalog Sync ─────────────────────────────────────────────────────

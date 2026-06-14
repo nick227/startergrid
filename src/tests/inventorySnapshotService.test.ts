@@ -120,6 +120,7 @@ describe('dbDealershipToPayload', () => {
     desiredChannels: ['google-vehicle-ads', 'meta-automotive-ads'],
     logoUrl: null,
     documents: null,
+    notificationChannels: null,
     createdAt: new Date('2026-01-01'),
     updatedAt: new Date('2026-01-01')
   };

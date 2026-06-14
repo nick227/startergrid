@@ -16,8 +16,9 @@ export type ParsedMarketplaceCategory =
   | { ok: true; category: BusinessCategory }
   | { ok: false; error: string };
 
-export function parseMarketplaceCategoryParam(value: string | undefined): ParsedMarketplaceCategory {
-  if (!value || value.trim() === '') {
+export function parseMarketplaceCategoryParam(value: string | string[] | undefined): ParsedMarketplaceCategory {
+  if (Array.isArray(value)) value = value[0];
+  if (!value || typeof value !== 'string' || value.trim() === '') {
     return { ok: true, category: DEFAULT_MARKETPLACE_CATEGORY };
   }
 

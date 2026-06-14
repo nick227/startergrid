@@ -1132,6 +1132,99 @@ export async function fetchDealerLeads(
   );
 }
 
+// ── Notification Channels ─────────────────────────────────────────────────────
+
+export type AutoResponseConfig = {
+  enabled:        boolean;
+  emailEnabled?:  boolean;
+  smsEnabled?:    boolean;
+  fromName?:      string;
+  emailTemplate?: string;
+  smsTemplate?:   string;
+};
+
+export type NotificationChannelsConfig = {
+  email?:        { enabled?: boolean };
+  webhook?:      { url: string; secret?: string };
+  telegram?:     { botToken: string; chatId: string };
+  sms?:          { phone: string };
+  discord?:      { webhookUrl: string };
+  autoResponse?: AutoResponseConfig;
+};
+
+export type BuyerOutreachRecord = {
+  id:               string;
+  leadId:           string;
+  channel:          'email' | 'sms';
+  recipientAddress: string;
+  status:           'SENT' | 'FAILED';
+  messagePreview:   string;
+  errorMessage:     string | null;
+  sentAt:           string | null;
+  createdAt:        string;
+  contactName:      string | null;
+  platformSlug:     string | null;
+  vehicle:          { year: number; make: string; model: string; stockNumber: string } | null;
+};
+
+export async function fetchNotificationChannels(
+  dealershipId: string,
+): Promise<NotificationChannelsConfig> {
+  const res = await fetch(`/api/dealers/${dealershipId}/notification-channels`, {
+    credentials: 'include',
+  });
+  if (!res.ok) throw new Error(`HTTP ${res.status}`);
+  const body = await res.json() as { channels: NotificationChannelsConfig };
+  return body.channels;
+}
+
+export async function updateNotificationChannels(
+  dealershipId: string,
+  channels: NotificationChannelsConfig,
+): Promise<NotificationChannelsConfig> {
+  const res = await fetch(`/api/dealers/${dealershipId}/notification-channels`, {
+    method:      'PATCH',
+    headers:     { 'Content-Type': 'application/json' },
+    credentials: 'include',
+    body:        JSON.stringify(channels),
+  });
+  if (!res.ok) {
+    const body = await res.json().catch(() => ({})) as { error?: string };
+    throw new Error(body.error ?? `HTTP ${res.status}`);
+  }
+  const body = await res.json() as { channels: NotificationChannelsConfig };
+  return body.channels;
+}
+
+export async function fetchBuyerOutreach(
+  dealershipId: string,
+  opts: { limit?: number; channel?: string } = {},
+): Promise<{ outreach: BuyerOutreachRecord[]; total: number }> {
+  const params = new URLSearchParams();
+  if (opts.limit)   params.set('limit',   String(opts.limit));
+  if (opts.channel) params.set('channel', opts.channel);
+  const qs = params.toString();
+  const res = await fetch(`/api/dealers/${dealershipId}/buyer-outreach${qs ? `?${qs}` : ''}`, {
+    credentials: 'include',
+  });
+  if (!res.ok) throw new Error(`HTTP ${res.status}`);
+  return res.json() as Promise<{ outreach: BuyerOutreachRecord[]; total: number }>;
+}
+
+export type OutreachStats = {
+  days:        number;
+  totalSent:   number;
+  totalFailed: number;
+  byChannel:   Array<{ channel: string; status: string; count: number }>;
+  topDealers:  Array<{ dealershipId: string; sent: number }>;
+};
+
+export async function fetchAdminOutreachStats(days = 30): Promise<OutreachStats> {
+  const res = await fetch(`/api/admin/buyer-outreach-stats?days=${days}`, { credentials: 'include' });
+  if (!res.ok) throw new Error(`HTTP ${res.status}`);
+  return res.json() as Promise<OutreachStats>;
+}
+
 // ── Category Inventory Items ───────────────────────────────────────────────────
 
 export type CategoryIdentifierDecodeResponse = {

@@ -10,6 +10,7 @@ import {
   listingHref,
   listHref,
   parseRoute,
+  profileHref,
   sellerHref,
 } from './routes.ts';
 
@@ -71,6 +72,21 @@ describe('parseRoute', () => {
       slug: 'automotive',
       listingId: 'abc123',
     });
+    expect(withHash('#/automotive/listing/2022-chevrolet-silverado-1500?id=veh_0069')).toEqual({
+      page: 'listing',
+      slug: 'automotive',
+      listingId: 'veh_0069',
+    });
+    expect(withHash('#/automotive/listing/2022-chevrolet-silverado-1500-veh_0069')).toEqual({
+      page: 'listing',
+      slug: 'automotive',
+      listingId: 'veh_0069',
+    });
+    expect(withHash('#/automotive/listing/2021-bmw-330i-cmqapsgk8008outrc5cs89w45')).toEqual({
+      page: 'listing',
+      slug: 'automotive',
+      listingId: 'cmqapsgk8008outrc5cs89w45',
+    });
     expect(withHash('#/automotive/seller/dealer-1')).toEqual({
       page: 'seller',
       slug: 'automotive',
@@ -78,6 +94,10 @@ describe('parseRoute', () => {
     });
     expect(withHash('#/automotive/favorites')).toEqual({
       page: 'favorites',
+      slug: 'automotive',
+    });
+    expect(withHash('#/automotive/profile')).toEqual({
+      page: 'profile',
       slug: 'automotive',
     });
   });
@@ -95,6 +115,10 @@ describe('parseRoute', () => {
       page: 'redirect',
       href: favoritesHref(DEFAULT_CATEGORY_SLUG),
     });
+    expect(withHash('#/profile')).toEqual({
+      page: 'redirect',
+      href: profileHref(DEFAULT_CATEGORY_SLUG),
+    });
     expect(withHash('#/?make=Toyota')).toEqual({
       page: 'redirect',
       href: listHref(DEFAULT_CATEGORY_SLUG, { make: 'Toyota' }),
@@ -106,8 +130,10 @@ describe('href builders', () => {
   it('builds category-scoped hrefs', () => {
     expect(listHref('automotive', { make: 'Honda' })).toBe('#/automotive/?make=Honda');
     expect(listingHref('watches', 'x1')).toBe('#/watches/listing/x1');
+    expect(listingHref('automotive', 'veh_0069', '2022 Chevrolet Silverado 1500')).toBe('#/automotive/listing/2022-chevrolet-silverado-1500?id=veh_0069');
     expect(sellerHref('ebooks', 'seller-9')).toBe('#/ebooks/seller/seller-9');
     expect(favoritesHref('automotive')).toBe('#/automotive/favorites');
+    expect(profileHref('automotive')).toBe('#/automotive/profile');
   });
 
   it('round-trips facet params in list hrefs', () => {

@@ -188,7 +188,7 @@ export function InventoryDetailPanel({
                         onClick={() => setActiveWizardTab(tab.key)}
                         className={`min-h-[72px] rounded-lg border px-3 py-2 text-left transition-all focus:outline-none focus-visible:ring-2 focus-visible:ring-navy-400 ${
                           isActive
-                            ? 'border-silver-200 bg-white shadow-sm'
+                            ? 'border-navy-100 bg-blue-50 shadow-sm'
                             : 'border-transparent bg-transparent hover:bg-white/70 hover:border-silver-200'
                         }`}
                         aria-current={isActive ? 'step' : undefined}

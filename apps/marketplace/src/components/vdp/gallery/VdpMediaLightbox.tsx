@@ -199,7 +199,7 @@ export function VdpMediaLightbox({ items, index, alt, location, onIndexChange, o
         <div className="flex flex-1 min-h-0 w-full flex-col md:flex-row p-4 gap-4">
           
           {/* Left Pane: Main Media Viewer */}
-          <div className="relative flex w-full md:max-w-[800px] xl:max-w-[1200px] flex-col overflow-hidden rounded-2xl bg-black shadow-elevation-3">
+          <div className="relative flex min-h-[40vh] md:min-h-0 w-full md:max-w-[800px] xl:max-w-[1200px] flex-col overflow-hidden rounded-2xl bg-black shadow-elevation-3">
             <button 
               type="button"
               className="relative min-h-0 flex-1 group cursor-zoom-in"

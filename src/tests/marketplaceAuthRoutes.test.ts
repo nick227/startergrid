@@ -117,6 +117,33 @@ function makeMePrisma(sessionRow: ReturnType<typeof makeSessionRow> | null): Pri
   } as unknown as PrismaClient;
 }
 
+function makeProfileUpdatePrisma(opts: {
+  sessionRow?: ReturnType<typeof makeSessionRow> | null;
+  user?: ReturnType<typeof makeUser> | null;
+  onUpdate?: (data: Record<string, unknown>) => void;
+} = {}): PrismaClient {
+  const sessionRow = 'sessionRow' in opts ? opts.sessionRow : makeSessionRow();
+  const user = 'user' in opts ? opts.user : makeUser();
+  return {
+    marketplaceSession: {
+      findUnique: async () => sessionRow,
+    },
+    marketplaceUser: {
+      findUnique: async () => user,
+      update: async (args: { data: Record<string, unknown> }) => {
+        opts.onUpdate?.(args.data);
+        return {
+          id: USER_ID,
+          email: TEST_EMAIL,
+          displayName: Object.prototype.hasOwnProperty.call(args.data, 'displayName')
+            ? args.data['displayName']
+            : user?.displayName ?? null,
+        };
+      },
+    },
+  } as unknown as PrismaClient;
+}
+
 // ── POST /api/marketplace/auth/register ──────────────────────────────────────
 
 describe('POST /api/marketplace/auth/register', () => {
@@ -457,6 +484,91 @@ describe('GET /api/marketplace/auth/me — authenticated', () => {
     assert.equal(res.statusCode, 200);
     const body = res.json() as { displayName: unknown };
     assert.equal(body.displayName, null);
+  });
+});
+
+// ── PATCH /api/marketplace/auth/me ───────────────────────────────────────────
+
+describe('PATCH /api/marketplace/auth/me', () => {
+  it('updates displayName and returns a safe consumer identity', async () => {
+    let updated: Record<string, unknown> | null = null;
+    const rawToken = createRawSessionToken();
+    const app = buildApp(makeProfileUpdatePrisma({
+      onUpdate: data => { updated = data; },
+    }));
+
+    const res = await app.inject({
+      method: 'PATCH',
+      url: '/api/marketplace/auth/me',
+      headers: { Cookie: `mp_session=${rawToken}` },
+      payload: { displayName: 'New Shopper' },
+    });
+
+    assert.equal(res.statusCode, 200, `expected 200, got ${res.statusCode}: ${res.body}`);
+    assert.deepEqual(res.json(), {
+      id: USER_ID,
+      email: TEST_EMAIL,
+      displayName: 'New Shopper',
+    });
+    assert.equal(updated?.['displayName'], 'New Shopper');
+    assert.ok(!('passwordHash' in res.json()), 'profile update response must not include passwordHash');
+  });
+
+  it('requires the current password before changing password', async () => {
+    const rawToken = createRawSessionToken();
+    const app = buildApp(makeProfileUpdatePrisma());
+
+    const res = await app.inject({
+      method: 'PATCH',
+      url: '/api/marketplace/auth/me',
+      headers: { Cookie: `mp_session=${rawToken}` },
+      payload: { newPassword: 'new-password-value' },
+    });
+
+    assert.equal(res.statusCode, 400);
+  });
+
+  it('returns 401 when the current password is wrong', async () => {
+    const rawToken = createRawSessionToken();
+    const app = buildApp(makeProfileUpdatePrisma({
+      user: makeUser({ passwordHash: await hashPassword(TEST_PASSWORD) }),
+    }));
+
+    const res = await app.inject({
+      method: 'PATCH',
+      url: '/api/marketplace/auth/me',
+      headers: { Cookie: `mp_session=${rawToken}` },
+      payload: {
+        currentPassword: 'wrong-password-value',
+        newPassword: 'new-password-value',
+      },
+    });
+
+    assert.equal(res.statusCode, 401);
+    assert.deepEqual(res.json(), { error: 'Current password is incorrect' });
+  });
+
+  it('updates the password hash when the current password is correct', async () => {
+    let updated: Record<string, unknown> | null = null;
+    const rawToken = createRawSessionToken();
+    const app = buildApp(makeProfileUpdatePrisma({
+      user: makeUser({ passwordHash: await hashPassword(TEST_PASSWORD) }),
+      onUpdate: data => { updated = data; },
+    }));
+
+    const res = await app.inject({
+      method: 'PATCH',
+      url: '/api/marketplace/auth/me',
+      headers: { Cookie: `mp_session=${rawToken}` },
+      payload: {
+        currentPassword: TEST_PASSWORD,
+        newPassword: 'new-password-value',
+      },
+    });
+
+    assert.equal(res.statusCode, 200, `expected 200, got ${res.statusCode}: ${res.body}`);
+    assert.equal(typeof updated?.['passwordHash'], 'string');
+    assert.notEqual(updated?.['passwordHash'], TEST_PASSWORD);
   });
 });
 

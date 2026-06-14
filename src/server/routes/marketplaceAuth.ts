@@ -1,6 +1,11 @@
 import type { FastifyInstance, FastifyReply, FastifyRequest } from 'fastify';
 import type { PrismaClient } from '@prisma/client';
-import { validateBody, marketplaceLoginSchema, marketplaceRegisterSchema } from '../requestValidation.js';
+import {
+  validateBody,
+  marketplaceLoginSchema,
+  marketplaceProfileUpdateSchema,
+  marketplaceRegisterSchema,
+} from '../requestValidation.js';
 import { hashPassword, verifyPassword } from '../../services/auth/passwordService.js';
 import {
   createMarketplaceSession,
@@ -10,8 +15,9 @@ import {
   MARKETPLACE_SESSION_LIFETIME_MS,
 } from '../../services/auth/marketplaceSessionService.js';
 
-function parseCookieHeader(header: string | undefined, name: string): string | undefined {
-  if (!header) return undefined;
+function parseCookieHeader(header: string | string[] | undefined, name: string): string | undefined {
+  if (Array.isArray(header)) header = header.join(';');
+  if (!header || typeof header !== 'string') return undefined;
   const match = header.match(new RegExp(`(?:^|;\\s*)${name}=([^;]+)`));
   return match?.[1];
 }
@@ -112,7 +118,7 @@ export function registerMarketplaceAuthRoutes(app: FastifyInstance, prisma: Pris
   // Always returns 200 — safe to call unconditionally.
   app.post('/api/marketplace/auth/logout', async (request, reply) => {
     const rawToken = parseCookieHeader(
-      request.headers['cookie'] as string | undefined,
+      request.headers['cookie'],
       'mp_session'
     );
     if (rawToken) {
@@ -125,7 +131,7 @@ export function registerMarketplaceAuthRoutes(app: FastifyInstance, prisma: Pris
   // GET /api/marketplace/auth/me
   app.get('/api/marketplace/auth/me', async (request, reply) => {
     const rawToken = parseCookieHeader(
-      request.headers['cookie'] as string | undefined,
+      request.headers['cookie'],
       'mp_session'
     );
     if (!rawToken) {
@@ -135,10 +141,56 @@ export function registerMarketplaceAuthRoutes(app: FastifyInstance, prisma: Pris
       const identity = await getMarketplaceUserFromSessionToken(prisma, rawToken);
       return reply.status(200).send(identity);
     } catch (err) {
-      if (err instanceof MarketplaceAuthError) {
+      if (err instanceof Error && err.name === 'MarketplaceAuthError') {
         return reply.status(401).send({ error: 'Marketplace authentication required' });
       }
       throw err;
     }
+  });
+
+  // PATCH /api/marketplace/auth/me
+  app.patch('/api/marketplace/auth/me', async (request, reply) => {
+    const rawToken = parseCookieHeader(
+      request.headers['cookie'] as string | undefined,
+      'mp_session'
+    );
+    if (!rawToken) {
+      return reply.status(401).send({ error: 'Marketplace authentication required' });
+    }
+
+    const parsed = validateBody(marketplaceProfileUpdateSchema, request.body);
+    if (!parsed.ok) return reply.status(400).send({ error: parsed.error });
+
+    let identity;
+    try {
+      identity = await getMarketplaceUserFromSessionToken(prisma, rawToken);
+    } catch (err) {
+      if (err instanceof Error && err.name === 'MarketplaceAuthError') {
+        return reply.status(401).send({ error: 'Marketplace authentication required' });
+      }
+      throw err;
+    }
+
+    const data: { displayName?: string | null; passwordHash?: string } = {};
+    if (Object.prototype.hasOwnProperty.call(parsed.data, 'displayName')) {
+      const displayName = parsed.data.displayName?.trim() ?? '';
+      data.displayName = displayName ? displayName : null;
+    }
+
+    if (parsed.data.newPassword) {
+      const user = await prisma.marketplaceUser.findUnique({ where: { id: identity.id } });
+      if (!user || !(await verifyPassword(user.passwordHash, parsed.data.currentPassword ?? ''))) {
+        return reply.status(401).send({ error: 'Current password is incorrect' });
+      }
+      data.passwordHash = await hashPassword(parsed.data.newPassword);
+    }
+
+    const updated = await prisma.marketplaceUser.update({
+      where: { id: identity.id },
+      data,
+      select: { id: true, email: true, displayName: true },
+    });
+
+    return reply.status(200).send(updated);
   });
 }

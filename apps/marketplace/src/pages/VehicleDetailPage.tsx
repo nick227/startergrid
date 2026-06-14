@@ -210,7 +210,7 @@ function ListingDetailContent({
         <div className="grid grid-cols-1 gap-8 lg:grid-cols-[1fr_360px] lg:gap-10">
           
           {/* Main Column */}
-          <div className="space-y-6 lg:order-1">
+          <div className="space-y-6 order-last lg:order-1">
             <FulfillmentSection />
             <ClassificationSection classification={vehicle.classification} />
             <ColorsSection colors={vehicle.colors} />
@@ -223,7 +223,7 @@ function ListingDetailContent({
           </div>
 
           {/* Right Sidebar Column */}
-          <div className="space-y-6 lg:sticky lg:top-20 lg:self-start lg:order-2">
+          <div className="space-y-6 order-first lg:sticky lg:top-20 lg:self-start lg:order-2">
             <div className="flex flex-wrap items-center gap-2">
               <FavoriteButton listingId={vehicle.core.listingId} />
               <span className="text-sm text-ink-muted">Save this listing</span>

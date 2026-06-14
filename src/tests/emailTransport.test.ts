@@ -16,6 +16,7 @@ import fs from 'node:fs/promises';
 import type { PrismaClient } from '@prisma/client';
 import { emailTransport, type EmailMessage } from '../services/dealer/emailTransport.js';
 import { notifyLeadCaptured } from '../services/dealer/dealerNotificationService.js';
+import type { NotificationChannelsConfig, LeadNotificationPayload } from '../services/dealer/notificationFanout.js';
 
 // ── Fixture ───────────────────────────────────────────────────────────────────
 
@@ -154,10 +155,11 @@ function makePrisma(opts: {
       findUnique: async () => {
         if (opts.dealerEmail === null) return null;
         return {
-          id:             'dealer-001',
-          legalName:      'Prairie Ridge Motors LLC',
-          dbaName:        'Prairie Ridge Motors',
-          primaryContact: opts.dealerEmail === undefined
+          id:                  'dealer-001',
+          legalName:           'Prairie Ridge Motors LLC',
+          dbaName:             'Prairie Ridge Motors',
+          notificationChannels: { email: { enabled: true } },
+          primaryContact:      opts.dealerEmail === undefined
             ? { email: 'dealer@example.com', phone: '+13125550100' }
             : { email: opts.dealerEmail },
         };
@@ -168,73 +170,81 @@ function makePrisma(opts: {
   return { prisma, updates };
 }
 
-describe('notifyLeadCaptured — transport success', () => {
-  it('marks notification SENT when transport succeeds', async () => {
+// Fanout mock builders — replace the real fanout in unit tests.
+function makeSuccessFanout() {
+  return async (_channels: NotificationChannelsConfig, _email: string | null, _payload: LeadNotificationPayload) =>
+    [{ channel: 'email', ok: true as const }];
+}
+
+function makeFailingFanout() {
+  return async (_channels: NotificationChannelsConfig, _email: string | null, _payload: LeadNotificationPayload) =>
+    [{ channel: 'email', ok: false as const, error: 'SMTP connection refused' }];
+}
+
+function makeNoOpFanout(called = { value: false }) {
+  return async (_channels: NotificationChannelsConfig, _email: string | null, _payload: LeadNotificationPayload) => {
+    called.value = true;
+    return [] as { channel: string; ok: boolean; error?: string }[];
+  };
+}
+
+describe('notifyLeadCaptured — fanout success', () => {
+  it('marks notification SENT when fanout succeeds', async () => {
     const { prisma, updates } = makePrisma();
-    const transport = async (_msg: EmailMessage) => { /* success */ };
 
     await notifyLeadCaptured(prisma, 'dealer-001', 'lead-001', 'consumer-marketplace',
-      { name: 'Alice', email: 'alice@example.com', stockNumber: 'PR-001' }, transport);
+      { name: 'Alice', email: 'alice@example.com', stockNumber: 'PR-001' }, makeSuccessFanout());
 
     const sent = updates.find(u => u.data['deliveryStatus'] === 'SENT');
-    assert.ok(sent, 'notification must be marked SENT after successful transport');
+    assert.ok(sent, 'notification must be marked SENT after successful fanout');
     assert.ok(sent.data['deliveredAt'] instanceof Date, 'deliveredAt must be set on SENT');
   });
 
-  it('does not throw when transport succeeds', async () => {
+  it('does not throw when fanout succeeds', async () => {
     const { prisma } = makePrisma();
-    const transport = async (_msg: EmailMessage) => { /* success */ };
     await assert.doesNotReject(() =>
       notifyLeadCaptured(prisma, 'dealer-001', 'lead-001', 'dealer-storefront',
-        { name: 'Bob', stockNumber: 'PR-002' }, transport)
+        { name: 'Bob', stockNumber: 'PR-002' }, makeSuccessFanout())
     );
   });
 });
 
-describe('notifyLeadCaptured — transport failure (non-blocking)', () => {
-  it('does not re-throw when transport throws', async () => {
+describe('notifyLeadCaptured — fanout failure (non-blocking)', () => {
+  it('does not re-throw when all channels fail', async () => {
     const { prisma } = makePrisma();
-    const failingTransport = async (_msg: EmailMessage): Promise<void> => {
-      throw new Error('SMTP connection refused');
-    };
 
     await assert.doesNotReject(() =>
       notifyLeadCaptured(prisma, 'dealer-001', 'lead-001', 'consumer-marketplace',
-        { name: 'Carol', stockNumber: 'PR-003' }, failingTransport)
+        { name: 'Carol', stockNumber: 'PR-003' }, makeFailingFanout())
     );
   });
 
-  it('marks notification FAILED when transport throws', async () => {
+  it('marks notification FAILED when all channels fail', async () => {
     const { prisma, updates } = makePrisma();
-    const failingTransport = async (_msg: EmailMessage): Promise<void> => {
-      throw new Error('Connection refused');
-    };
 
     await notifyLeadCaptured(prisma, 'dealer-001', 'lead-001', 'consumer-marketplace',
-      { stockNumber: 'PR-004' }, failingTransport);
+      { stockNumber: 'PR-004' }, makeFailingFanout());
 
     const failed = updates.find(u => u.data['deliveryStatus'] === 'FAILED');
-    assert.ok(failed, 'notification must be marked FAILED after transport failure');
+    assert.ok(failed, 'notification must be marked FAILED after fanout failure');
   });
 });
 
 describe('notifyLeadCaptured — missing dealer email', () => {
-  it('marks notification FAILED when no dealer email configured', async () => {
+  it('marks notification FAILED when no channels deliver', async () => {
     const { prisma, updates } = makePrisma({ dealerEmail: '' });
-    const transport = async (_msg: EmailMessage) => { /* should not be called */ };
 
     await notifyLeadCaptured(prisma, 'dealer-001', 'lead-001', 'consumer-marketplace',
-      { stockNumber: 'PR-005' }, transport);
+      { stockNumber: 'PR-005' }, makeFailingFanout());
 
     const failed = updates.find(u => u.data['deliveryStatus'] === 'FAILED');
-    assert.ok(failed, 'notification must be FAILED when no dealer email');
+    assert.ok(failed, 'notification must be FAILED when no channel delivers');
   });
 
   it('does not throw when dealer cannot be found', async () => {
     const { prisma } = makePrisma({ dealerEmail: null });
-    const transport = async (_msg: EmailMessage) => {};
     await assert.doesNotReject(() =>
-      notifyLeadCaptured(prisma, 'dealer-001', 'lead-001', 'consumer-marketplace', {}, transport)
+      notifyLeadCaptured(prisma, 'dealer-001', 'lead-001', 'consumer-marketplace', {}, makeNoOpFanout())
     );
   });
 });
@@ -242,19 +252,17 @@ describe('notifyLeadCaptured — missing dealer email', () => {
 describe('notifyLeadCaptured — outer failure handling', () => {
   it('does not throw even when notification DB create fails', async () => {
     const { prisma } = makePrisma({ createFails: true });
-    const transport = async (_msg: EmailMessage) => {};
     await assert.doesNotReject(() =>
       notifyLeadCaptured(prisma, 'dealer-001', 'lead-001', 'consumer-marketplace',
-        { name: 'Dave' }, transport)
+        { name: 'Dave' }, makeNoOpFanout())
     );
   });
 
-  it('transport is never called when DB create fails', async () => {
+  it('fanout is never called when DB create fails', async () => {
     const { prisma } = makePrisma({ createFails: true });
-    let transportCalled = false;
-    const transport = async (_msg: EmailMessage) => { transportCalled = true; };
+    const called = { value: false };
     await notifyLeadCaptured(prisma, 'dealer-001', 'lead-001', 'consumer-marketplace',
-      { name: 'Eve' }, transport);
-    assert.equal(transportCalled, false);
+      { name: 'Eve' }, makeNoOpFanout(called));
+    assert.equal(called.value, false);
   });
 });

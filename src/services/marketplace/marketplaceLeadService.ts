@@ -84,6 +84,8 @@ export async function captureMarketplaceLead(
     {
       name:        contact.contactName  ?? undefined,
       email:       contact.contactEmail ?? undefined,
+      phone:       contact.contactPhone ?? undefined,
+      message:     contact.message      ?? undefined,
       stockNumber: listing.stockNumber,
     },
   );

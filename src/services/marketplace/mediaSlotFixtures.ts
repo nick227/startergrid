@@ -164,5 +164,5 @@ export function buildDefaultMediaTour(items: MarketplaceMediaItem[]): MediaTour 
 
 export function mapDbMediaToDetailMedia(media: DbMedia[]): { items: MarketplaceMediaItem[]; tour: MediaTour | null } {
   const items = assignDetailMediaSlots(media);
-  return { items, tour: buildDefaultMediaTour(items) };
+  return { items, tour: null };
 }

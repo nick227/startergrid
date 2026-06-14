@@ -2026,6 +2026,100 @@ paths:
         '403':
           $ref: '#/components/responses/Forbidden'
 
+  /api/dealers/{dealershipId}/notification-channels:
+    get:
+      tags: [Leads]
+      security:
+        - OperatorAuth: []
+      x-route-classification: operator
+      operationId: getNotificationChannels
+      summary: Get notification channel configuration
+      parameters:
+        - $ref: '#/components/parameters/dealershipId'
+      responses:
+        '200':
+          description: Channel configuration
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [channels]
+                properties:
+                  channels:
+                    type: object
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+    patch:
+      tags: [Leads]
+      security:
+        - OperatorAuth: []
+      x-route-classification: operator
+      operationId: updateNotificationChannels
+      summary: Update notification channel configuration
+      parameters:
+        - $ref: '#/components/parameters/dealershipId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+      responses:
+        '200':
+          description: Updated channel configuration
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [channels]
+                properties:
+                  channels:
+                    type: object
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+
+  /api/dealers/{dealershipId}/buyer-outreach:
+    get:
+      tags: [Leads]
+      security:
+        - OperatorAuth: []
+      x-route-classification: operator
+      operationId: listBuyerOutreach
+      summary: List auto-response messages sent to buyers
+      parameters:
+        - $ref: '#/components/parameters/dealershipId'
+        - name: limit
+          in: query
+          schema: { type: integer, minimum: 1, maximum: 200, default: 50 }
+        - name: channel
+          in: query
+          schema: { type: string, enum: [email, sms] }
+      responses:
+        '200':
+          description: Outreach history
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [outreach, total]
+                properties:
+                  outreach:
+                    type: array
+                    items:
+                      type: object
+                  total:
+                    type: integer
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+
   /api/dealers/{dealershipId}/performance/vehicles:
     get:
       tags: [Performance]
@@ -2496,6 +2590,52 @@ paths:
           description: Cannot delete own account
         '404':
           description: User not found
+
+  /api/admin/buyer-outreach-stats:
+    get:
+      tags: [Admin]
+      security:
+        - OperatorAuth: []
+      x-route-classification: admin
+      operationId: getAdminBuyerOutreachStats
+      summary: System-wide buyer auto-response usage stats (SUPER_ADMIN only)
+      parameters:
+        - name: days
+          in: query
+          schema: { type: integer, minimum: 1, maximum: 90, default: 30 }
+      responses:
+        '200':
+          description: Outreach stats
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [days, totalSent, totalFailed, byChannel, topDealers]
+                properties:
+                  days:        { type: integer }
+                  totalSent:   { type: integer }
+                  totalFailed: { type: integer }
+                  byChannel:
+                    type: array
+                    items:
+                      type: object
+                      required: [channel, status, count]
+                      properties:
+                        channel: { type: string }
+                        status:  { type: string }
+                        count:   { type: integer }
+                  topDealers:
+                    type: array
+                    items:
+                      type: object
+                      required: [dealershipId, sent]
+                      properties:
+                        dealershipId: { type: string }
+                        sent:         { type: integer }
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
 
   /api/admin/blocked-dealers:
     get:

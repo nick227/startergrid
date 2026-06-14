@@ -62,6 +62,17 @@ export function VdpGalleryMosaic({ map, alt, onOpenItem }: Props) {
             {activeBadge}
           </span>
         )}
+
+        {/* Mobile Photo Count Badge */}
+        {totalItems > 1 && (
+          <div className="absolute bottom-4 right-4 md:hidden rounded-full bg-black/70 px-3 py-1 text-xs font-medium text-white flex items-center gap-1.5 z-10">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="w-4 h-4">
+              <path fillRule="evenodd" d="M1 5.25A2.25 2.25 0 013.25 3h13.5A2.25 2.25 0 0119 5.25v9.5A2.25 2.25 0 0116.75 17H3.25A2.25 2.25 0 011 14.75v-9.5zm1.5 5.81v3.69c0 .414.336.75.75.75h13.5a.75.75 0 00.75-.75v-2.69l-2.22-2.219a.75.75 0 00-1.06 0l-1.91 1.909.47.47a.75.75 0 11-1.06 1.06L6.53 8.091a.75.75 0 00-1.06 0l-2.97 2.97zM12 7a1 1 0 11-2 0 1 1 0 012 0z" clipRule="evenodd" />
+            </svg>
+            1 / {totalItems}
+          </div>
+        )}
+
         <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/60 to-transparent p-4 opacity-0 transition-opacity group-hover:opacity-100">
           <span className="text-sm font-semibold text-white">
             {activeSlot.label}
@@ -71,7 +82,7 @@ export function VdpGalleryMosaic({ map, alt, onOpenItem }: Props) {
 
       {/* Thumbnails Grid */}
       {thumbnails.length > 0 && (
-        <div className="grid grid-cols-3 grid-rows-6 gap-2 h-full md:w-[400px] lg:w-[500px] xl:w-[600px]">
+        <div className="hidden md:grid grid-cols-3 grid-rows-6 gap-2 h-full md:w-[400px] lg:w-[500px] xl:w-[600px]">
           {thumbnails.map((thumb, index) => {
             const isLast = index === thumbnails.length - 1;
             const item = thumb.item!;
