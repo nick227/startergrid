@@ -4,6 +4,8 @@ import type { PrismaClient } from '@prisma/client';
 import { buildApp } from '../server/app.js';
 import {
   computePublishingWarnings,
+  normalizePrimaryContact,
+  normalizeRooftopAddress,
   summarizeNotificationChannels,
 } from '../services/dealer/dealershipProfileService.js';
 
@@ -118,6 +120,35 @@ describe('dealership profile helpers', () => {
     assert.ok(warnings.some(w => w.field === 'primaryContact.email'));
     assert.ok(warnings.some(w => w.field === 'rooftopAddress.city'));
   });
+
+  it('normalizes null or empty JSON contact and address fields', () => {
+    assert.deepEqual(normalizePrimaryContact(null), {
+      name: '',
+      email: '',
+      phone: null,
+      role: null,
+    });
+    assert.deepEqual(normalizePrimaryContact({}), {
+      name: '',
+      email: '',
+      phone: null,
+      role: null,
+    });
+    assert.deepEqual(normalizeRooftopAddress(null), {
+      street: '',
+      city: '',
+      state: '',
+      postalCode: '',
+      country: 'US',
+    });
+    assert.deepEqual(normalizeRooftopAddress({}), {
+      street: '',
+      city: '',
+      state: '',
+      postalCode: '',
+      country: 'US',
+    });
+  });
 });
 
 describe('GET /api/dealers/:dealershipId/profile', () => {
@@ -151,6 +182,31 @@ describe('GET /api/dealers/:dealershipId/profile', () => {
     const body = res.json() as { profile: { legalName: string; notificationChannels: { discord: { configured: boolean } } } };
     assert.equal(body.profile.legalName, 'Messy Motors Inc');
     assert.equal(body.profile.notificationChannels.discord.configured, true);
+  });
+
+  it('normalizes null JSON fields in profile response', async () => {
+    const row = {
+      ...BASE_ROW,
+      primaryContact: null as unknown as typeof BASE_ROW.primaryContact,
+      rooftopAddress: {} as typeof BASE_ROW.rooftopAddress,
+    };
+    const app = buildApp(makePrisma({ row }));
+    const res = await app.inject({
+      method: 'GET',
+      url: `/api/dealers/${DEALER_ID}/profile`,
+      headers: authCookie(),
+    });
+    assert.equal(res.statusCode, 200);
+    const body = res.json() as {
+      profile: {
+        primaryContact: { name: string; email: string };
+        rooftopAddress: { street: string; country: string };
+      };
+    };
+    assert.equal(body.profile.primaryContact.name, '');
+    assert.equal(body.profile.primaryContact.email, '');
+    assert.equal(body.profile.rooftopAddress.street, '');
+    assert.equal(body.profile.rooftopAddress.country, 'US');
   });
 
   it('returns 404 when dealer missing', async () => {

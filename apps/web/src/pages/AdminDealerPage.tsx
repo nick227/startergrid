@@ -122,7 +122,7 @@ export default function AdminDealerPage({ dealerId, nav, activeTab }: Props) {
       {/* Tab content */}
       {tab === 'overview' && (
         <div className="space-y-4">
-          <DealershipProfilePanel dealerId={dealerId} nav={nav} mode="admin" />
+          <DealershipProfilePanel dealerId={dealerId} nav={nav} mode="admin" onDealersChanged={reloadDealers} />
 
           <SectionCard title="Open Triage Items">
             {triageItems.length === 0 ? (

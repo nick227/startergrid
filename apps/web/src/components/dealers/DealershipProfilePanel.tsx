@@ -3,6 +3,12 @@ import { resolveCategorySchema } from '@auto-dealer/category-schemas';
 import { fetchDealershipProfile, updateDealershipProfile, uploadDealerLogo } from '@/lib/api/sdk.ts';
 import type { DealershipProfile, ProfileReadinessWarning } from '@/lib/types.ts';
 import type { OperatorNavHandlers } from '@/lib/operatorNav.ts';
+import { invalidateDealersList } from '@/lib/dealersListInvalidation.ts';
+import {
+  formatMemberSince,
+  normalizePrimaryContact,
+  normalizeRooftopAddress,
+} from '@/lib/dealershipProfileNormalize.ts';
 import { useAsyncQuery } from '@/hooks/useAsyncQuery.ts';
 import { SectionCard, ErrorState } from '@/components/operator';
 import { NotificationChannelsPanel } from '@/components/operator/NotificationChannelsPanel.tsx';
@@ -17,6 +23,7 @@ type Props = {
   dealerId: string;
   nav?: OperatorNavHandlers;
   mode?: 'operator' | 'admin';
+  onDealersChanged?: () => void;
 };
 
 type FormState = {
@@ -33,17 +40,19 @@ type FormState = {
 };
 
 function profileToForm(profile: DealershipProfile): FormState {
+  const contact = normalizePrimaryContact(profile.primaryContact);
+  const address = normalizeRooftopAddress(profile.rooftopAddress);
   return {
     legalName: profile.legalName,
     dbaName: profile.dbaName ?? '',
     websiteUrl: profile.websiteUrl ?? '',
-    contactName: profile.primaryContact.name,
-    contactEmail: profile.primaryContact.email,
-    contactPhone: profile.primaryContact.phone ?? '',
-    street: profile.rooftopAddress.street,
-    city: profile.rooftopAddress.city,
-    state: profile.rooftopAddress.state,
-    postalCode: profile.rooftopAddress.postalCode,
+    contactName: contact.name,
+    contactEmail: contact.email,
+    contactPhone: contact.phone ?? '',
+    street: address.street,
+    city: address.city,
+    state: address.state,
+    postalCode: address.postalCode,
   };
 }
 
@@ -89,7 +98,7 @@ function ChannelSummary({ profile }: { profile: DealershipProfile }) {
   );
 }
 
-export function DealershipProfilePanel({ dealerId, nav, mode = 'operator' }: Props) {
+export function DealershipProfilePanel({ dealerId, nav, mode = 'operator', onDealersChanged }: Props) {
   const { data: profile, loading, error, reload } = useAsyncQuery(
     () => fetchDealershipProfile(dealerId),
     [dealerId],
@@ -117,6 +126,11 @@ export function DealershipProfilePanel({ dealerId, nav, mode = 'operator' }: Pro
     setForm(prev => (prev ? { ...prev, [key]: value } : prev));
   };
 
+  const refreshDealerSummaries = () => {
+    invalidateDealersList();
+    onDealersChanged?.();
+  };
+
   const handleSave = async () => {
     if (!form) return;
     setSaveState('saving');
@@ -140,6 +154,7 @@ export function DealershipProfilePanel({ dealerId, nav, mode = 'operator' }: Pro
       });
       setSaveState('saved');
       reload();
+      refreshDealerSummaries();
       setTimeout(() => setSaveState('idle'), 2000);
     } catch (e: unknown) {
       setSaveState('error');
@@ -152,6 +167,7 @@ export function DealershipProfilePanel({ dealerId, nav, mode = 'operator' }: Pro
     try {
       await uploadDealerLogo(dealerId, file);
       reload();
+      refreshDealerSummaries();
     } finally {
       setUploadingLogo(false);
     }
@@ -300,7 +316,7 @@ export function DealershipProfilePanel({ dealerId, nav, mode = 'operator' }: Pro
             </div>
             <div>
               <dt className="text-xs text-ink-muted uppercase tracking-wide">Member since</dt>
-              <dd className="text-ink-heading mt-0.5">{new Date(profile.createdAt).toLocaleDateString()}</dd>
+              <dd className="text-ink-heading mt-0.5">{formatMemberSince(profile.createdAt)}</dd>
             </div>
           </dl>
         </SectionCard>

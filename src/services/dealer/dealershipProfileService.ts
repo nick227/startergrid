@@ -74,7 +74,10 @@ function asString(value: unknown): string {
   return typeof value === 'string' ? value.trim() : '';
 }
 
-function parseAddress(raw: unknown): DealershipAddress {
+export function normalizeRooftopAddress(raw: unknown): DealershipAddress {
+  if (!raw || typeof raw !== 'object') {
+    return { street: '', city: '', state: '', postalCode: '', country: 'US' };
+  }
   const o = asRecord(raw);
   return {
     street: asString(o['street']),
@@ -85,7 +88,10 @@ function parseAddress(raw: unknown): DealershipAddress {
   };
 }
 
-function parseContact(raw: unknown): DealershipContact {
+export function normalizePrimaryContact(raw: unknown): DealershipContact {
+  if (!raw || typeof raw !== 'object') {
+    return { name: '', email: '', phone: null, role: null };
+  }
   const o = asRecord(raw);
   return {
     name: asString(o['name']),
@@ -183,8 +189,8 @@ function shapeProfile(row: {
   createdAt: Date;
   updatedAt: Date;
 }): DealershipProfileResponse {
-  const primaryContact = parseContact(row.primaryContact);
-  const rooftopAddress = parseAddress(row.rooftopAddress);
+  const primaryContact = normalizePrimaryContact(row.primaryContact);
+  const rooftopAddress = normalizeRooftopAddress(row.rooftopAddress);
   return {
     id: row.id,
     legalName: row.legalName,
@@ -250,8 +256,8 @@ export async function updateDealershipProfile(
   });
   if (!current) return null;
 
-  const existingContact = parseContact(current.primaryContact);
-  const existingAddress = parseAddress(current.rooftopAddress);
+  const existingContact = normalizePrimaryContact(current.primaryContact);
+  const existingAddress = normalizeRooftopAddress(current.rooftopAddress);
   const mergedContact = mergeContact(existingContact, body.primaryContact);
   const mergedAddress = mergeAddress(existingAddress, body.rooftopAddress);
 

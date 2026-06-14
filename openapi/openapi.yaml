@@ -202,6 +202,107 @@ paths:
         '404':
           $ref: '#/components/responses/NotFound'
 
+  /api/dealers/{dealershipId}/profile:
+    get:
+      tags: [Dealers]
+      security:
+        - OperatorAuth: []
+      x-route-classification: operator
+      operationId: getDealershipProfile
+      summary: Get editable dealership profile metadata
+      description: |
+        Returns public marketplace profile fields, contact and rooftop address,
+        logo URL, notification channel summary, and publishing readiness warnings.
+      parameters:
+        - $ref: '#/components/parameters/dealershipId'
+      responses:
+        '200':
+          description: Dealership profile
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DealershipProfileEnvelope'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+    patch:
+      tags: [Dealers]
+      security:
+        - OperatorAuth: []
+      x-route-classification: operator
+      operationId: updateDealershipProfile
+      summary: Update dealership profile metadata
+      description: |
+        Partial update for legal/DBA name, website, primary contact, and rooftop address.
+        At least one field must be provided.
+      parameters:
+        - $ref: '#/components/parameters/dealershipId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateDealershipProfileRequest'
+      responses:
+        '200':
+          description: Updated dealership profile
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DealershipProfileEnvelope'
+        '400':
+          $ref: '#/components/responses/ValidationError'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /api/dealers/{dealershipId}/logo:
+    post:
+      tags: [Dealers]
+      security:
+        - OperatorAuth: []
+      x-route-classification: operator
+      operationId: uploadDealerLogo
+      summary: Upload dealership logo
+      parameters:
+        - $ref: '#/components/parameters/dealershipId'
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              required: [logo]
+              properties:
+                logo:
+                  type: string
+                  format: binary
+      responses:
+        '200':
+          description: Uploaded logo URL
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [logoUrl]
+                properties:
+                  logoUrl:
+                    type: string
+        '400':
+          $ref: '#/components/responses/ValidationError'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
   /api/dealers/{dealershipId}/publish/prepare:
     post:
       tags: [Publish]
@@ -3834,6 +3935,117 @@ components:
         mode:
           type: string
           enum: [signup, admin, operator]
+
+    NotificationChannelSummary:
+      type: object
+      required: [email, webhook, discord, telegram, sms, autoResponse]
+      properties:
+        email:
+          type: object
+          required: [enabled]
+          properties:
+            enabled: { type: boolean }
+        webhook:
+          type: object
+          required: [configured]
+          properties:
+            configured: { type: boolean }
+        discord:
+          type: object
+          required: [configured]
+          properties:
+            configured: { type: boolean }
+        telegram:
+          type: object
+          required: [configured]
+          properties:
+            configured: { type: boolean }
+        sms:
+          type: object
+          required: [configured]
+          properties:
+            configured: { type: boolean }
+        autoResponse:
+          type: object
+          required: [enabled]
+          properties:
+            enabled: { type: boolean }
+
+    ProfileReadinessWarning:
+      type: object
+      required: [field, label, severity, message]
+      properties:
+        field:    { type: string }
+        label:    { type: string }
+        severity: { type: string, enum: [warning, critical] }
+        message:  { type: string }
+
+    DealershipProfile:
+      type: object
+      required:
+        - id
+        - legalName
+        - dbaName
+        - businessCategory
+        - websiteUrl
+        - logoUrl
+        - dealerLicense
+        - primaryContact
+        - rooftopAddress
+        - notificationChannels
+        - publishingWarnings
+        - createdAt
+        - updatedAt
+      properties:
+        id:               { type: string }
+        legalName:        { type: string }
+        dbaName:          { type: string, nullable: true }
+        businessCategory:
+          $ref: '#/components/schemas/BusinessCategory'
+        websiteUrl:       { type: string, nullable: true, format: uri }
+        logoUrl:          { type: string, nullable: true }
+        dealerLicense:    { type: string, nullable: true }
+        primaryContact:
+          $ref: '#/components/schemas/DealershipContactInput'
+        rooftopAddress:
+          $ref: '#/components/schemas/DealershipAddressInput'
+        notificationChannels:
+          $ref: '#/components/schemas/NotificationChannelSummary'
+        publishingWarnings:
+          type: array
+          items:
+            $ref: '#/components/schemas/ProfileReadinessWarning'
+        createdAt:        { type: string, format: date-time }
+        updatedAt:        { type: string, format: date-time }
+
+    DealershipProfileEnvelope:
+      type: object
+      required: [profile]
+      properties:
+        profile:
+          $ref: '#/components/schemas/DealershipProfile'
+
+    UpdateDealershipProfileRequest:
+      type: object
+      properties:
+        legalName:        { type: string }
+        dbaName:          { type: string }
+        websiteUrl:       { type: string, format: uri }
+        primaryContact:
+          type: object
+          properties:
+            name:  { type: string }
+            email: { type: string, format: email }
+            phone: { type: string }
+            role:  { type: string }
+        rooftopAddress:
+          type: object
+          properties:
+            street:     { type: string }
+            city:       { type: string }
+            state:      { type: string }
+            postalCode: { type: string }
+            country:    { type: string }
 
     PlatformAccountDetail:
       type: object

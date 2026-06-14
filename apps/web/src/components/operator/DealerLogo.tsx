@@ -1,10 +1,12 @@
 import { useState, useRef } from 'react';
 import { uploadDealerLogo, fetchDealers } from '../../lib/api/sdk.ts';
+import { invalidateDealersList, useDealersListInvalidation } from '../../lib/dealersListInvalidation.ts';
 import { useAsyncQuery } from '../../hooks/useAsyncQuery.ts';
 import type { DealerSummary } from '../../lib/types.ts';
 
 export function DealerLogo({ dealershipId }: { dealershipId: string }) {
   const { data, reload } = useAsyncQuery(() => fetchDealers(), []);
+  useDealersListInvalidation(reload);
   const [uploading, setUploading] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -19,6 +21,7 @@ export function DealerLogo({ dealershipId }: { dealershipId: string }) {
     try {
       await uploadDealerLogo(dealershipId, file);
       reload();
+      invalidateDealersList();
     } catch (err) {
       console.error('Failed to upload logo', err);
       alert('Failed to upload logo');
