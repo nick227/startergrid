@@ -2,59 +2,97 @@ import { useMemo, useState, useEffect } from 'react';
 import { fetchPublishStatus, fetchAccounts, fetchPlatformPerformance, fetchSelectedSocialPages } from '@/lib/api/sdk.ts';
 import type { PlatformAccountDetail, PlatformPerformanceItem, PlatformPublishResult, SelectedSocialPage } from '@/lib/types.ts';
 import type { OperatorPageBaseProps } from '@/lib/operatorPage.ts';
+import type { OperatorNavHandlers } from '@/lib/operatorNav.ts';
 import { useAsyncQuery } from '@/hooks/useAsyncQuery.ts';
 import { OperatorPage, ErrorState } from '@/components/operator';
-import { PageSituation, ControlBlock } from '@/components/layout';
+import { PageSituation } from '@/components/layout';
 import { FilterChips } from '@/components/generic';
 import { PlatformChannelList } from '@/components/platforms/PlatformChannelList.tsx';
 import { OAuthConnectBanner } from '@/components/platforms/OAuthConnectBanner.tsx';
-import { NextBestActionPanel } from '@/components/platforms/NextBestActionPanel.tsx';
+import { PlatformLogo } from '@/components/platforms/PlatformLogo.tsx';
+import { Button } from '@/components/ui/Button.tsx';
 import {
   PLATFORM_CONNECTION_FILTERS,
-  platformConnectionWithAccount,
   platformMatchesFilter,
   platformSituationSummary,
   sortPlatformsForDisplay,
   type PlatformConnectionFilter,
 } from '@/lib/platformPresentation.ts';
+import { getSetupReadiness, severityToPill } from '@/lib/setupReadiness.ts';
 import { operatorCopy } from '@/lib/copy/operator.ts';
 import { useCategorySchema } from '@/contexts/CategoryContext.tsx';
+
+const MARKETPLACE_URL = (import.meta.env['VITE_MARKETPLACE_URL'] as string | undefined) ?? 'http://localhost:5174';
 
 type Props = OperatorPageBaseProps & {
   initialPlatformSlug?: string | null;
 };
 
-function DealerStorefrontFeature({
+function FeaturedMarketplaceSection({
   platform,
   account,
+  dealerId,
+  categorySlug,
+  nav,
 }: {
   platform: PlatformPublishResult;
   account: PlatformAccountDetail | null;
+  dealerId: string;
+  categorySlug: string;
+  nav: OperatorNavHandlers;
 }) {
-  const conn = platformConnectionWithAccount(platform, account);
-  const connected = conn.connection === 'connected' || conn.connection === 'updating';
-  const statusTone = connected
-    ? 'bg-green-100 text-green-800 border-green-200'
-    : conn.connection === 'blocked'
-      ? 'bg-red-100 text-red-700 border-red-200'
-      : 'bg-amber-50 text-amber-700 border-amber-200';
+  const readiness = getSetupReadiness(platform, account);
+  const sellerUrl = `${MARKETPLACE_URL}#/${categorySlug}/seller/${encodeURIComponent(dealerId)}`;
 
   return (
     <section className="pb-4">
-      <div className="grid gap-4 lg:grid-cols-[minmax(0,1.25fr)_minmax(320px,0.75fr)]">
-        <div className="">
-          <div className="flex flex-wrap items-center gap-2">
-            <span className="text-[10px] font-bold uppercase tracking-widest text-navy-700">Featured platform</span>
-            <span className={`text-[10px] font-bold uppercase tracking-wide px-2 py-0.5 rounded-full border ${statusTone}`}>
-              {conn.label}
-            </span>
+      <article className="surface-card-operator p-4 ring-1 ring-navy-500/20">
+        <div className="flex gap-3 items-start">
+          <div className="pt-0.5 shrink-0">
+            <PlatformLogo slug={platform.platformSlug} name="Auto Marketplace" />
           </div>
-          <h2 className="mt-2 text-lg font-semibold text-ink-heading">Dealer Storefront</h2>
-          <p className="mt-1 text-sm text-ink-muted max-w-2xl">
-            Use the in-house marketplace storefront to get started publishing.
-          </p>
+          <div className="min-w-0 flex-1 space-y-1.5">
+            <div className="flex items-start gap-3">
+              <div className="min-w-0 flex-1">
+                <p className="text-[10px] font-bold uppercase tracking-widest text-ink-faint mb-0.5">In-house marketplace</p>
+                <div className="flex flex-wrap items-center gap-2">
+                  <button
+                    type="button"
+                    onClick={() => nav.goToPlatformDetail(platform.platformSlug)}
+                    className="text-sm font-semibold text-ink-heading hover:text-orange-600 hover:underline text-left"
+                  >
+                    Auto Marketplace
+                  </button>
+                  <span className={`shrink-0 px-2 py-0.5 rounded-md text-[11px] font-bold border ${severityToPill(readiness.severity)}`}>
+                    {readiness.statusLabel}
+                  </span>
+                </div>
+              </div>
+              <div className="shrink-0 flex items-center gap-2">
+                <a
+                  href={sellerUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center px-3 py-1.5 text-xs font-semibold rounded-md text-ink-muted hover:text-ink-heading transition-colors whitespace-nowrap"
+                >
+                  View storefront →
+                </a>
+                <Button
+                  size="sm"
+                  variant="secondary"
+                  className="whitespace-nowrap"
+                  onClick={() => nav.goToPlatformDetail(platform.platformSlug)}
+                >
+                  Manage →
+                </Button>
+              </div>
+            </div>
+            <p className="text-xs text-ink-muted leading-snug">
+              Your first-party storefront — inventory published here is live in the public marketplace immediately.
+            </p>
+          </div>
         </div>
-      </div>
+      </article>
     </section>
   );
 }
@@ -69,7 +107,6 @@ export default function PlatformsPage({ dealerId, nav, activeTab, initialPlatfor
   const perfQuery = useAsyncQuery(() => fetchPlatformPerformance(dealerId), [dealerId]);
   const socialPagesQuery = useAsyncQuery(() => fetchSelectedSocialPages(dealerId), [dealerId]);
 
-  const [search, setSearch] = useState('');
   const [filter, setFilter] = useState<PlatformConnectionFilter>('ALL');
   const [sort] = useState<'urgency' | 'name'>('urgency');
   const [selectedSlug, setSelectedSlug] = useState<string | null>(initialPlatformSlug ?? null);
@@ -96,30 +133,29 @@ export default function PlatformsPage({ dealerId, nav, activeTab, initialPlatfor
     return m;
   }, [socialPagesQuery.data]);
 
-  const platforms = useMemo(
-    () => (data?.platforms ?? []).filter(p => p.supportedCategories.includes(categorySchema.id)),
-    [data, categorySchema.id]
-  );
+  // Backend already scopes platforms to the dealer's businessCategory (fail-closed in
+  // resolvePublishTargets). Do not re-filter by categorySchema.id here — while
+  // fetchDealers is loading, categorySchema is the WATCHES loading sentinel and
+  // would hide every platform even though the API returned the correct set.
+  const platforms = useMemo(() => data?.platforms ?? [], [data]);
 
-  const featuredStorefront = useMemo(
-    () => platforms.find(p => p.platformSlug === 'dealer-storefront') ?? null,
+  const featuredMarketplace = useMemo(
+    () => platforms.find(p => p.platformSlug === 'consumer-marketplace') ?? null,
     [platforms]
   );
 
+  const marketplaceCategorySlug = useMemo(() => {
+    if (categorySchema.status !== 'placeholder') return categorySchema.id.toLowerCase();
+    const fromPlatform = featuredMarketplace?.supportedCategories[0];
+    return (fromPlatform ?? 'automotive').toLowerCase();
+  }, [categorySchema, featuredMarketplace]);
+
   const visible = useMemo(() => {
-    let list = platforms
-      .filter(p => p.platformSlug !== featuredStorefront?.platformSlug)
+    const list = platforms
+      .filter(p => p.platformSlug !== featuredMarketplace?.platformSlug)
       .filter(p => platformMatchesFilter(p, filter));
-    if (search.trim()) {
-      const q = search.toLowerCase();
-      list = list.filter(
-        p =>
-          p.platformName.toLowerCase().includes(q) ||
-          p.platformSlug.toLowerCase().includes(q)
-      );
-    }
     return sortPlatformsForDisplay(list, sort);
-  }, [platforms, filter, search, sort]);
+  }, [platforms, filter, sort]);
 
   const handleRefresh = () => {
     reload();
@@ -139,7 +175,7 @@ export default function PlatformsPage({ dealerId, nav, activeTab, initialPlatfor
   const situation = data ? platformSituationSummary(platforms) : operatorCopy.platforms.loading;
 
   // Distinguish "category has no platforms" from "user filter excluded results".
-  const noUserFilter = filter === 'ALL' && !search.trim();
+  const noUserFilter = filter === 'ALL';
   const noCategoryPlatforms = !!data && platforms.length === 0;
   const channelEmptyMessage =
     noCategoryPlatforms && noUserFilter
@@ -159,36 +195,27 @@ export default function PlatformsPage({ dealerId, nav, activeTab, initialPlatfor
     >
       <PageSituation title={operatorCopy.platforms.title} line={situation} />
 
-      {featuredStorefront && (
-        <DealerStorefrontFeature
-          platform={featuredStorefront}
-          account={accountBySlug.get(featuredStorefront.platformSlug) ?? null}
+      <p className="text-sm text-ink-muted leading-relaxed mb-5 -mt-1">
+        Connect the channels where your inventory should appear — paid search, marketplaces, social feeds, and your own storefront. When a platform is active, new vehicles and price changes push automatically as listings are marked ready; you don't upload to each platform individually. Pause any channel at any time without losing your credentials or configuration.
+      </p>
+
+      {featuredMarketplace && (
+        <FeaturedMarketplaceSection
+          platform={featuredMarketplace}
+          account={accountBySlug.get(featuredMarketplace.platformSlug) ?? null}
+          dealerId={dealerId}
+          categorySlug={marketplaceCategorySlug}
+          nav={nav}
         />
       )}
 
-      <ControlBlock
-        search={search}
-        onSearchChange={setSearch}
-        searchPlaceholder={operatorCopy.platforms.searchPlaceholder}
-        filters={
-          <FilterChips
-            chips={PLATFORM_CONNECTION_FILTERS.map(f => ({ key: f.key, label: f.label }))}
-            activeKey={filter}
-            onSelect={key => setFilter(key as PlatformConnectionFilter)}
-          />
-        }
-      />
-
-      <NextBestActionPanel
-        platforms={platforms}
-        accountBySlug={accountBySlug}
-        dealerId={dealerId}
-        onDone={() => {
-          accountsQuery.reload();
-          reload();
-        }}
-        onSelectSlug={setSelectedSlug}
-      />
+      <div className="mb-4">
+        <FilterChips
+          chips={PLATFORM_CONNECTION_FILTERS.map(f => ({ key: f.key, label: f.label }))}
+          activeKey={filter}
+          onSelect={key => setFilter(key as PlatformConnectionFilter)}
+        />
+      </div>
 
       <OAuthConnectBanner
         platforms={platforms}
