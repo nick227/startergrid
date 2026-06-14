@@ -30,7 +30,8 @@ const LEGACY_SEGMENT_MAP: Record<string, OperatorPageSegment> = {
 };
 
 function parsePageSegment(segment: string | undefined): OperatorPageSegment | null {
-  if (!segment) return 'platforms';
+  // Bare #/{dealerId} and #/{dealerId}/home are the dealership profile Home tab.
+  if (!segment || segment === 'home') return null;
   if (segment === 'knowledge') return 'help';
   const legacy = LEGACY_SEGMENT_MAP[segment];
   if (legacy) return legacy;

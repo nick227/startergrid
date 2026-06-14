@@ -7,8 +7,37 @@ import {
   platformHistoryHash,
   platformQueueHash,
 } from './routes.ts';
+import { tabFromPage } from './operatorNav.ts';
 
 describe('parseOperatorRoute', () => {
+  it('parses dealer root hash as home (profile)', () => {
+    const route = parseOperatorRoute('#/dealer-a');
+    expect(route).toMatchObject({
+      dealerId: 'dealer-a',
+      page: null,
+      platformSlug: null,
+    });
+    expect(tabFromPage(route.page)).toBe('home');
+  });
+
+  it('parses explicit /home segment as home (profile)', () => {
+    const route = parseOperatorRoute('#/dealer-a/home');
+    expect(route).toMatchObject({
+      dealerId: 'dealer-a',
+      page: null,
+    });
+    expect(tabFromPage(route.page)).toBe('home');
+  });
+
+  it('parses /platforms segment as platforms', () => {
+    const route = parseOperatorRoute('#/dealer-a/platforms');
+    expect(route).toMatchObject({
+      dealerId: 'dealer-a',
+      page: 'platforms',
+    });
+    expect(tabFromPage(route.page)).toBe('platforms');
+  });
+
   it('parses global queue with asset scope', () => {
     const route = parseOperatorRoute('#/dealer-a/queue?ref=STK1&assetId=v-1');
     expect(route).toMatchObject({
