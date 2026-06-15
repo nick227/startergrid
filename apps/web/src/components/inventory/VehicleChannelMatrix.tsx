@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { useAsyncQuery } from '@/hooks/useAsyncQuery.ts';
 import {
   fetchVehicleChannels,
@@ -8,6 +8,9 @@ import {
 } from '@/lib/api/sdk.ts';
 import type { OperatorNavHandlers } from '@/lib/operatorNav.ts';
 
+const CONSUMER_MARKETPLACE_SLUG = 'consumer-marketplace';
+const DEFAULT_EXCLUDED_CHANNELS = [CONSUMER_MARKETPLACE_SLUG];
+
 type Props = {
   dealerId: string;
   vehicleId: string;
@@ -15,6 +18,7 @@ type Props = {
   nav?: OperatorNavHandlers;
   /** Bumped by the parent when vehicle state changes so the matrix refetches. */
   refreshKey?: number;
+  excludeChannelKeys?: string[];
   onStatusChange?: (status: 'complete' | 'needs_attention' | 'incomplete') => void;
 };
 
@@ -164,26 +168,47 @@ function ChannelRow({
   );
 }
 
-export function VehicleChannelMatrix({ dealerId, vehicleId, stockNumber, nav, refreshKey = 0, onStatusChange }: Props) {
+export function VehicleChannelMatrix({
+  dealerId,
+  vehicleId,
+  stockNumber,
+  nav,
+  refreshKey = 0,
+  excludeChannelKeys,
+  onStatusChange,
+}: Props) {
   const { data, loading, error, reload } = useAsyncQuery(
     () => fetchVehicleChannels(dealerId, vehicleId),
     [dealerId, vehicleId, refreshKey],
   );
   const [togglingKey, setTogglingKey] = useState<string | null>(null);
   const [toggleError, setToggleError] = useState<string | null>(null);
-  const liveCount = data?.channels.filter(c => c.liveStatus === 'LIVE').length ?? 0;
-  const failedCount = data?.channels.filter(c => c.liveStatus === 'FAILED').length ?? 0;
-  const selectedChannels = data?.channels.filter(c => c.selected) ?? [];
-  const selectedBlockedCount = selectedChannels.filter(c => !c.eligible || (!c.connected && c.connectionState !== 'BUILT_IN')).length;
+  const excludedKeys = excludeChannelKeys ?? DEFAULT_EXCLUDED_CHANNELS;
+  const channels = useMemo(
+    () => data?.channels.filter(c => !excludedKeys.includes(c.channelKey)) ?? [],
+    [data, excludedKeys],
+  );
+  const liveCount = channels.filter(c => c.liveStatus === 'LIVE').length;
 
   useEffect(() => {
     if (!onStatusChange || !data) return;
-    if (failedCount > 0 || selectedBlockedCount > 0) {
+    const selectedChannels = channels.filter(c => c.selected);
+    const needsAttention = selectedChannels.some(c =>
+      c.liveStatus === 'FAILED' || (c.connected && !c.eligible),
+    );
+    if (needsAttention) {
       onStatusChange('needs_attention');
       return;
     }
-    onStatusChange(selectedChannels.length > 0 ? 'complete' : 'incomplete');
-  }, [data, failedCount, onStatusChange, selectedBlockedCount, selectedChannels.length]);
+    const hasPending = selectedChannels.some(c =>
+      c.connected && c.eligible && c.liveStatus !== 'LIVE',
+    );
+    if (hasPending) {
+      onStatusChange('incomplete');
+      return;
+    }
+    onStatusChange('complete');
+  }, [channels, data, onStatusChange]);
 
   const handleToggle = async (channelKey: string, selected: boolean) => {
     setTogglingKey(channelKey);
@@ -214,7 +239,7 @@ export function VehicleChannelMatrix({ dealerId, vehicleId, stockNumber, nav, re
         <p className="text-[11px] text-ink-muted">
           {isDraft
             ? 'Vehicle is in Draft — channels resume when it is marked Ready.'
-            : `Live on ${liveCount} of ${data.channels.length} channels${failedCount > 0 ? ` · ${failedCount} failed` : ''}.`}
+            : `Live on ${liveCount} of ${channels.length} partner channel${channels.length === 1 ? '' : 's'}.`}
         </p>
         {toggleError && <span className="text-[11px] text-red-600">{toggleError}</span>}
       </div>
@@ -228,7 +253,7 @@ export function VehicleChannelMatrix({ dealerId, vehicleId, stockNumber, nav, re
           </tr>
         </thead>
         <tbody>
-          {data.channels.map(row => (
+          {channels.map(row => (
             <ChannelRow
               key={row.channelKey}
               row={row}

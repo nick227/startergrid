@@ -68,8 +68,17 @@ function detailsStatus(vehicle: VehicleDetailDto): SectionStatus {
 }
 
 function channelDistributionStatus(vehicle: VehicleDetailDto): SectionStatus {
-  if (vehicle.distribution.failedCount > 0 || vehicle.distribution.blockedCount > 0) return 'needs_attention';
+  if (vehicle.distribution.failedCount > 0) return 'needs_attention';
+  if (vehicle.distribution.liveCount > 0) return 'complete';
   return vehicle.distribution.nextAction ? 'incomplete' : 'complete';
+}
+
+function combineSectionStatus(...statuses: (SectionStatus | null | undefined)[]): SectionStatus | null {
+  const active = statuses.filter((status): status is SectionStatus => status != null);
+  if (active.length === 0) return null;
+  if (active.includes('needs_attention')) return 'needs_attention';
+  if (active.includes('incomplete')) return 'incomplete';
+  return 'complete';
 }
 
 function photoProgressLabel(vehicle: VehicleDetailDto): string {
@@ -95,11 +104,13 @@ export function InventoryDetailPanel({
   // Bumped on every reload so dependent sections (channel matrix) refetch too.
   const [refreshKey, setRefreshKey] = useState(0);
   const [activeWizardTab, setActiveWizardTab] = useState<WizardTabKey>('photos');
-  const [channelStatus, setChannelStatus] = useState<SectionStatus | null>(null);
+  const [matrixStatus, setMatrixStatus] = useState<SectionStatus | null>(null);
+  const [marketplaceStatus, setMarketplaceStatus] = useState<SectionStatus | null>(null);
 
   useEffect(() => {
     setActiveWizardTab('photos');
-    setChannelStatus(null);
+    setMatrixStatus(null);
+    setMarketplaceStatus(null);
   }, [vehicleId]);
 
   if (loading && !vehicle) {
@@ -145,7 +156,7 @@ export function InventoryDetailPanel({
     {
       key: 'channels' as const,
       label: 'Channels',
-      status: channelStatus ?? channelDistributionStatus(vehicle),
+      status: combineSectionStatus(marketplaceStatus, matrixStatus) ?? channelDistributionStatus(vehicle),
       detail: vehicle.distribution.nextAction ?? `${vehicle.distribution.liveCount} live`,
     },
   ];
@@ -268,21 +279,14 @@ export function InventoryDetailPanel({
                     <SectionHeader title="Channels" />
                     <div className="mt-4 space-y-4">
                       <div className="rounded-lg border border-navy-100 bg-navy-50 p-4">
-                        <div className="flex items-start justify-between gap-3">
-                          <div>
-                            <p className="text-xs font-semibold text-navy-800">Dealer Storefront publish</p>
-                            <p className="mt-1 text-[11px] leading-5 text-ink-muted">
-                              Ready makes this vehicle eligible. Selected keeps the storefront allowed. Publish is the final on/off switch that creates the live owned-marketplace listing.
-                            </p>
-                          </div>
-                        </div>
-                        <div className="mt-3">
-                          <MarketplacePublishPanel
-                            dealerId={dealerId}
-                            vehicleId={vehicleId}
-                            listingTitle={`${vehicle.year} ${vehicle.make} ${vehicle.model}`}
-                          />
-                        </div>
+                        <MarketplacePublishPanel
+                          dealerId={dealerId}
+                          vehicleId={vehicleId}
+                          listingTitle={`${vehicle.year} ${vehicle.make} ${vehicle.model}`}
+                          refreshKey={refreshKey}
+                          onStatusChange={setMarketplaceStatus}
+                          onSelectionChange={handleReload}
+                        />
                       </div>
                       <VehicleChannelMatrix
                         dealerId={dealerId}
@@ -290,7 +294,7 @@ export function InventoryDetailPanel({
                         stockNumber={vehicle.stockNumber}
                         nav={nav}
                         refreshKey={refreshKey}
-                        onStatusChange={setChannelStatus}
+                        onStatusChange={setMatrixStatus}
                       />
                     </div>
                   </section>
