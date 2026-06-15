@@ -4,7 +4,9 @@ import { systemCredentialReadiness } from './platformAccountService.js';
 import {
   resolveAutoSyncReadyInventory,
   resolveDealerPlatformEnabled,
+  resolveSiteEnabled,
 } from '../platform/platformAvailabilityService.js';
+import { platformProfiles } from '../../data/platformProfiles.js';
 
 export const CHANNEL_NOT_CONNECTED = 'Channel not connected';
 export const ASSET_NOT_SELECTED = 'Asset not selected for this channel';
@@ -51,6 +53,23 @@ export function isAdminPlatformEnabled(
   }
   if (integrationClass === 'OWNED') return true;
   return systemCredentialReadiness(platformSlug).ready;
+}
+
+/** Dealer triage/blockers only surface platforms offered site-wide with system credentials ready. */
+export function shouldSurfaceDealerBlockersForPlatform(
+  platformSlug: string,
+  siteAvailability: Map<string, boolean> | ReadonlyMap<string, boolean>,
+): boolean {
+  if (platformSlug === 'all') return true;
+  const profile = platformProfiles.find(p => p.slug === platformSlug);
+  if (!profile) return true;
+  const siteEnabled = resolveSiteEnabled(platformSlug, siteAvailability);
+  return isAdminPlatformEnabled(
+    platformSlug,
+    profile.integrationClass,
+    profile.oauthProvider ?? null,
+    siteEnabled,
+  );
 }
 
 /** Dealer chose to use this destination (toggle or onboarding intent). */

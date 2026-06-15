@@ -4,6 +4,7 @@ import {
   fetchPlatformCredentials,
   validatePlatformCredential,
   validatePlatformCredentials,
+  updatePlatformSiteAvailability,
   type AdminDashboardResponse,
   type PlatformCredentialContractSummary,
   type PlatformCredentialDisplayStatus,
@@ -25,6 +26,7 @@ import {
 
 type PlatformOverviewItemWithCategories = AdminDashboardResponse['platformOverview'][number] & {
   supportedCategories?: string[];
+  siteEnabled?: boolean;
 };
 
 type PlatSortField = 'platformName' | 'dealersUsing' | 'liveInventory' | 'outbound7d' | 'recentFailures' | 'blockedDealers';
@@ -225,6 +227,8 @@ export function PlatformsTab({ platformOverview }: Props) {
   const [validatingSlug, setValidatingSlug] = useState<string | null>(null);
   const [validationMeta, setValidationMeta] = useState<{ checkedAt: Date; durationMs: number } | null>(null);
   const [validationError, setValidationError] = useState<string | null>(null);
+  const [siteSavingSlug, setSiteSavingSlug] = useState<string | null>(null);
+  const [siteToggleError, setSiteToggleError] = useState<string | null>(null);
 
   useEffect(() => {
     let cancelled = false;
@@ -325,6 +329,35 @@ export function PlatformsTab({ platformOverview }: Props) {
     } finally {
       setValidatingSlug(null);
     }
+  }
+
+  async function toggleSiteEnabled(platformSlug: string, next: boolean) {
+    if (siteSavingSlug) return;
+    setSiteSavingSlug(platformSlug);
+    setSiteToggleError(null);
+    try {
+      await updatePlatformSiteAvailability(platformSlug, next);
+      setCredentialMap(prev => {
+        const nextMap = new Map(prev);
+        const existing = nextMap.get(platformSlug);
+        if (existing) nextMap.set(platformSlug, { ...existing, siteEnabled: next });
+        return nextMap;
+      });
+    } catch (err) {
+      setSiteToggleError(err instanceof Error ? err.message : 'Failed to update platform availability.');
+    } finally {
+      setSiteSavingSlug(null);
+    }
+  }
+
+  function isPlatformOfferedToDealers(
+    platform: PlatformOverviewItemWithCategories,
+    contract: PlatformCredentialContractSummary | undefined,
+  ): boolean {
+    const siteEnabled = contract?.siteEnabled !== false && platform.siteEnabled !== false;
+    if (!siteEnabled) return false;
+    const status = validationStatus(contract);
+    return status === 'VALID' || status === 'INTERNAL' || status === 'MANUAL_SETUP' || status === 'READY_TO_VALIDATE';
   }
 
   function validationCopy(platform: PlatformOverviewItemWithCategories, contract: PlatformCredentialContractSummary | undefined): string {
@@ -450,6 +483,11 @@ export function PlatformsTab({ platformOverview }: Props) {
             {validationError}
           </div>
         )}
+        {siteToggleError && (
+          <div className="rounded-md border border-status-error-border bg-status-error-bg px-3 py-2 text-xs text-status-error-text">
+            {siteToggleError}
+          </div>
+        )}
         <div className="flex flex-wrap gap-1.5">
           <button
             type="button"
@@ -489,6 +527,7 @@ export function PlatformsTab({ platformOverview }: Props) {
               <SortableHeaderCell isActive={platSort === 'outbound7d'} dir={platDir} onClick={() => togglePlat('outbound7d')}>Outbound</SortableHeaderCell>
               <SortableHeaderCell isActive={platSort === 'recentFailures'} dir={platDir} onClick={() => togglePlat('recentFailures')}>Failures</SortableHeaderCell>
               <SortableHeaderCell isActive={platSort === 'blockedDealers'} dir={platDir} onClick={() => togglePlat('blockedDealers')}>Blocked</SortableHeaderCell>
+              <th className="px-4 py-3 font-semibold text-center">Site</th>
               <th className="px-4 py-3 font-semibold text-center">Status</th>
             </tr>
           </thead>
@@ -499,6 +538,8 @@ export function PlatformsTab({ platformOverview }: Props) {
               const valCfg = VALIDATION_CFG[status] ?? VALIDATION_DEFAULT;
               const visibleStages = contract?.stages.filter(stage => stage.status !== 'READY_TO_VALIDATE' || stage.stage === 'config').slice(0, 3) ?? [];
               const opStatus = operationalStatus(platform, status);
+              const siteEnabled = contract?.siteEnabled !== false && platform.siteEnabled !== false;
+              const offeredToDealers = isPlatformOfferedToDealers(platform, contract);
               return (
                 <tr key={platform.platformSlug} className="border-b border-silver-200 last:border-0 hover:bg-surface-inset transition-colors">
                   <td className="px-4 py-3 min-w-[280px]">
@@ -597,6 +638,27 @@ export function PlatformsTab({ platformOverview }: Props) {
                     </span>
                     <div className="text-[10px] text-ink-faint mt-0.5">dealers / items</div>
                   </td>
+                  <td className="px-4 py-3 text-center min-w-[120px]">
+                    <label className="inline-flex flex-col items-center gap-1 cursor-pointer">
+                      <span className="inline-flex items-center gap-1.5 text-xs font-semibold text-ink-heading">
+                        <input
+                          type="checkbox"
+                          checked={siteEnabled}
+                          disabled={Boolean(siteSavingSlug)}
+                          onChange={e => void toggleSiteEnabled(platform.platformSlug, e.target.checked)}
+                        />
+                        {siteEnabled ? 'On' : 'Off'}
+                      </span>
+                      {!offeredToDealers && (
+                        <span className="text-[9px] text-amber-800 leading-snug">
+                          {!siteEnabled ? 'Hidden from dealers' : 'Not configured'}
+                        </span>
+                      )}
+                      {siteSavingSlug === platform.platformSlug && (
+                        <span className="text-[9px] text-ink-faint">Saving…</span>
+                      )}
+                    </label>
+                  </td>
                   <td className="px-4 py-3 text-center">
                     <span
                       className={`inline-block h-2.5 w-2.5 rounded-full ${statusDotClass(opStatus)}`}
@@ -608,7 +670,7 @@ export function PlatformsTab({ platformOverview }: Props) {
               );
             })}
             {filteredPlatforms.length === 0 && (
-              <tr><td colSpan={9} className="px-4 py-10 text-center text-ink-faint text-sm">No platforms match the selected filters.</td></tr>
+              <tr><td colSpan={10} className="px-4 py-10 text-center text-ink-faint text-sm">No platforms match the selected filters.</td></tr>
             )}
           </tbody>
         </table>

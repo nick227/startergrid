@@ -10,6 +10,7 @@ import {
   OPERATOR_QUEUE_EXCLUDED_SLUGS,
   PLATFORM_DISABLED_SITEWIDE,
   PLATFORM_NOT_ENABLED,
+  shouldSurfaceDealerBlockersForPlatform,
   vehicleChannelKey,
 } from '../services/publishing/queueEligibilityService.js';
 
@@ -26,6 +27,26 @@ const FEEDABLE_CTX = {
   oauthProvider: null,
   oauthConnected: true,
 };
+
+describe('shouldSurfaceDealerBlockersForPlatform', () => {
+  it('keeps dealer-wide blockers', () => {
+    assert.equal(shouldSurfaceDealerBlockersForPlatform('all', new Map()), true);
+  });
+
+  it('hides blockers when platform is disabled site-wide', () => {
+    assert.equal(
+      shouldSurfaceDealerBlockersForPlatform('consumer-marketplace', new Map([['consumer-marketplace', false]])),
+      false,
+    );
+  });
+
+  it('keeps blockers for enabled internal platforms', () => {
+    assert.equal(
+      shouldSurfaceDealerBlockersForPlatform('consumer-marketplace', new Map()),
+      true,
+    );
+  });
+});
 
 describe('isPlatformOutboundEligible', () => {
   it('requires ACTIVE account state', () => {

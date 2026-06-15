@@ -16,7 +16,8 @@ import { LISTING_BRIDGE_SLUGS } from './marketplaceListings.js';
 import { isRegisteredCategory } from '@auto-dealer/category-schemas';
 import { createDealershipSchema, validateBody, platformSiteAvailabilitySchema } from '../requestValidation.js';
 import { createDealership } from '../../services/dealer/createDealershipService.js';
-import { loadSiteAvailabilityMap, setSitePlatformEnabled } from '../../services/platform/platformAvailabilityService.js';
+import { loadSiteAvailabilityMap, resolveSiteEnabled, setSitePlatformEnabled } from '../../services/platform/platformAvailabilityService.js';
+import { shouldSurfaceDealerBlockersForPlatform } from '../../services/publishing/queueEligibilityService.js';
 
 type DashboardCache = {
   data: any;
@@ -201,6 +202,8 @@ export function registerAdminRoutes(app: FastifyInstance, prisma: PrismaClient):
     }
 
     try {
+      const siteAvailability = await loadSiteAvailabilityMap(prisma);
+
       // 1. Health checks
       let dbHealth = 'healthy';
       try {
@@ -434,6 +437,7 @@ export function registerAdminRoutes(app: FastifyInstance, prisma: PrismaClient):
           operationalStatus,
           integrationMaturity: p.integrationMaturity || 'UNKNOWN',
           supportedCategories: p.supportedCategories,
+          siteEnabled: resolveSiteEnabled(p.slug, siteAvailability),
         };
       }));
 
@@ -502,7 +506,10 @@ export function registerAdminRoutes(app: FastifyInstance, prisma: PrismaClient):
 
       // Sort critical first, then warning, then info
       const SEVERITY_ORDER: Record<string, number> = { critical: 1, warning: 2, info: 3 };
-      dealerAttention.sort((a, b) => (SEVERITY_ORDER[a.severity] ?? 3) - (SEVERITY_ORDER[b.severity] ?? 3));
+      const surfacedDealerAttention = dealerAttention.filter(item =>
+        shouldSurfaceDealerBlockersForPlatform(item.platformSlug, siteAvailability),
+      );
+      surfacedDealerAttention.sort((a, b) => (SEVERITY_ORDER[a.severity] ?? 3) - (SEVERITY_ORDER[b.severity] ?? 3));
 
       // 6. Recent Events (Sanitized AdminAuditLog)
       const logs = await prisma.adminAuditLog.findMany({
@@ -543,7 +550,7 @@ export function registerAdminRoutes(app: FastifyInstance, prisma: PrismaClient):
         readiness,
         queueSnapshot,
         platformOverview,
-        dealerAttention: dealerAttention.slice(0, 20),
+        dealerAttention: surfacedDealerAttention.slice(0, 20),
         recentEvents,
         meta,
       };
@@ -578,6 +585,8 @@ export function registerAdminRoutes(app: FastifyInstance, prisma: PrismaClient):
     }
 
     try {
+      const siteAvailability = await loadSiteAvailabilityMap(prisma);
+
       // 1. Gather all dealerships for lookup
       const dealerships = await prisma.dealershipProfile.findMany();
       const dealerMap = new Map(dealerships.map(d => [d.id, d]));
@@ -844,7 +853,9 @@ export function registerAdminRoutes(app: FastifyInstance, prisma: PrismaClient):
       }
 
       // 8. Filters
-      let filtered = blockedDealers;
+      let filtered = blockedDealers.filter(item =>
+        shouldSurfaceDealerBlockersForPlatform(item.platformSlug, siteAvailability),
+      );
       const severityFilter = query.severity;
 	      const categoryFilter = query.category;
 	      const dealerFilter = query.dealerId;
@@ -884,7 +895,9 @@ export function registerAdminRoutes(app: FastifyInstance, prisma: PrismaClient):
       });
 
       // 10. Summary counts based on search filters *except* severity filter
-	      let summaryFiltered = blockedDealers;
+	      let summaryFiltered = blockedDealers.filter(item =>
+          shouldSurfaceDealerBlockersForPlatform(item.platformSlug, siteAvailability),
+        );
 	      if (categoryFilter) summaryFiltered = summaryFiltered.filter(item => item.category === categoryFilter);
 	      if (dealerFilter) summaryFiltered = summaryFiltered.filter(item => item.dealerId === dealerFilter);
 	      if (platformFilter) summaryFiltered = summaryFiltered.filter(item => item.platformSlug === platformFilter);

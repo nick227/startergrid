@@ -82,7 +82,10 @@ function makeApp(role: 'SUPER_ADMIN' | 'OPERATOR'): {
     },
     platformAccount: {
       findMany: async () => []
-    }
+    },
+    platformSiteAvailability: {
+      findMany: async () => [],
+    },
   } as unknown as PrismaClient;
   
   return { app: buildApp(prisma), token, auditEntries };
