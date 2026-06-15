@@ -59,6 +59,9 @@ export function PlatformQueueSummaryCard({ dealerId, platformSlug, nav }: Props)
       >
         {operatorCopy.platforms.viewQueueForPlatform} →
       </button>
+      <p className="text-[11px] text-ink-muted leading-snug pt-1">
+        {operatorCopy.queue.scheduleNote}
+      </p>
     </div>
   );
 }

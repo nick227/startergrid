@@ -54,6 +54,9 @@ export function PlatformConnectBanner({
               </li>
             )}
           </ul>
+          <p className="text-xs text-green-700/90 leading-relaxed pt-1">
+            {operatorCopy.queue.scheduleNote}
+          </p>
         </div>
         <div className="flex flex-wrap gap-2 shrink-0">
           <Button size="sm" onClick={() => nav.goToPlatformQueue(platformSlug)}>

@@ -81,6 +81,38 @@ describe('API security contract', () => {
     assert.equal(response.statusCode, 400);
     assert.match(response.json().error, /contactName/);
   });
+
+  it('requires operator auth for queue action routes', async () => {
+    const app = buildApp(mockPrisma());
+
+    const response = await app.inject({
+      method: 'POST',
+      url: '/api/dealers/dealer-a/publish/queue/item-1/approve',
+    });
+
+    assert.equal(response.statusCode, 401);
+    assert.deepEqual(response.json(), { error: 'Operator authentication required' });
+  });
+
+  it('enforces dealer access on queue action routes', async () => {
+    const previous = process.env['DEV_OPERATOR_DEALER_IDS'];
+    process.env['DEV_OPERATOR_DEALER_IDS'] = 'dealer-a';
+
+    try {
+      const app = buildApp(mockPrisma());
+      const response = await app.inject({
+        method: 'POST',
+        url: '/api/dealers/dealer-b/publish/queue/item-1/approve',
+        headers: { 'x-operator-id': 'dev-operator' },
+      });
+
+      assert.equal(response.statusCode, 403);
+      assert.deepEqual(response.json(), { error: 'Operator does not have access to this dealership' });
+    } finally {
+      if (previous === undefined) delete process.env['DEV_OPERATOR_DEALER_IDS'];
+      else process.env['DEV_OPERATOR_DEALER_IDS'] = previous;
+    }
+  });
 });
 
 describe('marketplace routes — public access', () => {

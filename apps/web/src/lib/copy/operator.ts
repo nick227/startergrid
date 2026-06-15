@@ -77,6 +77,8 @@ export const operatorCopy = {
       ready: 'Ready to send',
       held: 'On hold',
     },
+    scheduleNote:
+      'Posting schedules are managed automatically for each platform type. Use Queue to approve, pause, retry, or publish selected work.',
   },
   history: {
     title: 'History',

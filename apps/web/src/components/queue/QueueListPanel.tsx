@@ -89,6 +89,10 @@ export function QueueListPanel({
         line={platformSlug ? `${situation} · ${operatorCopy.queue.subtitle}` : `${situation} — ${operatorCopy.queue.subtitle}`}
       />
 
+      <p className="text-xs text-ink-muted leading-relaxed mb-4 -mt-1 max-w-3xl">
+        {operatorCopy.queue.scheduleNote}
+      </p>
+
       {data && !platformSlug && (
         <QueueSummaryStrip
           view={data}
