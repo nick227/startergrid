@@ -7,6 +7,7 @@ import {
   READINESS_DEFAULT,
 } from '@/features/adminOverview/constants/statusConfig.ts';
 import { formatDuration } from '@/features/adminOverview/utils/formatDuration.ts';
+import { formatPendingAge, queueHealthGuidance } from '@/features/adminOverview/utils/queueHealthPresentation.ts';
 import { PublishingFlowComic } from '@/components/publishing/PublishingFlowComic.tsx';
 
 type Props = {
@@ -15,7 +16,17 @@ type Props = {
   queueSnapshot: AdminDashboardResponse['queueSnapshot'] | undefined;
 };
 
+const HEALTH_TILES = [
+  { key: 'api', label: 'API Gateway', field: 'api' as const, hint: 'Request routing layer' },
+  { key: 'db', label: 'Database', field: 'db' as const, hint: 'Primary data store' },
+  { key: 'queue', label: 'Queue Flow', field: 'queue' as const, hint: 'Sync and publish pipeline' },
+  { key: 'credentials', label: 'Credentials Cache', field: 'credentials' as const, hint: 'Platform API key store' },
+] as const;
+
 export function SystemStatusTab({ health, readiness, queueSnapshot }: Props) {
+  const queueGuidance = queueHealthGuidance(health?.queue, queueSnapshot);
+  const showQueueGuidance = health?.queue === 'backed_up' || health?.queue === 'unhealthy';
+
   return (
     <div className="space-y-5">
       <PublishingFlowComic variant="admin-system" />
@@ -25,29 +36,48 @@ export function SystemStatusTab({ health, readiness, queueSnapshot }: Props) {
         subtitle="Live status of core infrastructure components powering this portal instance."
       >
         <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-          {[
-            { label: 'API Gateway',       value: 'healthy',                       hint: 'Request routing layer' },
-            { label: 'Database',          value: health?.db,                       hint: 'Primary data store' },
-            { label: 'Queue Flow',        value: health?.queue,                    hint: 'Sync and publish pipeline' },
-            { label: 'Credentials Cache', value: health?.credentials ?? 'unknown', hint: 'Platform API key store' },
-          ].map(item => {
-            const cfg = HEALTH_CFG[item.value ?? ''] ?? HEALTH_DEFAULT;
+          {HEALTH_TILES.map(item => {
+            const value = health?.[item.field];
+            const cfg = HEALTH_CFG[value ?? ''] ?? HEALTH_DEFAULT;
+            const hint = item.field === 'queue' ? queueGuidance.hint : item.hint;
             return (
               <div key={item.label} className="bg-surface-inset border border-silver-200 rounded-md p-4">
                 <div className="text-xs font-semibold text-ink-heading mb-0.5">{item.label}</div>
-                <div className="text-[10px] text-ink-faint mb-2">{item.hint}</div>
+                <div className="text-[10px] text-ink-faint mb-2 leading-snug">{hint}</div>
                 <span className={`px-2 py-0.5 rounded text-[10px] font-semibold border ${cfg.cls}`}>
                   {cfg.label}
                 </span>
+                {item.field === 'queue' && queueSnapshot?.oldestPendingAgeSec != null && (
+                  <p className="mt-2 text-[10px] text-ink-muted">
+                    Oldest pending: {formatPendingAge(queueSnapshot.oldestPendingAgeSec)}
+                  </p>
+                )}
               </div>
             );
           })}
         </div>
+
+        {showQueueGuidance && (
+          <div className="mt-4 rounded-md border border-status-warning-border bg-status-warning-bg/40 px-4 py-3">
+            <p className="text-xs font-semibold text-status-warning-text">
+              {health?.queue === 'unhealthy' ? 'Queue flow is down' : 'Queue flow is stalled'}
+            </p>
+            {queueGuidance.summary && (
+              <p className="mt-1 text-xs text-ink-body leading-relaxed">{queueGuidance.summary}</p>
+            )}
+            <p className="mt-2 text-[10px] font-bold uppercase tracking-wide text-ink-faint">What to do</p>
+            <ul className="mt-1 space-y-1 text-xs text-ink-body list-disc pl-4">
+              {queueGuidance.actions.map(action => (
+                <li key={action}>{action}</li>
+              ))}
+            </ul>
+          </div>
+        )}
       </SectionCard>
 
       <SectionCard
         title="Publish Queue"
-        subtitle="Current state of the sync and publish pipeline. Failed and held items require manual review."
+        subtitle="Counts for READY, SCHEDULED, and CLAIMED items. Queue Flow shows Stalled when the oldest pending item exceeds 1 hour."
       >
         <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
           {[

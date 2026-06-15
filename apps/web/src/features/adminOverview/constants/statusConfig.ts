@@ -7,7 +7,7 @@ export const HEALTH_CFG: Record<string, StatusConfig> = {
   healthy:   { label: 'Healthy',    cls: 'bg-status-success-bg text-status-success-text border-status-success-border' },
   flowing:   { label: 'Flowing',    cls: 'bg-status-success-bg text-status-success-text border-status-success-border' },
   valid:     { label: 'Valid',      cls: 'bg-status-success-bg text-status-success-text border-status-success-border' },
-  backed_up: { label: 'Backed Up', cls: 'bg-status-warning-bg text-status-warning-text border-status-warning-border' },
+  backed_up: { label: 'Stalled', cls: 'bg-status-warning-bg text-status-warning-text border-status-warning-border' },
   invalid:   { label: 'Invalid',   cls: 'bg-status-error-bg text-status-error-text border-status-error-border' },
   unhealthy: { label: 'Unhealthy', cls: 'bg-status-error-bg text-status-error-text border-status-error-border' },
   unknown:   { label: 'Not Checked', cls: 'bg-status-neutral-bg text-status-neutral-text border-status-neutral-border' },
