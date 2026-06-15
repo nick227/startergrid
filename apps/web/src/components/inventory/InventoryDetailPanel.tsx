@@ -277,7 +277,11 @@ export function InventoryDetailPanel({
                           </div>
                         </div>
                         <div className="mt-3">
-                          <MarketplacePublishPanel dealerId={dealerId} vehicleId={vehicleId} />
+                          <MarketplacePublishPanel
+                            dealerId={dealerId}
+                            vehicleId={vehicleId}
+                            listingTitle={`${vehicle.year} ${vehicle.make} ${vehicle.model}`}
+                          />
                         </div>
                       </div>
                       <VehicleChannelMatrix

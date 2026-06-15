@@ -6,13 +6,13 @@ import {
   unpublishFromMarketplace,
   type MarketplaceListingRecord,
 } from '@/lib/api/sdk.ts';
+import { buildConsumerMarketplaceListingUrl } from '@/lib/marketplaceListingUrl.ts';
 
 type Props = {
   dealerId: string;
   vehicleId: string;
+  listingTitle?: string;
 };
-
-const MARKETPLACE_URL = import.meta.env['VITE_MARKETPLACE_URL'] as string | undefined ?? 'http://localhost:5174';
 
 function statusBadge(status: MarketplaceListingRecord['status']) {
   if (status === 'ACTIVE') {
@@ -44,7 +44,7 @@ function statusBadge(status: MarketplaceListingRecord['status']) {
   );
 }
 
-export function MarketplacePublishPanel({ dealerId, vehicleId }: Props) {
+export function MarketplacePublishPanel({ dealerId, vehicleId, listingTitle }: Props) {
   const [working, setWorking] = useState(false);
   const [actionError, setActionError] = useState<string | null>(null);
 
@@ -120,7 +120,7 @@ export function MarketplacePublishPanel({ dealerId, vehicleId }: Props) {
         <p className="text-[10px] text-ink-muted">
           Live since {new Date(listing.listedAt).toLocaleDateString()}.{' '}
           <a
-            href={`${MARKETPLACE_URL}/automotive/listings/${vehicleId}?demo=1`}
+            href={buildConsumerMarketplaceListingUrl(vehicleId, { title: listingTitle })}
             target="_blank"
             rel="noopener noreferrer"
             className="text-navy-600 underline"
