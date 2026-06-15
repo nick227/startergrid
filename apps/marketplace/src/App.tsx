@@ -16,8 +16,9 @@ import ProfilePage from './pages/ProfilePage.tsx';
 import { PageShell } from './components/layout/PageShell.tsx';
 import { NotFoundState } from './components/ui/NotFoundState.tsx';
 import { sitesHref } from './lib/routes.ts';
-import { AutomotiveHomeTemplate } from './pages/templates/AutomotiveHomeTemplate.tsx';
+import { templateRegistry } from './pages/templates/templateRegistry.ts';
 import { GenericHomeTemplate } from './pages/templates/GenericHomeTemplate.tsx';
+import { PersonalizationProvider } from './contexts/PersonalizationContext.tsx';
 
 export default function App() {
   const [route, setRoute] = useState(parseRoute);
@@ -101,8 +102,14 @@ export default function App() {
         {route.page === 'seller' && <SellerDetailPage key={route.sellerId} sellerId={route.sellerId} />}
         {route.page === 'favorites' && <FavoritesPage />}
         {route.page === 'profile' && <ProfilePage />}
-        {route.page === 'home' && route.slug === 'automotive' && <AutomotiveHomeTemplate />}
-        {route.page === 'home' && route.slug !== 'automotive' && <GenericHomeTemplate />}
+        {route.page === 'home' && (() => {
+          const Template = templateRegistry[route.slug] || GenericHomeTemplate;
+          return (
+            <PersonalizationProvider>
+              <Template />
+            </PersonalizationProvider>
+          );
+        })()}
         {route.page === 'list' && (
           <Suspense fallback={<PageShell><p className="p-6 text-sm text-ink-muted">Loading inventory…</p></PageShell>}>
             <ListingListPage initialQuery={route.query} />

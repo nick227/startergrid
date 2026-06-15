@@ -5,10 +5,15 @@ import {
   type CategorySchema,
 } from '@auto-dealer/category-schemas';
 
+export type CategoryTheme = {
+  primaryColor: string;
+};
+
 type CategoryContextValue = {
   categoryId: BusinessCategoryId;
   slug: string;
   schema: CategorySchema;
+  theme: CategoryTheme;
 };
 
 const CategoryContext = createContext<CategoryContextValue | null>(null);
@@ -21,8 +26,14 @@ type Props = {
 
 export function CategoryProvider({ categoryId, slug, children }: Props) {
   const schema = resolveCategorySchema(categoryId);
+  
+  // Dummy theme generation based on schema id
+  const theme: CategoryTheme = {
+    primaryColor: categoryId === 'HEAVY_EQUIPMENT' ? '#16a34a' : '#1d4ed8' // green or blue
+  };
+
   return (
-    <CategoryContext.Provider value={{ categoryId, slug, schema }}>
+    <CategoryContext.Provider value={{ categoryId, slug, schema, theme }}>
       {children}
     </CategoryContext.Provider>
   );
@@ -48,4 +59,8 @@ export function useCategoryId(): BusinessCategoryId {
 
 export function useOptionalCategoryContext(): CategoryContextValue | null {
   return useContext(CategoryContext);
+}
+
+export function useCategoryTheme(): CategoryTheme {
+  return useCategoryContext().theme;
 }

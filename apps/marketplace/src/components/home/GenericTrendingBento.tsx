@@ -1,12 +1,14 @@
 import { useMarketplaceFeed } from '../../hooks/useMarketplaceFeed.ts';
 import { useCategorySlug } from '../../contexts/CategoryContext.tsx';
-import { listingHref } from '../../lib/routes.ts';
-import { buildAutomotiveListHref } from './automotiveLinks.ts';
+import { listHref, listingHref } from '../../lib/routes.ts';
+import { vehicleHeading } from '../../lib/display.ts';
 import { ThumbnailCard } from './ThumbnailCard.tsx';
+import { usePersonalization } from '../../contexts/PersonalizationContext.tsx';
 
-export function HomeTrendingBento() {
+export function GenericTrendingBento() {
   const slug = useCategorySlug();
   const { vehicles, loading, error } = useMarketplaceFeed({ limit: 5, sortBy: 'relevance' });
+  const { recentListings } = usePersonalization();
 
   if (loading) {
     return <div className="py-12 text-center text-silver-500">Loading trending inventory...</div>;
@@ -17,21 +19,22 @@ export function HomeTrendingBento() {
 
   const featured = vehicles[0];
   const others = vehicles.slice(1, 5);
+  const title = recentListings.length > 0 ? "Recommended for You" : "Trending Near You";
 
   return (
     <div className="py-12 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto">
       <div className="flex items-center justify-between mb-8">
-        <h2 className="text-2xl sm:text-3xl font-extrabold text-ink-heading tracking-tight">Trending Near You</h2>
-        <a href={buildAutomotiveListHref({ sortBy: 'relevance' })} className="text-sm font-bold text-orange-600 hover:text-orange-700">See all →</a>
+        <h2 className="text-2xl sm:text-3xl font-extrabold text-ink-heading tracking-tight">{title}</h2>
+        <a href={listHref(slug, { sortBy: 'relevance' })} className="text-sm font-bold text-orange-600 hover:text-orange-700">See all →</a>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Large Feature Card */}
         {featured && (
-          <a href={listingHref(slug, featured.listingId, `${featured.year} ${featured.make} ${featured.model}`)} className="group relative lg:col-span-2 overflow-hidden shadow-elevation-1 hover:shadow-elevation-2 transition">
+          <a href={listingHref(slug, featured.listingId, vehicleHeading(featured))} className="group relative lg:col-span-2 overflow-hidden shadow-elevation-1 hover:shadow-elevation-2 transition rounded-2xl">
             <div className="absolute inset-0">
               {featured.mediaUrls[0] ? (
-                <img src={featured.mediaUrls[0]} alt={`${featured.make} ${featured.model}`} className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" />
+                <img src={featured.mediaUrls[0]} alt={vehicleHeading(featured)} className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" />
               ) : (
                 <div className="w-full h-full bg-navy-800" />
               )}
@@ -44,7 +47,7 @@ export function HomeTrendingBento() {
             </div>
             <div className="absolute bottom-6 left-6 right-6 flex justify-between items-end">
               <div>
-                <h3 className="text-3xl sm:text-4xl font-extrabold text-white mb-1 tracking-tight">{featured.year} {featured.make} {featured.model}</h3>
+                <h3 className="text-3xl sm:text-4xl font-extrabold text-white mb-1 tracking-tight">{vehicleHeading(featured)}</h3>
                 <p className="text-xl font-bold text-silver-200">${(featured.priceCents / 100).toLocaleString()}</p>
               </div>
               <button className="bg-white/20 hover:bg-white/40 backdrop-blur p-3 rounded-full text-white transition shadow-sm" aria-label="Save">
@@ -58,13 +61,13 @@ export function HomeTrendingBento() {
 
         {/* Smaller Cards Grid */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-2 gap-6">
-          {others.map(car => (
+          {others.map(item => (
             <ThumbnailCard
-              key={car.listingId}
-              link={listingHref(slug, car.listingId, `${car.year} ${car.make} ${car.model}`)}
-              imageUrl={car.mediaUrls[0] || ''}
-              title={`${car.year} ${car.make} ${car.model}`}
-              subtitle={`$${(car.priceCents / 100).toLocaleString()}`}
+              key={item.listingId}
+              link={listingHref(slug, item.listingId, vehicleHeading(item))}
+              imageUrl={item.mediaUrls[0] || ''}
+              title={vehicleHeading(item)}
+              subtitle={`$${(item.priceCents / 100).toLocaleString()}`}
               badge="Trending"
             />
           ))}

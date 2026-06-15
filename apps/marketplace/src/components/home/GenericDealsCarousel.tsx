@@ -1,11 +1,10 @@
 import { useMarketplaceFeed } from '../../hooks/useMarketplaceFeed.ts';
 import { useCategorySlug } from '../../contexts/CategoryContext.tsx';
-import { listingHref } from '../../lib/routes.ts';
-import { buildAutomotiveListHref } from './automotiveLinks.ts';
+import { listHref, listingHref } from '../../lib/routes.ts';
+import { vehicleHeading } from '../../lib/display.ts';
 
-export function HomeDealsCarousel() {
+export function GenericDealsCarousel() {
   const slug = useCategorySlug();
-  // Fetch up to 10 vehicles sorted by price ascending for deals
   const { vehicles, loading, error } = useMarketplaceFeed({ limit: 10, sortBy: 'price-asc' });
 
   if (loading) {
@@ -19,21 +18,22 @@ export function HomeDealsCarousel() {
     <div className="py-12 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto overflow-hidden">
       <div className="flex items-center justify-between mb-8">
         <div>
-          <h2 className="text-2xl sm:text-3xl font-extrabold text-ink-heading tracking-tight">The Best Car Deals</h2>
-          <p className="text-ink-muted font-medium mt-1">Vehicles priced below market value.</p>
+          <h2 className="text-2xl sm:text-3xl font-extrabold text-ink-heading tracking-tight">The Best Deals</h2>
+          <p className="text-ink-muted font-medium mt-1">Listings priced below market value.</p>
         </div>
-        <a href={buildAutomotiveListHref({ sortBy: 'price-asc' })} className="text-sm font-bold text-orange-600 hover:text-orange-700">View all deals →</a>
+        <a href={listHref(slug, { sortBy: 'price-asc' })} className="text-sm font-bold text-orange-600 hover:text-orange-700">View all deals →</a>
       </div>
 
       <div className="flex overflow-x-auto gap-6 pb-8 hide-scrollbar snap-x snap-mandatory">
-        {vehicles.map(car => {
-          const discount = car.originalPriceCents ? car.originalPriceCents - car.priceCents : 0;
+        {vehicles.map(item => {
+          const discount = item.originalPriceCents ? item.originalPriceCents - item.priceCents : 0;
+          const title = vehicleHeading(item);
 
           return (
-            <a key={car.listingId} href={listingHref(slug, car.listingId, `${car.year} ${car.make} ${car.model}`)} className="snap-start shrink-0 w-72 sm:w-80 group flex flex-col bg-surface-card rounded-2xl overflow-hidden shadow-elevation-1 border border-silver-200 hover:shadow-elevation-2 transition">
+            <a key={item.listingId} href={listingHref(slug, item.listingId, title)} className="snap-start shrink-0 w-72 sm:w-80 group flex flex-col bg-surface-card rounded-2xl overflow-hidden shadow-elevation-1 border border-silver-200 hover:shadow-elevation-2 transition">
               <div className="relative h-48">
-                {car.mediaUrls[0] ? (
-                  <img src={car.mediaUrls[0]} alt={`${car.make} ${car.model}`} className="absolute inset-0 w-full h-full object-cover" />
+                {item.mediaUrls[0] ? (
+                  <img src={item.mediaUrls[0]} alt={title} className="absolute inset-0 w-full h-full object-cover" />
                 ) : (
                   <div className="absolute inset-0 bg-silver-200" />
                 )}
@@ -44,10 +44,10 @@ export function HomeDealsCarousel() {
               <div className="p-4 flex-1 flex flex-col justify-between">
                 <div>
                   <h3 className="font-bold text-ink-heading group-hover:text-orange-600 transition-colors">
-                    {car.year} {car.make} {car.model}
+                    {title}
                   </h3>
                   <div className="mt-2 flex items-baseline gap-2">
-                    <p className="text-xl font-extrabold text-ink-heading">${(car.priceCents / 100).toLocaleString()}</p>
+                    <p className="text-xl font-extrabold text-ink-heading">${(item.priceCents / 100).toLocaleString()}</p>
                     {discount > 0 && (
                       <p className="text-xs font-bold text-status-success-text">
                         ${(discount / 100).toLocaleString()} drop
@@ -56,8 +56,8 @@ export function HomeDealsCarousel() {
                   </div>
                 </div>
                 <div className="mt-4 pt-4 border-t border-silver-100 flex justify-between text-xs text-ink-muted font-medium">
-                  <span>{car.mileage.toLocaleString()} mi</span>
-                  <span>{car.dealerName}</span>
+                  {item.mileage > 0 && <span>{item.mileage.toLocaleString()} mi</span>}
+                  <span>{item.dealerName}</span>
                 </div>
               </div>
             </a>

@@ -26,7 +26,7 @@ export function HomeHeroSearch() {
     return () => clearTimeout(timer);
   }, [query]);
 
-  const { vehicles, isLoading } = useMarketplaceFeed({ q: debouncedQuery, limit: 5 });
+  const { vehicles, loading } = useMarketplaceFeed({ q: debouncedQuery, limit: 5 });
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -133,7 +133,7 @@ export function HomeHeroSearch() {
                   </div>
                 ) : (
                   <div>
-                    {isLoading ? (
+                    {loading ? (
                       <div className="text-center py-8">
                         <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-orange-500 mb-2"></div>
                         <p className="text-sm text-ink-muted">Searching inventory...</p>

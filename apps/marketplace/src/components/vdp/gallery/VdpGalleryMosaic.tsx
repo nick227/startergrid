@@ -61,7 +61,7 @@ export function VdpGalleryMosaic({ map, alt, onOpenItem }: Props) {
     <section aria-label="Vehicle gallery" className="flex flex-col gap-2 md:flex-row md:h-[550px] lg:h-[700px] xl:h-[800px]">
       <button
         type="button"
-        className="mp-focus relative flex-1 overflow-hidden rounded-2xl bg-black group"
+        className="mp-focus relative flex-1 overflow-hidden group"
         aria-label={`View ${activeCell.label}`}
         onClick={() => onOpenItem(activeItem.id)}
       >

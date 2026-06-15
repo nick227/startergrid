@@ -85,7 +85,7 @@ export function HomeInfiniteFeed({ viewMode = 'grid', initialQuery = {} }: Props
 
       {feed.loadingMore && <LoadingMoreState />}
 
-      {appendError && (
+      {Boolean(appendError) && (
         <div className="mt-8">
           <ErrorState
             message={queryErrorMessage(feed.error)}
