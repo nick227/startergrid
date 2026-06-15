@@ -80,10 +80,16 @@ export function performanceItemRowScope(item: {
 
 export function historyEventRowScope(event: {
   vehicleId: string | null;
+  stockNumber?: string | null;
   payload: unknown;
 }): RowNavScope | undefined {
-  if (event.vehicleId) return { assetId: event.vehicleId };
-  const ref = stockNumberFromPayload(event.payload);
+  if (event.vehicleId) {
+    return {
+      assetId: event.vehicleId,
+      ...(event.stockNumber ? { assetRef: event.stockNumber } : {}),
+    };
+  }
+  const ref = event.stockNumber ?? stockNumberFromPayload(event.payload);
   return ref ? { assetRef: ref } : undefined;
 }
 
@@ -98,9 +104,17 @@ export function syncEventSearchBlob(event: {
   kind: string;
   platformSlug: string | null;
   vehicleId: string | null;
+  assetTitle?: string | null;
+  stockNumber?: string | null;
   payload: unknown;
 }): string {
-  const parts = [event.kind, event.platformSlug ?? '', event.vehicleId ?? ''];
+  const parts = [
+    event.kind,
+    event.platformSlug ?? '',
+    event.vehicleId ?? '',
+    event.assetTitle ?? '',
+    event.stockNumber ?? '',
+  ];
   if (event.payload && typeof event.payload === 'object') {
     parts.push(JSON.stringify(event.payload));
   }

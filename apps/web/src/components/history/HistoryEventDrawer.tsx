@@ -1,5 +1,5 @@
 import type { SyncEvent } from '@/lib/types.ts';
-import { historyEventKindLabel, historyEventMeta, historyEventSecondaryMeta } from '@/lib/historyPresentation.ts';
+import { historyEventKindLabel, historyEventMeta, historyEventProductTitle, historyEventSecondaryMeta } from '@/lib/historyPresentation.ts';
 import { operatorCopy } from '@/lib/copy/operator.ts';
 import { RowDetailDrawer } from '@/components/layout';
 
@@ -10,10 +10,13 @@ type Props = {
 };
 
 export function HistoryEventDrawer({ event, open, onClose }: Props) {
+  const productTitle = historyEventProductTitle(event);
   return (
-    <RowDetailDrawer open={open} title={historyEventKindLabel(event)} onClose={onClose}>
+    <RowDetailDrawer open={open} title={productTitle ?? historyEventKindLabel(event)} onClose={onClose}>
       <dl className="space-y-3 text-sm">
+        <Row label="Event" value={historyEventKindLabel(event)} />
         <Row label="Recorded" value={historyEventMeta(event)} />
+        {event.stockNumber && <Row label="Stock #" value={event.stockNumber} />}
         {event.platformSlug && (
           <Row label={operatorCopy.drawer.channel} value={event.platformSlug} />
         )}

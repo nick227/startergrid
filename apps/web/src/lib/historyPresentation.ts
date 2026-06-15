@@ -34,8 +34,12 @@ export function historyEventKindLabel(event: SyncEvent): string {
   return KIND_LABELS[event.kind] ?? event.kind.replace(/_/g, ' ').toLowerCase();
 }
 
+export function historyEventProductTitle(event: SyncEvent): string | null {
+  return event.assetTitle?.trim() ? event.assetTitle : null;
+}
+
 export function historyEventTitle(event: SyncEvent): string {
-  return historyEventKindLabel(event);
+  return historyEventProductTitle(event) ?? historyEventKindLabel(event);
 }
 
 export function historyEventSecondaryMeta(event: SyncEvent): string {
@@ -48,8 +52,11 @@ export function historyEventSecondaryMeta(event: SyncEvent): string {
 export function historyDesktopFields(event: SyncEvent): OpsRowField[] {
   const fields: OpsRowField[] = [
     { label: 'Recorded', value: historyEventMeta(event) },
-    { label: 'Event type', value: event.kind },
+    { label: 'Event type', value: historyEventKindLabel(event) },
   ];
+  if (event.stockNumber) {
+    fields.unshift({ label: 'Stock #', value: event.stockNumber });
+  }
   if (event.platformSlug) {
     fields.unshift({ label: operatorCopy.drawer.channel, value: event.platformSlug });
   }

@@ -73,6 +73,10 @@ describe('row scope helpers', () => {
   });
 
   it('derives history scope from vehicleId or payload stockNumber', () => {
+    expect(historyEventRowScope({ vehicleId: 'v-3', stockNumber: 'STK3', payload: null })).toEqual({
+      assetId: 'v-3',
+      assetRef: 'STK3',
+    });
     expect(historyEventRowScope({ vehicleId: 'v-3', payload: null })).toEqual({ assetId: 'v-3' });
     expect(
       historyEventRowScope({ vehicleId: null, payload: { stockNumber: 'STK3' } })

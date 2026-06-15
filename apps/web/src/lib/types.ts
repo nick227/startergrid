@@ -116,6 +116,8 @@ export type SyncEvent = {
   payload: unknown;
   syncRunId: string | null;
   createdAt: string;
+  assetTitle: string | null;
+  stockNumber: string | null;
 };
 
 export type HistoryResponse = {

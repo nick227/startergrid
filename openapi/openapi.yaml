@@ -3793,6 +3793,12 @@ components:
         createdAt:
           type: string
           format: date-time
+        assetTitle:
+          type: string
+          nullable: true
+        stockNumber:
+          type: string
+          nullable: true
 
     HistoryMeta:
       type: object

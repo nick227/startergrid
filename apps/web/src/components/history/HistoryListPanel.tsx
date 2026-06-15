@@ -11,9 +11,11 @@ import { HistoryEventDrawer } from './HistoryEventDrawer.tsx';
 import {
   HISTORY_KIND_FILTERS,
   filterHistoryEvents,
-  historyEventTitle,
+  historyEventKindLabel,
+  historyEventProductTitle,
   historyEventSecondaryMeta,
   historyDesktopFields,
+  historyEventTitle,
   historySituationLine,
   type HistoryKindFilter,
 } from '@/lib/historyPresentation.ts';
@@ -145,10 +147,20 @@ export function HistoryListPanel({
               }
             />
           ) : (
-            visible.map(event => (
+            visible.map(event => {
+              const productTitle = historyEventProductTitle(event);
+              const scope = historyEventRowScope(event);
+              const canLinkProduct = Boolean(productTitle && scope);
+              return (
               <OpsRowCard
                 key={event.id}
                 title={historyEventTitle(event)}
+                onTitleClick={canLinkProduct ? () => nav.goToInventoryItem({
+                  assetTitle: productTitle,
+                  assetRef: event.stockNumber ?? scope?.assetRef,
+                  stockNumber: event.stockNumber,
+                }, scope) : undefined}
+                subtitleLine={productTitle ? historyEventKindLabel(event) : undefined}
                 statusLabel={operatorCopy.history.recorded}
                 statusClassName="bg-silver-100 text-ink-muted border-silver-200"
                 secondaryMeta={historyEventSecondaryMeta(event)}
@@ -156,25 +168,10 @@ export function HistoryListPanel({
                 detailOpen={selectedId === event.id}
                 actions={[
                   { label: actions.details, onClick: () => setSelectedId(event.id) },
-                  {
-                    label: actions.queue,
-                    onClick: () => {
-                      const scope = historyEventRowScope(event);
-                      if (event.platformSlug) nav.goToPlatformQueue(event.platformSlug, scope);
-                      else nav.goToQueue(scope);
-                    },
-                  },
-                  {
-                    label: actions.inventory,
-                    onClick: () => {
-                      const scope = historyEventRowScope(event);
-                      if (scope) nav.goToInventory(scope);
-                      else nav.goToInventory();
-                    },
-                  },
                 ]}
               />
-            ))
+            );
+            })
           )}
         </div>
 
@@ -188,10 +185,7 @@ export function HistoryListPanel({
       </div>
 
       <p className="text-xs text-ink-faint mt-6">
-        {operatorCopy.history.readOnlyNote}{' '}
-        <button type="button" onClick={() => nav.goToQueue()} className="text-orange-600 font-semibold hover:underline">
-          {operatorCopy.queue.title}
-        </button>
+        {operatorCopy.history.readOnlyNote}
       </p>
     </OperatorPage>
   );

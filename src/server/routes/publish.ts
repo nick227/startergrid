@@ -21,6 +21,10 @@ import {
   filterDealerHistoryEvents,
   loadDealerOutboundContext,
 } from '../../services/publishing/historyEligibilityService.js';
+import {
+  loadHistoryAssetFields,
+  resolveHistoryAssetFields,
+} from '../../services/publishing/historyAssetEnrichment.js';
 import { preparePublishSchema, validateBody } from '../requestValidation.js';
 
 type DealerParams = { dealershipId: string };
@@ -157,18 +161,24 @@ export function registerPublishRoutes(app: FastifyInstance, prisma: PrismaClient
       const filtered = filterDealerHistoryEvents(rows, outboundCtx);
       const hasMore = filtered.length > limit || rows.length > fetchLimit;
       const page = filtered.slice(0, limit);
+      const assetFields = await loadHistoryAssetFields(prisma, dealershipId, page);
 
       return reply.send({
-        events: page.map(e => ({
-          id:           e.id,
-          dealershipId: e.dealershipId,
-          vehicleId:    e.vehicleId,
-          platformSlug: e.platformSlug,
-          kind:         e.kind,
-          payload:      e.payload,
-          syncRunId:    e.syncRunId,
-          createdAt:    e.createdAt.toISOString()
-        })),
+        events: page.map(e => {
+          const asset = resolveHistoryAssetFields(e, assetFields);
+          return {
+            id:           e.id,
+            dealershipId: e.dealershipId,
+            vehicleId:    e.vehicleId,
+            platformSlug: e.platformSlug,
+            kind:         e.kind,
+            payload:      e.payload,
+            syncRunId:    e.syncRunId,
+            createdAt:    e.createdAt.toISOString(),
+            assetTitle:   asset.assetTitle,
+            stockNumber:  asset.stockNumber,
+          };
+        }),
         meta: {
           hasMore,
           nextCursor: hasMore ? (page[page.length - 1]?.id ?? null) : null
