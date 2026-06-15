@@ -161,7 +161,7 @@ export async function upsertDefaultPlatformAccounts(
       const state = defaultAccountState(appStatus) as any;
       return prisma.platformAccount.upsert({
         where: { dealershipId_platformSlug: { dealershipId, platformSlug: p.slug } },
-        update: { state },
+        update: {},
         create: { dealershipId, platformSlug: p.slug, state }
       });
     })

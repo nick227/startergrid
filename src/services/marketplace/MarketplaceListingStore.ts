@@ -1,6 +1,7 @@
 import type { PrismaClient } from '@prisma/client';
 import type { MarketplaceListingRecord } from './marketplaceListingTypes.js';
 import { isPlatformAllowedForCategory } from '../../data/platformCategoryMap.js';
+import { recordMarketplaceListingPublished } from '../publishing/historyEligibilityService.js';
 
 export type ItemRef =
   | { vehicleId: string }
@@ -38,18 +39,26 @@ export const MarketplaceListingStore = {
     }
     if (isVehicleRef(itemRef)) {
       const { vehicleId } = itemRef;
-      return prisma.marketplaceListing.upsert({
+      const listing = await prisma.marketplaceListing.upsert({
         where: { vehicleId_platformSlug: { vehicleId, platformSlug } },
         create: { dealershipId, vehicleId, platformSlug, ...patch },
         update: patch,
-      }) as Promise<MarketplaceListingRecord>;
+      }) as MarketplaceListingRecord;
+      if (patch.status === 'ACTIVE') {
+        await recordMarketplaceListingPublished(prisma, dealershipId, platformSlug, vehicleId);
+      }
+      return listing;
     } else {
       const { categoryItemId } = itemRef;
-      return prisma.marketplaceListing.upsert({
+      const listing = await prisma.marketplaceListing.upsert({
         where: { categoryItemId_platformSlug: { categoryItemId, platformSlug } },
         create: { dealershipId, categoryItemId, platformSlug, ...patch },
         update: patch,
-      }) as Promise<MarketplaceListingRecord>;
+      }) as MarketplaceListingRecord;
+      if (patch.status === 'ACTIVE') {
+        await recordMarketplaceListingPublished(prisma, dealershipId, platformSlug, null);
+      }
+      return listing;
     }
   },
 

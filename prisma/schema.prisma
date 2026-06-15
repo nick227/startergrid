@@ -1027,7 +1027,7 @@ model PlatformAccount {
   id                String               @id @default(cuid())
   dealershipId      String
   platformSlug      String               @db.VarChar(80)
-  dealerEnabled            Boolean       @default(true)
+  dealerEnabled            Boolean       @default(false)
   autoSyncReadyInventory   Boolean       @default(false)
   state             PlatformAccountState @default(ACCOUNT_NEEDED)
   accountId         String?              @db.VarChar(120)

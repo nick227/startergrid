@@ -4,7 +4,8 @@ import { platformProfiles } from '../../data/platformProfiles.js';
 import { isPlatformAllowedForCategory } from '../../data/platformCategoryMap.js';
 import { loadSiteAvailabilityMap, resolveSiteEnabled } from '../platform/platformAvailabilityService.js';
 import {
-  isQueueItemOutboundEligible,
+  isDealerPlatformRunning,
+  isOperatorQueueDestination,
   parseDesiredChannels,
   vehicleChannelKey,
 } from './queueEligibilityService.js';
@@ -12,6 +13,7 @@ import type { SyncEventInput, SyncEventKind } from './syncEventService.js';
 import { recordSyncEvent } from './syncEventService.js';
 
 const OAUTH_EXPIRY_BUFFER_MS = 60_000;
+export const CONSUMER_MARKETPLACE_SLUG = 'consumer-marketplace';
 
 export const OUTBOUND_PLATFORM_HISTORY_KINDS = new Set<SyncEventKind>([
   'SUBMISSION_SENT',
@@ -37,9 +39,11 @@ export type DealerOutboundContext = {
     dealerEnabled: boolean | null;
     autoSyncReadyInventory: boolean | null;
   }>;
+  applicationStatusBySlug: Map<string, string>;
   liveOAuth: Set<string>;
   deselectedKeys: Set<string>;
   eligibleVehicleCountByPlatform: Map<string, number>;
+  activeMarketplaceVehicleIds: Set<string>;
   profileBySlug: Map<string, (typeof platformProfiles)[number]>;
 };
 
@@ -61,6 +65,55 @@ function oauthConnectedForPlatform(
 
 export function isOutboundPlatformHistoryKind(kind: string): boolean {
   return OUTBOUND_PLATFORM_HISTORY_KINDS.has(kind as SyncEventKind);
+}
+
+function runningContext(
+  profile: (typeof platformProfiles)[number] | undefined,
+  account: { state: string } | undefined,
+  liveOAuth: Set<string>,
+) {
+  return {
+    accountState: account?.state ?? null,
+    oauthProvider: profile?.oauthProvider ?? null,
+    oauthConnected: oauthConnectedForPlatform(profile, liveOAuth),
+  };
+}
+
+/** Operator-attested channel — stricter than queue eligibility; matches Platforms "connected". */
+export function isOperatorAttestedChannelForHistory(
+  ctx: DealerOutboundContext,
+  platformSlug: string,
+  vehicleId: string | null,
+  accountStateOverride?: string | null,
+): boolean {
+  if (!isOperatorQueueDestination(platformSlug)) return false;
+  if (!isPlatformAllowedForCategory(platformSlug, ctx.businessCategory)) return false;
+  if (!resolveSiteEnabled(platformSlug, ctx.siteAvailability)) return false;
+
+  const profile = ctx.profileBySlug.get(platformSlug);
+  if (!profile) return false;
+
+  const account = ctx.accountBySlug.get(platformSlug);
+  const accountState = accountStateOverride !== undefined ? accountStateOverride : (account?.state ?? null);
+  const runCtx = runningContext(profile, account ? { state: accountState ?? account.state } : undefined, ctx.liveOAuth);
+
+  if (platformSlug === CONSUMER_MARKETPLACE_SLUG) {
+    if (vehicleId && ctx.activeMarketplaceVehicleIds.has(vehicleId)) return true;
+    if (account?.dealerEnabled === true && isDealerPlatformRunning(runCtx)) return true;
+    return false;
+  }
+
+  if (account?.dealerEnabled !== true) return false;
+  if (!isDealerPlatformRunning(runCtx)) return false;
+
+  const appStatus = ctx.applicationStatusBySlug.get(platformSlug) ?? 'NOT_STARTED';
+  const integrationClass = profile.integrationClass as IntegrationClass;
+
+  if (integrationClass === 'OWNED') {
+    return appStatus === 'ACTIVE';
+  }
+
+  return appStatus === 'ACTIVE' && accountState === 'ACTIVE';
 }
 
 export function queueEligibilityInputForPlatform(
@@ -94,18 +147,31 @@ export function isPlatformHistoryEligible(
   vehicleId: string | null,
   accountStateOverride?: string | null,
 ): boolean {
-  if (!isPlatformAllowedForCategory(platformSlug, ctx.businessCategory)) return false;
-  return isQueueItemOutboundEligible(
-    queueEligibilityInputForPlatform(ctx, platformSlug, vehicleId, accountStateOverride),
-  );
+  return isOperatorAttestedChannelForHistory(ctx, platformSlug, vehicleId, accountStateOverride);
 }
 
 export function isSyncEventVisibleForDealer(
-  event: { kind: string; platformSlug: string | null; vehicleId: string | null },
+  event: {
+    kind: string;
+    platformSlug: string | null;
+    vehicleId: string | null;
+    payload?: unknown;
+  },
   ctx: DealerOutboundContext,
 ): boolean {
   if (!event.platformSlug || !isOutboundPlatformHistoryKind(event.kind)) return true;
-  return isPlatformHistoryEligible(ctx, event.platformSlug, event.vehicleId);
+
+  const payload = event.payload && typeof event.payload === 'object'
+    ? event.payload as Record<string, unknown>
+    : null;
+  if (
+    event.platformSlug === CONSUMER_MARKETPLACE_SLUG
+    && payload?.source === 'marketplace_listing'
+  ) {
+    return true;
+  }
+
+  return isOperatorAttestedChannelForHistory(ctx, event.platformSlug, event.vehicleId);
 }
 
 export async function loadDealerOutboundContext(
@@ -119,7 +185,8 @@ export async function loadDealerOutboundContext(
   const businessCategory = dealer.businessCategory;
   const desiredChannels = parseDesiredChannels(dealer.desiredChannels);
 
-  const [accounts, deselections, readyVehicles, oauthTokens, siteAvailability] = await Promise.all([
+  const [accounts, applications, deselections, readyVehicles, oauthTokens, siteAvailability, marketplaceListings] =
+    await Promise.all([
     prisma.platformAccount.findMany({
       where: { dealershipId },
       select: {
@@ -128,6 +195,10 @@ export async function loadDealerOutboundContext(
         dealerEnabled: true,
         autoSyncReadyInventory: true,
       },
+    }),
+    prisma.platformApplication.findMany({
+      where: { dealershipId },
+      select: { status: true, platform: { select: { slug: true } } },
     }),
     prisma.vehicleChannelSelection.findMany({
       where: { dealershipId, selected: false },
@@ -142,16 +213,24 @@ export async function loadDealerOutboundContext(
       select: { provider: true, expiresAt: true },
     }),
     loadSiteAvailabilityMap(prisma),
+    prisma.marketplaceListing.findMany({
+      where: { dealershipId, platformSlug: CONSUMER_MARKETPLACE_SLUG, status: 'ACTIVE' },
+      select: { vehicleId: true },
+    }),
   ]);
 
   const profileBySlug = new Map(platformProfiles.map(p => [p.slug, p]));
   const accountBySlug = new Map(accounts.map(a => [a.platformSlug, a]));
+  const applicationStatusBySlug = new Map(applications.map(a => [a.platform.slug, a.status]));
   const liveOAuth = liveOAuthProviders(oauthTokens);
   const deselectedKeys = new Set(
     deselections.map(d => vehicleChannelKey(d.vehicleId, d.channelKey)),
   );
   const readyVehicleIds = new Set(readyVehicles.map(v => v.id));
   const eligibleVehicleCountByPlatform = new Map<string, number>();
+  const activeMarketplaceVehicleIds = new Set(
+    marketplaceListings.map(l => l.vehicleId).filter((id): id is string => id !== null),
+  );
 
   for (const profile of platformProfiles) {
     if (!isPlatformAllowedForCategory(profile.slug, businessCategory)) continue;
@@ -168,9 +247,11 @@ export async function loadDealerOutboundContext(
     desiredChannels,
     siteAvailability,
     accountBySlug,
+    applicationStatusBySlug,
     liveOAuth,
     deselectedKeys,
     eligibleVehicleCountByPlatform,
+    activeMarketplaceVehicleIds,
     profileBySlug,
   };
 }
@@ -179,11 +260,12 @@ export function filterDealerHistoryEvents<T extends {
   kind: string;
   platformSlug: string | null;
   vehicleId: string | null;
+  payload?: unknown;
 }>(events: T[], ctx: DealerOutboundContext): T[] {
   return events.filter(e => isSyncEventVisibleForDealer(e, ctx));
 }
 
-/** Record platform-scoped history only when the channel is outbound-eligible for the dealer. */
+/** Record platform-scoped history only when the channel is operator-attested for the dealer. */
 export async function recordOutboundSyncEvent(
   prisma: PrismaClient,
   input: SyncEventInput,
@@ -196,7 +278,7 @@ export async function recordOutboundSyncEvent(
 
   const context = ctx ?? await loadDealerOutboundContext(prisma, input.dealershipId);
   if (
-    !isPlatformHistoryEligible(
+    !isOperatorAttestedChannelForHistory(
       context,
       input.platformSlug,
       input.vehicleId ?? null,
@@ -207,4 +289,19 @@ export async function recordOutboundSyncEvent(
   }
 
   return recordSyncEvent(prisma, input);
+}
+
+export async function recordMarketplaceListingPublished(
+  prisma: PrismaClient,
+  dealershipId: string,
+  platformSlug: string,
+  vehicleId: string | null,
+): Promise<string> {
+  return recordSyncEvent(prisma, {
+    dealershipId,
+    vehicleId,
+    platformSlug,
+    kind: 'SUBMISSION_SENT',
+    payload: { source: 'marketplace_listing', channel: platformSlug },
+  });
 }

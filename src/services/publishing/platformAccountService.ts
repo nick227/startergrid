@@ -460,7 +460,7 @@ export async function updatePlatformAccount(
       dealershipId,
       platformSlug,
       state: (payload.state ?? 'ACCOUNT_NEEDED') as PlatformAccountState,
-      dealerEnabled: payload.dealerEnabled ?? true,
+      dealerEnabled: payload.dealerEnabled ?? false,
       autoSyncReadyInventory: payload.autoSyncReadyInventory ?? defaultAutoSyncReadyInventory(platformSlug),
       notes: payload.notes,
       accountId: payload.accountId,

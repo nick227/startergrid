@@ -1,5 +1,6 @@
 import type { PrismaClient, Prisma } from '@prisma/client';
 import { platformSlugsForCategory } from '../../data/platformCategoryMap.js';
+import { recordMarketplaceListingPublished } from '../publishing/historyEligibilityService.js';
 
 // ─── Automotive demo dealers ──────────────────────────────────────────────────
 // Three reproducible demo dealers covering the full merchandising spectrum, so
@@ -315,10 +316,11 @@ async function seedPlatformAccounts(prisma: PrismaClient, d: DemoDealer): Promis
 
   for (const slug of automotiveSlugs) {
     const state = (d.accountStates[slug] ?? 'ACCOUNT_NEEDED') as never;
+    const dealerEnabled = slug === 'consumer-marketplace' || d.desiredChannels.includes(slug);
     await prisma.platformAccount.upsert({
       where: { dealershipId_platformSlug: { dealershipId: d.id, platformSlug: slug } },
-      update: { state },
-      create: { dealershipId: d.id, platformSlug: slug, state, connectionConfig: {} },
+      update: { state, dealerEnabled },
+      create: { dealershipId: d.id, platformSlug: slug, state, dealerEnabled, connectionConfig: {} },
     });
   }
 }
@@ -421,6 +423,9 @@ async function seedVehicle(prisma: PrismaClient, d: DemoDealer, v: DemoVehicle):
         listedAt: new Date('2026-06-10T15:30:00Z'),
       },
     });
+    if (listing.platformSlug === 'consumer-marketplace') {
+      await recordMarketplaceListingPublished(prisma, d.id, listing.platformSlug, vehicle.id);
+    }
   }
 
   return vehicle.id;

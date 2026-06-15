@@ -5,6 +5,7 @@ import { syncEventSearchBlob } from './rowNavScope.ts';
 
 const KIND_LABELS: Record<string, string> = {
   SUBMISSION_SENT: 'Send completed',
+  MARKETPLACE_LISTED: 'Listed on marketplace',
   ARTIFACT_GENERATED: 'Feed prepared',
   INVENTORY_CHANGE: 'Inventory updated',
   INVENTORY_IMPORT: 'Assets imported',
@@ -24,6 +25,12 @@ const KIND_LABELS: Record<string, string> = {
 };
 
 export function historyEventKindLabel(event: SyncEvent): string {
+  const payload = event.payload && typeof event.payload === 'object'
+    ? event.payload as Record<string, unknown>
+    : null;
+  if (event.kind === 'SUBMISSION_SENT' && payload?.source === 'marketplace_listing') {
+    return KIND_LABELS.MARKETPLACE_LISTED ?? 'Listed on marketplace';
+  }
   return KIND_LABELS[event.kind] ?? event.kind.replace(/_/g, ' ').toLowerCase();
 }
 
