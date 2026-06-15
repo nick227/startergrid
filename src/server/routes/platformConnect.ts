@@ -5,6 +5,7 @@ import { PlatformClientRegistry, XOAuthClient } from '../../services/platform/cl
 import { CredentialStore } from '../../services/platform/clients/CredentialStore.js';
 import { platformProfiles } from '../../data/platformProfiles.js';
 import { requireDealerAccess } from '../security.js';
+import { assertSystemReadyForDealerRegistration } from '../../services/publishing/platformAccountService.js';
 
 type ConnectParams = { dealershipId: string; platformSlug: string };
 type CallbackQuery  = { state?: string; code?: string; error?: string; error_description?: string };
@@ -43,6 +44,13 @@ export function registerPlatformConnectRoutes(app: FastifyInstance, prisma: Pris
       const profile = platformProfiles.find(p => p.slug === platformSlug);
       if (!profile) return reply.status(404).send({ error: `Unknown platform: ${platformSlug}` });
       if (!profile.oauthProvider) return reply.status(400).send({ error: `Platform ${platformSlug} does not support OAuth` });
+      try {
+        assertSystemReadyForDealerRegistration(platformSlug);
+      } catch (err) {
+        return reply.status(409).send({
+          error: err instanceof Error ? err.message : 'System setup is not ready for dealer registration on this platform.',
+        });
+      }
 
       const client = PlatformClientRegistry.forSlug(platformSlug);
       if (!client) return reply.status(500).send({ error: `No OAuth client registered for ${platformSlug}` });

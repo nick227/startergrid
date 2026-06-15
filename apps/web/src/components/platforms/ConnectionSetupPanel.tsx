@@ -45,6 +45,7 @@ export function ConnectionSetupPanel({ dealerId, platform, account, onRefresh }:
   
   // Is it already active?
   const isActive = account?.state === 'ACTIVE';
+  const systemSetupReady = account?.systemSetupReady ?? platform.integrationClass === 'OWNED';
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -53,7 +54,7 @@ export function ConnectionSetupPanel({ dealerId, platform, account, onRefresh }:
     try {
       const payload: Record<string, any> = {
         connectionConfig: { ...formData },
-        state: 'READY_TO_SUBMIT', // advance state once config is provided
+        state: 'PENDING_REVIEW',
       };
       
       // Extract known top-level fields
@@ -87,6 +88,9 @@ export function ConnectionSetupPanel({ dealerId, platform, account, onRefresh }:
   };
 
 
+  // OWNED platforms are first-party — no external credentials or validation needed
+  if (platform.integrationClass === 'OWNED') return null;
+
   const readiness = getSetupReadiness(platform, account || null);
 
   return (
@@ -101,6 +105,15 @@ export function ConnectionSetupPanel({ dealerId, platform, account, onRefresh }:
       </div>
 
       <div className="p-5 space-y-6">
+        {!systemSetupReady && (
+          <div className="p-4 bg-silver-50 border border-silver-200 rounded-lg">
+            <h3 className="text-[11px] font-bold text-ink-heading mb-1 uppercase tracking-wide">System Setup Pending</h3>
+            <p className="text-sm text-ink-muted">
+              {account?.systemSetupMessage ?? 'This platform is not ready for dealer setup yet.'}
+            </p>
+          </div>
+        )}
+
         {/* Render Validation Feedback (if it was ever tested or is ready) */}
         {(() => {
           const feedback = getValidationFeedback(account);
@@ -157,7 +170,7 @@ export function ConnectionSetupPanel({ dealerId, platform, account, onRefresh }:
         )}
 
         {/* Render OAuth Flow */}
-        {isOAuth && (
+        {isOAuth && systemSetupReady && (
           <div className="space-y-3">
             <h3 className="text-sm font-semibold text-ink-body">OAuth Authorization</h3>
             <p className="text-sm text-ink-muted">
@@ -176,7 +189,7 @@ export function ConnectionSetupPanel({ dealerId, platform, account, onRefresh }:
         )}
 
         {/* Render Dynamic Fields */}
-        {hasFields && (
+        {hasFields && systemSetupReady && (
           <form onSubmit={handleSubmit} className="space-y-4">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               {fields.map(field => {
@@ -246,7 +259,7 @@ export function ConnectionSetupPanel({ dealerId, platform, account, onRefresh }:
           </form>
         )}
 
-        {!hasFields && !isOAuth && (
+        {!hasFields && !isOAuth && systemSetupReady && (
           <div className="text-sm text-ink-muted italic">
             No specific connection fields required. This platform may be completely assisted or direct.
           </div>

@@ -73,16 +73,51 @@ function authCookieHeader(value = 'mock-session-token'): string {
   return `op_session=${value}`;
 }
 
+async function withEnv<T>(patch: Record<string, string | undefined>, fn: () => Promise<T>): Promise<T> {
+  const previous = new Map<string, string | undefined>();
+  for (const key of Object.keys(patch)) {
+    previous.set(key, process.env[key]);
+    const value = patch[key];
+    if (value === undefined) delete process.env[key];
+    else process.env[key] = value;
+  }
+  try {
+    return await fn();
+  } finally {
+    for (const [key, value] of previous) {
+      if (value === undefined) delete process.env[key];
+      else process.env[key] = value;
+    }
+  }
+}
+
+const GOOGLE_READY_ENV = {
+  GOOGLE_CLIENT_ID: 'test-google-client-id',
+  GOOGLE_CLIENT_SECRET: 'test-google-client-secret',
+};
+
+const GOOGLE_NOT_CONFIGURED_ENV = {
+  GOOGLE_CLIENT_ID: undefined,
+  GOOGLE_CLIENT_SECRET: undefined,
+};
+
+const X_READY_ENV = {
+  X_CLIENT_ID: 'test-x-client-id',
+  X_CLIENT_SECRET: 'test-x-client-secret',
+};
+
 // ── GET /api/dealers/:dealershipId/platforms/:platformSlug/connect-url ────────
 
 describe('GET connect-url — happy path for Google Vehicle Ads', () => {
   it('returns 200 with authUrl and state', async () => {
-    const prisma = makeConnectPrisma({});
-    const app = buildApp(prisma);
-    const res = await app.inject({
-      method: 'GET',
-      url: '/api/dealers/dealer-1/platforms/google-vehicle-ads/connect-url',
-      headers: { cookie: authCookieHeader() },
+    const res = await withEnv(GOOGLE_READY_ENV, async () => {
+      const prisma = makeConnectPrisma({});
+      const app = buildApp(prisma);
+      return app.inject({
+        method: 'GET',
+        url: '/api/dealers/dealer-1/platforms/google-vehicle-ads/connect-url',
+        headers: { cookie: authCookieHeader() },
+      });
     });
     assert.equal(res.statusCode, 200, `expected 200, got ${res.statusCode}: ${res.body}`);
     const body = res.json() as { authUrl?: string; state?: string };
@@ -90,6 +125,52 @@ describe('GET connect-url — happy path for Google Vehicle Ads', () => {
     assert.ok(typeof body.state === 'string', 'state must be a string');
     assert.ok(body.authUrl!.includes('accounts.google.com'), 'authUrl should be Google');
     assert.ok(body.authUrl!.includes('state='), 'authUrl should include state param');
+  });
+});
+
+describe('GET connect-url — system credentials not configured', () => {
+  it('returns 409 before creating OAuth state', async () => {
+    let createCalled = false;
+    const base = makeConnectPrisma({});
+    const prisma = {
+      ...(base as unknown as Record<string, unknown>),
+      oAuthState: {
+        findUnique: async () => null,
+        update: async (args: { data: Record<string, unknown> }) => ({ id: 'state-1', ...args.data }),
+        create: async (args: { data: Record<string, unknown> }) => {
+          createCalled = true;
+          return { id: 'state-1', ...args.data };
+        },
+      },
+    } as unknown as PrismaClient;
+    const res = await withEnv(GOOGLE_NOT_CONFIGURED_ENV, async () => {
+      const app = buildApp(prisma);
+      return app.inject({
+        method: 'GET',
+        url: '/api/dealers/dealer-1/platforms/google-vehicle-ads/connect-url',
+        headers: { cookie: authCookieHeader() },
+      });
+    });
+    assert.equal(res.statusCode, 409, `expected 409, got ${res.statusCode}: ${res.body}`);
+    assert.equal(createCalled, false, 'OAuth state must not be created when system credentials are not ready');
+    assert.match((res.json() as { error: string }).error, /System credentials are not configured/);
+  });
+});
+
+describe('PATCH account — system credentials not configured', () => {
+  it('returns 409 for dealer setup/registration state changes', async () => {
+    const res = await withEnv(GOOGLE_NOT_CONFIGURED_ENV, async () => {
+      const prisma = makeConnectPrisma({});
+      const app = buildApp(prisma);
+      return app.inject({
+        method: 'PATCH',
+        url: '/api/dealers/dealer-1/accounts/google-vehicle-ads',
+        headers: { cookie: authCookieHeader() },
+        payload: { state: 'PENDING_REVIEW' },
+      });
+    });
+    assert.equal(res.statusCode, 409, `expected 409, got ${res.statusCode}: ${res.body}`);
+    assert.match((res.json() as { error: string }).error, /System credentials are not configured/);
   });
 });
 
@@ -352,11 +433,13 @@ describe('GET connect-url — X platform PKCE', () => {
         },
       },
     } as unknown as PrismaClient;
-    const app = buildApp(prisma);
-    const res = await app.inject({
-      method: 'GET',
-      url: '/api/dealers/dealer-1/platforms/x-dynamic-product-ads/connect-url',
-      headers: { cookie: authCookieHeader() },
+    const res = await withEnv(X_READY_ENV, async () => {
+      const app = buildApp(prisma);
+      return app.inject({
+        method: 'GET',
+        url: '/api/dealers/dealer-1/platforms/x-dynamic-product-ads/connect-url',
+        headers: { cookie: authCookieHeader() },
+      });
     });
     assert.equal(res.statusCode, 200, `expected 200, got ${res.statusCode}: ${res.body}`);
     assert.ok(typeof capturedVerifier === 'string', 'X platform must store a PKCE codeVerifier');

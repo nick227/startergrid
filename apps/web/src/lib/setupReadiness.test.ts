@@ -152,4 +152,19 @@ describe('setupReadiness', () => {
     expect(readiness.statusLabel).toBe('Active');
     expect(readiness.severity).toBe('success');
   });
+
+  it('shows owned marketplace inventory blockers instead of ready', () => {
+    const platform = createMockPlatform({
+      integrationClass: 'OWNED',
+      connectionType: 'NONE',
+      state: 'Blocked' as any,
+      readiness: 'RED' as any,
+      detail: 'Blocked: Vehicle MES-2002 needs at least one photo before it can publish',
+    });
+    const readiness = getSetupReadiness(platform, null);
+    expect(readiness.statusLabel).toBe('Inventory needs attention');
+    expect(readiness.severity).toBe('critical');
+    expect(readiness.nextAction).toBe('Fix inventory');
+    expect(readiness.validationSummary).toContain('MES-2002');
+  });
 });

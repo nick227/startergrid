@@ -40,7 +40,28 @@ export default function FavoritesPage() {
   const visibleCards         = data?.favorites.filter(v => favoriteIds.has(v.listingId)) ?? [];
   const unavailableFavorites = data?.unavailableFavorites ?? [];
 
-  if (!authReady || !user) return null;
+  if (!authReady) {
+    return (
+      <PageShell>
+        <PageHeader
+          title={`Saved ${schema.asset.plural}`}
+          subtitle={`${schema.asset.plural} you've saved on the ${schema.label.toLowerCase()} marketplace.`}
+        />
+        <SkeletonGrid />
+      </PageShell>
+    );
+  }
+
+  if (!user) {
+    return (
+      <PageShell>
+        <PageHeader
+          title={`Saved ${schema.asset.plural}`}
+          subtitle="Redirecting to browse."
+        />
+      </PageShell>
+    );
+  }
 
   const isEmpty = visibleCards.length === 0 && unavailableFavorites.length === 0;
 

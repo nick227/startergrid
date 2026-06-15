@@ -1,7 +1,7 @@
 import type { ReactNode } from 'react';
 import { useAuth } from '../../contexts/AuthContext.tsx';
 import { useOptionalCategoryContext } from '../../contexts/CategoryContext.tsx';
-import { favoritesHref, listHref, profileHref, sitesHref } from '../../lib/routes.ts';
+import { categoryHomeHref, favoritesHref, listHref, parseRoute, profileHref, sitesHref } from '../../lib/routes.ts';
 
 type Props = {
   children: ReactNode;
@@ -18,13 +18,24 @@ export function PageShell({
 }: Props) {
   const { user, authReady, openLoginModal, logout } = useAuth();
   const category = useOptionalCategoryContext();
-  const homeHref = category && showCategoryNav ? listHref(category.slug) : sitesHref();
+  const homeHref = category && showCategoryNav ? categoryHomeHref(category.slug) : sitesHref();
   const siteTitle = category ? `${category.schema.label} Marketplace` : 'Marketplaces';
   const savedHref = category ? favoritesHref(category.slug) : favoritesHref('automotive');
   const accountHref = category ? profileHref(category.slug) : profileHref('automotive');
+  const route = typeof window === 'undefined' ? null : parseRoute();
+  const activeTab = route && category && 'slug' in route && route.slug === category.slug
+    ? route.page
+    : null;
+  const tabs = category && showCategoryNav
+    ? [
+        { key: 'list', label: 'Browse', href: listHref(category.slug) },
+        { key: 'favorites', label: 'Saved', href: savedHref },
+        { key: 'profile', label: 'Profile', href: accountHref },
+      ] as const
+    : [];
 
   return (
-    <div className="min-h-screen bg-surface-page-bright">
+    <div className="min-h-screen">
       <a href="#main-content" className="sr-only mp-focus focus:not-sr-only focus:absolute focus:left-4 focus:top-4 focus:z-50 focus:rounded-lg focus:bg-white focus:px-3 focus:py-2 focus:shadow-elevation-2">
         Skip to content
       </a>
@@ -93,6 +104,25 @@ export function PageShell({
             </div>
           )}
         </nav>
+        {tabs.length > 0 && (
+          <nav className="border-t border-silver-100 bg-white/80 py-3" aria-label={`${category!.schema.label} sections`}>
+            <div className="mx-auto flex max-w-6xl items-center gap-2 overflow-x-auto px-4 sm:px-6">
+              {tabs.map(tab => {
+                const active = activeTab === tab.key;
+                return (
+                  <a
+                    key={tab.key}
+                    href={tab.href}
+                    aria-current={active ? 'page' : undefined}
+                    className={active ? 'mp-btn-primary py-1.5 px-3' : 'mp-btn-secondary py-1.5 px-3'}
+                  >
+                    {tab.label}
+                  </a>
+                );
+              })}
+            </div>
+          </nav>
+        )}
       </header>
 
       <main id="main-content" className="mp-page">

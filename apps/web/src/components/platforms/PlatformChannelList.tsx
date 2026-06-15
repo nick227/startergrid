@@ -57,7 +57,7 @@ const GROUP_LABELS: Record<string, string> = {
   partner_pending: 'Partner approval pending',
   inactive: 'Setup needed',
   updating: 'Syncing',
-  paused: 'Paused',
+  paused: 'Disconnected',
   connected: 'Active',
 };
 
@@ -88,6 +88,17 @@ function buildGroups(
 
 const CTA_W = 'min-w-[8rem] justify-center';
 
+function SystemSetupPending({ account }: { account?: PlatformAccountDetail }) {
+  return (
+    <span
+      className={`inline-flex items-center px-3 py-1.5 text-[11px] font-semibold rounded-md bg-silver-100 text-ink-muted border border-silver-200 ${CTA_W}`}
+      title={account?.systemSetupMessage ?? 'System setup is not ready for this platform yet.'}
+    >
+      System pending
+    </span>
+  );
+}
+
 function PlatformCta({
   platform,
   account,
@@ -108,16 +119,17 @@ function PlatformCta({
   onPlatformConnected?: (platformSlug: string) => void;
 }) {
   const slug = platform.platformSlug;
-  const [pausing, setPausing] = useState(false);
+  const [disconnecting, setDisconnecting] = useState(false);
   const [resuming, setResuming] = useState(false);
 
-  const handlePause = async () => {
-    setPausing(true);
+  const systemSetupReady = account?.systemSetupReady ?? platform.integrationClass === 'OWNED';
+  const handleDisconnect = async () => {
+    setDisconnecting(true);
     try {
       await updateAccount(dealerId, slug, { state: 'SUSPENDED' });
       onAccountSaved();
     } catch {
-      setPausing(false);
+      setDisconnecting(false);
     }
   };
 
@@ -132,11 +144,16 @@ function PlatformCta({
   };
 
   if (conn.connection === 'paused') {
+    if (!systemSetupReady) return <SystemSetupPending account={account} />;
     return (
       <Button size="sm" variant="secondary" loading={resuming} className={CTA_W} onClick={() => void handleResume()}>
-        Resume
+        Reconnect
       </Button>
     );
+  }
+
+  if (!systemSetupReady && conn.connection !== 'connected' && conn.connection !== 'updating') {
+    return <SystemSetupPending account={account} />;
   }
 
   if (conn.connection === 'needs_oauth' && account?.oauthProvider) {
@@ -190,11 +207,11 @@ function PlatformCta({
         {platform.integrationClass !== 'OWNED' && (
           <button
             type="button"
-            disabled={pausing}
-            onClick={() => void handlePause()}
+            disabled={disconnecting}
+            onClick={() => void handleDisconnect()}
             className="text-[10px] text-ink-faint hover:text-ink-muted disabled:opacity-50 transition-colors"
           >
-            {pausing ? 'Pausing…' : 'Pause syncing'}
+            {disconnecting ? 'Disconnecting…' : 'Disconnect channel'}
           </button>
         )}
       </div>

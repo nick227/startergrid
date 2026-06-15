@@ -2,7 +2,8 @@
 //
 // Routes:
 //   #/                          → sites index
-//   #/{slug}/                   → category feed
+//   #/{slug}/                   → category home (templates)
+//   #/{slug}/list               → category feed
 //   #/{slug}/listing/{id}       → item detail (automotive VDP in Phase 2)
 //   #/{slug}/seller/{id}        → seller storefront
 //   #/{slug}/favorites          → saved listings (category-scoped)
@@ -25,6 +26,7 @@ export const DEFAULT_CATEGORY_SLUG = 'automotive';
 
 export type MarketplaceRoute =
   | { page: 'sites' }
+  | { page: 'home'; slug: string }
   | { page: 'list'; slug: string; query: ListQuery }
   | { page: 'listing'; slug: string; listingId: string }
   | { page: 'seller'; slug: string; sellerId: string }
@@ -133,13 +135,23 @@ function legacyRedirect(path: string, search: string): MarketplaceRoute | null {
 function parseCategoryPath(path: string, search: string): MarketplaceRoute | null {
   const segments = path.split('/').filter(Boolean);
   if (segments.length === 0) {
-    return { page: 'list', slug: DEFAULT_CATEGORY_SLUG, query: parseHashQuery(search) };
+    if (search) {
+      return { page: 'list', slug: DEFAULT_CATEGORY_SLUG, query: parseHashQuery(search) };
+    }
+    return { page: 'home', slug: DEFAULT_CATEGORY_SLUG };
   }
 
   const slug = segments[0]!;
   if (!categorySlugToId(slug)) return null;
 
   if (segments.length === 1) {
+    if (search) {
+      return { page: 'list', slug, query: parseHashQuery(search) };
+    }
+    return { page: 'home', slug };
+  }
+  
+  if (segments[1] === 'list') {
     return { page: 'list', slug, query: parseHashQuery(search) };
   }
 
@@ -199,6 +211,10 @@ export function sitesHref(): string {
   return '#/';
 }
 
+export function categoryHomeHref(slug: string): string {
+  return `#/${slug}`;
+}
+
 export function listHref(slug: string, query: ListQuery = {}): string {
   const params = new URLSearchParams();
   if (query.sellerName) params.set('sellerName', query.sellerName);
@@ -221,7 +237,8 @@ export function listHref(slug: string, query: ListQuery = {}): string {
   }
 
   const qs = params.toString();
-  return qs ? `#/${slug}/?${qs}` : `#/${slug}/`;
+  // We introduced #/{slug}/list so the root can be the home template
+  return qs ? `#/${slug}/list?${qs}` : `#/${slug}/list`;
 }
 
 export function listingHref(slug: string, listingId: string, title?: string): string {
@@ -245,7 +262,6 @@ export function favoritesHref(slug: string): string {
 export function profileHref(slug: string): string {
   return `#/${slug}/profile`;
 }
-
 
 export function categorySiteHref(apiHref: string): string {
   const normalized = apiHref.startsWith('/') ? apiHref.slice(1) : apiHref;

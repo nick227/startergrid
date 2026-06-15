@@ -1,5 +1,5 @@
 import { useMemo } from 'react';
-import { resolveCategorySchema, genericOperatorFallback, type CategorySchema } from '@auto-dealer/category-schemas';
+import { resolveCategorySchema, type CategorySchema } from '@auto-dealer/category-schemas';
 import { useAsyncQuery } from './useAsyncQuery.ts';
 import { fetchDealers } from '@/lib/api/sdk.ts';
 
@@ -14,9 +14,11 @@ export function useDealerCategorySchema(dealerId: string | null): CategorySchema
   return useMemo(() => {
     if (!dealerId) return PICKER_DEFAULT;
     if (!data) {
-      // Dealer selected but list not yet loaded: show neutral generic labels
-      // so non-automotive orgs never see "Stock #" / "VIN" during the fetch.
-      return genericOperatorFallback;
+      // Still loading — default to AUTOMOTIVE so platform filters and category-
+      // aware UI work correctly during the fetch. The genericOperatorFallback
+      // (id='WATCHES') would filter out all automotive platforms in any hook
+      // that guards on categorySchema.id.
+      return PICKER_DEFAULT;
     }
     const dealer = data.dealers.find(d => d.id === dealerId);
     return resolveCategorySchema(dealer?.businessCategory ?? 'AUTOMOTIVE');

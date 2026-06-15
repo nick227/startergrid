@@ -8,7 +8,7 @@ type Props = {
 
 export function PageHeader({ title, subtitle, eyebrow, as: Tag = 'h1', className = '' }: Props) {
   return (
-    <header className={`mb-6 space-y-2 sm:mb-8 ${className}`}>
+    <header className={`my-6 space-y-2 sm:mb-8 ${className}`}>
       {eyebrow && (
         <p className="mp-label text-ink-faint">{eyebrow}</p>
       )}

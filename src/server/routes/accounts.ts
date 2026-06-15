@@ -61,13 +61,22 @@ export function registerAccountRoutes(app: FastifyInstance, prisma: PrismaClient
       if (validationError)
         return reply.status(400).send({ error: validationError });
 
-      const updated = await updatePlatformAccount(
-        prisma,
-        dealershipId,
-        platformSlug,
-        body,
-        request.operator
-      );
+      try {
+        const updated = await updatePlatformAccount(
+          prisma,
+          dealershipId,
+          platformSlug,
+          body,
+          request.operator
+        );
+        return reply.send({ account: updated });
+      } catch (err) {
+        const message = err instanceof Error ? err.message : 'Account update failed.';
+        if (message.startsWith('System ') || message.startsWith('Cross-category ')) {
+          return reply.status(409).send({ error: message });
+        }
+        throw err;
+      }
     }
   );
 

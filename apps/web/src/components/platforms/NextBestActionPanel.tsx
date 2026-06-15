@@ -1,4 +1,3 @@
-import { useState } from 'react';
 import type { PlatformPublishResult, PlatformAccountDetail } from '@/lib/types.ts';
 import {
   platformConnectionWithAccount,
@@ -9,7 +8,6 @@ import {
 } from '@/lib/platformPresentation.ts';
 import { PlatformLogo } from './PlatformLogo.tsx';
 import { OAuthConnectButton } from './OAuthConnectButton.tsx';
-import { updateAccount } from '@/lib/api/sdk.ts';
 
 type PlatformWithConn = {
   platform: PlatformPublishResult;
@@ -46,18 +44,6 @@ function ActionRow({ item, dealerId, onDone, onSelectSlug }: RowProps) {
   const { platform, account, conn } = item;
   const benefit = platformBenefitLine(platform.platformSlug);
   const badge = effortBadge(account);
-  const [marking, setMarking] = useState(false);
-
-  const handleMarkApplied = async () => {
-    setMarking(true);
-    try {
-      await updateAccount(dealerId, platform.platformSlug, { state: 'PENDING_REVIEW' });
-      onDone();
-    } catch {
-      setMarking(false);
-    }
-  };
-
   let cta: React.ReactNode = null;
   if (conn.connection === 'needs_oauth' && account.oauthProvider) {
     cta = (
@@ -77,24 +63,14 @@ function ActionRow({ item, dealerId, onDone, onSelectSlug }: RowProps) {
     );
   } else if (account.partnerSignup && account.state === 'ACCOUNT_NEEDED') {
     cta = (
-      <div className="flex items-center gap-2">
-        <a
-          href={account.partnerSignup.applyUrl}
-          target="_blank"
-          rel="noopener noreferrer"
-          className="px-2.5 py-0.5 text-[11px] font-bold rounded-md text-white bg-blue-500 hover:bg-blue-600 transition-colors"
-        >
-          Apply →
-        </a>
-        <button
-          type="button"
-          disabled={marking}
-          onClick={() => void handleMarkApplied()}
-          className="text-[11px] text-ink-muted hover:text-ink underline underline-offset-2 disabled:opacity-50"
-        >
-          {marking ? 'Saving…' : 'Mark applied'}
-        </button>
-      </div>
+      <a
+        href={account.partnerSignup.applyUrl}
+        target="_blank"
+        rel="noopener noreferrer"
+        className="px-2.5 py-0.5 text-[11px] font-bold rounded-md text-white bg-blue-500 hover:bg-blue-600 transition-colors"
+      >
+        Apply →
+      </a>
     );
   } else {
     cta = (

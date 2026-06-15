@@ -12,7 +12,6 @@ import { findReport, type ReportSlug } from '@/lib/reportsCatalog.ts';
 import { reportCatalogCopy } from '@/lib/reportCopy.ts';
 
 import { ReportWidget } from '@/components/reports/ReportWidget.tsx';
-import { ReportHubSection } from '@/components/reports/ReportHubSection.tsx';
 import {
   MiniAssetRow,
   MiniPlatformRow,
@@ -22,7 +21,6 @@ import {
 } from '@/components/reports/ReportWidgetRows.tsx';
 
 import { usePhase2HubTeasers } from '@/hooks/usePhase2Report.ts';
-import { usePhase3HubTeasers } from '@/hooks/usePhase3Report.ts';
 import {
   engagementSortedPlatforms,
   lowestCoveragePct,
@@ -30,7 +28,6 @@ import {
   platformCoverageRows,
   readinessCounts,
   topEngagementTotal,
-  topIssueSummary,
   topMovementRows,
 } from '@/lib/reportPresentation.ts';
 import { formatMovementBenchmarkLine } from '@/lib/movementBenchmark.ts';
@@ -43,12 +40,50 @@ import { ReportAssetList } from '@/components/reports/ReportAssetList.tsx';
 import { ReportThroughputList } from '@/components/reports/ReportThroughputList.tsx';
 
 type Props = OperatorPageBaseProps;
+type HubReportSlug = 'readiness' | 'throughput' | 'exposure' | 'movement' | 'demand' | 'engagement';
+
+const hubReportCopy: Record<HubReportSlug, { category: string; title: string; summary: string; actionHint: string }> = {
+  readiness: {
+    category: 'Publishing',
+    title: 'Vehicles blocked from publishing',
+    summary: 'Shows active vehicles that cannot be sent to marketplaces because required data, photos, or validation rules are failing.',
+    actionHint: 'Fix these first. A blocked vehicle usually cannot appear or update on any connected channel.',
+  },
+  throughput: {
+    category: 'Publishing',
+    title: 'Channels with failed sends',
+    summary: 'Shows marketplaces where recent sync attempts failed, so listing updates may not have reached shoppers.',
+    actionHint: 'Use this when a channel looks stale, missing, or out of sync compared with Inventory.',
+  },
+  exposure: {
+    category: 'Coverage',
+    title: 'Where listings are not live',
+    summary: 'Compares connected channels against active inventory so you can see where coverage is low or incomplete.',
+    actionHint: 'Low coverage means some active vehicles are not live on that marketplace.',
+  },
+  movement: {
+    category: 'Inventory',
+    title: 'Inventory sitting too long',
+    summary: 'Highlights vehicles aging slower than similar inventory and likely needing price, photo, or merchandising attention.',
+    actionHint: 'Start here for stale stock decisions before changing channel settings.',
+  },
+  demand: {
+    category: 'Demand',
+    title: 'Vehicles getting little interest',
+    summary: 'Shows which vehicles have leads or inquiry events and calls out older inventory with no observed demand.',
+    actionHint: 'No demand is a merchandising signal, not proof that a vehicle cannot sell.',
+  },
+  engagement: {
+    category: 'Demand',
+    title: 'Channels creating the most leads',
+    summary: 'Ranks connected marketplaces by observed assists so you can see where shoppers are engaging.',
+    actionHint: 'Assists are directional engagement signals, not sales attribution.',
+  },
+};
 
 export default function ReportsHubPage({ dealerId, nav, activeTab }: Props) {
   const { perf, publish, reload, loading, error } = useReportsData(dealerId);
   const phase2 = usePhase2HubTeasers(dealerId);
-  // phase3 not used in the 6 MVP widgets but keeping it for compatibility
-  const phase3 = usePhase3HubTeasers(dealerId);
   const [refreshing, setRefreshing] = useState(false);
   const [refreshError, setRefreshError] = useState<string | null>(null);
   const [activeDrawerSlug, setActiveDrawerSlug] = useState<ReportSlug | null>(null);
@@ -72,17 +107,18 @@ export default function ReportsHubPage({ dealerId, nav, activeTab }: Props) {
   // Derive top rows and metrics
   const blockedAssets = publish.data?.vehicles.details ?? [];
   const platforms = perf.data?.platforms ?? [];
+  const platformPerfBySlug = new Map(platforms.map(platform => [platform.platformSlug, platform]));
   const coverageRows = platforms.length > 0 ? platformCoverageRows(platforms, activeCount) : [];
   const demandAssets = phase2.demand.data?.assets ?? [];
   const throughputChannels = phase2.throughput.data?.channels ?? [];
 
-  // Group 1: Inventory Health (Stale Inventory)
+  // Inventory attention
   const staleDef = findReport('movement')!;
   const staleCopy = reportCatalogCopy(staleDef);
   const topStale = topMovementRows(perf.data?.vehicles ?? [], 3);
   const staleMetric = movementActionCount(perf.data?.vehicles ?? []);
 
-  // Group 2: Publishing Health (Publish Blockers, Channel Failures, Listing Coverage)
+  // Publishing and coverage attention
   const blockersDef = findReport('readiness')!;
   const blockersCopy = reportCatalogCopy(blockersDef);
   const topBlockers = blockedAssets.slice(0, 3);
@@ -99,10 +135,10 @@ export default function ReportsHubPage({ dealerId, nav, activeTab }: Props) {
   const topCoverage = sortedCoverage.slice(0, 3);
   const lowCoverageMetric = lowestCoveragePct(coverageRows) ?? '—';
 
-  // Group 3: Demand & Performance (Vehicle Interest, Top Channels)
+  // Demand and engagement attention
   const interestDef = findReport('demand')!;
   const interestCopy = reportCatalogCopy(interestDef);
-  const topInterest = [...demandAssets].sort((a, b) => b.events.length - a.events.length).slice(0, 3);
+  const topInterest = [...demandAssets].sort((a, b) => b.observedDemandCount - a.observedDemandCount).slice(0, 3);
   const interestMetric = phase2.demand.data?.summary.highAgeZeroDemandCount ?? '—';
 
   const topChannelsDef = findReport('engagement')!;
@@ -172,13 +208,23 @@ export default function ReportsHubPage({ dealerId, nav, activeTab }: Props) {
       )}
 
       {((loading && !perf.data) || perf.data || publish.data) && (
-        <div className="space-y-12">
-          <ReportHubSection title={operatorCopy.reports.hubPublishingHealthHeading} subtitle={operatorCopy.reports.hubPublishingHealthSubtitle}>
+        <div className="space-y-5">
+          <div>
+            <h2 className="text-base font-bold text-ink-heading tracking-tight">Reports at a glance</h2>
+            <p className="mt-1 max-w-3xl text-sm leading-relaxed text-ink-muted">
+              These cards answer the day-to-day questions operators ask most: what cannot publish,
+              which inventory needs attention, and where shopper interest is showing up.
+            </p>
+          </div>
+
+          <div className="grid items-stretch gap-4 lg:grid-cols-2">
             <ReportWidget
-              title={blockersCopy.title}
-              decision={blockersCopy.decision}
+              category={hubReportCopy.readiness.category}
+              title={hubReportCopy.readiness.title}
+              decision={hubReportCopy.readiness.summary}
               metricLabel={blockersCopy.primaryMetric}
               metricValue={blockersMetric}
+              actionHint={hubReportCopy.readiness.actionHint}
               onViewAll={() => setActiveDrawerSlug('readiness')}
             >
               {topBlockers.length === 0 ? (
@@ -189,42 +235,12 @@ export default function ReportsHubPage({ dealerId, nav, activeTab }: Props) {
             </ReportWidget>
 
             <ReportWidget
-              title={failuresCopy.title}
-              decision={failuresCopy.decision}
-              metricLabel={failuresCopy.primaryMetric}
-              metricValue={failuresMetric}
-              onViewAll={() => setActiveDrawerSlug('throughput')}
-            >
-              {topFailures.length === 0 || topFailures[0].failedInPeriod === 0 ? (
-                <div className="py-4 text-center text-xs text-ink-muted">No failures — channels are syncing.</div>
-              ) : (
-                topFailures.filter(r => r.failedInPeriod > 0).map(r => (
-                  <MiniGenericRow key={r.channelSlug} label={r.channelSlug} value={`${r.failedInPeriod} fails`} onClick={() => nav.goToPlatformQueue(r.channelSlug)} />
-                ))
-              )}
-            </ReportWidget>
-
-            <ReportWidget
-              title={coverageCopy.title}
-              decision={coverageCopy.decision}
-              metricLabel={coverageCopy.primaryMetric}
-              metricValue={lowCoverageMetric !== '—' ? `${lowCoverageMetric}%` : '—'}
-              onViewAll={() => setActiveDrawerSlug('exposure')}
-            >
-              {topCoverage.length === 0 ? (
-                <div className="py-4 text-center text-xs text-ink-muted">No channels connected yet.</div>
-              ) : (
-                topCoverage.map(r => <MiniCoverageRow key={r.platformSlug} item={r} valueLabel={r.coveragePct != null ? `${r.coveragePct}%` : '—'} onClick={() => nav.goToPlatforms()} />)
-              )}
-            </ReportWidget>
-          </ReportHubSection>
-
-          <ReportHubSection title={operatorCopy.reports.hubInventoryHealthHeading} subtitle={operatorCopy.reports.hubInventoryHealthSubtitle}>
-            <ReportWidget
-              title={staleCopy.title}
-              decision={staleCopy.decision}
+              category={hubReportCopy.movement.category}
+              title={hubReportCopy.movement.title}
+              decision={hubReportCopy.movement.summary}
               metricLabel={staleCopy.primaryMetric}
               metricValue={staleMetric}
+              actionHint={hubReportCopy.movement.actionHint}
               onViewAll={() => setActiveDrawerSlug('movement')}
             >
               {topStale.length === 0 ? (
@@ -233,28 +249,64 @@ export default function ReportsHubPage({ dealerId, nav, activeTab }: Props) {
                 topStale.map(r => <MiniAssetRow key={r.stockNumber} item={r} valueLabel={formatMovementBenchmarkLine(r) || ''} onClick={() => nav.goToInventory({ assetRef: r.stockNumber })} />)
               )}
             </ReportWidget>
-          </ReportHubSection>
 
-          <ReportHubSection title={operatorCopy.reports.hubDemandPerformanceHeading} subtitle={operatorCopy.reports.hubDemandPerformanceSubtitle}>
             <ReportWidget
-              title={interestCopy.title}
-              decision={interestCopy.decision}
+              category={hubReportCopy.throughput.category}
+              title={hubReportCopy.throughput.title}
+              decision={hubReportCopy.throughput.summary}
+              metricLabel={failuresCopy.primaryMetric}
+              metricValue={failuresMetric}
+              actionHint={hubReportCopy.throughput.actionHint}
+              onViewAll={() => setActiveDrawerSlug('throughput')}
+            >
+              {topFailures.length === 0 || topFailures[0].failedInPeriod === 0 ? (
+                <div className="py-4 text-center text-xs text-ink-muted">No failures. Channels are syncing.</div>
+              ) : (
+                topFailures.filter(r => r.failedInPeriod > 0).map(r => (
+                  <MiniGenericRow key={r.channelSlug} label={r.channelSlug} value={`${r.failedInPeriod} fails`} onClick={() => nav.goToPlatformQueue(r.channelSlug)} />
+                ))
+              )}
+            </ReportWidget>
+
+            <ReportWidget
+              category={hubReportCopy.demand.category}
+              title={hubReportCopy.demand.title}
+              decision={hubReportCopy.demand.summary}
               metricLabel={interestCopy.primaryMetric}
               metricValue={interestMetric}
+              actionHint={hubReportCopy.demand.actionHint}
               onViewAll={() => setActiveDrawerSlug('demand')}
             >
               {topInterest.length === 0 ? (
                 <div className="py-4 text-center text-xs text-ink-muted">No active leads or events recorded.</div>
               ) : (
-                topInterest.map(r => <MiniGenericRow key={r.assetId} label={r.stockNumber} value={`${r.events.length} events`} onClick={() => nav.goToInventory({ assetRef: r.stockNumber })} />)
+                topInterest.map(r => <MiniGenericRow key={r.assetId} label={r.assetRef} value={`${r.observedDemandCount} events`} onClick={() => nav.goToInventory({ assetRef: r.assetRef, assetId: r.assetId })} />)
               )}
             </ReportWidget>
 
             <ReportWidget
-              title={topChannelsCopy.title}
-              decision={topChannelsCopy.decision}
+              category={hubReportCopy.exposure.category}
+              title={hubReportCopy.exposure.title}
+              decision={hubReportCopy.exposure.summary}
+              metricLabel={coverageCopy.primaryMetric}
+              metricValue={lowCoverageMetric !== '—' ? `${lowCoverageMetric}%` : '—'}
+              actionHint={hubReportCopy.exposure.actionHint}
+              onViewAll={() => setActiveDrawerSlug('exposure')}
+            >
+              {topCoverage.length === 0 ? (
+                <div className="py-4 text-center text-xs text-ink-muted">No channels connected yet.</div>
+              ) : (
+                topCoverage.map(r => <MiniCoverageRow key={r.platformSlug} item={r} valueLabel={r.coveragePct != null ? `${r.coveragePct}%` : '—'} onClick={() => nav.goToPlatforms()} />)
+              )}
+            </ReportWidget>
+
+            <ReportWidget
+              category={hubReportCopy.engagement.category}
+              title={hubReportCopy.engagement.title}
+              decision={hubReportCopy.engagement.summary}
               metricLabel={topChannelsCopy.primaryMetric}
               metricValue={topChannelsMetric}
+              actionHint={hubReportCopy.engagement.actionHint}
               onViewAll={() => setActiveDrawerSlug('engagement')}
             >
               {topEngagement.length === 0 ? (
@@ -263,7 +315,7 @@ export default function ReportsHubPage({ dealerId, nav, activeTab }: Props) {
                 topEngagement.map(r => <MiniPlatformRow key={r.platformSlug} item={r} valueLabel={`${r.totalLeads} assists`} onClick={() => nav.goToPlatformHistory(r.platformSlug)} />)
               )}
             </ReportWidget>
-          </ReportHubSection>
+          </div>
         </div>
       )}
 
@@ -276,7 +328,7 @@ export default function ReportsHubPage({ dealerId, nav, activeTab }: Props) {
 
       <RowDetailDrawer open={activeDrawerSlug === 'throughput'} size="3xl" title={failuresCopy.title} onClose={closeDrawer}>
         <div className="p-4 sm:p-6 bg-surface-base min-h-full">
-          <ReportThroughputList rows={throughputChannels} loading={false} emptyState={emptyListState} />
+          <ReportThroughputList rows={throughputChannels} nav={nav} loading={false} emptyState={emptyListState} />
         </div>
       </RowDetailDrawer>
 
@@ -288,13 +340,13 @@ export default function ReportsHubPage({ dealerId, nav, activeTab }: Props) {
 
       <RowDetailDrawer open={activeDrawerSlug === 'movement'} size="3xl" title={staleCopy.title} onClose={closeDrawer}>
         <div className="p-4 sm:p-6 bg-surface-base min-h-full">
-          <ReportAssetList rows={perf.data?.vehicles ?? []} nav={nav} emptyState={emptyListState} />
+          <ReportAssetList rows={perf.data?.vehicles ?? []} platformPerfBySlug={platformPerfBySlug} nav={nav} emptyState={emptyListState} />
         </div>
       </RowDetailDrawer>
 
       <RowDetailDrawer open={activeDrawerSlug === 'demand'} size="3xl" title={interestCopy.title} onClose={closeDrawer}>
         <div className="p-4 sm:p-6 bg-surface-base min-h-full">
-          <ReportObservedDemandList rows={demandAssets} loading={false} emptyState={emptyListState} />
+          <ReportObservedDemandList rows={demandAssets} nav={nav} loading={false} emptyState={emptyListState} />
         </div>
       </RowDetailDrawer>
 

@@ -84,7 +84,32 @@ export default function ProfilePage() {
   const favorites = data?.favorites.slice(0, 4) ?? [];
   const unavailableCount = data?.unavailableFavorites.length ?? 0;
 
-  if (!authReady || !user) return null;
+  if (!authReady) {
+    return (
+      <PageShell>
+        <PageHeader
+          title="Your profile"
+          subtitle={`Manage your account and saved activity for the ${schema.label.toLowerCase()} marketplace.`}
+        />
+        <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_22rem]">
+          <SkeletonBlock className="h-72" />
+          <div className="grid gap-3 sm:grid-cols-3 lg:grid-cols-1">
+            <SkeletonBlock className="h-24" />
+            <SkeletonBlock className="h-24" />
+            <SkeletonBlock className="h-24" />
+          </div>
+        </div>
+      </PageShell>
+    );
+  }
+
+  if (!user) {
+    return (
+      <PageShell>
+        <PageHeader title="Your profile" subtitle="Redirecting to browse." />
+      </PageShell>
+    );
+  }
 
   async function handleSubmit(e: FormEvent) {
     e.preventDefault();

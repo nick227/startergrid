@@ -8,7 +8,7 @@
   }
 
   .btn-primary-marketplace {
-    @apply focus-ring inline-flex min-h-[48px] items-center justify-center rounded-pill bg-cta px-5 py-2.5 text-sm font-semibold text-white shadow-elevation-2 transition hover:bg-cta-hover disabled:cursor-not-allowed disabled:opacity-40;
+    @apply focus-ring inline-flex min-h-[48px] items-center justify-center rounded-pill bg-cta px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-cta-hover disabled:cursor-not-allowed disabled:opacity-40;
   }
 
   .btn-secondary-marketplace {
@@ -16,14 +16,14 @@
   }
 
   .surface-card-operator {
-    @apply rounded-lg border border-silver-200/60 bg-surface-card shadow-sm;
+    @apply border border-silver-200/60 bg-surface-card;
   }
 
   .surface-card-marketplace {
-    @apply rounded-xl border border-silver-200 bg-surface-card shadow-elevation-2;
+    @apply border border-silver-200 bg-surface-card;
   }
 
   .field-input-base {
-    @apply w-full rounded-lg border border-silver-200 bg-surface-card px-3.5 py-2 text-sm text-ink-heading focus:outline-none focus:ring-2 focus:ring-navy-500/30 transition-colors shadow-sm;
+    @apply w-full rounded-sm border border-silver-200 bg-surface-card px-3.5 py-2 text-sm text-ink-heading focus:outline-none focus:ring-2 focus:ring-navy-500/30 transition-colors;
   }
 }

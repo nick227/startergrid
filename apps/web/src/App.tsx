@@ -11,6 +11,7 @@ import LeadsPage from './pages/LeadsPage.tsx';
 import KnowledgeBasePage from './pages/KnowledgeBasePage.tsx';
 import HomePage from './pages/HomePage.tsx';
 import DealershipSignupPage from './pages/DealershipSignupPage.tsx';
+import { OperatorPage } from '@/components/operator';
 
 const PlatformDetailPage = lazy(() => import('./pages/PlatformDetailPage.tsx'));
 const ReportsRouter = lazy(() => import('./pages/ReportsRouter.tsx'));
@@ -22,6 +23,30 @@ import { useDealerCategorySchema } from '@/hooks/useDealerCategorySchema.ts';
 import { CategoryProvider } from '@/contexts/CategoryContext.tsx';
 import { DocReaderProvider, DocReaderSheet } from '@/components/docs';
 import { canAccessDealer } from '@/lib/operatorAccess.ts';
+import type { OperatorNavHandlers, OperatorTab } from '@/lib/operatorNav.ts';
+
+function OperatorRouteFallback({
+  dealerId,
+  nav,
+  activeTab,
+}: {
+  dealerId: string;
+  nav: OperatorNavHandlers;
+  activeTab: OperatorTab;
+}) {
+  return (
+    <OperatorPage dealerId={dealerId} nav={nav} activeTab={activeTab}>
+      <div className="surface-card-operator p-6">
+        <div className="h-4 w-40 animate-pulse rounded bg-silver-200" />
+        <div className="mt-5 space-y-3">
+          <div className="h-3 w-full animate-pulse rounded bg-silver-100" />
+          <div className="h-3 w-5/6 animate-pulse rounded bg-silver-100" />
+          <div className="h-3 w-2/3 animate-pulse rounded bg-silver-100" />
+        </div>
+      </div>
+    </OperatorPage>
+  );
+}
 
 function OperatorApp() {
   const { user, authReady } = useAuth();
@@ -69,7 +94,7 @@ function OperatorApp() {
       ) : !canAccessDealer(user, dealerId) ? (
         <DealerPicker onSelect={selectDealer} forbiddenDealerId={dealerId} />
       ) : platformSlug && !platformView ? (
-        <Suspense fallback={null}>
+        <Suspense fallback={<OperatorRouteFallback dealerId={dealerId} nav={nav} activeTab={activeTab} />}>
           <PlatformDetailPage dealerId={dealerId} nav={nav} activeTab={activeTab} platformSlug={platformSlug} />
         </Suspense>
       ) : platformSlug && platformView === 'queue' ? (
@@ -83,7 +108,7 @@ function OperatorApp() {
       ) : page === 'history' ? (
         <HistoryPage dealerId={dealerId} nav={nav} activeTab={activeTab} />
       ) : page === 'reports' ? (
-        <Suspense fallback={null}>
+        <Suspense fallback={<OperatorRouteFallback dealerId={dealerId} nav={nav} activeTab={activeTab} />}>
           <ReportsRouter dealerId={dealerId} nav={nav} activeTab={activeTab} reportSlug={reportSlug} reportRange={reportRange} />
         </Suspense>
       ) : page === 'inventory' ? (

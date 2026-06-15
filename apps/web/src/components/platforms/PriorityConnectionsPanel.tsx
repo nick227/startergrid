@@ -23,6 +23,7 @@ type PriorityRowProps = {
 function PriorityRow({ platform, account, dealerId, onDone, onSelectSlug }: PriorityRowProps) {
   const conn = platformConnectionWithAccount(platform, account);
   const [marking, setMarking] = useState(false);
+  const systemSetupReady = account.systemSetupReady ?? platform.integrationClass === 'OWNED';
 
   const handleMarkApplied = async () => {
     setMarking(true);
@@ -36,7 +37,16 @@ function PriorityRow({ platform, account, dealerId, onDone, onSelectSlug }: Prio
 
   let cta: React.ReactNode = null;
 
-  if (conn.connection === 'needs_oauth' && account.oauthProvider) {
+  if (!systemSetupReady) {
+    cta = (
+      <span
+        className="shrink-0 px-2.5 py-0.5 text-[11px] font-bold rounded-md bg-silver-100 text-ink-muted border border-silver-200"
+        title={account.systemSetupMessage ?? 'System setup is not ready for this platform yet.'}
+      >
+        System pending
+      </span>
+    );
+  } else if (conn.connection === 'needs_oauth' && account.oauthProvider) {
     cta = (
       <OAuthConnectButton
         dealerId={dealerId}

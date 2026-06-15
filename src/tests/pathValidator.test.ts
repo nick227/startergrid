@@ -44,6 +44,13 @@ describe('validateRequiredPaths', () => {
     const issues = validateRequiredPaths({}, ['vin'], 'Vehicle STOCK-1');
     assert.ok(issues[0].message.includes('Vehicle STOCK-1'));
   });
+
+  it('uses friendly photo copy for required media URL paths', () => {
+    const issues = validateRequiredPaths({}, ['media[0].url'], 'Vehicle STOCK-1');
+    assert.equal(issues.length, 1);
+    assert.equal(issues[0].code, 'MEDIA_MISSING');
+    assert.equal(issues[0].message, 'Vehicle STOCK-1 needs at least one photo before it can publish');
+  });
 });
 
 describe('validateMediaRules', () => {

@@ -52,7 +52,6 @@ export function AccountEditForm({ account, dealerId, onSaved, onCancel }: Props)
   const [err, setErr] = useState<string | null>(null);
   const { connecting, connected: justConnected, connect: handleConnect } = useOAuthConnect(dealerId, account.platformSlug, onSaved);
   const [disconnecting, setDisconnecting] = useState(false);
-  const [marking, setMarking] = useState(false);
 
   const set = (field: keyof AccountUpdatePayload) => (
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>
@@ -88,18 +87,6 @@ export function AccountEditForm({ account, dealerId, onSaved, onCancel }: Props)
     } catch (e: unknown) {
       setErr(e instanceof Error ? e.message : 'Disconnect failed');
       setDisconnecting(false);
-    }
-  };
-
-  const handleMarkApplied = async () => {
-    setMarking(true);
-    setErr(null);
-    try {
-      await updateAccount(dealerId, account.platformSlug, { state: 'PENDING_REVIEW' });
-      onSaved();
-    } catch (e: unknown) {
-      setErr(e instanceof Error ? e.message : 'Save failed');
-      setMarking(false);
     }
   };
 
@@ -161,7 +148,7 @@ export function AccountEditForm({ account, dealerId, onSaved, onCancel }: Props)
                 <p className="text-xs font-semibold text-blue-800">Partner signup required</p>
                 <p className="text-xs text-blue-700">{account.partnerSignup.requirements}</p>
                 <p className="text-xs text-blue-600">Estimated approval: {account.partnerSignup.estimatedDays}</p>
-                <div className="flex items-center gap-3 pt-0.5">
+                <div className="pt-0.5">
                   <a
                     href={account.partnerSignup.applyUrl}
                     target="_blank"
@@ -170,14 +157,6 @@ export function AccountEditForm({ account, dealerId, onSaved, onCancel }: Props)
                   >
                     Apply →
                   </a>
-                  <button
-                    type="button"
-                    disabled={marking}
-                    onClick={() => void handleMarkApplied()}
-                    className="text-xs text-blue-700 underline underline-offset-2 hover:text-blue-900 disabled:opacity-50"
-                  >
-                    {marking ? 'Saving…' : 'Mark as applied'}
-                  </button>
                 </div>
               </div>
             )}

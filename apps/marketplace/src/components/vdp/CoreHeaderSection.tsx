@@ -6,7 +6,7 @@ type Props = { core: VehicleCore; commerce: VehicleCommerce; location: VehicleLo
 
 export function CoreHeaderSection({ core, commerce, location }: Props) {
   return (
-    <header className="space-y-4">
+    <header className="space-y-4 pt-4">
       {/* Dealership Branding at top */}
       <div className="flex items-center gap-2 text-sm font-semibold text-slate-500 uppercase tracking-wide">
         <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="size-4">

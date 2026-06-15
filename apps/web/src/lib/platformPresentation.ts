@@ -136,7 +136,7 @@ export function platformConnection(p: PlatformPublishResult): PlatformConnection
 
   const acct = p.accountState;
   if (acct === 'SUSPENDED') {
-    return { connection: 'paused', label: 'Paused', sort: 5, pill: CONNECTION_PILL.paused };
+    return { connection: 'paused', label: 'Disconnected', sort: 5, pill: CONNECTION_PILL.paused };
   }
   if (
     acct === 'BLOCKED' ||
@@ -215,7 +215,7 @@ export function platformSituationSummary(platforms: PlatformPublishResult[]): st
   if (setup) parts.push(`${setup} need setup`);
   if (blocked) parts.push(`${blocked} blocked`);
   if (updating) parts.push(`${updating} updating`);
-  if (paused) parts.push(`${paused} paused`);
+  if (paused) parts.push(`${paused} disconnected`);
   return parts.join(' · ');
 }
 
@@ -233,7 +233,7 @@ export const PLATFORM_CONNECTION_FILTERS: Array<{ key: PlatformConnectionFilter;
   { key: 'ALL', label: 'All' },
   { key: 'connected', label: operatorCopy.connection.connected },
   { key: 'inactive', label: operatorCopy.connection.setupNeeded },
-  { key: 'paused', label: 'Paused' },
+  { key: 'paused', label: 'Disconnected' },
   { key: 'blocked', label: operatorCopy.connection.blocked },
   { key: 'updating', label: operatorCopy.connection.updating },
 ];

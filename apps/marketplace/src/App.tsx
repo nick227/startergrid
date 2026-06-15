@@ -1,4 +1,4 @@
-import { lazy, Suspense, useEffect, useState } from 'react';
+import { lazy, startTransition, Suspense, useEffect, useState } from 'react';
 import { categorySlugToId, isConsumerMarketplaceLive, resolveCategorySchema } from '@auto-dealer/category-schemas';
 import { parseRoute } from './lib/routes.ts';
 import { setPageMeta } from './lib/pageMeta.ts';
@@ -16,12 +16,18 @@ import ProfilePage from './pages/ProfilePage.tsx';
 import { PageShell } from './components/layout/PageShell.tsx';
 import { NotFoundState } from './components/ui/NotFoundState.tsx';
 import { sitesHref } from './lib/routes.ts';
+import { AutomotiveHomeTemplate } from './pages/templates/AutomotiveHomeTemplate.tsx';
+import { GenericHomeTemplate } from './pages/templates/GenericHomeTemplate.tsx';
 
 export default function App() {
   const [route, setRoute] = useState(parseRoute);
 
   useEffect(() => {
-    const handler = () => setRoute(parseRoute());
+    const handler = () => {
+      startTransition(() => {
+        setRoute(parseRoute());
+      });
+    };
     window.addEventListener('hashchange', handler);
     return () => window.removeEventListener('hashchange', handler);
   }, []);
@@ -95,6 +101,8 @@ export default function App() {
         {route.page === 'seller' && <SellerDetailPage key={route.sellerId} sellerId={route.sellerId} />}
         {route.page === 'favorites' && <FavoritesPage />}
         {route.page === 'profile' && <ProfilePage />}
+        {route.page === 'home' && route.slug === 'automotive' && <AutomotiveHomeTemplate />}
+        {route.page === 'home' && route.slug !== 'automotive' && <GenericHomeTemplate />}
         {route.page === 'list' && (
           <Suspense fallback={<PageShell><p className="p-6 text-sm text-ink-muted">Loading inventory…</p></PageShell>}>
             <ListingListPage initialQuery={route.query} />

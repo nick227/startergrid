@@ -1,11 +1,10 @@
 import type { CategorySchema } from '@auto-dealer/category-schemas';
 import type { Column } from '../generic/DataTable.tsx';
 import type { FieldDef } from '../generic/BulkActionBar.tsx';
-import type { VehicleListItem, VehiclePerformanceItem, MovementSignal } from '../../lib/types.ts';
+import type { VehicleListItem, VehiclePerformanceItem } from '../../lib/types.ts';
 import { LIFECYCLE_STATE_LABELS, LIFECYCLE_STATE_PILL } from '../../lib/lifecycleDisplay.ts';
 import {
   VEHICLE_READINESS_REGISTRY,
-  movementSignalVisual,
   type VehicleReadinessKey,
 } from '../../lib/statusRegistry.ts';
 import { MovementBenchmarkCell } from './MovementBenchmark.tsx';

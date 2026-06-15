@@ -17,6 +17,46 @@ export function getSetupReadiness(
   platform: PlatformPublishResult,
   account: PlatformAccountDetail | null
 ): SetupReadiness {
+  // OWNED channels are always available — no external account setup required
+  if (platform.integrationClass === 'OWNED') {
+    if (platform.state === 'Blocked' || platform.readiness === 'RED') {
+      return {
+        statusLabel: 'Inventory needs attention',
+        severity: 'critical',
+        nextAction: 'Fix inventory',
+        missingRequiredFields: [],
+        missingRequiredSecrets: [],
+        setupProgress: null,
+        validationSummary: platform.detail || 'One or more ready listings are missing required marketplace data.',
+        partnerAcceptanceNote: null,
+      };
+    }
+
+    if (platform.state === 'Failed') {
+      return {
+        statusLabel: 'Sync failed',
+        severity: 'critical',
+        nextAction: 'Retry sync',
+        missingRequiredFields: [],
+        missingRequiredSecrets: [],
+        setupProgress: null,
+        validationSummary: platform.detail || 'The last marketplace update did not complete.',
+        partnerAcceptanceNote: null,
+      };
+    }
+
+    return {
+      statusLabel: platform.state === 'Active' ? 'Active' : 'Ready',
+      severity: 'success',
+      nextAction: null,
+      missingRequiredFields: [],
+      missingRequiredSecrets: [],
+      setupProgress: null,
+      validationSummary: null,
+      partnerAcceptanceNote: null,
+    };
+  }
+
   const isOauth = platform.connectionType === 'OAUTH';
   const isPartnerFeed = platform.connectionType === 'PARTNER_FEED';
 
@@ -147,4 +187,3 @@ export function severityToPill(severity: ReadinessSeverity): string {
       return 'border-silver-200 bg-silver-100 text-ink-muted';
   }
 }
-

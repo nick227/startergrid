@@ -63,6 +63,7 @@ export function OAuthConnectBanner({ platforms, accountBySlug, dealerId, onDone 
   for (const p of platforms) {
     const acct = accountBySlug.get(p.platformSlug);
     if (!acct?.oauthProvider || acct.oauthConnected) continue;
+    if (!acct.systemSetupReady) continue;
     const provider = acct.oauthProvider;
     const existing = groupMap.get(provider);
     if (existing) {

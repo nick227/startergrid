@@ -7,6 +7,8 @@ type Props = {
   metricLabel: string;
   metricValue: string | number;
   onViewAll: () => void;
+  category?: string;
+  actionHint?: string;
   children?: ReactNode;
 };
 
@@ -16,15 +18,22 @@ export function ReportWidget({
   metricLabel,
   metricValue,
   onViewAll,
+  category,
+  actionHint,
   children,
 }: Props) {
   return (
-    <article className="surface-card-operator rounded-lg border border-silver-200/90 bg-surface-card shadow-elevation-1 flex flex-col h-full overflow-hidden transition-all hover:border-navy-400/40 hover:shadow-elevation-2">
+    <article className="surface-card-operator rounded-lg border border-silver-200/90 bg-surface-card shadow-elevation-1 flex flex-col h-full min-h-[360px] overflow-hidden transition-all hover:border-navy-400/40 hover:shadow-elevation-2">
       <div className="p-5 flex-1 flex flex-col gap-4">
         <div className="flex items-start justify-between gap-4">
           <div className="min-w-0 flex-1">
+            {category && (
+              <p className="mb-2 text-[10px] font-bold uppercase tracking-wider text-navy-500">
+                {category}
+              </p>
+            )}
             <h3 className="text-sm font-bold text-ink-heading tracking-tight">{title}</h3>
-            <p className="text-xs text-ink-muted mt-1 leading-relaxed line-clamp-2">{decision}</p>
+            <p className="text-xs text-ink-muted mt-2 leading-relaxed">{decision}</p>
           </div>
           <div className="shrink-0 text-right rounded-md border border-silver-100 bg-surface-inset/60 px-3 py-2.5">
             <dt className="text-[10px] font-bold uppercase tracking-wider text-ink-faint">{metricLabel}</dt>
@@ -33,11 +42,15 @@ export function ReportWidget({
         </div>
 
         {children && (
-          <div className="mt-2 flex-1">
-            <div className="border-t border-silver-100/50 pt-3">
-              {children}
-            </div>
+          <div className="flex-1">
+            {children}
           </div>
+        )}
+
+        {actionHint && (
+          <p className="rounded-md bg-surface-inset/70 px-3 py-2 text-xs font-medium leading-relaxed text-ink-muted">
+            {actionHint}
+          </p>
         )}
       </div>
 

@@ -12,7 +12,18 @@ export function validateRequiredPaths(source: unknown, paths: string[], label: s
   return paths.flatMap((path) => {
     const value = readPath(source, path);
     const missing = value === undefined || value === null || value === '';
-    return missing ? [{ path, message: `${label} missing required field: ${path}`, severity: 'FAIL' as const }] : [];
+    if (!missing) return [];
+
+    if (/^media\[\d+\]\.url$/.test(path)) {
+      return [{
+        path,
+        message: `${label} needs at least one photo before it can publish`,
+        severity: 'FAIL' as const,
+        code: 'MEDIA_MISSING',
+      }];
+    }
+
+    return [{ path, message: `${label} missing required field: ${path}`, severity: 'FAIL' as const }];
   });
 }
 

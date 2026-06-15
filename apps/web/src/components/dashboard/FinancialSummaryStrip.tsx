@@ -8,25 +8,34 @@ function formatCurrency(val: number) {
 export function FinancialSummaryStrip({ data, isAdmin }: { data: DealerFinancialSummaryDto; isAdmin?: boolean }) {
   return (
     <SectionCard title="Financial Summary" subtitle={isAdmin ? "Global aggregate sales performance across all dealers." : "Your current sales performance."}>
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-        <div className="bg-gradient-to-br from-indigo-50 to-indigo-100 border border-indigo-200 rounded-xl p-5 shadow-sm hover:shadow-md transition-shadow">
-          <div className="text-sm font-semibold text-indigo-800 mb-1">Total Sales</div>
-          <div className="text-3xl font-bold text-indigo-950 font-mono tracking-tight">{formatCurrency(data.totalSales)}</div>
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-4 lg:gap-6">
+        <div className="flex flex-col p-6 bg-white rounded-2xl border border-slate-200/60 shadow-[0_2px_10px_-3px_rgba(6,81,237,0.05)] transition-all hover:shadow-[0_8px_30px_rgb(0,0,0,0.04)]">
+          <span className="text-sm font-medium text-slate-500 mb-2">Total Sales</span>
+          <span className="text-3xl font-semibold tracking-tight text-slate-900">{formatCurrency(data.totalSales)}</span>
         </div>
-        <div className="bg-gradient-to-br from-blue-50 to-blue-100 border border-blue-200 rounded-xl p-5 shadow-sm hover:shadow-md transition-shadow">
-          <div className="text-sm font-semibold text-blue-800 mb-1">MTD Sales</div>
-          <div className="text-2xl font-bold text-blue-950 font-mono tracking-tight">{formatCurrency(data.monthToDateSales)}</div>
-          {data.conversionIndicator && <div className="text-[11px] font-semibold text-emerald-700 mt-2 bg-emerald-100 inline-block px-2 py-0.5 rounded-full border border-emerald-200">{data.conversionIndicator}</div>}
+
+        <div className="flex flex-col p-6 bg-white rounded-2xl border border-slate-200/60 shadow-[0_2px_10px_-3px_rgba(6,81,237,0.05)] transition-all hover:shadow-[0_8px_30px_rgb(0,0,0,0.04)] relative overflow-hidden">
+          <span className="text-sm font-medium text-slate-500 mb-2">MTD Sales</span>
+          <span className="text-3xl font-semibold tracking-tight text-slate-900">{formatCurrency(data.monthToDateSales)}</span>
+          {data.conversionIndicator && (
+            <div className="mt-auto pt-3">
+              <span className="inline-flex items-center px-2 py-1 rounded-md text-xs font-medium bg-emerald-50 text-emerald-700 ring-1 ring-inset ring-emerald-600/20">
+                {data.conversionIndicator}
+              </span>
+            </div>
+          )}
         </div>
-        <div className="bg-gradient-to-br from-slate-50 to-slate-100 border border-slate-200 rounded-xl p-5 shadow-sm hover:shadow-md transition-shadow">
-          <div className="text-sm font-semibold text-slate-700 mb-1">Units Sold</div>
-          <div className="text-2xl font-bold text-slate-900 font-mono tracking-tight">{data.unitsSold}</div>
-          <div className="text-[11px] text-slate-500 mt-1">Avg {formatCurrency(data.averageSalePrice)}</div>
+
+        <div className="flex flex-col p-6 bg-white rounded-2xl border border-slate-200/60 shadow-[0_2px_10px_-3px_rgba(6,81,237,0.05)] transition-all hover:shadow-[0_8px_30px_rgb(0,0,0,0.04)]">
+          <span className="text-sm font-medium text-slate-500 mb-2">Units Sold</span>
+          <span className="text-3xl font-semibold tracking-tight text-slate-900">{data.unitsSold}</span>
+          <span className="text-sm text-slate-500 mt-auto pt-2">Avg {formatCurrency(data.averageSalePrice)}</span>
         </div>
-        <div className="bg-gradient-to-br from-slate-50 to-slate-100 border border-slate-200 rounded-xl p-5 shadow-sm hover:shadow-md transition-shadow">
-          <div className="text-sm font-semibold text-slate-700 mb-1">Active Inventory Value</div>
-          <div className="text-2xl font-bold text-slate-900 font-mono tracking-tight">{formatCurrency(data.activeInventoryValue)}</div>
-          <div className="text-[11px] text-slate-500 mt-1">{data.averageDaysToSale} days to sale avg</div>
+
+        <div className="flex flex-col p-6 bg-white rounded-2xl border border-slate-200/60 shadow-[0_2px_10px_-3px_rgba(6,81,237,0.05)] transition-all hover:shadow-[0_8px_30px_rgb(0,0,0,0.04)]">
+          <span className="text-sm font-medium text-slate-500 mb-2">Active Inventory Value</span>
+          <span className="text-3xl font-semibold tracking-tight text-slate-900">{formatCurrency(data.activeInventoryValue)}</span>
+          <span className="text-sm text-slate-500 mt-auto pt-2">{data.averageDaysToSale} days to sale avg</span>
         </div>
       </div>
     </SectionCard>
