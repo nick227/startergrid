@@ -228,6 +228,13 @@ const NON_TERMINAL: string[] = ['READY', 'SCHEDULED', 'NEEDS_APPROVAL', 'BLOCKED
 const TERMINAL: string[] = ['SENT', 'FAILED', 'CANCELLED'];
 const IN_FLIGHT: string[] = ['CLAIMED'];
 
+function ownedChannelStatusLabel(platformSlug: string): string {
+  if (platformSlug === 'consumer-marketplace') {
+    return 'Live · Auto-syncs from ready inventory';
+  }
+  return 'Auto-syncs from ready inventory';
+}
+
 export async function getQueueView(
   prisma: PrismaClient,
   dealershipId: string
@@ -360,7 +367,7 @@ export async function getQueueView(
     .map(p => ({
       platformSlug: p.slug,
       platformName: p.name,
-      statusLabel: 'Live · Auto-syncs from ready inventory',
+      statusLabel: ownedChannelStatusLabel(p.slug),
     }))
     .sort((a, b) => a.platformName.localeCompare(b.platformName));
 

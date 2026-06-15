@@ -1,5 +1,6 @@
 import type { OwnedChannelView } from '@/lib/types.ts';
 import { PlatformLogo } from '@/components/platforms/PlatformLogo.tsx';
+import { platformDisplayName } from '@/lib/marketplaceBrand.ts';
 import { operatorCopy } from '@/lib/copy/operator.ts';
 
 type Props = {
@@ -19,7 +20,9 @@ export function QueueOwnedChannelsStrip({ channels }: Props) {
           <li key={channel.platformSlug} className="flex items-center justify-between gap-3">
             <div className="flex items-center gap-2 min-w-0">
               <PlatformLogo slug={channel.platformSlug} name={channel.platformName} size="sm" />
-              <span className="text-sm font-semibold text-ink-heading truncate">{channel.platformName}</span>
+              <span className="text-sm font-semibold text-ink-heading truncate">
+                {platformDisplayName(channel.platformSlug, channel.platformName)}
+              </span>
             </div>
             <span className="shrink-0 text-xs font-medium text-emerald-800">{channel.statusLabel}</span>
           </li>

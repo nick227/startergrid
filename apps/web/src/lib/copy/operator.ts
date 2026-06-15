@@ -85,7 +85,7 @@ export const operatorCopy = {
       change: 'Change',
       controls: 'Controls',
     },
-    ownedChannelsTitle: 'Live channels',
+    ownedChannelsTitle: 'Auto-sync channels',
     sendNow: 'Send now',
     setupChannel: 'Set up channel',
   },
