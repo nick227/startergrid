@@ -115,6 +115,10 @@ function providerForPlatform(
   return providers?.find(provider => provider.platformSlugs.includes(platformSlug));
 }
 
+function isInternalPlatform(platform: PlatformOverviewItemWithCategories): boolean {
+  return platform.platformSlug === AUTO_MARKETPLACE_SLUG || platform.platformType === 'internal';
+}
+
 function fallbackContract(
   platform: PlatformOverviewItemWithCategories,
   provider?: ProviderCredentialSummaryWithContracts | ProviderCredentialResultWithContracts,
@@ -360,8 +364,13 @@ export function PlatformsTab({ platformOverview }: Props) {
   }
 
   function operationalStatus(platform: PlatformOverviewItemWithCategories, validation: PlatformCredentialDisplayStatus): 'green' | 'yellow' | 'red' {
+    if (isInternalPlatform(platform) || validation === 'INTERNAL') {
+      if ((platform.recentFailures ?? 0) > 0) return 'red';
+      if (platform.blockedDealers > 0 || (platform.blockedItems ?? 0) > 0) return 'yellow';
+      return 'green';
+    }
     if (validation === 'VALIDATION_FAILED' || validation === 'CONTRACT_MISSING' || (platform.recentFailures ?? 0) > 0) return 'red';
-    if ((validation !== 'VALID' && validation !== 'INTERNAL' && validation !== 'MANUAL_SETUP') || platform.blockedDealers > 0 || (platform.blockedItems ?? 0) > 0) return 'yellow';
+    if ((validation !== 'VALID' && validation !== 'MANUAL_SETUP') || platform.blockedDealers > 0 || (platform.blockedItems ?? 0) > 0) return 'yellow';
     return platform.operationalStatus ?? 'green';
   }
 
@@ -501,7 +510,9 @@ export function PlatformsTab({ platformOverview }: Props) {
                       <span className="px-1.5 py-0.5 rounded bg-surface-inset border border-silver-200 text-[9px] font-semibold uppercase tracking-wide">
                         {platform.platformType ?? (platform.configured ? 'external' : 'internal')}
                       </span>
-                      {!platform.configured && <span className="ml-1.5 text-ink-faint">· not configured</span>}
+                      {!isInternalPlatform(platform) && !platform.configured && (
+                        <span className="ml-1.5 text-ink-faint">· not configured</span>
+                      )}
                     </div>
                     <div className="flex flex-wrap gap-1 mt-2">
                       {(platform.supportedCategories ?? []).map(category => (

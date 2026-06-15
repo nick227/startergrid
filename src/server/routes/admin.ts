@@ -334,11 +334,14 @@ export function registerAdminRoutes(app: FastifyInstance, prisma: PrismaClient):
         if (p.partnerFeed) capabilities.push('partnerFeed');
         if ((p as any).testFixtures?.supportsLeadCapture) capabilities.push('leadCapture');
 
+        const isInternal = p.integrationClass === 'OWNED';
         const client = PlatformClientRegistry.forSlug(p.slug);
-        const configured = client ? client.isConfigured() : false;
+        const configured = isInternal ? true : (client ? client.isConfigured() : false);
 
         let liveValidationStatus = 'unknown';
-        if (cachedCreds) {
+        if (isInternal) {
+          liveValidationStatus = 'internal';
+        } else if (cachedCreds) {
           const credResult = cachedCreds.results.find(r => r.platformSlugs.includes(p.slug) || r.provider === client?.provider);
           if (credResult) {
             liveValidationStatus = credResult.status;
@@ -400,11 +403,17 @@ export function registerAdminRoutes(app: FastifyInstance, prisma: PrismaClient):
         const liveInventory = activeMarketplaceListings + publishedSocialPosts + sentQueueItems;
         const recentFailures = failedQueueItems24h + dispatchFailures24h;
         const blockedItems = blockedQueueItems;
-        const operationalStatus = !configured || liveValidationStatus === 'invalid' || recentFailures > 0
-          ? 'red'
-          : blockedDealers > 0 || blockedItems > 0 || liveValidationStatus === 'unknown' || liveValidationStatus === 'not-configured'
-            ? 'yellow'
-            : 'green';
+        const operationalStatus = isInternal
+          ? recentFailures > 0
+            ? 'red'
+            : blockedDealers > 0 || blockedItems > 0
+              ? 'yellow'
+              : 'green'
+          : !configured || liveValidationStatus === 'invalid' || recentFailures > 0
+            ? 'red'
+            : blockedDealers > 0 || blockedItems > 0 || liveValidationStatus === 'unknown' || liveValidationStatus === 'not-configured'
+              ? 'yellow'
+              : 'green';
 
         return {
           platformName: p.name,

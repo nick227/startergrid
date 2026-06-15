@@ -121,10 +121,27 @@ describe('admin dashboard — access controls & gating', () => {
     assert.ok(body.queueSnapshot, 'queueSnapshot section present');
     assert.ok(body.platformOverview, 'platformOverview section present');
     assert.ok(body.dealerAttention, 'dealerAttention section present');
-	    assert.ok(body.recentEvents, 'recentEvents section present');
-	    assert.ok(body.meta, 'meta section present');
-	    assert.equal(body.recentEvents[0].dealerId, 'dl-2');
-	  });
+    assert.ok(body.recentEvents, 'recentEvents section present');
+    assert.ok(body.meta, 'meta section present');
+    assert.equal(body.recentEvents[0].dealerId, 'dl-2');
+  });
+
+  it('reports owned internal platforms as configured with green operational status', async () => {
+    const { app, token } = makeApp('SUPER_ADMIN');
+    const res = await app.inject({
+      method: 'GET',
+      url: '/api/admin/dashboard',
+      headers: { Cookie: `op_session=${token}` },
+    }) as unknown as InjectResult;
+    assert.equal(res.statusCode, 200);
+    const body = res.json() as { platformOverview: Array<Record<string, unknown>> };
+    const marketplace = body.platformOverview.find(p => p.platformSlug === 'consumer-marketplace');
+    assert.ok(marketplace, 'consumer-marketplace row present');
+    assert.equal(marketplace.platformType, 'internal');
+    assert.equal(marketplace.configured, true);
+    assert.equal(marketplace.liveValidationStatus, 'internal');
+    assert.equal(marketplace.operationalStatus, 'green');
+  });
 });
 
 describe('admin dashboard — operational behaviors & cache', () => {
