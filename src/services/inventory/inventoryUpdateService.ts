@@ -5,6 +5,7 @@ import { propagateVehicleUpdate, summarizeUpdatePropagations } from './vehicleUp
 import { persistVehicleUpdate } from '../publishing/lifecyclePersistenceService.js';
 import { dbVehicleToPayload } from './inventorySnapshotService.js';
 import { enqueueFromVehicleUpdate } from '../publishing/publishQueueService.js';
+import { loadSiteAvailabilityMap, resolveSiteEnabled } from '../platform/platformAvailabilityService.js';
 
 export type VehicleUpdateOptions = {
   priceCents?: number;
@@ -108,9 +109,11 @@ export async function applyVehicleUpdate(
     include: { platform: true }
   });
 
+  const siteAvailability = await loadSiteAvailabilityMap(prisma);
   const activePlatforms = activeApps
     .map(app => platformProfiles.find(p => p.slug === app.platform.slug))
-    .filter((p): p is NonNullable<typeof p> => p !== undefined);
+    .filter((p): p is NonNullable<typeof p> => p !== undefined)
+    .filter(p => resolveSiteEnabled(p.slug, siteAvailability));
 
   // Compute propagations (pure)
   const vehiclePayload = dbVehicleToPayload({ ...dbVehicle, media: dbVehicle.media });

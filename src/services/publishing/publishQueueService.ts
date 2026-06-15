@@ -397,19 +397,25 @@ export async function getQueueView(
     ),
   );
 
-  const accountViews = accounts.map(a => ({
-    platformSlug: a.platformSlug,
-    platformName: profileBySlug.get(a.platformSlug)?.name ?? a.platformSlug,
-    state: a.state,
-  }));
+  const accountViews = accounts
+    .filter(a => resolveSiteEnabled(a.platformSlug, siteAvailability))
+    .map(a => ({
+      platformSlug: a.platformSlug,
+      platformName: profileBySlug.get(a.platformSlug)?.name ?? a.platformSlug,
+      state: a.state,
+    }));
 
   const policies = await prisma.syncPolicy.findMany({ where: { dealershipId } });
   const policyModeBySlug = new Map(policies.map(p => [p.platformSlug, p.mode as string]));
 
   const slugSet = new Set([
-    ...accounts.map(a => a.platformSlug),
+    ...accounts
+      .map(a => a.platformSlug)
+      .filter(slug => resolveSiteEnabled(slug, siteAvailability)),
     ...pending.map(i => i.platformSlug),
-    ...policies.map(p => p.platformSlug),
+    ...policies
+      .map(p => p.platformSlug)
+      .filter(slug => resolveSiteEnabled(slug, siteAvailability)),
   ]);
 
   const byPlatform: PlatformQueueStats[] = [...slugSet].map(slug => {

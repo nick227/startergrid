@@ -6,6 +6,7 @@ import { CredentialStore } from '../../services/platform/clients/CredentialStore
 import { platformProfiles } from '../../data/platformProfiles.js';
 import { requireDealerAccess } from '../security.js';
 import { assertSystemReadyForDealerRegistration } from '../../services/publishing/platformAccountService.js';
+import { isDealerPlatformAccessible } from '../dealerPlatformGuard.js';
 
 type ConnectParams = { dealershipId: string; platformSlug: string };
 type CallbackQuery  = { state?: string; code?: string; error?: string; error_description?: string };
@@ -40,6 +41,9 @@ export function registerPlatformConnectRoutes(app: FastifyInstance, prisma: Pris
     async (request, reply) => {
       const { dealershipId, platformSlug } = request.params;
       if (!await requireDealerAccess(prisma, request, reply, dealershipId)) return;
+      if (!await isDealerPlatformAccessible(prisma, dealershipId, platformSlug)) {
+        return reply.status(404).send({ error: 'Platform not found.' });
+      }
 
       const profile = platformProfiles.find(p => p.slug === platformSlug);
       if (!profile) return reply.status(404).send({ error: `Unknown platform: ${platformSlug}` });
@@ -160,6 +164,9 @@ export function registerPlatformConnectRoutes(app: FastifyInstance, prisma: Pris
     async (request, reply) => {
       const { dealershipId, platformSlug } = request.params;
       if (!await requireDealerAccess(prisma, request, reply, dealershipId)) return;
+      if (!await isDealerPlatformAccessible(prisma, dealershipId, platformSlug)) {
+        return reply.status(404).send({ error: 'Platform not found.' });
+      }
 
       const profile = platformProfiles.find(p => p.slug === platformSlug);
       if (!profile?.oauthProvider) return reply.status(400).send({ error: `Platform ${platformSlug} does not support OAuth` });

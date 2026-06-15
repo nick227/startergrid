@@ -26,6 +26,11 @@ import {
   resolveHistoryAssetFields,
 } from '../../services/publishing/historyAssetEnrichment.js';
 import { preparePublishSchema, validateBody } from '../requestValidation.js';
+import {
+  filterOfferedPlatformProfiles,
+  loadSiteAvailabilityMap,
+} from '../../services/platform/platformAvailabilityService.js';
+import { platformsForCategory } from '../../data/platformCategoryMap.js';
 
 type DealerParams = { dealershipId: string };
 type PrepareBody = { dryRun?: boolean; platforms?: string[] };
@@ -197,24 +202,40 @@ export function registerPublishRoutes(app: FastifyInstance, prisma: PrismaClient
       if (!await requireDealer(prisma, dealershipId))
         return reply.status(404).send({ error: 'Dealer not found' });
 
+      const dealer = await prisma.dealershipProfile.findUnique({
+        where: { id: dealershipId },
+        select: { businessCategory: true },
+      });
+      const siteAvailability = await loadSiteAvailabilityMap(prisma);
+      const offeredSlugs = new Set(
+        filterOfferedPlatformProfiles(
+          platformsForCategory(dealer?.businessCategory ?? null),
+          siteAvailability,
+        ).map(p => p.slug),
+      );
+
       const [accounts, applications] = await Promise.all([
-        prisma.platformAccount.findMany({ where: { dealershipId } }),
+        prisma.platformAccount.findMany({
+          where: { dealershipId, platformSlug: { in: [...offeredSlugs] } },
+        }),
         prisma.platformApplication.findMany({
-          where: { dealershipId },
-          include: { platform: { select: { slug: true } } }
-        })
+          where: { dealershipId, platform: { slug: { in: [...offeredSlugs] } } },
+          include: { platform: { select: { slug: true } } },
+        }),
       ]);
 
       const accountBySlug = new Map(accounts.map(a => [a.platformSlug, a]));
-      const appBySlug     = new Map(applications.map(a => [a.platform.slug, a]));
+      const appBySlug = new Map(applications.map(a => [a.platform.slug, a]));
 
-      const result = platformProfiles.map(p => {
-        const acct = accountBySlug.get(p.slug);
-        const appl = appBySlug.get(p.slug);
+      const result = [...offeredSlugs].map(slug => {
+        const profile = platformProfiles.find(p => p.slug === slug);
+        if (!profile) return null;
+        const acct = accountBySlug.get(slug);
+        const appl = appBySlug.get(slug);
         return {
-          platformSlug:      p.slug,
-          platformName:      p.name,
-          integrationClass:  p.integrationClass,
+          platformSlug:      slug,
+          platformName:      profile.name,
+          integrationClass:  profile.integrationClass,
           accountState:      acct?.state ?? 'ACCOUNT_NEEDED',
           accountId:         acct?.accountId ?? null,
           platformRepName:   acct?.platformRepName ?? null,
@@ -225,9 +246,9 @@ export function registerPublishRoutes(app: FastifyInstance, prisma: PrismaClient
           notes:             acct?.notes ?? null,
           applicationStatus: appl?.status ?? null,
           lastChecked:       acct?.lastChecked?.toISOString()  ?? null,
-          updatedAt:         acct?.updatedAt?.toISOString()    ?? appl?.updatedAt?.toISOString() ?? null
+          updatedAt:         acct?.updatedAt?.toISOString()    ?? appl?.updatedAt?.toISOString() ?? null,
         };
-      });
+      }).filter((row): row is NonNullable<typeof row> => row !== null);
 
       return reply.send({ accounts: result });
     }

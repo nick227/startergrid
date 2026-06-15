@@ -1,6 +1,7 @@
 import type { FastifyInstance } from 'fastify';
 import type { PrismaClient } from '@prisma/client';
 import { requireDealerAccess } from '../security.js';
+import { isDealerPlatformAccessible } from '../dealerPlatformGuard.js';
 import { CredentialStore } from '../../services/platform/clients/CredentialStore.js';
 import { LinkedInOAuthClient } from '../../services/platform/clients/providers/LinkedInOAuthClient.js';
 import { LinkedInLeadCaptureBridge } from '../../services/leadSync/bridges/LinkedInLeadCaptureBridge.js';
@@ -27,6 +28,9 @@ export function registerLeadSyncRoutes(app: FastifyInstance, prisma: PrismaClien
     async (request, reply) => {
       const { dealershipId, platformSlug } = request.params;
       if (!await requireDealerAccess(prisma, request, reply, dealershipId)) return;
+      if (!await isDealerPlatformAccessible(prisma, dealershipId, platformSlug)) {
+        return reply.status(404).send({ error: 'Platform not found.' });
+      }
 
       const bridge = LEAD_SYNC_BRIDGE_REGISTRY[platformSlug];
       if (!bridge)
@@ -70,6 +74,9 @@ export function registerLeadSyncRoutes(app: FastifyInstance, prisma: PrismaClien
     async (request, reply) => {
       const { dealershipId, platformSlug } = request.params;
       if (!await requireDealerAccess(prisma, request, reply, dealershipId)) return;
+      if (!await isDealerPlatformAccessible(prisma, dealershipId, platformSlug)) {
+        return reply.status(404).send({ error: 'Platform not found.' });
+      }
 
       const bridge = LEAD_SYNC_BRIDGE_REGISTRY[platformSlug];
       if (!bridge)

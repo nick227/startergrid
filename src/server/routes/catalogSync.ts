@@ -1,6 +1,7 @@
 import type { FastifyInstance } from 'fastify';
 import type { PrismaClient } from '@prisma/client';
 import { requireDealerAccess } from '../security.js';
+import { isDealerPlatformAccessible } from '../dealerPlatformGuard.js';
 import { CredentialStore } from '../../services/platform/clients/CredentialStore.js';
 import type { OAuthClient } from '../../services/platform/clients/OAuthClient.js';
 import { CatalogSyncStore } from '../../services/catalog/CatalogSyncStore.js';
@@ -71,6 +72,9 @@ export function registerCatalogSyncRoutes(app: FastifyInstance, prisma: PrismaCl
     async (request, reply) => {
       const { dealershipId, platformSlug } = request.params;
       if (!await requireDealerAccess(prisma, request, reply, dealershipId)) return;
+      if (!await isDealerPlatformAccessible(prisma, dealershipId, platformSlug)) {
+        return reply.status(404).send({ error: 'Platform not found.' });
+      }
 
       if (!BRIDGE_REGISTRY[platformSlug])
         return reply.status(400).send({ error: `Platform ${platformSlug} does not support catalog sync` });
@@ -92,6 +96,9 @@ export function registerCatalogSyncRoutes(app: FastifyInstance, prisma: PrismaCl
     async (request, reply) => {
       const { dealershipId, platformSlug } = request.params;
       if (!await requireDealerAccess(prisma, request, reply, dealershipId)) return;
+      if (!await isDealerPlatformAccessible(prisma, dealershipId, platformSlug)) {
+        return reply.status(404).send({ error: 'Platform not found.' });
+      }
 
       const config = await CatalogSyncStore.getConfig(prisma, dealershipId, platformSlug);
       if (!config) return reply.status(404).send({ error: 'Catalog not configured for this platform' });
@@ -106,6 +113,9 @@ export function registerCatalogSyncRoutes(app: FastifyInstance, prisma: PrismaCl
     async (request, reply) => {
       const { dealershipId, platformSlug } = request.params;
       if (!await requireDealerAccess(prisma, request, reply, dealershipId)) return;
+      if (!await isDealerPlatformAccessible(prisma, dealershipId, platformSlug)) {
+        return reply.status(404).send({ error: 'Platform not found.' });
+      }
 
       const bridge = BRIDGE_REGISTRY[platformSlug];
       if (!bridge)
@@ -159,6 +169,9 @@ export function registerCatalogSyncRoutes(app: FastifyInstance, prisma: PrismaCl
     async (request, reply) => {
       const { dealershipId, platformSlug, itemId } = request.params;
       if (!await requireDealerAccess(prisma, request, reply, dealershipId)) return;
+      if (!await isDealerPlatformAccessible(prisma, dealershipId, platformSlug)) {
+        return reply.status(404).send({ error: 'Platform not found.' });
+      }
 
       const bridge = BRIDGE_REGISTRY[platformSlug];
       if (!bridge)

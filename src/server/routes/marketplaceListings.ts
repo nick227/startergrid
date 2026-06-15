@@ -1,6 +1,7 @@
 import type { FastifyInstance } from 'fastify';
 import type { PrismaClient } from '@prisma/client';
 import { requireDealerAccess } from '../security.js';
+import { isDealerPlatformAccessible } from '../dealerPlatformGuard.js';
 import { CredentialStore } from '../../services/platform/clients/CredentialStore.js';
 import { MarketplaceListingStore } from '../../services/marketplace/MarketplaceListingStore.js';
 import { ContentPackageBuilder } from '../../services/distribution/ContentPackageBuilder.js';
@@ -37,6 +38,9 @@ export function registerMarketplaceListingRoutes(app: FastifyInstance, prisma: P
     async (request, reply) => {
       const { dealershipId, platformSlug } = request.params;
       if (!await requireDealerAccess(prisma, request, reply, dealershipId)) return;
+      if (!await isDealerPlatformAccessible(prisma, dealershipId, platformSlug)) {
+        return reply.status(404).send({ error: 'Platform not found.' });
+      }
 
       const bridge = BRIDGE_REGISTRY[platformSlug];
       if (!bridge)
@@ -101,6 +105,9 @@ export function registerMarketplaceListingRoutes(app: FastifyInstance, prisma: P
     async (request, reply) => {
       const { dealershipId, platformSlug, vehicleId } = request.params;
       if (!await requireDealerAccess(prisma, request, reply, dealershipId)) return;
+      if (!await isDealerPlatformAccessible(prisma, dealershipId, platformSlug)) {
+        return reply.status(404).send({ error: 'Platform not found.' });
+      }
 
       const bridge = BRIDGE_REGISTRY[platformSlug];
       if (!bridge)
@@ -145,6 +152,9 @@ export function registerMarketplaceListingRoutes(app: FastifyInstance, prisma: P
     async (request, reply) => {
       const { dealershipId, platformSlug } = request.params;
       if (!await requireDealerAccess(prisma, request, reply, dealershipId)) return;
+      if (!await isDealerPlatformAccessible(prisma, dealershipId, platformSlug)) {
+        return reply.status(404).send({ error: 'Platform not found.' });
+      }
 
       const listings = await MarketplaceListingStore.findByDealership(prisma, dealershipId, platformSlug);
       return reply.send({ listings });
@@ -157,6 +167,9 @@ export function registerMarketplaceListingRoutes(app: FastifyInstance, prisma: P
     async (request, reply) => {
       const { dealershipId, platformSlug, vehicleId } = request.params;
       if (!await requireDealerAccess(prisma, request, reply, dealershipId)) return;
+      if (!await isDealerPlatformAccessible(prisma, dealershipId, platformSlug)) {
+        return reply.status(404).send({ error: 'Platform not found.' });
+      }
 
       const listing = await MarketplaceListingStore.findOneByItem(prisma, { vehicleId }, platformSlug);
       if (!listing || listing.dealershipId !== dealershipId)
@@ -174,6 +187,9 @@ export function registerMarketplaceListingRoutes(app: FastifyInstance, prisma: P
     async (request, reply) => {
       const { dealershipId, platformSlug } = request.params;
       if (!await requireDealerAccess(prisma, request, reply, dealershipId)) return;
+      if (!await isDealerPlatformAccessible(prisma, dealershipId, platformSlug)) {
+        return reply.status(404).send({ error: 'Platform not found.' });
+      }
 
       const bridge = BRIDGE_REGISTRY[platformSlug];
       if (!bridge)
@@ -208,6 +224,9 @@ export function registerMarketplaceListingRoutes(app: FastifyInstance, prisma: P
     async (request, reply) => {
       const { dealershipId, platformSlug, categoryItemId } = request.params;
       if (!await requireDealerAccess(prisma, request, reply, dealershipId)) return;
+      if (!await isDealerPlatformAccessible(prisma, dealershipId, platformSlug)) {
+        return reply.status(404).send({ error: 'Platform not found.' });
+      }
 
       const bridge = BRIDGE_REGISTRY[platformSlug];
       if (!bridge)
@@ -233,6 +252,9 @@ export function registerMarketplaceListingRoutes(app: FastifyInstance, prisma: P
     async (request, reply) => {
       const { dealershipId, platformSlug, categoryItemId } = request.params;
       if (!await requireDealerAccess(prisma, request, reply, dealershipId)) return;
+      if (!await isDealerPlatformAccessible(prisma, dealershipId, platformSlug)) {
+        return reply.status(404).send({ error: 'Platform not found.' });
+      }
 
       const listing = await MarketplaceListingStore.findOneByItem(prisma, { categoryItemId }, platformSlug);
       if (!listing || listing.dealershipId !== dealershipId)

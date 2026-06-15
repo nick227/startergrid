@@ -1,6 +1,8 @@
 import type { FastifyInstance } from 'fastify';
 import type { PrismaClient } from '@prisma/client';
 import { requireDealerAccess } from '../security.js';
+import { isDealerPlatformAccessible } from '../dealerPlatformGuard.js';
+import { loadSiteAvailabilityMap, resolveSiteEnabled } from '../../services/platform/platformAvailabilityService.js';
 import { CredentialStore } from '../../services/platform/clients/CredentialStore.js';
 import { SocialPageStore } from '../../services/social/SocialPageStore.js';
 import { SocialPostBuilder } from '../../services/social/SocialPostBuilder.js';
@@ -23,6 +25,9 @@ export function registerSocialPageRoutes(app: FastifyInstance, prisma: PrismaCli
     async (request, reply) => {
       const { dealershipId, platformSlug } = request.params;
       if (!await requireDealerAccess(prisma, request, reply, dealershipId)) return;
+      if (!await isDealerPlatformAccessible(prisma, dealershipId, platformSlug)) {
+        return reply.status(404).send({ error: 'Platform not found.' });
+      }
 
       const bridge = getSocialPlatformBridge(platformSlug);
       if (!bridge)
@@ -58,6 +63,9 @@ export function registerSocialPageRoutes(app: FastifyInstance, prisma: PrismaCli
     async (request, reply) => {
       const { dealershipId, platformSlug, pageId } = request.params;
       if (!await requireDealerAccess(prisma, request, reply, dealershipId)) return;
+      if (!await isDealerPlatformAccessible(prisma, dealershipId, platformSlug)) {
+        return reply.status(404).send({ error: 'Platform not found.' });
+      }
 
       if (!SOCIAL_PAGE_PLATFORM_SLUGS.has(platformSlug))
         return reply.status(400).send({ error: `Platform ${platformSlug} does not support page selection` });
@@ -81,6 +89,9 @@ export function registerSocialPageRoutes(app: FastifyInstance, prisma: PrismaCli
     async (request, reply) => {
       const { dealershipId, platformSlug } = request.params;
       if (!await requireDealerAccess(prisma, request, reply, dealershipId)) return;
+      if (!await isDealerPlatformAccessible(prisma, dealershipId, platformSlug)) {
+        return reply.status(404).send({ error: 'Platform not found.' });
+      }
 
       if (!SOCIAL_PAGE_PLATFORM_SLUGS.has(platformSlug))
         return reply.status(400).send({ error: `Platform ${platformSlug} does not support post preview` });
@@ -119,6 +130,9 @@ export function registerSocialPageRoutes(app: FastifyInstance, prisma: PrismaCli
     async (request, reply) => {
       const { dealershipId, platformSlug } = request.params;
       if (!await requireDealerAccess(prisma, request, reply, dealershipId)) return;
+      if (!await isDealerPlatformAccessible(prisma, dealershipId, platformSlug)) {
+        return reply.status(404).send({ error: 'Platform not found.' });
+      }
 
       const bridge = getSocialPlatformBridge(platformSlug);
       if (!bridge)
@@ -210,12 +224,15 @@ export function registerSocialPageRoutes(app: FastifyInstance, prisma: PrismaCli
       const { dealershipId } = request.params;
       if (!await requireDealerAccess(prisma, request, reply, dealershipId)) return;
 
+      const siteAvailability = await loadSiteAvailabilityMap(prisma);
       const rows = await prisma.socialPageAccount.findMany({
         where: { dealershipId, isSelected: true },
         select: { platformSlug: true, pageId: true, name: true, pictureUrl: true },
       });
 
-      return reply.send({ selections: rows });
+      return reply.send({
+        selections: rows.filter(row => resolveSiteEnabled(row.platformSlug, siteAvailability)),
+      });
     }
   );
 
@@ -226,6 +243,9 @@ export function registerSocialPageRoutes(app: FastifyInstance, prisma: PrismaCli
     async (request, reply) => {
       const { dealershipId, platformSlug } = request.params;
       if (!await requireDealerAccess(prisma, request, reply, dealershipId)) return;
+      if (!await isDealerPlatformAccessible(prisma, dealershipId, platformSlug)) {
+        return reply.status(404).send({ error: 'Platform not found.' });
+      }
 
       if (!SOCIAL_PAGE_PLATFORM_SLUGS.has(platformSlug))
         return reply.status(400).send({ error: `Platform ${platformSlug} does not support posting` });
