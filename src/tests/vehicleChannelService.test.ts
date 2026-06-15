@@ -49,6 +49,7 @@ function makePrisma(overrides: {
   posts?: Array<{ platformSlug: string; status: string; publishedAt: Date | null }>;
   queueItems?: Array<{ platformSlug: string; status: string; failureReason: string | null; approvalRequiredReason: string | null; holdReason: string | null; sentAt: Date | null }>;
   catalogConfigs?: Array<{ platformSlug: string; lastSyncAt: Date | null }>;
+  siteAvailability?: Array<{ platformSlug: string; siteEnabled: boolean }>;
 }) {
   return {
     vehicle: {
@@ -62,6 +63,9 @@ function makePrisma(overrides: {
     socialPost: { findMany: async () => overrides.posts ?? [] },
     publishQueueItem: { findMany: async () => overrides.queueItems ?? [] },
     platformCatalogSync: { findMany: async () => overrides.catalogConfigs ?? [] },
+    platformSiteAvailability: {
+      findMany: async () => overrides.siteAvailability ?? [],
+    },
   };
 }
 
@@ -195,5 +199,19 @@ describe('buildVehicleChannelMatrix', () => {
     const google = matrix!.channels.find(c => c.channelKey === 'google-vehicle-ads')!;
     assert.equal(google.eligible, false);
     assert.ok(google.eligibilityIssues.length > 0);
+  });
+
+  it('omits admin-disabled platforms from the channel matrix', async () => {
+    const prisma = makePrisma({
+      accounts: [
+        { platformSlug: 'dealer-storefront', state: 'ACTIVE' },
+        { platformSlug: 'consumer-marketplace', state: 'ACTIVE' },
+      ],
+      siteAvailability: [{ platformSlug: 'consumer-marketplace', siteEnabled: false }],
+    });
+    const matrix = await buildVehicleChannelMatrix(prisma as never, 'd-001', 'v-001');
+    const keys = matrix!.channels.map(c => c.channelKey);
+    assert.ok(keys.includes(STOREFRONT_CHANNEL_KEY));
+    assert.ok(!keys.includes('consumer-marketplace'));
   });
 });

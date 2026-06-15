@@ -9,6 +9,7 @@
 import type { PrismaClient } from '@prisma/client';
 import { benchmarkLabel, platformAssistLabel, type Confidence } from './performanceMath.js';
 import type { ChannelMetrics } from '../channel/channelMetrics.js';
+import { loadSiteAvailabilityMap, resolveSiteEnabled } from '../platform/platformAvailabilityService.js';
 
 // ── Public types ──────────────────────────────────────────────────────────────
 
@@ -170,13 +171,15 @@ export async function listPlatformPerformance(
   prisma: PrismaClient,
   dealershipId: string,
 ): Promise<{ platforms: PlatformPerformanceItem[]; computedAt: string | null }> {
+  const siteAvailability = await loadSiteAvailabilityMap(prisma);
   const rows = await prisma.platformPerformanceSummary.findMany({
     where:   { dealershipId },
     orderBy: [{ sampleSize: 'desc' }, { avgDaysToMove: 'asc' }],
   });
+  const offered = rows.filter(row => resolveSiteEnabled(row.platformSlug, siteAvailability));
   return {
-    platforms:  rows.map(shapePlatform),
-    computedAt: rows[0]?.computedAt?.toISOString() ?? null,
+    platforms:  offered.map(shapePlatform),
+    computedAt: offered[0]?.computedAt?.toISOString() ?? null,
   };
 }
 
@@ -184,6 +187,7 @@ export async function getPerformanceSummary(
   prisma: PrismaClient,
   dealershipId: string,
 ): Promise<PerformanceSummaryView> {
+  const siteAvailability = await loadSiteAvailabilityMap(prisma);
   const [vehicles, platforms] = await Promise.all([
     prisma.vehiclePerformanceCache.findMany({
       where:   { dealershipId },
@@ -195,13 +199,15 @@ export async function getPerformanceSummary(
     }),
   ]);
 
+  const offeredPlatforms = platforms.filter(p => resolveSiteEnabled(p.platformSlug, siteAvailability));
+
   const stale   = vehicles.filter(v => v.movementSignal === 'STALE');
   const fast    = vehicles.filter(v => v.movementSignal === 'FAST');
   const lowData = vehicles.filter(v => v.movementSignal === 'LOW_DATA');
 
   // Best observed platform = lowest avgDaysToMove with confidence ≥ LOW (≥3 sold vehicles).
   // Does not claim sales causation — "best observed" means best correlated timing.
-  const eligible = platforms.filter(
+  const eligible = offeredPlatforms.filter(
     p => p.avgDaysToMove !== null && ['LOW', 'MEDIUM', 'HIGH'].includes(p.confidence),
   );
   const best = eligible[0] ?? null;

@@ -21,6 +21,21 @@ export function resolveSiteEnabled(
   return stored !== false;
 }
 
+/** Platforms disabled site-wide by admin are out of rotation for all dealerships. */
+export function isPlatformOfferedSiteWide(
+  platformSlug: string,
+  siteAvailabilityBySlug: Map<string, boolean> | ReadonlyMap<string, boolean>,
+): boolean {
+  return resolveSiteEnabled(platformSlug, siteAvailabilityBySlug);
+}
+
+export function filterOfferedPlatformProfiles<T extends { slug: string }>(
+  profiles: readonly T[],
+  siteAvailabilityBySlug: ReadonlyMap<string, boolean>,
+): T[] {
+  return profiles.filter(profile => resolveSiteEnabled(profile.slug, siteAvailabilityBySlug));
+}
+
 export function resolveDealerPlatformEnabled(
   dealerEnabled: boolean | null | undefined,
   desiredChannels: string[],

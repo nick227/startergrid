@@ -3,6 +3,7 @@ import { platformProfiles } from '../../data/platformProfiles.js';
 import { isPlatformAllowedForCategory } from '../../data/platformCategoryMap.js';
 import { dbVehicleToPayload } from './inventorySnapshotService.js';
 import { validateVehiclePayloads } from '../../validators/vehicle/vehiclePayloadValidator.js';
+import { loadSiteAvailabilityMap, resolveSiteEnabled } from '../platform/platformAvailabilityService.js';
 
 export const STOREFRONT_CHANNEL_KEY = 'storefront';
 
@@ -97,6 +98,7 @@ export async function buildVehicleChannelMatrix(
   if (!vehicle) return null;
 
   const dealer = await prisma.dealershipProfile.findUniqueOrThrow({ where: { id: dealershipId } });
+  const siteAvailability = await loadSiteAvailabilityMap(prisma);
 
   const [accounts, listings, posts, queueItems, catalogConfigs] = await Promise.all([
     prisma.platformAccount.findMany({
@@ -157,6 +159,7 @@ export async function buildVehicleChannelMatrix(
   const channels: VehicleChannelRow[] = [];
 
   // ── Storefront pseudo-channel ───────────────────────────────────────────────
+  if (resolveSiteEnabled('dealer-storefront', siteAvailability)) {
   const storefrontState = accountStateBySlug.get('dealer-storefront') ?? 'ACCOUNT_NEEDED';
   const storefrontConnected = CONNECTED_STATES.has(storefrontState);
   const storefrontSelected = !deselected.has(STOREFRONT_CHANNEL_KEY);
@@ -180,6 +183,7 @@ export async function buildVehicleChannelMatrix(
     externalListingId: null,
     lastActivityAt: null,
   });
+  }
 
   // ── Platform channels (one row per platform account for this dealer) ────────
   // Account rows may exist for the whole registry — only platforms that support
@@ -188,6 +192,7 @@ export async function buildVehicleChannelMatrix(
     // The registry's 'dealer-storefront' profile is the built-in storefront — already
     // rendered above as the pseudo-channel; a second row would be a duplicate.
     if (account.platformSlug === 'dealer-storefront') continue;
+    if (!resolveSiteEnabled(account.platformSlug, siteAvailability)) continue;
     const profile = platformProfiles.find(p => p.slug === account.platformSlug);
     if (!profile) continue;
     if (!isPlatformAllowedForCategory(account.platformSlug, dealer.businessCategory)) continue;

@@ -18,7 +18,7 @@ import { upsertApplication } from './lifecyclePersistenceService.js';
 import { activateApplicationAfterCreate } from './applicationActivationService.js';
 import { upsertDefaultSyncPolicies, upsertDefaultPlatformAccounts, defaultSyncMode, resolveScheduledFor } from './syncPolicyService.js';
 import { canCreateInitialPublishQueueItem, parseDesiredChannels } from './queueEligibilityService.js';
-import { loadSiteAvailabilityMap, resolveSiteEnabled } from '../platform/platformAvailabilityService.js';
+import { loadSiteAvailabilityMap, resolveSiteEnabled, filterOfferedPlatformProfiles } from '../platform/platformAvailabilityService.js';
 import { nanoid } from 'nanoid';
 
 // ── Public state vocabulary ──────────────────────────────────────────────────
@@ -250,10 +250,15 @@ export async function runPrepareAndPublish(
     return excluded ? vehiclePayloads.filter(v => !excluded.has(v.stockNumber)) : vehiclePayloads;
   };
 
+  const siteAvailability = await loadSiteAvailabilityMap(prisma);
+
   // Platform targets: scoped to the dealer's business category, then narrowed by
   // any caller-supplied filter (intersection only — the filter cannot add a
-  // platform outside the dealer's category).
-  const targets = resolvePublishTargets(dbDealer.businessCategory, opts.platformFilter);
+  // platform outside the dealer's category). Admin-disabled platforms are excluded.
+  const targets = filterOfferedPlatformProfiles(
+    resolvePublishTargets(dbDealer.businessCategory, opts.platformFilter),
+    siteAvailability,
+  );
 
   // Run baseline readiness for all target platforms
   const readinessMap = new Map<string, PlatformReadinessReport>();
@@ -322,7 +327,6 @@ export async function runPrepareAndPublish(
   });
   const accountStateBySlug = new Map(accountRows.map(a => [a.platformSlug, a.state as string]));
   const dealerEnabledBySlug = new Map(accountRows.map(a => [a.platformSlug, a.dealerEnabled]));
-  const siteAvailability = await loadSiteAvailabilityMap(prisma);
 
   const queueItems = await prisma.publishQueueItem.findMany({
     where: { dealershipId, status: { notIn: ['CANCELLED'] as any } },

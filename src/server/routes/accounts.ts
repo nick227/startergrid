@@ -12,6 +12,7 @@ import { requireDealerAccess } from '../security.js';
 import { accountUpdateSchema, validateBody } from '../requestValidation.js';
 import { PartnerConnectionValidator } from '../../services/validation/PartnerConnectionValidator.js';
 import { decryptSecret } from '../../lib/secrets.js';
+import { loadSiteAvailabilityMap, resolveSiteEnabled } from '../../services/platform/platformAvailabilityService.js';
 
 type DealerParams = { dealershipId: string };
 type SlugParams   = { dealershipId: string; platformSlug: string };
@@ -57,6 +58,10 @@ export function registerAccountRoutes(app: FastifyInstance, prisma: PrismaClient
       if (!knownSlug)
         return reply.status(404).send({ error: `Unknown platform: ${platformSlug}` });
 
+      const siteAvailability = await loadSiteAvailabilityMap(prisma);
+      if (!resolveSiteEnabled(platformSlug, siteAvailability))
+        return reply.status(404).send({ error: 'Platform not found.' });
+
       const validationError = validateAccountUpdatePayload(body);
       if (validationError)
         return reply.status(400).send({ error: validationError });
@@ -72,6 +77,12 @@ export function registerAccountRoutes(app: FastifyInstance, prisma: PrismaClient
         return reply.send({ account: updated });
       } catch (err) {
         const message = err instanceof Error ? err.message : 'Account update failed.';
+        const statusCode = typeof err === 'object' && err !== null && 'statusCode' in err
+          ? Number((err as { statusCode?: number }).statusCode)
+          : null;
+        if (statusCode === 404 || message === 'Platform not found.') {
+          return reply.status(404).send({ error: 'Platform not found.' });
+        }
         if (message.startsWith('System ') || message.startsWith('Cross-category ')) {
           return reply.status(409).send({ error: message });
         }
@@ -92,6 +103,10 @@ export function registerAccountRoutes(app: FastifyInstance, prisma: PrismaClient
       const profile = platformProfiles.find(p => p.slug === platformSlug);
       if (!profile)
         return reply.status(404).send({ error: `Unknown platform: ${platformSlug}` });
+
+      const siteAvailability = await loadSiteAvailabilityMap(prisma);
+      if (!resolveSiteEnabled(platformSlug, siteAvailability))
+        return reply.status(404).send({ error: 'Platform not found.' });
 
       const account = await prisma.platformAccount.findUnique({
         where: { dealershipId_platformSlug: { dealershipId, platformSlug } }

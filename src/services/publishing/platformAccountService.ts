@@ -13,6 +13,7 @@ import {
   resolveDealerPlatformEnabled,
   resolveSiteEnabled,
   parseDesiredChannels,
+  filterOfferedPlatformProfiles,
 } from '../platform/platformAvailabilityService.js';
 import { recordOutboundSyncEvent } from './historyEligibilityService.js';
 
@@ -243,11 +244,13 @@ export async function listPlatformAccounts(
   });
   // Fail closed: an unknown dealer (or one with no category) gets zero platforms,
   // never an AUTOMOTIVE default that would leak car platforms into the account list.
-  const profiles = profilesForCategory(dealer?.businessCategory ?? null);
+  const siteAvailability = await loadSiteAvailabilityMap(prisma);
+  const profiles = filterOfferedPlatformProfiles(
+    profilesForCategory(dealer?.businessCategory ?? null),
+    siteAvailability,
+  );
 
   await ensureAccountRows(prisma, dealershipId, profiles);
-
-  const siteAvailability = await loadSiteAvailabilityMap(prisma);
 
   const [rows, tokenRows, secretRows] = await Promise.all([
     prisma.platformAccount.findMany({ where: { dealershipId } }),
@@ -383,7 +386,7 @@ export async function updatePlatformAccount(
   }
   const siteAvailability = await loadSiteAvailabilityMap(prisma);
   if (!resolveSiteEnabled(platformSlug, siteAvailability)) {
-    throw new Error('Platform is disabled site-wide by admin.');
+    throw Object.assign(new Error('Platform not found.'), { statusCode: 404 });
   }
   if (
     payload.state != null &&

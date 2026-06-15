@@ -2,6 +2,7 @@ import assert from 'node:assert/strict';
 import { describe, it } from 'node:test';
 import {
   defaultAutoSyncReadyInventory,
+  filterOfferedPlatformProfiles,
   parseDesiredChannels,
   resolveAutoSyncReadyInventory,
   resolveDealerPlatformEnabled,
@@ -15,6 +16,20 @@ describe('resolveSiteEnabled', () => {
 
   it('respects explicit disable', () => {
     assert.equal(resolveSiteEnabled('cars-com', new Map([['cars-com', false]])), false);
+  });
+});
+
+describe('filterOfferedPlatformProfiles', () => {
+  it('removes admin-disabled platforms from dealer-facing profile lists', () => {
+    const profiles = [
+      { slug: 'consumer-marketplace', name: 'Marketplace' },
+      { slug: 'cars-com', name: 'Cars.com' },
+    ];
+    const filtered = filterOfferedPlatformProfiles(
+      profiles,
+      new Map([['cars-com', false]]),
+    );
+    assert.deepEqual(filtered.map(p => p.slug), ['consumer-marketplace']);
   });
 });
 
