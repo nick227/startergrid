@@ -44,6 +44,37 @@ const QUEUE_STATUS_RANK: Array<{ statuses: string[]; live: VehicleChannelLiveSta
   { statuses: ['READY', 'SCHEDULED', 'CLAIMED'], live: 'QUEUED' },
 ];
 
+function formatScheduledFor(d: Date): string {
+  return d.toLocaleString(undefined, {
+    weekday: 'short',
+    month: 'short',
+    day: 'numeric',
+    hour: 'numeric',
+    minute: '2-digit',
+  });
+}
+
+function queueStatusDetail(hit: {
+  status: string;
+  scheduledFor: Date | null;
+  policyMode: string;
+  failureReason: string | null;
+  approvalRequiredReason: string | null;
+  holdReason: string | null;
+  blockReason: string | null;
+}): string | null {
+  if (hit.failureReason) return hit.failureReason;
+  if (hit.blockReason) return hit.blockReason;
+  if (hit.holdReason) return hit.holdReason;
+  if (hit.approvalRequiredReason) return hit.approvalRequiredReason;
+  if (hit.status === 'SCHEDULED' && hit.scheduledFor) {
+    return `Queued for ${formatScheduledFor(hit.scheduledFor)}`;
+  }
+  if (hit.status === 'READY') return 'Ready to publish';
+  if (hit.policyMode === 'SCHEDULED') return 'Scheduled batch';
+  return null;
+}
+
 function profileLanes(p: (typeof platformProfiles)[number]): string[] {
   const lanes: string[] = [];
   if (p.socialPosting) lanes.push('socialPosting');
@@ -83,7 +114,17 @@ export async function buildVehicleChannelMatrix(
     }),
     prisma.publishQueueItem.findMany({
       where: { dealershipId, vehicleId, status: { not: 'CANCELLED' } },
-      select: { platformSlug: true, status: true, failureReason: true, approvalRequiredReason: true, holdReason: true, sentAt: true },
+      select: {
+        platformSlug: true,
+        status: true,
+        scheduledFor: true,
+        policyMode: true,
+        failureReason: true,
+        approvalRequiredReason: true,
+        holdReason: true,
+        blockReason: true,
+        sentAt: true,
+      },
       orderBy: { createdAt: 'desc' },
     }),
     prisma.platformCatalogSync.findMany({
@@ -172,7 +213,7 @@ export async function buildVehicleChannelMatrix(
       const hit = queue.find(q => rank.statuses.includes(q.status));
       if (hit) {
         liveStatus = rank.live;
-        statusDetail = hit.failureReason ?? hit.approvalRequiredReason ?? hit.holdReason ?? null;
+        statusDetail = queueStatusDetail(hit);
         break;
       }
     }
@@ -190,6 +231,10 @@ export async function buildVehicleChannelMatrix(
       } else if (queue.some(q => q.status === 'SENT')) {
         liveStatus = 'LIVE';
         lastActivityAt = queue.find(q => q.status === 'SENT')?.sentAt ?? null;
+        const pendingUpdate = queue.find(q => q.status === 'SCHEDULED' && q.scheduledFor);
+        if (pendingUpdate?.scheduledFor) {
+          statusDetail = `Live · next update ${formatScheduledFor(pendingUpdate.scheduledFor)}`;
+        }
       } else if (
         catalog?.lastSyncAt &&
         vehicle.listingStatus === 'READY' &&

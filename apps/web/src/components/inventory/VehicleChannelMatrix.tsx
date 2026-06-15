@@ -3,12 +3,16 @@ import { useAsyncQuery } from '@/hooks/useAsyncQuery.ts';
 import {
   fetchVehicleChannels,
   setVehicleChannelSelection,
+  type VehicleChannelRow,
+  type VehicleChannelLiveStatus,
 } from '@/lib/api/sdk.ts';
-import type { VehicleChannelRow, VehicleChannelLiveStatus } from '@/lib/api/sdk.ts';
+import type { OperatorNavHandlers } from '@/lib/operatorNav.ts';
 
 type Props = {
   dealerId: string;
   vehicleId: string;
+  stockNumber?: string;
+  nav?: OperatorNavHandlers;
   /** Bumped by the parent when vehicle state changes so the matrix refetches. */
   refreshKey?: number;
   onStatusChange?: (status: 'complete' | 'needs_attention' | 'incomplete') => void;
@@ -37,14 +41,23 @@ function ChannelRow({
   isDraft,
   onToggle,
   toggling,
+  stockNumber,
+  nav,
 }: {
   row: VehicleChannelRow;
   isDraft: boolean;
   onToggle: (channelKey: string, selected: boolean) => void;
   toggling: boolean;
+  stockNumber?: string;
+  nav?: OperatorNavHandlers;
 }) {
   const [expanded, setExpanded] = useState(false);
   const chip = liveStatusChip[row.liveStatus];
+  const showQueueLink =
+    nav &&
+    stockNumber &&
+    row.channelKey !== 'storefront' &&
+    (row.liveStatus === 'QUEUED' || row.liveStatus === 'NEEDS_APPROVAL' || row.liveStatus === 'HELD' || row.liveStatus === 'FAILED');
   const hasIssues = !row.eligible && row.eligibilityIssues.length > 0;
   const showDetail = row.statusDetail || hasIssues;
   const selectionDisabled = toggling || (!row.connected && row.connectionState !== 'BUILT_IN');
@@ -66,6 +79,18 @@ function ChannelRow({
               <span key={lane} className="text-[9px] text-ink-faint">{laneLabel[lane] ?? lane}</span>
             ))}
           </div>
+          {row.statusDetail && !expanded && (
+            <p className="text-[10px] text-ink-muted mt-1 leading-snug">{row.statusDetail}</p>
+          )}
+          {showQueueLink && (
+            <button
+              type="button"
+              onClick={() => nav!.goToPlatformQueue(row.channelKey, { assetRef: stockNumber })}
+              className="text-[10px] font-semibold text-navy-600 hover:underline mt-0.5"
+            >
+              View in queue →
+            </button>
+          )}
         </td>
         <td className="py-2.5 px-2 text-center">
           {!row.connected && row.connectionState !== 'BUILT_IN' ? (
@@ -139,7 +164,7 @@ function ChannelRow({
   );
 }
 
-export function VehicleChannelMatrix({ dealerId, vehicleId, refreshKey = 0, onStatusChange }: Props) {
+export function VehicleChannelMatrix({ dealerId, vehicleId, stockNumber, nav, refreshKey = 0, onStatusChange }: Props) {
   const { data, loading, error, reload } = useAsyncQuery(
     () => fetchVehicleChannels(dealerId, vehicleId),
     [dealerId, vehicleId, refreshKey],
@@ -210,6 +235,8 @@ export function VehicleChannelMatrix({ dealerId, vehicleId, refreshKey = 0, onSt
               isDraft={isDraft}
               onToggle={handleToggle}
               toggling={togglingKey === row.channelKey}
+              stockNumber={stockNumber}
+              nav={nav}
             />
           ))}
         </tbody>

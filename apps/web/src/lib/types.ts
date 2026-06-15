@@ -817,6 +817,18 @@ export type SelectedSocialPagesResponse = { selections: SelectedSocialPage[] };
 
 // ── Queue ─────────────────────────────────────────────────────────────────────
 
+export type PlatformQueueStats = {
+  platformSlug: string;
+  platformName: string;
+  postingMode: string;
+  queued: number;
+  scheduled: number;
+  needsApproval: number;
+  blocked: number;
+  held: number;
+  nextScheduledFor: string | null;
+};
+
 export type QueueView = {
   dealershipId: string;
   dealerName: string;
@@ -827,6 +839,7 @@ export type QueueView = {
   retryPending: QueueItemView[];
   claimed: QueueItemView[];
   platformAccounts: Array<{ platformSlug: string; platformName: string; state: string }>;
+  byPlatform: PlatformQueueStats[];
   summary: {
     ready: number;
     scheduled: number;

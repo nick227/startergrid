@@ -9,6 +9,7 @@ export type QueueTaskFilter =
   | 'NEEDS_APPROVAL'
   | 'SCHEDULED'
   | 'READY'
+  | 'HELD'
   | 'BLOCKED'
   | 'FAILED'
   | 'SENT';
@@ -18,6 +19,7 @@ export const QUEUE_TASK_FILTERS: Array<{ key: QueueTaskFilter; label: string }> 
   { key: 'NEEDS_APPROVAL', label: 'Needs approval' },
   { key: 'SCHEDULED', label: 'Scheduled' },
   { key: 'READY', label: 'Ready' },
+  { key: 'HELD', label: 'On hold' },
   { key: 'BLOCKED', label: 'Blocked' },
   { key: 'FAILED', label: 'Failed' },
   { key: 'SENT', label: 'Sent' },

@@ -3,24 +3,17 @@ import type { OperatorNavHandlers } from '@/lib/operatorNav.ts';
 import { useAsyncQuery } from '@/hooks/useAsyncQuery.ts';
 import { fetchPublishQueue } from '@/lib/api/sdk.ts';
 import { OperatorPage, ErrorState } from '@/components/operator';
-import { PageSituation, ControlBlock, OpsRowCardSkeleton } from '@/components/layout';
-import { OpsRowCard } from '@/components/layout/OpsRowCard.tsx';
+import { PageSituation, ControlBlock } from '@/components/layout';
 import { FilterChips } from '@/components/generic';
 import { EmptyState } from '@/components/ui';
-import { QueueDetailDrawer } from './QueueDetailDrawer.tsx';
+import { QueueSummaryStrip } from './QueueSummaryStrip.tsx';
+import { QueueControlTable } from './QueueControlTable.tsx';
 import {
   QUEUE_TASK_FILTERS,
   filterQueueItems,
   type QueueTaskFilter,
 } from '@/lib/queuePresentation.ts';
 import { queueSituationSummary } from '@/lib/queuePresentation.ts';
-import {
-  queueTaskTitle,
-  queueTaskSecondaryMeta,
-  queueDesktopFields,
-  queueRowSurface,
-  queueItemStatusVisual,
-} from '@/lib/queueRowPresentation.ts';
 import { operatorCopy } from '@/lib/copy/operator.ts';
 import type { OperatorTab } from '@/lib/operatorNav.ts';
 
@@ -50,7 +43,6 @@ export function QueueListPanel({
 
   const [search, setSearch] = useState(initialAssetRef ?? '');
   const [filter, setFilter] = useState<QueueTaskFilter>('ALL');
-  const [selectedId, setSelectedId] = useState<string | null>(null);
 
   useEffect(() => {
     if (initialAssetRef) setSearch(initialAssetRef);
@@ -61,10 +53,7 @@ export function QueueListPanel({
     [data, filter, platformSlug, search]
   );
 
-  const selected = selectedId ? items.find(i => i.id === selectedId) ?? null : null;
-  const actions = operatorCopy.channels.rowActions;
-
-  const title = platformName ?? operatorCopy.queue.title;
+  const title = platformName ?? operatorCopy.queue.controlCenterTitle;
   const situation = data ? queueSituationSummary(data) : operatorCopy.queue.loading;
 
   if (error && !data) {
@@ -97,8 +86,16 @@ export function QueueListPanel({
 
       <PageSituation
         title={title}
-        line={platformSlug ? `${situation} · ${operatorCopy.queue.subtitle}` : situation}
+        line={platformSlug ? `${situation} · ${operatorCopy.queue.subtitle}` : `${situation} — ${operatorCopy.queue.subtitle}`}
       />
+
+      {data && !platformSlug && (
+        <QueueSummaryStrip
+          view={data}
+          activeFilter={filter}
+          onFilter={key => setFilter(key as QueueTaskFilter)}
+        />
+      )}
 
       <ControlBlock
         search={search}
@@ -116,73 +113,37 @@ export function QueueListPanel({
         }
       />
 
-      <div className={`${selected ? 'lg:grid lg:grid-cols-[1fr_min(22rem,38%)] lg:gap-4 lg:items-start' : ''}`}>
+      {loading && !data ? (
         <div className="space-y-3">
-          {loading && !data ? (
-            <>
-              <OpsRowCardSkeleton />
-              <OpsRowCardSkeleton />
-              <OpsRowCardSkeleton />
-            </>
-          ) : items.length === 0 ? (
-            <EmptyState
-              icon="📭"
-              title="No queue items found"
-              subtitle={operatorCopy.queue.emptyFilter}
-              action={
-                search || filter !== 'ALL' ? (
-                  <button
-                    type="button"
-                    onClick={() => { setSearch(''); setFilter('ALL'); }}
-                    className="text-navy-600 hover:text-navy-700 font-medium text-sm"
-                  >
-                    Clear filters
-                  </button>
-                ) : null
-              }
-            />
-          ) : (
-            items.map(item => {
-              const st = queueItemStatusVisual(item);
-              return (
-                <OpsRowCard
-                  key={item.id}
-                  title={queueTaskTitle(item)}
-                  statusLabel={st.label}
-                  statusClassName={st.pill}
-                  secondaryMeta={queueTaskSecondaryMeta(item)}
-                  desktopFields={queueDesktopFields(item)}
-                  detailOpen={selectedId === item.id}
-                  surfaceClassName={queueRowSurface(item.status)}
-                  actions={[
-                    {
-                      label: actions.details,
-                      onClick: () => {
-                        if (item.assetTitle || item.assetRef || item.assetId) {
-                          nav.goToInventoryItem({
-                            assetTitle: item.assetTitle,
-                            assetRef: item.assetRef,
-                          });
-                        } else {
-                          setSelectedId(item.id);
-                        }
-                      },
-                    },
-                  ]}
-                />
-              );
-            })
-          )}
+          {[1, 2, 3].map(i => (
+            <div key={i} className="h-16 rounded-xl bg-silver-100 animate-pulse" />
+          ))}
         </div>
-
-        {selected && (
-          <QueueDetailDrawer
-            item={selected}
-            open
-            onClose={() => setSelectedId(null)}
-          />
-        )}
-      </div>
+      ) : items.length === 0 ? (
+        <EmptyState
+          icon="📭"
+          title="No queue items found"
+          subtitle={search || filter !== 'ALL' ? operatorCopy.queue.emptyFilter : operatorCopy.queue.empty}
+          action={
+            search || filter !== 'ALL' ? (
+              <button
+                type="button"
+                onClick={() => { setSearch(''); setFilter('ALL'); }}
+                className="text-navy-600 hover:text-navy-700 font-medium text-sm"
+              >
+                Clear filters
+              </button>
+            ) : null
+          }
+        />
+      ) : (
+        <QueueControlTable
+          dealerId={dealerId}
+          items={items}
+          nav={nav}
+          onChanged={reload}
+        />
+      )}
     </OperatorPage>
   );
 }

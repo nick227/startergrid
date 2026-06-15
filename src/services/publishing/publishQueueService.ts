@@ -36,6 +36,18 @@ export type QueueItemView = {
   createdAt: string;
 };
 
+export type PlatformQueueStats = {
+  platformSlug: string;
+  platformName: string;
+  postingMode: string;
+  queued: number;
+  scheduled: number;
+  needsApproval: number;
+  blocked: number;
+  held: number;
+  nextScheduledFor: string | null;
+};
+
 export type QueueView = {
   dealershipId: string;
   dealerName: string;
@@ -46,6 +58,7 @@ export type QueueView = {
   retryPending: QueueItemView[];
   claimed: QueueItemView[];
   platformAccounts: Array<{ platformSlug: string; platformName: string; state: string }>;
+  byPlatform: PlatformQueueStats[];
   summary: {
     ready: number;
     scheduled: number;
@@ -231,6 +244,34 @@ export async function getQueueView(
     state: a.state
   }));
 
+  const policies = await prisma.syncPolicy.findMany({ where: { dealershipId } });
+  const policyModeBySlug = new Map(policies.map(p => [p.platformSlug, p.mode as string]));
+
+  const slugSet = new Set([
+    ...accounts.map(a => a.platformSlug),
+    ...pending.map(i => i.platformSlug),
+    ...policies.map(p => p.platformSlug),
+  ]);
+
+  const byPlatform: PlatformQueueStats[] = [...slugSet].map(slug => {
+    const platformPending = pending.filter(i => i.platformSlug === slug);
+    const scheduledItems = platformPending.filter(i => i.status === 'SCHEDULED' && i.scheduledFor);
+    const nextScheduled = scheduledItems
+      .map(i => i.scheduledFor!)
+      .sort()[0] ?? null;
+    return {
+      platformSlug: slug,
+      platformName: profileBySlug.get(slug)?.name ?? slug,
+      postingMode: policyModeBySlug.get(slug) ?? 'SCHEDULED',
+      queued: platformPending.filter(i => i.status === 'READY').length,
+      scheduled: platformPending.filter(i => i.status === 'SCHEDULED').length,
+      needsApproval: platformPending.filter(i => i.status === 'NEEDS_APPROVAL').length,
+      blocked: platformPending.filter(i => i.status === 'BLOCKED').length,
+      held: platformPending.filter(i => i.status === 'HELD').length,
+      nextScheduledFor: nextScheduled,
+    };
+  }).sort((a, b) => a.platformName.localeCompare(b.platformName));
+
   const summary = {
     ready:        pending.filter(i => i.status === 'READY').length,
     scheduled:    pending.filter(i => i.status === 'SCHEDULED').length,
@@ -254,8 +295,58 @@ export async function getQueueView(
     retryPending,
     claimed,
     platformAccounts: accountViews,
+    byPlatform,
     summary
   };
+}
+
+const DISPATCHABLE_STATUSES = new Set(['READY', 'SCHEDULED', 'FAILED']);
+
+export async function dispatchQueueItemNow(
+  prisma: PrismaClient,
+  dealershipId: string,
+  itemId: string,
+  operator: string,
+): Promise<{ sent: boolean; queueItemId: string }> {
+  const item = await prisma.publishQueueItem.findFirst({
+    where: { id: itemId, dealershipId },
+    include: { vehicle: { select: { stockNumber: true } } },
+  });
+  if (!item) throw new Error('Queue item not found');
+
+  if (!DISPATCHABLE_STATUSES.has(item.status)) {
+    throw new Error(`Cannot publish item in status ${item.status}`);
+  }
+  if (item.status === 'FAILED' && item.attemptCount >= 3) {
+    throw new Error('Maximum retry attempts reached');
+  }
+
+  await prisma.publishQueueItem.update({
+    where: { id: itemId },
+    data: { status: 'READY' as any, scheduledFor: new Date() },
+  });
+
+  await prisma.publishQueueItem.update({
+    where: { id: itemId },
+    data: { status: 'SENT' as any, sentAt: new Date() },
+  });
+
+  await recordSyncEvent(prisma, {
+    dealershipId,
+    vehicleId: item.vehicleId,
+    platformSlug: item.platformSlug,
+    kind: 'SUBMISSION_SENT',
+    payload: {
+      queueItemId: itemId,
+      triggerKind: item.triggerKind,
+      stockNumber: item.vehicle?.stockNumber ?? null,
+      operator,
+      manual: true,
+      environment: 'MOCK',
+    },
+  });
+
+  return { sent: true, queueItemId: itemId };
 }
 
 // ── Queue mutations ──────────────────────────────────────────────────────────

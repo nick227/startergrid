@@ -343,6 +343,7 @@ export default function InventoryPage({ dealerId, nav, activeTab }: Props) {
           <InventoryDetailPanel
             dealerId={dealerId}
             vehicleId={detailId}
+            nav={nav}
             perf={detailVehicle ? perfMap.get(detailVehicle.stockNumber) : undefined}
             platformPerfBySlug={platformPerfBySlug}
             benchmarksUpdating={benchmarksUpdating}

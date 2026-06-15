@@ -10,7 +10,7 @@ export function canApprove(status: string): boolean {
 }
 
 export function canHold(status: string): boolean {
-  return status === 'NEEDS_APPROVAL';
+  return status === 'NEEDS_APPROVAL' || status === 'READY' || status === 'SCHEDULED';
 }
 
 export function canReject(status: string): boolean {
@@ -88,7 +88,7 @@ export async function holdQueueItem(
   const item = await prisma.publishQueueItem.findUniqueOrThrow({ where: { id: itemId } });
 
   if (!canHold(item.status)) {
-    throw new Error(`Cannot hold item in status ${item.status}. Only NEEDS_APPROVAL items can be held.`);
+    throw new Error(`Cannot hold item in status ${item.status}.`);
   }
 
   await prisma.publishQueueItem.update({
@@ -152,10 +152,18 @@ export async function releaseHeldQueueItem(
     throw new Error(`Cannot release item in status ${item.status}. Only HELD items can be released.`);
   }
 
+  const policyMode = item.policyMode as SyncMode;
+  const nextStatus =
+    policyMode === 'APPROVAL_REQUIRED' ? 'NEEDS_APPROVAL'
+    : policyMode === 'SCHEDULED' ? 'SCHEDULED'
+    : 'READY';
+  const scheduledFor = nextStatus === 'SCHEDULED' ? resolveScheduledFor('SCHEDULED') : null;
+
   await prisma.publishQueueItem.update({
     where: { id: itemId },
     data: {
-      status: 'NEEDS_APPROVAL' as any,
+      status: nextStatus as any,
+      scheduledFor,
       holdReason: null,
       heldAt: null,
       heldBy: null

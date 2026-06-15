@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import type { PlatformPublishResult, PlatformAccountDetail, PlatformPerformanceItem, SelectedSocialPage } from '@/lib/types.ts';
+import type { PlatformPublishResult, PlatformAccountDetail, PlatformPerformanceItem, SelectedSocialPage, PlatformQueueStats } from '@/lib/types.ts';
 import type { OperatorNavHandlers } from '@/lib/operatorNav.ts';
 import { updateAccount } from '@/lib/api/sdk.ts';
 import { OpsRowCard } from '@/components/layout/OpsRowCard.tsx';
@@ -19,18 +19,22 @@ import {
 import { socialRowSubtitle } from '@/lib/platformPanelGuards.ts';
 import { channelSecondaryMeta, channelRowSurface } from '@/lib/channelRowPresentation.ts';
 import { platformDisplayName } from '@/lib/marketplaceBrand.ts';
+import { platformQueueSummaryLine } from '@/lib/platformQueueStats.ts';
 import { getSetupReadiness, severityToPill } from '@/lib/setupReadiness.ts';
+import { operatorCopy } from '@/lib/copy/operator.ts';
 
 type Props = {
   platforms: PlatformPublishResult[];
   perfBySlug: Map<string, PlatformPerformanceItem>;
   accountBySlug: Map<string, PlatformAccountDetail>;
   socialPageBySlug?: Map<string, SelectedSocialPage>;
+  queueStatsBySlug?: Map<string, PlatformQueueStats>;
   dealerId: string;
   nav: OperatorNavHandlers;
   selectedSlug: string | null;
   onSelectSlug: (slug: string | null) => void;
   onAccountSaved: () => void;
+  onPlatformConnected?: (platformSlug: string) => void;
   loading?: boolean;
   emptyMessage: string;
 };
@@ -92,6 +96,7 @@ function PlatformCta({
   onAccountSaved,
   onSelectSlug,
   nav,
+  onPlatformConnected,
 }: {
   platform: PlatformPublishResult;
   account: PlatformAccountDetail | undefined;
@@ -100,6 +105,7 @@ function PlatformCta({
   onAccountSaved: () => void;
   onSelectSlug: (slug: string | null) => void;
   nav: OperatorNavHandlers;
+  onPlatformConnected?: (platformSlug: string) => void;
 }) {
   const slug = platform.platformSlug;
   const [pausing, setPausing] = useState(false);
@@ -140,7 +146,10 @@ function PlatformCta({
         platformSlug={slug}
         providerDisplayName={oauthProviderDisplayName(account.oauthProvider)}
         isReconnect={account.oauthExpired}
-        onDone={onAccountSaved}
+        onDone={() => {
+          onAccountSaved();
+          onPlatformConnected?.(slug);
+        }}
         label={account.oauthExpired ? 'Re-connect' : 'Connect'}
         className={CTA_W}
       />
@@ -312,11 +321,13 @@ export function PlatformChannelList({
   perfBySlug,
   accountBySlug,
   socialPageBySlug,
+  queueStatsBySlug,
   dealerId,
   nav,
   selectedSlug,
   onSelectSlug,
   onAccountSaved,
+  onPlatformConnected,
   loading,
   emptyMessage,
 }: Props) {
@@ -344,6 +355,8 @@ export function PlatformChannelList({
     );
 
     const readiness = getSetupReadiness(platform, account || null);
+    const queueStats = queueStatsBySlug?.get(platform.platformSlug);
+    const queueLine = platformQueueSummaryLine(queueStats);
 
     const inlineContent = account ? (
       <PlatformRowFields
@@ -368,8 +381,16 @@ export function PlatformChannelList({
         surfaceClassName={channelRowSurface(conn.connection)}
         logoNode={<PlatformLogo slug={platform.platformSlug} name={displayName} />}
         subtitleLine={socialSubtitle ?? platformBenefitLine(platform.platformSlug)}
-        healthLine={feedHealthLine(perf, conn.connection)}
+        healthLine={queueLine ?? feedHealthLine(perf, conn.connection)}
         inlineContent={inlineContent}
+        actions={
+          (conn.connection === 'connected' || conn.connection === 'updating')
+            ? [{
+                label: operatorCopy.platforms.viewQueueForPlatform,
+                onClick: () => nav.goToPlatformQueue(platform.platformSlug),
+              }]
+            : undefined
+        }
         ctaNode={
           <PlatformCta
             platform={platform}
@@ -379,6 +400,7 @@ export function PlatformChannelList({
             onAccountSaved={onAccountSaved}
             onSelectSlug={onSelectSlug}
             nav={nav}
+            onPlatformConnected={onPlatformConnected}
           />
         }
       />

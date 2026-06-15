@@ -430,6 +430,187 @@ paths:
         '404':
           $ref: '#/components/responses/NotFound'
 
+  /api/dealers/{dealershipId}/publish/queue/{itemId}/approve:
+    post:
+      tags: [Publish]
+      security:
+        - OperatorAuth: []
+      x-route-classification: operator
+      operationId: approvePublishQueueItem
+      summary: Approve a queue item pending operator review
+      parameters:
+        - $ref: '#/components/parameters/dealershipId'
+        - name: itemId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Item approved
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [ok, itemId]
+                properties:
+                  ok:
+                    type: boolean
+                  itemId:
+                    type: string
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /api/dealers/{dealershipId}/publish/queue/{itemId}/hold:
+    post:
+      tags: [Publish]
+      security:
+        - OperatorAuth: []
+      x-route-classification: operator
+      operationId: holdPublishQueueItem
+      summary: Hold a queue item
+      parameters:
+        - $ref: '#/components/parameters/dealershipId'
+        - name: itemId
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                reason:
+                  type: string
+      responses:
+        '200':
+          description: Item held
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [ok, itemId]
+                properties:
+                  ok:
+                    type: boolean
+                  itemId:
+                    type: string
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /api/dealers/{dealershipId}/publish/queue/{itemId}/reject:
+    post:
+      tags: [Publish]
+      security:
+        - OperatorAuth: []
+      x-route-classification: operator
+      operationId: rejectPublishQueueItem
+      summary: Reject a queue item
+      parameters:
+        - $ref: '#/components/parameters/dealershipId'
+        - name: itemId
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                reason:
+                  type: string
+      responses:
+        '200':
+          description: Item rejected
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [ok, itemId]
+                properties:
+                  ok:
+                    type: boolean
+                  itemId:
+                    type: string
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /api/dealers/{dealershipId}/publish/queue/{itemId}/release:
+    post:
+      tags: [Publish]
+      security:
+        - OperatorAuth: []
+      x-route-classification: operator
+      operationId: releasePublishQueueItem
+      summary: Release a held queue item back to the approval or dispatch flow
+      parameters:
+        - $ref: '#/components/parameters/dealershipId'
+        - name: itemId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Item released
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [ok, itemId]
+                properties:
+                  ok:
+                    type: boolean
+                  itemId:
+                    type: string
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /api/dealers/{dealershipId}/publish/queue/{itemId}/publish-now:
+    post:
+      tags: [Publish]
+      security:
+        - OperatorAuth: []
+      x-route-classification: operator
+      operationId: publishQueueItemNow
+      summary: Dispatch a queue item immediately
+      parameters:
+        - $ref: '#/components/parameters/dealershipId'
+        - name: itemId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Item dispatched
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [sent, queueItemId]
+                properties:
+                  sent:
+                    type: boolean
+                  queueItemId:
+                    type: string
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
   /api/dealers/{dealershipId}/publish/auto-sync:
     get:
       tags: [Publish]
@@ -3797,6 +3978,7 @@ components:
         - retryPending
         - claimed
         - platformAccounts
+        - byPlatform
         - summary
       properties:
         dealershipId:
@@ -3830,8 +4012,46 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/QueuePlatformAccountRef'
+        byPlatform:
+          type: array
+          items:
+            $ref: '#/components/schemas/PlatformQueueStats'
         summary:
           $ref: '#/components/schemas/QueueSummary'
+
+    PlatformQueueStats:
+      type: object
+      required:
+        - platformSlug
+        - platformName
+        - postingMode
+        - queued
+        - scheduled
+        - needsApproval
+        - blocked
+        - held
+        - nextScheduledFor
+      properties:
+        platformSlug:
+          type: string
+        platformName:
+          type: string
+        postingMode:
+          type: string
+        queued:
+          type: integer
+        scheduled:
+          type: integer
+        needsApproval:
+          type: integer
+        blocked:
+          type: integer
+        held:
+          type: integer
+        nextScheduledFor:
+          type: string
+          format: date-time
+          nullable: true
 
     BusinessCategory:
       type: string

@@ -13,9 +13,12 @@ import { MarketplacePublishPanel } from './MarketplacePublishPanel.tsx';
 import { VehicleDangerZone } from './VehicleDangerZone.tsx';
 import { AssetLifecycleHistory } from './AssetLifecycleHistory.tsx';
 
+import type { OperatorNavHandlers } from '@/lib/operatorNav.ts';
+
 type Props = {
   dealerId: string;
   vehicleId: string;
+  nav?: OperatorNavHandlers;
   perf?: VehiclePerformanceItem | null;
   platformPerfBySlug?: Map<string, PlatformPerformanceItem>;
   benchmarksUpdating?: boolean;
@@ -80,6 +83,7 @@ function photoProgressLabel(vehicle: VehicleDetailDto): string {
 export function InventoryDetailPanel({
   dealerId,
   vehicleId,
+  nav,
   perf,
   onClose,
   onMediaAssigned,
@@ -279,6 +283,8 @@ export function InventoryDetailPanel({
                       <VehicleChannelMatrix
                         dealerId={dealerId}
                         vehicleId={vehicleId}
+                        stockNumber={vehicle.stockNumber}
+                        nav={nav}
                         refreshKey={refreshKey}
                         onStatusChange={setChannelStatus}
                       />

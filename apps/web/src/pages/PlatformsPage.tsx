@@ -1,5 +1,5 @@
 import { useMemo, useState, useEffect } from 'react';
-import { fetchPublishStatus, fetchAccounts, fetchPlatformPerformance, fetchSelectedSocialPages } from '@/lib/api/sdk.ts';
+import { fetchPublishStatus, fetchAccounts, fetchPlatformPerformance, fetchSelectedSocialPages, fetchPublishQueue } from '@/lib/api/sdk.ts';
 import type { PlatformAccountDetail, PlatformPerformanceItem, PlatformPublishResult, SelectedSocialPage } from '@/lib/types.ts';
 import type { OperatorPageBaseProps } from '@/lib/operatorPage.ts';
 import type { OperatorNavHandlers } from '@/lib/operatorNav.ts';
@@ -21,6 +21,8 @@ import {
 import { getSetupReadiness, severityToPill } from '@/lib/setupReadiness.ts';
 import { operatorCopy } from '@/lib/copy/operator.ts';
 import { useCategorySchema } from '@/contexts/CategoryContext.tsx';
+import { PlatformConnectBanner } from '@/components/platforms/PlatformConnectBanner.tsx';
+import { platformStatsBySlug } from '@/lib/platformQueueStats.ts';
 import {
   AUTO_MARKETPLACE_NAME,
   AUTO_MARKETPLACE_SLUG,
@@ -112,10 +114,12 @@ export default function PlatformsPage({ dealerId, nav, activeTab, initialPlatfor
   const accountsQuery = useAsyncQuery(() => fetchAccounts(dealerId), [dealerId]);
   const perfQuery = useAsyncQuery(() => fetchPlatformPerformance(dealerId), [dealerId]);
   const socialPagesQuery = useAsyncQuery(() => fetchSelectedSocialPages(dealerId), [dealerId]);
+  const queueQuery = useAsyncQuery(() => fetchPublishQueue(dealerId), [dealerId]);
 
   const [filter, setFilter] = useState<PlatformConnectionFilter>('ALL');
   const [sort] = useState<'urgency' | 'name'>('urgency');
   const [selectedSlug, setSelectedSlug] = useState<string | null>(initialPlatformSlug ?? null);
+  const [connectedSlug, setConnectedSlug] = useState<string | null>(null);
 
   useEffect(() => {
     if (initialPlatformSlug) setSelectedSlug(initialPlatformSlug);
@@ -138,6 +142,11 @@ export default function PlatformsPage({ dealerId, nav, activeTab, initialPlatfor
     for (const s of socialPagesQuery.data?.selections ?? []) m.set(s.platformSlug, s);
     return m;
   }, [socialPagesQuery.data]);
+
+  const queueStatsBySlug = useMemo(
+    () => platformStatsBySlug(queueQuery.data?.byPlatform),
+    [queueQuery.data],
+  );
 
   // Backend already scopes platforms to the dealer's businessCategory (fail-closed in
   // resolvePublishTargets). Do not re-filter by categorySchema.id here — while
@@ -168,6 +177,7 @@ export default function PlatformsPage({ dealerId, nav, activeTab, initialPlatfor
     accountsQuery.reload();
     perfQuery.reload();
     socialPagesQuery.reload();
+    queueQuery.reload();
   };
 
   if (error && !data) {
@@ -202,8 +212,22 @@ export default function PlatformsPage({ dealerId, nav, activeTab, initialPlatfor
       <PageSituation title={operatorCopy.platforms.title} line={situation} />
 
       <p className="text-sm text-ink-muted leading-relaxed mb-5 -mt-1">
-        Connect the channels where your inventory should appear — paid search, marketplaces, social feeds, and your own storefront. When a platform is active, new vehicles and price changes push automatically as listings are marked ready; you don't upload to each platform individually. Pause any channel at any time without losing your credentials or configuration.
+        Connect destinations here. Inventory selects what can go out; the Queue controls when and how it posts; History records what already happened.
       </p>
+
+      {connectedSlug && (
+        <PlatformConnectBanner
+          platformName={platformDisplayName(
+            connectedSlug,
+            platforms.find(p => p.platformSlug === connectedSlug)?.platformName ?? connectedSlug,
+          )}
+          platformSlug={connectedSlug}
+          stats={queueStatsBySlug.get(connectedSlug) ?? null}
+          readyVehicleCount={data?.vehicles?.ready}
+          nav={nav}
+          onDismiss={() => setConnectedSlug(null)}
+        />
+      )}
 
       {featuredMarketplace && (
         <FeaturedMarketplaceSection
@@ -230,6 +254,7 @@ export default function PlatformsPage({ dealerId, nav, activeTab, initialPlatfor
         onDone={() => {
           accountsQuery.reload();
           reload();
+          queueQuery.reload();
         }}
       />
 
@@ -238,6 +263,7 @@ export default function PlatformsPage({ dealerId, nav, activeTab, initialPlatfor
         perfBySlug={perfBySlug}
         accountBySlug={accountBySlug}
         socialPageBySlug={socialPageBySlug}
+        queueStatsBySlug={queueStatsBySlug}
         dealerId={dealerId}
         nav={nav}
         selectedSlug={selectedSlug}
@@ -246,6 +272,11 @@ export default function PlatformsPage({ dealerId, nav, activeTab, initialPlatfor
           accountsQuery.reload();
           socialPagesQuery.reload();
           reload();
+          queueQuery.reload();
+        }}
+        onPlatformConnected={slug => {
+          setConnectedSlug(slug);
+          queueQuery.reload();
         }}
         loading={loading && !data}
         emptyMessage={channelEmptyMessage}

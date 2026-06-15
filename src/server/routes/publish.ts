@@ -8,7 +8,13 @@ import {
   getAutoSyncStatus,
   scheduleBootstrapIfNeeded,
 } from '../../services/publishing/autoReconcileService.js';
-import { getQueueView } from '../../services/publishing/publishQueueService.js';
+import { getQueueView, dispatchQueueItemNow } from '../../services/publishing/publishQueueService.js';
+import {
+  approveQueueItem,
+  holdQueueItem,
+  rejectQueueItem,
+  releaseHeldQueueItem,
+} from '../../services/publishing/approvalService.js';
 import { platformProfiles } from '../../data/platformProfiles.js';
 import { requireDealerAccess } from '../security.js';
 import { preparePublishSchema, validateBody } from '../requestValidation.js';
@@ -16,6 +22,12 @@ import { preparePublishSchema, validateBody } from '../requestValidation.js';
 type DealerParams = { dealershipId: string };
 type PrepareBody = { dryRun?: boolean; platforms?: string[] };
 type HistoryQuery = { platformSlug?: string; kind?: string; limit?: string; before?: string };
+type QueueItemParams = { dealershipId: string; itemId: string };
+type QueueActionBody = { reason?: string };
+
+function operatorLabel(request: { operator?: { email: string } }): string {
+  return request.operator?.email ?? 'operator';
+}
 
 // ── helpers ──────────────────────────────────────────────────────────────────
 
@@ -213,6 +225,104 @@ export function registerPublishRoutes(app: FastifyInstance, prisma: PrismaClient
         return reply.status(404).send({ error: 'Dealer not found' });
       const view = await getQueueView(prisma, dealershipId);
       return reply.send(view);
+    }
+  );
+
+  async function requireQueueItem(
+    dealershipId: string,
+    itemId: string,
+  ) {
+    return prisma.publishQueueItem.findFirst({
+      where: { id: itemId, dealershipId },
+      select: { id: true },
+    });
+  }
+
+  // POST /api/dealers/:dealershipId/publish/queue/:itemId/approve
+  app.post<{ Params: QueueItemParams }>(
+    '/api/dealers/:dealershipId/publish/queue/:itemId/approve',
+    async (request, reply) => {
+      const { dealershipId, itemId } = request.params;
+      if (!await requireDealerAccess(prisma, request, reply, dealershipId)) return;
+      if (!await requireDealer(prisma, dealershipId)) return reply.status(404).send({ error: 'Dealer not found' });
+      if (!await requireQueueItem(dealershipId, itemId)) return reply.status(404).send({ error: 'Queue item not found' });
+      try {
+        await approveQueueItem(prisma, itemId, operatorLabel(request));
+        return reply.send({ ok: true, itemId });
+      } catch (err: unknown) {
+        return reply.status(400).send({ error: err instanceof Error ? err.message : 'Approve failed' });
+      }
+    }
+  );
+
+  // POST /api/dealers/:dealershipId/publish/queue/:itemId/hold
+  app.post<{ Params: QueueItemParams; Body: QueueActionBody }>(
+    '/api/dealers/:dealershipId/publish/queue/:itemId/hold',
+    async (request, reply) => {
+      const { dealershipId, itemId } = request.params;
+      if (!await requireDealerAccess(prisma, request, reply, dealershipId)) return;
+      if (!await requireDealer(prisma, dealershipId)) return reply.status(404).send({ error: 'Dealer not found' });
+      if (!await requireQueueItem(dealershipId, itemId)) return reply.status(404).send({ error: 'Queue item not found' });
+      const reason = request.body?.reason?.trim() || 'Held by operator';
+      try {
+        await holdQueueItem(prisma, itemId, operatorLabel(request), reason);
+        return reply.send({ ok: true, itemId });
+      } catch (err: unknown) {
+        return reply.status(400).send({ error: err instanceof Error ? err.message : 'Hold failed' });
+      }
+    }
+  );
+
+  // POST /api/dealers/:dealershipId/publish/queue/:itemId/reject
+  app.post<{ Params: QueueItemParams; Body: QueueActionBody }>(
+    '/api/dealers/:dealershipId/publish/queue/:itemId/reject',
+    async (request, reply) => {
+      const { dealershipId, itemId } = request.params;
+      if (!await requireDealerAccess(prisma, request, reply, dealershipId)) return;
+      if (!await requireDealer(prisma, dealershipId)) return reply.status(404).send({ error: 'Dealer not found' });
+      if (!await requireQueueItem(dealershipId, itemId)) return reply.status(404).send({ error: 'Queue item not found' });
+      const reason = request.body?.reason?.trim() || 'Rejected by operator';
+      try {
+        await rejectQueueItem(prisma, itemId, operatorLabel(request), reason);
+        return reply.send({ ok: true, itemId });
+      } catch (err: unknown) {
+        return reply.status(400).send({ error: err instanceof Error ? err.message : 'Reject failed' });
+      }
+    }
+  );
+
+  // POST /api/dealers/:dealershipId/publish/queue/:itemId/release
+  app.post<{ Params: QueueItemParams }>(
+    '/api/dealers/:dealershipId/publish/queue/:itemId/release',
+    async (request, reply) => {
+      const { dealershipId, itemId } = request.params;
+      if (!await requireDealerAccess(prisma, request, reply, dealershipId)) return;
+      if (!await requireDealer(prisma, dealershipId)) return reply.status(404).send({ error: 'Dealer not found' });
+      if (!await requireQueueItem(dealershipId, itemId)) return reply.status(404).send({ error: 'Queue item not found' });
+      try {
+        await releaseHeldQueueItem(prisma, itemId, operatorLabel(request));
+        return reply.send({ ok: true, itemId });
+      } catch (err: unknown) {
+        return reply.status(400).send({ error: err instanceof Error ? err.message : 'Release failed' });
+      }
+    }
+  );
+
+  // POST /api/dealers/:dealershipId/publish/queue/:itemId/publish-now
+  app.post<{ Params: QueueItemParams }>(
+    '/api/dealers/:dealershipId/publish/queue/:itemId/publish-now',
+    async (request, reply) => {
+      const { dealershipId, itemId } = request.params;
+      if (!await requireDealerAccess(prisma, request, reply, dealershipId)) return;
+      if (!await requireDealer(prisma, dealershipId)) return reply.status(404).send({ error: 'Dealer not found' });
+      try {
+        const result = await dispatchQueueItemNow(prisma, dealershipId, itemId, operatorLabel(request));
+        return reply.send(result);
+      } catch (err: unknown) {
+        const message = err instanceof Error ? err.message : 'Publish failed';
+        const status = message.includes('not found') ? 404 : 400;
+        return reply.status(status).send({ error: message });
+      }
     }
   );
 }

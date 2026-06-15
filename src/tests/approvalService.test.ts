@@ -26,8 +26,9 @@ describe('canApprove', () => {
 
 describe('canHold', () => {
   it('NEEDS_APPROVAL → can hold',   () => assert.ok(canHold('NEEDS_APPROVAL')));
+  it('READY          → can hold',   () => assert.ok(canHold('READY')));
+  it('SCHEDULED      → can hold',   () => assert.ok(canHold('SCHEDULED')));
   it('HELD           → cannot hold', () => assert.ok(!canHold('HELD')));
-  it('READY          → cannot hold', () => assert.ok(!canHold('READY')));
   it('SENT           → cannot hold', () => assert.ok(!canHold('SENT')));
   it('CANCELLED      → cannot hold', () => assert.ok(!canHold('CANCELLED')));
 });

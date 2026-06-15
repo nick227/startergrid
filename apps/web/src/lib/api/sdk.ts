@@ -145,7 +145,51 @@ export async function fetchPublishAccounts(dealershipId: string): Promise<Accoun
 }
 
 export async function fetchPublishQueue(dealershipId: string): Promise<QueueView> {
-  return fromSdk(PublishService.getPublishQueue({ dealershipId }));
+  const res = await fetch(`/api/dealers/${dealershipId}/publish/queue`, { credentials: 'include' });
+  if (!res.ok) {
+    const body = await res.json().catch(() => ({})) as { error?: string };
+    throw new Error(body.error ?? `HTTP ${res.status}`);
+  }
+  return res.json() as Promise<QueueView>;
+}
+
+async function queueAction(
+  dealershipId: string,
+  itemId: string,
+  action: 'approve' | 'hold' | 'reject' | 'release' | 'publish-now',
+  body?: { reason?: string },
+): Promise<{ ok: boolean; itemId: string } | { sent: boolean; queueItemId: string }> {
+  const res = await fetch(`/api/dealers/${dealershipId}/publish/queue/${itemId}/${action}`, {
+    method: 'POST',
+    headers: body ? { 'Content-Type': 'application/json' } : undefined,
+    body: body ? JSON.stringify(body) : undefined,
+    credentials: 'include',
+  });
+  if (!res.ok) {
+    const errBody = await res.json().catch(() => ({})) as { error?: string };
+    throw new Error(errBody.error ?? `HTTP ${res.status}`);
+  }
+  return res.json() as Promise<{ ok: boolean; itemId: string } | { sent: boolean; queueItemId: string }>;
+}
+
+export function approveQueueItem(dealershipId: string, itemId: string) {
+  return queueAction(dealershipId, itemId, 'approve');
+}
+
+export function holdQueueItem(dealershipId: string, itemId: string, reason?: string) {
+  return queueAction(dealershipId, itemId, 'hold', { reason });
+}
+
+export function rejectQueueItem(dealershipId: string, itemId: string, reason?: string) {
+  return queueAction(dealershipId, itemId, 'reject', { reason });
+}
+
+export function releaseQueueItem(dealershipId: string, itemId: string) {
+  return queueAction(dealershipId, itemId, 'release');
+}
+
+export function publishQueueItemNow(dealershipId: string, itemId: string) {
+  return queueAction(dealershipId, itemId, 'publish-now');
 }
 
 export async function fetchInventory(

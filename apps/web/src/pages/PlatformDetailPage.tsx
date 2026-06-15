@@ -10,6 +10,7 @@ import { platformOutcomeMeta } from '@/lib/syncPresentation.ts';
 import { operatorCopy } from '@/lib/copy/operator.ts';
 import { platformDisplayName } from '@/lib/marketplaceBrand.ts';
 import { ConnectionSetupPanel } from '@/components/platforms/ConnectionSetupPanel.tsx';
+import { PlatformQueueSummaryCard } from '@/components/platforms/PlatformQueueSummaryCard.tsx';
 
 type ExternalLink = { label: string; url: string };
 type OperatorSetupGuide = {
@@ -427,6 +428,8 @@ export default function PlatformDetailPage({ dealerId, nav, activeTab, platformS
 
         {/* Right Column */}
         <div className="space-y-6">
+
+          <PlatformQueueSummaryCard dealerId={dealerId} platformSlug={platform.platformSlug} nav={nav} />
           
           {/* Connection Method Card */}
           <div className="bg-white border border-silver-200 rounded-xl shadow-sm p-5">
