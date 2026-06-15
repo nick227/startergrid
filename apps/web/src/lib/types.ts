@@ -234,6 +234,9 @@ export type QueueItemView = {
   nextAttemptAt: string | null;
   claimedBy: string | null;
   createdAt: string;
+  accountState: string | null;
+  outboundEligible: boolean;
+  ineligibleReason: string | null;
 };
 
 // ── Inventory ─────────────────────────────────────────────────────────────────
@@ -499,6 +502,9 @@ export type PlatformAccountDetail = {
   requiredDealershipFields: string[];
   requiredVehicleFields: string[];
   profileConfidence: string | null;
+  systemCredentialStatus: string | null;
+  systemSetupReady: boolean;
+  systemSetupMessage: string | null;
 };
 
 export type AccountStateSummary = {
@@ -829,6 +835,12 @@ export type PlatformQueueStats = {
   nextScheduledFor: string | null;
 };
 
+export type OwnedChannelView = {
+  platformSlug: string;
+  platformName: string;
+  statusLabel: string;
+};
+
 export type QueueView = {
   dealershipId: string;
   dealerName: string;
@@ -839,6 +851,7 @@ export type QueueView = {
   retryPending: QueueItemView[];
   claimed: QueueItemView[];
   platformAccounts: Array<{ platformSlug: string; platformName: string; state: string }>;
+  ownedChannels: OwnedChannelView[];
   byPlatform: PlatformQueueStats[];
   summary: {
     ready: number;

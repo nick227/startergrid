@@ -37,7 +37,7 @@ function ActionButton({
   onClick: () => void;
 }) {
   const variant =
-    action.kind === 'approve' || action.kind === 'publish-now'
+    action.kind === 'approve' || action.kind === 'send-now'
       ? 'text-white bg-navy-700 hover:bg-navy-800'
       : action.kind === 'reject'
         ? 'text-red-700 bg-red-50 hover:bg-red-100 border border-red-200'
@@ -68,6 +68,11 @@ export function QueueControlTable({ dealerId, items, nav, onChanged }: Props) {
       return;
     }
 
+    if (action.kind === 'setup-channel') {
+      nav.goToPlatformDetail(item.platformSlug);
+      return;
+    }
+
     let reason: string | undefined;
     if (action.kind === 'hold' || action.kind === 'reject') {
       const promptLabel = action.kind === 'reject' ? 'Rejection reason' : 'Hold reason';
@@ -92,7 +97,7 @@ export function QueueControlTable({ dealerId, items, nav, onChanged }: Props) {
         case 'release':
           await releaseQueueItem(dealerId, item.id);
           break;
-        case 'publish-now':
+        case 'send-now':
           await publishQueueItemNow(dealerId, item.id);
           break;
       }
@@ -114,13 +119,13 @@ export function QueueControlTable({ dealerId, items, nav, onChanged }: Props) {
         <table className="w-full text-sm">
           <thead>
             <tr className="border-b border-silver-200 bg-silver-50 text-left">
-              <th className="px-4 py-3 text-[10px] font-bold uppercase tracking-widest text-ink-faint">Item</th>
+              <th className="px-4 py-3 text-[10px] font-bold uppercase tracking-widest text-ink-faint">{operatorCopy.queue.columns.task}</th>
               <th className="px-4 py-3 text-[10px] font-bold uppercase tracking-widest text-ink-faint">Platform</th>
-              <th className="px-4 py-3 text-[10px] font-bold uppercase tracking-widest text-ink-faint">Action</th>
+              <th className="px-4 py-3 text-[10px] font-bold uppercase tracking-widest text-ink-faint">{operatorCopy.queue.columns.change}</th>
               <th className="px-4 py-3 text-[10px] font-bold uppercase tracking-widest text-ink-faint">Status</th>
               <th className="px-4 py-3 text-[10px] font-bold uppercase tracking-widest text-ink-faint">Scheduled</th>
               <th className="px-4 py-3 text-[10px] font-bold uppercase tracking-widest text-ink-faint">Reason</th>
-              <th className="px-4 py-3 text-[10px] font-bold uppercase tracking-widest text-ink-faint">Actions</th>
+              <th className="px-4 py-3 text-[10px] font-bold uppercase tracking-widest text-ink-faint">{operatorCopy.queue.columns.controls}</th>
             </tr>
           </thead>
           <tbody>
@@ -144,7 +149,7 @@ export function QueueControlTable({ dealerId, items, nav, onChanged }: Props) {
                   </td>
                   <td className="px-4 py-3 text-ink-muted">{taskActionLabel(item.triggerKind)}</td>
                   <td className="px-4 py-3">
-                    <span className={`inline-flex px-2 py-0.5 rounded-md text-[11px] font-bold border ${st.pill}`}>
+                    <span className={`inline-flex px-2 py-0.5 rounded-md text-[11px] whitespace-nowrap font-bold border ${st.pill}`}>
                       {st.label}
                     </span>
                   </td>

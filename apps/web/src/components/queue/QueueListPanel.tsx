@@ -7,6 +7,7 @@ import { PageSituation, ControlBlock } from '@/components/layout';
 import { FilterChips } from '@/components/generic';
 import { EmptyState } from '@/components/ui';
 import { QueueSummaryStrip } from './QueueSummaryStrip.tsx';
+import { QueueOwnedChannelsStrip } from './QueueOwnedChannelsStrip.tsx';
 import { QueueControlTable } from './QueueControlTable.tsx';
 import {
   QUEUE_TASK_FILTERS,
@@ -92,6 +93,10 @@ export function QueueListPanel({
       <p className="text-xs text-ink-muted leading-relaxed mb-4 -mt-1 max-w-3xl">
         {operatorCopy.queue.scheduleNote}
       </p>
+
+      {data && data.ownedChannels.length > 0 && (
+        <QueueOwnedChannelsStrip channels={data.ownedChannels} />
+      )}
 
       {data && !platformSlug && (
         <QueueSummaryStrip

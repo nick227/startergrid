@@ -17,6 +17,7 @@ import { writeAndRegisterArtifact } from './artifactWriterService.js';
 import { upsertApplication } from './lifecyclePersistenceService.js';
 import { activateApplicationAfterCreate } from './applicationActivationService.js';
 import { upsertDefaultSyncPolicies, upsertDefaultPlatformAccounts, defaultSyncMode, resolveScheduledFor } from './syncPolicyService.js';
+import { canCreateInitialPublishQueueItem, parseDesiredChannels } from './queueEligibilityService.js';
 import { nanoid } from 'nanoid';
 
 // ── Public state vocabulary ──────────────────────────────────────────────────
@@ -133,24 +134,6 @@ export function derivePublishState(opts: {
   }
 }
 
-export function needsInitialQueueItem(opts: {
-  integrationClass: IntegrationClass;
-  applicationStatus: string | null;
-  activeQueueItemStatus: string | null;
-}): boolean {
-  const { integrationClass, applicationStatus, activeQueueItemStatus } = opts;
-  // OWNED is always Active from application status — no queue item needed
-  if (integrationClass === 'OWNED') return false;
-  // PARTNER_DEPENDENT stays Partner Required — no queue item
-  if (integrationClass === 'PARTNER_DEPENDENT') return false;
-  // ASSISTED packets are handled by activateApplicationAfterCreate — no additional item
-  if (integrationClass === 'ASSISTED') return false;
-  // Don't create if there's already an active queue item
-  const ACTIVE_STATUSES = ['READY', 'SCHEDULED', 'NEEDS_APPROVAL', 'HELD', 'CLAIMED'];
-  if (activeQueueItemStatus && ACTIVE_STATUSES.includes(activeQueueItemStatus)) return false;
-  // FEEDABLE: needs initial SCHEDULED queue item when submitted
-  return applicationStatus === 'SUBMITTED' || applicationStatus === 'ACTIVE';
-}
 
 export type PublishStateSummary = Record<PublishState, number>;
 
@@ -365,12 +348,22 @@ export async function runPrepareAndPublish(
     if (!artifactBySlug.has(a.platformSlug)) artifactBySlug.set(a.platformSlug, a.storagePath);
   }
 
+  const desiredChannels = parseDesiredChannels(dbDealer.desiredChannels);
+
   if (!dryRun) {
     for (const platform of targets) {
       if (platform.integrationClass !== 'FEEDABLE') continue;
-      const appStatus = appBySlug.get(platform.slug) ?? null;
       const queueItem = queueBySlug.get(platform.slug) ?? null;
-      if (needsInitialQueueItem({ integrationClass: 'FEEDABLE', applicationStatus: appStatus, activeQueueItemStatus: queueItem?.status ?? null })) {
+      const accountState = accountStateBySlug.get(platform.slug) ?? null;
+      if (canCreateInitialPublishQueueItem({
+        integrationClass: platform.integrationClass,
+        platformSlug: platform.slug,
+        businessCategory: dbDealer.businessCategory,
+        accountState,
+        desiredChannels,
+        eligibleVehicleCount: vehiclesForPlatform(platform.slug).length,
+        activeQueueItemStatus: queueItem?.status ?? null,
+      })) {
         const mode = defaultSyncMode('FEEDABLE');
         const scheduledFor = resolveScheduledFor(mode);
         const created = await prisma.publishQueueItem.create({
@@ -470,7 +463,7 @@ function stateDetail(
       if (accountState === 'BLOCKED')    return `Account blocked — update account state in Accounts to unblock publishing.`;
       if (accountState === 'SUSPENDED')  return `Account suspended — update account state in Accounts to resume publishing.`;
       return report.issues.length > 0
-        ? `Blocked: ${report.issues.filter(i => i.severity === 'FAIL')[0]?.message ?? 'validation failed'}`
+        ? `${report.issues.filter(i => i.severity === 'FAIL')[0]?.message ?? 'Validation failed'}`
         : `Blocked by policy — manual action required.`;
     case 'Packet Prepared': return `Authorization packet sent to ${platform.name}. Awaiting platform response.`;
     case 'Partner Required':

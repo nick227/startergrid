@@ -78,7 +78,16 @@ export const operatorCopy = {
       held: 'On hold',
     },
     scheduleNote:
-      'Posting schedules are managed automatically for each platform type. Use Queue to approve, pause, retry, or publish selected work.',
+      'Posting schedules are managed automatically for each platform type. Use Queue to approve, pause, retry, or send selected work.',
+    fullInventoryFeed: 'Full inventory feed',
+    columns: {
+      task: 'Task',
+      change: 'Change',
+      controls: 'Controls',
+    },
+    ownedChannelsTitle: 'Live channels',
+    sendNow: 'Send now',
+    setupChannel: 'Set up channel',
   },
   history: {
     title: 'History',

@@ -13,7 +13,8 @@ import assert from 'node:assert/strict';
 import { describe, it } from 'node:test';
 import { platformProfiles } from '../data/platformProfiles.js';
 import { generateFeedForPlatform } from '../services/publishing/feedGeneratorService.js';
-import { derivePublishState, needsInitialQueueItem } from '../services/publishing/prepareAndPublishService.js';
+import { derivePublishState } from '../services/publishing/prepareAndPublishService.js';
+import { canCreateInitialPublishQueueItem } from '../services/publishing/queueEligibilityService.js';
 import { defaultSyncMode, resolveQueueStatus } from '../services/publishing/syncPolicyService.js';
 import type { DealershipPayload, VehiclePayload } from '../lib/types.js';
 
@@ -226,10 +227,14 @@ describe('consumer-marketplace publish state (OWNED)', () => {
     assert.equal(state, 'Ready');
   });
 
-  it('needsInitialQueueItem is false for OWNED', () => {
-    const needs = needsInitialQueueItem({
+  it('canCreateInitialPublishQueueItem is false for OWNED', () => {
+    const needs = canCreateInitialPublishQueueItem({
       integrationClass: 'OWNED',
-      applicationStatus: 'ACTIVE',
+      platformSlug: 'consumer-marketplace',
+      businessCategory: 'AUTOMOTIVE',
+      accountState: 'ACTIVE',
+      desiredChannels: ['consumer-marketplace'],
+      eligibleVehicleCount: 1,
       activeQueueItemStatus: null,
     });
     assert.equal(needs, false, 'OWNED platforms use application status, not queue items');

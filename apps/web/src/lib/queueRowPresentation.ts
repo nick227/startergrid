@@ -8,6 +8,9 @@ import { operatorCopy } from './copy/operator.ts';
 export function queueTaskTitle(item: QueueItemView): string {
   if (item.assetTitle) return item.assetTitle;
   if (item.assetRef) return `${inventoryLabels().refColumn} ${item.assetRef}`;
+  if (!item.assetId && item.triggerKind.toUpperCase() === 'INITIAL_PUBLISH') {
+    return operatorCopy.queue.fullInventoryFeed;
+  }
   return operatorCopy.asset.unknown;
 }
 

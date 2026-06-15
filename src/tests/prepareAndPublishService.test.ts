@@ -2,11 +2,11 @@
 import { describe, it } from 'node:test';
 import {
   derivePublishState,
-  needsInitialQueueItem,
   summarizePublishStates,
   classifyVehicleReadiness,
   type PublishState
 } from '../services/publishing/prepareAndPublishService.js';
+import { canCreateInitialPublishQueueItem } from '../services/publishing/queueEligibilityService.js';
 import { platformProfiles } from '../data/platformProfiles.js';
 import type { ValidationIssue, VehiclePayload } from '../lib/types.js';
 
@@ -108,35 +108,49 @@ describe('derivePublishState — readiness fallback (no queue item)', () => {
   });
 });
 
-// ── needsInitialQueueItem ─────────────────────────────────────────────────────
+// ── canCreateInitialPublishQueueItem ──────────────────────────────────────────
 
-describe('needsInitialQueueItem', () => {
-  it('FEEDABLE SUBMITTED with no active queue → needs item', () => {
-    assert.ok(needsInitialQueueItem({ integrationClass: 'FEEDABLE', applicationStatus: 'SUBMITTED', activeQueueItemStatus: null }));
+const ELIGIBLE_BASE = {
+  integrationClass: 'FEEDABLE' as const,
+  platformSlug: 'google-vehicle-ads',
+  businessCategory: 'AUTOMOTIVE',
+  accountState: 'ACTIVE',
+  desiredChannels: ['google-vehicle-ads'],
+  eligibleVehicleCount: 2,
+  activeQueueItemStatus: null as string | null,
+};
+
+describe('canCreateInitialPublishQueueItem', () => {
+  it('FEEDABLE ACTIVE with inventory and no active queue → needs item', () => {
+    assert.ok(canCreateInitialPublishQueueItem(ELIGIBLE_BASE));
   });
 
-  it('FEEDABLE SUBMITTED with existing SCHEDULED item → no new item', () => {
-    assert.ok(!needsInitialQueueItem({ integrationClass: 'FEEDABLE', applicationStatus: 'SUBMITTED', activeQueueItemStatus: 'SCHEDULED' }));
+  it('FEEDABLE with existing SCHEDULED item → no new item', () => {
+    assert.ok(!canCreateInitialPublishQueueItem({ ...ELIGIBLE_BASE, activeQueueItemStatus: 'SCHEDULED' }));
   });
 
-  it('FEEDABLE SUBMITTED with existing READY item → no new item', () => {
-    assert.ok(!needsInitialQueueItem({ integrationClass: 'FEEDABLE', applicationStatus: 'SUBMITTED', activeQueueItemStatus: 'READY' }));
+  it('FEEDABLE with existing READY item → no new item', () => {
+    assert.ok(!canCreateInitialPublishQueueItem({ ...ELIGIBLE_BASE, activeQueueItemStatus: 'READY' }));
   });
 
-  it('FEEDABLE SUBMITTED with only CANCELLED item → needs item', () => {
-    assert.ok(needsInitialQueueItem({ integrationClass: 'FEEDABLE', applicationStatus: 'SUBMITTED', activeQueueItemStatus: 'CANCELLED' }));
+  it('FEEDABLE unconnected account → no item', () => {
+    assert.ok(!canCreateInitialPublishQueueItem({ ...ELIGIBLE_BASE, accountState: 'ACCOUNT_NEEDED' }));
+  });
+
+  it('FEEDABLE with zero eligible inventory → no item', () => {
+    assert.ok(!canCreateInitialPublishQueueItem({ ...ELIGIBLE_BASE, eligibleVehicleCount: 0 }));
   });
 
   it('OWNED → never needs initial item', () => {
-    assert.ok(!needsInitialQueueItem({ integrationClass: 'OWNED', applicationStatus: 'ACTIVE', activeQueueItemStatus: null }));
+    assert.ok(!canCreateInitialPublishQueueItem({ ...ELIGIBLE_BASE, integrationClass: 'OWNED' }));
   });
 
   it('ASSISTED → managed by activateApplicationAfterCreate', () => {
-    assert.ok(!needsInitialQueueItem({ integrationClass: 'ASSISTED', applicationStatus: 'SUBMITTED', activeQueueItemStatus: null }));
+    assert.ok(!canCreateInitialPublishQueueItem({ ...ELIGIBLE_BASE, integrationClass: 'ASSISTED' }));
   });
 
   it('PARTNER_DEPENDENT → never needs initial item', () => {
-    assert.ok(!needsInitialQueueItem({ integrationClass: 'PARTNER_DEPENDENT', applicationStatus: null, activeQueueItemStatus: null }));
+    assert.ok(!canCreateInitialPublishQueueItem({ ...ELIGIBLE_BASE, integrationClass: 'PARTNER_DEPENDENT' }));
   });
 });
 

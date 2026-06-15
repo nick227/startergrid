@@ -1,13 +1,15 @@
 import type { QueueItemView } from './types.ts';
+import { operatorCopy } from './copy/operator.ts';
 
 export type QueueRowAction =
-  | { kind: 'publish-now'; label: string }
+  | { kind: 'send-now'; label: string }
   | { kind: 'approve'; label: string }
   | { kind: 'hold'; label: string; needsReason?: boolean }
   | { kind: 'reject'; label: string; needsReason?: boolean }
   | { kind: 'release'; label: string }
   | { kind: 'fix-item'; label: string }
-  | { kind: 'view-inventory'; label: string };
+  | { kind: 'view-inventory'; label: string }
+  | { kind: 'setup-channel'; label: string };
 
 const POSTING_MODE_LABEL: Record<string, string> = {
   REAL_TIME: 'Real-time',
@@ -32,6 +34,7 @@ export function formatQueueSchedule(iso: string | null): string {
 }
 
 export function queueItemReason(item: QueueItemView): string {
+  if (item.ineligibleReason) return item.ineligibleReason;
   if (item.blockReason) return item.blockReason;
   if (item.approvalRequiredReason) return item.approvalRequiredReason;
   if (item.holdReason) return item.holdReason;
@@ -43,6 +46,10 @@ export function queueItemReason(item: QueueItemView): string {
 }
 
 export function queueItemActions(item: QueueItemView): QueueRowAction[] {
+  if (item.outboundEligible === false) {
+    return [{ kind: 'setup-channel', label: operatorCopy.queue.setupChannel }];
+  }
+
   const actions: QueueRowAction[] = [];
 
   if (item.status === 'NEEDS_APPROVAL') {
@@ -59,13 +66,13 @@ export function queueItemActions(item: QueueItemView): QueueRowAction[] {
   }
 
   if (item.status === 'READY' || item.status === 'SCHEDULED') {
-    actions.push({ kind: 'publish-now', label: 'Publish now' });
+    actions.push({ kind: 'send-now', label: operatorCopy.queue.sendNow });
     actions.push({ kind: 'hold', label: 'Hold' });
     return actions;
   }
 
   if (item.status === 'FAILED' && item.attemptCount < 3) {
-    actions.push({ kind: 'publish-now', label: 'Retry' });
+    actions.push({ kind: 'send-now', label: 'Retry' });
     return actions;
   }
 
