@@ -69,20 +69,15 @@ const PLATFORMS_LIST = [
 
 // ── View model ─────────────────────────────────────────────────────────────────
 
-type ActionEntry = { label: string; href: string; highlight: boolean };
-
 export type AdminTriageWorkItem = {
   id: string;
   dealerName: string;
-  dealerHref?: string;
   dealerId: string;
   platformName: string;
-  platformHref?: string;
   severity: string;
   blockerLabel: string;
   impactLabel: string;
   durationLabel: string;
-  actions: ActionEntry[];
   technicalDetails: {
     source: string;
     status?: string | null;
@@ -130,40 +125,30 @@ function getImpactLabel(item: AdminBlockedDealerItem): string {
   return 'Platform unavailable';
 }
 
-function getActions(item: AdminBlockedDealerItem): ActionEntry[] {
-  const dealerUrl   = item.dealerHref   || `#/${item.dealerId}`;
-  const platformUrl = item.platformHref || `#/${item.dealerId}/platforms/${item.platformSlug}`;
+function remediationSteps(item: AdminTriageWorkItem): string[] {
+  const d = item.technicalDetails;
+  const steps: string[] = [];
+  if (d.nextAction?.trim()) steps.push(d.nextAction.trim());
 
-  switch (item.source) {
+  switch (d.source) {
     case 'partner_setup':
-      return [
-        { label: 'Reconnect',   href: platformUrl, highlight: true  },
-        { label: 'Edit dealer', href: dealerUrl,   highlight: false },
-      ];
+      steps.push('Finish partner setup for this platform and confirm the dealer account state is Active or Ready.');
+      break;
     case 'dealer_partner_credentials':
-      return [
-        { label: 'Add key',    href: platformUrl, highlight: true  },
-        { label: 'Reconnect',  href: platformUrl, highlight: false },
-      ];
+      steps.push('Enter dealer partner credentials on the platform account, then retry the held publish work.');
+      break;
     case 'feed_validation':
-      return [
-        { label: 'View errors', href: platformUrl, highlight: true  },
-        { label: 'Retry',       href: platformUrl, highlight: false },
-      ];
+      steps.push('Fix the feed validation errors on affected listings (required fields, media, or policy violations).');
+      break;
     case 'geo_readiness':
-      return [
-        { label: 'Edit dealer', href: dealerUrl, highlight: true },
-      ];
+      steps.push('Correct the dealer rooftop address or run geo backfill so marketplace local search can resolve coordinates.');
+      break;
     case 'developer_credentials':
-      return [
-        { label: 'Add key',     href: platformUrl, highlight: true  },
-        { label: 'Edit dealer', href: dealerUrl,   highlight: false },
-      ];
-    default:
-      return [
-        { label: 'Open', href: dealerUrl, highlight: false },
-      ];
+      steps.push('Update developer API keys on the platform Credentials page and re-run credential validation.');
+      break;
   }
+
+  return [...new Set(steps)];
 }
 
 export function mapBlockedDealerToWorkItem(
@@ -173,15 +158,12 @@ export function mapBlockedDealerToWorkItem(
   return {
     id: item.id || `${item.dealerId}-${item.platformSlug}-${item.source}-${index}`,
     dealerName:   item.dealerName,
-    dealerHref:   item.dealerHref,
     dealerId:     item.dealerId,
     platformName: item.platformName,
-    platformHref: item.platformHref,
     severity:     item.severity,
     blockerLabel: getBlockerLabel(item.source),
     impactLabel:  getImpactLabel(item),
     durationLabel: formatDuration(item.firstSeenAt),
-    actions:      getActions(item),
     technicalDetails: {
       source:        item.source,
       status:        item.status,
@@ -205,40 +187,51 @@ function ResultCount({ shown, total }: { shown: number; total: number }) {
 
 function DetailsRow({ item }: { item: AdminTriageWorkItem }) {
   const d = item.technicalDetails;
+  const steps = remediationSteps(item);
   return (
     <tr className="bg-surface-inset border-b border-silver-200">
       <td colSpan={7} className="px-4 py-3">
-        <div className="flex flex-wrap gap-x-6 gap-y-2 text-[11px]">
+        <div className="space-y-3">
+          <div className="flex flex-wrap gap-x-6 gap-y-2 text-[11px]">
+            <div>
+              <span className="text-ink-faint uppercase tracking-wider font-semibold mr-1">Dealer ID</span>
+              <span className="font-mono text-ink-muted">{item.dealerId}</span>
+            </div>
+            <div>
+              <span className="text-ink-faint uppercase tracking-wider font-semibold mr-1">Source</span>
+              <span className="text-ink-muted">{SOURCE_LABELS[d.source] ?? d.source}</span>
+            </div>
+            {d.status && (
+              <div>
+                <span className="text-ink-faint uppercase tracking-wider font-semibold mr-1">Status</span>
+                <span className="font-mono text-ink-muted">{d.status}</span>
+              </div>
+            )}
+            {d.platformSlug !== 'all' && (
+              <div>
+                <span className="text-ink-faint uppercase tracking-wider font-semibold mr-1">Slug</span>
+                <span className="font-mono text-ink-muted">{d.platformSlug}</span>
+              </div>
+            )}
+            {d.affectedCount != null && (
+              <div>
+                <span className="text-ink-faint uppercase tracking-wider font-semibold mr-1">Affected</span>
+                <span className="text-status-error-text font-semibold">{d.affectedCount}</span>
+              </div>
+            )}
+          </div>
           <div>
-            <span className="text-ink-faint uppercase tracking-wider font-semibold mr-1">Source</span>
-            <span className="text-ink-muted">{SOURCE_LABELS[d.source] ?? d.source}</span>
+            <p className="text-[10px] font-bold uppercase tracking-wider text-ink-faint">Reason</p>
+            <p className="mt-0.5 text-xs text-ink-body leading-relaxed">{d.reason}</p>
           </div>
-          {d.status && (
+          {steps.length > 0 && (
             <div>
-              <span className="text-ink-faint uppercase tracking-wider font-semibold mr-1">Status</span>
-              <span className="font-mono text-ink-muted">{d.status}</span>
-            </div>
-          )}
-          {d.platformSlug !== 'all' && (
-            <div>
-              <span className="text-ink-faint uppercase tracking-wider font-semibold mr-1">Slug</span>
-              <span className="font-mono text-ink-muted">{d.platformSlug}</span>
-            </div>
-          )}
-          {d.affectedCount != null && (
-            <div>
-              <span className="text-ink-faint uppercase tracking-wider font-semibold mr-1">Affected</span>
-              <span className="text-status-error-text font-semibold">{d.affectedCount}</span>
-            </div>
-          )}
-          <div className="w-full">
-            <span className="text-ink-faint uppercase tracking-wider font-semibold mr-1">Reason</span>
-            <span className="text-ink-body">{d.reason}</span>
-          </div>
-          {d.nextAction && (
-            <div className="w-full">
-              <span className="text-ink-faint uppercase tracking-wider font-semibold mr-1">Next action</span>
-              <span className="text-orange-600">{d.nextAction}</span>
+              <p className="text-[10px] font-bold uppercase tracking-wider text-ink-faint">How to fix</p>
+              <ul className="mt-1 space-y-1 text-xs text-ink-body list-disc pl-4">
+                {steps.map(step => (
+                  <li key={step}>{step}</li>
+                ))}
+              </ul>
             </div>
           )}
         </div>
@@ -301,7 +294,8 @@ export function DealerTriagePanel() {
   function toggleDetails(id: string) {
     setExpanded(prev => {
       const next = new Set(prev);
-      next.has(id) ? next.delete(id) : next.add(id);
+      if (next.has(id)) next.delete(id);
+      else next.add(id);
       return next;
     });
   }
@@ -396,7 +390,7 @@ export function DealerTriagePanel() {
                     <th className="px-4 py-3 font-semibold">Impact</th>
                     <th className="px-4 py-3 font-semibold">Duration</th>
                     <th className="px-4 py-3 font-semibold">Severity</th>
-                    <th className="px-4 py-3 font-semibold">Actions</th>
+                    <th className="px-4 py-3 font-semibold w-28">Details</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -409,12 +403,8 @@ export function DealerTriagePanel() {
                           className="border-b border-silver-200 last:border-0 hover:bg-surface-inset transition-colors"
                         >
                           <td className="px-4 py-3">
-                            <a
-                              href={item.dealerHref || `#/${item.dealerId}/platforms`}
-                              className="font-semibold text-navy-700 hover:text-navy-600 hover:underline text-sm"
-                            >
-                              {item.dealerName}
-                            </a>
+                            <div className="font-semibold text-ink-heading text-sm">{item.dealerName}</div>
+                            <div className="text-[10px] font-mono text-ink-faint mt-0.5">{item.dealerId}</div>
                           </td>
                           <td className="px-4 py-3">
                             <div className="text-xs font-semibold text-ink-heading">{item.platformName}</div>
@@ -430,29 +420,18 @@ export function DealerTriagePanel() {
                             </span>
                           </td>
                           <td className="px-4 py-3">
-                            <div className="flex items-center gap-1.5 flex-wrap">
-                              {item.actions.map(action => (
-                                <a
-                                  key={action.label}
-                                  href={action.href}
-                                  className={
-                                    action.highlight
-                                      ? 'px-2.5 py-1 text-[10px] font-semibold text-orange-600 hover:text-orange-500 border border-orange-200 hover:border-orange-300 rounded transition-all'
-                                      : 'px-2.5 py-1 text-[10px] font-semibold text-ink-muted hover:text-ink-heading border border-silver-300 hover:border-silver-400 rounded transition-all'
-                                  }
-                                >
-                                  {action.label}
-                                </a>
-                              ))}
-                              <button
-                                type="button"
-                                onClick={() => toggleDetails(item.id)}
-                                className="px-2 py-1 text-[10px] text-ink-faint hover:text-ink-muted border border-silver-200 hover:border-silver-300 rounded transition-all"
-                                aria-expanded={isExpanded}
-                              >
-                                {isExpanded ? '▲' : '▾'}
-                              </button>
-                            </div>
+                            <button
+                              type="button"
+                              onClick={() => toggleDetails(item.id)}
+                              className={`px-2.5 py-1 text-[10px] font-semibold rounded border transition-all ${
+                                isExpanded
+                                  ? 'text-navy-700 border-navy-200 bg-navy-50'
+                                  : 'text-ink-muted border-silver-300 hover:border-silver-400 hover:text-ink-heading'
+                              }`}
+                              aria-expanded={isExpanded}
+                            >
+                              {isExpanded ? 'Hide' : 'Show'}
+                            </button>
                           </td>
                         </tr>
                         {isExpanded && <DetailsRow item={item} />}
