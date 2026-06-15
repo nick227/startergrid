@@ -12,6 +12,11 @@ import {
 } from './syncPolicyService.js';
 import { recordSyncEvent } from './syncEventService.js';
 import {
+  isPlatformHistoryEligible,
+  loadDealerOutboundContext,
+  recordOutboundSyncEvent,
+} from './historyEligibilityService.js';
+import {
   ineligibleReasonForQueueItem,
   isAutoSyncEnabledForPlatform,
   isQueueItemOutboundEligible,
@@ -241,7 +246,7 @@ export async function enqueueFromVehicleUpdate(
 
     // Emit APPROVAL_REQUESTED event so the approval gate has an audit entry
     if (status === 'NEEDS_APPROVAL') {
-      await recordSyncEvent(prisma, {
+      await recordOutboundSyncEvent(prisma, {
         dealershipId,
         vehicleId,
         platformSlug: prop.platformSlug,
@@ -475,6 +480,11 @@ export async function dispatchQueueItemNow(
     throw new Error('Maximum retry attempts reached');
   }
 
+  const outboundCtx = await loadDealerOutboundContext(prisma, dealershipId);
+  if (!isPlatformHistoryEligible(outboundCtx, item.platformSlug, item.vehicleId)) {
+    throw new Error('Channel is not connected or enabled for this dealership');
+  }
+
   await prisma.publishQueueItem.update({
     where: { id: itemId },
     data: { status: 'READY' as any, scheduledFor: new Date() },
@@ -485,7 +495,7 @@ export async function dispatchQueueItemNow(
     data: { status: 'SENT' as any, sentAt: new Date() },
   });
 
-  await recordSyncEvent(prisma, {
+  await recordOutboundSyncEvent(prisma, {
     dealershipId,
     vehicleId: item.vehicleId,
     platformSlug: item.platformSlug,
@@ -498,7 +508,7 @@ export async function dispatchQueueItemNow(
       manual: true,
       environment: 'MOCK',
     },
-  });
+  }, outboundCtx);
 
   return { sent: true, queueItemId: itemId };
 }
@@ -527,6 +537,8 @@ export async function processReadyItems(
     (item.status === 'SCHEDULED' && item.scheduledFor != null && item.scheduledFor <= now)
   );
 
+  const outboundCtx = await loadDealerOutboundContext(prisma, dealershipId);
+
   const syncRun = await prisma.syncRun.create({
     data: {
       dealershipId,
@@ -541,13 +553,18 @@ export async function processReadyItems(
   let skipped = 0;
 
   for (const item of toProcess) {
+    if (!isPlatformHistoryEligible(outboundCtx, item.platformSlug, item.vehicleId)) {
+      skipped++;
+      continue;
+    }
+
     // In MOCK env: mark SENT immediately (no real API call)
     await prisma.publishQueueItem.update({
       where: { id: item.id },
       data: { status: 'SENT' as any, sentAt: new Date() }
     });
 
-    await recordSyncEvent(prisma, {
+    await recordOutboundSyncEvent(prisma, {
       dealershipId,
       vehicleId: item.vehicleId,
       platformSlug: item.platformSlug,
@@ -559,11 +576,11 @@ export async function processReadyItems(
         environment: 'MOCK'
       },
       syncRunId: syncRun.id
-    });
+    }, outboundCtx);
     sent++;
   }
 
-  skipped = ready.length - toProcess.length;
+  skipped += ready.length - toProcess.length;
 
   await prisma.syncRun.update({
     where: { id: syncRun.id },

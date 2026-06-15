@@ -4,13 +4,21 @@ import { operatorCopy } from './copy/operator.ts';
 import { syncEventSearchBlob } from './rowNavScope.ts';
 
 const KIND_LABELS: Record<string, string> = {
-  SUBMISSION_SENT: 'Sent to channel',
+  SUBMISSION_SENT: 'Send completed',
   ARTIFACT_GENERATED: 'Feed prepared',
-  INVENTORY_CHANGE: 'Asset updated',
+  INVENTORY_CHANGE: 'Inventory updated',
   INVENTORY_IMPORT: 'Assets imported',
   VEHICLE_SOLD: 'Delisted',
   VEHICLE_REMOVED: 'Removed from catalog',
-  DISPATCH_CLAIMED: 'Dispatch started',
+  DISPATCH_CLAIMED: 'Send started',
+  DISPATCH_FAILED: 'Send failed',
+  DISPATCH_RETRY: 'Send retry scheduled',
+  APPROVAL_REQUESTED: 'Approval requested',
+  APPROVAL_GRANTED: 'Approval approved',
+  APPROVAL_REJECTED: 'Approval rejected',
+  APPROVAL_HELD: 'On hold',
+  APPROVAL_RELEASED: 'Hold released',
+  ACCOUNT_UPDATED: 'Channel settings updated',
   SYNC_RUN_COMPLETE: 'Sync completed',
   SYNC_RUN_FAILED: 'Sync failed',
 };
@@ -80,6 +88,6 @@ export type HistoryKindFilter = 'ALL' | 'SUCCESS' | 'FAILED';
 
 export const HISTORY_KIND_FILTERS: Array<{ key: HistoryKindFilter; label: string }> = [
   { key: 'ALL', label: 'All' },
-  { key: 'SUCCESS', label: 'Sent / prepared' },
+  { key: 'SUCCESS', label: 'Completed sends' },
   { key: 'FAILED', label: 'Failed' },
 ];

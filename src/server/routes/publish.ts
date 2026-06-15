@@ -17,6 +17,10 @@ import {
 } from '../../services/publishing/approvalService.js';
 import { platformProfiles } from '../../data/platformProfiles.js';
 import { requireDealerAccess } from '../security.js';
+import {
+  filterDealerHistoryEvents,
+  loadDealerOutboundContext,
+} from '../../services/publishing/historyEligibilityService.js';
 import { preparePublishSchema, validateBody } from '../requestValidation.js';
 
 type DealerParams = { dealershipId: string };
@@ -129,12 +133,15 @@ export function registerPublishRoutes(app: FastifyInstance, prisma: PrismaClient
         return reply.status(404).send({ error: 'Dealer not found' });
 
       const limit = Math.min(Math.max(parseInt(limitStr ?? '50', 10) || 50, 1), 200);
+      const fetchLimit = Math.min(limit * 5, 200);
 
       let cursorDate: Date | undefined;
       if (before) {
         const ref = await prisma.syncEvent.findUnique({ where: { id: before }, select: { createdAt: true } });
         if (ref) cursorDate = ref.createdAt;
       }
+
+      const outboundCtx = await loadDealerOutboundContext(prisma, dealershipId);
 
       const rows = await prisma.syncEvent.findMany({
         where: {
@@ -144,11 +151,12 @@ export function registerPublishRoutes(app: FastifyInstance, prisma: PrismaClient
           ...(cursorDate ? { createdAt: { lt: cursorDate } } : {})
         },
         orderBy: { createdAt: 'desc' },
-        take: limit + 1
+        take: fetchLimit + 1
       });
 
-      const hasMore = rows.length > limit;
-      const page = hasMore ? rows.slice(0, limit) : rows;
+      const filtered = filterDealerHistoryEvents(rows, outboundCtx);
+      const hasMore = filtered.length > limit || rows.length > fetchLimit;
+      const page = filtered.slice(0, limit);
 
       return reply.send({
         events: page.map(e => ({

@@ -14,6 +14,7 @@ import {
   resolveSiteEnabled,
   parseDesiredChannels,
 } from '../platform/platformAvailabilityService.js';
+import { recordOutboundSyncEvent } from './historyEligibilityService.js';
 
 type ProfileConfidence = 'HIGH' | 'MEDIUM' | 'LOW';
 
@@ -476,18 +477,16 @@ export async function updatePlatformAccount(
   // Write ACCOUNT_UPDATED SyncEvent only when state actually changes
   const stateChanged = payload.state !== undefined && current?.state !== payload.state;
   if (stateChanged) {
-    await prisma.syncEvent.create({
-      data: {
-        dealershipId,
+    await recordOutboundSyncEvent(prisma, {
+      dealershipId,
+      platformSlug,
+      kind: 'ACCOUNT_UPDATED',
+      payload: {
+        previousState: current?.state ?? null,
+        newState: payload.state,
         platformSlug,
-        kind: 'ACCOUNT_UPDATED',
-        payload: {
-          previousState: current?.state ?? null,
-          newState: payload.state,
-          platformSlug,
-        } as unknown as Prisma.InputJsonValue,
-      }
-    });
+      },
+    }, undefined, payload.state ?? null);
   }
 
   const { accounts } = await listPlatformAccounts(prisma, dealershipId);

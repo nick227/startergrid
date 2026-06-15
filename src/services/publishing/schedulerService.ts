@@ -1,6 +1,11 @@
 ﻿import { nanoid } from 'nanoid';
 import type { PrismaClient, Prisma } from '@prisma/client';
-import { recordSyncEvent } from './syncEventService.js';
+import {
+  isPlatformHistoryEligible,
+  loadDealerOutboundContext,
+  recordOutboundSyncEvent,
+  type DealerOutboundContext,
+} from './historyEligibilityService.js';
 import { isInCooldown } from './syncPolicyService.js';
 import { getDispatchEnvironment, dispatchAdapter, type DispatchEnvironment } from './dispatchAdapter.js';
 
@@ -135,9 +140,25 @@ export async function runScheduler(
     }
   }
 
-  // Build previews for dry-run and result reporting
+  const contextByDealer = new Map<string, DealerOutboundContext>();
+  const outboundEligible: typeof eligible = [];
+  let ineligibleOutboundCount = 0;
+
+  for (const item of eligible) {
+    let ctx = contextByDealer.get(item.dealershipId);
+    if (!ctx) {
+      ctx = await loadDealerOutboundContext(prisma, item.dealershipId);
+      contextByDealer.set(item.dealershipId, ctx);
+    }
+    if (isPlatformHistoryEligible(ctx, item.platformSlug, item.vehicleId)) {
+      outboundEligible.push(item);
+    } else {
+      ineligibleOutboundCount++;
+    }
+  }
+
   const previews: SchedulerItemPreview[] = [
-    ...eligible.map(item => ({
+    ...outboundEligible.map(item => ({
       id: item.id,
       dealershipId: item.dealershipId,
       vehicleId: item.vehicleId,
@@ -168,20 +189,20 @@ export async function runScheduler(
       dryRun: true,
       schedulerId,
       dispatchEnvironment: dispatchEnv,
-      eligibleCount: eligible.length,
+      eligibleCount: outboundEligible.length,
       claimedCount: 0,
       sentCount: 0,
       failedCount: 0,
-      skippedCount: 0,
+      skippedCount: ineligibleOutboundCount,
       cooldownCount: inCooldownItems.length,
       syncRunIds: [],
       previews
     };
   }
 
-  // Atomically claim each eligible item
+  // Atomically claim each outbound-eligible item
   const claimedIds: string[] = [];
-  for (const item of eligible) {
+  for (const item of outboundEligible) {
     const updated = await prisma.publishQueueItem.updateMany({
       where: {
         id: item.id,
@@ -196,22 +217,23 @@ export async function runScheduler(
     });
     if (updated.count > 0) {
       claimedIds.push(item.id);
-      await recordSyncEvent(prisma, {
+      const ctx = contextByDealer.get(item.dealershipId)!;
+      await recordOutboundSyncEvent(prisma, {
         dealershipId: item.dealershipId,
         vehicleId: item.vehicleId,
         platformSlug: item.platformSlug,
         kind: 'DISPATCH_CLAIMED',
         payload: { schedulerId, idempotencyKey: item.idempotencyKey, triggerKind: item.triggerKind }
-      });
+      }, ctx);
     }
   }
 
   if (claimedIds.length === 0) {
-    return { dryRun: false, schedulerId, dispatchEnvironment: dispatchEnv, eligibleCount: eligible.length, claimedCount: 0, sentCount: 0, failedCount: 0, skippedCount: eligible.length, cooldownCount: inCooldownItems.length, syncRunIds: [], previews };
+    return { dryRun: false, schedulerId, dispatchEnvironment: dispatchEnv, eligibleCount: outboundEligible.length, claimedCount: 0, sentCount: 0, failedCount: 0, skippedCount: outboundEligible.length + ineligibleOutboundCount, cooldownCount: inCooldownItems.length, syncRunIds: [], previews };
   }
 
   // Group claimed items by dealershipId
-  const claimedItems = eligible.filter(i => claimedIds.includes(i.id));
+  const claimedItems = outboundEligible.filter(i => claimedIds.includes(i.id));
   const byDealer = new Map<string, typeof claimedItems>();
   for (const item of claimedItems) {
     const arr = byDealer.get(item.dealershipId) ?? [];
@@ -261,7 +283,7 @@ export async function runScheduler(
             attemptCount: { increment: 1 }
           }
         });
-        await recordSyncEvent(prisma, {
+        await recordOutboundSyncEvent(prisma, {
           dealershipId: dId,
           vehicleId: item.vehicleId,
           platformSlug: item.platformSlug,
@@ -274,7 +296,7 @@ export async function runScheduler(
             environment: dispatchResult.environment,
           },
           syncRunId: syncRun.id
-        });
+        }, contextByDealer.get(dId));
         dispatchedPlatforms.add(policyKey(dId, item.platformSlug));
         runSent++;
       } else {
@@ -296,7 +318,7 @@ export async function runScheduler(
         });
 
         const eventKind = exhausted ? 'DISPATCH_FAILED' : 'DISPATCH_RETRY';
-        await recordSyncEvent(prisma, {
+        await recordOutboundSyncEvent(prisma, {
           dealershipId: dId,
           vehicleId: item.vehicleId,
           platformSlug: item.platformSlug,
@@ -309,7 +331,7 @@ export async function runScheduler(
             nextAttemptAt: retryAt?.toISOString() ?? null
           },
           syncRunId: syncRun.id
-        });
+        }, contextByDealer.get(dId));
         runFailed++;
       }
     }

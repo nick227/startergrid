@@ -1,7 +1,7 @@
 ﻿import type { PrismaClient } from '@prisma/client';
 import type { SyncMode } from './syncPolicyService.js';
 import { resolveScheduledFor } from './syncPolicyService.js';
-import { recordSyncEvent } from './syncEventService.js';
+import { recordOutboundSyncEvent } from './historyEligibilityService.js';
 
 // ── Legal transition matrix ──────────────────────────────────────────────────
 
@@ -64,7 +64,7 @@ export async function approveQueueItem(
     }
   });
 
-  await recordSyncEvent(prisma, {
+  await recordOutboundSyncEvent(prisma, {
     dealershipId: item.dealershipId,
     vehicleId: item.vehicleId,
     platformSlug: item.platformSlug,
@@ -101,7 +101,7 @@ export async function holdQueueItem(
     }
   });
 
-  await recordSyncEvent(prisma, {
+  await recordOutboundSyncEvent(prisma, {
     dealershipId: item.dealershipId,
     vehicleId: item.vehicleId,
     platformSlug: item.platformSlug,
@@ -132,7 +132,7 @@ export async function rejectQueueItem(
     }
   });
 
-  await recordSyncEvent(prisma, {
+  await recordOutboundSyncEvent(prisma, {
     dealershipId: item.dealershipId,
     vehicleId: item.vehicleId,
     platformSlug: item.platformSlug,
@@ -170,7 +170,7 @@ export async function releaseHeldQueueItem(
     }
   });
 
-  await recordSyncEvent(prisma, {
+  await recordOutboundSyncEvent(prisma, {
     dealershipId: item.dealershipId,
     vehicleId: item.vehicleId,
     platformSlug: item.platformSlug,

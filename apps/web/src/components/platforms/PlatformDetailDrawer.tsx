@@ -34,8 +34,11 @@ const EVENT_KIND_LABELS: Record<string, string> = {
   VEHICLE_SOLD:       'Vehicle sold',
   VEHICLE_REMOVED:    'Vehicle removed',
   ARTIFACT_GENERATED: 'Feed generated',
-  SUBMISSION_SENT:    'Submission sent',
-  ACCOUNT_UPDATED:    'Account updated',
+  SUBMISSION_SENT:    'Send completed',
+  DISPATCH_CLAIMED:   'Send started',
+  APPROVAL_REQUESTED: 'Approval requested',
+  APPROVAL_GRANTED:   'Approval approved',
+  ACCOUNT_UPDATED:    'Channel settings updated',
 };
 
 function ActivityTab({ dealerId, platformSlug, nav }: { dealerId: string; platformSlug: string; nav: OperatorNavHandlers }) {
