@@ -2,6 +2,7 @@ import { useMemo, useState } from 'react';
 import {
   fetchPlatformCredentials,
   validatePlatformCredential,
+  updatePlatformSiteAvailability,
   type AdminPlatformOverviewItem,
   type AdminDealerAttentionItem,
   type AdminRecentEventItem,
@@ -620,7 +621,7 @@ export default function AdminPlatformDetailPage({
     [platformOverview, slug],
   );
 
-  const { data: credData, loading: credLoading } = useAsyncQuery(() => fetchPlatformCredentials(), []);
+  const { data: credData, loading: credLoading, reload: reloadCreds } = useAsyncQuery(() => fetchPlatformCredentials(), []);
   const provider = useMemo(
     () => credData?.providers.find(p => p.platformSlugs.includes(slug)),
     [credData, slug],
@@ -661,6 +662,23 @@ export default function AdminPlatformDetailPage({
         ? 'red'
         : 'yellow'
   );
+  const siteEnabled = credentialContract?.siteEnabled !== false;
+  const [siteSaving, setSiteSaving] = useState(false);
+  const [siteError, setSiteError] = useState<string | null>(null);
+
+  const toggleSiteEnabled = async (next: boolean) => {
+    setSiteSaving(true);
+    setSiteError(null);
+    try {
+      await updatePlatformSiteAvailability(slug, next);
+      await reloadCreds();
+      setContractOverride(null);
+    } catch (e) {
+      setSiteError(toErrorMessage(e));
+    } finally {
+      setSiteSaving(false);
+    }
+  };
 
   return (
     <div className="space-y-5">
@@ -723,6 +741,23 @@ export default function AdminPlatformDetailPage({
                   )}
                 </div>
                 <div className="font-mono text-xs text-ink-faint mb-2">{platform.platformSlug}</div>
+                <div className="flex flex-wrap items-center gap-3 mt-3 p-3 rounded-lg border border-silver-200 bg-silver-50/60">
+                  <label className="flex items-center gap-2 text-sm font-semibold text-ink-heading cursor-pointer">
+                    <input
+                      type="checkbox"
+                      checked={siteEnabled}
+                      disabled={siteSaving || credLoading}
+                      onChange={e => toggleSiteEnabled(e.target.checked)}
+                    />
+                    Offered site-wide to dealerships
+                  </label>
+                  {!siteEnabled && (
+                    <span className="text-xs text-amber-800 bg-amber-50 border border-amber-200 px-2 py-0.5 rounded">
+                      Disabled — dealers cannot enable or publish to this platform
+                    </span>
+                  )}
+                  {siteError && <span className="text-xs text-status-error-text">{siteError}</span>}
+                </div>
                 {platform.capabilities.length > 0 && (
                   <div className="flex flex-wrap gap-1.5">
                     {platform.capabilities.map(cap => (

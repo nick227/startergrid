@@ -114,6 +114,8 @@ const ELIGIBLE_BASE = {
   integrationClass: 'FEEDABLE' as const,
   platformSlug: 'cars-com',
   businessCategory: 'AUTOMOTIVE',
+  siteEnabled: true,
+  dealerEnabled: true,
   accountState: 'ACTIVE',
   desiredChannels: ['cars-com'],
   eligibleVehicleCount: 2,

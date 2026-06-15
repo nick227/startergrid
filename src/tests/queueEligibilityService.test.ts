@@ -8,6 +8,8 @@ import {
   isQueueItemOutboundEligible,
   OAUTH_NOT_CONNECTED,
   OPERATOR_QUEUE_EXCLUDED_SLUGS,
+  PLATFORM_DISABLED_SITEWIDE,
+  PLATFORM_NOT_ENABLED,
   vehicleChannelKey,
 } from '../services/publishing/queueEligibilityService.js';
 
@@ -17,6 +19,8 @@ const FEEDABLE_CTX = {
   platformSlug: 'cars-com',
   integrationClass: 'FEEDABLE' as const,
   businessCategory: AUTOMOTIVE,
+  siteEnabled: true,
+  dealerEnabled: true,
   accountState: 'ACTIVE',
   desiredChannels: ['cars-com'],
   oauthProvider: null,
@@ -32,12 +36,21 @@ describe('isPlatformOutboundEligible', () => {
     assert.equal(isPlatformOutboundEligible(FEEDABLE_CTX), true);
   });
 
-  it('requires platform in desiredChannels when not yet connected', () => {
+  it('requires dealer platform enabled', () => {
     assert.equal(
       isPlatformOutboundEligible({
         ...FEEDABLE_CTX,
-        accountState: 'CREDENTIALS_NEEDED',
-        desiredChannels: ['google-vehicle-ads'],
+        dealerEnabled: false,
+      }),
+      false,
+    );
+  });
+
+  it('requires site-wide enablement', () => {
+    assert.equal(
+      isPlatformOutboundEligible({
+        ...FEEDABLE_CTX,
+        siteEnabled: false,
       }),
       false,
     );
@@ -49,6 +62,8 @@ describe('isPlatformOutboundEligible', () => {
         platformSlug: 'facebook-business-page',
         integrationClass: 'OWNED',
         businessCategory: AUTOMOTIVE,
+        siteEnabled: true,
+        dealerEnabled: true,
         accountState: 'ACTIVE',
         desiredChannels: ['facebook-business-page'],
         oauthProvider: 'facebook-business-page',
@@ -65,6 +80,8 @@ describe('isPlatformOutboundEligible', () => {
         platformSlug: 'dealer-storefront',
         integrationClass: 'OWNED',
         businessCategory: AUTOMOTIVE,
+        siteEnabled: true,
+        dealerEnabled: true,
         accountState: 'ACTIVE',
         desiredChannels: ['dealer-storefront'],
         oauthProvider: null,
@@ -80,6 +97,8 @@ describe('canCreateInitialPublishQueueItem', () => {
     integrationClass: 'FEEDABLE' as const,
     platformSlug: 'cars-com',
     businessCategory: AUTOMOTIVE,
+    siteEnabled: true,
+    dealerEnabled: true,
     accountState: 'ACTIVE',
     desiredChannels: ['cars-com'],
     eligibleVehicleCount: 3,
@@ -90,6 +109,10 @@ describe('canCreateInitialPublishQueueItem', () => {
 
   it('does not create for unconnected account', () => {
     assert.equal(canCreateInitialPublishQueueItem({ ...base, accountState: 'ACCOUNT_NEEDED' }), false);
+  });
+
+  it('does not create when site disabled', () => {
+    assert.equal(canCreateInitialPublishQueueItem({ ...base, siteEnabled: false }), false);
   });
 
   it('does not create without eligible inventory', () => {
@@ -106,6 +129,8 @@ describe('isQueueItemOutboundEligible', () => {
     platformSlug: 'cars-com',
     integrationClass: 'FEEDABLE' as const,
     businessCategory: AUTOMOTIVE,
+    siteEnabled: true,
+    dealerEnabled: true,
     accountState: 'ACTIVE',
     desiredChannels: ['cars-com'],
     eligibleVehicleCountForPlatform: 2,
@@ -131,6 +156,28 @@ describe('isQueueItemOutboundEligible', () => {
         oauthConnected: false,
       }),
       OAUTH_NOT_CONNECTED,
+    );
+  });
+
+  it('site-disabled platform is ineligible', () => {
+    assert.equal(
+      ineligibleReasonForQueueItem({
+        ...base,
+        vehicleId: null,
+        siteEnabled: false,
+      }),
+      PLATFORM_DISABLED_SITEWIDE,
+    );
+  });
+
+  it('dealer-disabled platform is ineligible', () => {
+    assert.equal(
+      ineligibleReasonForQueueItem({
+        ...base,
+        vehicleId: null,
+        dealerEnabled: false,
+      }),
+      PLATFORM_NOT_ENABLED,
     );
   });
 

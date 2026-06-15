@@ -232,10 +232,14 @@ describe('consumer-marketplace publish state (OWNED)', () => {
       integrationClass: 'OWNED',
       platformSlug: 'consumer-marketplace',
       businessCategory: 'AUTOMOTIVE',
+      siteEnabled: true,
+      dealerEnabled: true,
       accountState: 'ACTIVE',
       desiredChannels: ['consumer-marketplace'],
       eligibleVehicleCount: 1,
       activeQueueItemStatus: null,
+      oauthProvider: null,
+      oauthConnected: true,
     });
     assert.equal(needs, false, 'OWNED platforms use application status, not queue items');
   });

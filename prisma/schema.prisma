@@ -1015,10 +1015,20 @@ model IngressRun {
   @@index([sourceId])
 }
 
+// Admin site-wide platform on/off (absent row = enabled).
+model PlatformSiteAvailability {
+  platformSlug String   @id @db.VarChar(80)
+  siteEnabled  Boolean  @default(true)
+  updatedAt    DateTime @updatedAt
+  updatedBy    String?  @db.VarChar(255)
+}
+
 model PlatformAccount {
   id                String               @id @default(cuid())
   dealershipId      String
   platformSlug      String               @db.VarChar(80)
+  dealerEnabled            Boolean       @default(true)
+  autoSyncReadyInventory   Boolean       @default(false)
   state             PlatformAccountState @default(ACCOUNT_NEEDED)
   accountId         String?              @db.VarChar(120)
   platformRepName   String?              @db.VarChar(160)

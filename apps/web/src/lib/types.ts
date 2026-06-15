@@ -505,6 +505,9 @@ export type PlatformAccountDetail = {
   systemCredentialStatus: string | null;
   systemSetupReady: boolean;
   systemSetupMessage: string | null;
+  siteEnabled: boolean;
+  dealerEnabled: boolean;
+  autoSyncReadyInventory: boolean;
 };
 
 export type AccountStateSummary = {
@@ -530,6 +533,8 @@ export type AccountUpdatePayload = {
   membershipStatus?: string;
   nextAction?: string;
   nextActionOwner?: string | null;
+  dealerEnabled?: boolean;
+  autoSyncReadyInventory?: boolean;
 };
 
 export type AccountUpdateResponse = {

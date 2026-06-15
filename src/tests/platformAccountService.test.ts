@@ -238,6 +238,12 @@ describe('PlatformAccountDetail shape', () => {
     description: null,
     externalLinks: null,
     operatorSetup: null,
+    systemCredentialStatus: null,
+    systemSetupReady: false,
+    systemSetupMessage: null,
+    siteEnabled: true,
+    dealerEnabled: true,
+    autoSyncReadyInventory: false,
   };
 
   it('has all required fields', () => {

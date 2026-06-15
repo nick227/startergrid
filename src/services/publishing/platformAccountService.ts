@@ -7,6 +7,13 @@ import {
   listPlatformCredentialSummaries,
   type PlatformCredentialDisplayStatus,
 } from '../platform/credentialHealthService.js';
+import {
+  defaultAutoSyncReadyInventory,
+  loadSiteAvailabilityMap,
+  resolveDealerPlatformEnabled,
+  resolveSiteEnabled,
+  parseDesiredChannels,
+} from '../platform/platformAvailabilityService.js';
 
 type ProfileConfidence = 'HIGH' | 'MEDIUM' | 'LOW';
 
@@ -83,6 +90,9 @@ export type PlatformAccountDetail = {
   systemCredentialStatus: PlatformCredentialDisplayStatus | null;
   systemSetupReady: boolean;
   systemSetupMessage: string | null;
+  siteEnabled: boolean;
+  dealerEnabled: boolean;
+  autoSyncReadyInventory: boolean;
 };
 
 export type AccountUpdatePayload = {
@@ -95,6 +105,8 @@ export type AccountUpdatePayload = {
   nextAction?: string | null;
   nextActionOwner?: string | null;
   connectionConfig?: Record<string, unknown>;
+  dealerEnabled?: boolean;
+  autoSyncReadyInventory?: boolean;
 };
 
 const SYSTEM_READY_STATUSES: PlatformCredentialDisplayStatus[] = ['VALID', 'READY_TO_VALIDATE', 'INTERNAL', 'MANUAL_SETUP'];
@@ -170,6 +182,8 @@ async function ensureAccountRows(prisma: PrismaClient, dealershipId: string, pro
       dealershipId,
       platformSlug: p.slug,
       state: 'ACCOUNT_NEEDED' as PlatformAccountState,
+      dealerEnabled: true,
+      autoSyncReadyInventory: defaultAutoSyncReadyInventory(p.slug),
       notes: null,
       connectionConfig: {},
       lastChecked: new Date(),
@@ -224,13 +238,15 @@ export async function listPlatformAccounts(
 ): Promise<{ accounts: PlatformAccountDetail[]; summary: AccountStateSummary }> {
   const dealer = await prisma.dealershipProfile.findUnique({
     where: { id: dealershipId },
-    select: { businessCategory: true },
+    select: { businessCategory: true, desiredChannels: true },
   });
   // Fail closed: an unknown dealer (or one with no category) gets zero platforms,
   // never an AUTOMOTIVE default that would leak car platforms into the account list.
   const profiles = profilesForCategory(dealer?.businessCategory ?? null);
 
   await ensureAccountRows(prisma, dealershipId, profiles);
+
+  const siteAvailability = await loadSiteAvailabilityMap(prisma);
 
   const [rows, tokenRows, secretRows] = await Promise.all([
     prisma.platformAccount.findMany({ where: { dealershipId } }),
@@ -311,6 +327,13 @@ export async function listPlatformAccounts(
         systemCredentialStatus: systemReadiness.status,
         systemSetupReady: systemReadiness.ready,
         systemSetupMessage: systemReadiness.message,
+        siteEnabled: resolveSiteEnabled(p.slug, siteAvailability),
+        dealerEnabled: r?.dealerEnabled ?? resolveDealerPlatformEnabled(
+          null,
+          parseDesiredChannels(dealer?.desiredChannels),
+          p.slug,
+        ),
+        autoSyncReadyInventory: r?.autoSyncReadyInventory ?? defaultAutoSyncReadyInventory(p.slug),
       };
 
       if (!r) return { ...base, readinessScore: computeReadinessScore(base).score };
@@ -356,6 +379,10 @@ export async function updatePlatformAccount(
     throw new Error(
       `Cross-category write rejected: platform '${platformSlug}' is not permitted for category '${dealer?.businessCategory ?? 'unknown'}'`,
     );
+  }
+  const siteAvailability = await loadSiteAvailabilityMap(prisma);
+  if (!resolveSiteEnabled(platformSlug, siteAvailability)) {
+    throw new Error('Platform is disabled site-wide by admin.');
   }
   if (
     payload.state != null &&
@@ -419,6 +446,10 @@ export async function updatePlatformAccount(
   if (payload.membershipStatus !== undefined) update.membershipStatus = payload.membershipStatus;
   if (payload.nextAction !== undefined)       update.nextAction = payload.nextAction;
   if (payload.nextActionOwner !== undefined)  update.nextActionOwner = payload.nextActionOwner ?? null;
+  if (payload.dealerEnabled !== undefined)    update.dealerEnabled = payload.dealerEnabled;
+  if (payload.autoSyncReadyInventory !== undefined) {
+    update.autoSyncReadyInventory = payload.autoSyncReadyInventory;
+  }
   if (configToSave !== undefined)             (update as any).connectionConfig = configToSave;
 
   const updated = await prisma.platformAccount.upsert({
@@ -428,6 +459,8 @@ export async function updatePlatformAccount(
       dealershipId,
       platformSlug,
       state: (payload.state ?? 'ACCOUNT_NEEDED') as PlatformAccountState,
+      dealerEnabled: payload.dealerEnabled ?? true,
+      autoSyncReadyInventory: payload.autoSyncReadyInventory ?? defaultAutoSyncReadyInventory(platformSlug),
       notes: payload.notes,
       accountId: payload.accountId,
       platformRepName: payload.platformRepName,

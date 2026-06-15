@@ -2982,6 +2982,52 @@ paths:
         '403':
           $ref: '#/components/responses/Forbidden'
 
+  /api/admin/platforms/{platformSlug}/availability:
+    patch:
+      tags: [Admin]
+      security:
+        - OperatorAuth: []
+      x-route-classification: admin
+      operationId: updatePlatformSiteAvailability
+      summary: Enable or disable a platform site-wide for all dealerships (SUPER_ADMIN only)
+      parameters:
+        - name: platformSlug
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [siteEnabled]
+              properties:
+                siteEnabled:
+                  type: boolean
+      responses:
+        '200':
+          description: Updated site availability
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [platformSlug, siteEnabled]
+                properties:
+                  platformSlug:
+                    type: string
+                  siteEnabled:
+                    type: boolean
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
   /api/admin/platform-credentials:
     get:
       tags: [Admin]
@@ -4289,6 +4335,9 @@ components:
         - oauthExpired
         - tier
         - partnerSignup
+        - systemCredentialStatus
+        - systemSetupReady
+        - systemSetupMessage
       properties:
         id:
           type: string
@@ -4360,6 +4409,27 @@ components:
             contactType:
               type: string
               enum: [self-serve, rep-assisted]
+        systemCredentialStatus:
+          type: string
+          nullable: true
+          enum: [VALID, NOT_CONFIGURED, READY_TO_VALIDATE, VALIDATION_FAILED, MANUAL_SETUP, INTERNAL, CONTRACT_MISSING]
+          description: Admin-side system credential readiness status for this platform
+        systemSetupReady:
+          type: boolean
+          description: Whether this platform is ready for dealer setup or OAuth connection
+        systemSetupMessage:
+          type: string
+          nullable: true
+          description: Dealer-safe explanation when system setup is not ready
+        siteEnabled:
+          type: boolean
+          description: Whether admin has enabled this platform site-wide
+        dealerEnabled:
+          type: boolean
+          description: Whether this dealership has enabled outbound use of this platform
+        autoSyncReadyInventory:
+          type: boolean
+          description: Whether inventory changes auto-enqueue posts for this platform
 
     AccountStateSummary:
       type: object
@@ -4419,6 +4489,10 @@ components:
           type: string
           enum: [DEALER, OPERATOR, PLATFORM]
           nullable: true
+        dealerEnabled:
+          type: boolean
+        autoSyncReadyInventory:
+          type: boolean
 
     AccountUpdateResponse:
       type: object

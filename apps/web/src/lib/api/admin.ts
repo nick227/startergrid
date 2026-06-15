@@ -86,6 +86,7 @@ export type PlatformCredentialContractSummary = {
   lastCheckedAt: string | null;
   lastStatus: PlatformCredentialDisplayStatus;
   lastError: string | null;
+  siteEnabled?: boolean;
   description?: string | null;
   externalLinks?: ExternalLink[] | null;
   adminSetup?: AdminSetupGuide | null;
@@ -164,6 +165,16 @@ export async function validatePlatformCredentials(): Promise<PlatformCredentialV
 
 export async function validatePlatformCredential(platformSlug: string): Promise<PlatformCredentialValidationResponse> {
   return fromSdk(AdminService.validatePlatformCredential({ platformSlug })) as unknown as Promise<PlatformCredentialValidationResponse>;
+}
+
+export async function updatePlatformSiteAvailability(
+  platformSlug: string,
+  siteEnabled: boolean,
+): Promise<{ platformSlug: string; siteEnabled: boolean }> {
+  return apiFetch(`/api/admin/platforms/${encodeURIComponent(platformSlug)}/availability`, {
+    method: 'PATCH',
+    body: JSON.stringify({ siteEnabled }),
+  });
 }
 
 export async function fetchAdminDashboard(): Promise<AdminDashboardResponse> {

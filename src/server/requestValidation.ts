@@ -91,6 +91,12 @@ export const accountUpdateSchema = z.object({
   nextAction: optionalText(255),
   nextActionOwner: z.enum(['DEALER', 'OPERATOR', 'PLATFORM']).nullable().optional(),
   connectionConfig: z.record(z.string(), z.unknown()).optional(),
+  dealerEnabled: z.boolean().optional(),
+  autoSyncReadyInventory: z.boolean().optional(),
+}).strict();
+
+export const platformSiteAvailabilitySchema = z.object({
+  siteEnabled: z.boolean(),
 }).strict();
 
 // operationId: updateVehiclePrice

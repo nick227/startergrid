@@ -18,6 +18,7 @@ import { upsertApplication } from './lifecyclePersistenceService.js';
 import { activateApplicationAfterCreate } from './applicationActivationService.js';
 import { upsertDefaultSyncPolicies, upsertDefaultPlatformAccounts, defaultSyncMode, resolveScheduledFor } from './syncPolicyService.js';
 import { canCreateInitialPublishQueueItem, parseDesiredChannels } from './queueEligibilityService.js';
+import { loadSiteAvailabilityMap, resolveSiteEnabled } from '../platform/platformAvailabilityService.js';
 import { nanoid } from 'nanoid';
 
 // ── Public state vocabulary ──────────────────────────────────────────────────
@@ -316,9 +317,12 @@ export async function runPrepareAndPublish(
 
   // Load account states (always, so publish state reflects operator-set blocks)
   const accountRows = await prisma.platformAccount.findMany({
-    where: { dealershipId }, select: { platformSlug: true, state: true }
+    where: { dealershipId },
+    select: { platformSlug: true, state: true, dealerEnabled: true },
   });
   const accountStateBySlug = new Map(accountRows.map(a => [a.platformSlug, a.state as string]));
+  const dealerEnabledBySlug = new Map(accountRows.map(a => [a.platformSlug, a.dealerEnabled]));
+  const siteAvailability = await loadSiteAvailabilityMap(prisma);
 
   const queueItems = await prisma.publishQueueItem.findMany({
     where: { dealershipId, status: { notIn: ['CANCELLED'] as any } },
@@ -369,6 +373,8 @@ export async function runPrepareAndPublish(
         integrationClass: platform.integrationClass,
         platformSlug: platform.slug,
         businessCategory: dbDealer.businessCategory,
+        siteEnabled: resolveSiteEnabled(platform.slug, siteAvailability),
+        dealerEnabled: dealerEnabledBySlug.get(platform.slug),
         accountState,
         desiredChannels,
         eligibleVehicleCount: vehiclesForPlatform(platform.slug).length,

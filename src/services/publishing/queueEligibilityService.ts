@@ -1,12 +1,18 @@
 import type { IntegrationClass } from '../../lib/types.js';
 import { isPlatformAllowedForCategory } from '../../data/platformCategoryMap.js';
 import { systemCredentialReadiness } from './platformAccountService.js';
+import {
+  resolveAutoSyncReadyInventory,
+  resolveDealerPlatformEnabled,
+} from '../platform/platformAvailabilityService.js';
 
 export const CHANNEL_NOT_CONNECTED = 'Channel not connected';
 export const ASSET_NOT_SELECTED = 'Asset not selected for this channel';
 export const NO_ELIGIBLE_INVENTORY = 'No eligible inventory for this channel';
 export const PLATFORM_NOT_ENABLED = 'Platform not enabled for this dealership';
+export const PLATFORM_DISABLED_SITEWIDE = 'Platform disabled site-wide';
 export const OAUTH_NOT_CONNECTED = 'OAuth connection required';
+export const AUTO_SYNC_DISABLED = 'Auto-sync disabled for this channel';
 
 /** Legacy feed channel — operator queue is vehicle posts to configured destinations only. */
 export const OPERATOR_QUEUE_EXCLUDED_SLUGS = new Set(['dealer-storefront']);
@@ -17,26 +23,29 @@ export type PlatformDispatchContext = {
   platformSlug: string;
   integrationClass: IntegrationClass;
   businessCategory: string | null;
-  accountState: string | null | undefined;
+  siteEnabled: boolean;
+  dealerEnabled: boolean | null | undefined;
   desiredChannels: string[];
+  accountState: string | null | undefined;
   oauthProvider: string | null;
   oauthConnected: boolean;
+  autoSyncReadyInventory?: boolean | null;
 };
 
-export function parseDesiredChannels(raw: unknown): string[] {
-  return Array.isArray(raw) ? raw.filter((s): s is string => typeof s === 'string') : [];
-}
+export { parseDesiredChannels } from '../platform/platformAvailabilityService.js';
 
 export function isOperatorQueueDestination(platformSlug: string): boolean {
   return !OPERATOR_QUEUE_EXCLUDED_SLUGS.has(platformSlug);
 }
 
-/** Admin/system has enabled this platform for dealer registration (matches Platforms UI). */
+/** Admin has enabled this platform site-wide and system credentials are ready. */
 export function isAdminPlatformEnabled(
   platformSlug: string,
   integrationClass: IntegrationClass,
   oauthProvider: string | null,
+  siteEnabled = true,
 ): boolean {
+  if (!siteEnabled) return false;
   if (oauthProvider) {
     return systemCredentialReadiness(platformSlug).ready;
   }
@@ -44,35 +53,41 @@ export function isAdminPlatformEnabled(
   return systemCredentialReadiness(platformSlug).ready;
 }
 
-/**
- * Dealer opted into this destination: explicit ACTIVE connect, or listed in onboarding
- * desired channels while setup is in progress.
- */
-export function isDealerPlatformOptedIn(
+/** Dealer chose to use this destination (toggle or onboarding intent). */
+export function isDealerPlatformEnabled(
+  dealerEnabled: boolean | null | undefined,
   desiredChannels: string[],
   platformSlug: string,
-  accountState: string | null | undefined,
 ): boolean {
-  if (accountState === 'ACTIVE') return true;
-  if (desiredChannels.length === 0) return false;
-  return desiredChannels.includes(platformSlug);
+  return resolveDealerPlatformEnabled(dealerEnabled, desiredChannels, platformSlug);
 }
 
 export function isPlatformAccountOutboundReady(accountState: string | null | undefined): boolean {
   return accountState === 'ACTIVE';
 }
 
-export function isDealerPlatformRunning(ctx: Pick<PlatformDispatchContext, 'accountState' | 'oauthProvider' | 'oauthConnected'>): boolean {
+export function isDealerPlatformRunning(
+  ctx: Pick<PlatformDispatchContext, 'accountState' | 'oauthProvider' | 'oauthConnected'>,
+): boolean {
   if (!isPlatformAccountOutboundReady(ctx.accountState)) return false;
   if (ctx.oauthProvider && !ctx.oauthConnected) return false;
   return true;
 }
 
+export function isAutoSyncEnabledForPlatform(
+  platformSlug: string,
+  autoSyncReadyInventory: boolean | null | undefined,
+): boolean {
+  return resolveAutoSyncReadyInventory(platformSlug, autoSyncReadyInventory);
+}
+
 export function isPlatformOutboundEligible(ctx: PlatformDispatchContext): boolean {
   if (!isOperatorQueueDestination(ctx.platformSlug)) return false;
   if (!isPlatformAllowedForCategory(ctx.platformSlug, ctx.businessCategory)) return false;
-  if (!isAdminPlatformEnabled(ctx.platformSlug, ctx.integrationClass, ctx.oauthProvider)) return false;
-  if (!isDealerPlatformOptedIn(ctx.desiredChannels, ctx.platformSlug, ctx.accountState)) return false;
+  if (!isAdminPlatformEnabled(ctx.platformSlug, ctx.integrationClass, ctx.oauthProvider, ctx.siteEnabled)) {
+    return false;
+  }
+  if (!isDealerPlatformEnabled(ctx.dealerEnabled, ctx.desiredChannels, ctx.platformSlug)) return false;
   if (!isDealerPlatformRunning(ctx)) return false;
   return true;
 }
@@ -95,6 +110,8 @@ export function ineligibleReasonForQueueItem(opts: {
   integrationClass: IntegrationClass;
   vehicleId: string | null;
   businessCategory: string | null;
+  siteEnabled: boolean;
+  dealerEnabled: boolean | null | undefined;
   accountState: string | null | undefined;
   desiredChannels: string[];
   eligibleVehicleCountForPlatform: number;
@@ -104,11 +121,12 @@ export function ineligibleReasonForQueueItem(opts: {
 }): string | null {
   if (!isOperatorQueueDestination(opts.platformSlug)) return PLATFORM_NOT_ENABLED;
   if (!isPlatformAllowedForCategory(opts.platformSlug, opts.businessCategory)) return PLATFORM_NOT_ENABLED;
-  if (!isAdminPlatformEnabled(opts.platformSlug, opts.integrationClass, opts.oauthProvider)) {
+  if (!opts.siteEnabled) return PLATFORM_DISABLED_SITEWIDE;
+  if (!isAdminPlatformEnabled(opts.platformSlug, opts.integrationClass, opts.oauthProvider, opts.siteEnabled)) {
     return PLATFORM_NOT_ENABLED;
   }
-  if (!isDealerPlatformOptedIn(opts.desiredChannels, opts.platformSlug, opts.accountState)) {
-    return CHANNEL_NOT_CONNECTED;
+  if (!isDealerPlatformEnabled(opts.dealerEnabled, opts.desiredChannels, opts.platformSlug)) {
+    return PLATFORM_NOT_ENABLED;
   }
   if (!isPlatformAccountOutboundReady(opts.accountState)) return CHANNEL_NOT_CONNECTED;
   if (opts.oauthProvider && !opts.oauthConnected) return OAUTH_NOT_CONNECTED;
@@ -133,6 +151,8 @@ export function canCreateInitialPublishQueueItem(opts: {
   integrationClass: IntegrationClass;
   platformSlug: string;
   businessCategory: string | null;
+  siteEnabled: boolean;
+  dealerEnabled: boolean | null | undefined;
   accountState: string | null;
   desiredChannels: string[];
   eligibleVehicleCount: number;
@@ -149,6 +169,8 @@ export function canCreateInitialPublishQueueItem(opts: {
       platformSlug: opts.platformSlug,
       integrationClass: opts.integrationClass,
       businessCategory: opts.businessCategory,
+      siteEnabled: opts.siteEnabled,
+      dealerEnabled: opts.dealerEnabled,
       accountState: opts.accountState,
       desiredChannels: opts.desiredChannels,
       oauthProvider: opts.oauthProvider,

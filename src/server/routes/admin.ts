@@ -14,8 +14,9 @@ import { PlatformClientRegistry } from '../../services/platform/clients/Platform
 import { CATALOG_BRIDGE_SLUGS } from './catalogSync.js';
 import { LISTING_BRIDGE_SLUGS } from './marketplaceListings.js';
 import { isRegisteredCategory } from '@auto-dealer/category-schemas';
-import { createDealershipSchema, validateBody } from '../requestValidation.js';
+import { createDealershipSchema, validateBody, platformSiteAvailabilitySchema } from '../requestValidation.js';
 import { createDealership } from '../../services/dealer/createDealershipService.js';
+import { loadSiteAvailabilityMap, setSitePlatformEnabled } from '../../services/platform/platformAvailabilityService.js';
 
 type DashboardCache = {
   data: any;
@@ -137,10 +138,38 @@ export function registerAdminRoutes(app: FastifyInstance, prisma: PrismaClient):
 
   app.get('/api/admin/platform-credentials', async (request, reply) => {
     if (!await requireSuperAdmin(prisma, request, reply)) return;
+    const siteAvailability = await loadSiteAvailabilityMap(prisma);
     return reply.send({
       providers: listProviderCredentials(),
-      platforms: listPlatformCredentialSummaries(),
+      platforms: listPlatformCredentialSummaries().map(platform => ({
+        ...platform,
+        siteEnabled: siteAvailability.get(platform.platformSlug) !== false,
+      })),
     });
+  });
+
+  app.patch('/api/admin/platforms/:platformSlug/availability', async (request, reply) => {
+    const operator = await requireSuperAdmin(prisma, request, reply);
+    if (!operator) return;
+    const { platformSlug } = request.params as { platformSlug: string };
+    const parsed = validateBody(platformSiteAvailabilitySchema, request.body ?? {});
+    if (!parsed.ok) return reply.status(400).send({ error: parsed.error });
+    try {
+      const result = await setSitePlatformEnabled(
+        prisma,
+        platformSlug,
+        parsed.data.siteEnabled,
+        { id: operator.id, email: operator.email },
+      );
+      resetDashboardCache();
+      return reply.send(result);
+    } catch (err) {
+      const statusCode = typeof err === 'object' && err !== null && 'statusCode' in err
+        ? Number((err as { statusCode?: number }).statusCode)
+        : 500;
+      const message = err instanceof Error ? err.message : 'Failed to update platform availability';
+      return reply.status(statusCode || 500).send({ error: message });
+    }
   });
 
   app.post('/api/admin/platform-credentials/validate', async (request, reply) => {

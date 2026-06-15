@@ -13,10 +13,12 @@ import {
 import { recordSyncEvent } from './syncEventService.js';
 import {
   ineligibleReasonForQueueItem,
+  isAutoSyncEnabledForPlatform,
   isQueueItemOutboundEligible,
   parseDesiredChannels,
   vehicleChannelKey,
 } from './queueEligibilityService.js';
+import { loadSiteAvailabilityMap, resolveSiteEnabled } from '../platform/platformAvailabilityService.js';
 
 export type QueueItemView = {
   id: string;
@@ -118,8 +120,16 @@ export async function enqueueFromVehicleUpdate(
     prop => isPlatformAllowedForCategory(prop.platformSlug, businessCategory),
   );
 
-  const [accounts, deselections, oauthTokens] = await Promise.all([
-    prisma.platformAccount.findMany({ where: { dealershipId }, select: { platformSlug: true, state: true } }),
+  const [accounts, deselections, oauthTokens, siteAvailability] = await Promise.all([
+    prisma.platformAccount.findMany({
+      where: { dealershipId },
+      select: {
+        platformSlug: true,
+        state: true,
+        dealerEnabled: true,
+        autoSyncReadyInventory: true,
+      },
+    }),
     prisma.vehicleChannelSelection.findMany({
       where: { dealershipId, vehicleId, selected: false },
       select: { channelKey: true },
@@ -128,8 +138,9 @@ export async function enqueueFromVehicleUpdate(
       where: { dealershipId },
       select: { provider: true, expiresAt: true },
     }),
+    loadSiteAvailabilityMap(prisma),
   ]);
-  const accountStateBySlug = new Map(accounts.map(a => [a.platformSlug, a.state as string]));
+  const accountBySlug = new Map(accounts.map(a => [a.platformSlug, a]));
   const profileBySlug = new Map(platformProfiles.map(p => [p.slug, p]));
   const liveOAuth = liveOAuthProviders(oauthTokens);
   const deselectedSlugs = new Set(deselections.map(d => d.channelKey));
@@ -158,10 +169,17 @@ export async function enqueueFromVehicleUpdate(
     if (prop.action === 'NO_ACTION') continue;
 
     const profile = profileBySlug.get(prop.platformSlug);
-    const accountState = accountStateBySlug.get(prop.platformSlug) ?? null;
+    const account = accountBySlug.get(prop.platformSlug);
+    const accountState = account?.state ?? null;
+    const siteEnabled = resolveSiteEnabled(prop.platformSlug, siteAvailability);
     const deselectedKeys = new Set<string>();
     if (deselectedSlugs.has(prop.platformSlug)) {
       deselectedKeys.add(vehicleChannelKey(vehicleId, prop.platformSlug));
+    }
+    if (
+      !isAutoSyncEnabledForPlatform(prop.platformSlug, account?.autoSyncReadyInventory ?? null)
+    ) {
+      continue;
     }
     if (
       !isQueueItemOutboundEligible({
@@ -169,6 +187,8 @@ export async function enqueueFromVehicleUpdate(
         integrationClass: (profile?.integrationClass ?? prop.integrationClass) as IntegrationClass,
         vehicleId,
         businessCategory,
+        siteEnabled,
+        dealerEnabled: account?.dealerEnabled,
         accountState,
         desiredChannels,
         eligibleVehicleCountForPlatform: 1,
@@ -255,7 +275,7 @@ export async function getQueueView(
   const businessCategory = dealer.businessCategory;
   const desiredChannels = parseDesiredChannels(dealer.desiredChannels);
 
-  const [items, accounts, deselections, readyVehicles, oauthTokens] = await Promise.all([
+  const [items, accounts, deselections, readyVehicles, oauthTokens, siteAvailability] = await Promise.all([
     prisma.publishQueueItem.findMany({
       where: { dealershipId },
       include: { vehicle: { select: { stockNumber: true, year: true, make: true, model: true } } },
@@ -277,10 +297,12 @@ export async function getQueueView(
       where: { dealershipId },
       select: { provider: true, expiresAt: true },
     }),
+    loadSiteAvailabilityMap(prisma),
   ]);
 
   const profileBySlug = new Map(platformProfiles.map(p => [p.slug, p]));
   const accountStateBySlug = new Map(accounts.map(a => [a.platformSlug, a.state as string]));
+  const dealerEnabledBySlug = new Map(accounts.map(a => [a.platformSlug, a.dealerEnabled]));
   const liveOAuth = liveOAuthProviders(oauthTokens);
 
   const deselectedKeys = new Set(
@@ -301,6 +323,7 @@ export async function getQueueView(
     const profile = profileBySlug.get(item.platformSlug);
     const v = item.vehicle;
     const accountState = accountStateBySlug.get(item.platformSlug) ?? null;
+    const siteEnabled = resolveSiteEnabled(item.platformSlug, siteAvailability);
     const eligibleVehicleCountForPlatform =
       eligibleVehicleCountByPlatform.get(item.platformSlug) ?? 0;
     const integrationClass = (profile?.integrationClass ?? 'FEEDABLE') as IntegrationClass;
@@ -311,6 +334,8 @@ export async function getQueueView(
       integrationClass,
       vehicleId: item.vehicleId,
       businessCategory,
+      siteEnabled,
+      dealerEnabled: dealerEnabledBySlug.get(item.platformSlug),
       accountState,
       desiredChannels,
       eligibleVehicleCountForPlatform,

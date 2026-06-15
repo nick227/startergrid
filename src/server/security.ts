@@ -151,6 +151,7 @@ export const routeClassifications = {
     'GET /api/admin/dashboard',
     'POST /api/admin/dealers',
     'GET /api/admin/platform-credentials',
+    'PATCH /api/admin/platforms/:platformSlug/availability',
     'POST /api/admin/platform-credentials/validate',
     'POST /api/admin/platform-credentials/:platformSlug/validate',
     'GET /api/admin/blocked-dealers',
