@@ -3,13 +3,14 @@ import { parseCategoryPayload, usageUnitFromPayload } from '../../lib/categoryPa
 import { deriveMarketplaceAvailabilityStatus } from './marketplaceAvailability.js';
 
 type DbMedia = {
-  id:         string;
-  url:        string;
-  sortOrder:  number;
-  kind?:      string;
-  width?:     number | null;
-  height?:    number | null;
-  mimeType?:  string | null;
+  id:            string;
+  url:           string;
+  sortOrder:     number;
+  kind?:         string;
+  mediaSlotKey?: string | null;
+  width?:        number | null;
+  height?:       number | null;
+  mimeType?:     string | null;
 };
 
 export type DbVehicleDetailRow = {

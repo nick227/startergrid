@@ -43,4 +43,30 @@ describe('buildVdpMediaSlotMap', () => {
     expect(items[items.length - 1]?.id).toBe('spin');
     expect(lightboxIndexForItem(map, 'doors')).toBe(items.findIndex(item => item.id === 'doors'));
   });
+
+  it('keeps main photo separate from mosaic exterior cells', () => {
+    const map = buildVdpMediaSlotMap([
+      ...GALLERY_FIXTURES.sparseMosaic,
+      {
+        id: 'main',
+        kind: MediaEnums.kind.IMAGE,
+        url: 'https://cdn.example.com/main.jpg',
+        sortOrder: -1,
+        slot: MediaEnums.slot.OVERFLOW,
+        angle: null,
+        caption: 'Main Photo',
+        posterUrl: null,
+        mimeType: 'image/jpeg',
+        width: 1200,
+        height: 900,
+        durationSec: null,
+        embedUrl: null,
+      },
+    ]);
+    expect(map.mainPhoto?.id).toBe('main');
+    expect(map.mosaic[0]!.item?.id).toBe('hero');
+    const lightbox = collectLightboxItems(map);
+    expect(lightbox[0]!.id).toBe('main');
+    expect(lightbox.some(item => item.id === 'main' && item.slot === MediaEnums.slot.OVERFLOW)).toBe(true);
+  });
 });

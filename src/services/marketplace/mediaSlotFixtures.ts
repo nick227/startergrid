@@ -1,13 +1,22 @@
 import type { MarketplaceMediaItem } from './marketplaceDetailMapper.js';
+import {
+  GUIDE_KEY_TO_MOSAIC,
+  MAIN_PHOTO_CAPTION,
+  MAIN_PHOTO_SLOT_KEY,
+  MOSAIC_SLOT_SPECS,
+} from './mediaSlotMapping.js';
+
+export { MOSAIC_SLOT_SPECS } from './mediaSlotMapping.js';
 
 type DbMedia = {
-  id:         string;
-  url:        string;
-  sortOrder:  number;
-  kind?:      string;
-  width?:     number | null;
-  height?:    number | null;
-  mimeType?:  string | null;
+  id:            string;
+  url:           string;
+  sortOrder:     number;
+  kind?:         string;
+  mediaSlotKey?: string | null;
+  width?:        number | null;
+  height?:       number | null;
+  mimeType?:     string | null;
 };
 
 type MediaTour = {
@@ -21,37 +30,6 @@ type MediaTour = {
     sortOrder: number;
   }>;
 };
-
-export const MOSAIC_SLOT_SPECS: ReadonlyArray<{
-  slot:  NonNullable<MarketplaceMediaItem['slot']>;
-  angle: NonNullable<MarketplaceMediaItem['angle']>;
-}> = [
-  { slot: 'HERO', angle: 'EXTERIOR_FRONT_34' },
-  { slot: 'SLOT_2', angle: 'EXTERIOR_FRONT' },
-  { slot: 'SLOT_3', angle: 'EXTERIOR_REAR_34' },
-  { slot: 'SLOT_4', angle: 'EXTERIOR_REAR' },
-  { slot: 'SLOT_5', angle: 'EXTERIOR_SIDE' },
-  { slot: 'SLOT_6', angle: 'EXTERIOR_DOORS_OPEN' },
-  { slot: 'SLOT_7', angle: 'INTERIOR_FRONT' },
-  { slot: 'SLOT_8', angle: 'INTERIOR_REAR' },
-  { slot: 'SLOT_9', angle: 'INTERIOR_DASH' },
-  { slot: 'SLOT_10', angle: 'INTERIOR_CARGO' },
-  { slot: 'SLOT_11', angle: 'DETAIL' },
-  { slot: 'SLOT_12', angle: 'DETAIL' },
-  { slot: 'SLOT_13', angle: 'DETAIL' },
-  { slot: 'SLOT_14', angle: 'DETAIL' },
-  { slot: 'SLOT_15', angle: 'DETAIL' },
-  { slot: 'SLOT_16', angle: 'DETAIL' },
-  { slot: 'SLOT_17', angle: 'DETAIL' },
-  { slot: 'SLOT_18', angle: 'DETAIL' },
-  { slot: 'SLOT_19', angle: 'DETAIL' },
-  { slot: 'SLOT_20', angle: 'DETAIL' },
-  { slot: 'SLOT_21', angle: 'DETAIL' },
-  { slot: 'SLOT_22', angle: 'DETAIL' },
-  { slot: 'SLOT_23', angle: 'DETAIL' },
-  { slot: 'SLOT_24', angle: 'DETAIL' },
-  { slot: 'SLOT_25', angle: 'DETAIL' },
-];
 
 function detailMediaKind(kind: string | undefined): MarketplaceMediaItem['kind'] {
   const upper = kind?.toUpperCase();
@@ -67,6 +45,7 @@ function shapeItem(
   angle: MarketplaceMediaItem['angle'],
   kind: MarketplaceMediaItem['kind'],
   embedUrl: string | null = null,
+  caption: string | null = null,
 ): MarketplaceMediaItem {
   return {
     id:          m.id,
@@ -75,7 +54,7 @@ function shapeItem(
     sortOrder:   m.sortOrder,
     slot,
     angle,
-    caption:     null,
+    caption,
     posterUrl:   null,
     mimeType:    m.mimeType ?? null,
     width:       m.width ?? null,
@@ -89,30 +68,64 @@ export function assignDetailMediaSlots(media: DbMedia[]): MarketplaceMediaItem[]
   const sorted = [...media].sort((a, b) => a.sortOrder - b.sortOrder);
   const items: MarketplaceMediaItem[] = [];
   const usedSlots = new Set<string>();
+  const deferred: DbMedia[] = [];
   let overflowOrder = 1000;
 
-  const takeSlot = (m: DbMedia, spec: (typeof MOSAIC_SLOT_SPECS)[number], kind: MarketplaceMediaItem['kind'], embedUrl?: string | null) => {
+  const takeSlot = (
+    m: DbMedia,
+    spec: (typeof MOSAIC_SLOT_SPECS)[number],
+    kind: MarketplaceMediaItem['kind'],
+    embedUrl?: string | null,
+  ) => {
     if (usedSlots.has(spec.slot)) return false;
     usedSlots.add(spec.slot);
     items.push(shapeItem(m, spec.slot, spec.angle, kind, embedUrl ?? null));
     return true;
   };
 
-  const pushOverflow = (m: DbMedia, kind: MarketplaceMediaItem['kind'], angle: MarketplaceMediaItem['angle'] = 'DETAIL', embedUrl?: string | null) => {
-    items.push(shapeItem(m, 'OVERFLOW', angle, kind, embedUrl ?? null));
-    items[items.length - 1]!.sortOrder = overflowOrder++;
+  const pushOverflow = (
+    m: DbMedia,
+    kind: MarketplaceMediaItem['kind'],
+    angle: MarketplaceMediaItem['angle'] = 'DETAIL',
+    embedUrl?: string | null,
+    caption?: string | null,
+  ) => {
+    const shaped = shapeItem(m, 'OVERFLOW', angle, kind, embedUrl ?? null, caption ?? null);
+    shaped.sortOrder = caption === MAIN_PHOTO_CAPTION ? m.sortOrder : overflowOrder++;
+    items.push(shaped);
   };
 
   for (const m of sorted) {
     const kind = detailMediaKind(m.kind);
-    if (kind === 'DOORS_OPEN') {
-      takeSlot(m, MOSAIC_SLOT_SPECS[5]!, kind) || pushOverflow(m, kind, 'EXTERIOR_DOORS_OPEN');
+    const slotKey = m.mediaSlotKey?.trim() || null;
+
+    if (slotKey === MAIN_PHOTO_SLOT_KEY) {
+      pushOverflow(m, kind, null, null, MAIN_PHOTO_CAPTION);
       continue;
     }
+
     if (kind === 'SPIN_360') {
       pushOverflow(m, kind, 'DETAIL', m.url);
       continue;
     }
+
+    if (kind === 'DOORS_OPEN') {
+      if (takeSlot(m, MOSAIC_SLOT_SPECS[5]!, kind)) continue;
+      pushOverflow(m, kind, 'EXTERIOR_DOORS_OPEN');
+      continue;
+    }
+
+    if (slotKey && GUIDE_KEY_TO_MOSAIC[slotKey]) {
+      if (takeSlot(m, GUIDE_KEY_TO_MOSAIC[slotKey]!, kind)) continue;
+      deferred.push(m);
+      continue;
+    }
+
+    deferred.push(m);
+  }
+
+  for (const m of deferred) {
+    const kind = detailMediaKind(m.kind);
     const nextSpec = MOSAIC_SLOT_SPECS.find(spec => !usedSlots.has(spec.slot));
     if (nextSpec && takeSlot(m, nextSpec, kind)) continue;
     pushOverflow(m, kind);
@@ -125,9 +138,9 @@ export function buildDefaultMediaTour(items: MarketplaceMediaItem[]): MediaTour 
   if (items.length < 2) return null;
 
   const bySlot = new Map(items.filter(i => i.slot).map(i => [i.slot!, i]));
-  const hero = bySlot.get('HERO') ?? items[0]!;
+  const hero = bySlot.get('HERO') ?? items.find(i => i.caption !== MAIN_PHOTO_CAPTION) ?? items[0]!;
   const doors = bySlot.get('SLOT_6') ?? items.find(i => i.kind === 'DOORS_OPEN');
-  const condition = items.find(i => i.angle === 'CONDITION') ?? items.find(i => i.slot === 'OVERFLOW');
+  const condition = items.find(i => i.angle === 'CONDITION') ?? items.find(i => i.slot === 'OVERFLOW' && i.caption !== MAIN_PHOTO_CAPTION);
 
   const steps: MediaTour['steps'] = [
     { mediaId: hero.id, label: 'Exterior overview', stepType: 'NEUTRAL', note: null, sortOrder: 0 },
@@ -136,7 +149,7 @@ export function buildDefaultMediaTour(items: MarketplaceMediaItem[]): MediaTour 
   if (doors && doors.id !== hero.id) {
     steps.push({ mediaId: doors.id, label: 'Doors open', stepType: 'HIGHLIGHT', note: null, sortOrder: 1 });
   } else {
-    const secondary = bySlot.get('SLOT_2') ?? items.find(i => i.id !== hero.id);
+    const secondary = bySlot.get('SLOT_2') ?? items.find(i => i.id !== hero.id && i.caption !== MAIN_PHOTO_CAPTION);
     if (secondary) {
       steps.push({
         mediaId:   secondary.id,

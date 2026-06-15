@@ -38,6 +38,7 @@ import {
   type DbVehicleDetailRow,
   type MarketplaceVehicleDetailResponse,
 } from './marketplaceDetailMapper.js';
+import { orderMediaForCardDisplay } from './mediaSlotMapping.js';
 
 // ── Eligibility rule ──────────────────────────────────────────────────────────
 // A vehicle is marketplace-eligible when:
@@ -237,12 +238,13 @@ export type MarketplaceListFilters = {
 // ── Internal DB row types ─────────────────────────────────────────────────────
 
 type DbMedia = {
-  url: string;
-  sortOrder: number;
-  kind?: string;
-  width?: number | null;
-  height?: number | null;
-  mimeType?: string | null;
+  url:           string;
+  sortOrder:     number;
+  kind?:         string;
+  mediaSlotKey?: string | null;
+  width?:        number | null;
+  height?:       number | null;
+  mimeType?:     string | null;
 };
 
 type DbDealership = {
@@ -334,9 +336,9 @@ function distanceField(
 function shapeCard(row: DbVehicleRow, buyer?: BuyerLocation): MarketplaceVehicleCard {
   const payload = parseCategoryPayload(row.categoryPayload);
   const addr = extractAddress(row.dealership.rooftopAddress);
-  const sorted = [...row.media].sort((a, b) => a.sortOrder - b.sortOrder);
-  const mediaUrls = sorted.slice(0, MAX_CARD_IMAGES).map(m => m.url);
-  const mediaItems = sorted.slice(0, MAX_CARD_IMAGES).map(m => ({
+  const sorted = orderMediaForCardDisplay(row.media).slice(0, MAX_CARD_IMAGES);
+  const mediaUrls = sorted.map(m => m.url);
+  const mediaItems = sorted.map(m => ({
     kind:      mediaKind(m.kind),
     url:       m.url,
     width:     m.width ?? null,
@@ -420,9 +422,8 @@ const VEHICLE_CARD_SELECT: Prisma.VehicleSelect = {
   removedAt:          true,
   createdAt:          true,
   media: {
-    select:  { url: true, kind: true, sortOrder: true, width: true, height: true, mimeType: true },
+    select:  { url: true, kind: true, sortOrder: true, mediaSlotKey: true, width: true, height: true, mimeType: true },
     orderBy: { sortOrder: 'asc' },
-    take:    MAX_CARD_IMAGES,
   },
   dealership: { select: DEALER_SELECT },
 };
@@ -453,7 +454,7 @@ const VEHICLE_DETAIL_SELECT: Prisma.VehicleSelect = {
   categoryPayload:    true,
   createdAt:          true,
   media: {
-    select:  { id: true, url: true, kind: true, sortOrder: true, width: true, height: true, mimeType: true },
+    select:  { id: true, url: true, kind: true, sortOrder: true, mediaSlotKey: true, width: true, height: true, mimeType: true },
     orderBy: { sortOrder: 'asc' },
   },
   dealership: { select: DEALER_SELECT },

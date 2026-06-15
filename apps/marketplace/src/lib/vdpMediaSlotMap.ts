@@ -2,6 +2,9 @@ import type { MarketplaceMediaItem } from '@dealer-marketplace/client';
 import { MarketplaceMediaItem as MediaEnums } from '@dealer-marketplace/client';
 import { angleLabel } from './vdpMediaLabels.ts';
 
+/** Must match server mediaSlotMapping MAIN_PHOTO_CAPTION */
+export const MAIN_PHOTO_CAPTION = 'Main Photo';
+
 export const VDP_MOSAIC_SLOT_ORDER: ReadonlyArray<{
   slot: MarketplaceMediaItem['slot'];
   angle: MarketplaceMediaItem['angle'];
@@ -49,9 +52,14 @@ export type VdpSlotCell = {
 };
 
 export type VdpMediaSlotMap = {
+  mainPhoto: MarketplaceMediaItem | null;
   mosaic: VdpSlotCell[];
   overflow: MarketplaceMediaItem[];
 };
+
+function isMainPhotoItem(item: MarketplaceMediaItem): boolean {
+  return item.caption === MAIN_PHOTO_CAPTION;
+}
 
 function emptyMosaic(): VdpSlotCell[] {
   return VDP_MOSAIC_SLOT_ORDER.map(({ slot, angle }) => ({
@@ -73,9 +81,10 @@ export function buildVdpMediaSlotMap(items: MarketplaceMediaItem[]): VdpMediaSlo
   const mosaic = emptyMosaic();
   const overflow: MarketplaceMediaItem[] = [];
   const sorted = [...items].sort((a, b) => a.sortOrder - b.sortOrder);
+  const mainPhoto = sorted.find(isMainPhotoItem) ?? null;
+  const galleryItems = sorted.filter(item => !isMainPhotoItem(item));
 
-  for (const item of sorted) {
-    // Explicit OVERFLOW marker always goes to overflow — check before angle fallback.
+  for (const item of galleryItems) {
     if (item.slot === MediaEnums.slot.OVERFLOW) {
       overflow.push(item);
       continue;
@@ -94,12 +103,13 @@ export function buildVdpMediaSlotMap(items: MarketplaceMediaItem[]): VdpMediaSlo
   }
 
   overflow.sort((a, b) => a.sortOrder - b.sortOrder);
-  return { mosaic, overflow };
+  return { mainPhoto, mosaic, overflow };
 }
 
 export function collectLightboxItems(map: VdpMediaSlotMap): MarketplaceMediaItem[] {
   const mosaicItems = map.mosaic.flatMap(cell => (cell.item ? [cell.item] : []));
-  return [...mosaicItems, ...map.overflow];
+  const leading = map.mainPhoto ? [map.mainPhoto] : [];
+  return [...leading, ...mosaicItems, ...map.overflow];
 }
 
 export function lightboxIndexForItem(map: VdpMediaSlotMap, itemId: string): number {

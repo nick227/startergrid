@@ -11,11 +11,12 @@ type DbMedia = {
   url: string;
   sortOrder: number;
   kind?: string;
+  mediaSlotKey?: string | null;
   mimeType?: string | null;
 };
 
-function media(id: string, sortOrder: number, kind = 'IMAGE'): DbMedia {
-  return { id, url: `https://cdn.example.com/${id}.jpg`, sortOrder, kind, mimeType: 'image/jpeg' };
+function media(id: string, sortOrder: number, kind = 'IMAGE', mediaSlotKey?: string | null): DbMedia {
+  return { id, url: `https://cdn.example.com/${id}.jpg`, sortOrder, kind, mediaSlotKey, mimeType: 'image/jpeg' };
 }
 
 describe('mediaSlotFixtures — slot assignment', () => {
@@ -50,6 +51,20 @@ describe('mediaSlotFixtures — slot assignment', () => {
       items.filter(i => i.slot !== 'OVERFLOW').map(i => i.slot),
       ['HERO', 'SLOT_2', 'SLOT_3', 'SLOT_4'],
     );
+  });
+
+  it('keeps main-photo out of mosaic exterior slots', () => {
+    const items = assignDetailMediaSlots([
+      media('main', 0, 'IMAGE', 'main-photo'),
+      media('front', 1, 'IMAGE', 'front'),
+      media('quarter', 2, 'IMAGE', 'front-quarter-driver'),
+    ]);
+    const main = items.find(i => i.id === 'main');
+    const quarter = items.find(i => i.id === 'quarter');
+    assert.equal(main?.slot, 'OVERFLOW');
+    assert.equal(main?.caption, 'Main Photo');
+    assert.equal(quarter?.slot, 'HERO');
+    assert.equal(items.find(i => i.id === 'front')?.slot, 'SLOT_2');
   });
 });
 
