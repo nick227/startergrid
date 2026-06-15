@@ -835,12 +835,6 @@ export type PlatformQueueStats = {
   nextScheduledFor: string | null;
 };
 
-export type OwnedChannelView = {
-  platformSlug: string;
-  platformName: string;
-  statusLabel: string;
-};
-
 export type QueueView = {
   dealershipId: string;
   dealerName: string;
@@ -851,7 +845,6 @@ export type QueueView = {
   retryPending: QueueItemView[];
   claimed: QueueItemView[];
   platformAccounts: Array<{ platformSlug: string; platformName: string; state: string }>;
-  ownedChannels: OwnedChannelView[];
   byPlatform: PlatformQueueStats[];
   summary: {
     ready: number;

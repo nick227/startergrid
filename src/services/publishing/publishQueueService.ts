@@ -18,12 +18,6 @@ import {
   vehicleChannelKey,
 } from './queueEligibilityService.js';
 
-export type OwnedChannelView = {
-  platformSlug: string;
-  platformName: string;
-  statusLabel: string;
-};
-
 export type QueueItemView = {
   id: string;
   assetRef: string | null;
@@ -73,7 +67,6 @@ export type QueueView = {
   retryPending: QueueItemView[];
   claimed: QueueItemView[];
   platformAccounts: Array<{ platformSlug: string; platformName: string; state: string }>;
-  ownedChannels: OwnedChannelView[];
   byPlatform: PlatformQueueStats[];
   summary: {
     ready: number;
@@ -88,6 +81,22 @@ export type QueueView = {
     failed: number;
   };
 };
+
+const OAUTH_EXPIRY_BUFFER_MS = 60_000;
+
+function liveOAuthProviders(tokenRows: Array<{ provider: string; expiresAt: Date | null }>): Set<string> {
+  const isExpired = (exp: Date | null) =>
+    exp !== null && exp.getTime() - OAUTH_EXPIRY_BUFFER_MS <= Date.now();
+  return new Set(tokenRows.filter(t => !isExpired(t.expiresAt)).map(t => t.provider));
+}
+
+function oauthConnectedForPlatform(
+  profile: { oauthProvider?: string | null } | undefined,
+  liveProviders: Set<string>,
+): boolean {
+  if (!profile?.oauthProvider) return true;
+  return liveProviders.has(profile.oauthProvider);
+}
 
 // ── Queue population ─────────────────────────────────────────────────────────
 
@@ -109,14 +118,20 @@ export async function enqueueFromVehicleUpdate(
     prop => isPlatformAllowedForCategory(prop.platformSlug, businessCategory),
   );
 
-  const [accounts, deselections] = await Promise.all([
+  const [accounts, deselections, oauthTokens] = await Promise.all([
     prisma.platformAccount.findMany({ where: { dealershipId }, select: { platformSlug: true, state: true } }),
     prisma.vehicleChannelSelection.findMany({
       where: { dealershipId, vehicleId, selected: false },
       select: { channelKey: true },
     }),
+    prisma.platformOAuthToken.findMany({
+      where: { dealershipId },
+      select: { provider: true, expiresAt: true },
+    }),
   ]);
   const accountStateBySlug = new Map(accounts.map(a => [a.platformSlug, a.state as string]));
+  const profileBySlug = new Map(platformProfiles.map(p => [p.slug, p]));
+  const liveOAuth = liveOAuthProviders(oauthTokens);
   const deselectedSlugs = new Set(deselections.map(d => d.channelKey));
 
   // Pick the right SyncEventKind
@@ -142,6 +157,7 @@ export async function enqueueFromVehicleUpdate(
   for (const prop of allowedPropagations) {
     if (prop.action === 'NO_ACTION') continue;
 
+    const profile = profileBySlug.get(prop.platformSlug);
     const accountState = accountStateBySlug.get(prop.platformSlug) ?? null;
     const deselectedKeys = new Set<string>();
     if (deselectedSlugs.has(prop.platformSlug)) {
@@ -150,12 +166,15 @@ export async function enqueueFromVehicleUpdate(
     if (
       !isQueueItemOutboundEligible({
         platformSlug: prop.platformSlug,
+        integrationClass: (profile?.integrationClass ?? prop.integrationClass) as IntegrationClass,
         vehicleId,
         businessCategory,
         accountState,
         desiredChannels,
         eligibleVehicleCountForPlatform: 1,
         deselectedKeys,
+        oauthProvider: profile?.oauthProvider ?? null,
+        oauthConnected: oauthConnectedForPlatform(profile, liveOAuth),
       })
     ) {
       continue;
@@ -228,13 +247,6 @@ const NON_TERMINAL: string[] = ['READY', 'SCHEDULED', 'NEEDS_APPROVAL', 'BLOCKED
 const TERMINAL: string[] = ['SENT', 'FAILED', 'CANCELLED'];
 const IN_FLIGHT: string[] = ['CLAIMED'];
 
-function ownedChannelStatusLabel(platformSlug: string): string {
-  if (platformSlug === 'consumer-marketplace') {
-    return 'Live · Auto-syncs from ready inventory';
-  }
-  return 'Auto-syncs from ready inventory';
-}
-
 export async function getQueueView(
   prisma: PrismaClient,
   dealershipId: string
@@ -243,7 +255,7 @@ export async function getQueueView(
   const businessCategory = dealer.businessCategory;
   const desiredChannels = parseDesiredChannels(dealer.desiredChannels);
 
-  const [items, accounts, deselections, readyVehicles] = await Promise.all([
+  const [items, accounts, deselections, readyVehicles, oauthTokens] = await Promise.all([
     prisma.publishQueueItem.findMany({
       where: { dealershipId },
       include: { vehicle: { select: { stockNumber: true, year: true, make: true, model: true } } },
@@ -261,10 +273,15 @@ export async function getQueueView(
       where: { dealershipId, soldAt: null, removedAt: null, listingStatus: 'READY' },
       select: { id: true },
     }),
+    prisma.platformOAuthToken.findMany({
+      where: { dealershipId },
+      select: { provider: true, expiresAt: true },
+    }),
   ]);
 
   const profileBySlug = new Map(platformProfiles.map(p => [p.slug, p]));
   const accountStateBySlug = new Map(accounts.map(a => [a.platformSlug, a.state as string]));
+  const liveOAuth = liveOAuthProviders(oauthTokens);
 
   const deselectedKeys = new Set(
     deselections.map(d => vehicleChannelKey(d.vehicleId, d.channelKey)),
@@ -286,26 +303,25 @@ export async function getQueueView(
     const accountState = accountStateBySlug.get(item.platformSlug) ?? null;
     const eligibleVehicleCountForPlatform =
       eligibleVehicleCountByPlatform.get(item.platformSlug) ?? 0;
-    const outboundEligible = isQueueItemOutboundEligible({
+    const integrationClass = (profile?.integrationClass ?? 'FEEDABLE') as IntegrationClass;
+    const oauthProvider = profile?.oauthProvider ?? null;
+    const oauthConnected = oauthConnectedForPlatform(profile, liveOAuth);
+    const eligibilityInput = {
       platformSlug: item.platformSlug,
+      integrationClass,
       vehicleId: item.vehicleId,
       businessCategory,
       accountState,
       desiredChannels,
       eligibleVehicleCountForPlatform,
       deselectedKeys,
-    });
+      oauthProvider,
+      oauthConnected,
+    };
+    const outboundEligible = isQueueItemOutboundEligible(eligibilityInput);
     const ineligibleReason = outboundEligible
       ? null
-      : ineligibleReasonForQueueItem({
-          platformSlug: item.platformSlug,
-          vehicleId: item.vehicleId,
-          businessCategory,
-          accountState,
-          desiredChannels,
-          eligibleVehicleCountForPlatform,
-          deselectedKeys,
-        });
+      : ineligibleReasonForQueueItem(eligibilityInput);
 
     return {
       id: item.id,
@@ -314,7 +330,7 @@ export async function getQueueView(
       assetId: item.vehicleId,
       platformSlug: item.platformSlug,
       platformName: profile?.name ?? item.platformSlug,
-      integrationClass: (profile?.integrationClass ?? 'FEEDABLE') as IntegrationClass,
+      integrationClass,
       triggerKind: item.triggerKind,
       status: item.status,
       policyMode: item.policyMode,
@@ -356,20 +372,6 @@ export async function getQueueView(
     platformName: profileBySlug.get(a.platformSlug)?.name ?? a.platformSlug,
     state: a.state,
   }));
-
-  const ownedChannels: OwnedChannelView[] = platformProfiles
-    .filter(
-      p =>
-        p.integrationClass === 'OWNED' &&
-        isPlatformAllowedForCategory(p.slug, businessCategory) &&
-        accountStateBySlug.get(p.slug) === 'ACTIVE',
-    )
-    .map(p => ({
-      platformSlug: p.slug,
-      platformName: p.name,
-      statusLabel: ownedChannelStatusLabel(p.slug),
-    }))
-    .sort((a, b) => a.platformName.localeCompare(b.platformName));
 
   const policies = await prisma.syncPolicy.findMany({ where: { dealershipId } });
   const policyModeBySlug = new Map(policies.map(p => [p.platformSlug, p.mode as string]));
@@ -422,7 +424,6 @@ export async function getQueueView(
     retryPending,
     claimed,
     platformAccounts: accountViews,
-    ownedChannels,
     byPlatform,
     summary
   };

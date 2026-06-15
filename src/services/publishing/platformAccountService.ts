@@ -3,6 +3,10 @@ import { platformProfiles } from '../../data/platformProfiles.js';
 import { platformsForCategory, isPlatformAllowedForCategory } from '../../data/platformCategoryMap.js';
 import type { PlatformProfileSeed, ConnectionField } from '../../lib/types.js';
 import { PLATFORM_SETUP_GUIDES, type ExternalLink, type OperatorSetupGuide } from '../../data/platformSetupGuides.js';
+import {
+  listPlatformCredentialSummaries,
+  type PlatformCredentialDisplayStatus,
+} from '../platform/credentialHealthService.js';
 
 type ProfileConfidence = 'HIGH' | 'MEDIUM' | 'LOW';
 
@@ -76,6 +80,9 @@ export type PlatformAccountDetail = {
   description: string | null;
   externalLinks: ExternalLink[] | null;
   operatorSetup: OperatorSetupGuide | null;
+  systemCredentialStatus: PlatformCredentialDisplayStatus | null;
+  systemSetupReady: boolean;
+  systemSetupMessage: string | null;
 };
 
 export type AccountUpdatePayload = {
@@ -89,6 +96,38 @@ export type AccountUpdatePayload = {
   nextActionOwner?: string | null;
   connectionConfig?: Record<string, unknown>;
 };
+
+const SYSTEM_READY_STATUSES: PlatformCredentialDisplayStatus[] = ['VALID', 'READY_TO_VALIDATE', 'INTERNAL', 'MANUAL_SETUP'];
+const DEALER_REGISTRATION_STATES: PlatformAccountState[] = ['ACTIVE', 'READY', 'PENDING_REVIEW'];
+
+function systemCredentialMessage(status: PlatformCredentialDisplayStatus | null): string | null {
+  if (!status || status === 'CONTRACT_MISSING') return 'System setup is not registered for this platform yet.';
+  if (status === 'NOT_CONFIGURED') return 'System credentials are not configured for this platform yet.';
+  if (status === 'READY_TO_VALIDATE') return 'System credentials need to be validated before dealers can connect.';
+  if (status === 'VALIDATION_FAILED') return 'System credential validation failed. Admin review is required before dealers can connect.';
+  return null;
+}
+
+export function systemCredentialReadiness(platformSlug: string): {
+  status: PlatformCredentialDisplayStatus | null;
+  ready: boolean;
+  message: string | null;
+} {
+  const summary = listPlatformCredentialSummaries().find(platform => platform.platformSlug === platformSlug);
+  const status = summary?.lastStatus ?? null;
+  return {
+    status,
+    ready: status != null && SYSTEM_READY_STATUSES.includes(status),
+    message: systemCredentialMessage(status),
+  };
+}
+
+export function assertSystemReadyForDealerRegistration(platformSlug: string): void {
+  const readiness = systemCredentialReadiness(platformSlug);
+  if (!readiness.ready) {
+    throw new Error(readiness.message ?? 'System setup is not ready for dealer registration on this platform.');
+  }
+}
 
 export function needsSetupAccountState(s: string) {
   return s === 'ACCOUNT_NEEDED' || s === 'CREDENTIALS_NEEDED';
@@ -213,6 +252,7 @@ export async function listPlatformAccounts(
   const accounts: PlatformAccountDetail[] = profiles.map(p => {
     const r = bySlug.get(p.slug);
     const guide = PLATFORM_SETUP_GUIDES[p.slug];
+    const systemReadiness = systemCredentialReadiness(p.slug);
       let connectionConfig = (r as any)?.connectionConfig as Record<string, unknown> | null ?? null;
       const secrets = secretsBySlug.get(p.slug);
       if (secrets && secrets.length > 0) {
@@ -268,6 +308,9 @@ export async function listPlatformAccounts(
         description: guide?.description ?? null,
         externalLinks: guide?.externalLinks?.length ? guide.externalLinks : null,
         operatorSetup: guide?.operator ?? null,
+        systemCredentialStatus: systemReadiness.status,
+        systemSetupReady: systemReadiness.ready,
+        systemSetupMessage: systemReadiness.message,
       };
 
       if (!r) return { ...base, readinessScore: computeReadinessScore(base).score };
@@ -313,6 +356,13 @@ export async function updatePlatformAccount(
     throw new Error(
       `Cross-category write rejected: platform '${platformSlug}' is not permitted for category '${dealer?.businessCategory ?? 'unknown'}'`,
     );
+  }
+  if (
+    payload.state != null &&
+    DEALER_REGISTRATION_STATES.includes(payload.state) &&
+    platformProfiles.find(p => p.slug === platformSlug)?.integrationClass !== 'OWNED'
+  ) {
+    assertSystemReadyForDealerRegistration(platformSlug);
   }
   const current = await prisma.platformAccount.findUnique({
     where: { dealershipId_platformSlug: { dealershipId, platformSlug } }

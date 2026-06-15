@@ -349,12 +349,22 @@ export async function runPrepareAndPublish(
   }
 
   const desiredChannels = parseDesiredChannels(dbDealer.desiredChannels);
+  const oauthTokens = await prisma.platformOAuthToken.findMany({
+    where: { dealershipId },
+    select: { provider: true, expiresAt: true },
+  });
+  const liveOAuth = new Set(
+    oauthTokens
+      .filter(t => t.expiresAt === null || t.expiresAt.getTime() > Date.now())
+      .map(t => t.provider),
+  );
 
   if (!dryRun) {
     for (const platform of targets) {
       if (platform.integrationClass !== 'FEEDABLE') continue;
       const queueItem = queueBySlug.get(platform.slug) ?? null;
       const accountState = accountStateBySlug.get(platform.slug) ?? null;
+      const oauthConnected = platform.oauthProvider ? liveOAuth.has(platform.oauthProvider) : true;
       if (canCreateInitialPublishQueueItem({
         integrationClass: platform.integrationClass,
         platformSlug: platform.slug,
@@ -363,6 +373,8 @@ export async function runPrepareAndPublish(
         desiredChannels,
         eligibleVehicleCount: vehiclesForPlatform(platform.slug).length,
         activeQueueItemStatus: queueItem?.status ?? null,
+        oauthProvider: platform.oauthProvider ?? null,
+        oauthConnected,
       })) {
         const mode = defaultSyncMode('FEEDABLE');
         const scheduledFor = resolveScheduledFor(mode);

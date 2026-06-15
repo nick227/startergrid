@@ -83,7 +83,7 @@ async function main() {
       checks.push({
         name: `[${dealer.legalName}] Case 1: no fake scheduled feeds without connected externals`,
         ok: !hasExternalFeeds,
-        detail: `ACTIVE accounts=${activeExternal.length}, INITIAL_PUBLISH rows=${fakeScheduled.length}, ownedChannels=${view.ownedChannels.length}`,
+        detail: `ACTIVE accounts=${activeExternal.length}, INITIAL_PUBLISH rows=${fakeScheduled.length}`,
       });
     }
 
@@ -100,46 +100,58 @@ async function main() {
   // Case 3: pure eligibility — vehicle opt-out
   const optOutBlocked = !isQueueItemOutboundEligible({
     platformSlug: 'google-vehicle-ads',
+    integrationClass: 'FEEDABLE',
     vehicleId: 'veh-test',
     businessCategory: 'AUTOMOTIVE',
     accountState: 'ACTIVE',
     desiredChannels: ['google-vehicle-ads'],
     eligibleVehicleCountForPlatform: 1,
     deselectedKeys: new Set([vehicleChannelKey('veh-test', 'google-vehicle-ads')]),
+    oauthProvider: null,
+    oauthConnected: true,
   });
   checks.push({
     name: 'Case 3: vehicle channel opt-out blocks vehicle-specific work',
     ok: optOutBlocked,
     detail: `blocked=${optOutBlocked}, reason=${ineligibleReasonForQueueItem({
       platformSlug: 'google-vehicle-ads',
+      integrationClass: 'FEEDABLE',
       vehicleId: 'veh-test',
       businessCategory: 'AUTOMOTIVE',
       accountState: 'ACTIVE',
       desiredChannels: ['google-vehicle-ads'],
       eligibleVehicleCountForPlatform: 1,
       deselectedKeys: new Set([vehicleChannelKey('veh-test', 'google-vehicle-ads')]),
+      oauthProvider: null,
+      oauthConnected: true,
     })}`,
   });
 
-  // Case 4: ineligible legacy → setup-channel only (mirrors queueItemActions rule)
+  // Case 4: ineligible legacy → hidden from API
   const case4ok =
     !isQueueItemOutboundEligible({
       platformSlug: 'cars-com',
+      integrationClass: 'FEEDABLE',
       vehicleId: null,
       businessCategory: 'AUTOMOTIVE',
       accountState: 'ACCOUNT_NEEDED',
       desiredChannels: ['cars-com'],
       eligibleVehicleCountForPlatform: 5,
       deselectedKeys: new Set(),
+      oauthProvider: null,
+      oauthConnected: true,
     }) &&
     ineligibleReasonForQueueItem({
       platformSlug: 'cars-com',
+      integrationClass: 'FEEDABLE',
       vehicleId: null,
       businessCategory: 'AUTOMOTIVE',
       accountState: 'ACCOUNT_NEEDED',
       desiredChannels: ['cars-com'],
       eligibleVehicleCountForPlatform: 5,
       deselectedKeys: new Set(),
+      oauthProvider: null,
+      oauthConnected: true,
     }) === 'Channel not connected';
   checks.push({
     name: 'Case 4: unconnected legacy rows are ineligible (hidden from API, no Send now)',

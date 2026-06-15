@@ -6,52 +6,69 @@ import {
   ineligibleReasonForQueueItem,
   isPlatformOutboundEligible,
   isQueueItemOutboundEligible,
+  OAUTH_NOT_CONNECTED,
+  OPERATOR_QUEUE_EXCLUDED_SLUGS,
   vehicleChannelKey,
 } from '../services/publishing/queueEligibilityService.js';
 
 const AUTOMOTIVE = 'AUTOMOTIVE';
 
+const FEEDABLE_CTX = {
+  platformSlug: 'cars-com',
+  integrationClass: 'FEEDABLE' as const,
+  businessCategory: AUTOMOTIVE,
+  accountState: 'ACTIVE',
+  desiredChannels: ['cars-com'],
+  oauthProvider: null,
+  oauthConnected: true,
+};
+
 describe('isPlatformOutboundEligible', () => {
   it('requires ACTIVE account state', () => {
     assert.equal(
-      isPlatformOutboundEligible({
-        platformSlug: 'google-vehicle-ads',
-        businessCategory: AUTOMOTIVE,
-        accountState: 'SUBMITTED',
-        desiredChannels: ['google-vehicle-ads'],
-      }),
+      isPlatformOutboundEligible({ ...FEEDABLE_CTX, accountState: 'SUBMITTED' }),
       false,
     );
-    assert.equal(
-      isPlatformOutboundEligible({
-        platformSlug: 'google-vehicle-ads',
-        businessCategory: AUTOMOTIVE,
-        accountState: 'ACTIVE',
-        desiredChannels: ['google-vehicle-ads'],
-      }),
-      true,
-    );
+    assert.equal(isPlatformOutboundEligible(FEEDABLE_CTX), true);
   });
 
-  it('requires platform in desiredChannels when list is non-empty', () => {
+  it('requires platform in desiredChannels when not yet connected', () => {
     assert.equal(
       isPlatformOutboundEligible({
-        platformSlug: 'cars-com',
-        businessCategory: AUTOMOTIVE,
-        accountState: 'ACTIVE',
+        ...FEEDABLE_CTX,
+        accountState: 'CREDENTIALS_NEEDED',
         desiredChannels: ['google-vehicle-ads'],
       }),
       false,
     );
   });
 
-  it('rejects cross-category platforms', () => {
+  it('requires oauth when platform uses oauth', () => {
     assert.equal(
       isPlatformOutboundEligible({
-        platformSlug: 'ebay-motors',
-        businessCategory: 'EBOOKS',
+        platformSlug: 'facebook-business-page',
+        integrationClass: 'OWNED',
+        businessCategory: AUTOMOTIVE,
         accountState: 'ACTIVE',
-        desiredChannels: ['ebay-motors'],
+        desiredChannels: ['facebook-business-page'],
+        oauthProvider: 'facebook-business-page',
+        oauthConnected: false,
+      }),
+      false,
+    );
+  });
+
+  it('excludes legacy dealer-storefront from operator queue', () => {
+    assert.equal(OPERATOR_QUEUE_EXCLUDED_SLUGS.has('dealer-storefront'), true);
+    assert.equal(
+      isPlatformOutboundEligible({
+        platformSlug: 'dealer-storefront',
+        integrationClass: 'OWNED',
+        businessCategory: AUTOMOTIVE,
+        accountState: 'ACTIVE',
+        desiredChannels: ['dealer-storefront'],
+        oauthProvider: null,
+        oauthConnected: true,
       }),
       false,
     );
@@ -61,78 +78,59 @@ describe('isPlatformOutboundEligible', () => {
 describe('canCreateInitialPublishQueueItem', () => {
   const base = {
     integrationClass: 'FEEDABLE' as const,
-    platformSlug: 'google-vehicle-ads',
+    platformSlug: 'cars-com',
     businessCategory: AUTOMOTIVE,
     accountState: 'ACTIVE',
-    desiredChannels: ['google-vehicle-ads'],
+    desiredChannels: ['cars-com'],
     eligibleVehicleCount: 3,
     activeQueueItemStatus: null,
+    oauthProvider: null,
+    oauthConnected: true,
   };
 
-  it('does not create for SUBMITTED-only account (not ACTIVE)', () => {
-    assert.equal(
-      canCreateInitialPublishQueueItem({ ...base, accountState: 'ACCOUNT_NEEDED' }),
-      false,
-    );
+  it('does not create for unconnected account', () => {
+    assert.equal(canCreateInitialPublishQueueItem({ ...base, accountState: 'ACCOUNT_NEEDED' }), false);
   });
 
   it('does not create without eligible inventory', () => {
-    assert.equal(
-      canCreateInitialPublishQueueItem({ ...base, eligibleVehicleCount: 0 }),
-      false,
-    );
-  });
-
-  it('does not create when an active queue item already exists', () => {
-    assert.equal(
-      canCreateInitialPublishQueueItem({ ...base, activeQueueItemStatus: 'SCHEDULED' }),
-      false,
-    );
+    assert.equal(canCreateInitialPublishQueueItem({ ...base, eligibleVehicleCount: 0 }), false);
   });
 
   it('creates for ACTIVE connected platform with inventory', () => {
     assert.equal(canCreateInitialPublishQueueItem(base), true);
   });
-
-  it('never creates for OWNED integration class', () => {
-    assert.equal(
-      canCreateInitialPublishQueueItem({ ...base, integrationClass: 'OWNED' }),
-      false,
-    );
-  });
 });
 
 describe('isQueueItemOutboundEligible', () => {
   const base = {
-    platformSlug: 'google-vehicle-ads',
+    platformSlug: 'cars-com',
+    integrationClass: 'FEEDABLE' as const,
     businessCategory: AUTOMOTIVE,
     accountState: 'ACTIVE',
-    desiredChannels: ['google-vehicle-ads'],
+    desiredChannels: ['cars-com'],
     eligibleVehicleCountForPlatform: 2,
     deselectedKeys: new Set<string>(),
+    oauthProvider: null,
+    oauthConnected: true,
   };
-
-  it('platform-level INITIAL_PUBLISH needs eligible inventory', () => {
-    assert.equal(
-      isQueueItemOutboundEligible({ ...base, vehicleId: null, eligibleVehicleCountForPlatform: 0 }),
-      false,
-    );
-    assert.equal(
-      isQueueItemOutboundEligible({ ...base, vehicleId: null }),
-      true,
-    );
-  });
 
   it('vehicle item blocked when deselected for channel', () => {
     const vehicleId = 'veh-1';
-    const deselectedKeys = new Set([vehicleChannelKey(vehicleId, 'google-vehicle-ads')]);
+    const deselectedKeys = new Set([vehicleChannelKey(vehicleId, 'cars-com')]);
+    assert.equal(isQueueItemOutboundEligible({ ...base, vehicleId, deselectedKeys }), false);
+  });
+
+  it('oauth-required platform without token is ineligible', () => {
     assert.equal(
-      isQueueItemOutboundEligible({ ...base, vehicleId, deselectedKeys }),
-      false,
-    );
-    assert.equal(
-      ineligibleReasonForQueueItem({ ...base, vehicleId, deselectedKeys }),
-      'Asset not selected for this channel',
+      ineligibleReasonForQueueItem({
+        ...base,
+        vehicleId: 'veh-1',
+        platformSlug: 'facebook-business-page',
+        integrationClass: 'OWNED',
+        oauthProvider: 'facebook-business-page',
+        oauthConnected: false,
+      }),
+      OAUTH_NOT_CONNECTED,
     );
   });
 

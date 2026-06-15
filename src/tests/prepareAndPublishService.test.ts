@@ -112,12 +112,14 @@ describe('derivePublishState — readiness fallback (no queue item)', () => {
 
 const ELIGIBLE_BASE = {
   integrationClass: 'FEEDABLE' as const,
-  platformSlug: 'google-vehicle-ads',
+  platformSlug: 'cars-com',
   businessCategory: 'AUTOMOTIVE',
   accountState: 'ACTIVE',
-  desiredChannels: ['google-vehicle-ads'],
+  desiredChannels: ['cars-com'],
   eligibleVehicleCount: 2,
   activeQueueItemStatus: null as string | null,
+  oauthProvider: null,
+  oauthConnected: true,
 };
 
 describe('canCreateInitialPublishQueueItem', () => {

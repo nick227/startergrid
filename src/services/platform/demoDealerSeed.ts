@@ -95,8 +95,8 @@ export const DEMO_DEALERS: DemoDealer[] = [
     desiredChannels: ['google-vehicle-ads', 'meta-automotive-ads', 'cars-com'],
     accountStates: {
       'meta-automotive-ads': 'ACTIVE',
-      'facebook-business-page': 'ACTIVE',
-      'google-business-profile': 'ACTIVE',
+      'facebook-business-page': 'CREDENTIALS_NEEDED',
+      'google-business-profile': 'CREDENTIALS_NEEDED',
       'cars-com': 'PENDING_REVIEW',
       'autotrader-cox': 'PARTNER_REQUIRED',
       'ebay-motors': 'CREDENTIALS_NEEDED',
@@ -160,6 +160,7 @@ export const DEMO_DEALERS: DemoDealer[] = [
       'meta-automotive-ads': 'BLOCKED',
       'ebay-motors': 'CREDENTIALS_NEEDED',
       'google-vehicle-ads': 'FAILED',
+      'consumer-marketplace': 'ACTIVE',
     },
     vehicles: [
       {
