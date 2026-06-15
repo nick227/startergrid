@@ -2,7 +2,7 @@ import { useEffect, useMemo, useState } from 'react';
 import type { OperatorNavHandlers } from '@/lib/operatorNav.ts';
 import { useAsyncQuery } from '@/hooks/useAsyncQuery.ts';
 import { fetchPublishQueue } from '@/lib/api/sdk.ts';
-import { OperatorPage, ErrorState } from '@/components/operator';
+import { OperatorPage, ErrorState, InlineCallout } from '@/components/operator';
 import { PageSituation, ControlBlock } from '@/components/layout';
 import { FilterChips } from '@/components/generic';
 import { EmptyState } from '@/components/ui';
@@ -89,9 +89,17 @@ export function QueueListPanel({
         line={platformSlug ? `${situation} · ${operatorCopy.queue.subtitle}` : `${situation} — ${operatorCopy.queue.subtitle}`}
       />
 
-      <p className="text-xs text-ink-muted leading-relaxed mb-4 -mt-1 max-w-3xl">
-        {operatorCopy.queue.scheduleNote}
-      </p>
+      <div className="mb-4 -mt-1 max-w-3xl">
+        <InlineCallout title={operatorCopy.queue.educationTitle}>
+          <p className="text-xs leading-relaxed">{operatorCopy.queue.educationIntro}</p>
+          <ul className="mt-2 list-disc pl-4 space-y-1 text-xs">
+            {operatorCopy.queue.educationWhenPoints.map(point => (
+              <li key={point}>{point}</li>
+            ))}
+          </ul>
+          <p className="mt-2 text-[11px] text-ink-faint leading-snug">{operatorCopy.queue.educationFooter}</p>
+        </InlineCallout>
+      </div>
 
       {data && !platformSlug && (
         <QueueSummaryStrip

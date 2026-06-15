@@ -4,7 +4,7 @@ import type { PlatformAccountDetail, PlatformPerformanceItem, PlatformPublishRes
 import type { OperatorPageBaseProps } from '@/lib/operatorPage.ts';
 import type { OperatorNavHandlers } from '@/lib/operatorNav.ts';
 import { useAsyncQuery } from '@/hooks/useAsyncQuery.ts';
-import { OperatorPage, ErrorState } from '@/components/operator';
+import { OperatorPage, ErrorState, InlineCallout } from '@/components/operator';
 import { PageSituation } from '@/components/layout';
 import { FilterChips } from '@/components/generic';
 import { PlatformChannelList } from '@/components/platforms/PlatformChannelList.tsx';
@@ -211,9 +211,16 @@ export default function PlatformsPage({ dealerId, nav, activeTab, initialPlatfor
     >
       <PageSituation title={operatorCopy.platforms.title} line={situation} />
 
-      <p className="text-sm text-ink-muted leading-relaxed mb-5 -mt-1">
-        Connect destinations here. Inventory selects what can go out; the Queue controls when and how it posts; History records what already happened.
-      </p>
+      <div className="mb-5 -mt-1 max-w-3xl">
+        <InlineCallout title={operatorCopy.platforms.educationTitle}>
+          <p className="text-xs leading-relaxed">{operatorCopy.platforms.educationIntro}</p>
+          <ul className="mt-2 list-disc pl-4 space-y-1 text-xs">
+            {operatorCopy.platforms.educationPoints.map(point => (
+              <li key={point}>{point}</li>
+            ))}
+          </ul>
+        </InlineCallout>
+      </div>
 
       {connectedSlug && (
         <PlatformConnectBanner

@@ -60,6 +60,14 @@ export const operatorCopy = {
     observedAssists: 'Observed assists',
     avgExposure: 'Avg exposure',
     signals: 'Signals',
+    educationTitle: 'How platforms work',
+    educationIntro:
+      'Inventory is ingested here in near real time. Platforms are outbound destinations—partners do not pull your feed live; we create posts and send them on schedule.',
+    educationPoints: [
+      'Enable a channel for this dealership, then finish connection setup (OAuth or credentials) when required.',
+      'Auto-sync queues posts when READY inventory changes. Turn it off to post manually from Queue.',
+      'Queue shows what will go out, where, and when. History shows what already went out.',
+    ],
   },
   queue: {
     title: 'Queue',
@@ -78,7 +86,18 @@ export const operatorCopy = {
       held: 'On hold',
     },
     scheduleNote:
-      'Queue shows outbound posts that are due or waiting — vehicle, destination, and scheduled time. Completed work is in History.',
+      'Each row is an outbound post: asset (or full feed) × destination × change. Completed work is in History.',
+    educationTitle: 'Reading the queue',
+    educationIntro:
+      'Platforms receive posts on their schedule—not live inventory sync. This list is work waiting to leave your system.',
+    educationWhenPoints: [
+      'Due now — real-time destinations; eligible for the next scheduler run.',
+      'Date/time — batch destinations (e.g. Cars.com) with a scheduled feed window.',
+      'Overdue — past the batch window; still waiting to dispatch.',
+      'After approval / On hold — blocked until an operator acts.',
+    ],
+    educationFooter:
+      'Use Send now to override a batch window. Fix setup on Platforms if a row says the channel is not connected.',
     fullInventoryFeed: 'Full inventory feed',
     columns: {
       task: 'Task',

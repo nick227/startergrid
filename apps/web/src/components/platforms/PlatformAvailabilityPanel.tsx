@@ -48,7 +48,7 @@ export function PlatformAvailabilityPanel({ dealerId, platform, account, onRefre
     <div className="bg-white border border-silver-200 rounded-xl shadow-sm p-5 space-y-4">
       <h2 className="text-[11px] font-bold uppercase tracking-widest text-ink-faint">Availability</h2>
       <p className="text-sm text-ink-muted leading-snug">
-        Control whether this dealership uses the channel and whether inventory changes auto-create queue posts.
+        Enable controls whether this dealership posts to the channel. Connection setup (below) is separate—both are required before queue posts go out.
       </p>
 
       <label className="flex items-start gap-3 cursor-pointer">
