@@ -7,6 +7,7 @@ import {
   READINESS_DEFAULT,
 } from '@/features/adminOverview/constants/statusConfig.ts';
 import { formatDuration } from '@/features/adminOverview/utils/formatDuration.ts';
+import { PublishingFlowComic } from '@/components/publishing/PublishingFlowComic.tsx';
 
 type Props = {
   health: AdminDashboardResponse['health'] | undefined;
@@ -17,6 +18,8 @@ type Props = {
 export function SystemStatusTab({ health, readiness, queueSnapshot }: Props) {
   return (
     <div className="space-y-5">
+      <PublishingFlowComic variant="admin-system" />
+
       <SectionCard
         title="Health"
         subtitle="Live status of core infrastructure components powering this portal instance."

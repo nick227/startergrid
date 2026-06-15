@@ -7,6 +7,7 @@ import { ErrorState, SectionCard, OperatorPage } from '@/components/operator/ind
 import { DealershipProfilePanel } from '@/components/dealers/DealershipProfilePanel.tsx';
 import type { OperatorNavHandlers, OperatorTab } from '@/lib/operatorNav.ts';
 import { Skeleton } from '@/components/ui/Skeleton.tsx';
+import { PublishingFlowComic } from '@/components/publishing/PublishingFlowComic.tsx';
 
 const SEVERITY_CFG: Record<string, { label: string; cls: string }> = {
   critical: { label: 'CRITICAL', cls: 'bg-status-error-bg text-status-error-text border-status-error-border' },
@@ -122,6 +123,7 @@ export default function AdminDealerPage({ dealerId, nav, activeTab }: Props) {
       {/* Tab content */}
       {tab === 'overview' && (
         <div className="space-y-4">
+          <PublishingFlowComic variant="operator" nav={nav} />
           <DealershipProfilePanel dealerId={dealerId} nav={nav} mode="admin" onDealersChanged={reloadDealers} />
 
           <SectionCard title="Open Triage Items">
