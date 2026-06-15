@@ -11,7 +11,7 @@ import {
 import { taskActionLabel } from '@/lib/copy/index.ts';
 import { queueStatusVisual } from '@/lib/statusRegistry.ts';
 import {
-  formatQueueSchedule,
+  formatQueueWhen,
   queueItemActions,
   queueItemReason,
   type QueueRowAction,
@@ -123,7 +123,7 @@ export function QueueControlTable({ dealerId, items, nav, onChanged }: Props) {
               <th className="px-4 py-3 text-[10px] font-bold uppercase tracking-widest text-ink-faint">Platform</th>
               <th className="px-4 py-3 text-[10px] font-bold uppercase tracking-widest text-ink-faint">{operatorCopy.queue.columns.change}</th>
               <th className="px-4 py-3 text-[10px] font-bold uppercase tracking-widest text-ink-faint">Status</th>
-              <th className="px-4 py-3 text-[10px] font-bold uppercase tracking-widest text-ink-faint">Scheduled</th>
+              <th className="px-4 py-3 text-[10px] font-bold uppercase tracking-widest text-ink-faint">{operatorCopy.queue.columns.when}</th>
               <th className="px-4 py-3 text-[10px] font-bold uppercase tracking-widest text-ink-faint">Reason</th>
               <th className="px-4 py-3 text-[10px] font-bold uppercase tracking-widest text-ink-faint">{operatorCopy.queue.columns.controls}</th>
             </tr>
@@ -133,6 +133,7 @@ export function QueueControlTable({ dealerId, items, nav, onChanged }: Props) {
               const st = queueStatusVisual(item.status);
               const actions = queueItemActions(item);
               const busy = workingId === item.id;
+              const when = formatQueueWhen(item);
               return (
                 <tr key={item.id} className="border-t border-silver-100 hover:bg-silver-50/50">
                   <td className="px-4 py-3 font-semibold text-ink-heading whitespace-nowrap">
@@ -153,8 +154,8 @@ export function QueueControlTable({ dealerId, items, nav, onChanged }: Props) {
                       {st.label}
                     </span>
                   </td>
-                  <td className="px-4 py-3 text-ink-muted whitespace-nowrap">
-                    {formatQueueSchedule(item.scheduledFor)}
+                  <td className="px-4 py-3 text-ink-muted whitespace-nowrap" title={when.title}>
+                    {when.text}
                   </td>
                   <td className="px-4 py-3 text-ink-muted max-w-[14rem]">
                     <span className="line-clamp-2">{queueItemReason(item)}</span>
@@ -184,6 +185,7 @@ export function QueueControlTable({ dealerId, items, nav, onChanged }: Props) {
           const st = queueStatusVisual(item.status);
           const actions = queueItemActions(item);
           const busy = workingId === item.id;
+          const when = formatQueueWhen(item);
           return (
             <article key={item.id} className="surface-card-operator p-4 space-y-3">
               <div className="flex items-start justify-between gap-3">
@@ -197,8 +199,8 @@ export function QueueControlTable({ dealerId, items, nav, onChanged }: Props) {
               </div>
               <dl className="grid grid-cols-2 gap-2 text-xs">
                 <div>
-                  <dt className="text-ink-faint font-semibold uppercase tracking-wide">{operatorCopy.drawer.scheduledFor}</dt>
-                  <dd className="text-ink-body mt-0.5">{formatQueueSchedule(item.scheduledFor)}</dd>
+                  <dt className="text-ink-faint font-semibold uppercase tracking-wide">{operatorCopy.queue.columns.when}</dt>
+                  <dd className="text-ink-body mt-0.5" title={when.title}>{when.text}</dd>
                 </div>
                 <div className="col-span-2">
                   <dt className="text-ink-faint font-semibold uppercase tracking-wide">Reason</dt>

@@ -33,6 +33,62 @@ export function formatQueueSchedule(iso: string | null): string {
   });
 }
 
+export type QueueWhenDisplay = {
+  text: string;
+  title?: string;
+};
+
+/** Operator-facing dispatch timing derived from status, policy, and stored timestamps. */
+export function formatQueueWhen(item: QueueItemView, now = Date.now()): QueueWhenDisplay {
+  const q = operatorCopy.queue;
+
+  if (item.status === 'CLAIMED') {
+    return { text: q.whenSending };
+  }
+  if (item.status === 'HELD') {
+    return { text: q.whenOnHold, title: item.holdReason ?? undefined };
+  }
+  if (item.status === 'NEEDS_APPROVAL') {
+    return { text: q.whenAfterApproval, title: item.approvalRequiredReason ?? undefined };
+  }
+  if (item.status === 'BLOCKED' || item.policyMode === 'MANUAL') {
+    return { text: q.whenManual, title: item.blockReason ?? undefined };
+  }
+  if (item.status === 'FAILED') {
+    if (item.attemptCount >= 3) {
+      return { text: '—', title: 'Maximum retry attempts reached' };
+    }
+    if (item.nextAttemptAt) {
+      const retryAt = new Date(item.nextAttemptAt).getTime();
+      if (retryAt > now) {
+        return { text: formatQueueSchedule(item.nextAttemptAt), title: 'Automatic retry' };
+      }
+    }
+    return { text: q.whenRetryDue };
+  }
+
+  if (item.scheduledFor) {
+    const dueAt = new Date(item.scheduledFor).getTime();
+    const formatted = formatQueueSchedule(item.scheduledFor);
+    if (item.status === 'SCHEDULED' && dueAt < now) {
+      return { text: `${q.whenOverdue} · ${formatted}`, title: 'Past scheduled batch window' };
+    }
+    if (item.status === 'READY' && dueAt <= now) {
+      return { text: q.whenDueNow, title: `Batch window opened ${formatted}` };
+    }
+    return { text: formatted };
+  }
+
+  if (item.status === 'SCHEDULED') {
+    return { text: q.whenBatchPending, title: 'Scheduled batch without a stored time' };
+  }
+  if (item.status === 'READY') {
+    return { text: q.whenDueNow, title: 'Eligible for the next scheduler run' };
+  }
+
+  return { text: '—' };
+}
+
 export function queueItemReason(item: QueueItemView): string {
   if (item.ineligibleReason) return item.ineligibleReason;
   if (item.blockReason) return item.blockReason;

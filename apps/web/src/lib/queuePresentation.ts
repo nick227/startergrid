@@ -1,6 +1,7 @@
 import type { QueueItemView, QueueView } from './types.ts';
 import { queueStatusVisual } from './statusRegistry.ts';
 import { operatorCopy, taskActionLabel } from './copy/index.ts';
+import { formatQueueWhen } from './queueControl.ts';
 
 export { taskActionLabel };
 
@@ -80,10 +81,11 @@ export function filterQueueItems(
 }
 
 export function queueItemMeta(item: QueueItemView): string {
-  const parts: string[] = [item.platformName, taskActionLabel(item.triggerKind)];
-  if (item.scheduledFor) {
-    parts.push(`scheduled ${new Date(item.scheduledFor).toLocaleString()}`);
-  }
+  const parts: string[] = [
+    item.platformName,
+    taskActionLabel(item.triggerKind),
+    formatQueueWhen(item).text,
+  ];
   if (item.blockReason) parts.push(item.blockReason);
   else if (item.approvalRequiredReason) parts.push(item.approvalRequiredReason);
   else if (item.holdReason) parts.push(item.holdReason);

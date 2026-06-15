@@ -4,6 +4,7 @@ import { queueStatusVisual } from './statusRegistry.ts';
 import { taskActionLabel } from './copy/index.ts';
 import { inventoryLabels } from './copy/index.ts';
 import { operatorCopy } from './copy/operator.ts';
+import { formatQueueWhen } from './queueControl.ts';
 
 export function queueTaskTitle(item: QueueItemView): string {
   if (item.assetTitle) return item.assetTitle;
@@ -33,13 +34,8 @@ export function queueDesktopFields(item: QueueItemView): OpsRowField[] {
     { label: operatorCopy.drawer.action, value: taskActionLabel(item.triggerKind) },
     { label: operatorCopy.drawer.status, value: status.label },
     { label: operatorCopy.drawer.policy, value: item.policyMode },
+    { label: operatorCopy.queue.columns.when, value: formatQueueWhen(item).text },
   ];
-  if (item.scheduledFor) {
-    fields.push({
-      label: operatorCopy.drawer.scheduledFor,
-      value: new Date(item.scheduledFor).toLocaleString(),
-    });
-  }
   if (item.attemptCount > 0) {
     fields.push({ label: operatorCopy.drawer.attempts, value: String(item.attemptCount) });
   }
