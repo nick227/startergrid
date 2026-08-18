@@ -59,6 +59,14 @@ export async function revokeOperatorSession(
   });
 }
 
+export function makeSessionCookieHeader(rawToken: string): string {
+  const isProd    = process.env['NODE_ENV'] === 'production';
+  const maxAge    = Math.floor(SESSION_LIFETIME_MS / 1000); // 28800 for 8 h
+  const sameSite  = isProd ? 'None' : 'Strict';
+  const secure    = isProd ? '; Secure' : '';
+  return `op_session=${rawToken}; HttpOnly; SameSite=${sameSite}; Path=/api; Max-Age=${maxAge}${secure}`;
+}
+
 export async function getOperatorFromSessionToken(
   prisma: PrismaClient,
   rawToken: string

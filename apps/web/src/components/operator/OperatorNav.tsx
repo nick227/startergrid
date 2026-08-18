@@ -9,11 +9,10 @@ export function OperatorNav({ active, nav }: Props) {
   const handlers: Record<OperatorTab, () => void> = {
     home: nav.goToHome,
     platforms: nav.goToPlatforms,
-    queue: () => nav.goToQueue(),
-    history: () => nav.goToHistory(),
     reports: nav.goToReports,
     inventory: () => nav.goToInventory(),
     leads: nav.goToLeads,
+    settings: nav.goToSettings,
     help: nav.goToHelp,
   };
 

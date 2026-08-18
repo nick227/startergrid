@@ -5,6 +5,7 @@ import { fileUploadService } from '../../services/storage/fileUploadService.js';
 import { createDealershipSchema, updateDealershipProfileSchema, validateBody } from '../requestValidation.js';
 import { createDealership } from '../../services/dealer/createDealershipService.js';
 import { getDealershipProfile, updateDealershipProfile } from '../../services/dealer/dealershipProfileService.js';
+import { createOperatorSession, makeSessionCookieHeader } from '../../services/auth/sessionService.js';
 
 function sendCreateDealershipError(reply: FastifyReply, err: unknown) {
   const statusCode = typeof err === 'object' && err !== null && 'statusCode' in err
@@ -62,6 +63,16 @@ export function registerDealerRoutes(app: FastifyInstance, prisma: PrismaClient)
 
     try {
       const result = await createDealership(prisma, parsed.data);
+      if (result.createdOperatorAccountId) {
+        const rawToken = await createOperatorSession(prisma, result.createdOperatorAccountId, {
+          ipAddress: request.ip ?? undefined,
+          userAgent: typeof request.headers['user-agent'] === 'string'
+            ? request.headers['user-agent']
+            : undefined,
+        });
+        reply.header('Set-Cookie', makeSessionCookieHeader(rawToken));
+      }
+      
       return reply.status(201).send({
         dealer: result.dealer,
         nextHref: '#/',

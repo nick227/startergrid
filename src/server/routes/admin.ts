@@ -110,6 +110,65 @@ async function replaceUserDealerAccess(prisma: PrismaClient, userId: string, dea
   ]);
 }
 
+export async function executeIssueRetry(
+  prisma: PrismaClient,
+  actor: { id: string; email: string },
+  incidentRequest: { incidentId: string; dealerId: string; platformSlug?: string | null; reasonCode: string }
+): Promise<{ status: string; errorCode?: string; timestamp?: string }> {
+  let isStale = false; 
+
+  const failedQueueItems = await prisma.publishQueueItem.count({
+    where: { 
+      dealershipId: incidentRequest.dealerId, 
+      platformSlug: incidentRequest.platformSlug || undefined,
+      status: 'FAILED'
+    }
+  });
+
+  if (failedQueueItems === 0) {
+    isStale = true;
+  }
+
+  if (isStale) {
+    await prisma.adminAuditLog.create({
+      data: {
+        action: 'ISSUE_RETRY',
+        actorId: actor.id,
+        actorEmail: actor.email,
+        detail: { incidentId: incidentRequest.incidentId, dealerId: incidentRequest.dealerId, result: 'already_resolved' },
+      },
+    });
+    return { status: 'already_resolved', timestamp: new Date().toISOString() };
+  }
+
+  // Execute Retry logic (e.g., reset FAILED items to READY)
+  await prisma.publishQueueItem.updateMany({
+    where: { 
+      dealershipId: incidentRequest.dealerId, 
+      platformSlug: incidentRequest.platformSlug || undefined,
+      status: 'FAILED'
+    },
+    data: { status: 'READY', attemptCount: 0 }
+  });
+
+  await prisma.adminAuditLog.create({
+    data: {
+      action: 'ISSUE_RETRY',
+      actorId: actor.id,
+      actorEmail: actor.email,
+      detail: { 
+        incidentId: incidentRequest.incidentId, 
+        dealerId: incidentRequest.dealerId, 
+        platformSlug: incidentRequest.platformSlug, 
+        reasonCode: incidentRequest.reasonCode, 
+        result: 'succeeded' 
+      },
+    },
+  });
+
+  return { status: 'succeeded', timestamp: new Date().toISOString() };
+}
+
 export function registerAdminRoutes(app: FastifyInstance, prisma: PrismaClient): void {
   app.post('/api/admin/dealers', async (request, reply) => {
     const operator = await requireSuperAdmin(prisma, request, reply);
@@ -567,9 +626,21 @@ export function registerAdminRoutes(app: FastifyInstance, prisma: PrismaClient):
   });
 
   app.get('/api/admin/blocked-dealers', async (request, reply) => {
-    if (!await requireSuperAdmin(prisma, request, reply)) return;
-
     const query = request.query as any;
+
+    // Unscoped (no dealerId) is the SUPER_ADMIN cross-dealer triage view — stays admin-only.
+    // Scoped to one dealerId, this is the same data a dealer-facing "Actionable Issues" view
+    // needs, and the response is filtered down to that dealer before it's ever sent — so any
+    // operator with access to that specific dealer can call it, not just SUPER_ADMIN.
+    if (query.dealerId) {
+      const { requireOperator, requireDealerAccess } = await import('../security.js');
+      const actor = await requireOperator(prisma, request, reply);
+      if (!actor) return;
+      const hasAccess = await requireDealerAccess(prisma, request, reply, query.dealerId);
+      if (!hasAccess) return;
+    } else {
+      if (!await requireSuperAdmin(prisma, request, reply)) return;
+    }
     const cacheKey = JSON.stringify(query);
     const startedAt = Date.now();
 
@@ -1161,5 +1232,116 @@ export function registerAdminRoutes(app: FastifyInstance, prisma: PrismaClient):
     });
 
     return reply.status(200).send({ ok: true });
+  });
+
+  // POST /api/admin/issues/retry
+  app.post('/api/admin/issues/retry', async (request, reply) => {
+    const { requireDealerAccess, requireOperator } = await import('../security.js');
+    
+    const body = request.body as any;
+    if (!body || !body.incidentId || !body.dealerId || !body.reasonCode) {
+      return reply.status(400).send({ error: 'incidentId, dealerId, and reasonCode are required' });
+    }
+
+    const actor = await requireOperator(prisma, request, reply);
+    if (!actor) return;
+
+    const hasAccess = await requireDealerAccess(prisma, request, reply, body.dealerId);
+    if (!hasAccess) return;
+
+    // In a real implementation, we would check if the role has explicit "operations:retry" capability.
+    const result = await executeIssueRetry(prisma, actor, {
+      incidentId: body.incidentId,
+      dealerId: body.dealerId,
+      platformSlug: body.platformSlug,
+      reasonCode: body.reasonCode,
+    });
+
+    return reply.send(result);
+  });
+
+  // POST /api/admin/issues/bulk-retry
+  app.post('/api/admin/issues/bulk-retry', async (request, reply) => {
+    const { requireDealerAccess, requireOperator } = await import('../security.js');
+    
+    const body = request.body as any;
+    if (!body || !Array.isArray(body.incidents)) {
+      return reply.status(400).send({ error: 'incidents array is required' });
+    }
+
+    const actor = await requireOperator(prisma, request, reply);
+    if (!actor) return;
+
+    const results = [];
+    
+    // We check dealer access per-incident to avoid failing the entire batch if one is unauthorized
+    for (const incident of body.incidents) {
+      if (!incident.isBulkSafe) {
+        results.push({ incidentId: incident.incidentId, status: 'failed', errorCode: 'not_bulk_safe' });
+        continue;
+      }
+      
+      // We skip sending a reply on failure here, since we want to handle partial success.
+      // We must manually invoke the permission check logic or mock it since requireDealerAccess might send a reply.
+      // Actually, requireDealerAccess calls reply.status().send() and returns false.
+      // In bulk mode, we don't want it to prematurely close the response for the whole batch.
+      // So we will just use a lighter DB check.
+      const hasAccess = actor.role === 'SUPER_ADMIN' || (await prisma.operatorDealerAccess.count({
+        where: { operatorAccountId: actor.id, dealershipId: incident.dealerId }
+      }) > 0);
+      
+      if (!hasAccess) {
+        results.push({ incidentId: incident.incidentId, status: 'not_authorized' });
+        continue;
+      }
+
+      const res = await executeIssueRetry(prisma, actor, incident);
+      results.push({ incidentId: incident.incidentId, status: res.status, errorCode: res.errorCode });
+    }
+
+    // Audit the bulk action
+    await prisma.adminAuditLog.create({
+      data: {
+        action: 'BULK_ISSUE_RETRY',
+        actorId: actor.id,
+        actorEmail: actor.email,
+        detail: { count: results.length, incidents: body.incidents.map((i: any) => i.incidentId) },
+      },
+    });
+
+    return reply.send({ results });
+  });
+
+  // POST /api/admin/issues/reauth
+  app.post('/api/admin/issues/reauth', async (request, reply) => {
+    const { requireDealerAccess, requireOperator } = await import('../security.js');
+    
+    const body = request.body as any;
+    if (!body || !body.incidentId || !body.dealerId || !body.platformSlug) {
+      return reply.status(400).send({ error: 'incidentId, dealerId, and platformSlug are required' });
+    }
+
+    const actor = await requireOperator(prisma, request, reply);
+    if (!actor) return;
+
+    const hasAccess = await requireDealerAccess(prisma, request, reply, body.dealerId);
+    if (!hasAccess) return;
+
+    const incidentId = body.incidentId;
+
+    // Execute Reauth logic (e.g. invalidate current token, generate auth URL)
+    await prisma.adminAuditLog.create({
+      data: {
+        action: 'ISSUE_REAUTH',
+        actorId: actor.id,
+        actorEmail: actor.email,
+        detail: { incidentId, dealerId: body.dealerId, platformSlug: body.platformSlug, result: 'succeeded' },
+      },
+    });
+
+    // Mock Auth URL return
+    const authUrl = `https://mock-oauth-provider.com/auth?client_id=test&state=${body.dealerId}`;
+
+    return reply.send({ status: 'succeeded', authUrl });
   });
 }

@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react';
+import { useMemo, useState, useEffect } from 'react';
 import { fetchDealers } from '@/lib/api/sdk.ts';
 import { createOperatorDealership, uploadDealerLogo } from '@/lib/api/sdk.ts';
 import type { DealerSummary } from '@/lib/types.ts';
@@ -30,6 +30,12 @@ export default function DealerPicker({ onSelect, forbiddenDealerId }: Props) {
     () => (user ? filterDealersForOperator(dealers, user) : []),
     [dealers, user],
   );
+
+  useEffect(() => {
+    if (user?.role === 'DEALER_OPERATOR' && scopedDealers.length === 1 && !forbiddenDealerId) {
+      onSelect(scopedDealers[0].id);
+    }
+  }, [user, scopedDealers, onSelect, forbiddenDealerId]);
 
   const filtered = useMemo(
     () =>
@@ -149,13 +155,15 @@ export default function DealerPicker({ onSelect, forbiddenDealerId }: Props) {
           </div>
 
           <div className="px-4 py-3 border-t border-silver-200 bg-surface-card text-center flex items-center justify-center gap-6">
-            <button
-              type="button"
-              onClick={() => setShowCreateDealer(true)}
-              className="text-xs font-semibold text-ink-muted hover:text-orange-600 transition-colors"
-            >
-              Add dealership
-            </button>
+            {user?.role !== 'DEALER_OPERATOR' && (
+              <button
+                type="button"
+                onClick={() => setShowCreateDealer(true)}
+                className="text-xs font-semibold text-ink-muted hover:text-orange-600 transition-colors"
+              >
+                Add dealership
+              </button>
+            )}
             <button
               type="button"
               onClick={() => { window.location.hash = '#/knowledge'; }}

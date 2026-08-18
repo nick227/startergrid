@@ -1,8 +1,7 @@
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef, useState, useCallback } from 'react';
 import { resolveCategorySchema } from '@auto-dealer/category-schemas';
 import { fetchDealershipProfile, updateDealershipProfile, uploadDealerLogo } from '@/lib/api/sdk.ts';
 import type { DealershipProfile, ProfileReadinessWarning } from '@/lib/types.ts';
-import type { OperatorNavHandlers } from '@/lib/operatorNav.ts';
 import { invalidateDealersList } from '@/lib/dealersListInvalidation.ts';
 import {
   formatMemberSince,
@@ -11,7 +10,7 @@ import {
 } from '@/lib/dealershipProfileNormalize.ts';
 import { useAsyncQuery } from '@/hooks/useAsyncQuery.ts';
 import { SectionCard, ErrorState } from '@/components/operator';
-import { NotificationChannelsPanel } from '@/components/operator/NotificationChannelsPanel.tsx';
+import { NotificationChannelsPanel, type NotificationChannelsPanelHandle } from '@/components/operator/NotificationChannelsPanel.tsx';
 import { Button } from '@/components/ui/Button.tsx';
 import { Skeleton } from '@/components/ui/Skeleton.tsx';
 
@@ -21,7 +20,6 @@ const FIELD_CLS =
 
 type Props = {
   dealerId: string;
-  nav?: OperatorNavHandlers;
   mode?: 'operator' | 'admin';
   onDealersChanged?: () => void;
 };
@@ -82,6 +80,17 @@ function WarningList({ warnings }: { warnings: ProfileReadinessWarning[] }) {
   );
 }
 
+function hasOptionalChannelConfigured(profile: DealershipProfile): boolean {
+  // Email defaults on for every dealer, so it doesn't count as a deliberate setup step.
+  return (
+    profile.notificationChannels.webhook.configured ||
+    profile.notificationChannels.discord.configured ||
+    profile.notificationChannels.telegram.configured ||
+    profile.notificationChannels.sms.configured ||
+    profile.notificationChannels.autoResponse.enabled
+  );
+}
+
 function ChannelSummary({ profile }: { profile: DealershipProfile }) {
   const items = [
     profile.notificationChannels.email.enabled && 'Email',
@@ -98,7 +107,7 @@ function ChannelSummary({ profile }: { profile: DealershipProfile }) {
   );
 }
 
-export function DealershipProfilePanel({ dealerId, nav, mode = 'operator', onDealersChanged }: Props) {
+export function DealershipProfilePanel({ dealerId, mode = 'operator', onDealersChanged }: Props) {
   const { data: profile, loading, error, reload } = useAsyncQuery(
     () => fetchDealershipProfile(dealerId),
     [dealerId],
@@ -108,10 +117,66 @@ export function DealershipProfilePanel({ dealerId, nav, mode = 'operator', onDea
   const [saveError, setSaveError] = useState<string | null>(null);
   const [uploadingLogo, setUploadingLogo] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const channelsRef = useRef<NotificationChannelsPanelHandle>(null);
+  const savedFormRef = useRef<FormState | null>(null);
 
   useEffect(() => {
-    if (profile) setForm(profileToForm(profile));
+    if (profile) {
+      const f = profileToForm(profile);
+      setForm(f);
+      savedFormRef.current = f;
+    }
   }, [profile]);
+
+  const isProfileDirty = useCallback(() => !!form && JSON.stringify(form) !== JSON.stringify(savedFormRef.current), [form]);
+  const isAnyDirty = useCallback(() => isProfileDirty() || !!channelsRef.current?.isDirty(), [isProfileDirty]);
+
+  // Warn on tab close / refresh while there are unsaved changes. This app has no router
+  // library (navigation is plain `window.location.hash` assignment), so this is the
+  // native browser API rather than a router hook.
+  useEffect(() => {
+    function handleBeforeUnload(e: BeforeUnloadEvent) {
+      if (!isAnyDirty()) return;
+      e.preventDefault();
+      e.returnValue = '';
+    }
+    window.addEventListener('beforeunload', handleBeforeUnload);
+    return () => window.removeEventListener('beforeunload', handleBeforeUnload);
+  }, [isAnyDirty]);
+
+  // Warn on in-app navigation (clicking another tab, etc.) while there are unsaved
+  // changes. `hashchange` fires after the hash has already changed, so on a dirty form
+  // we revert it immediately, confirm with the user, then re-apply the target hash only
+  // if they choose to leave. `ignoreNextChange` distinguishes those programmatic
+  // hash writes from a genuine navigation so this doesn't loop on itself.
+  useEffect(() => {
+    let lastHash = window.location.hash;
+    let ignoreNextChange = false;
+
+    function handleHashChange() {
+      if (ignoreNextChange) {
+        ignoreNextChange = false;
+        lastHash = window.location.hash;
+        return;
+      }
+      if (!isAnyDirty()) {
+        lastHash = window.location.hash;
+        return;
+      }
+      const attemptedHash = window.location.hash;
+      ignoreNextChange = true;
+      window.location.hash = lastHash;
+      const leave = window.confirm('You have unsaved changes on this page. Leave without saving?');
+      if (leave) {
+        ignoreNextChange = true;
+        window.location.hash = attemptedHash;
+        lastHash = attemptedHash;
+      }
+    }
+
+    window.addEventListener('hashchange', handleHashChange);
+    return () => window.removeEventListener('hashchange', handleHashChange);
+  }, [isAnyDirty]);
 
   const categoryLabel = useMemo(
     () => (profile ? resolveCategorySchema(profile.businessCategory).label : ''),
@@ -131,34 +196,49 @@ export function DealershipProfilePanel({ dealerId, nav, mode = 'operator', onDea
     onDealersChanged?.();
   };
 
+  const saveProfileFields = async (fields: FormState) => {
+    await updateDealershipProfile(dealerId, {
+      legalName: fields.legalName.trim(),
+      dbaName: fields.dbaName.trim(),
+      websiteUrl: fields.websiteUrl.trim(),
+      primaryContact: {
+        name: fields.contactName.trim(),
+        email: fields.contactEmail.trim(),
+        phone: fields.contactPhone.trim() || undefined,
+      },
+      rooftopAddress: {
+        street: fields.street.trim(),
+        city: fields.city.trim(),
+        state: fields.state.trim(),
+        postalCode: fields.postalCode.trim(),
+      },
+    });
+    savedFormRef.current = fields;
+  };
+
   const handleSave = async () => {
     if (!form) return;
     setSaveState('saving');
     setSaveError(null);
+    let profileSaved = false;
     try {
-      await updateDealershipProfile(dealerId, {
-        legalName: form.legalName.trim(),
-        dbaName: form.dbaName.trim(),
-        websiteUrl: form.websiteUrl.trim(),
-        primaryContact: {
-          name: form.contactName.trim(),
-          email: form.contactEmail.trim(),
-          phone: form.contactPhone.trim() || undefined,
-        },
-        rooftopAddress: {
-          street: form.street.trim(),
-          city: form.city.trim(),
-          state: form.state.trim(),
-          postalCode: form.postalCode.trim(),
-        },
-      });
+      await saveProfileFields(form);
+      profileSaved = true;
+      // Flush unsaved channel edits too — the two forms sit in one visual area,
+      // so "Save profile" must not silently drop changes made in the other. If this
+      // half fails, fall through to the catch below rather than reporting "Saved" —
+      // one form succeeding must never present as an overall success.
+      if (channelsRef.current?.isDirty()) {
+        await channelsRef.current.save();
+      }
       setSaveState('saved');
       reload();
       refreshDealerSummaries();
       setTimeout(() => setSaveState('idle'), 2000);
     } catch (e: unknown) {
       setSaveState('error');
-      setSaveError(e instanceof Error ? e.message : 'Save failed');
+      const message = e instanceof Error ? e.message : 'Save failed';
+      setSaveError(profileSaved ? `Profile details saved successfully, but lead routing channels failed to update: ${message}. Please try saving again.` : message);
     }
   };
 
@@ -189,11 +269,6 @@ export function DealershipProfilePanel({ dealerId, nav, mode = 'operator', onDea
           </p>
         </div>
         <div className="flex flex-wrap items-center gap-2">
-          {nav && (
-            <Button size="sm" variant="secondary" onClick={() => nav.goToPlatforms()}>
-              Manage platforms →
-            </Button>
-          )}
           {marketplaceHref && (
             <a
               href={marketplaceHref}
@@ -303,8 +378,21 @@ export function DealershipProfilePanel({ dealerId, nav, mode = 'operator', onDea
       </SectionCard>
 
       <div className="space-y-2">
+        <div>
+          <h2 className="text-lg font-semibold text-ink-heading">Lead notification channels</h2>
+          <p className="text-sm text-ink-muted mt-1">
+            Stored separately from the profile fields above — either Save button below persists both.
+          </p>
+        </div>
         <ChannelSummary profile={profile} />
-        <NotificationChannelsPanel dealerId={dealerId} defaultOpen />
+        <NotificationChannelsPanel
+          dealerId={dealerId}
+          defaultOpen={!hasOptionalChannelConfigured(profile)}
+          ref={channelsRef}
+          onBeforeSave={async () => {
+            if (isProfileDirty()) await saveProfileFields(form);
+          }}
+        />
       </div>
 
       {mode === 'admin' && (
@@ -322,12 +410,18 @@ export function DealershipProfilePanel({ dealerId, nav, mode = 'operator', onDea
         </SectionCard>
       )}
 
-      <div className="flex items-center gap-3 pt-1">
-        <Button variant="primary" loading={saveState === 'saving'} onClick={() => void handleSave()}>
-          Save profile
-        </Button>
-        {saveState === 'saved' && <span className="text-sm text-emerald-700 font-medium">Saved</span>}
-        {saveError && <span className="text-sm text-red-600">{saveError}</span>}
+      <div className="flex flex-col gap-3 pt-1">
+        <div className="flex items-center gap-3">
+          <Button variant="primary" loading={saveState === 'saving'} onClick={() => void handleSave()}>
+            Save profile
+          </Button>
+          {saveState === 'saved' && <span className="text-sm text-emerald-700 font-medium">Saved</span>}
+        </div>
+        {saveError && (
+          <div className="p-3 bg-red-50 border border-red-200 rounded-md">
+            <span className="text-sm text-red-700 font-medium">{saveError}</span>
+          </div>
+        )}
       </div>
     </div>
   );

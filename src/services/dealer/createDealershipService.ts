@@ -1,6 +1,8 @@
 import type { BusinessCategory, Prisma, PrismaClient } from '@prisma/client';
+import { OperatorRole } from '@prisma/client';
 import type { CreateDealershipBody } from '../../server/requestValidation.js';
 import { upsertDefaultPlatformAccounts, upsertDefaultSyncPolicies } from '../publishing/syncPolicyService.js';
+import { hashPassword } from '../auth/passwordService.js';
 
 type CreateDealershipOptions = {
   createdByOperatorId?: string | null;
@@ -22,6 +24,7 @@ export type CreatedDealershipSummary = {
 export type CreateDealershipResult = {
   dealer: CreatedDealershipSummary;
   duplicate: false;
+  createdOperatorAccountId?: string;
 };
 
 function cleanOptional(value: string | undefined | null): string | null {
@@ -80,6 +83,28 @@ export async function createDealership(
     throw err;
   }
 
+  let operatorAccountIdToLink = options.grantAccessToOperatorId;
+
+  if (body.password) {
+    const existingAccount = await prisma.operatorAccount.findUnique({
+      where: { email: body.primaryContact.email }
+    });
+    if (existingAccount) {
+      const err = new Error('An account with this email already exists');
+      (err as Error & { statusCode?: number }).statusCode = 409;
+      throw err;
+    }
+    const passwordHash = await hashPassword(body.password);
+    const newAccount = await prisma.operatorAccount.create({
+      data: {
+        email: body.primaryContact.email,
+        passwordHash,
+        role: OperatorRole.DEALER_OPERATOR,
+      }
+    });
+    operatorAccountIdToLink = newAccount.id;
+  }
+
   const dealer = await prisma.dealershipProfile.create({
     data: {
       legalName,
@@ -101,11 +126,11 @@ export async function createDealership(
       documents: body.documents && body.documents.length > 0
         ? body.documents as unknown as Prisma.InputJsonValue
         : undefined,
-      operatorAccess: options.grantAccessToOperatorId
+      operatorAccess: operatorAccountIdToLink
         ? {
             create: {
-              operatorAccountId: options.grantAccessToOperatorId,
-              grantedBy: options.grantAccessToOperatorId,
+              operatorAccountId: operatorAccountIdToLink,
+              grantedBy: operatorAccountIdToLink,
             },
           }
         : undefined,
@@ -123,5 +148,9 @@ export async function createDealership(
   await upsertDefaultSyncPolicies(prisma, dealer.id);
   await upsertDefaultPlatformAccounts(prisma, dealer.id);
 
-  return { dealer: toSummary(dealer), duplicate: false };
+  return { 
+    dealer: toSummary(dealer), 
+    duplicate: false,
+    createdOperatorAccountId: body.password ? operatorAccountIdToLink ?? undefined : undefined
+  };
 }

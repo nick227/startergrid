@@ -10,6 +10,7 @@ export function buildAdminOverviewNav(): OperatorNavHandlers {
     goToInventory: () => { window.location.hash = '#/admin/dealers'; },
     goToInventoryItem: () => { window.location.hash = '#/admin/dealers'; },
     goToLeads: () => { window.location.hash = '#/admin/dealers'; },
+    goToSettings: () => { window.location.hash = '#/admin/dealers'; },
     goToHelp: () => { window.location.hash = '#/admin/dealers'; },
     goToPlatformDetail: () => { window.location.hash = '#/admin/platforms'; },
     goToPlatformQueue: () => {},

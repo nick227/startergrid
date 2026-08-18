@@ -2,6 +2,7 @@ import { lazy, Suspense, useEffect } from 'react';
 import DealerPicker from './pages/DealerPicker.tsx';
 import LoginPage from './pages/LoginPage.tsx';
 import PlatformsPage from './pages/PlatformsPage.tsx';
+import SettingsPage from './pages/SettingsPage.tsx';
 import QueuePage from './pages/QueuePage.tsx';
 import HistoryPage from './pages/HistoryPage.tsx';
 import PlatformQueuePage from './pages/PlatformQueuePage.tsx';
@@ -115,6 +116,8 @@ function OperatorApp() {
         <InventoryPage dealerId={dealerId} nav={nav} activeTab={activeTab} />
       ) : page === 'leads' ? (
         <LeadsPage dealerId={dealerId} nav={nav} activeTab={activeTab} />
+      ) : page === 'settings' ? (
+        <SettingsPage dealerId={dealerId} nav={nav} activeTab={activeTab} />
       ) : page === 'platforms' ? (
         <PlatformsPage
           dealerId={dealerId}

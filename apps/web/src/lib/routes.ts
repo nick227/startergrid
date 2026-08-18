@@ -277,6 +277,7 @@ export function buildOperatorNav(dealerId: string): OperatorNavHandlers {
     goToInventory: scope => { window.location.hash = operatorHash(dealerId, 'inventory', scope); },
     goToInventoryItem: (item, scope) => { window.location.hash = inventoryItemHash(dealerId, item, scope); },
     goToLeads: () => { window.location.hash = operatorHash(dealerId, 'leads'); },
+    goToSettings: () => { window.location.hash = operatorHash(dealerId, 'settings'); },
     goToHelp: () => { window.location.hash = operatorHash(dealerId, 'help'); },
     goToPlatformDetail: (slug, scope) => { window.location.hash = platformDetailHash(dealerId, slug, scope); },
     goToPlatformQueue: (slug, scope) => { window.location.hash = platformQueueHash(dealerId, slug, scope); },

@@ -24,6 +24,8 @@ export function SplashNav({ content, onCta }: SplashNavProps) {
   const nameBase = gridIdx > 0 ? name.slice(0, gridIdx) : name;
   const nameSuffix = gridIdx > 0 ? 'Grid' : '';
 
+  const appUrl = import.meta.env.VITE_APP_URL || 'http://localhost:5173';
+
   return (
     <nav className={`splash-nav${scrolled ? ' scrolled' : ''}`} role="navigation" aria-label="Main navigation">
       <div className="splash-nav__inner">
@@ -35,7 +37,13 @@ export function SplashNav({ content, onCta }: SplashNavProps) {
           <span className="splash-nav__powered">Powered by StarterGrid</span>
         </a>
 
-        <div className="splash-nav__actions">
+        <div className="splash-nav__actions" style={{ display: 'flex', gap: 'var(--space-3)', alignItems: 'center' }}>
+          <a href={`${appUrl}/#/login`} className="t-body" style={{ color: 'var(--ink-muted)', textDecoration: 'none', fontWeight: 500 }}>
+            Log In
+          </a>
+          <a href={`${appUrl}/#/signup`} className="t-body" style={{ color: 'var(--ink-muted)', textDecoration: 'none', fontWeight: 500 }}>
+            Get Started
+          </a>
           <button
             id="nav-cta-btn"
             className="btn btn-primary btn-sm"

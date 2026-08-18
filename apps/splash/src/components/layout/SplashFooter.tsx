@@ -8,6 +8,8 @@ export function SplashFooter({ content }: SplashFooterProps) {
   const year = new Date().getFullYear();
   const { brand } = content;
 
+  const appUrl = import.meta.env.VITE_APP_URL || 'http://localhost:5173';
+
   return (
     <footer className="splash-footer" role="contentinfo">
       <div className="container">
@@ -20,6 +22,8 @@ export function SplashFooter({ content }: SplashFooterProps) {
           </div>
 
           <nav className="splash-footer__links" aria-label="Footer links">
+            <a href={`${appUrl}/#/login`}>Log in</a>
+            <a href={`${appUrl}/#/signup`}>Get started</a>
             <a href="mailto:hello@startergrid.com">Contact</a>
             <a href="#/">All products</a>
             <a href="#privacy">Privacy policy</a>

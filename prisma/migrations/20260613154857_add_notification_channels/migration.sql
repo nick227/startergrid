@@ -8,32 +8,32 @@
 
 */
 -- DropForeignKey
-ALTER TABLE `categoryinventoryitem` DROP FOREIGN KEY `CategoryInventoryItem_dealershipId_fkey`;
+ALTER TABLE `CategoryInventoryItem` DROP FOREIGN KEY `CategoryInventoryItem_dealershipId_fkey`;
 
 -- DropForeignKey
-ALTER TABLE `categoryinventoryitemmedia` DROP FOREIGN KEY `CategoryInventoryItemMedia_itemId_fkey`;
+ALTER TABLE `CategoryInventoryItemMedia` DROP FOREIGN KEY `CategoryInventoryItemMedia_itemId_fkey`;
 
 -- DropForeignKey
-ALTER TABLE `marketplacelisting` DROP FOREIGN KEY `MarketplaceListing_categoryItemId_fkey`;
+ALTER TABLE `MarketplaceListing` DROP FOREIGN KEY `MarketplaceListing_categoryItemId_fkey`;
 
 -- DropForeignKey
-ALTER TABLE `marketplacelisting` DROP FOREIGN KEY `MarketplaceListing_vehicleId_fkey`;
+ALTER TABLE `MarketplaceListing` DROP FOREIGN KEY `MarketplaceListing_vehicleId_fkey`;
 
 -- DropIndex
-DROP INDEX `MarketplaceListing_categoryItemId_idx` ON `marketplacelisting`;
+DROP INDEX `MarketplaceListing_categoryItemId_idx` ON `MarketplaceListing`;
 
 -- DropIndex
-DROP INDEX `MarketplaceListing_categoryItemId_platformSlug_key` ON `marketplacelisting`;
+DROP INDEX `MarketplaceListing_categoryItemId_platformSlug_key` ON `MarketplaceListing`;
 
 -- AlterTable
-ALTER TABLE `marketplacelisting` DROP COLUMN `categoryItemId`,
+ALTER TABLE `MarketplaceListing` DROP COLUMN `categoryItemId`,
     MODIFY `vehicleId` VARCHAR(191) NOT NULL;
 
 -- DropTable
-DROP TABLE `categoryinventoryitem`;
+DROP TABLE `CategoryInventoryItem`;
 
 -- DropTable
-DROP TABLE `categoryinventoryitemmedia`;
+DROP TABLE `CategoryInventoryItemMedia`;
 
 -- AddForeignKey
 ALTER TABLE `MarketplaceListing` ADD CONSTRAINT `MarketplaceListing_vehicleId_fkey` FOREIGN KEY (`vehicleId`) REFERENCES `Vehicle`(`id`) ON DELETE CASCADE ON UPDATE CASCADE;

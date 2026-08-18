@@ -52,6 +52,7 @@ const EMPTY_PAYLOAD: CreateDealershipPayload = {
     phone: '',
     role: '',
   },
+  password: '',
   inventorySize: null,
   desiredChannels: [],
   documents: [],
@@ -77,6 +78,7 @@ function cleanPayload(payload: CreateDealershipPayload): CreateDealershipPayload
       phone: payload.primaryContact.phone?.trim() || undefined,
       role: payload.primaryContact.role?.trim() || undefined,
     },
+    password: payload.password?.trim() || undefined,
     inventorySize: payload.inventorySize ?? null,
     desiredChannels: payload.desiredChannels ?? [],
     documents: payload.documents?.filter(Boolean) ?? [],
@@ -92,7 +94,7 @@ function stepLabel(step: Step) {
   }
 }
 
-function validateStep(step: Step, payload: CreateDealershipPayload): string | null {
+function validateStep(step: Step, payload: CreateDealershipPayload, mode: Mode, confirmPass: string): string | null {
   if (step === 'business') {
     if (!payload.legalName.trim()) return 'Legal business name is required.';
     if (!payload.businessCategory) return 'Business category is required.';
@@ -104,12 +106,17 @@ function validateStep(step: Step, payload: CreateDealershipPayload): string | nu
     if (!payload.rooftopAddress.postalCode.trim()) return 'Postal code is required.';
     if (!payload.primaryContact.name.trim()) return 'Primary contact name is required.';
     if (!payload.primaryContact.email.trim()) return 'Primary contact email is required.';
+    if (mode === 'signup') {
+      if (!payload.password || payload.password.length < 8) return 'Password must be at least 8 characters.';
+      if (payload.password !== confirmPass) return 'Passwords do not match.';
+    }
   }
   return null;
 }
 
 export function DealershipIntakeFlow({ mode, onSubmit, onUploadLogo, onComplete, onCancel }: Props) {
   const [payload, setPayload] = useState<CreateDealershipPayload>(EMPTY_PAYLOAD);
+  const [confirmPassword, setConfirmPassword] = useState('');
   const [logoFile, setLogoFile] = useState<File | null>(null);
   const [stepIndex, setStepIndex] = useState(0);
   const [error, setError] = useState<string | null>(null);
@@ -152,7 +159,7 @@ export function DealershipIntakeFlow({ mode, onSubmit, onUploadLogo, onComplete,
   }
 
   function goNext() {
-    const stepError = validateStep(step, payload);
+    const stepError = validateStep(step, payload, mode, confirmPassword);
     if (stepError) {
       setError(stepError);
       return;
@@ -168,7 +175,7 @@ export function DealershipIntakeFlow({ mode, onSubmit, onUploadLogo, onComplete,
       return;
     }
     for (const s of STEPS) {
-      const stepError = validateStep(s, payload);
+      const stepError = validateStep(s, payload, mode, confirmPassword);
       if (stepError) {
         setStepIndex(STEPS.indexOf(s));
         setError(stepError);
@@ -301,6 +308,18 @@ export function DealershipIntakeFlow({ mode, onSubmit, onUploadLogo, onComplete,
             <span className={LABEL_TEXT_CLS}>Contact role</span>
             <input value={payload.primaryContact.role ?? ''} onChange={e => updateContact('role', e.target.value)} className={FIELD_CLS} />
           </label>
+          {mode === 'signup' && (
+            <>
+              <label className={LABEL_CLS}>
+                <span className={LABEL_TEXT_CLS}>Password</span>
+                <input type="password" value={payload.password ?? ''} onChange={e => update('password', e.target.value)} className={FIELD_CLS} />
+              </label>
+              <label className={LABEL_CLS}>
+                <span className={LABEL_TEXT_CLS}>Confirm password</span>
+                <input type="password" value={confirmPassword} onChange={e => setConfirmPassword(e.target.value)} className={FIELD_CLS} />
+              </label>
+            </>
+          )}
         </div>
       )}
 

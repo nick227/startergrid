@@ -571,7 +571,7 @@ export function VehiclePhotoWorkspace({ dealerId, vehicleId, category, media, on
           )}
         </div>
 
-        <DragOverlay dropAnimation={defaultDropAnimationSideEffects({ styles: { active: { opacity: '0.5' } } })}>
+        <DragOverlay dropAnimation={{ sideEffects: defaultDropAnimationSideEffects({ styles: { active: { opacity: '0.5' } } }) }}>
           {activeMedia ? (
             <div className="aspect-[4/3] w-40 rounded-xl overflow-hidden border-2 border-navy-400 shadow-elevation-3 opacity-90">
               <img src={activeMedia.url} alt="" className="w-full h-full object-cover" />

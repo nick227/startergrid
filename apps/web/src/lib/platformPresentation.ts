@@ -178,11 +178,15 @@ export function platformConnectionWithAccount(
   return base;
 }
 
-export type PlatformConnectionFilter = 'ALL' | PlatformConnection;
+export type PlatformConnectionFilter = 'ALL' | 'configured' | PlatformConnection;
 
 export function platformMatchesFilter(p: PlatformPublishResult, filter: PlatformConnectionFilter): boolean {
   if (filter === 'ALL') return true;
-  return platformConnection(p).connection === filter;
+  const c = platformConnection(p).connection;
+  if (filter === 'configured') {
+    return c !== 'inactive' && c !== 'partner_pending';
+  }
+  return c === filter;
 }
 
 export function platformMetaLine(p: PlatformPublishResult): string {
@@ -231,6 +235,7 @@ export function sortPlatformsForDisplay(
 
 export const PLATFORM_CONNECTION_FILTERS: Array<{ key: PlatformConnectionFilter; label: string }> = [
   { key: 'ALL', label: 'All' },
+  { key: 'configured', label: 'Active & Needs Attention' },
   { key: 'connected', label: operatorCopy.connection.connected },
   { key: 'inactive', label: operatorCopy.connection.setupNeeded },
   { key: 'paused', label: 'Disconnected' },

@@ -198,8 +198,8 @@ export function DealershipsTab({
                         <td className="px-4 py-3">
                           <div className="flex gap-2">
                             <a href={adminDealerHash(dealer.id)} className="px-2.5 py-1 text-[10px] font-semibold text-orange-600 hover:text-orange-500 border border-orange-100 hover:border-orange-100 rounded transition-all">Manage</a>
-                            <a href={`#/${dealer.id}/platforms`} className="px-2.5 py-1 text-[10px] font-semibold text-ink-muted hover:text-ink-heading border border-silver-300 hover:border-silver-400 rounded transition-all">Platforms</a>
-                            <a href={`#/${dealer.id}/inventory`} className="px-2.5 py-1 text-[10px] font-semibold text-ink-muted hover:text-ink-heading border border-silver-300 hover:border-silver-400 rounded transition-all">Inventory</a>
+                            <a href={`${adminDealerHash(dealer.id)}/platforms`} className="px-2.5 py-1 text-[10px] font-semibold text-ink-muted hover:text-ink-heading border border-silver-300 hover:border-silver-400 rounded transition-all">Platforms</a>
+                            <a href={`${adminDealerHash(dealer.id)}/inventory`} className="px-2.5 py-1 text-[10px] font-semibold text-ink-muted hover:text-ink-heading border border-silver-300 hover:border-silver-400 rounded transition-all">Inventory</a>
                           </div>
                         </td>
                       </tr>

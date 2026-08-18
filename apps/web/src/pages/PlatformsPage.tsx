@@ -116,7 +116,7 @@ export default function PlatformsPage({ dealerId, nav, activeTab, initialPlatfor
   const socialPagesQuery = useAsyncQuery(() => fetchSelectedSocialPages(dealerId), [dealerId]);
   const queueQuery = useAsyncQuery(() => fetchPublishQueue(dealerId), [dealerId]);
 
-  const [filter, setFilter] = useState<PlatformConnectionFilter>('ALL');
+  const [filter, setFilter] = useState<PlatformConnectionFilter>('configured');
   const [sort] = useState<'urgency' | 'name'>('urgency');
   const [selectedSlug, setSelectedSlug] = useState<string | null>(initialPlatformSlug ?? null);
   const [connectedSlug, setConnectedSlug] = useState<string | null>(null);
@@ -288,6 +288,15 @@ export default function PlatformsPage({ dealerId, nav, activeTab, initialPlatfor
         loading={loading && !data}
         emptyMessage={channelEmptyMessage}
       />
+
+      {filter === 'connected' && (
+        <div className="mt-8 text-center border-t border-silver-200 pt-6">
+          <p className="text-sm text-ink-muted mb-3">Looking to connect a new platform?</p>
+          <Button variant="secondary" onClick={() => setFilter('ALL')}>
+            Discover Available Integrations
+          </Button>
+        </div>
+      )}
     </OperatorPage>
   );
 }

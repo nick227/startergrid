@@ -82,7 +82,26 @@ npm run dealer:proof -- <dealershipId>
 # Full reset (wipe demo data → re-seed → re-run pipeline)
 npm run demo:reset
 
-# API + Portal (ports 3000 / 5173)
+# Local Development Environment (`dev:all`)
+
+When running the full local stack via `npm run dev:all`, multiple UIs and the backend API start concurrently:
+
+- **API Server** (`http://localhost:3000`)
+  The backend Node.js pipeline powering all interfaces.
+- **Operator Console** (`http://localhost:5173`)
+  The internal administration portal. **"Operator" refers to our internal team**, who use this interface to manage auto dealer accounts, onboarding, and sync readiness.
+- **Marketplace UI** (`http://localhost:5174`)
+  The public consumer-facing shopping application where end-users browse and search vehicles across all onboarded dealers.
+- **Splash UI** (`http://localhost:5175`)
+  The public-facing marketing landing page for the platform.
+
+To start all of these simultaneously:
+```bash
+npm run dev:all
+```
+
+Alternatively, to run just the API and Operator Console:
+```bash
 npm run server:start
 npm run ui:dev
 

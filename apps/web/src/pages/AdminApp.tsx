@@ -14,6 +14,7 @@ import AdminDealerPage from './AdminDealerPage.tsx';
 import PlatformsPage from './PlatformsPage.tsx';
 import QueuePage from './QueuePage.tsx';
 import HistoryPage from './HistoryPage.tsx';
+import SettingsPage from './SettingsPage.tsx';
 import InventoryPage from './InventoryPage.tsx';
 import LeadsPage from './LeadsPage.tsx';
 import KnowledgeBasePage from './KnowledgeBasePage.tsx';
@@ -24,26 +25,32 @@ const PlatformDetailPage          = lazy(() => import('./PlatformDetailPage.tsx'
 const PlatformQueuePage     = lazy(() => import('./PlatformQueuePage.tsx'));
 const PlatformHistoryPage   = lazy(() => import('./PlatformHistoryPage.tsx'));
 const ReportsRouter         = lazy(() => import('./ReportsRouter.tsx'));
+const OperationsPage        = lazy(() => import('./OperationsPage.tsx'));
 
 const LAZY_FALLBACK = <div className="surface-card-operator p-6"><Skeleton rows={6} /></div>;
 
-type AdminSection = 'system' | 'dealers' | 'platforms' | 'triage' | 'audit' | 'insights' | 'users';
-type OverviewTab = 'system' | 'dealers' | 'platforms' | 'triage' | 'audit' | 'insights' | 'users';
+type AdminSection = 'system' | 'dealers' | 'platforms' | 'triage' | 'audit' | 'insights' | 'users' | 'operations';
+type OverviewTab = 'system' | 'dealers' | 'platforms' | 'triage' | 'audit' | 'insights' | 'users' | 'operations';
 
 const SECTION_HASHES: Record<AdminSection, string> = {
   system:    '#/admin',
   dealers:   '#/admin/dealers',
   platforms: '#/admin/platforms',
-  triage:    '#/admin/triage',
+  triage:    '#/admin/blockers',
   insights:  '#/admin/insights',
   audit:     '#/admin/audit',
   users:     '#/admin/users',
+  operations:'#/admin/operations',
 };
 
 function routeToSection(adminDealerId: string | null, platformSlug: string | null): AdminSection {
+  // 'triage' and 'blocked-dealers' are legacy URL segments kept for old bookmarks/links —
+  // the tab is labeled "Blockers" and now links out as '#/admin/blockers'.
+  if (platformSlug === 'blockers')             return 'triage';
   if (platformSlug === 'blocked-dealers')      return 'triage';
   if (platformSlug === 'insights')             return 'insights';
   if (platformSlug === 'users')                return 'users';
+  if (platformSlug === 'operations')           return 'operations';
   if (platformSlug === 'dealers' || adminDealerId) return 'dealers';
   if (platformSlug === 'platforms') return 'platforms';
   if (platformSlug === 'triage')    return 'triage';
@@ -52,7 +59,7 @@ function routeToSection(adminDealerId: string | null, platformSlug: string | nul
 }
 
 function isOverviewTab(s: AdminSection): s is OverviewTab {
-  return s === 'system' || s === 'dealers' || s === 'platforms' || s === 'triage' || s === 'audit' || s === 'insights' || s === 'users';
+  return s === 'system' || s === 'dealers' || s === 'platforms' || s === 'triage' || s === 'audit' || s === 'insights' || s === 'users' || s === 'operations';
 }
 
 function buildAdminDealerNav(dealerId: string): OperatorNavHandlers {
@@ -74,6 +81,7 @@ function buildAdminDealerNav(dealerId: string): OperatorNavHandlers {
     goToInsights:       ()           => { window.location.hash = `${base}/reports`; },
     goToKnowledge:      ()           => { window.location.hash = `${base}/help`; },
     goToLeads:          ()           => { window.location.hash = `${base}/leads`; },
+    goToSettings:       ()           => { window.location.hash = `${base}/settings`; },
     changeDealer:       ()           => { window.location.hash = '#/admin/dealers'; },
   };
 }
@@ -123,12 +131,12 @@ export default function AdminApp({
 
   const activeOperatorTab =
     !adminDealerPage                ? 'home'
-    : adminDealerPage === 'queue'     ? 'queue'
-    : adminDealerPage === 'history' ? 'history'
     : adminDealerPage === 'reports' ? 'reports'
     : adminDealerPage === 'inventory' ? 'inventory'
     : adminDealerPage === 'leads'   ? 'leads'
+    : adminDealerPage === 'settings' ? 'settings'
     : adminDealerPage === 'help'    ? 'help'
+    // 'queue' and 'history' are retired tabs; their deprecated stub pages fall back to Platforms.
     : 'platforms';
 
   // Data fetching
@@ -150,6 +158,7 @@ export default function AdminApp({
 
   const TABS = [
     { id: 'system'    as AdminSection, label: 'System Status', count: null,                     alert: false },
+    { id: 'operations'as AdminSection, label: 'Operations',    count: null,                     alert: false },
     { id: 'insights'  as AdminSection, label: 'Finances',      count: null,                      alert: false },
     { id: 'dealers'   as AdminSection, label: 'Dealerships',   count: allDealers.length || null, alert: false },
     { id: 'platforms' as AdminSection, label: 'Platforms',     count: platformOverview.length,   alert: false },
@@ -192,7 +201,25 @@ export default function AdminApp({
 
   return (
     <AdminShell nav={tabNav} action={adminAction}>
-      {showOverview && (
+      {showDealerDetail && (
+        <div className="bg-orange-600 text-white px-6 py-2 text-sm font-semibold flex items-center justify-between">
+          <span>
+            Viewing {allDealers.find(d => d.id === adminDealerId)?.legalName || adminDealerId}
+            <span className="opacity-50 text-xs ml-2 font-mono hidden sm:inline">({adminDealerId})</span>
+          </span>
+          <button className="text-orange-100 hover:text-white underline" onClick={() => navigate('dealers')}>
+            Exit Dealer View
+          </button>
+        </div>
+      )}
+
+      {showOverview && section === 'operations' && (
+        <Suspense fallback={LAZY_FALLBACK}>
+          <OperationsPage />
+        </Suspense>
+      )}
+
+      {showOverview && section !== 'operations' && (
         <AdminOverviewPage
           activeTab={section}
           data={data}
@@ -227,10 +254,13 @@ export default function AdminApp({
               <PlatformHistoryPage dealerId={adminDealerId} nav={adminNav} activeTab="platforms" platformSlug={platformSlug} />
             )}
             {adminDealerPage === 'queue' && (
-              <QueuePage dealerId={adminDealerId} nav={adminNav} activeTab="queue" />
+              <QueuePage dealerId={adminDealerId} nav={adminNav} activeTab="platforms" />
             )}
             {adminDealerPage === 'history' && (
-              <HistoryPage dealerId={adminDealerId} nav={adminNav} activeTab="history" />
+              <HistoryPage dealerId={adminDealerId} nav={adminNav} activeTab="platforms" />
+            )}
+            {adminDealerPage === 'settings' && (
+              <SettingsPage dealerId={adminDealerId} nav={adminNav} activeTab="settings" />
             )}
             {adminDealerPage === 'reports' && (
               <Suspense fallback={LAZY_FALLBACK}>

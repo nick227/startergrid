@@ -8,6 +8,7 @@ import {
   getOperatorFromSessionToken,
   OperatorAuthError,
   SESSION_LIFETIME_MS,
+  makeSessionCookieHeader,
 } from '../../services/auth/sessionService.js';
 
 function parseCookieHeader(header: string | string[] | undefined, name: string): string | undefined {
@@ -17,13 +18,7 @@ function parseCookieHeader(header: string | string[] | undefined, name: string):
   return match?.[1];
 }
 
-function makeSessionCookieHeader(rawToken: string): string {
-  const isProd    = process.env['NODE_ENV'] === 'production';
-  const maxAge    = Math.floor(SESSION_LIFETIME_MS / 1000); // 28800 for 8 h
-  const sameSite  = isProd ? 'None' : 'Strict';
-  const secure    = isProd ? '; Secure' : '';
-  return `op_session=${rawToken}; HttpOnly; SameSite=${sameSite}; Path=/api; Max-Age=${maxAge}${secure}`;
-}
+
 
 function makeClearCookieHeader(): string {
   const isProd   = process.env['NODE_ENV'] === 'production';

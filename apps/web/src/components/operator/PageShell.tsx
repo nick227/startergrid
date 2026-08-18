@@ -26,11 +26,10 @@ type Props = {
 const TAB_LABELS: Record<OperatorTab, string> = {
   home: 'Overview',
   platforms: 'Platforms',
-  queue: 'Queue',
-  history: 'History',
   reports: 'Reports',
   inventory: 'Inventory',
   leads: 'Leads',
+  settings: 'Settings',
   help: 'Help',
 };
 
@@ -57,11 +56,10 @@ export function PageShell({
     const tabHandlers: Record<OperatorTab, () => void> = {
       home: nav.goToHome,
       platforms: nav.goToPlatforms,
-      queue: () => nav.goToQueue(),
-      history: () => nav.goToHistory(),
       reports: nav.goToReports,
       inventory: () => nav.goToInventory(),
       leads: nav.goToLeads,
+      settings: nav.goToSettings,
       help: nav.goToHelp,
     };
     return (
@@ -69,6 +67,11 @@ export function PageShell({
         <div className="flex items-center justify-between gap-4 py-3 border-b border-silver-200">
           <div className="flex items-center gap-3 min-w-0">
             <span className="text-4xl font-semibold text-ink-heading truncate">{displayDealerName}</span>
+            {user?.role === 'SUPER_ADMIN' && (
+              <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-semibold bg-orange-100 text-orange-800 border border-orange-200">
+                Viewing as internal user
+              </span>
+            )}
             {!hideDealerId && (
               <span className="text-xs text-ink-faint font-mono hidden sm:block truncate max-w-[14rem]">{dealerId}</span>
             )}
@@ -120,10 +123,23 @@ export function PageShell({
             <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
               <div className="flex items-start gap-4 min-w-0">
                 <DealerLogo dealershipId={dealerId} />
-                <div className="min-w-0">
-                  <h1 className="font-bold text-base sm:text-lg tracking-tight truncate">{displayDealerName}</h1>
+                <div className="min-w-0 flex flex-col gap-1">
+                  <div className="flex items-center gap-2 flex-wrap">
+                    {user?.role === 'SUPER_ADMIN' ? (
+                      <>
+                        <h1 className="font-bold text-base sm:text-lg tracking-tight truncate text-ink-muted">
+                          Viewing <span className="text-ink-heading">{displayDealerName}</span>
+                        </h1>
+                        <span className="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-semibold bg-orange-500/20 text-orange-600 border border-orange-500/30">
+                          Internal access
+                        </span>
+                      </>
+                    ) : (
+                      <h1 className="font-bold text-base sm:text-lg tracking-tight truncate">{displayDealerName}</h1>
+                    )}
+                  </div>
                   {!hideDealerId && (
-                    <p className="text-ink-faint text-xs font-mono mt-0.5 truncate">{dealerId}</p>
+                    <p className="text-ink-faint text-xs font-mono truncate">{dealerId}</p>
                   )}
                   <p className="text-ink-faint text-xs mt-1 hidden sm:block">
                     {sectionLabel ?? TAB_LABELS[activeTab]}
@@ -137,13 +153,15 @@ export function PageShell({
           </div>
 
           <div className="pb-3 flex items-center justify-between gap-3 flex-wrap border-t border-navy-800/80 pt-3">
-            <button
-              type="button"
-              onClick={nav.changeDealer}
-              className="text-xs text-ink-faint hover:text-white transition-colors"
-            >
-              ← {operatorCopy.scope.changeAction}
-            </button>
+            {!(user?.role === 'DEALER_OPERATOR' && user.dealerAccessIds.length <= 1) ? (
+              <button
+                type="button"
+                onClick={nav.changeDealer}
+                className="text-xs text-ink-faint hover:text-white transition-colors"
+              >
+                ← {operatorCopy.scope.changeAction}
+              </button>
+            ) : <div />}
             <div className="flex items-center gap-2">
               {user && (
                 <OperatorAvatar user={user} onAvatarUpdated={refresh} />

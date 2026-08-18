@@ -18,6 +18,19 @@ npm install
 
 This installs all workspace packages (`apps/*`, `packages/*`) from the repo root.
 
+> **Check your npm config for `save=false` before adding a new dependency.** If your
+> user- or global-level `.npmrc` has `save=false` set (`npm config get save`), `npm install
+> <package>` will install into `node_modules` but silently **not** write the package to
+> `package.json` or `package-lock.json` — the install looks successful, typecheck/build
+> pass locally, but the addition never lands in the manifest. On a shared or agent-driven
+> checkout this is easy to misread as "something reverted my change." If you hit this,
+> either fix the `save` setting for this project, or pass `--save` explicitly:
+> ```bash
+> npm install --save <package>
+> ```
+> Then confirm the entry actually appears in `package.json` (and `package-lock.json`)
+> before relying on it — `node_modules` alone isn't proof it was persisted.
+
 ### 2. Configure environment
 
 ```bash
@@ -60,7 +73,7 @@ npm run client:generate:marketplace  # marketplace SDK → packages/marketplace-
 ```bash
 npm run dev:all
 ```
-Starts the API server, operator portal, marketplace, splash, and corporate site concurrently.
+Starts the API server, operator portal, marketplace, and splash site concurrently.
 
 **Individual services:**
 ```bash

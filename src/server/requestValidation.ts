@@ -238,6 +238,7 @@ export const createDealershipSchema = z.object({
   websiteUrl: z.string().trim().url().max(255).optional().or(z.literal('')),
   rooftopAddress: dealershipAddressSchema,
   primaryContact: dealershipContactSchema,
+  password: z.string().min(8).max(128).optional(),
   inventorySize: z.number().int().min(0).max(1_000_000).nullable().optional(),
   desiredChannels: z.array(nonEmptyString(80)).max(50).optional(),
   documents: z.array(nonEmptyString(160)).max(50).optional(),

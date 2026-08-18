@@ -10,7 +10,7 @@ import { AuditLogTab } from '@/features/adminOverview/tabs/audit/index.ts';
 import { AdminInsightsTab } from '@/features/adminOverview/tabs/insights/index.ts';
 import { UsersTab } from '@/features/adminOverview/tabs/users/index.ts';
 
-type AdminOverviewTab = 'system' | 'dealers' | 'platforms' | 'triage' | 'audit' | 'insights' | 'users';
+type AdminOverviewTab = 'system' | 'dealers' | 'platforms' | 'triage' | 'audit' | 'insights' | 'users' | 'operations';
 
 type Props = {
   activeTab: AdminOverviewTab;

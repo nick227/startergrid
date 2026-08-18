@@ -665,6 +665,7 @@ export default function AdminPlatformDetailPage({
   const siteEnabled = credentialContract?.siteEnabled !== false;
   const [siteSaving, setSiteSaving] = useState(false);
   const [siteError, setSiteError] = useState<string | null>(null);
+  const [confirmDisable, setConfirmDisable] = useState(false);
 
   const toggleSiteEnabled = async (next: boolean) => {
     setSiteSaving(true);
@@ -678,6 +679,17 @@ export default function AdminPlatformDetailPage({
     } finally {
       setSiteSaving(false);
     }
+  };
+
+  // Disabling is a site-wide, immediate action affecting every dealership — gate it
+  // behind confirmation the same way other high-blast-radius admin actions are.
+  // Re-enabling is not destructive and stays a single click.
+  const handleSiteToggle = (next: boolean) => {
+    if (!next) {
+      setConfirmDisable(true);
+      return;
+    }
+    void toggleSiteEnabled(true);
   };
 
   return (
@@ -747,7 +759,7 @@ export default function AdminPlatformDetailPage({
                       type="checkbox"
                       checked={siteEnabled}
                       disabled={siteSaving || credLoading}
-                      onChange={e => toggleSiteEnabled(e.target.checked)}
+                      onChange={e => handleSiteToggle(e.target.checked)}
                     />
                     Offered site-wide to dealerships
                   </label>
@@ -772,6 +784,38 @@ export default function AdminPlatformDetailPage({
 
             </div>
           </div>
+
+          {confirmDisable && (
+            <div className="fixed inset-0 z-50 flex items-center justify-center bg-navy-950/70 p-4">
+              <div className="w-full max-w-sm rounded-xl border border-silver-200 bg-surface-card p-6 shadow-elevation-3">
+                <h2 className="text-base font-bold text-ink-heading mb-2">Disable platform site-wide</h2>
+                <p className="text-sm text-ink-muted mb-5">
+                  Every dealership loses the ability to enable or publish to{' '}
+                  {platformDisplayName(platform.platformSlug, platform.platformName)} immediately. Existing
+                  connections stay configured but stop sending.
+                </p>
+                <div className="flex gap-2 justify-end">
+                  <button
+                    type="button"
+                    onClick={() => setConfirmDisable(false)}
+                    className="px-4 py-1.5 text-xs font-semibold rounded-md border border-silver-300 text-ink-muted hover:text-ink-heading transition-colors"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    type="button"
+                    className="px-4 py-1.5 text-xs font-semibold rounded-md bg-status-error-bg text-status-error-text hover:bg-red-100 border border-status-error-border transition-colors"
+                    onClick={() => {
+                      setConfirmDisable(false);
+                      void toggleSiteEnabled(false);
+                    }}
+                  >
+                    Disable for all dealerships
+                  </button>
+                </div>
+              </div>
+            </div>
+          )}
 
           {/* ── Platform intro ── */}
           <PlatformIntroCard

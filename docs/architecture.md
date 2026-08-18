@@ -20,8 +20,7 @@ The system has two distinct security domains: the **operator surface** (internal
 ├── apps/
 │   ├── web/                    # Operator portal (React + Vite)
 │   ├── marketplace/            # Consumer marketplace (React + Vite)
-│   ├── splash/                 # Marketing splash page
-│   └── corporate/              # Corporate site
+│   ├── splash/                 # Public vertical marketing site
 ├── packages/
 │   ├── api-client/             # Generated TypeScript SDK for operator API
 │   ├── marketplace-client/     # Generated TypeScript SDK for marketplace API

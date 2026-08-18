@@ -116,8 +116,8 @@ export type SyncEvent = {
   payload: unknown;
   syncRunId: string | null;
   createdAt: string;
-  assetTitle: string | null;
-  stockNumber: string | null;
+  assetTitle?: string | null;
+  stockNumber?: string | null;
 };
 
 export type HistoryResponse = {
@@ -171,6 +171,7 @@ export type CreateDealershipPayload = {
   websiteUrl?: string;
   rooftopAddress: DealershipAddressInput;
   primaryContact: DealershipContactInput;
+  password?: string;
   inventorySize?: number | null;
   desiredChannels?: string[];
   documents?: string[];

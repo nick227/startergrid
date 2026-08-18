@@ -91,6 +91,58 @@ function makeApp(role: 'SUPER_ADMIN' | 'OPERATOR'): {
   return { app: buildApp(prisma), token, auditEntries };
 }
 
+// A plain OPERATOR (not SUPER_ADMIN) with a specific dealerAccess grant, for testing the
+// dealer-scoped /api/admin/blocked-dealers?dealerId= path a dealer's own Home page uses.
+function makeScopedOperatorApp(dealerAccessIds: string[]): {
+  app: ReturnType<typeof buildApp>;
+  token: string;
+} {
+  const token = createRawSessionToken();
+  const sessionRow = {
+    id:                'sess-operator-scoped',
+    tokenHash:         hashSessionToken(token),
+    operatorAccountId: 'acct-operator-scoped',
+    createdAt:         new Date(),
+    expiresAt:         new Date(Date.now() + SESSION_LIFETIME_MS),
+    revokedAt:         null,
+    ipAddress:         null,
+    userAgent:         null,
+    account: {
+      id:           'acct-operator-scoped',
+      email:        'scoped-operator@example.local',
+      role:         'OPERATOR',
+      isActive:     true,
+      passwordHash: '[not-returned]',
+      lastLoginAt:  null,
+      createdAt:    new Date(),
+      updatedAt:    new Date(),
+      dealerAccess: dealerAccessIds.map(id => ({ dealershipId: id })),
+    },
+  };
+
+  const prisma = {
+    operatorSession: { findUnique: async () => sessionRow },
+    adminAuditLog: { create: async () => ({}), findMany: async () => [] },
+    dealershipProfile: {
+      count: async () => 2,
+      findMany: async () => [
+        { id: 'dl-1', legalName: 'Dealer 1', businessCategory: 'AUTOMOTIVE', rooftopAddress: { street: '123 Main St', city: 'Denver', state: 'CO' }, rooftopLat: 39.7392, rooftopLng: -104.9903 },
+        { id: 'dl-2', legalName: 'Dealer 2', businessCategory: 'AUTOMOTIVE', rooftopAddress: { street: '456 Oak Ave', city: 'Denver', state: 'CO' }, rooftopLat: null, rooftopLng: null },
+      ]
+    },
+    publishQueueItem:  { count: async () => 0, findFirst: async () => null, findMany: async () => [] },
+    platformApplication: { count: async () => 0, findMany: async () => [] },
+    marketplaceListing: { count: async () => 0 },
+    socialPost:        { count: async () => 0 },
+    syncRun:            { findFirst: async () => null, findMany: async () => [] },
+    syncEvent:          { count: async () => 0, findMany: async () => [] },
+    platformAccount:    { findMany: async () => [] },
+    platformSiteAvailability: { findMany: async () => [] },
+  } as unknown as PrismaClient;
+
+  return { app: buildApp(prisma), token };
+}
+
 type InjectResult = { statusCode: number; json(): Record<string, unknown>; body: string };
 
 describe('admin dashboard — access controls & gating', () => {
@@ -243,7 +295,7 @@ describe('admin blocked dealers — access controls, gating & functionality', ()
     assert.equal(res.statusCode, 401);
   });
 
-  it('403 for OPERATOR role', async () => {
+  it('403 for OPERATOR role on the unscoped (no dealerId) cross-dealer view', async () => {
     const { app, token } = makeApp('OPERATOR');
     const res = await app.inject({
       method: 'GET',
@@ -251,6 +303,37 @@ describe('admin blocked dealers — access controls, gating & functionality', ()
       headers: { Cookie: `op_session=${token}` }
     }) as unknown as InjectResult;
     assert.equal(res.statusCode, 403);
+  });
+
+  it('200 for OPERATOR scoped to a dealerId they have access to (dealer-facing Home page path)', async () => {
+    const { app, token } = makeScopedOperatorApp(['dl-2']);
+    const res = await app.inject({
+      method: 'GET',
+      url: '/api/admin/blocked-dealers?dealerId=dl-2',
+      headers: { Cookie: `op_session=${token}` }
+    }) as unknown as InjectResult;
+    assert.equal(res.statusCode, 200);
+    const body = res.json() as Record<string, any>;
+    assert.ok(body.items.every((item: any) => item.dealerId === 'dl-2'));
+  });
+
+  it('403 for OPERATOR scoped to a dealerId they do NOT have access to', async () => {
+    const { app, token } = makeScopedOperatorApp(['dl-1']);
+    const res = await app.inject({
+      method: 'GET',
+      url: '/api/admin/blocked-dealers?dealerId=dl-2',
+      headers: { Cookie: `op_session=${token}` }
+    }) as unknown as InjectResult;
+    assert.equal(res.statusCode, 403);
+  });
+
+  it('401 for OPERATOR scoped request with no session at all', async () => {
+    const { app } = makeApp('OPERATOR');
+    const res = await app.inject({
+      method: 'GET',
+      url: '/api/admin/blocked-dealers?dealerId=dl-2',
+    }) as unknown as InjectResult;
+    assert.equal(res.statusCode, 401);
   });
 
   it('200 for SUPER_ADMIN with paginated payload and summaries', async () => {

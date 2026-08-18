@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, forwardRef, useImperativeHandle } from 'react';
 import {
   fetchNotificationChannels,
   updateNotificationChannels,
@@ -7,7 +7,17 @@ import {
 } from '@/lib/api/sdk.ts';
 import { InfoButton } from '@/components/docs/index.ts';
 
-type Props = { dealerId: string; defaultOpen?: boolean };
+type Props = {
+  dealerId: string;
+  defaultOpen?: boolean;
+  /** Runs before this panel's own save, so a caller can flush other unsaved state (e.g. a sibling profile form) into the same save action. */
+  onBeforeSave?: () => Promise<void>;
+};
+
+export type NotificationChannelsPanelHandle = {
+  isDirty: () => boolean;
+  save: () => Promise<void>;
+};
 
 type SaveState = 'idle' | 'saving' | 'saved' | 'error';
 
@@ -68,30 +78,48 @@ function toSavePayload(local: Required<NotificationChannelsConfig>): Notificatio
   return out;
 }
 
-export function NotificationChannelsPanel({ dealerId, defaultOpen = false }: Props) {
+export const NotificationChannelsPanel = forwardRef<NotificationChannelsPanelHandle, Props>(function NotificationChannelsPanel({ dealerId, defaultOpen = false, onBeforeSave }, ref) {
   const [open, setOpen]       = useState(defaultOpen);
   const [cfg, setCfg]         = useState<Required<NotificationChannelsConfig>>(merge(EMPTY));
+  const [savedCfg, setSavedCfg] = useState<Required<NotificationChannelsConfig>>(merge(EMPTY));
   const [saveState, setSave]  = useState<SaveState>('idle');
   const [loadErr, setLoadErr] = useState<string | null>(null);
 
   useEffect(() => {
     if (!open) return;
     fetchNotificationChannels(dealerId)
-      .then(saved => setCfg(merge(saved)))
+      .then(saved => {
+        const m = merge(saved);
+        setCfg(m);
+        setSavedCfg(m);
+      })
       .catch(err => setLoadErr(String(err)));
   }, [open, dealerId]);
 
+  // Rethrows on failure so a caller driving this via the imperative handle (below) sees
+  // the rejection and won't report overall success when only this half actually saved.
+  // The local `saveState` is still set here so this panel's own UI reflects the failure
+  // even when nothing awaits the promise (the "Save channels" button below just fires it).
   async function handleSave() {
     setSave('saving');
     try {
+      await onBeforeSave?.();
       const saved = await updateNotificationChannels(dealerId, toSavePayload(cfg));
-      setCfg(merge(saved));
+      const m = merge(saved);
+      setCfg(m);
+      setSavedCfg(m);
       setSave('saved');
       setTimeout(() => setSave('idle'), 2000);
-    } catch {
+    } catch (e) {
       setSave('error');
+      throw e;
     }
   }
+
+  useImperativeHandle(ref, () => ({
+    isDirty: () => JSON.stringify(cfg) !== JSON.stringify(savedCfg),
+    save: handleSave,
+  }));
 
   function setEmail(patch: Partial<typeof cfg.email>)             { setCfg(c => ({ ...c, email:        { ...c.email,        ...patch } })); }
   function setWebhook(patch: Partial<typeof cfg.webhook>)         { setCfg(c => ({ ...c, webhook:      { ...c.webhook,      ...patch } })); }
@@ -102,20 +130,29 @@ export function NotificationChannelsPanel({ dealerId, defaultOpen = false }: Pro
 
   return (
     <div className="rounded-xl border border-silver-200 bg-white shadow-sm">
-      <button
-        type="button"
+      <div
+        role="button"
+        tabIndex={0}
         onClick={() => setOpen(o => !o)}
-        className="flex w-full items-center justify-between px-4 py-3 text-left"
+        onKeyDown={e => {
+          if (e.key === 'Enter' || e.key === ' ') {
+            e.preventDefault();
+            setOpen(o => !o);
+          }
+        }}
+        className="flex w-full items-center justify-between px-4 py-3 text-left cursor-pointer"
       >
         <div className="flex items-center gap-2">
           <div>
             <p className="text-sm font-semibold text-ink-heading">Notification channels</p>
             <p className="text-xs text-ink-muted">Configure where lead alerts are delivered</p>
           </div>
-          <InfoButton docId="connections/lead-notifications" />
+          <span onClick={e => e.stopPropagation()}>
+            <InfoButton docId="connections/lead-notifications" />
+          </span>
         </div>
         <span className="text-xs text-ink-faint">{open ? '▲' : '▼'}</span>
-      </button>
+      </div>
 
       {open && (
         <div className="border-t border-silver-200 px-4 py-4 space-y-5">
@@ -339,7 +376,7 @@ export function NotificationChannelsPanel({ dealerId, defaultOpen = false }: Pro
           <div className="flex items-center gap-3 pt-1">
             <button
               type="button"
-              onClick={handleSave}
+              onClick={() => { void handleSave().catch(() => {}); }}
               disabled={saveState === 'saving'}
               className="rounded-lg bg-orange-600 px-4 py-2 text-sm font-semibold text-white hover:bg-orange-700 disabled:opacity-50"
             >
@@ -356,4 +393,4 @@ export function NotificationChannelsPanel({ dealerId, defaultOpen = false }: Pro
       )}
     </div>
   );
-}
+});

@@ -112,7 +112,7 @@ function adminSystemSteps(): Step[] {
       title: 'Resolve system blockers',
       body: 'Cross-dealer failures — bad credentials, sync errors, validation stalls — that won’t clear from the dealer Queue alone.',
       linkLabel: 'Blockers',
-      onNavigate: () => { window.location.hash = '#/admin/triage'; },
+      onNavigate: () => { window.location.hash = '#/admin/blockers'; },
     },
     {
       emoji: '📡',

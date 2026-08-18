@@ -2,7 +2,7 @@
 
 End-to-end guide for running, verifying, and demonstrating the system.
 
-**Stack:** Fastify API (port 3000) · Operator portal (port 5173) · Marketplace (port 5174) · Splash (port 5175) · Corporate (port 5176) · MySQL
+**Stack:** Fastify API (port 3000) · Operator portal (port 5173) · Marketplace (port 5174) · Splash (port 5175) · Corporate (retired) · MySQL
 
 ---
 
