@@ -80,7 +80,7 @@ function WarningList({ warnings }: { warnings: ProfileReadinessWarning[] }) {
   );
 }
 
-function hasOptionalChannelConfigured(profile: DealershipProfile): boolean {
+export function hasOptionalChannelConfigured(profile: DealershipProfile): boolean {
   // Email defaults on for every dealer, so it doesn't count as a deliberate setup step.
   return (
     profile.notificationChannels.webhook.configured ||

@@ -1,4 +1,5 @@
 
+import type { ReactNode } from 'react';
 import { InventoryGridRowDto } from '../../types/inventoryDto.ts';
 import { INVENTORY_FIELD_REGISTRY } from './fieldRegistry.ts';
 import { InventoryRowCard } from './InventoryRowCard.tsx';
@@ -16,6 +17,8 @@ type Props = {
   sortKey: string;
   sortDir: 'asc' | 'desc';
   onSort: (key: string) => void;
+  /** Overrides the default zero-rows message — callers should distinguish "never added anything" from "filtered to zero". */
+  emptyMessage?: ReactNode;
 };
 
 function renderCell(item: InventoryGridRowDto, colKey: string) {
@@ -70,12 +73,16 @@ function renderCell(item: InventoryGridRowDto, colKey: string) {
 }
 
 export function InventoryDataGrid({
-  dealerId, items, viewMode, selectedIds, onToggleSelection, onToggleAll, onRowClick, activeColumns, sortKey, sortDir, onSort
+  dealerId, items, viewMode, selectedIds, onToggleSelection, onToggleAll, onRowClick, activeColumns, sortKey, sortDir, onSort, emptyMessage
 }: Props) {
   const allSelected = items.length > 0 && items.every(i => selectedIds.has(i.id));
 
   if (items.length === 0) {
-    return <div className="py-12 text-center text-sm text-ink-muted bg-white rounded-xl border border-silver-200 m-4">No inventory found matching criteria.</div>;
+    return (
+      <div className="py-12 text-center text-sm text-ink-muted bg-white rounded-xl border border-silver-200 m-4">
+        {emptyMessage ?? 'No inventory found matching criteria.'}
+      </div>
+    );
   }
 
   if (viewMode === 'card') {

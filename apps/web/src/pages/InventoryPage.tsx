@@ -277,6 +277,24 @@ export default function InventoryPage({ dealerId, nav, activeTab }: Props) {
 
   const isEmpty = !loading && vehicles.length === 0;
 
+  // Distinguish "this dealer has never added a vehicle" from "filters/search excluded everything" —
+  // the old copy ("No inventory found matching criteria") told every brand-new dealer their search was
+  // broken instead of pointing at the add-vehicle controls already on screen.
+  const isFilteredEmpty = !loading && vehicles.length > 0 && mappedVisible.length === 0;
+  const hasActiveFilter = search.trim() !== '' || filter !== 'All';
+  const inventoryEmptyMessage = isEmpty ? (
+    <>
+      No vehicles yet. Use <strong>Single VIN</strong>, <strong>Bulk VIN Paste</strong>, or <strong>CSV Import</strong> above to add your first one.
+    </>
+  ) : isFilteredEmpty && hasActiveFilter ? (
+    <>
+      No vehicles match your current search or filter.{' '}
+      <button type="button" onClick={() => { setSearch(''); setFilter('All'); }} className="text-navy-600 hover:text-navy-700 font-medium underline underline-offset-2">
+        Clear filters
+      </button>
+    </>
+  ) : undefined;
+
   const summaryCounts = {
     active: summary?.total ?? 0,
     ready: summary?.ready ?? 0,
@@ -469,6 +487,7 @@ export default function InventoryPage({ dealerId, nav, activeTab }: Props) {
                       <InventoryDataGrid
                         dealerId={dealerId}
                         items={mappedVisible}
+                        emptyMessage={inventoryEmptyMessage}
                         viewMode={viewMode}
                         selectedIds={selected}
                         onToggleSelection={(id) => {
