@@ -71,6 +71,25 @@ export function buildApp(prisma: PrismaClient): FastifyInstance {
     return reply.send({ ok: true, ts: new Date().toISOString() });
   });
 
+  // Built SPA bundles (apps/web, apps/marketplace, apps/splash) are served
+  // from this same process in production — one Railway service, one deploy.
+  // Each gets its own encapsulated context so the fastify-static `sendFile`
+  // reply decorator doesn't collide across the three registrations, and each
+  // falls back to its own index.html for client-side routes.
+  const registerSpa = (prefix: string, distDir: string): void => {
+    if (!fs.existsSync(path.join(distDir, 'index.html'))) return;
+    app.register(async (scoped) => {
+      scoped.register(fastifyStatic, { root: distDir, prefix: '/' });
+      scoped.setNotFoundHandler((_req, reply) => {
+        return reply.sendFile('index.html', distDir);
+      });
+    }, { prefix });
+  };
+
+  registerSpa('/app/', path.join(process.cwd(), 'apps/web/dist'));
+  registerSpa('/marketplace/', path.join(process.cwd(), 'apps/marketplace/dist'));
+  registerSpa('/', path.join(process.cwd(), 'apps/splash/dist'));
+
   // Dev-only demo feed — not registered in production.
   if (process.env['NODE_ENV'] !== 'production') {
     app.get('/dev/demo-feed', async (_req, reply) => {
