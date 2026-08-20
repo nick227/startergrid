@@ -2,72 +2,62 @@
 
 ## Railway Topology
 
-Four Railway services in one project, all pointing at the same GitHub repo:
+Two Railway services in one project, both in the `startergrid` project:
 
-| Service | Type | Build root | Start command |
-|---|---|---|---|
-| `db` | Railway MySQL plugin | — | — |
-| `api` | Fastify backend | `/` | `npx prisma migrate deploy && node dist/src/scripts/server.js` |
-| `web` | Operator portal SPA | `/` | `npx serve apps/web/dist -s -l $PORT` |
-| `marketplace` | Consumer marketplace SPA | `/` | `npx serve apps/marketplace/dist -s -l $PORT` |
+| Service | Type | Notes |
+|---|---|---|
+| `MySQL` | Railway MySQL plugin | Provides `DATABASE_URL` via `${{MySQL.MYSQL_URL}}` |
+| `auto-dealer-operator-ui` | Fastify backend + all 3 SPAs | Single service. Build: `npx prisma generate && npm run build:all`. Start: `npx prisma migrate deploy && node dist/src/scripts/server.js` |
 
-Each service has its own `railway.toml` at its root (root `railway.toml` covers the API service; `apps/web/railway.toml` and `apps/marketplace/railway.toml` cover the SPAs).
+The Fastify server (`src/server/app.ts`) serves the built operator UI at `/app/`, the marketplace UI at `/marketplace/`, the splash/landing page at `/`, and the API at `/api/*` — all from one process, one deploy. There is no separate `web`/`marketplace`/`splash` service; that 4-service split was consolidated into one service to cut build complexity and cost for the POC stage. Config lives in the root `railway.toml` — `apps/*/railway.toml` no longer exist.
+
+Nixpacks needs `NIXPACKS_PKGS=python3 gcc` set on the service (build-time variable, not in `railway.toml`) — `@cardog/corgi`'s `better-sqlite3` dependency compiles from source on this platform and Railway's default Nixpacks Node image has neither.
 
 ---
 
 ## Environment Variables
 
-### API service (required)
+All variables below live on the single `auto-dealer-operator-ui` service — there's no separate frontend service to configure.
+
+### Required
 
 | Variable | Notes |
 |---|---|
 | `NODE_ENV` | `production` |
-| `DATABASE_URL` | `${{MySQL.DATABASE_URL}}` (Railway plugin reference) |
-| `APP_BASE_URL` | HTTPS URL of this API service |
+| `DATABASE_URL` | `${{MySQL.MYSQL_URL}}` (Railway plugin reference) |
+| `APP_BASE_URL` | `https://${{RAILWAY_PUBLIC_DOMAIN}}` — this service's own public URL |
 | `SESSION_SECRET` | Min 32 chars. Generate: `openssl rand -hex 32` |
-| `ALLOWED_ORIGINS` | Comma-separated frontend URLs: `https://portal-xxx.up.railway.app,https://marketplace-xxx.up.railway.app` |
 | `PUBLIC_WRITE_RATE_LIMIT` | `20` (requests per window per IP) |
 | `PUBLIC_WRITE_RATE_WINDOW_MS` | `60000` |
+| `NIXPACKS_PKGS` | `python3 gcc` — build-time only, needed for `better-sqlite3` native compile |
 
-### API service (optional)
+### Optional
 
 | Variable | Default | Notes |
 |---|---|---|
-| `DISPATCH_ENVIRONMENT` | `MOCK` | `MOCK` \| `SANDBOX` \| `PRODUCTION`. Leave as MOCK until platforms are wired. |
+| `DISPATCH_ENVIRONMENT` | `MOCK` | `MOCK` \| `SANDBOX` \| `PRODUCTION`. See [Dispatch Safety](#dispatch-safety) below — this is a different, narrower gate than platform integrations. |
+| `ALLOWED_ORIGINS` | — | Only needed if something outside this origin calls the API with credentials. The 3 SPAs are same-origin now, so this is normally unset. |
 | `SMTP_ENABLED` | `false` | Set `true` + all `SMTP_*` vars to enable transactional email |
 | `SMTP_HOST` / `SMTP_PORT` / `SMTP_USER` / `SMTP_PASS` / `SMTP_FROM` | — | Required when `SMTP_ENABLED=true` |
 | `TWILIO_ACCOUNT_SID` / `TWILIO_AUTH_TOKEN` / `TWILIO_FROM_NUMBER` | — | Optional. SMS lead alerts. |
-| `STORAGE_DRIVER` | `local` | `local` \| `s3`. Use `s3` in production (local disk is ephemeral on Railway). |
+| `STORAGE_DRIVER` | `local` | `local` \| `s3`. **Use `s3` in production** — local disk is ephemeral on Railway; uploaded files (vehicle photos, etc.) are lost on every redeploy under `local`. |
 | `S3_BUCKET` / `S3_REGION` / `S3_ENDPOINT` / `S3_ACCESS_KEY_ID` / `S3_SECRET_ACCESS_KEY` / `S3_PUBLIC_BASE_URL` | — | Required when `STORAGE_DRIVER=s3` |
-| `OAUTH_REDIRECT_BASE_URL` | — | Must match registered OAuth redirect URIs in each provider console |
+| `OAUTH_REDIRECT_BASE_URL` | — | Must match registered OAuth redirect URIs in each provider console. See [Platform Integrations Go-Live](./integrations-go-live.md). |
 
-### Web service (build-time)
-
-| Variable | Value |
-|---|---|
-| `VITE_API_URL` | HTTPS URL of the API service |
-
-### Marketplace service (build-time)
-
-| Variable | Value |
-|---|---|
-| `VITE_API_URL` | HTTPS URL of the API service |
-
-`VITE_*` variables are baked into the JS bundle at build time by Vite — they must be set on the Railway service, not at runtime.
+Platform integration credentials (Meta, Google, eBay, TikTok, etc.) are their own topic — see [`docs/integrations-go-live.md`](./integrations-go-live.md).
 
 ---
 
 ## First Deploy (new environment)
 
-1. **Create Railway project** → add MySQL plugin → note the `DATABASE_URL`.
-2. **Deploy API service** — set all required env vars. First deploy runs `prisma migrate deploy` (creates schema from migrations) then starts the server. Confirm `/health` returns `{ ok: true }`.
-3. **Seed the database** (one-time):
+1. **Create Railway project** → `railway add --database mysql`.
+2. **Create the service** from the GitHub repo, set all required env vars above, and generate a public domain (`railway domain`) so `APP_BASE_URL` has something to reference.
+3. **First deploy** runs `prisma generate && npm run build:all` at build time, then `prisma migrate deploy` (creates schema from migrations) before starting the server. Confirm `/health` returns `{ ok: true }`, and that `/`, `/app/`, and `/marketplace/` all load.
+4. **Seed the database** (one-time):
    ```bash
    railway run npm run db:seed
    ```
    This creates platform profiles and a seed admin account (`SEED_ADMIN_EMAIL` / `SEED_ADMIN_PASSWORD` env vars, defaults `admin@example.local` / `dev-change-me` — override these).
-4. **Deploy Web service** — set `VITE_API_URL`. Confirm the portal loads and login works.
-5. **Deploy Marketplace service** — set `VITE_API_URL`. Confirm the marketplace feed loads.
 
 ---
 
@@ -132,12 +122,14 @@ pm2 startup
 
 ## Dispatch Safety
 
-`DISPATCH_ENVIRONMENT` controls whether the sync scheduler makes real platform API calls:
+`DISPATCH_ENVIRONMENT` gates the generic submission/scheduler pipeline (`src/services/publishing/dispatchAdapter.ts`) — the code path behind the sync scheduler and the broader multi-platform submission lifecycle:
 
 | Value | Behavior |
 |---|---|
-| `MOCK` (default) | All dispatch writes to `mock-platform-receipts/` — no external HTTP |
-| `SANDBOX` | Calls platform sandbox APIs (per-platform adapter required) |
-| `PRODUCTION` | Live dispatch — requires explicit opt-in; hard gate in `dispatchAdapter.ts` |
+| `MOCK` (default) | All dispatch returns a mock receipt — no external HTTP |
+| `SANDBOX` | **Not implemented.** Throws `DispatchNotImplementedError` unconditionally, regardless of credentials. |
+| `PRODUCTION` | **Not implemented.** Same — throws `DispatchNotImplementedError` even when explicitly set. |
 
-Do not set `DISPATCH_ENVIRONMENT=PRODUCTION` until per-platform live adapters are implemented and tested in sandbox.
+As of this writing, there is no live implementation behind this specific adapter for any value other than `MOCK` — changing the env var does not unlock anything.
+
+This is a **different, narrower gate** than platform integrations as a whole. The Catalog Sync feature (10 ad-catalog platforms — Meta, Google, TikTok, Microsoft, Pinterest, Snapchat, Reddit, X, Nextdoor, TikTok Shop) and the eBay listing/OAuth flow are separate subsystems that make real API calls today, independent of `DISPATCH_ENVIRONMENT`, once their OAuth credentials are configured and an account is connected. See [`docs/integrations-go-live.md`](./integrations-go-live.md) for the full picture.
