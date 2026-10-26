@@ -1,0 +1,40 @@
+export type PageExperience = 'empty' | 'setup' | 'running' | 'attention';
+
+export type ChannelCounts = {
+  connected: number;
+  attention: number;
+  setup: number;
+  total: number;
+};
+
+/** Channels: attention wins, then none connected, then unfinished setup, then running. */
+export function channelExperience(counts: ChannelCounts): PageExperience {
+  if (counts.total === 0) return 'empty';
+  if (counts.attention > 0) return 'attention';
+  if (counts.connected === 0) return 'empty';
+  if (counts.setup > 0) return 'setup';
+  return 'running';
+}
+
+export function platformLooksConnected(platform: { accountState?: string | null; state?: string | null }): boolean {
+  return (
+    platform.accountState === 'ACTIVE' ||
+    platform.state === 'Active' ||
+    platform.state === 'Ready' ||
+    platform.state === 'Scheduled'
+  );
+}
+
+export function dealerSetupIncomplete(input: {
+  vehicleTotal: number;
+  vehicleReady: number;
+  channelConnected: boolean;
+  missingPrimaryContact: boolean;
+}): boolean {
+  return (
+    input.vehicleTotal === 0 ||
+    input.vehicleReady === 0 ||
+    !input.channelConnected ||
+    input.missingPrimaryContact
+  );
+}

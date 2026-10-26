@@ -2,10 +2,13 @@ import { useEffect, useState } from 'react';
 import type { OperatorNavHandlers } from '@/lib/operatorNav.ts';
 import { fetchDealershipProfile, fetchPublishStatus } from '@/lib/api/sdk.ts';
 import type { DealershipProfile, PublishStatusResponse } from '@/lib/types.ts';
+import { platformLooksConnected } from '@/lib/pagePrimaryState.ts';
 
 type Props = {
   dealerId: string;
   nav: OperatorNavHandlers;
+  profile?: DealershipProfile | null;
+  status?: PublishStatusResponse | null;
 };
 
 type SetupStep = {
@@ -18,32 +21,28 @@ type SetupStep = {
 
 const DISMISS_KEY_PREFIX = 'getting-started-dismissed:';
 
-function platformIsConnected(platform: PublishStatusResponse['platforms'][number]): boolean {
-  return platform.accountState === 'ACTIVE' || platform.state === 'Active' || platform.state === 'Ready' || platform.state === 'Scheduled';
-}
-
 function buildSetupSteps(nav: OperatorNavHandlers, profile: DealershipProfile, status: PublishStatusResponse): SetupStep[] {
   return [
     {
       key: 'vehicle',
-      label: 'Add or import your vehicle inventory',
+      label: 'Add vehicles to your lot',
       done: status.vehicles.total > 0,
       onGo: () => nav.goToInventory(),
       ctaLabel: 'Add vehicles',
     },
     {
       key: 'ready',
-      label: 'Complete vehicle prices and photos for listings',
+      label: 'Add a price and photos so a vehicle can be listed',
       done: status.vehicles.ready > 0,
       onGo: () => nav.goToInventory(),
-      ctaLabel: 'Review lot',
+      ctaLabel: 'Review vehicles',
     },
     {
       key: 'channels',
-      label: 'Connect at least one sales channel (Google, Meta, or partner marketplaces)',
-      done: status.platforms.some(platformIsConnected),
+      label: 'Connect a destination where shoppers look',
+      done: status.platforms.some(platformLooksConnected),
       onGo: nav.goToPlatforms,
-      ctaLabel: 'Connect channel',
+      ctaLabel: 'Connect a destination',
     },
     {
       key: 'team',
@@ -60,12 +59,15 @@ function buildSetupSteps(nav: OperatorNavHandlers, profile: DealershipProfile, s
  * Explains how StarterGrid works in plain language and distinguishes internal
  * lot/account setup from ongoing external distribution outcomes.
  */
-export function GettingStartedChecklist({ dealerId, nav }: Props) {
-  const [profile, setProfile] = useState<DealershipProfile | null>(null);
-  const [status, setStatus] = useState<PublishStatusResponse | null>(null);
+export function GettingStartedChecklist({ dealerId, nav, profile: profileProp, status: statusProp }: Props) {
+  const [loadedProfile, setLoadedProfile] = useState<DealershipProfile | null>(profileProp ?? null);
+  const [loadedStatus, setLoadedStatus] = useState<PublishStatusResponse | null>(statusProp ?? null);
   const [dismissed, setDismissed] = useState(() => localStorage.getItem(DISMISS_KEY_PREFIX + dealerId) === '1');
+  const profile = profileProp ?? loadedProfile;
+  const status = statusProp ?? loadedStatus;
 
   useEffect(() => {
+    if (profileProp && statusProp) return;
     let active = true;
     Promise.all([
       fetchDealershipProfile(dealerId),
@@ -73,12 +75,12 @@ export function GettingStartedChecklist({ dealerId, nav }: Props) {
     ])
       .then(([prof, stat]) => {
         if (!active) return;
-        setProfile(prof);
-        setStatus(stat);
+        setLoadedProfile(prof);
+        setLoadedStatus(stat);
       })
       .catch(() => {});
     return () => { active = false; };
-  }, [dealerId]);
+  }, [dealerId, profileProp, statusProp]);
 
   const dismiss = () => {
     localStorage.setItem(DISMISS_KEY_PREFIX + dealerId, '1');
@@ -89,11 +91,8 @@ export function GettingStartedChecklist({ dealerId, nav }: Props) {
 
   const steps = buildSetupSteps(nav, profile, status);
   const allSetupDone = steps.every(s => s.done);
-  const connectedCount = status.platforms.filter(platformIsConnected).length;
-  const autopilotOn = (profile.autopilotPreference ?? 'OFF') === 'ON';
 
-  // If both setup steps and autopilot distribution are live, auto-dismiss.
-  if (allSetupDone && autopilotOn && connectedCount > 0) {
+  if (allSetupDone) {
     localStorage.setItem(DISMISS_KEY_PREFIX + dealerId, '1');
     return null;
   }
@@ -108,11 +107,10 @@ export function GettingStartedChecklist({ dealerId, nav }: Props) {
       <div className="flex items-start justify-between gap-4">
         <div className="space-y-1">
           <div className="flex items-center gap-2">
-            <span className="text-base" aria-hidden="true">🚀</span>
-            <h2 className="text-sm font-bold text-ink-heading">Getting started with StarterGrid</h2>
+            <h2 className="text-sm font-bold text-ink-heading">Your setup</h2>
           </div>
           <p className="text-xs text-ink-muted leading-relaxed max-w-2xl">
-            Add your vehicles once. StarterGrid helps keep your listings updated across connected advertising and sales channels. Buyer inquiries arrive in one place.
+            Do the next step below. You can skip this list after the four setup tasks are done.
           </p>
         </div>
         <button
@@ -144,7 +142,7 @@ export function GettingStartedChecklist({ dealerId, nav }: Props) {
       {/* Part 1: Account & Lot Setup */}
       <div className="space-y-2 pt-2 border-t border-silver-100">
         <div className="flex items-center justify-between text-xs">
-          <span className="font-semibold text-ink-heading">Account & Lot Setup</span>
+          <span className="font-semibold text-ink-heading">Setup</span>
           <span className="text-ink-muted">{doneCount} of {steps.length} completed ({progressPercent}%)</span>
         </div>
         <div className="w-full h-1.5 bg-silver-100 rounded-full overflow-hidden">
@@ -181,39 +179,6 @@ export function GettingStartedChecklist({ dealerId, nav }: Props) {
         </ul>
       </div>
 
-      {/* Part 2: Channel Distribution & Live Outcomes (Distinct from internal setup) */}
-      <div className="p-3 bg-surface-page rounded-lg border border-silver-200 space-y-2 text-xs">
-        <div className="flex items-center justify-between">
-          <span className="font-semibold text-ink-heading flex items-center gap-1.5">
-            <span className={`w-2 h-2 rounded-full ${autopilotOn && connectedCount > 0 ? 'bg-status-success-text' : 'bg-amber-500'}`} />
-            Channel Distribution & Listing Outcomes
-          </span>
-          <span className="text-[11px] text-ink-muted font-medium">
-            {status.vehicles.ready} vehicle{status.vehicles.ready === 1 ? '' : 's'} qualified
-          </span>
-        </div>
-
-        <p className="text-ink-muted leading-relaxed">
-          {autopilotOn
-            ? connectedCount === 0
-              ? 'Autopilot is active, but requires at least one connected channel to deliver catalog feeds.'
-              : `Autopilot delivers catalog feeds across ${connectedCount} connected channel${connectedCount === 1 ? '' : 's'}.`
-            : 'Autopilot is currently off. Ready vehicles will not be sent to connected channels automatically until Autopilot is turned on.'}
-        </p>
-
-        <div className="pt-1.5 border-t border-silver-200/60 flex flex-col sm:flex-row sm:items-center justify-between gap-2 text-[11px] text-ink-muted">
-          <span>
-            <strong className="text-ink-heading">Connected ≠ Live:</strong> Advertising channels review and verify listings after feed delivery.
-          </span>
-          <button
-            type="button"
-            onClick={nav.goToPlatforms}
-            className="text-navy-700 hover:text-navy-900 font-semibold underline shrink-0"
-          >
-            Review channels →
-          </button>
-        </div>
-      </div>
     </div>
   );
 }

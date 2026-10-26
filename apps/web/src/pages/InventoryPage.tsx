@@ -43,7 +43,7 @@ import { CreatePostModal } from '@/components/social/index.ts';
 import { useCategorySchema } from '@/contexts/CategoryContext.tsx';
 import { useOperatorRoute } from '@/hooks/useOperatorRoute.ts';
 import { OwnershipLine } from '@/components/guidance/OwnershipLine.tsx';
-import { GuidanceNote } from '@/components/guidance/GuidanceNote.tsx';
+import { PagePrimaryState } from '@/components/guidance/PagePrimaryState.tsx';
 
 type Props = OperatorPageBaseProps;
 
@@ -379,17 +379,25 @@ export default function InventoryPage({ dealerId, nav, activeTab }: Props) {
         </div>
       ) : (
         <div className="space-y-5">
-          <PageHeader
-            title="Vehicles"
-            subtitle="Keep prices, photos, and details accurate. Ready vehicles can be sent to your channels."
-          />
+          <PageHeader title="Vehicles" />
 
           {isPhysicalInventory ? (
             <>
               {isEmpty && (
-                <GuidanceNote>
-                  You have no vehicles yet. Add one by VIN, or import a spreadsheet of your current lot.
-                </GuidanceNote>
+                <PagePrimaryState
+                  kind="empty"
+                  title="Add your first vehicle"
+                  why="Shoppers can only see vehicles that are on your lot with a price and photos. Add one by VIN, or import a spreadsheet."
+                />
+              )}
+              {!isEmpty && summaryCounts.blocked > 0 && (
+                <PagePrimaryState
+                  kind="attention"
+                  title={`${summaryCounts.blocked} vehicle${summaryCounts.blocked === 1 ? '' : 's'} cannot be listed yet`}
+                  why="Usually a missing price or photos. Fix those and the vehicle can go to your destinations."
+                  next="Open the vehicles that need a fix."
+                  ownerKind="YOU"
+                />
               )}
               <VehicleAddControls
                 dealerId={dealerId}
@@ -432,6 +440,7 @@ export default function InventoryPage({ dealerId, nav, activeTab }: Props) {
           {(!isPhysicalInventory || !isEmpty) && (
           <InventoryWorkspace
             dealerId={dealerId}
+            initialTab={isPhysicalInventory && summaryCounts.blocked > 0 ? 'attention' : 'browse'}
             tabCounts={{
               browse: isPhysicalInventory ? activeVehicles.length : 0,
               attention: isPhysicalInventory ? attentionVehicles.length : 0,

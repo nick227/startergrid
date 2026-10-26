@@ -107,10 +107,7 @@ export default function PlatformsPage({ dealerId, nav, activeTab, initialPlatfor
       lastRefresh={lastRefresh ?? undefined}
       hideDealerId
     >
-      <PageHeader
-        title="Channels"
-        subtitle="Destinations where your vehicles can appear. Connect one, then send ready vehicles."
-      />
+      <PageHeader title="Channels" />
 
       {connectedSlug && (
         <PlatformConnectBanner

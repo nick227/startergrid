@@ -5,7 +5,7 @@ import { updateLeadWorkflow, fetchDealershipPeople } from '@/lib/api/dealershipR
 import type { OperatorPageBaseProps } from '@/lib/operatorPage.ts';
 import { OperatorPage, PageHeader } from '@/components/operator';
 import { InfoButton } from '@/components/docs/index.ts';
-import { GuidanceNote } from '@/components/guidance/GuidanceNote.tsx';
+import { PagePrimaryState } from '@/components/guidance/PagePrimaryState.tsx';
 import { Banner, SearchField, Select } from '@/components/ui';
 import { AUTO_MARKETPLACE_NAME, AUTO_MARKETPLACE_SLUG } from '@/lib/marketplaceBrand.ts';
 
@@ -513,17 +513,21 @@ export default function LeadsPage({ dealerId, nav, activeTab }: Props) {
       refreshing={loading}
     >
       <div className="space-y-5">
-        <PageHeader
-          title="Leads"
-          subtitle="Shopper inquiries about your vehicles. Status and assignment save for everyone at this dealership."
-        />
+        <PageHeader title="Leads" />
 
-        {leads.length === 0 && !loading && view === 'leads' && (
-          <GuidanceNote>
-            When a shopper asks about a vehicle, the inquiry lands here. Reply from this inbox, then mark the next step so the rest of the team can see it.
-          </GuidanceNote>
-        )}
-
+        {leads.length === 0 && !loading && view === 'leads' ? (
+          <PagePrimaryState
+            kind="empty"
+            title="Buyer questions will show up here"
+            why="When a shopper asks about a vehicle, the inquiry lands in this inbox. Reply here, then mark the next step so the rest of the team can see it."
+            next="Vehicles need a destination before shoppers can find them."
+            actionLabel="Open channels"
+            onAction={nav.goToPlatforms}
+            secondaryLabel="See vehicles"
+            onSecondary={() => nav.goToInventory()}
+          />
+        ) : (
+        <>
         <p className="text-xs text-ink-muted">
           Change email and text alerts in{' '}
           <button type="button" onClick={nav.goToSettings} className="font-semibold text-navy-700 hover:underline">
@@ -637,6 +641,8 @@ export default function LeadsPage({ dealerId, nav, activeTab }: Props) {
               )}
             </div>
           </div>
+        )}
+        </>
         )}
       </div>
     </OperatorPage>

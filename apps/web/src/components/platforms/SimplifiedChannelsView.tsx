@@ -1,6 +1,6 @@
-import { useState, useMemo } from 'react';
+import { useMemo, useState } from 'react';
 import { DealershipAutopilot } from '@/components/guidance/DealershipAutopilot.tsx';
-import { GuidanceNote } from '@/components/guidance/GuidanceNote.tsx';
+import { PagePrimaryState } from '@/components/guidance/PagePrimaryState.tsx';
 import type {
   PlatformPublishResult,
   PlatformAccountDetail,
@@ -9,9 +9,11 @@ import type {
   PlatformQueueStats,
 } from '@/lib/types.ts';
 import type { OperatorNavHandlers } from '@/lib/operatorNav.ts';
+import { channelExperience } from '@/lib/pagePrimaryState.ts';
+import { AUTO_MARKETPLACE_SLUG, platformDisplayName } from '@/lib/marketplaceBrand.ts';
+import { getSetupReadiness } from '@/lib/setupReadiness.ts';
 import { PlatformDetailDrawer } from './PlatformDetailDrawer.tsx';
 import { ChannelDestinationCard } from './ChannelDestinationCard.tsx';
-import { getSetupReadiness } from '@/lib/setupReadiness.ts';
 
 type Props = {
   platforms: PlatformPublishResult[];
@@ -30,7 +32,16 @@ type Props = {
   storefrontHref?: string;
 };
 
-type ChannelFilter = 'all' | 'connected' | 'setup' | 'attention';
+type Row = {
+  platform: PlatformPublishResult;
+  account: PlatformAccountDetail | null;
+  isConnected: boolean;
+  hasErrors: boolean;
+};
+
+function nameOf(row: Row): string {
+  return platformDisplayName(row.platform.platformSlug, row.platform.platformName);
+}
 
 export function SimplifiedChannelsView({
   platforms,
@@ -45,102 +56,101 @@ export function SimplifiedChannelsView({
   emptyMessage,
   storefrontHref,
 }: Props) {
-  const [filter, setFilter] = useState<ChannelFilter>('all');
-  const [search, setSearch] = useState('');
+  const [showRest, setShowRest] = useState(false);
 
-  const channelList = useMemo(() => {
-    return platforms.map(platform => {
-      const account = accountBySlug.get(platform.platformSlug) ?? null;
-      const readiness = getSetupReadiness(platform, account);
-      const isConnected =
-        platform.accountState === 'ACTIVE' ||
-        platform.state === 'Active' ||
-        platform.state === 'Ready' ||
-        platform.state === 'Scheduled';
-      const hasErrors = readiness.severity === 'critical' || platform.accountState === 'ERROR';
-      return { platform, account, isConnected, hasErrors };
-    });
-  }, [platforms, accountBySlug]);
+  const rows = useMemo<Row[]>(() => platforms.map(platform => {
+    const account = accountBySlug.get(platform.platformSlug) ?? null;
+    const readiness = getSetupReadiness(platform, account);
+    const isConnected =
+      platform.accountState === 'ACTIVE' ||
+      platform.state === 'Active' ||
+      platform.state === 'Ready' ||
+      platform.state === 'Scheduled';
+    return {
+      platform,
+      account,
+      isConnected,
+      hasErrors: readiness.severity === 'critical' || platform.accountState === 'ERROR',
+    };
+  }), [platforms, accountBySlug]);
 
-  const connectedCount = channelList.filter(c => c.isConnected).length;
-  const attentionCount = channelList.filter(c => c.hasErrors).length;
-  const setupCount = channelList.filter(c => !c.isConnected && !c.hasErrors).length;
+  const connected = rows.filter(r => r.isConnected);
+  const attention = rows.filter(r => r.hasErrors);
+  const setup = rows.filter(r => !r.isConnected && !r.hasErrors);
+  const experience = channelExperience({
+    connected: connected.length,
+    attention: attention.length,
+    setup: setup.length,
+    total: rows.length,
+  });
 
-  const filteredChannels = useMemo(() => {
-    let list = channelList;
-    if (filter === 'connected') list = list.filter(c => c.isConnected);
-    else if (filter === 'attention') list = list.filter(c => c.hasErrors);
-    else if (filter === 'setup') list = list.filter(c => !c.isConnected && !c.hasErrors);
+  const focus = experience === 'attention'
+    ? attention
+    : experience === 'empty'
+      ? rows.filter(r => r.platform.platformSlug === AUTO_MARKETPLACE_SLUG).slice(0, 1).concat(setup).slice(0, 1)
+      : experience === 'setup'
+        ? setup
+        : connected;
 
-    if (search) {
-      const q = search.toLowerCase();
-      list = list.filter(
-        c =>
-          c.platform.platformName.toLowerCase().includes(q) ||
-          c.platform.platformSlug.toLowerCase().includes(q),
-      );
-    }
-    return list;
-  }, [channelList, filter, search]);
-
+  const visible = showRest ? rows : focus;
+  const hiddenCount = Math.max(0, rows.length - focus.length);
+  const starter = (experience === 'attention' ? attention[0] : focus[0]) ?? rows[0];
+  const starterName = starter ? nameOf(starter) : 'a destination';
   const selectedPlatform = platforms.find(p => p.platformSlug === selectedSlug) ?? null;
-  const firstTime = !loading && platforms.length > 0 && connectedCount === 0;
 
   return (
-    <div className="space-y-6">
-      <DealershipAutopilot dealerId={dealerId} connectedChannelCount={connectedCount} />
-
-      {firstTime && (
-        <GuidanceNote>
-          A channel is a place shoppers can see your vehicles, such as Google or Facebook. Connect one to get started. Autopilot stays off until our team turns it on after that destination qualifies.
-        </GuidanceNote>
-      )}
-
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-        <div className="flex gap-2 overflow-x-auto pb-1" role="tablist" aria-label="Channel filters">
-          {[
-            { id: 'all' as ChannelFilter, label: 'All', count: platforms.length },
-            { id: 'connected' as ChannelFilter, label: 'Connected', count: connectedCount },
-            { id: 'attention' as ChannelFilter, label: 'Needs a fix', count: attentionCount },
-            { id: 'setup' as ChannelFilter, label: 'Not connected', count: setupCount },
-          ].map(f => (
-            <button
-              key={f.id}
-              type="button"
-              role="tab"
-              aria-selected={filter === f.id}
-              onClick={() => setFilter(f.id)}
-              className={`px-3 py-1.5 rounded-lg text-xs font-semibold flex items-center gap-1.5 transition-colors ${
-                filter === f.id
-                  ? 'bg-navy-900 text-white shadow-sm'
-                  : 'bg-silver-100 text-ink-muted hover:text-ink-heading hover:bg-silver-200'
-              }`}
-            >
-              <span>{f.label}</span>
-              <span className={`px-1.5 rounded-full text-[10px] font-mono ${
-                filter === f.id ? 'bg-navy-800 text-silver-300' : 'bg-silver-200 text-ink-faint'
-              }`}>
-                {f.count}
-              </span>
-            </button>
-          ))}
-        </div>
-
-        <input
-          type="search"
-          value={search}
-          onChange={e => setSearch(e.target.value)}
-          placeholder="Find a destination…"
-          className="px-3 py-1.5 text-xs border border-silver-300 rounded-md focus:outline-none focus:ring-2 focus:ring-navy-500 w-52 bg-white"
+    <div className="space-y-5">
+      {experience === 'empty' && (
+        <PagePrimaryState
+          kind="empty"
+          title="Connect a place shoppers look"
+          why="Vehicles stay on your lot until a destination is connected. Start with one. You can add more later."
+          next={`Connect ${starterName}.`}
+          ownerKind="YOU"
+          actionLabel={`Connect ${starterName}`}
+          onAction={() => starter && onSelectSlug(starter.platform.platformSlug)}
         />
-      </div>
-
-      {loading && (
-        <p className="text-sm text-ink-muted">Loading destinations…</p>
       )}
+      {experience === 'setup' && (
+        <PagePrimaryState
+          kind="setup"
+          title="Finish connecting destinations"
+          why={`${connected.length} connected. ${setup.length} still need a connection from you.`}
+          next={`Continue with ${starterName}.`}
+          ownerKind="YOU"
+          actionLabel={`Continue with ${starterName}`}
+          onAction={() => starter && onSelectSlug(starter.platform.platformSlug)}
+        />
+      )}
+      {experience === 'attention' && (
+        <PagePrimaryState
+          kind="attention"
+          title={attention.length === 1 ? `${nameOf(attention[0]!)} needs a fix` : `${attention.length} destinations need a fix`}
+          why="Until this is fixed, vehicles will not update there."
+          next={getSetupReadiness(attention[0]!.platform, attention[0]!.account).nextAction ?? `Fix ${starterName}`}
+          ownerKind="YOU"
+          actionLabel={`Fix ${starterName}`}
+          onAction={() => starter && onSelectSlug(starter.platform.platformSlug)}
+        />
+      )}
+      {experience === 'running' && (
+        <PagePrimaryState
+          kind="running"
+          title={`Shoppers can find you on ${connected.length} destination${connected.length === 1 ? '' : 's'}`}
+          why="Ready vehicles can be sent to connected destinations. Connected does not mean a listing is live yet."
+          secondaryLabel={hiddenCount > 0 ? 'Add another destination' : undefined}
+          onSecondary={hiddenCount > 0 ? () => setShowRest(true) : undefined}
+        />
+      )}
+
+      {experience === 'running' && (
+        <DealershipAutopilot dealerId={dealerId} connectedChannelCount={connected.length} />
+      )}
+
+      {loading && <p className="text-sm text-ink-muted">Loading destinations…</p>}
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        {filteredChannels.map(({ platform, account }) => (
+        {visible.map(({ platform, account }) => (
           <ChannelDestinationCard
             key={platform.platformSlug}
             platform={platform}
@@ -150,14 +160,19 @@ export function SimplifiedChannelsView({
             onOpen={() => onSelectSlug(platform.platformSlug)}
           />
         ))}
-
-        {!loading && filteredChannels.length === 0 && (
+        {!loading && visible.length === 0 && (
           <div className="col-span-2 p-12 text-center bg-white rounded-xl border border-silver-200">
-            <p className="text-sm font-semibold text-ink-heading">No destinations in this list</p>
+            <p className="text-sm font-semibold text-ink-heading">No destinations yet</p>
             <p className="text-xs text-ink-muted mt-1">{emptyMessage}</p>
           </div>
         )}
       </div>
+
+      {!showRest && hiddenCount > 0 && experience !== 'running' && (
+        <button type="button" onClick={() => setShowRest(true)} className="text-sm font-semibold text-navy-700 hover:underline">
+          See {hiddenCount} other destination{hiddenCount === 1 ? '' : 's'}
+        </button>
+      )}
 
       {selectedPlatform && (
         <PlatformDetailDrawer

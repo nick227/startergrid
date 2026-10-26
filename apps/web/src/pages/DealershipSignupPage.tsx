@@ -1,7 +1,6 @@
 import { useState } from 'react';
 import { DealershipIntakeFlow } from '@/components/dealers/DealershipIntakeFlow.tsx';
 import { createDealershipSignup, uploadSignupDealerLogo } from '@/lib/api/sdk.ts';
-import { operatorCopy } from '@/lib/copy/operator.ts';
 import { useAuth } from '@/contexts/AuthContext.tsx';
 
 export default function DealershipSignupPage() {
@@ -15,9 +14,9 @@ export default function DealershipSignupPage() {
           <div className="w-16 h-16 rounded-xl bg-gradient-to-br from-navy-800 to-navy-700 flex items-center justify-center text-2xl mx-auto mb-4 shadow-chrome">
             AD
           </div>
-          <h1 className="text-2xl font-bold text-white tracking-tight">{operatorCopy.app.title}</h1>
+          <h1 className="text-2xl font-bold text-white tracking-tight">StarterGrid</h1>
           <p className="text-ink-faint mt-2 text-sm max-w-md mx-auto leading-relaxed">
-            Create a dealership workspace for inventory, channel setup, and publishing readiness.
+            Create your dealership. Next you will add vehicles and a place shoppers can find them.
           </p>
         </div>
 

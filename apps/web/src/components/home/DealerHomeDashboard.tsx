@@ -10,8 +10,10 @@ import type { DealershipProfile, PublishStatusResponse } from '@/lib/types.ts';
 import { OwnershipLine } from '@/components/guidance/OwnershipLine.tsx';
 import { GuidanceNote } from '@/components/guidance/GuidanceNote.tsx';
 import { DealershipAutopilot } from '@/components/guidance/DealershipAutopilot.tsx';
+import { PagePrimaryState } from '@/components/guidance/PagePrimaryState.tsx';
 import { GettingStartedChecklist } from './GettingStartedChecklist.tsx';
 import { Skeleton } from '@/components/ui/Skeleton.tsx';
+import { dealerSetupIncomplete, platformLooksConnected } from '@/lib/pagePrimaryState.ts';
 
 type Props = { dealerId: string; nav: OperatorNavHandlers };
 
@@ -23,10 +25,6 @@ type HomeTask = {
   button: string;
   onAction: () => void;
 };
-
-function platformIsConnected(platform: PublishStatusResponse['platforms'][number]): boolean {
-  return platform.accountState === 'ACTIVE' || platform.state === 'Active' || platform.state === 'Ready' || platform.state === 'Scheduled';
-}
 
 export function DealerHomeDashboard({ dealerId, nav }: Props) {
   const [profile, setProfile] = useState<DealershipProfile | null>(null);
@@ -52,13 +50,13 @@ export function DealerHomeDashboard({ dealerId, nav }: Props) {
 
   const newLeads = leads.filter(lead => !lead.workflowStatus || lead.workflowStatus === 'NEW');
   const blocked = status?.vehicles?.blocked ?? 0;
-  const connectedCount = (status?.platforms ?? []).filter(platformIsConnected).length;
-
-  const lastCheckTime = status?.autoSync?.lastCompletedAt
-    ? new Date(status.autoSync.lastCompletedAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
-    : status?.preparedAt
-    ? new Date(status.preparedAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
-    : null;
+  const connectedCount = (status?.platforms ?? []).filter(platformLooksConnected).length;
+  const firstTime = Boolean(profile && status && dealerSetupIncomplete({
+    vehicleTotal: status.vehicles.total,
+    vehicleReady: status.vehicles.ready,
+    channelConnected: connectedCount > 0,
+    missingPrimaryContact: profile.publishingWarnings.some(w => w.field === 'primaryContactEmail'),
+  }));
 
   const tasks = useMemo<HomeTask[]>(() => {
     const list: HomeTask[] = [];
@@ -101,10 +99,21 @@ export function DealerHomeDashboard({ dealerId, nav }: Props) {
     return <div className="surface-card-operator p-6 rounded-xl"><Skeleton rows={6} /></div>;
   }
 
+  if (firstTime) {
+    return (
+      <div className="space-y-5">
+        <PagePrimaryState
+          kind="empty"
+          title="This is your dealership home"
+          why="Add vehicles once. Connect a destination so shoppers can find them. Buyer questions arrive here as inquiries."
+        />
+        <GettingStartedChecklist dealerId={dealerId} nav={nav} profile={profile} status={status} />
+      </div>
+    );
+  }
+
   return (
     <div className="space-y-5">
-      <GettingStartedChecklist dealerId={dealerId} nav={nav} />
-
       <DealershipAutopilot
         dealerId={dealerId}
         preference={profile?.autopilotPreference ?? 'OFF'}
@@ -113,54 +122,6 @@ export function DealerHomeDashboard({ dealerId, nav }: Props) {
           if (profile) setProfile({ ...profile, autopilotPreference: preference });
         }}
       />
-
-      {/* Reliable Home Health Summary (P0.4) */}
-      <section className="surface-card-operator p-5 rounded-xl border border-silver-200 bg-white space-y-3">
-        <div className="flex items-center justify-between flex-wrap gap-2">
-          <div className="flex items-center gap-2">
-            <span
-              className={`w-2.5 h-2.5 rounded-full ${
-                (profile?.autopilotPreference ?? 'OFF') === 'ON' && connectedCount > 0
-                  ? 'bg-status-success-text ring-4 ring-status-success-bg'
-                  : (profile?.autopilotPreference ?? 'OFF') === 'PAUSED'
-                  ? 'bg-amber-500 ring-4 ring-amber-100'
-                  : 'bg-silver-400'
-              }`}
-            />
-            <h3 className="text-xs font-bold text-ink-heading uppercase tracking-wider">
-              Distribution Health & Status
-            </h3>
-          </div>
-          <span className="text-[11px] text-ink-muted">
-            Last check: <strong>{lastCheckTime || 'recently'}</strong>
-          </span>
-        </div>
-
-        <p className="text-sm text-ink-heading font-medium leading-relaxed">
-          {(profile?.autopilotPreference ?? 'OFF') === 'ON'
-            ? connectedCount === 0
-              ? 'Autopilot is active, but no channels are currently connected. Connect a destination channel to begin syndication.'
-              : `Autopilot is running. ${status?.vehicles.ready ?? 0} vehicle${(status?.vehicles.ready ?? 0) === 1 ? '' : 's'} submitted across ${connectedCount} connected channel${connectedCount === 1 ? '' : 's'}.${blocked > 0 ? ` ${blocked} need attention.` : ' All vehicles qualified.'}`
-            : (profile?.autopilotPreference ?? 'OFF') === 'PAUSED'
-            ? `Autopilot is paused. ${status?.vehicles.ready ?? 0} vehicle${(status?.vehicles.ready ?? 0) === 1 ? '' : 's'} staged on lot. Distribution is held until Autopilot is resumed.`
-            : `Autopilot is off. Manual syndication only. ${status?.vehicles.ready ?? 0} vehicle${(status?.vehicles.ready ?? 0) === 1 ? '' : 's'} ready on lot.`
-          }
-        </p>
-
-        <div className="pt-2 border-t border-silver-100 flex flex-col sm:flex-row sm:items-center justify-between gap-2 text-xs text-ink-muted">
-          <div className="flex items-center gap-1.5">
-            <span className="font-semibold text-ink-heading">Connected ≠ Live:</span>
-            <span>Vehicles are delivered via catalog feeds. Marketplace ingestion verification occurs on each destination platform.</span>
-          </div>
-          <button
-            type="button"
-            onClick={nav.goToPlatforms}
-            className="text-navy-700 hover:text-navy-900 font-semibold underline shrink-0"
-          >
-            Inspect channels →
-          </button>
-        </div>
-      </section>
 
       <section className="surface-card-operator p-5 rounded-xl border border-silver-200 bg-white space-y-3">
         <h3 className="text-sm font-semibold text-ink-heading">Needs attention</h3>

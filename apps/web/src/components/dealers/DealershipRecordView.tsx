@@ -16,7 +16,7 @@ import { DealershipProfilePanel } from './DealershipProfilePanel.tsx';
 import { DealershipActivity } from './DealershipActivity.tsx';
 import { lifecycleLabel, relativeTime, stepTitle, type LifecycleTone } from '@/lib/dealershipLabels.ts';
 import { handoffReadiness, recordNextAction, type NextAction } from '@/lib/dealershipNextStep.ts';
-import { ownerLabel } from '@/lib/taskOwnership.ts';
+import { PagePrimaryState } from '@/components/guidance/PagePrimaryState.tsx';
 
 export type RecordTab = 'overview' | 'people' | 'activity';
 
@@ -219,24 +219,31 @@ export function DealershipRecordView({ dealerId, initialTab = 'overview', viewer
           </button>
         </div>
 
-        <div className="pt-4 border-t border-silver-200 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-          <div className="min-w-0">
-            <p className="text-sm text-ink-body">
-              Next: <span className="font-semibold text-ink-heading">{next.label}</span>
-              {next.kind !== 'none' && (
-                <span className="ml-2 inline-flex px-1.5 py-0.5 rounded border text-[11px] font-medium bg-silver-50 border-silver-200 text-ink-body">
-                  {ownerLabel(next.owner, next.owner === 'OUR_TEAM' ? record.internalOwner?.email : null)}
-                </span>
-              )}
-            </p>
-            {next.detail && <p className="text-xs text-ink-muted mt-1">{next.detail}</p>}
-          </div>
-          {next.actionable && PRIMARY_LABEL[next.kind] && (
-            <button type="button" onClick={runPrimary} disabled={primaryBusy} className="btn-primary-operator text-sm shrink-0 disabled:opacity-50">
-              {primaryBusy ? 'Working…' : PRIMARY_LABEL[next.kind]}
-            </button>
-          )}
-        </div>
+        <PagePrimaryState
+          kind={next.kind === 'retryChannelSetup' ? 'attention' : next.kind === 'none' ? 'running' : 'setup'}
+          title={next.kind === 'none' ? 'This dealership is ready' : next.label}
+          why={
+            next.detail
+            ?? (next.kind === 'none'
+              ? 'Open dealer view if you are helping a customer with vehicles, channels, or inquiries.'
+              : next.owner === 'DEALER'
+                ? 'The dealership does this next. You can still open dealer view to help.'
+                : 'This is the next real task for our team.')
+          }
+          ownerKind={next.owner === 'OUR_TEAM' && next.kind !== 'none' ? 'OUR_TEAM' : undefined}
+          actionLabel={
+            next.kind === 'none'
+              ? 'Open dealer view'
+              : next.actionable && PRIMARY_LABEL[next.kind]
+                ? (primaryBusy ? 'Working…' : PRIMARY_LABEL[next.kind])
+                : 'Open dealer view'
+          }
+          onAction={
+            next.kind === 'none' || !next.actionable || !PRIMARY_LABEL[next.kind]
+              ? () => onOpenDealerView(dealerId)
+              : runPrimary
+          }
+        />
       </section>
 
       <nav className="border-b border-silver-200 flex gap-1 overflow-x-auto" aria-label="Dealership sections">

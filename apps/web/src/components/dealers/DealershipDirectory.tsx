@@ -7,6 +7,7 @@ import { lifecycleLabel, relativeTime, SETUP_LIFECYCLES, type LifecycleTone } fr
 import { needsOurAction, summaryNextAction } from '@/lib/dealershipNextStep.ts';
 import { ownerLabel } from '@/lib/taskOwnership.ts';
 import { CreateDealershipDialog } from './CreateDealershipDialog.tsx';
+import { PagePrimaryState } from '@/components/guidance/PagePrimaryState.tsx';
 
 export type DirectoryFilter = 'mine' | 'action' | 'setup' | 'all';
 
@@ -82,7 +83,7 @@ export function DealershipDirectory({ currentUserId, includeChannelIssues, onOpe
       <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-3">
         <div>
           <h1 className="text-xl font-bold text-ink-heading">Dealerships</h1>
-          <p className="text-sm text-ink-muted">Each row shows what happens next and who does it.</p>
+          <p className="text-sm text-ink-muted">Find a dealership, see who needs to do what, and open it to continue setup or help a customer.</p>
         </div>
         <button type="button" onClick={() => setCreating(true)} className="btn-primary-operator text-sm self-start sm:self-auto">
           Add dealership
@@ -112,6 +113,16 @@ export function DealershipDirectory({ currentUserId, includeChannelIssues, onOpe
           {dealers.error}{' '}
           <button type="button" onClick={() => dealers.reload()} className="font-semibold text-navy-700 hover:underline">Try again</button>
         </div>
+      ) : rows.length === 0 ? (
+        <PagePrimaryState
+          kind="empty"
+          title="Create a dealership to get started"
+          why="A dealership is a rooftop you set up, give access to, and help through listing."
+          next="Add the first dealership, then invite the owner."
+          ownerKind="YOU"
+          actionLabel="Add dealership"
+          onAction={() => setCreating(true)}
+        />
       ) : visible.length === 0 ? (
         <div className="surface-card-operator p-8 rounded-xl border border-silver-200 bg-white text-center">
           <p className="text-sm font-medium text-ink-heading">

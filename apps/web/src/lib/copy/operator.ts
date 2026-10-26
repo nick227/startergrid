@@ -3,21 +3,21 @@
 export const operatorCopy = {
   app: {
     title: 'Operator Console',
-    tagline: 'Pick an organization, then manage channels, queue, and inventory.',
+    tagline: 'Open a dealership to continue setup or help a customer.',
   },
   scope: {
     term: 'Organization',
-    pickerTitle: 'Choose an organization',
+    pickerTitle: 'Choose a dealership',
     searchPlaceholder: 'Search organization name or ID…',
     pasteIdPlaceholder: 'Paste organization ID…',
     noResults: 'No organizations found',
     noAssignedOrgs: 'No organizations are assigned to your account.',
-    changeAction: 'Change organization',
+    changeAction: 'Change dealership',
     manualOpen: 'Open',
   },
   auth: {
-    signInTitle: 'Operator sign in',
-    signInSubtitle: 'Sign in to manage channels, queue, and inventory.',
+    signInTitle: 'Sign in to StarterGrid',
+    signInSubtitle: 'Use the email you were invited with.',
     emailLabel: 'Email',
     passwordLabel: 'Password',
     signInAction: 'Sign in',
