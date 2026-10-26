@@ -7,6 +7,7 @@ import type {
 import { HttpError } from './httpError.js';
 import { defaultIncomplete, defaultOwner, upsertStep } from './onboardingSteps.js';
 import { recordDealershipActivity } from './activityService.js';
+import { channelSetupStatus } from './channelSetupStatus.js';
 
 type Db = PrismaClient | Prisma.TransactionClient;
 
@@ -65,7 +66,11 @@ export async function refreshOnboarding(db: Db, dealershipId: string, actorId?: 
   const hasOwnerAccess = Boolean(ownerAccess);
   const hasVehicles = dealer._count.vehicles > 0;
   const vehiclesReady = hasVehicles || dealer.waitingForStock;
-  const channelsReady = dealer.autopilotPreference !== 'OFF' || Boolean(dealer.launchCompletedAt);
+  // Missing default channel rows block setup until a retry repairs them. Live dealerships
+  // are not re-flagged here; their record still reports the channel setup status.
+  const inSetup = !['ACTIVE', 'PAUSED', 'ARCHIVED'].includes(dealer.lifecycleStatus);
+  const channelSetup = inSetup ? await channelSetupStatus(db, dealershipId) : { ready: true, missing: [] };
+  const channelsReady = channelSetup.ready && (dealer.autopilotPreference !== 'OFF' || Boolean(dealer.launchCompletedAt));
 
   await upsertStep(db, dealershipId, 'CREATE', {
     status: 'COMPLETE',
@@ -115,7 +120,16 @@ export async function refreshOnboarding(db: Db, dealershipId: string, actorId?: 
     });
   }
 
-  if (channelsReady) {
+  if (!channelSetup.ready) {
+    await upsertStep(db, dealershipId, 'CHANNELS', {
+      status: 'BLOCKED',
+      ownerKind: 'OUR_TEAM',
+      incompleteReason: `Default channel setup did not finish for ${channelSetup.missing.length} destination${channelSetup.missing.length === 1 ? '' : 's'}. Retry channel setup.`,
+      evidenceJson: { channelSetup: 'INCOMPLETE', missing: channelSetup.missing },
+      completedAt: null,
+      completedBy: null,
+    });
+  } else if (channelsReady) {
     await upsertStep(db, dealershipId, 'CHANNELS', {
       status: 'COMPLETE',
       ownerKind: 'OUR_TEAM',

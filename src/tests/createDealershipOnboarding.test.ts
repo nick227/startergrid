@@ -16,6 +16,7 @@ function createPrisma(opts: { duplicate?: boolean; failAfterAccount?: boolean } 
     accounts: 0, dealers: 0, access: 0, steps: 0,
   };
   const tx = {
+    $queryRaw: async () => [],
     operatorAccount: {
       create: async () => {
         created.accounts += 1;

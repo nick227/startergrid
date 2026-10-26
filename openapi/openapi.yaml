@@ -3510,6 +3510,37 @@ paths:
               schema:
                 $ref: '#/components/schemas/OnboardingSnapshot'
 
+  /api/admin/dealerships/{dealershipId}/channel-setup:
+    post:
+      tags: [Dealers]
+      security:
+        - OperatorAuth: []
+      x-route-classification: operator
+      operationId: retryDealershipChannelSetup
+      summary: Retry default channel setup
+      description: >-
+        Re-runs default channel account and sync-policy provisioning for the dealership's category.
+        Idempotent upserts keyed on dealership and platform: safe to repeat, never duplicates rows.
+        Internal staff with access to the dealership only.
+      parameters:
+        - name: dealershipId
+          in: path
+          required: true
+          schema: { type: string }
+      responses:
+        '200':
+          description: Channel setup result
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [channelSetup]
+                properties:
+                  channelSetup:
+                    $ref: '#/components/schemas/ChannelSetupResult'
+        '404':
+          description: Dealership not found
+
   /api/admin/dealerships/{dealershipId}/handoff:
     post:
       tags: [Admin]
@@ -5733,6 +5764,7 @@ components:
           nullable: true
           properties:
             stepKey: { $ref: '#/components/schemas/OnboardingStepKey' }
+            status: { $ref: '#/components/schemas/OnboardingStepStatus' }
             ownerKind: { type: string }
             incompleteReason: { type: string, nullable: true }
 
@@ -5779,14 +5811,44 @@ components:
         internalOwnerId: { type: string }
         inviteOwnerEmail: { type: string, format: email }
 
+    ChannelSetupResult:
+      type: object
+      description: >-
+        Default channel setup is a recoverable step. NEEDS_ATTENTION means the dealership exists
+        but some default destinations were not provisioned; retry with POST /channel-setup.
+      required: [status, missing]
+      properties:
+        status:
+          type: string
+          enum: [READY, NEEDS_ATTENTION]
+        missing:
+          type: array
+          items: { type: string }
+        message: { type: string, nullable: true }
+
     DealershipRecordCreateResponse:
       type: object
-      required: [dealer, nextHref]
+      description: Returned with 201 whenever the dealership was committed, even if channel setup needs attention.
+      required: [dealer, nextHref, channelSetup]
       properties:
         dealer:
           $ref: '#/components/schemas/DealerSummary'
         invite:
           $ref: '#/components/schemas/InviteCreated'
+        channelSetup:
+          $ref: '#/components/schemas/ChannelSetupResult'
+        nextHref: { type: string }
+
+    DuplicateDealershipResponse:
+      type: object
+      description: >-
+        A dealership with matching name, license or website already exists. existingDealershipId
+        is included only when the caller can open that dealership, so a repeated create can
+        resume instead of duplicating.
+      required: [error]
+      properties:
+        error: { type: string }
+        existingDealershipId: { type: string }
         nextHref: { type: string }
 
     OnboardingStep:
@@ -5898,6 +5960,13 @@ components:
                   type: string
                 email:
                   type: string
+            channelSetup:
+              type: object
+              properties:
+                status: { type: string, enum: [READY, NEEDS_ATTENTION] }
+                missing:
+                  type: array
+                  items: { type: string }
     PatchDealershipOnboardingRequest:
       type: object
       properties:

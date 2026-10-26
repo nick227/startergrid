@@ -125,6 +125,8 @@ export function activitySentence(event: { action: string; detail?: unknown }): s
       return (event.detail as { to?: unknown } | null)?.to === true ? 'Marked the dealership as waiting for stock' : 'Cleared waiting for stock';
     case 'LIFECYCLE_CHANGED': return `Changed the status to ${lifecycleLabel(to).label}`;
     case 'HANDOFF_COMPLETED': return 'Completed the handoff to the dealership';
+    case 'CHANNEL_SETUP_INCOMPLETE': return 'Default channel setup did not finish';
+    case 'CHANNEL_SETUP_COMPLETED': return 'Completed default channel setup';
     default: {
       const words = event.action.toLowerCase().replace(/_/g, ' ');
       return words.charAt(0).toUpperCase() + words.slice(1);

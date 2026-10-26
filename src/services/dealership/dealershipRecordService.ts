@@ -6,6 +6,7 @@ import { listPeople } from './peopleAccessService.js';
 import { assignInternalOwner } from './peopleAccessService.js';
 import { recordDealershipActivity } from './activityService.js';
 import { ONBOARDING_STEP_KEYS } from './onboardingSteps.js';
+import { channelSetupStatus } from './channelSetupStatus.js';
 
 type Db = PrismaClient | Prisma.TransactionClient;
 
@@ -50,9 +51,11 @@ export function dealershipListWhere(
   return clauses.length > 0 ? { AND: clauses } : {};
 }
 
-function firstOpenStep<T extends { stepKey: string }>(steps: T[]): T | null {
-  return [...steps].sort((a, b) =>
-    ONBOARDING_STEP_KEYS.indexOf(a.stepKey as never) - ONBOARDING_STEP_KEYS.indexOf(b.stepKey as never))[0] ?? null;
+// Blocked steps come first: a failure our team must fix outranks waiting on someone else.
+function firstOpenStep<T extends { stepKey: string; status?: string }>(steps: T[]): T | null {
+  const blocked = (step: T) => (step.status === 'BLOCKED' || step.status === 'NEEDS_RECHECK' ? 0 : 1);
+  return [...steps].sort((a, b) => blocked(a) - blocked(b)
+    || ONBOARDING_STEP_KEYS.indexOf(a.stepKey as never) - ONBOARDING_STEP_KEYS.indexOf(b.stepKey as never))[0] ?? null;
 }
 
 export async function listDealershipRecords(
@@ -121,7 +124,7 @@ export async function listDealershipRecords(
       blockedStepCount: row.onboardingSteps.filter((step) => step.status === 'BLOCKED' || step.status === 'NEEDS_RECHECK').length,
       nextStep: (() => {
         const step = firstOpenStep(row.onboardingSteps);
-        return step ? { stepKey: step.stepKey, ownerKind: step.ownerKind, incompleteReason: step.incompleteReason } : null;
+        return step ? { stepKey: step.stepKey, status: step.status, ownerKind: step.ownerKind, incompleteReason: step.incompleteReason } : null;
       })(),
     })),
   };
@@ -159,6 +162,7 @@ export async function getDealershipRecord(db: Db, dealershipId: string) {
     db.platformAccount.findMany({ where: { dealershipId }, select: { platformSlug: true, state: true, dealerEnabled: true } }),
     dealer.internalOwnerId ? db.operatorAccount.findUnique({ where: { id: dealer.internalOwnerId }, select: { id: true, email: true } }) : null,
   ]);
+  const channelSetup = await channelSetupStatus(db, dealershipId);
   const latestEvent = await db.dealershipActivityEvent.findFirst({
     where: { dealershipId },
     orderBy: { createdAt: 'desc' },
@@ -172,6 +176,7 @@ export async function getDealershipRecord(db: Db, dealershipId: string) {
     handoffCompletedAt: dealer.handoffCompletedAt?.toISOString() ?? null,
     internalOwner: owner,
     lastActivityAt: (latestEvent?.createdAt ?? dealer.createdAt).toISOString(),
+    channelSetup: { status: channelSetup.ready ? 'READY' : 'NEEDS_ATTENTION', missing: channelSetup.missing },
     inventory: { vehicleCount: dealer._count.vehicles, waitingForStock: dealer.waitingForStock,
       ready: vehicles.filter(v => v.listingStatus === 'READY' && !v.soldAt && !v.removedAt).length,
       needsAttention: vehicles.filter(v => v.listingStatus !== 'READY' && !v.soldAt && !v.removedAt).length,

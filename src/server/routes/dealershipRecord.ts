@@ -11,7 +11,8 @@ import {
 } from '../../services/dealership/dealershipRecordService.js';
 import { completeHandoff, getOnboarding, refreshOnboarding } from '../../services/dealership/onboardingService.js';
 import { upsertStep } from '../../services/dealership/onboardingSteps.js';
-import { statusFromUnknown } from '../../services/dealership/httpError.js';
+import { DuplicateDealershipError, statusFromUnknown } from '../../services/dealership/httpError.js';
+import { provisionDefaultChannels } from '../../services/dealership/channelSetupService.js';
 
 export function registerDealershipRecordRoutes(app: FastifyInstance, prisma: PrismaClient): void {
   app.get('/api/admin/dealerships', async (request, reply) => {
@@ -57,12 +58,28 @@ export function registerDealershipRecordRoutes(app: FastifyInstance, prisma: Pri
           setupUrl: result.invite.setupUrl,
         })
         : null;
+      // 201 whenever the dealership was committed; channel setup is reported, not fatal.
       return reply.status(201).send({
         dealer: result.dealer,
         invite: result.invite ? { ...result.invite, ...delivery } : null,
+        channelSetup: result.channelSetup,
         nextHref: `#/admin/dealers/${result.dealer.id}`,
       });
     } catch (err) {
+      if (err instanceof DuplicateDealershipError) {
+        // A repeated create (e.g. after a lost response) points at the existing record instead
+        // of creating another; the id is only shared with staff who can open that dealership.
+        // Check access in the database: the session snapshot predates a dealership this
+        // caller created moments ago in a concurrent request.
+        const canOpen = operator.devHeader || operator.role === 'SUPER_ADMIN' || Boolean(await prisma.operatorDealerAccess.findFirst({
+          where: { operatorAccountId: operator.id, dealershipId: err.existingDealershipId },
+          select: { id: true },
+        }));
+        return reply.status(409).send({
+          error: err.message,
+          ...(canOpen ? { existingDealershipId: err.existingDealershipId, nextHref: `#/admin/dealers/${err.existingDealershipId}` } : {}),
+        });
+      }
       return reply.status(statusFromUnknown(err)).send({
         error: err instanceof Error ? err.message : 'Failed to create dealership',
       });
@@ -138,6 +155,18 @@ export function registerDealershipRecordRoutes(app: FastifyInstance, prisma: Pri
         error: err instanceof Error ? err.message : 'Failed to update onboarding',
       });
     }
+  });
+
+  // Re-runs default channel setup. Idempotent upserts: safe to call any number of times.
+  app.post('/api/admin/dealerships/:dealershipId/channel-setup', async (request, reply) => {
+    const operator = await requireInternalStaff(prisma, request, reply);
+    if (!operator) return;
+    const { dealershipId } = request.params as { dealershipId: string };
+    if (!await requireDealerAccess(prisma, request, reply, dealershipId)) return;
+    const exists = await prisma.dealershipProfile.findUnique({ where: { id: dealershipId }, select: { id: true } });
+    if (!exists) return reply.status(404).send({ error: 'Dealership not found' });
+    const actor = operator.devHeader ? null : { id: operator.id, email: operator.email };
+    return reply.send({ channelSetup: await provisionDefaultChannels(prisma, dealershipId, actor, { retry: true }) });
   });
 
   app.post('/api/admin/dealerships/:dealershipId/handoff', async (request, reply) => {

@@ -2,6 +2,7 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import {
   completeHandoff,
   fetchAdminDealershipRecord,
+  retryChannelSetup,
   patchAdminDealershipRecord,
   type DealershipRecordDetail,
 } from '@/lib/api/dealershipRecordApi.ts';
@@ -44,6 +45,7 @@ const TONE_CLASS: Record<LifecycleTone, string> = {
 };
 
 const PRIMARY_LABEL: Partial<Record<NextAction['kind'], string>> = {
+  retryChannelSetup: 'Retry channel setup',
   inviteOwner: 'Invite the owner',
   shareOwnerLink: 'Share the link again',
   addVehicles: 'Open dealer view: Vehicles',
@@ -60,6 +62,7 @@ export function DealershipRecordView({ dealerId, initialTab = 'overview', viewer
   const [handoffBusy, setHandoffBusy] = useState(false);
   const [handoffError, setHandoffError] = useState<string | null>(null);
   const [stockBusy, setStockBusy] = useState(false);
+  const [primaryBusy, setPrimaryBusy] = useState(false);
   const [activityKey, setActivityKey] = useState(0);
   const autopilotRef = useRef<HTMLDivElement>(null);
   const { toast, show, dismiss } = useToast();
@@ -102,6 +105,17 @@ export function DealershipRecordView({ dealerId, initialTab = 'overview', viewer
 
   const runPrimary = () => {
     switch (next.kind) {
+      case 'retryChannelSetup':
+        setPrimaryBusy(true);
+        void retryChannelSetup(dealerId)
+          .then(result => {
+            if (result.status === 'READY') show('Channel setup is complete.');
+            else show(result.message ?? 'Channel setup still needs attention. Try again shortly.', 'error');
+            return refresh();
+          })
+          .catch(err => show(err instanceof Error ? err.message : 'Could not retry channel setup.', 'error'))
+          .finally(() => setPrimaryBusy(false));
+        return;
       case 'inviteOwner':
         setTab('people');
         setAddRequest({
@@ -218,8 +232,8 @@ export function DealershipRecordView({ dealerId, initialTab = 'overview', viewer
             {next.detail && <p className="text-xs text-ink-muted mt-1">{next.detail}</p>}
           </div>
           {next.actionable && PRIMARY_LABEL[next.kind] && (
-            <button type="button" onClick={runPrimary} className="btn-primary-operator text-sm shrink-0">
-              {PRIMARY_LABEL[next.kind]}
+            <button type="button" onClick={runPrimary} disabled={primaryBusy} className="btn-primary-operator text-sm shrink-0 disabled:opacity-50">
+              {primaryBusy ? 'Working…' : PRIMARY_LABEL[next.kind]}
             </button>
           )}
         </div>

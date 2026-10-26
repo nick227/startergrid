@@ -41,6 +41,7 @@ export type DealershipRecordSummary = {
   internalOwner?: { id: string; email: string; name?: string | null } | null;
   nextStep?: {
     key: OnboardingStepKey;
+    status?: OnboardingStepStatus;
     label: string;
     ownerKind: TaskOwnerKind;
     ownerName?: string | null;
@@ -94,7 +95,18 @@ export type DealershipRecordDetail = DealershipRecordSummary & {
   }>;
   people: Array<DealershipPerson & { id: string }>;
   invitations: DealershipInvitation[];
+  channelSetup: { status: 'READY' | 'NEEDS_ATTENTION'; missing: string[] };
 };
+
+export type ChannelSetupResult = { status: 'READY' | 'NEEDS_ATTENTION'; missing: string[]; message?: string | null };
+
+/** Thrown when a create matches an existing dealership; carries its id when the caller can open it. */
+export class DuplicateDealershipError extends Error {
+  constructor(message: string, readonly existingDealershipId: string | null) {
+    super(message);
+    this.name = 'DuplicateDealershipError';
+  }
+}
 
 export type DealershipPerson = {
   accountId: string;
@@ -436,23 +448,46 @@ export async function createDealershipRecord(input: CreateDealershipRecordInput)
   dealerId: string;
   legalName: string;
   invite: InviteResult | null;
+  channelSetup: ChannelSetupResult;
 }> {
-  const wire = await apiFetch<{
-    dealer: { id: string; legalName: string };
-    invite: { inviteId: string; email: string; setupUrl: string; expiresAt?: string; delivery?: InviteDelivery; deliveryError?: string | null } | null;
-  }>('/api/admin/dealerships', {
+  const res = await fetch('/api/admin/dealerships', {
     method: 'POST',
-    body: JSON.stringify({
-      legalName: input.legalName.trim(),
-      businessCategory: input.businessCategory,
-      primaryContact: { email: input.ownerEmail.trim(), ...(input.ownerName?.trim() ? { name: input.ownerName.trim() } : {}) },
-      inviteOwnerEmail: input.ownerEmail.trim(),
-    }),
+    credentials: 'include',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(createBody(input)),
   });
+  const body = await res.json().catch(() => ({})) as {
+    error?: string;
+    existingDealershipId?: string;
+    dealer?: { id: string; legalName: string };
+    invite?: { inviteId: string; email: string; setupUrl: string; expiresAt?: string; delivery?: InviteDelivery; deliveryError?: string | null } | null;
+    channelSetup?: ChannelSetupResult;
+  };
+  if (res.status === 409) throw new DuplicateDealershipError(body.error ?? 'This dealership already exists.', body.existingDealershipId ?? null);
+  if (!res.ok || !body.dealer) throw new Error(body.error ?? `Request failed (${res.status})`);
   return {
-    dealerId: wire.dealer.id,
-    legalName: wire.dealer.legalName,
-    invite: wire.invite ? adaptInvite({ invite: { ...wire.invite, accessRole: 'DEALER_OWNER' } }) : null,
+    dealerId: body.dealer.id,
+    legalName: body.dealer.legalName,
+    invite: body.invite ? adaptInvite({ invite: { ...body.invite, accessRole: 'DEALER_OWNER' } }) : null,
+    channelSetup: body.channelSetup ?? { status: 'READY', missing: [] },
+  };
+}
+
+/** Re-runs default channel setup. Safe to repeat; it never duplicates anything. */
+export async function retryChannelSetup(dealershipId: string): Promise<ChannelSetupResult> {
+  const res = await apiFetch<{ channelSetup: ChannelSetupResult }>(
+    `/api/admin/dealerships/${encodeURIComponent(dealershipId)}/channel-setup`,
+    { method: 'POST' },
+  );
+  return res.channelSetup;
+}
+
+function createBody(input: CreateDealershipRecordInput) {
+  return {
+    legalName: input.legalName.trim(),
+    businessCategory: input.businessCategory,
+    primaryContact: { email: input.ownerEmail.trim(), ...(input.ownerName?.trim() ? { name: input.ownerName.trim() } : {}) },
+    inviteOwnerEmail: input.ownerEmail.trim(),
   };
 }
 
@@ -510,7 +545,7 @@ export function adaptSummary(wire: SummaryWire): DealershipRecordSummary {
     internalOwner: wire.internalOwner ?? null,
     lastActivityAt: wire.lastActivityAt ?? wire.createdAt,
     blockedStepCount: wire.blockedStepCount ?? 0,
-    nextStep: wire.nextStep?.stepKey ? { key: wire.nextStep.stepKey, label: STEP_LABELS[wire.nextStep.stepKey],
+    nextStep: wire.nextStep?.stepKey ? { key: wire.nextStep.stepKey, status: wire.nextStep.status, label: STEP_LABELS[wire.nextStep.stepKey],
       ownerKind: wire.nextStep.ownerKind as TaskOwnerKind, nextAction: wire.nextStep.incompleteReason } : null };
 }
 export function adaptRecord(wire: RecordWire): DealershipRecordDetail {
@@ -531,5 +566,9 @@ export function adaptRecord(wire: RecordWire): DealershipRecordDetail {
     })),
     people: people.people.map((person) => ({ ...person, id: person.accountId })),
     invitations: people.invitations,
+    channelSetup: {
+      status: wire.channelSetup?.status === 'NEEDS_ATTENTION' ? 'NEEDS_ATTENTION' : 'READY',
+      missing: wire.channelSetup?.missing ?? [],
+    },
   };
 }

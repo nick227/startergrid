@@ -1,13 +1,13 @@
 import type { BusinessCategory, Prisma, PrismaClient } from '@prisma/client';
 import { OperatorRole } from '@prisma/client';
 import type { CreateDealershipBody } from '../../server/requestValidation.js';
-import { upsertDefaultPlatformAccounts, upsertDefaultSyncPolicies } from '../publishing/syncPolicyService.js';
 import { hashPassword } from '../auth/passwordService.js';
 import { seedOnboardingSteps } from '../dealership/onboardingSteps.js';
 import { refreshOnboarding } from '../dealership/onboardingService.js';
 import { createInvitation } from '../dealership/invitationService.js';
 import { assignInternalOwner } from '../dealership/peopleAccessService.js';
-import { HttpError } from '../dealership/httpError.js';
+import { DuplicateDealershipError, HttpError } from '../dealership/httpError.js';
+import { provisionDefaultChannels, type ChannelSetupResult } from '../dealership/channelSetupService.js';
 import { recordDealershipActivity } from '../dealership/activityService.js';
 
 type CreateDealershipOptions = {
@@ -32,7 +32,29 @@ export type CreateDealershipResult = {
   duplicate: false;
   createdOperatorAccountId?: string;
   invite?: { inviteId: string; setupUrl: string; email: string; expiresAt: string };
+  channelSetup: ChannelSetupResult;
 };
+
+async function withConflictRetry<T>(run: () => Promise<T>, attempts = 4): Promise<T> {
+  for (let attempt = 1; ; attempt++) {
+    try {
+      return await run();
+    } catch (err) {
+      if (attempt >= attempts || !isWriteConflict(err)) throw err;
+      await new Promise(resolve => setTimeout(resolve, 25 * attempt + Math.floor(Math.random() * 25)));
+    }
+  }
+}
+
+function isWriteConflict(err: unknown): boolean {
+  const code = (err as { code?: string } | null)?.code;
+  const message = err instanceof Error ? err.message : '';
+  return code === 'P2034' || /deadlock|write conflict|1213/i.test(message);
+}
+
+function actorIdAfter(options: CreateDealershipOptions, createdOperatorAccountId?: string): string | null {
+  return options.createdByOperatorId ?? createdOperatorAccountId ?? null;
+}
 
 function cleanOptional(value: string | undefined | null): string | null {
   const trimmed = value?.trim();
@@ -50,17 +72,15 @@ export async function createDealership(
   const websiteUrl = cleanOptional(body.websiteUrl);
   const contactEmail = body.primaryContact.email.trim().toLowerCase();
 
-  const duplicate = await prisma.dealershipProfile.findFirst({
-    where: {
-      OR: [
-        { legalName },
-        ...(dealerLicense ? [{ dealerLicense }] : []),
-        ...(websiteUrl ? [{ websiteUrl }] : []),
-      ],
-    },
-    select: { id: true },
-  });
-  if (duplicate) throw new HttpError(409, 'A dealership with matching business details already exists');
+  const duplicateWhere = {
+    OR: [
+      { legalName },
+      ...(dealerLicense ? [{ dealerLicense }] : []),
+      ...(websiteUrl ? [{ websiteUrl }] : []),
+    ],
+  };
+  const duplicate = await prisma.dealershipProfile.findFirst({ where: duplicateWhere, select: { id: true } });
+  if (duplicate) throw new DuplicateDealershipError(duplicate.id);
 
   let passwordHash: string | null = null;
   if (body.password) {
@@ -69,7 +89,15 @@ export async function createDealership(
     passwordHash = await hashPassword(body.password);
   }
 
-  const created = await prisma.$transaction(async (tx) => {
+  // The loser of a concurrent identical create is rolled back as a deadlock while the
+  // winner may still be committing, so retry: the next locking read waits for the winner
+  // and then reports it as a duplicate instead of failing with a generic error.
+  const created = await withConflictRetry(() => prisma.$transaction(async (tx) => {
+    // Locking read on the indexed name: a concurrent identical create blocks here (or
+    // deadlocks and is rolled back) instead of committing a second dealership.
+    const locked = await tx.$queryRaw<Array<{ id: string }>>`SELECT id FROM DealershipProfile WHERE legalName = ${legalName} LIMIT 1 FOR UPDATE`;
+    if (locked[0]) throw new DuplicateDealershipError(locked[0].id);
+
     let createdOperatorAccountId: string | undefined;
     if (passwordHash) {
       const account = await tx.operatorAccount.create({
@@ -174,15 +202,15 @@ export async function createDealership(
       await refreshOnboarding(tx, dealer.id, actorId);
     }
     return { dealer, createdOperatorAccountId, invite };
-  });
+  }));
 
-  // Default channel accounts and sync policies are idempotent distribution setup.
-  try {
-    await upsertDefaultSyncPolicies(prisma, created.dealer.id);
-    await upsertDefaultPlatformAccounts(prisma, created.dealer.id);
-  } catch (syncErr) {
-    console.warn(`[createDealership] Default channel sync policies or accounts setup encountered an issue for ${created.dealer.id}:`, syncErr);
-  }
+  // Default channels are a recoverable setup step, not part of the creation transaction:
+  // the dealership and invitation stay committed and a failure becomes a retryable next action.
+  const channelSetup = await provisionDefaultChannels(
+    prisma,
+    created.dealer.id,
+    actorIdAfter(options, created.createdOperatorAccountId) ? { id: actorIdAfter(options, created.createdOperatorAccountId)!, email: options.actorEmail ?? contactEmail } : null,
+  );
   const invite = created.invite;
 
   return {
@@ -197,5 +225,6 @@ export async function createDealership(
     duplicate: false,
     createdOperatorAccountId: created.createdOperatorAccountId,
     invite,
+    channelSetup,
   };
 }

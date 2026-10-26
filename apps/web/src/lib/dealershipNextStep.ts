@@ -5,6 +5,7 @@ import { SETUP_LIFECYCLES } from './dealershipLabels.ts';
  * Nothing here marks steps complete; completion comes from what actually happened.
  */
 export type NextActionKind =
+  | 'retryChannelSetup'
   | 'inviteOwner'
   | 'shareOwnerLink'
   | 'waitForOwner'
@@ -32,7 +33,16 @@ export function recordNextAction(record: {
   onboardingSteps: Step[];
   invitations: Invite[];
   people: Person[];
+  channelSetup?: { status: string; missing: string[] };
 }, now = new Date()): NextAction {
+  // A failed setup step is our team's to fix and outranks waiting on anyone else.
+  if (record.channelSetup?.status === 'NEEDS_ATTENTION') {
+    const n = record.channelSetup.missing.length;
+    return {
+      kind: 'retryChannelSetup', label: 'Retry channel setup', owner: 'OUR_TEAM', actionable: true,
+      detail: `Default setup did not finish for ${n} destination${n === 1 ? '' : 's'}. Retrying is safe and never creates duplicates.`,
+    };
+  }
   const open = (key: string) => record.onboardingSteps.find(s => s.key === key && s.status !== 'COMPLETE');
   const owners = record.people.filter(p => p.accessRole === 'DEALER_OWNER' && !p.isInternal && p.isActive);
   const ownerSignedIn = owners.some(p => p.firstLoginAt || p.lastLoginAt);
@@ -85,13 +95,14 @@ type Summary = {
   lifecycleStatus: string;
   blockedStepCount?: number;
   waitingForStock?: boolean;
-  nextStep?: { key: string; ownerKind: string } | null;
+  nextStep?: { key: string; ownerKind: string; status?: string } | null;
 };
 
 /** Directory wording for the same next step, from the list summary. */
 export function summaryNextAction(summary: Summary): { label: string; owner: 'OUR_TEAM' | 'DEALER' | null } {
   const step = summary.nextStep;
   if (!step) return { label: summary.lifecycleStatus === 'PAUSED' ? 'Paused' : 'No action needed', owner: null };
+  if (step.key === 'CHANNELS' && step.status === 'BLOCKED') return { label: 'Retry channel setup', owner: 'OUR_TEAM' };
   const dealerMoves = step.ownerKind === 'DEALER' || step.ownerKind === 'YOU';
   switch (step.key) {
     case 'ACCESS': return dealerMoves ? { label: 'Owner to accept invitation', owner: 'DEALER' } : { label: 'Invite the owner', owner: 'OUR_TEAM' };

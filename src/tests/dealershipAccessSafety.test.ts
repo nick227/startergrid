@@ -11,6 +11,9 @@ import { hashPassword, verifyPassword } from '../services/auth/passwordService.j
 import { hashSessionToken } from '../services/auth/sessionService.js';
 import { deliverInvitation, inviteEmailDeliveryEnabled } from '../services/dealership/invitationDelivery.js';
 import { createDealership } from '../services/dealer/createDealershipService.js';
+import { provisionDefaultChannels } from '../services/dealership/channelSetupService.js';
+import { DuplicateDealershipError } from '../services/dealership/httpError.js';
+import { platformSlugsForCategory } from '../data/platformCategoryMap.js';
 
 type Row = Record<string, any>;
 
@@ -43,6 +46,18 @@ function memoryPrisma() {
     activity: [] as Row[],
     steps: [] as Row[],
     dealers: [] as Row[],
+    accounts2: [] as Row[],
+    policies: [] as Row[],
+    failChannels: null as null | 'platformAccount' | 'syncPolicy',
+  };
+  const upsertKeyed = (rows: Row[], where: Row, create: Row, model: 'platformAccount' | 'syncPolicy') => {
+    if (t.failChannels === model) throw new Error(`simulated ${model} outage`);
+    const key = where.dealershipId_platformSlug;
+    const row = rows.find(r => r.dealershipId === key.dealershipId && r.platformSlug === key.platformSlug);
+    if (row) return row;
+    const created = { ...create };
+    rows.push(created);
+    return created;
   };
   const withOperator = (row: Row): Row => ({ ...row, operator: t.accounts.find(a => a.id === row.operatorAccountId) });
 
@@ -128,7 +143,18 @@ function memoryPrisma() {
         return created;
       },
     },
+    $queryRaw: async () => [],
+    platformAccount: {
+      findMany: async ({ where }: Row) => t.accounts2.filter(r => r.dealershipId === where.dealershipId),
+      upsert: async ({ where, create }: Row) => upsertKeyed(t.accounts2, where, create, 'platformAccount'),
+    },
+    syncPolicy: {
+      findMany: async ({ where }: Row) => t.policies.filter(r => r.dealershipId === where.dealershipId),
+      upsert: async ({ where, create }: Row) => upsertKeyed(t.policies, where, create, 'syncPolicy'),
+    },
+    platformApplication: { findMany: async () => [] },
     dealershipProfile: {
+      findFirst: async ({ where }: Row) => t.dealers.find(d => where.OR?.some((c: Row) => c.legalName === d.legalName)) ?? null,
       findUnique: async ({ where }: Row) => {
         const dealer = t.dealers.find(d => d.id === where.id);
         if (!dealer) return null;
@@ -446,15 +472,11 @@ describe('dealership creation from essentials', () => {
     const { prisma, t } = memoryPrisma();
     const staff = await addAccount(t, { email: 'support@startergrid.test', role: 'INTERNAL_SUPPORT' });
     const p = prisma as unknown as Row;
-    p['dealershipProfile'].findFirst = async () => null;
     p['dealershipProfile'].create = async ({ data }: Row) => {
       const row = { id: 'dealer-new', dbaName: null, logoUrl: null, createdAt: new Date(), handoffCompletedAt: null, launchCompletedAt: null, waitingForStock: false, autopilotPreference: 'OFF', ...data };
       t.dealers.push(row);
       return row;
     };
-    p['syncPolicy'] = { upsert: async () => ({}) };
-    p['platformAccount'] = { upsert: async () => ({}) };
-    p['platformApplication'] = { findMany: async () => [] };
 
     const result = await createDealership(prisma, {
       legalName: 'Lakeview Motors',
@@ -473,5 +495,108 @@ describe('dealership creation from essentials', () => {
     assert.equal(t.dealers[0]!.internalOwnerId, staff.id);
     assert.deepEqual(t.activity.map(e => e.action), ['INTERNAL_OWNER_ASSIGNED', 'DEALERSHIP_CREATED', 'INVITE_CREATED']);
     assert.equal(t.steps.find(s => s.stepKey === 'ACCESS')?.ownerKind, 'DEALER', 'the owner now has the next move');
+  });
+});
+
+describe('default channel setup is recoverable, never ambiguous', () => {
+  let seqDealer = 0;
+  async function setup() {
+    const db = memoryPrisma();
+    const staff = await addAccount(db.t, { email: 'support@startergrid.test', role: 'INTERNAL_SUPPORT' });
+    (db.prisma as unknown as Row)['dealershipProfile'].create = async ({ data }: Row) => {
+      const row = { id: `dealer-${++seqDealer}`, dbaName: null, logoUrl: null, createdAt: new Date(), handoffCompletedAt: null, launchCompletedAt: null, waitingForStock: false, autopilotPreference: 'OFF', ...data };
+      db.t.dealers.push(row);
+      return row;
+    };
+    const create = () => createDealership(db.prisma, {
+      legalName: 'Lakeview Motors', businessCategory: 'AUTOMOTIVE', primaryContact: { email: 'owner@lakeview.test' },
+    }, { createdByOperatorId: staff.id, grantAccessToOperatorId: staff.id, inviteOwnerEmail: 'owner@lakeview.test', actorEmail: 'support@startergrid.test' });
+    return { ...db, staff, create };
+  }
+  const expected = platformSlugsForCategory('AUTOMOTIVE').length;
+
+  it('provisions every default destination when nothing fails', async () => {
+    const { t, create } = await setup();
+    const result = await create();
+    assert.equal(result.channelSetup.status, 'READY');
+    assert.equal(t.accounts2.length, expected);
+    assert.equal(t.policies.length, expected);
+    assert.notEqual(t.steps.find(s => s.stepKey === 'CHANNELS')?.status, 'BLOCKED');
+  });
+
+  it('keeps the dealership and invite, reports NEEDS_ATTENTION and blocks the next step when provisioning fails', async () => {
+    const { t, create } = await setup();
+    t.failChannels = 'platformAccount';
+    const result = await create();
+    assert.equal(t.dealers.length, 1, 'the committed dealership is kept');
+    assert.equal(t.invitations.length, 1, 'and so is the owner invitation');
+    assert.equal(result.channelSetup.status, 'NEEDS_ATTENTION');
+    assert.equal(result.channelSetup.missing.length, expected);
+    assert.match(result.channelSetup.message ?? '', /Retry channel setup/);
+    const step = t.steps.find(s => s.stepKey === 'CHANNELS');
+    assert.equal(step?.status, 'BLOCKED');
+    assert.equal(step?.ownerKind, 'OUR_TEAM');
+    const recorded = t.activity.find(e => e.action === 'CHANNEL_SETUP_INCOMPLETE');
+    assert.ok(recorded, 'the failure is recorded, not just logged');
+    assert.match(String(recorded.detail.error), /simulated platformAccount outage/);
+  });
+
+  it('a retry repairs setup idempotently and clears the blocked step', async () => {
+    const { prisma, t, staff, create } = await setup();
+    t.failChannels = 'platformAccount';
+    const { dealer } = await create();
+    t.failChannels = null;
+    const actor = { id: staff.id, email: 'support@startergrid.test' };
+    const first = await provisionDefaultChannels(prisma, dealer.id, actor, { retry: true });
+    const second = await provisionDefaultChannels(prisma, dealer.id, actor, { retry: true });
+    assert.equal(first.status, 'READY');
+    assert.equal(second.status, 'READY');
+    assert.equal(t.accounts2.length, expected, 'retries never duplicate channel accounts');
+    assert.equal(t.policies.length, expected, 'or sync policies');
+    assert.notEqual(t.steps.find(s => s.stepKey === 'CHANNELS')?.status, 'BLOCKED');
+    assert.equal(t.activity.filter(e => e.action === 'CHANNEL_SETUP_COMPLETED').length, 2);
+  });
+
+  it('repeating the same create returns the existing dealership instead of a duplicate', async () => {
+    const { t, create } = await setup();
+    t.failChannels = 'syncPolicy';
+    const { dealer } = await create();
+    t.failChannels = null;
+    await assert.rejects(create(), (err: unknown) => err instanceof DuplicateDealershipError && err.existingDealershipId === dealer.id);
+    assert.equal(t.dealers.length, 1);
+    assert.equal(t.invitations.length, 1);
+  });
+
+  it('the API answers 201 with channelSetup, and a repeated create gets 409 with the existing id', async () => {
+    const db = await setup();
+    const app = buildApp(db.prisma);
+    db.t.failChannels = 'platformAccount';
+    const payload = { legalName: 'Harbor Motors', businessCategory: 'AUTOMOTIVE', primaryContact: { email: 'o@harbor.test' }, inviteOwnerEmail: 'o@harbor.test' };
+    const headers = { cookie: (await addAccount(db.t, { email: 'admin@startergrid.test', role: 'SUPER_ADMIN' })).cookie };
+    const first = await app.inject({ method: 'POST', url: '/api/admin/dealerships', headers, payload });
+    assert.equal(first.statusCode, 201, first.body);
+    const body = first.json() as { dealer: { id: string }; channelSetup: { status: string }; invite: { setupUrl: string } };
+    assert.equal(body.channelSetup.status, 'NEEDS_ATTENTION');
+    assert.ok(body.invite.setupUrl);
+
+    const again = await app.inject({ method: 'POST', url: '/api/admin/dealerships', headers, payload });
+    assert.equal(again.statusCode, 409, again.body);
+    assert.equal((again.json() as { existingDealershipId: string }).existingDealershipId, body.dealer.id);
+
+    db.t.failChannels = null;
+    const retry = await app.inject({ method: 'POST', url: `/api/admin/dealerships/${body.dealer.id}/channel-setup`, headers });
+    assert.equal(retry.statusCode, 200, retry.body);
+    assert.equal((retry.json() as { channelSetup: { status: string } }).channelSetup.status, 'READY');
+    assert.equal(db.t.dealers.length, 1);
+  });
+
+  it('staff without access to the existing dealership are not told its id', async () => {
+    const db = await setup();
+    db.t.dealers.push({ id: 'dealer-hidden', legalName: 'Hidden Motors', createdAt: new Date() });
+    const app = buildApp(db.prisma);
+    const res = await app.inject({ method: 'POST', url: '/api/admin/dealerships', headers: { cookie: db.staff.cookie },
+      payload: { legalName: 'Hidden Motors', businessCategory: 'AUTOMOTIVE', primaryContact: { email: 'x@hidden.test' } } });
+    assert.equal(res.statusCode, 409, res.body);
+    assert.equal((res.json() as { existingDealershipId?: string }).existingDealershipId, undefined);
   });
 });

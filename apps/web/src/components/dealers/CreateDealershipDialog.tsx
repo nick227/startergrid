@@ -1,6 +1,6 @@
 import { useState, type FormEvent } from 'react';
 import { BUSINESS_CATEGORY_IDS } from '@auto-dealer/category-schemas';
-import { createDealershipRecord, type InviteResult } from '@/lib/api/dealershipRecordApi.ts';
+import { createDealershipRecord, DuplicateDealershipError, type ChannelSetupResult, type InviteResult } from '@/lib/api/dealershipRecordApi.ts';
 import { InviteLinkResult } from '@/components/people/InviteLinkResult.tsx';
 
 const FIELD = 'w-full px-3 py-2 text-sm border border-silver-300 rounded-md bg-surface-card focus:outline-none focus:ring-2 focus:ring-navy-500/30';
@@ -27,18 +27,23 @@ export function CreateDealershipDialog({ onClose, onOpenDealership, onCreated }:
   const [ownerEmail, setOwnerEmail] = useState('');
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [created, setCreated] = useState<{ dealerId: string; legalName: string; invite: InviteResult | null } | null>(null);
+  const [created, setCreated] = useState<{ dealerId: string; legalName: string; invite: InviteResult | null; channelSetup: ChannelSetupResult } | null>(null);
+  const [existingId, setExistingId] = useState<string | null>(null);
 
   const submit = async (e: FormEvent) => {
     e.preventDefault();
     setBusy(true);
     setError(null);
+    setExistingId(null);
     try {
       const result = await createDealershipRecord({ legalName, businessCategory: category, ownerName, ownerEmail });
       setCreated(result);
       onCreated?.();
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Could not create the dealership.');
+      if (err instanceof DuplicateDealershipError) setExistingId(err.existingDealershipId);
+      setError(err instanceof DuplicateDealershipError
+        ? 'This dealership already exists, so nothing new was created.'
+        : err instanceof Error ? err.message : 'Could not create the dealership.');
     } finally {
       setBusy(false);
     }
@@ -54,6 +59,12 @@ export function CreateDealershipDialog({ onClose, onOpenDealership, onCreated }:
               <h2 id="create-dealership-title" className="text-lg font-semibold text-ink-heading">{created.legalName} is set up</h2>
               <p className="text-sm text-ink-muted mt-1">Next, get the owner signed in. The rest of setup is on the dealership page.</p>
             </div>
+            {created.channelSetup.status === 'NEEDS_ATTENTION' && (
+              <p role="alert" className="rounded-md border border-status-warning-border bg-status-warning-bg px-3 py-2 text-sm text-status-warning-text">
+                The dealership and invitation were saved, but default channel setup did not finish.
+                Open the dealership and choose Retry channel setup; it is safe to repeat.
+              </p>
+            )}
             {created.invite && (
               <InviteLinkResult invite={created.invite} dealershipName={created.legalName} accessRole="DEALER_OWNER" name={ownerName} />
             )}
@@ -93,7 +104,14 @@ export function CreateDealershipDialog({ onClose, onOpenDealership, onCreated }:
             </div>
             <p className="text-xs text-ink-muted">You'll get a secure setup link for the owner as soon as the dealership is created.</p>
             {error && (
-              <p role="alert" className="rounded-md border border-status-error-border bg-status-error-bg px-3 py-2 text-sm text-status-error-text">{error}</p>
+              <div role="alert" className="rounded-md border border-status-error-border bg-status-error-bg px-3 py-2 text-sm text-status-error-text space-y-1">
+                <p>{error}</p>
+                {existingId && (
+                  <button type="button" onClick={() => onOpenDealership(existingId)} className="font-semibold underline">
+                    Open the existing dealership
+                  </button>
+                )}
+              </div>
             )}
             <div className="flex justify-end gap-2">
               <button type="button" onClick={onClose} disabled={busy} className="px-3 py-1.5 text-sm font-medium rounded-md text-ink-muted hover:bg-silver-100">Cancel</button>

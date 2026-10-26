@@ -135,3 +135,22 @@ describe('invitation copy', () => {
     expect(inviteProblem(404)).toMatch(/not valid/);
   });
 });
+
+describe('channel setup that needs attention', () => {
+  it('outranks every other next action and stays our team\'s to fix', () => {
+    const next = recordNextAction({
+      lifecycleStatus: 'SETTING_UP', onboardingSteps: allSteps({ ACCESS: 'IN_PROGRESS', CHANNELS: 'BLOCKED' }),
+      invitations: [{ email: 'o@x.test', accessRole: 'DEALER_OWNER', deliveryStatus: 'PENDING', expiresAt: future }], people: [],
+      channelSetup: { status: 'NEEDS_ATTENTION', missing: ['cars-com', 'cargurus-dealer'] },
+    });
+    expect(next).toMatchObject({ kind: 'retryChannelSetup', owner: 'OUR_TEAM', actionable: true });
+    expect(next.detail).toMatch(/2 destinations/);
+  });
+
+  it('reads as a retry in the directory and counts as needing action', () => {
+    const summary = { lifecycleStatus: 'SETTING_UP', blockedStepCount: 1, nextStep: { key: 'CHANNELS', ownerKind: 'OUR_TEAM', status: 'BLOCKED' } };
+    expect(summaryNextAction(summary)).toEqual({ label: 'Retry channel setup', owner: 'OUR_TEAM' });
+    expect(needsOurAction(summary)).toBe(true);
+    expect(activitySentence({ action: 'CHANNEL_SETUP_INCOMPLETE' })).toBe('Default channel setup did not finish');
+  });
+});

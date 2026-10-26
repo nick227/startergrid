@@ -94,6 +94,7 @@ const REGISTERED_ROUTES = new Set([
   'GET    /api/admin/dealerships/{dealershipId}/onboarding',
   'PATCH  /api/admin/dealerships/{dealershipId}/onboarding',
   'POST   /api/admin/dealerships/{dealershipId}/handoff',
+  'POST   /api/admin/dealerships/{dealershipId}/channel-setup',
   'GET    /api/dealers/{dealershipId}/notifications',
   'GET    /api/dealers/{dealershipId}/notification-channels',
   'PATCH  /api/dealers/{dealershipId}/notification-channels',
