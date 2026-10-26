@@ -30,7 +30,7 @@ type Props = {
   dealerId: string;
   initialTab?: RecordTab;
   viewer: { userId?: string | null; isSiteAdmin: boolean };
-  onOpenDealerView: (dealerId: string, page?: 'inventory' | 'platforms') => void;
+  onOpenDealerView: (dealerId: string, page?: 'inventory') => void;
   onBackToDirectory: () => void;
   onRefreshDealers?: () => void;
 };
@@ -46,7 +46,7 @@ const TONE_CLASS: Record<LifecycleTone, string> = {
 const PRIMARY_LABEL: Partial<Record<NextAction['kind'], string>> = {
   inviteOwner: 'Invite the owner',
   shareOwnerLink: 'Share the link again',
-  addVehicles: 'Open vehicles',
+  addVehicles: 'Open dealer view: Vehicles',
   setAutopilot: 'Record Autopilot decision',
   completeHandoff: 'Complete handoff',
 };
@@ -294,9 +294,6 @@ export function DealershipRecordView({ dealerId, initialTab = 'overview', viewer
                 {record.inventory.ready} ready · {record.inventory.needsAttention} need details · {record.inventory.sold} sold
                 {record.waitingForStock && ' · waiting for stock'}
               </p>
-              <button type="button" onClick={() => onOpenDealerView(dealerId, 'inventory')} className="mt-3 text-xs font-semibold text-navy-700 hover:underline">
-                Open vehicles
-              </button>
             </div>
             <div className="surface-card-operator p-5 rounded-xl border border-silver-200 bg-white">
               <h3 className="text-xs font-semibold uppercase tracking-wide text-ink-muted">Destinations</h3>
@@ -309,9 +306,6 @@ export function DealershipRecordView({ dealerId, initialTab = 'overview', viewer
                   ))}
                 </ul>
               )}
-              <button type="button" onClick={() => onOpenDealerView(dealerId, 'platforms')} className="mt-3 text-xs font-semibold text-navy-700 hover:underline">
-                Open channels
-              </button>
             </div>
           </section>
 
