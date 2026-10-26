@@ -47,7 +47,7 @@ const TONE: Record<PersonStatus['tone'], string> = {
 };
 
 function StatusChip({ status }: { status: PersonStatus }) {
-  return <span className={`inline-flex px-2 py-0.5 rounded border text-[11px] font-medium ${TONE[status.tone]}`}>{status.label}</span>;
+  return <span className={`self-start sm:self-auto inline-flex px-2 py-0.5 rounded border text-[11px] font-medium ${TONE[status.tone]}`}>{status.label}</span>;
 }
 
 /** Shared by the internal dealership record (People) and the dealer's Settings → Team. */

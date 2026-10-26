@@ -140,7 +140,8 @@ export type PeopleResponse = {
 async function apiFetch<T>(path: string, init?: RequestInit): Promise<T> {
   const res = await fetch(path, {
     ...init,
-    headers: { 'Content-Type': 'application/json', ...(init?.headers ?? {}) },
+    // Fastify rejects a JSON content type with an empty body, so only bodies get the header.
+    headers: { ...(init?.body ? { 'Content-Type': 'application/json' } : {}), ...(init?.headers ?? {}) },
     credentials: 'include',
   });
   if (!res.ok) {

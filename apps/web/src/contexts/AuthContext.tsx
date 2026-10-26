@@ -47,7 +47,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   useEffect(() => subscribeUnauthorized(() => {
     const dev = devBypassIdentity();
     setUser(dev);
-    if (!dev) window.location.hash = '#/';
+    // Invitation links are public; a stray 401 must not bounce the invitee to sign-in.
+    if (!dev && !window.location.hash.startsWith('#/invite/')) window.location.hash = '#/';
   }), []);
 
   const login = useCallback(async (email: string, password: string) => {

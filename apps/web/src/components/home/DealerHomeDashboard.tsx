@@ -52,7 +52,6 @@ export function DealerHomeDashboard({ dealerId, nav }: Props) {
 
   const newLeads = leads.filter(lead => !lead.workflowStatus || lead.workflowStatus === 'NEW');
   const blocked = status?.vehicles?.blocked ?? 0;
-  const emptyLot = (status?.vehicles.total ?? 0) === 0;
   const connectedCount = (status?.platforms ?? []).filter(platformIsConnected).length;
 
   const lastCheckTime = status?.autoSync?.lastCompletedAt
@@ -161,7 +160,7 @@ export function DealerHomeDashboard({ dealerId, nav }: Props) {
         </div>
       </section>
 
-      {emptyLot && <GettingStartedChecklist dealerId={dealerId} nav={nav} />}
+      <GettingStartedChecklist dealerId={dealerId} nav={nav} />
 
       <section className="surface-card-operator p-5 rounded-xl border border-silver-200 bg-white space-y-3">
         <h3 className="text-sm font-semibold text-ink-heading">Needs attention</h3>

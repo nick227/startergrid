@@ -2,9 +2,6 @@ import { useEffect, useState } from 'react';
 import type { OperatorNavHandlers } from '@/lib/operatorNav.ts';
 import { fetchDealershipProfile, fetchPublishStatus } from '@/lib/api/sdk.ts';
 import type { DealershipProfile, PublishStatusResponse } from '@/lib/types.ts';
-import { hasOptionalChannelConfigured } from '@/components/dealers/DealershipProfilePanel.tsx';
-import { SectionCard } from '@/components/operator';
-
 type Props = {
   dealerId: string;
   nav: OperatorNavHandlers;
@@ -27,47 +24,46 @@ function platformIsConnected(platform: PublishStatusResponse['platforms'][number
 function buildSteps(nav: OperatorNavHandlers, profile: DealershipProfile, status: PublishStatusResponse): Step[] {
   return [
     {
-      key: 'profile',
-      label: 'Complete your dealership profile',
-      done: profile.publishingWarnings.every(w => w.severity !== 'critical'),
-      onGo: nav.goToSettings,
-      ctaLabel: 'Go to Settings',
-    },
-    {
       key: 'channels',
-      label: 'Set up lead notifications',
-      done: hasOptionalChannelConfigured(profile),
-      onGo: nav.goToSettings,
-      ctaLabel: 'Go to Settings',
-    },
-    {
-      key: 'platform',
-      label: 'Connect a sales channel',
+      label: 'Connect at least one sales channel (Google, Meta, or partner marketplaces)',
       done: status.platforms.some(platformIsConnected),
       onGo: nav.goToPlatforms,
       ctaLabel: 'Open channels',
     },
     {
       key: 'vehicle',
-      label: 'Add your first vehicle',
+      label: 'Add or import your vehicle inventory',
       done: status.vehicles.total > 0,
       onGo: () => nav.goToInventory(),
       ctaLabel: 'Open vehicles',
     },
     {
       key: 'ready',
-      label: 'Make at least one vehicle ready to list',
+      label: 'Make vehicles ready to list (fix prices and attach photos)',
       done: status.vehicles.ready > 0,
       onGo: () => nav.goToInventory(),
-      ctaLabel: 'Open vehicles',
+      ctaLabel: 'Review lot',
+    },
+    {
+      key: 'autopilot',
+      label: 'Activate Autopilot (automated syndication & safeguard guardrails)',
+      done: (profile.autopilotPreference ?? 'OFF') === 'ON',
+      onGo: nav.goToHome,
+      ctaLabel: 'Review Autopilot',
+    },
+    {
+      key: 'team',
+      label: 'Invite your dealership sales and management team',
+      done: profile.publishingWarnings.every(w => w.field !== 'primaryContactEmail'),
+      onGo: nav.goToSettings,
+      ctaLabel: 'Invite team',
     },
   ];
 }
 
 /**
- * Proactive setup guidance for the dealer Home page. Unlike the InfoButton/doc-reader
- * system (pull: user must know to click "i"), this pushes a concrete next step until
- * the dealer's real account state shows every step is done — then it dismisses itself.
+ * Proactive setup guidance for the dealer Home page. Explains what StarterGrid does
+ * and gives new dealership employees a crystal-clear path to first publication and lead handling.
  */
 export function GettingStartedChecklist({ dealerId, nav }: Props) {
   const [steps, setSteps] = useState<Step[] | null>(null);
@@ -83,10 +79,7 @@ export function GettingStartedChecklist({ dealerId, nav }: Props) {
         if (!active) return;
         setSteps(buildSteps(nav, profile, status));
       })
-      .catch(() => {
-        // Setup guidance is a nice-to-have, not a load-bearing surface — fail silently
-        // rather than showing an error banner above the rest of a working Home page.
-      });
+      .catch(() => {});
     return () => { active = false; };
   }, [dealerId, nav]);
 
@@ -104,38 +97,70 @@ export function GettingStartedChecklist({ dealerId, nav }: Props) {
   }
 
   const doneCount = steps.filter(s => s.done).length;
+  const progressPercent = Math.round((doneCount / steps.length) * 100);
 
   return (
-    <div className="mb-6">
-      <SectionCard
-        title="Getting started"
-        subtitle={`${doneCount} of ${steps.length} steps complete`}
-        action={
-          <button type="button" onClick={dismiss} className="text-xs text-ink-faint hover:text-ink-muted underline underline-offset-2">
-            Hide
-          </button>
-        }
-      >
-        <ul className="space-y-2.5">
-          {steps.map(step => (
-            <li key={step.key} className="flex items-center justify-between gap-3">
-              <span className="flex items-center gap-2.5 text-sm">
-                <span className={`flex h-5 w-5 shrink-0 items-center justify-center rounded-full text-[11px] font-bold ${
-                  step.done ? 'bg-status-success-bg text-status-success-text' : 'bg-silver-100 text-ink-faint border border-silver-300'
-                }`}>
-                  {step.done ? '✓' : ''}
-                </span>
-                <span className={step.done ? 'text-ink-muted line-through' : 'text-ink-heading font-medium'}>{step.label}</span>
+    <div className="surface-card-operator p-5 rounded-xl border border-silver-200 bg-white space-y-4">
+      {/* Platform Value Proposition & Orientation */}
+      <div className="flex items-start justify-between gap-4">
+        <div className="space-y-1">
+          <div className="flex items-center gap-2">
+            <span className="text-base">🚀</span>
+            <h2 className="text-sm font-bold text-ink-heading">Getting started with StarterGrid</h2>
+          </div>
+          <p className="text-xs text-ink-muted leading-relaxed max-w-2xl">
+            StarterGrid centralizes your lot inventory, automatically syndicates eligible listings to connected advertising channels with pricing safeguards, and routes incoming buyer inquiries to your team.
+          </p>
+        </div>
+        <button
+          type="button"
+          onClick={dismiss}
+          className="text-xs text-ink-faint hover:text-ink-muted underline underline-offset-2 shrink-0"
+        >
+          Hide checklist
+        </button>
+      </div>
+
+      {/* Progress Bar */}
+      <div className="space-y-1.5 pt-1">
+        <div className="flex items-center justify-between text-xs">
+          <span className="font-semibold text-ink-heading">Setup Progress</span>
+          <span className="text-ink-muted">{doneCount} of {steps.length} steps completed ({progressPercent}%)</span>
+        </div>
+        <div className="w-full h-2 bg-silver-100 rounded-full overflow-hidden">
+          <div
+            className="h-full bg-navy-800 transition-all duration-300 rounded-full"
+            style={{ width: `${progressPercent}%` }}
+          />
+        </div>
+      </div>
+
+      {/* Checklist items */}
+      <ul className="space-y-2.5 pt-2 border-t border-silver-100">
+        {steps.map(step => (
+          <li key={step.key} className="flex items-center justify-between gap-3 text-xs sm:text-sm">
+            <span className="flex items-center gap-2.5">
+              <span className={`flex h-5 w-5 shrink-0 items-center justify-center rounded-full text-[11px] font-bold ${
+                step.done ? 'bg-status-success-bg text-status-success-text' : 'bg-silver-100 text-ink-faint border border-silver-300'
+              }`}>
+                {step.done ? '✓' : ''}
               </span>
-              {!step.done && (
-                <button type="button" onClick={step.onGo} className="shrink-0 text-xs font-semibold text-navy-600 hover:text-navy-800">
-                  {step.ctaLabel} →
-                </button>
-              )}
-            </li>
-          ))}
-        </ul>
-      </SectionCard>
+              <span className={step.done ? 'text-ink-muted line-through' : 'text-ink-heading font-medium'}>
+                {step.label}
+              </span>
+            </span>
+            {!step.done && (
+              <button
+                type="button"
+                onClick={step.onGo}
+                className="shrink-0 text-xs font-semibold text-navy-700 hover:text-navy-900 font-sans"
+              >
+                {step.ctaLabel} →
+              </button>
+            )}
+          </li>
+        ))}
+      </ul>
     </div>
   );
 }
