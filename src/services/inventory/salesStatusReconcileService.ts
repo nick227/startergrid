@@ -1,3 +1,4 @@
+import { autopilotEnabled } from '../autopilot/service.js';
 import { guardRemovalBatch } from '../autopilot/inventoryGuard.js';
 import type { PrismaClient } from '@prisma/client';
 import { applyVehicleUpdate } from './inventoryUpdateService.js';
@@ -125,8 +126,8 @@ export async function reconcileSalesStatusFromIngest(
 
   const feedStocks = new Set(rows.map(r => r.stockNumber));
   const removalStocks = rows.filter(r => r.availability === 'sold' || r.availability === 'removed').map(r => r.stockNumber);
-  const removalVehicles = removalStocks.length ? await prisma.vehicle.findMany({ where: { dealershipId, stockNumber: { in: removalStocks } }, select: { id: true } }) : [];
-  const snapshotCandidates = canApplySnapshot ? await detectSnapshotRemovedCandidates(prisma, dealershipId, feedStocks) : [];
+  const removalVehicles = autopilotEnabled() && removalStocks.length ? await prisma.vehicle.findMany({ where: { dealershipId, stockNumber: { in: removalStocks } }, select: { id: true } }) : [];
+  const snapshotCandidates = autopilotEnabled() && canApplySnapshot ? await detectSnapshotRemovedCandidates(prisma, dealershipId, feedStocks) : [];
   await guardRemovalBatch(prisma, dealershipId, [...removalVehicles.map(v => v.id), ...snapshotCandidates.map(v => v.vehicleId)], opts.ingressRunId);
   const rowResult = await applyRowAvailability(
     prisma,

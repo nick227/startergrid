@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { describeAutopilot, type AutopilotPreference } from '@/lib/autopilotStatus.ts';
 import { fetchDealershipProfile, updateDealershipProfile } from '@/lib/api/sdk.ts';
 import { AutopilotStatusCard } from './AutopilotStatusCard.tsx';
+import { AutopilotPreviewModal } from '@/components/platforms/AutopilotPreviewModal.tsx';
 
 type Props = {
   dealerId: string;
@@ -20,6 +21,7 @@ export function DealershipAutopilot({
 }: Props) {
   const [saving, setSaving] = useState(false);
   const [loaded, setLoaded] = useState<AutopilotPreference | null>(preference ?? null);
+  const [showPreview, setShowPreview] = useState(false);
 
   useEffect(() => {
     if (preference != null) {
@@ -55,11 +57,29 @@ export function DealershipAutopilot({
   };
 
   return (
-    <AutopilotStatusCard
-      view={view}
-      saving={saving}
-      onPause={() => void apply('PAUSED')}
-      onResume={() => void apply('ON')}
-    />
+    <>
+      <AutopilotStatusCard
+        view={view}
+        saving={saving}
+        onPause={() => void apply('PAUSED')}
+        onResume={() => setShowPreview(true)}
+        extraAction={
+          <button
+            type="button"
+            onClick={() => setShowPreview(true)}
+            className="text-xs text-navy-700 hover:text-navy-900 font-semibold px-2.5 py-1.5 rounded-md hover:bg-navy-50 transition-colors border border-silver-200"
+          >
+            Preview Impact
+          </button>
+        }
+      />
+
+      <AutopilotPreviewModal
+        dealerId={dealerId}
+        isOpen={showPreview}
+        onClose={() => setShowPreview(false)}
+        onConfirm={() => void apply('ON')}
+      />
+    </>
   );
 }

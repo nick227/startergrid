@@ -1,3 +1,4 @@
+import { createReconnectUrl } from './platformConnect.js';
 import type { FastifyInstance } from 'fastify';
 import type { PrismaClient } from '@prisma/client';
 import { randomBytes } from 'crypto';
@@ -1337,19 +1338,18 @@ export function registerAdminRoutes(app: FastifyInstance, prisma: PrismaClient):
 
     const incidentId = body.incidentId;
 
-    // Execute Reauth logic (e.g. invalidate current token, generate auth URL)
+    let connection: { authUrl: string; state: string };
+    try { connection = await createReconnectUrl(prisma, body.dealerId, body.platformSlug); }
+    catch (error) { return reply.status(409).send({ error: error instanceof Error ? error.message : 'Connection setup failed.' }); }
     await prisma.adminAuditLog.create({
       data: {
         action: 'ISSUE_REAUTH',
         actorId: actor.id,
         actorEmail: actor.email,
-        detail: { incidentId, dealerId: body.dealerId, platformSlug: body.platformSlug, result: 'succeeded' },
+        detail: { incidentId, dealerId: body.dealerId, platformSlug: body.platformSlug, result: 'initiated' },
       },
     });
 
-    // Mock Auth URL return
-    const authUrl = `https://mock-oauth-provider.com/auth?client_id=test&state=${body.dealerId}`;
-
-    return reply.send({ status: 'succeeded', authUrl });
+    return reply.send({ status: 'initiated', authUrl: connection.authUrl });
   });
 }

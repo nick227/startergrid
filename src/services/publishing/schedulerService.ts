@@ -7,7 +7,7 @@ import {
   type DealerOutboundContext,
 } from './historyEligibilityService.js';
 import { isInCooldown } from './syncPolicyService.js';
-import { getDispatchEnvironment, dispatchAdapter, type DispatchEnvironment } from './dispatchAdapter.js';
+import { getDispatchEnvironment, dispatchAdapter, type DispatchEnvironment, type DispatchResult } from './dispatchAdapter.js';
 
 // ── Constants ────────────────────────────────────────────────────────────────
 
@@ -263,14 +263,17 @@ export async function runScheduler(
     let runFailed = 0;
 
     for (const item of items) {
-      const dispatchResult = await dispatchAdapter({
+      let dispatchResult: DispatchResult;
+      try { dispatchResult = await dispatchAdapter({
         platformSlug: item.platformSlug,
         environment: dispatchEnv,
         dealershipId: dId,
         vehicleId: item.vehicleId,
         triggerKind: item.triggerKind,
         idempotencyKey: item.idempotencyKey,
-      });
+      }); } catch (error) {
+        dispatchResult = { success: false, environment: dispatchEnv, error: error instanceof Error ? error.message : 'Dispatch failed' };
+      }
       const success = dispatchResult.success;
 
       if (success) {
@@ -313,7 +316,8 @@ export async function runScheduler(
             attemptCount: newAttemptCount,
             lastAttemptAt: new Date(),
             nextAttemptAt: retryAt,
-            failureReason: 'MOCK dispatch failure (simulated)'
+            scheduledFor: retryAt,
+            failureReason: dispatchResult.error ?? 'Dispatch failed without a confirmation.'
           }
         });
 

@@ -1,3 +1,4 @@
+import { registerAutopilotRoutes } from './routes/autopilot.js';
 import Fastify, { type FastifyInstance } from 'fastify';
 import cors from '@fastify/cors';
 import fastifyMultipart from '@fastify/multipart';
@@ -105,6 +106,7 @@ export function buildApp(prisma: PrismaClient): FastifyInstance {
     });
   }
 
+  registerAutopilotRoutes(app, prisma);
   registerAuthRoutes(app, prisma);
   registerInviteAuthRoutes(app, prisma);
   registerDealerRoutes(app, prisma);

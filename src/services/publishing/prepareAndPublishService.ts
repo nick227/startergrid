@@ -475,7 +475,7 @@ function stateDetail(
   accountState: string | null
 ): string {
   switch (state) {
-    case 'Active':          return `Live on ${platform.name} — inventory visible to shoppers.`;
+    case 'Active':          return `Account active on ${platform.name} — publication requires destination verification.`;
     case 'Ready':           return `Queued for next scheduler run.`;
     case 'Scheduled':       return scheduledFor
       ? `Scheduled for ${scheduledFor.toISOString().slice(0, 16)} UTC.`

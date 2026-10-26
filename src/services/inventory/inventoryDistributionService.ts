@@ -13,7 +13,7 @@ export type InventoryDistributionSummary = {
   nextActionHref: string | null;
 };
 
-const LIVE_QUEUE_STATUSES = ['SENT'] as const;
+// A queue receipt is not evidence of a live listing.
 const QUEUED_STATUSES = ['READY', 'NEEDS_APPROVAL', 'SCHEDULED', 'CLAIMED'] as const;
 const FAILED_STATUSES = ['FAILED'] as const;
 const HELD_STATUSES = ['HELD', 'BLOCKED', 'CANCELLED'] as const;
@@ -64,7 +64,7 @@ export async function buildDistributionSummary(
     q => (FAILED_STATUSES as readonly string[]).includes(q.status)
   ).length;
 
-  // Live evidence: active marketplace listings + recent social posts + SENT queue items
+  // Legacy explicit listings/posts remain separate from transport receipts.
   const liveListings = new Set<string>();
   for (const l of marketplaceListings) {
     if (l.status === 'ACTIVE') liveListings.add(l.platformSlug);
@@ -72,9 +72,7 @@ export async function buildDistributionSummary(
   for (const p of socialPosts) {
     if (p.status === 'PUBLISHED') liveListings.add(p.platformSlug);
   }
-  for (const q of queueItems) {
-    if ((LIVE_QUEUE_STATUSES as readonly string[]).includes(q.status)) liveListings.add(q.platformSlug);
-  }
+
   const liveCount = liveListings.size;
 
   // Blocked = platform accounts with bad credential/state
@@ -194,9 +192,7 @@ export async function buildDistributionSummaryBatch(
     for (const p of vPosts) {
       if (p.status === 'PUBLISHED') liveSet.add(p.platformSlug);
     }
-    for (const q of vQueue) {
-      if ((LIVE_QUEUE_STATUSES as readonly string[]).includes(q.status)) liveSet.add(q.platformSlug);
-    }
+
 
     const liveCount = liveSet.size;
     const lastSync = latestSyncByVehicle.get(vehicleId);

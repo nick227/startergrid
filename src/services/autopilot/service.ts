@@ -5,7 +5,7 @@ import { isPlatformAllowedForCategory } from '../../data/platformCategoryMap.js'
 import { getMarketplaceVehicle } from '../marketplace/marketplaceQueryService.js';
 import { qualifyChannel } from './capabilities.js';
 import { defaultPolicy, idempotencyKey, removalGuard, snapshotHash, validatePolicy } from './policy.js';
-import { decideDistribution, evidenceStatus } from './decisions.js';
+import { decideDistribution, evidenceStatus, DistributionFailure, failureDecision } from './decisions.js';
 import { DISTRIBUTION_CONTRACT_VERSION, type AutopilotPolicy, type ChannelCapability, type DistributionOutcome,
   type AutopilotSummary, type VehicleSnapshot, type PublicationEvidence } from './contracts.js';
 
@@ -72,14 +72,27 @@ export function toOutcome(row: DistributionTarget, now = new Date(), evidenceMax
     evidence, updatedAt: row.updatedAt.toISOString() };
 }
 
+export async function currentOutcomes(db: DistributionDb, rows: DistributionTarget[], policy: AutopilotPolicy): Promise<DistributionOutcome[]> {
+  const vehicles = await db.vehicle.findMany({ where: { dealershipId: policy.dealershipId, id: { in: rows.map(r => r.vehicleId) } }, include: { media: true } });
+  const hashes = new Map(vehicles.map(v => [v.id, snapshotHash(vehicleSnapshot(v))]));
+  return rows.map(row => {
+    const outcome = toOutcome(row, new Date(), policy.safeguards.evidenceMaxAgeMs);
+    if (['VERIFIED_LIVE', 'VERIFIED_REMOVED'].includes(outcome.status) && hashes.get(row.vehicleId) !== row.desiredHash)
+      return { ...outcome, status: 'UNKNOWN', owner: 'SYSTEM', nextAction: 'Inventory changed since verification; awaiting reconciliation.' };
+    return outcome;
+  });
+}
+
 export async function summary(db: DistributionDb, dealershipId: string): Promise<AutopilotSummary> {
   const [policy, capabilities, rows, openIncidents] = await Promise.all([
     readPolicy(db, dealershipId), capabilitiesForDealer(db, dealershipId),
     db.distributionTarget.findMany({ where: { dealershipId } }),
     db.distributionIncident.count({ where: { dealershipId, state: { not: 'RESOLVED' } } }),
   ]);
+  const dealer = await db.dealershipProfile.findUnique({ where: { id: dealershipId }, select: { autopilotPreference: true } });
+  if (dealer && dealer.autopilotPreference !== 'ON') policy.mode = dealer.autopilotPreference;
   const counts: AutopilotSummary['counts'] = {};
-  for (const row of rows) { const { status } = toOutcome(row, new Date(), policy.safeguards.evidenceMaxAgeMs); counts[status] = (counts[status] ?? 0) + 1; }
+  for (const { status } of await currentOutcomes(db, rows, policy)) { counts[status] = (counts[status] ?? 0) + 1; }
   const qualified = policy.includedChannels.filter(c => capabilities.some(x => x.channel === c && x.qualification === 'VERIFIED_AUTOMATIC')).length;
   const coverage = policy.mode === 'OFF' ? 'OFF' : policy.mode === 'PAUSED' ? 'PAUSED'
     : !qualified ? 'UNAVAILABLE' : qualified < policy.includedChannels.length ? 'PARTIAL' : 'FULL';
@@ -145,16 +158,25 @@ export async function reconcileDealer(db: PrismaClient, dealershipId: string): P
     // Onboarding can pause/disable immediately, but cannot independently enable delivery.
     if (dealer.autopilotPreference !== 'ON') policy.mode = dealer.autopilotPreference;
     const capabilities = await capabilitiesForDealer(tx, dealershipId);
-    const [vehicles, prior, accounts, deselections] = await Promise.all([
+    // Fence source writes while evaluating and committing the first-party effect.
+    await tx.$queryRaw`SELECT id FROM Vehicle WHERE dealershipId = ${dealershipId} FOR UPDATE`;
+    const [vehicles, prior, accounts, deselections, approvals] = await Promise.all([
       tx.vehicle.findMany({ where: { dealershipId }, include: { media: true } }),
       tx.distributionTarget.findMany({ where: { dealershipId } }),
       tx.platformAccount.findMany({ where: { dealershipId } }),
       tx.vehicleChannelSelection.findMany({ where: { dealershipId, selected: false } }),
+      tx.distributionIncident.findMany({ where: { dealershipId, reasonCode: 'REMOVAL_BATCH', state: 'ACKNOWLEDGED' } }),
     ]);
+    for (const missing of prior.filter(p => !vehicles.some(v => v.id === p.vehicleId))) {
+      await tx.distributionTarget.update({ where: { id: missing.id }, data: { status: 'UNKNOWN', reasonCode: 'SOURCE_MISSING',
+        owner: 'INTERNAL_SUPPORT', nextAction: 'Confirm destination withdrawal and investigate the deleted inventory record.' } });
+      await upsertIncident(tx, missing, 'SOURCE_MISSING',
+        'Confirm destination withdrawal and investigate the deleted inventory record.', 'INTERNAL_SUPPORT', {}, true);
+    }
     const channels = new Set([...policy.includedChannels, ...prior.map(p => p.channel)]);
     let processed = 0, verified = 0;
     for (const channel of channels) {
-      const channelPrior = prior.filter(p => p.channel === channel && p.verifiedSnapshot !== null);
+      const channelPrior = prior.filter(p => p.channel === channel && p.verifiedSnapshot !== null && !(p.verifiedSnapshot as unknown as VehicleSnapshot).sold && !(p.verifiedSnapshot as unknown as VehicleSnapshot).removed);
       const removalCount = channelPrior.filter(p => vehicles.some(v => v.id === p.vehicleId && (v.soldAt || v.removedAt))).length;
       const massRemovalHeld = removalGuard(removalCount, channelPrior.length, policy.safeguards);
       for (const vehicle of vehicles) {
@@ -168,7 +190,10 @@ export async function reconcileDealer(db: PrismaClient, dealershipId: string): P
           connected: Boolean(account?.dealerEnabled && account.state === 'ACTIVE'),
           selected: !deselections.some(d => d.vehicleId === vehicle.id && d.channelKey === channel),
           previouslyManaged: previous?.verifiedSnapshot != null, verifiedSnapshot: previous?.verifiedSnapshot as unknown as VehicleSnapshot | null ?? null,
-          massRemovalHeld, approvedHash: changed ? null : previous?.approvedHash ?? null });
+          massRemovalHeld: massRemovalHeld && !approvals.some(a => {
+            const e = a.technicalEvidence as { approvedVehicleIds?: string[]; approvalExpiresAt?: string };
+            return e.approvalExpiresAt && Date.parse(e.approvalExpiresAt) > Date.now() && e.approvedVehicleIds?.includes(vehicle.id);
+          }), approvedHash: previous?.approvedHash ?? null });
         if (!changed && decision.dispatch && previous && ['VERIFIED_LIVE', 'VERIFIED_REMOVED'].includes(previous.status) &&
             toOutcome(previous, new Date(), policy.safeguards.evidenceMaxAgeMs).status === previous.status) continue;
         if (!changed && decision.dispatch && previous?.nextAttemptAt && previous.nextAttemptAt > new Date()) continue;
@@ -179,7 +204,7 @@ export async function reconcileDealer(db: PrismaClient, dealershipId: string): P
             operation: decision.operation, status: decision.status, reasonCode: decision.reasonCode, nextAction: decision.nextAction, owner: decision.owner },
           update: { desiredHash, snapshot: json(snapshot), generation, operation: decision.operation, status: decision.status,
             reasonCode: decision.reasonCode, nextAction: decision.nextAction, owner: decision.owner,
-            ...(changed ? { attemptCount: 0, nextAttemptAt: null, approvedHash: null, evidence: Prisma.DbNull, submittedAt: null } : {}) },
+            ...(changed ? { attemptCount: 0, nextAttemptAt: null, approvedHash: previous?.approvedHash === desiredHash ? desiredHash : null, evidence: Prisma.DbNull, submittedAt: null } : {}) },
         });
         processed++;
         if (!decision.dispatch) {
@@ -187,18 +212,29 @@ export async function reconcileDealer(db: PrismaClient, dealershipId: string): P
             await upsertIncident(tx, target, decision.reasonCode!, decision.nextAction!, decision.owner, {}, decision.operation === 'WITHDRAW');
           continue;
         }
-        const evidence = await publishOwned(tx, target, snapshot);
+        // Fresh readback on an unchanged verified generation does not repeat an
+        // effect or emit a second publication event.
+        const refreshing = !changed && previous && ['VERIFIED_LIVE', 'VERIFIED_REMOVED'].includes(previous.status);
+        const evidence = refreshing ? {
+          ...(previous.evidence as unknown as PublicationEvidence), observedAt: new Date().toISOString(),
+          result: (decision.operation === 'WITHDRAW'
+            ? !await getMarketplaceVehicle(tx as PrismaClient, vehicle.id) ? 'REMOVED' : 'MISMATCH'
+            : await getMarketplaceVehicle(tx as PrismaClient, vehicle.id) ? 'LIVE' : 'MISMATCH') as PublicationEvidence['result'],
+        } : await publishOwned(tx, target, snapshot);
         const status = evidenceStatus(evidence, { ...target, operation: decision.operation }, new Date(), policy.safeguards.evidenceMaxAgeMs);
         const confirmed = status === 'VERIFIED_LIVE' || status === 'VERIFIED_REMOVED';
         await tx.distributionTarget.update({ where: { id: target.id }, data: { status, submittedAt: new Date(), evidence: json(evidence),
-          attemptCount: { increment: 1 }, nextAttemptAt: confirmed ? null : new Date(Date.now() + policy.safeguards.retryBaseMs),
+          attemptCount: confirmed ? 0 : { increment: 1 }, nextAttemptAt: confirmed ? null : new Date(Date.now() + policy.safeguards.retryBaseMs),
           nextAction: confirmed ? null : 'Ask support to check why the destination result differs.', owner: confirmed ? 'SYSTEM' : 'INTERNAL_SUPPORT',
           ...(confirmed ? { verifiedSnapshot: json(snapshot) } : {}) } });
         if (confirmed) {
           verified++;
-          await tx.distributionIncident.updateMany({ where: { targetId: target.id, state: { not: 'RESOLVED' } },
+          await tx.distributionIncident.updateMany({ where: { targetId: target.id, state: { not: 'RESOLVED' }, reasonCode: { notIn: ['PRICE_MUTATION_HELD', 'INVALID_INVENTORY_MUTATION'] } },
             data: { state: 'RESOLVED', verificationState: 'VERIFIED', resolvedAt: new Date() } });
-          await tx.syncEvent.create({ data: { dealershipId, vehicleId: vehicle.id, platformSlug: channel, kind: 'INVENTORY_CHANGE',
+          await tx.distributionIncident.updateMany({ where: { targetId: target.id, reasonCode: 'PRICE_MUTATION_HELD', state: 'ACKNOWLEDGED',
+            technicalEvidence: { path: '$.proposedPriceCents', equals: snapshot.priceCents } },
+            data: { state: 'RESOLVED', verificationState: 'VERIFIED', resolvedAt: new Date() } });
+          if (!refreshing) await tx.syncEvent.create({ data: { dealershipId, vehicleId: vehicle.id, platformSlug: channel, kind: 'INVENTORY_CHANGE',
             payload: json({ autopilot: true, status, evidence, idempotencyKey: idempotencyKey(dealershipId, vehicle.id, channel, generation) }) } });
         } else await upsertIncident(tx, target, 'VERIFICATION_MISMATCH', 'Ask support to verify the public listing before retrying.', 'INTERNAL_SUPPORT', { evidence }, decision.operation === 'WITHDRAW');
       }
@@ -212,14 +248,26 @@ export async function runAutopilot(db: PrismaClient): Promise<{ dealers: number;
   const policies = await db.autopilotPolicy.findMany({ select: { dealershipId: true } });
   let failed = 0;
   for (const { dealershipId } of policies) {
-    try { await reconcileDealer(db, dealershipId); }
+    const failedKey = createHash('sha256').update(`reconcile:${dealershipId}:RECONCILE_FAILED`).digest('hex');
+    const incident = await db.distributionIncident.findUnique({ where: { key: failedKey } });
+    const retry = incident?.technicalEvidence as { attempt?: number; nextAttemptAt?: string | null } | null;
+    if (incident?.state === 'OPEN' && (retry?.nextAttemptAt === null || (retry?.nextAttemptAt && Date.parse(retry.nextAttemptAt) > Date.now()))) continue;
+    try {
+      await reconcileDealer(db, dealershipId);
+      await db.distributionIncident.updateMany({ where: { key: failedKey, state: { not: 'RESOLVED' } },
+        data: { state: 'RESOLVED', verificationState: 'VERIFIED', resolvedAt: new Date() } });
+    }
     catch (error) {
       failed++;
+      const policy = await readPolicy(db, dealershipId);
+      const attempt = (retry?.attempt ?? 0) + 1;
+      const retryable = error instanceof Prisma.PrismaClientKnownRequestError && ['P1001', 'P1002', 'P1008', 'P2024', 'P2034'].includes(error.code);
+      const result = failureDecision(retryable ? new DistributionFailure('TRANSIENT', 'Database operation interrupted.') : error, attempt, policy, new Date());
       // Transaction failure cannot commit half a listing effect. Persist an owned
       // incident outside the rolled-back transaction; next sweep retries safely.
       await upsertIncident(db, { id: `reconcile:${dealershipId}`, dealershipId, vehicleId: '', channel: OWNED_CHANNEL, desiredHash: '' },
         'RECONCILE_FAILED', 'Internal support should inspect the distribution worker and retry.', 'INTERNAL_SUPPORT',
-        { errorType: error instanceof Error ? error.name : 'Unknown' });
+        { errorType: error instanceof Error ? error.name : 'Unknown', attempt, nextAttemptAt: result.nextAttemptAt?.toISOString() ?? null });
     }
   }
   return { dealers: policies.length, failed };

@@ -234,12 +234,9 @@ export async function buildVehicleChannelMatrix(
         liveStatus = 'LIVE';
         lastActivityAt = postedAt ?? null;
       } else if (queue.some(q => q.status === 'SENT')) {
-        liveStatus = 'LIVE';
+        liveStatus = 'QUEUED';
+        statusDetail = 'Submitted — destination publication has not been verified.';
         lastActivityAt = queue.find(q => q.status === 'SENT')?.sentAt ?? null;
-        const pendingUpdate = queue.find(q => q.status === 'SCHEDULED' && q.scheduledFor);
-        if (pendingUpdate?.scheduledFor) {
-          statusDetail = `Live · next update ${formatScheduledFor(pendingUpdate.scheduledFor)}`;
-        }
       } else if (
         catalog?.lastSyncAt &&
         vehicle.listingStatus === 'READY' &&
@@ -248,8 +245,8 @@ export async function buildVehicleChannelMatrix(
       ) {
         // Catalog sync is dealership-wide; an eligible+selected READY vehicle
         // is part of the synced catalog.
-        liveStatus = 'LIVE';
-        statusDetail = 'Included in catalog sync';
+        liveStatus = 'QUEUED';
+        statusDetail = 'Catalog submitted — destination publication has not been verified.';
         lastActivityAt = catalog.lastSyncAt;
       }
     }

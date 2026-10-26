@@ -1,15 +1,15 @@
-# V5 distribution contract — proposed for Cursor and Antigravity
+# V5 distribution contract — implementation v1
 
-Status: awaiting Cursor agreement before shared Prisma model/migration edits. No external publishing is authorized. Existing dealership/account schemas remain owned by Cursor.
+Status: implemented on a best-effort additive basis, as authorized by the user. Cursor reconciliation remains required before rollout. No external publishing is authorized. Existing dealership/account schemas remain owned by Cursor.
 
-## Ownership and proposed persistence
+## Ownership and persistence
 
-Codex owns the distribution implementation and new distribution-specific records; Cursor owns dealership/account models and onboarding APIs. Proposed additive records reference existing dealership and vehicle IDs, never replace them:
+Codex owns the distribution implementation and new distribution-specific records; Cursor owns dealership/account models and onboarding APIs. Additive records reference existing dealership and vehicle IDs, never replace them:
 
 - AutopilotPolicy: dealership ID (unique), OFF/ON/PAUSED, version, included channel keys, excluded vehicle IDs, validated guard thresholds, actor/time. Absent means OFF. Conditional policy updates require the current version.
-- DistributionTarget: unique dealership/vehicle/channel; current desired revision/hash/snapshot, operation, generation, worker lease, attempts/next attempt, evidence/outcome, last verified snapshot, held approval bound to desired generation. An atomic compare/upsert makes repeated identical snapshots a no-op. A lease/fencing token prevents stale workers committing over newer work.
+- DistributionTarget: unique dealership/vehicle/channel; current desired revision/hash/snapshot, operation, generation, attempts/next attempt, evidence/outcome, last verified snapshot, held approval bound to desired generation. An atomic compare/upsert makes repeated identical snapshots a no-op. A MySQL transaction locks the policy and inventory rows, serializing workers and atomically committing first-party effects and evidence. External network dispatch is not implemented in this transaction.
 - DistributionIncident: stable target/reason key, dealership/channel/item/batch, severity, impact, owner role/ID, plain description, next action, sanitized evidence, OPEN/ACKNOWLEDGED/RESOLVED, verification and audit timestamps.
-- DistributionAudit: immutable policy/approval/retry/reconnect/closure evidence with actor and target generation. Could reuse existing AdminAuditLog/SyncEvent where semantically suitable.
+- Existing AdminAuditLog and SyncEvent persist policy/approval/retry/reconnect/closure actions and verified publication generations.
 
 Use existing PublishQueueItem/scheduler for compatibility where feasible; V5 owned jobs must never be dispatched by legacy MOCK paths. Recover missed inventory hooks via durable desired-state reconciliation, including media edits and imports. Do not depend on process-local debounce timers for correctness.
 
@@ -23,7 +23,7 @@ Distribution status: NEEDS_SETUP | NEEDS_VEHICLE_INFORMATION | PROCESSING | SUBM
 
 Owner roles: DEALERSHIP | INTERNAL_SUPPORT | SYSTEM | PARTNER. An owner role/queue is always present; person ID is optional until assigned. The UI must show nextAction and not reconstruct business status from queue states.
 
-## Proposed endpoints
+## Endpoints
 
 GET /api/dealers/:dealershipId/autopilot — policy, capabilities, coverage, counts and freshness.
 PUT /api/dealers/:dealershipId/autopilot — validated policy + expectedVersion, audit; reject automatic inclusion of unqualified channels.
@@ -34,7 +34,7 @@ POST .../incidents/:incidentId/approve — explicit generation-bound guard appro
 POST .../incidents/:incidentId/resolve — recheck evidence before resolution; administrative closure remains distinct.
 POST .../incidents/:incidentId/reconnect — real existing OAuth connect flow; initiation is not recovery.
 
-Existing requireDealerAccess applies to reads. Until Cursor provides granular capabilities, policy/guard approval mutations are SUPER_ADMIN-only (fail closed); do not infer owner rights from DEALER_OPERATOR. Manual publishing remains separate and available through existing authorized paths.
+Existing requireDealerAccess applies to reads. Cursor capabilities change_autopilot and connect_channels authorize mutations; approvals additionally require internal staff. Manual publishing remains separate and available through existing authorized paths.
 
 ## Required semantics
 
@@ -44,6 +44,12 @@ No provider except the first-party marketplace qualifies initially. External ada
 
 Current marketplace public reads project live Vehicle fields, so holding a dispatch alone cannot hold a price already written to inventory. Safeguards must either gate the inventory mutation or introduce a verified public snapshot. Likewise mass-removal protection must run before lifecycle writes that immediately affect public visibility. This cross-cutting boundary needs explicit agreement; a background queue hold alone is insufficient.
 
-## Cursor response needed
+## Coordination and rollout
 
-Confirm additive model ownership and proposed persistence/API vocabulary; specify account capability API for policy mutations; agree the safe marketplace snapshot or pre-write safeguard boundary. Antigravity can use the DTO module and provisional endpoint shapes while persistence agreement is pending, but should not treat endpoints as shipped until implementation/tests land.
+Cursor: reconcile these additive distribution models with onboarding. Onboarding autopilotPreference can disable/pause delivery, but ON alone cannot enable a qualified distribution policy. Antigravity: consume the DTOs and OpenAPI endpoints, including nextAction, evidence observation time and incident owner. Do not derive live status from account ACTIVE, queue SENT or reconnect initiation.
+
+See [operations and verification](distribution-operations.md) for enablement and remaining boundaries. Endpoints authenticate first and return 503 when V5_AUTOPILOT_ENABLED is not true. Policy writes require expectedVersion; conflicts return 409. Incident actions return 409 until preconditions are satisfied. Missing policy means OFF within V5; legacy manual workflows remain available.
+
+OFF/PAUSED prevents automatic promotion/reactivation. Existing Auto Marketplace listings project current inventory directly: these modes do not freeze already public prices/details/photos. Supported price/removal entry points apply pre-write safeguards, including while paused. Other source writes need equivalent guards.
+
+Outcome reads compare current inventory hashes against stored verification and return UNKNOWN for changed inventory. Evidence is timestamped. Status filters select persisted worker state, so a VERIFIED_LIVE page may contain UNKNOWN after freshness checks.

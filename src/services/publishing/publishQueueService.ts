@@ -1,4 +1,5 @@
-﻿import type { PrismaClient, Prisma } from '@prisma/client';
+import { autopilotEnabled } from '../autopilot/service.js';
+import type { PrismaClient, Prisma } from '@prisma/client';
 import type { IntegrationClass, VehicleUpdateKind, VehicleUpdatePropagation } from '../../lib/types.js';
 import { platformProfiles } from '../../data/platformProfiles.js';
 import { isPlatformAllowedForCategory } from '../../data/platformCategoryMap.js';
@@ -114,6 +115,13 @@ export async function enqueueFromVehicleUpdate(
   kind: VehicleUpdateKind,
   propagations: VehicleUpdatePropagation[]
 ): Promise<{ queued: number; syncEventId: string }> {
+  // Opted-in V5 dealerships are reconciled from durable source state. Never
+  // create a competing legacy MOCK publishing effect for the same change.
+  if (autopilotEnabled() && await prisma.autopilotPolicy.findUnique({ where: { dealershipId } })) {
+    const syncEventId = await recordSyncEvent(prisma, { dealershipId, vehicleId, kind: 'INVENTORY_CHANGE', payload: { autopilot: true, triggerKind: kind } });
+    return { queued: 0, syncEventId };
+  }
+
   // Guard: scope propagations to platforms allowed for this dealer's business category.
   const dealer = await prisma.dealershipProfile.findUnique({
     where: { id: dealershipId },

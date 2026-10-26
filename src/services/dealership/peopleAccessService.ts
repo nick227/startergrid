@@ -1,3 +1,4 @@
+import { assertAssignableRole, assertManageableAccount, type AccessActor } from './accessSafety.js';
 import type { DealerAccessRole, Prisma, PrismaClient } from '@prisma/client';
 import { generateSecurePassword, hashPassword } from '../auth/passwordService.js';
 import { HttpError } from './httpError.js';
@@ -71,41 +72,17 @@ export async function issueTemporaryLogin(
     dealershipId: string;
     email: string;
     accessRole: DealerAccessRole;
-    actor: { id: string; email: string };
+    actor: AccessActor;
   },
 ): Promise<{ accountId: string; email: string; accessRole: DealerAccessRole; temporaryPassword: string }> {
+  assertAssignableRole(input.actor, input.accessRole);
   const email = input.email.trim().toLowerCase();
+  const existing = await db.operatorAccount.findUnique({ where: { email } });
+  if (existing) throw new HttpError(409, 'This account already exists. Invite it using its current password, or use authorized account recovery.');
   const temporaryPassword = generateSecurePassword();
   const passwordHash = await hashPassword(temporaryPassword);
-
-  const existing = await db.operatorAccount.findUnique({ where: { email } });
   let accountId: string;
-  if (existing) {
-    await db.operatorAccount.update({
-      where: { id: existing.id },
-      data: { passwordHash, mustChangePassword: true, isActive: true, suspendedAt: null },
-    });
-    await db.operatorSession.updateMany({
-      where: { operatorAccountId: existing.id, revokedAt: null },
-      data: { revokedAt: new Date() },
-    });
-    await db.operatorDealerAccess.upsert({
-      where: {
-        operatorAccountId_dealershipId: {
-          operatorAccountId: existing.id,
-          dealershipId: input.dealershipId,
-        },
-      },
-      create: {
-        operatorAccountId: existing.id,
-        dealershipId: input.dealershipId,
-        accessRole: input.accessRole,
-        grantedBy: input.actor.id,
-      },
-      update: { accessRole: input.accessRole },
-    });
-    accountId = existing.id;
-  } else {
+  {
     const created = await db.operatorAccount.create({
       data: {
         email,
@@ -140,7 +117,7 @@ export async function patchPerson(
   input: {
     dealershipId: string;
     accountId: string;
-    actor: { id: string; email: string };
+    actor: AccessActor;
     accessRole?: DealerAccessRole;
     isActive?: boolean;
     resetPassword?: boolean;
@@ -151,6 +128,13 @@ export async function patchPerson(
     include: { operator: true },
   });
   if (!access) throw new HttpError(404, 'Person not found on this dealership');
+  assertAssignableRole(input.actor, input.accessRole);
+  assertManageableAccount(input.actor, access.operator.role);
+  if ((input.resetPassword || input.isActive !== undefined) && input.actor.role !== 'SUPER_ADMIN' && !input.actor.devHeader) {
+    const memberships = await db.operatorDealerAccess.findMany({ where: { operatorAccountId: input.accountId }, select: { dealershipId: true } });
+    if (memberships.some(m => m.dealershipId !== input.dealershipId))
+      throw new HttpError(403, 'This account has access to other dealerships. Ask a site administrator to manage its login.');
+  }
   if (input.accountId === input.actor.id && input.isActive === false) {
     throw new HttpError(400, 'You cannot suspend your own account');
   }
@@ -200,10 +184,12 @@ export async function assignInternalOwner(
   db: Db,
   dealershipId: string,
   ownerId: string,
-  actor: { id: string; email: string },
+  actor: AccessActor,
 ): Promise<void> {
   const owner = await db.operatorAccount.findUnique({ where: { id: ownerId } });
   if (!owner) throw new HttpError(400, 'Internal owner account does not exist');
+  if (!owner.isActive || !['SUPER_ADMIN', 'INTERNAL_SUPPORT', 'OPERATOR'].includes(owner.role))
+    throw new HttpError(400, 'Select an active internal staff account.');
 
   await db.dealershipProfile.update({
     where: { id: dealershipId },

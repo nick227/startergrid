@@ -1,5 +1,14 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
-import { fetchInventory, bulkEditVehicles, fetchVehiclePerformanceList, fetchPlatformPerformance, fetchPublishStatus, relistVehicle } from '@/lib/api/sdk.ts';
+import {
+  fetchInventory,
+  bulkEditVehicles,
+  fetchVehiclePerformanceList,
+  fetchPlatformPerformance,
+  fetchPublishStatus,
+  relistVehicle,
+  patchVehicleFields,
+  addVehicleMedia,
+} from '@/lib/api/sdk.ts';
 import type { BulkEditPayload, VehiclePerformanceItem, PlatformPerformanceItem, LifecycleScope, PublishStatusResponse } from '@/lib/types.ts';
 import type { OperatorPageBaseProps } from '@/lib/operatorPage.ts';
 import { useAsyncQuery } from '@/hooks/useAsyncQuery.ts';
@@ -161,6 +170,56 @@ export default function InventoryPage({ dealerId, nav, activeTab }: Props) {
     setActiveColumns(cols);
     localStorage.setItem('inventoryColumns', JSON.stringify(cols));
   };
+
+  // Inline quick fix state
+  const [inlinePriceInputs, setInlinePriceInputs] = useState<Record<string, string>>({});
+  const [inlinePhotoInputs, setInlinePhotoInputs] = useState<Record<string, string>>({});
+  const [showPhotoInputs, setShowPhotoInputs] = useState<Record<string, boolean>>({});
+  const [savingQuickFixId, setSavingQuickFixId] = useState<string | null>(null);
+  const [quickFixToast, setQuickFixToast] = useState<string | null>(null);
+
+  const handleSaveInlinePrice = async (vehicleId: string, priceStr: string) => {
+    const num = parseFloat(priceStr.replace(/[^0-9.]/g, ''));
+    if (isNaN(num) || num <= 0) return;
+    try {
+      setSavingQuickFixId(vehicleId);
+      await patchVehicleFields(dealerId, vehicleId, { priceCents: Math.round(num * 100) });
+      setInlinePriceInputs(prev => {
+        const next = { ...prev };
+        delete next[vehicleId];
+        return next;
+      });
+      setQuickFixToast(`Price updated to $${num.toLocaleString()}`);
+      setTimeout(() => setQuickFixToast(null), 3000);
+      await load();
+    } catch (err) {
+      alert(err instanceof Error ? err.message : 'Failed to update vehicle price');
+    } finally {
+      setSavingQuickFixId(null);
+    }
+  };
+
+  const handleSaveInlinePhoto = async (vehicleId: string, url: string) => {
+    if (!url || !url.trim()) return;
+    try {
+      setSavingQuickFixId(vehicleId);
+      await addVehicleMedia(dealerId, vehicleId, [url.trim()]);
+      setInlinePhotoInputs(prev => {
+        const next = { ...prev };
+        delete next[vehicleId];
+        return next;
+      });
+      setShowPhotoInputs(prev => ({ ...prev, [vehicleId]: false }));
+      setQuickFixToast('Photo attached successfully');
+      setTimeout(() => setQuickFixToast(null), 3000);
+      await load();
+    } catch (err) {
+      alert(err instanceof Error ? err.message : 'Failed to attach photo');
+    } finally {
+      setSavingQuickFixId(null);
+    }
+  };
+
 
   useEffect(() => {
     if (route.assetRef) setSearch(route.assetRef);
@@ -513,6 +572,13 @@ export default function InventoryPage({ dealerId, nav, activeTab }: Props) {
                     <p className="text-xs text-ink-muted">Actionable blockers, missing photos, and incomplete pricing preventing live syndication.</p>
                   </div>
                 </div>
+
+                {quickFixToast && (
+                  <div className="p-3 bg-emerald-50 border border-emerald-200 rounded-lg text-xs text-emerald-800 font-semibold flex items-center gap-2 animate-fade-in">
+                    <span>✓</span>
+                    <span>{quickFixToast}</span>
+                  </div>
+                )}
                 {attentionVehicles.length === 0 ? (
                   <div className="p-8 text-center bg-white border border-silver-200 rounded-xl shadow-sm">
                     <div className="text-3xl mb-2">🎉</div>
@@ -568,6 +634,90 @@ export default function InventoryPage({ dealerId, nav, activeTab }: Props) {
                                 </span>
                               ))}
                             </div>
+
+                            {/* Inline Quick Fixes (P0.3 on-the-lot inline editing) */}
+                            {missingPrice && (
+                              <div className="mt-3 p-2.5 bg-amber-50/80 border border-amber-200 rounded-lg space-y-1">
+                                <span className="block text-[11px] font-bold text-amber-900">
+                                  Quick Fix: Set Listing Price
+                                </span>
+                                <form
+                                  onSubmit={(e) => {
+                                    e.preventDefault();
+                                    void handleSaveInlinePrice(v.id, inlinePriceInputs[v.id] ?? '');
+                                  }}
+                                  className="flex items-center gap-1.5"
+                                >
+                                  <div className="relative flex-1">
+                                    <span className="absolute left-2.5 top-1/2 -translate-y-1/2 text-xs font-bold text-ink-muted">$</span>
+                                    <input
+                                      type="text"
+                                      placeholder="e.g. 21,995"
+                                      value={inlinePriceInputs[v.id] ?? ''}
+                                      onChange={(e) => setInlinePriceInputs({ ...inlinePriceInputs, [v.id]: e.target.value })}
+                                      className="w-full pl-6 pr-2 py-1 text-xs border border-silver-300 rounded bg-white font-mono focus:outline-none focus:ring-1 focus:ring-navy-600"
+                                    />
+                                  </div>
+                                  <button
+                                    type="submit"
+                                    disabled={savingQuickFixId === v.id || !inlinePriceInputs[v.id]}
+                                    className="px-2.5 py-1 text-xs font-bold bg-navy-900 hover:bg-navy-800 text-white rounded disabled:opacity-40 shrink-0 shadow-sm"
+                                  >
+                                    {savingQuickFixId === v.id ? 'Saving...' : 'Save'}
+                                  </button>
+                                </form>
+                              </div>
+                            )}
+
+                            {missingPhotos && (
+                              <div className="mt-2">
+                                {showPhotoInputs[v.id] ? (
+                                  <div className="p-2.5 bg-silver-50 border border-silver-200 rounded-lg space-y-1.5">
+                                    <span className="block text-[11px] font-bold text-ink-heading">
+                                      Attach Vehicle Photo URL:
+                                    </span>
+                                    <form
+                                      onSubmit={(e) => {
+                                        e.preventDefault();
+                                        void handleSaveInlinePhoto(v.id, inlinePhotoInputs[v.id] ?? '');
+                                      }}
+                                      className="flex items-center gap-1.5"
+                                    >
+                                      <input
+                                        type="url"
+                                        placeholder="https://example.com/photo.jpg"
+                                        value={inlinePhotoInputs[v.id] ?? ''}
+                                        onChange={(e) => setInlinePhotoInputs({ ...inlinePhotoInputs, [v.id]: e.target.value })}
+                                        className="w-full px-2 py-1 text-xs border border-silver-300 rounded bg-white focus:outline-none focus:ring-1 focus:ring-navy-600"
+                                      />
+                                      <button
+                                        type="submit"
+                                        disabled={savingQuickFixId === v.id || !inlinePhotoInputs[v.id]}
+                                        className="px-2.5 py-1 text-xs font-bold bg-navy-900 hover:bg-navy-800 text-white rounded disabled:opacity-40 shrink-0"
+                                      >
+                                        {savingQuickFixId === v.id ? 'Adding...' : 'Add'}
+                                      </button>
+                                      <button
+                                        type="button"
+                                        onClick={() => setShowPhotoInputs({ ...showPhotoInputs, [v.id]: false })}
+                                        className="text-xs text-ink-muted hover:text-ink-heading px-1"
+                                      >
+                                        ✕
+                                      </button>
+                                    </form>
+                                  </div>
+                                ) : (
+                                  <button
+                                    type="button"
+                                    onClick={() => setShowPhotoInputs({ ...showPhotoInputs, [v.id]: true })}
+                                    className="text-xs font-semibold text-navy-700 hover:text-navy-900 hover:underline flex items-center gap-1"
+                                  >
+                                    <span>📷</span>
+                                    <span>+ Quick-add photo URL</span>
+                                  </button>
+                                )}
+                              </div>
+                            )}
                           </div>
 
                           <div className="mt-3">

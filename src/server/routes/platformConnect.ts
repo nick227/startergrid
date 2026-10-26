@@ -4,7 +4,7 @@ import crypto from 'node:crypto';
 import { PlatformClientRegistry, XOAuthClient } from '../../services/platform/clients/PlatformClientRegistry.js';
 import { CredentialStore } from '../../services/platform/clients/CredentialStore.js';
 import { platformProfiles } from '../../data/platformProfiles.js';
-import { requireDealerAccess } from '../security.js';
+import { requireCapability } from '../security.js';
 import { assertSystemReadyForDealerRegistration } from '../../services/publishing/platformAccountService.js';
 import { isDealerPlatformAccessible } from '../dealerPlatformGuard.js';
 
@@ -31,33 +31,15 @@ window.close();
 </body></html>`;
 }
 
-export function registerPlatformConnectRoutes(app: FastifyInstance, prisma: PrismaClient): void {
-
-  // GET /api/dealers/:dealershipId/platforms/:platformSlug/connect-url
-  // Returns the OAuth authorization URL for the given platform.
-  // Stores an OAuthState row for CSRF validation at callback time.
-  app.get<{ Params: ConnectParams }>(
-    '/api/dealers/:dealershipId/platforms/:platformSlug/connect-url',
-    async (request, reply) => {
-      const { dealershipId, platformSlug } = request.params;
-      if (!await requireDealerAccess(prisma, request, reply, dealershipId)) return;
-      if (!await isDealerPlatformAccessible(prisma, dealershipId, platformSlug)) {
-        return reply.status(404).send({ error: 'Platform not found.' });
-      }
-
+export async function createReconnectUrl(prisma: PrismaClient, dealershipId: string, platformSlug: string): Promise<{ authUrl: string; state: string }> {
+  if (!await isDealerPlatformAccessible(prisma, dealershipId, platformSlug)) throw new Error('Platform not available for this dealership.');
       const profile = platformProfiles.find(p => p.slug === platformSlug);
-      if (!profile) return reply.status(404).send({ error: `Unknown platform: ${platformSlug}` });
-      if (!profile.oauthProvider) return reply.status(400).send({ error: `Platform ${platformSlug} does not support OAuth` });
-      try {
-        assertSystemReadyForDealerRegistration(platformSlug);
-      } catch (err) {
-        return reply.status(409).send({
-          error: err instanceof Error ? err.message : 'System setup is not ready for dealer registration on this platform.',
-        });
-      }
+      if (!profile) throw new Error(`Unknown platform: ${platformSlug}`);
+      if (!profile.oauthProvider) throw new Error(`Platform ${platformSlug} does not support OAuth`);
+      assertSystemReadyForDealerRegistration(platformSlug);
 
       const client = PlatformClientRegistry.forSlug(platformSlug);
-      if (!client) return reply.status(500).send({ error: `No OAuth client registered for ${platformSlug}` });
+      if (!client) throw new Error(`No OAuth client registered for ${platformSlug}`);
 
       const state = crypto.randomBytes(24).toString('hex');
       const redirectUri = `${redirectBase()}/api/oauth/callback`;
@@ -84,7 +66,32 @@ export function registerPlatformConnectRoutes(app: FastifyInstance, prisma: Pris
         },
       });
 
-      return reply.send({ authUrl, state });
+  return { authUrl, state };
+}
+
+export function registerPlatformConnectRoutes(app: FastifyInstance, prisma: PrismaClient): void {
+
+  // GET /api/dealers/:dealershipId/platforms/:platformSlug/connect-url
+  // Returns the OAuth authorization URL for the given platform.
+  // Stores an OAuthState row for CSRF validation at callback time.
+  app.get<{ Params: ConnectParams }>(
+    '/api/dealers/:dealershipId/platforms/:platformSlug/connect-url',
+    async (request, reply) => {
+      const { dealershipId, platformSlug } = request.params;
+      if (!await requireCapability(prisma, request, reply, dealershipId, 'connect_channels')) return;
+      if (!await isDealerPlatformAccessible(prisma, dealershipId, platformSlug)) {
+        return reply.status(404).send({ error: 'Platform not found.' });
+      }
+
+      try {
+        return reply.send(await createReconnectUrl(prisma, dealershipId, platformSlug));
+      } catch (error) {
+        const msg = error instanceof Error ? error.message : 'Connection setup failed.';
+        if (msg.includes('does not support OAuth') || msg.includes('No OAuth client')) {
+          return reply.status(400).send({ error: msg });
+        }
+        return reply.status(409).send({ error: msg });
+      }
     }
   );
 
@@ -163,7 +170,7 @@ export function registerPlatformConnectRoutes(app: FastifyInstance, prisma: Pris
     '/api/dealers/:dealershipId/platforms/:platformSlug/oauth-token',
     async (request, reply) => {
       const { dealershipId, platformSlug } = request.params;
-      if (!await requireDealerAccess(prisma, request, reply, dealershipId)) return;
+      if (!await requireCapability(prisma, request, reply, dealershipId, 'connect_channels')) return;
       if (!await isDealerPlatformAccessible(prisma, dealershipId, platformSlug)) {
         return reply.status(404).send({ error: 'Platform not found.' });
       }

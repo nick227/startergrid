@@ -1,3 +1,4 @@
+import { autopilotEnabled, reconcileDealer } from '../autopilot/service.js';
 import type { Prisma } from '@prisma/client';
 import { prisma } from '../../lib/prisma.js';
 import { runPerformanceComputeForDealer } from '../performance/computePerformanceService.js';
@@ -91,6 +92,11 @@ async function flushAutoReconcile(dealershipId: string): Promise<void> {
   statusByDealer.set(dealershipId, running);
 
   try {
+    if (autopilotEnabled() && await prisma.autopilotPolicy.findUnique({ where: { dealershipId } })) {
+      const result = await reconcileDealer(prisma, dealershipId);
+      statusByDealer.set(dealershipId, { ...prior, phase: 'idle', lastCompletedAt: new Date().toISOString(), lastError: null, lastDispatched: result.verified, scheduledFullReconcile: false });
+      return;
+    }
     let prepareResult: Awaited<ReturnType<typeof runPrepareAndPublish>> | null = null;
     if (needsFull) {
       prepareResult = await runPrepareAndPublish(prisma, dealershipId, { dryRun: false });

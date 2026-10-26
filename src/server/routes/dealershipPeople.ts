@@ -28,6 +28,28 @@ export function registerDealershipPeopleRoutes(app: FastifyInstance, prisma: Pri
     return reply.send(await listPeople(prisma, dealershipId));
   });
 
+  app.post<{ Params: DealerParams }>('/api/dealers/:dealershipId/people/invites/prepare', async (request, reply) => {
+    const operator = await requireCapability(prisma, request, reply, request.params.dealershipId, 'send_invite');
+    if (!operator) return;
+    const parsed = validateBody(invitePersonSchema, request.body);
+    if (!parsed.ok) return reply.status(400).send({ error: parsed.error });
+    const dealer = await prisma.dealershipProfile.findUniqueOrThrow({ where: { id: request.params.dealershipId } });
+    const dealerName = dealer.dbaName ?? dealer.legalName;
+    const roleLabel = parsed.data.accessRole === 'DEALER_OWNER' ? 'Owner / Administrator' : 'Staff Member';
+    const supportEmail = process.env['SUPPORT_EMAIL'] ?? 'support@startergrid.com';
+
+    return reply.send({
+      dealershipName: dealerName,
+      recipientEmail: parsed.data.email,
+      recipientName: parsed.data.name ?? null,
+      accessRole: parsed.data.accessRole,
+      roleLabel,
+      supportEmail,
+      subject: `Set up your StarterGrid account for ${dealerName}`,
+      previewBody: `Hello${parsed.data.name ? ' ' + parsed.data.name : ''},\n\nYou have been invited to manage inventory and syndication for ${dealerName} on StarterGrid as ${roleLabel}.\n\nClick the secure link below to set up your password and access your dashboard:\n[Set Up Your Account] (expires in 7 days)\n\nNeed assistance? Contact our onboarding team at ${supportEmail}.`,
+    });
+  });
+
   app.post<{ Params: DealerParams }>('/api/dealers/:dealershipId/people/invites', async (request, reply) => {
     const operator = await requireCapability(prisma, request, reply, request.params.dealershipId, 'send_invite');
     if (!operator) return;

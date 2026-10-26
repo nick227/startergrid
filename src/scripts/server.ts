@@ -1,3 +1,4 @@
+import { startAutopilotWorker } from '../services/autopilot/worker.js';
 import 'dotenv/config';
 import { prisma } from '../lib/prisma.js';
 import { buildApp } from '../server/app.js';
@@ -9,6 +10,8 @@ const PORT = Number(process.env['PORT'] ?? 3000);
 const HOST = process.env['HOST'] ?? '0.0.0.0';
 
 const app = buildApp(prisma);
+const stopAutopilot = startAutopilotWorker(prisma);
+app.addHook('onClose', async () => { await stopAutopilot(); });
 
 app.listen({ port: PORT, host: HOST }, (err, address) => {
   if (err) {

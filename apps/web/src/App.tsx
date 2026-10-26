@@ -1,3 +1,5 @@
+import AccountSetupPage from './pages/AccountSetupPage.tsx';
+import InternalWorkspace from './pages/InternalWorkspace.tsx';
 import { lazy, Suspense, useEffect } from 'react';
 import DealerPicker from './pages/DealerPicker.tsx';
 import LoginPage from './pages/LoginPage.tsx';
@@ -57,20 +59,25 @@ function OperatorApp() {
 
   const helpStandalone = (page === 'help' || page === 'knowledge') && !dealerId;
   const signupStandalone = page === 'signup' && !dealerId;
+  const internalStaff = user?.role === 'INTERNAL_SUPPORT' || user?.role === 'OPERATOR';
+  const inviteToken = /^#\/invite\/([^/?]+)/.exec(window.location.hash)?.[1];
   const superAdminHome = !dealerId && user?.role === 'SUPER_ADMIN';
 
   useEffect(() => {
-    if (!user || !dealerId || canAccessDealer(user, dealerId)) return;
+    if (window.location.hash.startsWith('#/invite/') || !user || !dealerId || canAccessDealer(user, dealerId)) return;
     window.location.hash = '#/';
   }, [user, dealerId]);
 
   // Site administration is SUPER_ADMIN only — redirect anyone else away from /admin.
   useEffect(() => {
-    if (!user || page !== 'admin' || user.role === 'SUPER_ADMIN') return;
+    if (!user || page !== 'admin' || user.role === 'SUPER_ADMIN' || internalStaff) return;
     window.location.hash = '#/';
-  }, [user, page]);
+  }, [user, page, internalStaff]);
 
   if (!authReady) return <AuthLoadingScreen />;
+  if (inviteToken) return <AccountSetupPage key={inviteToken} token={inviteToken} />;
+  if (user?.mustChangePassword) return <AccountSetupPage />;
+  if (internalStaff && (!dealerId || page === 'admin')) return <InternalWorkspace dealerId={adminDealerId} />;
   if (signupStandalone) return <DealershipSignupPage />;
   if (!user) return <LoginPage />;
 

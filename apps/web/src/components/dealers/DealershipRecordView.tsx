@@ -20,6 +20,7 @@ import { OwnershipLine } from '@/components/guidance/OwnershipLine.tsx';
 import { DealershipAutopilot } from '@/components/guidance/DealershipAutopilot.tsx';
 import { describeAutopilot } from '@/lib/autopilotStatus.ts';
 import { GuidanceNote } from '@/components/guidance/GuidanceNote.tsx';
+import { WelcomeEmailModal } from './WelcomeEmailModal.tsx';
 
 type SubTab = 'overview' | 'setup' | 'people' | 'vehicles' | 'channels' | 'activity';
 
@@ -57,6 +58,7 @@ export function DealershipRecordView({
 
   // Welcome packet modal
   const [showWelcomePacket, setShowWelcomePacket] = useState(false);
+  const [showWelcomeEmailModal, setShowWelcomeEmailModal] = useState(false);
   const [copiedPacket, setCopiedPacket] = useState(false);
 
   // Feedback toast
@@ -246,6 +248,20 @@ The StarterGrid Team`;
         </div>
 
         <div className="flex items-center gap-2.5">
+          <button
+            type="button"
+            onClick={() => {
+              const defaultEmail = record.primaryContactEmail || primaryOwnerInvite?.email || primaryOwnerPerson?.email || '';
+              const defaultName = record.primaryContact?.name || '';
+              setInviteEmail(defaultEmail);
+              setInviteName(defaultName);
+              setInviteRole('DEALER_OWNER');
+              setShowWelcomeEmailModal(true);
+            }}
+            className="px-3 py-1.5 text-xs font-semibold rounded-md border border-navy-300 bg-white hover:bg-navy-50 text-navy-900 shadow-sm flex items-center gap-1.5 transition-colors"
+          >
+            ✉️ Send Welcome Email
+          </button>
           <button
             type="button"
             onClick={() => setShowWelcomePacket(true)}
@@ -636,20 +652,25 @@ The StarterGrid Team`;
                   setInviteRole('DEALER_OWNER');
                   setShowTempLoginModal(true);
                 }}
-                className="px-3 py-1.5 text-xs font-semibold rounded-md border border-silver-300 bg-white hover:bg-silver-50 text-ink-heading"
+                className="px-3 py-1.5 text-xs font-semibold rounded-md border border-silver-300 bg-white hover:bg-silver-50 text-ink-muted"
+                title="Emergency fallback: generates a temporary one-time password"
               >
                 ⚡ Issue Temp Login
               </button>
               <button
                 type="button"
                 onClick={() => {
-                  setInviteEmail('');
+                  const defaultEmail = record.primaryContactEmail || '';
+                  const defaultName = record.primaryContact?.name || '';
+                  setInviteEmail(defaultEmail);
+                  setInviteName(defaultName);
                   setInviteRole('DEALER_OWNER');
-                  setShowInviteModal(true);
+                  setShowWelcomeEmailModal(true);
                 }}
-                className="px-3.5 py-1.5 text-xs font-bold rounded-md bg-navy-900 hover:bg-navy-800 text-white shadow-sm"
+                className="px-3.5 py-1.5 text-xs font-bold rounded-md bg-navy-900 hover:bg-navy-800 text-white shadow-sm flex items-center gap-1.5"
               >
-                + Invite Person
+                <span>✉️</span>
+                <span>Send Welcome Email</span>
               </button>
             </div>
           </div>
@@ -1081,6 +1102,25 @@ The StarterGrid Team`;
           </div>
         </div>
       )}
+
+      {/* Welcome Email Modal (P0.2 One-Click Prepare -> Preview -> Send flow) */}
+      <WelcomeEmailModal
+        dealerId={dealerId}
+        dealerName={record.legalName}
+        defaultEmail={inviteEmail}
+        defaultName={inviteName}
+        defaultRole={inviteRole}
+        isOpen={showWelcomeEmailModal}
+        onClose={() => setShowWelcomeEmailModal(false)}
+        onSuccess={({ email, setupUrl }) => {
+          if (setupUrl) {
+            setGeneratedSetupUrl(setupUrl);
+          }
+          showToast(`Welcome email invitation dispatched to ${email}`);
+          void loadData();
+          onRefreshDealers?.();
+        }}
+      />
     </div>
   );
 }

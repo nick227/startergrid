@@ -246,6 +246,83 @@ export async function fetchDealershipPeople(dealershipId: string): Promise<Peopl
   };
 }
 
+export type InviteEmailPreview = {
+  dealershipName: string;
+  recipientEmail: string;
+  recipientName?: string | null;
+  accessRole: DealerAccessRole;
+  roleLabel: string;
+  supportEmail: string;
+  subject: string;
+  previewBody: string;
+};
+
+export type AutopilotSimulationResult = {
+  dealershipId: string;
+  dealerName: string;
+  evaluatedAt: string;
+  simulatedMode: 'ON' | 'OFF' | 'PAUSED';
+  currentMode: 'ON' | 'OFF' | 'PAUSED';
+  summary: {
+    totalInventory: number;
+    qualifiedCount: number;
+    heldCount: number;
+    needsAttentionCount: number;
+    scheduledOperations: {
+      upsert: number;
+      withdraw: number;
+    };
+  };
+  channels: Array<{
+    channel: string;
+    name: string;
+    connected: boolean;
+    qualification: string;
+    eligibleCount: number;
+    blockedCount: number;
+    scheduledUpserts: number;
+    scheduledWithdraws: number;
+    blockers: Array<{
+      reasonCode: string;
+      message: string;
+      owner: 'DEALERSHIP' | 'INTERNAL_SUPPORT' | 'SYSTEM' | 'PARTNER';
+      vehicleCount: number;
+      sampleStockNumbers: string[];
+    }>;
+  }>;
+  heldVehicles: Array<{
+    vehicleId: string;
+    stockNumber: string;
+    year: number;
+    make: string;
+    model: string;
+    reasonCode: string;
+    nextAction: string;
+    owner: string;
+    channel: string;
+  }>;
+};
+
+export async function preparePersonInvite(
+  dealershipId: string,
+  payload: { email: string; accessRole: DealerAccessRole; name?: string },
+): Promise<InviteEmailPreview> {
+  return apiFetch(`/api/dealers/${encodeURIComponent(dealershipId)}/people/invites/prepare`, {
+    method: 'POST',
+    body: JSON.stringify(payload),
+  });
+}
+
+export async function fetchAutopilotPreview(
+  dealershipId: string,
+  opts?: { mode?: 'ON' | 'OFF' | 'PAUSED'; includedChannels?: string[] },
+): Promise<AutopilotSimulationResult> {
+  return apiFetch(`/api/dealers/${encodeURIComponent(dealershipId)}/autopilot/preview`, {
+    method: 'POST',
+    body: JSON.stringify(opts ?? {}),
+  });
+}
+
 export async function createPersonInvite(
   dealershipId: string,
   payload: { email: string; accessRole: DealerAccessRole; name?: string },

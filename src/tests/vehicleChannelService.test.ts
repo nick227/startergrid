@@ -164,7 +164,7 @@ describe('buildVehicleChannelMatrix', () => {
     const matrix = await buildVehicleChannelMatrix(prisma as never, 'd-001', 'v-001');
     const meta = matrix!.channels.find(c => c.channelKey === 'meta-automotive-ads')!;
     if (meta.eligible) {
-      assert.equal(meta.liveStatus, 'LIVE');
+      assert.equal(meta.liveStatus, 'QUEUED');
       assert.match(meta.statusDetail ?? '', /catalog/i);
     } else {
       assert.equal(meta.liveStatus, 'NOT_LIVE');

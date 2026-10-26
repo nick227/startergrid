@@ -22,6 +22,373 @@ tags:
   - name: Admin
 
 paths:
+  /api/dealers/{dealershipId}/autopilot:
+    get:
+      tags:
+        - Publish
+      operationId: getV5Autopilot
+      summary: get V5 Autopilot
+      description: >-
+        V5 distribution contract. Verified status requires destination evidence. Returns 503 when V5_AUTOPILOT_ENABLED is
+        not true.
+      x-route-classification: operator
+      security:
+        - OperatorAuth: []
+      parameters:
+        - name: dealershipId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/V5AutopilotSummary'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '409':
+          description: Policy version conflict, unresolved evidence or safety hold
+        '503':
+          description: Verified distribution is not enabled
+    put:
+      tags:
+        - Publish
+      operationId: updateV5Autopilot
+      summary: update V5 Autopilot
+      description: >-
+        V5 distribution contract. Verified status requires destination evidence. Returns 503 when V5_AUTOPILOT_ENABLED is
+        not true.
+      x-route-classification: operator
+      security:
+        - OperatorAuth: []
+      parameters:
+        - name: dealershipId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/V5AutopilotPolicy'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '409':
+          description: Policy version conflict, unresolved evidence or safety hold
+        '503':
+          description: Verified distribution is not enabled
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/V5AutopilotPolicyUpdate'
+  /api/dealers/{dealershipId}/distribution:
+    get:
+      tags:
+        - Publish
+      operationId: getV5Distribution
+      summary: get V5 Distribution
+      description: >-
+        V5 distribution contract. Verified status requires destination evidence. Returns 503 when V5_AUTOPILOT_ENABLED is
+        not true.
+      x-route-classification: operator
+      security:
+        - OperatorAuth: []
+      parameters:
+        - name: dealershipId
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: vehicleId
+          in: query
+          required: false
+          schema:
+            type: string
+        - name: channel
+          in: query
+          required: false
+          schema:
+            type: string
+        - name: status
+          in: query
+          required: false
+          schema:
+            type: string
+        - name: limit
+          in: query
+          required: false
+          schema:
+            type: integer
+            minimum: 1
+        - name: offset
+          in: query
+          required: false
+          schema:
+            type: integer
+            minimum: 0
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/V5DistributionPage'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '409':
+          description: Policy version conflict, unresolved evidence or safety hold
+        '503':
+          description: Verified distribution is not enabled
+  /api/dealers/{dealershipId}/distribution/incidents:
+    get:
+      tags:
+        - Publish
+      operationId: getV5DistributionIncidents
+      summary: get V5 Distribution Incidents
+      description: >-
+        V5 distribution contract. Verified status requires destination evidence. Returns 503 when V5_AUTOPILOT_ENABLED is
+        not true.
+      x-route-classification: operator
+      security:
+        - OperatorAuth: []
+      parameters:
+        - name: dealershipId
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: vehicleId
+          in: query
+          required: false
+          schema:
+            type: string
+        - name: channel
+          in: query
+          required: false
+          schema:
+            type: string
+        - name: status
+          in: query
+          required: false
+          schema:
+            type: string
+        - name: limit
+          in: query
+          required: false
+          schema:
+            type: integer
+            minimum: 1
+        - name: offset
+          in: query
+          required: false
+          schema:
+            type: integer
+            minimum: 0
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/V5IncidentPage'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '409':
+          description: Policy version conflict, unresolved evidence or safety hold
+        '503':
+          description: Verified distribution is not enabled
+  /api/dealers/{dealershipId}/distribution/incidents/{incidentId}/retry:
+    post:
+      tags:
+        - Publish
+      operationId: retryV5DistributionIncident
+      summary: retry V5 Distribution Incident
+      description: >-
+        V5 distribution contract. Verified status requires destination evidence. Returns 503 when V5_AUTOPILOT_ENABLED is
+        not true.
+      x-route-classification: operator
+      security:
+        - OperatorAuth: []
+      parameters:
+        - name: dealershipId
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: incidentId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/V5IncidentActionResult'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '409':
+          description: Policy version conflict, unresolved evidence or safety hold
+        '503':
+          description: Verified distribution is not enabled
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/V5IncidentAction'
+  /api/dealers/{dealershipId}/distribution/incidents/{incidentId}/approve:
+    post:
+      tags:
+        - Publish
+      operationId: approveV5DistributionIncident
+      summary: approve V5 Distribution Incident
+      description: >-
+        V5 distribution contract. Verified status requires destination evidence. Returns 503 when V5_AUTOPILOT_ENABLED is
+        not true.
+      x-route-classification: operator
+      security:
+        - OperatorAuth: []
+      parameters:
+        - name: dealershipId
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: incidentId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/V5IncidentActionResult'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '409':
+          description: Policy version conflict, unresolved evidence or safety hold
+        '503':
+          description: Verified distribution is not enabled
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/V5IncidentAction'
+  /api/dealers/{dealershipId}/distribution/incidents/{incidentId}/resolve:
+    post:
+      tags:
+        - Publish
+      operationId: resolveV5DistributionIncident
+      summary: resolve V5 Distribution Incident
+      description: >-
+        V5 distribution contract. Verified status requires destination evidence. Returns 503 when V5_AUTOPILOT_ENABLED is
+        not true.
+      x-route-classification: operator
+      security:
+        - OperatorAuth: []
+      parameters:
+        - name: dealershipId
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: incidentId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/V5IncidentActionResult'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '409':
+          description: Policy version conflict, unresolved evidence or safety hold
+        '503':
+          description: Verified distribution is not enabled
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/V5IncidentAction'
+  /api/dealers/{dealershipId}/distribution/incidents/{incidentId}/reconnect:
+    post:
+      tags:
+        - Publish
+      operationId: reconnectV5DistributionIncident
+      summary: reconnect V5 Distribution Incident
+      description: >-
+        V5 distribution contract. Verified status requires destination evidence. Returns 503 when V5_AUTOPILOT_ENABLED is
+        not true.
+      x-route-classification: operator
+      security:
+        - OperatorAuth: []
+      parameters:
+        - name: dealershipId
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: incidentId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/V5IncidentActionResult'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '409':
+          description: Policy version conflict, unresolved evidence or safety hold
+        '503':
+          description: Verified distribution is not enabled
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/V5IncidentAction'
   /api/auth/login:
     post:
       tags: [Auth]
@@ -3634,6 +4001,451 @@ components:
             $ref: '#/components/schemas/ErrorResponse'
 
   schemas:
+    V5AutopilotSafeguards:
+      type: object
+      required:
+        - maxPriceChangeFraction
+        - minPriceCents
+        - maxRemovalCount
+        - minRemovalBatchSize
+        - maxRemovalFraction
+        - maxAttempts
+        - retryBaseMs
+        - retryMaxMs
+        - verificationTimeoutMs
+        - evidenceMaxAgeMs
+      properties:
+        maxPriceChangeFraction:
+          type: number
+          minimum: 0
+          exclusiveMinimum: true
+        minPriceCents:
+          type: number
+          minimum: 0
+          exclusiveMinimum: true
+        maxRemovalCount:
+          type: number
+          minimum: 0
+          exclusiveMinimum: true
+        minRemovalBatchSize:
+          type: number
+          minimum: 0
+          exclusiveMinimum: true
+        maxRemovalFraction:
+          type: number
+          minimum: 0
+          exclusiveMinimum: true
+        maxAttempts:
+          type: number
+          minimum: 0
+          exclusiveMinimum: true
+        retryBaseMs:
+          type: number
+          minimum: 0
+          exclusiveMinimum: true
+        retryMaxMs:
+          type: number
+          minimum: 0
+          exclusiveMinimum: true
+        verificationTimeoutMs:
+          type: number
+          minimum: 0
+          exclusiveMinimum: true
+        evidenceMaxAgeMs:
+          type: number
+          minimum: 0
+          exclusiveMinimum: true
+    V5AutopilotPolicy:
+      type: object
+      required:
+        - dealershipId
+        - mode
+        - version
+        - includedChannels
+        - excludedVehicleIds
+        - safeguards
+        - updatedAt
+        - updatedBy
+      properties:
+        dealershipId:
+          type: string
+        mode:
+          type: string
+          enum:
+            - 'OFF'
+            - 'ON'
+            - PAUSED
+        version:
+          type: integer
+        includedChannels:
+          type: array
+          items:
+            type: string
+        excludedVehicleIds:
+          type: array
+          items:
+            type: string
+        safeguards:
+          $ref: '#/components/schemas/V5AutopilotSafeguards'
+        updatedAt:
+          type: string
+          format: date-time
+          nullable: true
+        updatedBy:
+          type: string
+    V5AutopilotPolicyUpdate:
+      type: object
+      required:
+        - expectedVersion
+        - mode
+        - includedChannels
+        - excludedVehicleIds
+      properties:
+        expectedVersion:
+          type: integer
+          minimum: 0
+        mode:
+          type: string
+          enum:
+            - 'OFF'
+            - 'ON'
+            - PAUSED
+        includedChannels:
+          type: array
+          items:
+            type: string
+        excludedVehicleIds:
+          type: array
+          items:
+            type: string
+        safeguards:
+          $ref: '#/components/schemas/V5AutopilotSafeguards'
+    V5ChannelCapability:
+      type: object
+      required:
+        - channel
+        - qualification
+        - operations
+        - canVerify
+        - reason
+        - evidenceReference
+      properties:
+        channel:
+          type: string
+        qualification:
+          type: string
+          enum:
+            - VERIFIED_AUTOMATIC
+            - CONFIGURED_UNVERIFIED
+            - MANUAL
+            - PARTNER_ASSISTED
+            - UNAVAILABLE
+        operations:
+          type: array
+          items:
+            type: string
+            enum:
+              - UPSERT
+              - WITHDRAW
+        canVerify:
+          type: boolean
+        reason:
+          type: string
+        evidenceReference:
+          type: string
+          nullable: true
+    V5PublicationEvidence:
+      type: object
+      required:
+        - channel
+        - vehicleId
+        - desiredHash
+        - operation
+        - method
+        - observedAt
+        - result
+        - reference
+      properties:
+        channel:
+          type: string
+        vehicleId:
+          type: string
+        desiredHash:
+          type: string
+        operation:
+          type: string
+          enum:
+            - UPSERT
+            - WITHDRAW
+        method:
+          type: string
+          enum:
+            - OWNED_READ_MODEL
+            - PROVIDER_READBACK
+            - PROVIDER_WEBHOOK
+        observedAt:
+          type: string
+          format: date-time
+          nullable: true
+        result:
+          type: string
+          enum:
+            - LIVE
+            - REMOVED
+            - PENDING
+            - MISMATCH
+        reference:
+          type: string
+    V5DistributionOutcome:
+      type: object
+      required:
+        - dealershipId
+        - vehicleId
+        - channel
+        - generation
+        - desiredHash
+        - operation
+        - status
+        - reasonCode
+        - nextAction
+        - owner
+        - attemptCount
+        - nextAttemptAt
+        - submittedAt
+        - evidence
+        - updatedAt
+      properties:
+        dealershipId:
+          type: string
+        vehicleId:
+          type: string
+        channel:
+          type: string
+        generation:
+          type: integer
+        desiredHash:
+          type: string
+        operation:
+          type: string
+          enum:
+            - UPSERT
+            - WITHDRAW
+        status:
+          type: string
+          enum:
+            - NEEDS_SETUP
+            - NEEDS_VEHICLE_INFORMATION
+            - PROCESSING
+            - SUBMITTED
+            - VERIFIED_LIVE
+            - FAILED
+            - UNKNOWN
+            - HELD
+            - PAUSED
+            - EXCLUDED
+            - VERIFIED_REMOVED
+        reasonCode:
+          type: string
+          nullable: true
+        nextAction:
+          type: string
+          nullable: true
+        owner:
+          type: string
+          enum:
+            - DEALERSHIP
+            - INTERNAL_SUPPORT
+            - SYSTEM
+            - PARTNER
+        attemptCount:
+          type: integer
+        nextAttemptAt:
+          type: string
+          format: date-time
+          nullable: true
+        submittedAt:
+          type: string
+          format: date-time
+          nullable: true
+        evidence:
+          allOf:
+            - $ref: '#/components/schemas/V5PublicationEvidence'
+          nullable: true
+        updatedAt:
+          type: string
+          format: date-time
+          nullable: true
+    V5DistributionIncident:
+      type: object
+      required:
+        - id
+        - dealershipId
+        - channel
+        - vehicleId
+        - batchId
+        - reasonCode
+        - severity
+        - businessImpact
+        - owner
+        - ownerId
+        - description
+        - nextAction
+        - technicalEvidence
+        - state
+        - verificationState
+        - createdAt
+        - updatedAt
+        - resolvedAt
+      properties:
+        id:
+          type: string
+        dealershipId:
+          type: string
+        channel:
+          type: string
+        vehicleId:
+          type: string
+          nullable: true
+        batchId:
+          type: string
+          nullable: true
+        reasonCode:
+          type: string
+        severity:
+          type: string
+          enum:
+            - INFO
+            - WARNING
+            - CRITICAL
+        businessImpact:
+          type: string
+        owner:
+          type: string
+        ownerId:
+          type: string
+          nullable: true
+        description:
+          type: string
+        nextAction:
+          type: string
+        technicalEvidence:
+          type: object
+          additionalProperties: true
+        state:
+          type: string
+          enum:
+            - OPEN
+            - ACKNOWLEDGED
+            - RESOLVED
+        verificationState:
+          type: string
+          enum:
+            - UNVERIFIED
+            - VERIFIED
+        createdAt:
+          type: string
+          format: date-time
+          nullable: true
+        updatedAt:
+          type: string
+          format: date-time
+          nullable: true
+        resolvedAt:
+          type: string
+          format: date-time
+          nullable: true
+    V5AutopilotSummary:
+      type: object
+      required:
+        - contractVersion
+        - policy
+        - capabilities
+        - coverage
+        - counts
+        - openIncidents
+        - generatedAt
+      properties:
+        contractVersion:
+          type: integer
+          enum:
+            - 1
+        policy:
+          $ref: '#/components/schemas/V5AutopilotPolicy'
+        capabilities:
+          type: array
+          items:
+            $ref: '#/components/schemas/V5ChannelCapability'
+        coverage:
+          type: string
+          enum:
+            - 'OFF'
+            - PAUSED
+            - FULL
+            - PARTIAL
+            - UNAVAILABLE
+        counts:
+          type: object
+          additionalProperties:
+            type: integer
+        openIncidents:
+          type: integer
+        generatedAt:
+          type: string
+          format: date-time
+          nullable: true
+    V5DistributionPage:
+      type: object
+      required:
+        - items
+        - total
+        - limit
+        - offset
+      properties:
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/V5DistributionOutcome'
+        total:
+          type: integer
+        limit:
+          type: integer
+        offset:
+          type: integer
+    V5IncidentPage:
+      type: object
+      required:
+        - items
+        - total
+        - limit
+        - offset
+      properties:
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/V5DistributionIncident'
+        total:
+          type: integer
+        limit:
+          type: integer
+        offset:
+          type: integer
+    V5IncidentAction:
+      type: object
+      required: []
+      properties:
+        expectedHash:
+          type: string
+        reason:
+          type: string
+    V5IncidentActionResult:
+      type: object
+      required:
+        - status
+      properties:
+        status:
+          type: string
+        authUrl:
+          type: string
     ProviderCredentialSummary:
       type: object
       required: [provider, platformSlugs, envVars, configured, probeSupported]
@@ -4753,24 +5565,78 @@ components:
         - $ref: '#/components/schemas/DealershipRecordSummary'
         - type: object
           properties:
-            websiteUrl: { type: string, nullable: true }
-            rooftopAddress: { type: object, additionalProperties: true, nullable: true }
-            primaryContact: { type: object, additionalProperties: true, nullable: true }
-            launchCompletedAt: { type: string, format: date-time, nullable: true }
-            handoffCompletedAt: { type: string, format: date-time, nullable: true }
+            websiteUrl:
+              type: string
+              nullable: true
+            rooftopAddress:
+              type: object
+              additionalProperties: true
+              nullable: true
+            primaryContact:
+              type: object
+              additionalProperties: true
+              nullable: true
+            launchCompletedAt:
+              type: string
+              format: date-time
+              nullable: true
+            handoffCompletedAt:
+              type: string
+              format: date-time
+              nullable: true
             inventory:
               type: object
               properties:
-                vehicleCount: { type: integer }
-                waitingForStock: { type: boolean }
+                vehicleCount:
+                  type: integer
+                waitingForStock:
+                  type: boolean
+                ready:
+                  type: integer
+                needsAttention:
+                  type: integer
+                sold:
+                  type: integer
             channels:
               type: object
               properties:
-                accountCount: { type: integer }
-                autopilotPreference: { $ref: '#/components/schemas/AutopilotPreference' }
-            onboarding: { $ref: '#/components/schemas/OnboardingSnapshot' }
-            people: { $ref: '#/components/schemas/DealershipPeopleResponse' }
-
+                accountCount:
+                  type: integer
+                autopilotPreference:
+                  $ref: '#/components/schemas/AutopilotPreference'
+                items:
+                  type: array
+                  items:
+                    type: object
+                    required:
+                      - slug
+                      - name
+                      - status
+                    properties:
+                      slug:
+                        type: string
+                      name:
+                        type: string
+                      status:
+                        type: string
+                        enum:
+                          - ACTIVE
+                          - NEEDS_LOGIN
+                          - SETUP_NEEDED
+                          - PAUSED
+                          - NOT_CONFIGURED
+            onboarding:
+              $ref: '#/components/schemas/OnboardingSnapshot'
+            people:
+              $ref: '#/components/schemas/DealershipPeopleResponse'
+            internalOwner:
+              type: object
+              nullable: true
+              properties:
+                id:
+                  type: string
+                email:
+                  type: string
     PatchDealershipOnboardingRequest:
       type: object
       properties:
@@ -5003,6 +5869,9 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/ProfileReadinessWarning'
+        lifecycleStatus: { $ref: '#/components/schemas/DealershipLifecycle' }
+        waitingForStock: { type: boolean }
+        autopilotPreference: { $ref: '#/components/schemas/AutopilotPreference' }
         createdAt:        { type: string, format: date-time }
         updatedAt:        { type: string, format: date-time }
 
@@ -5034,6 +5903,7 @@ components:
             state:      { type: string }
             postalCode: { type: string }
             country:    { type: string }
+        autopilotPreference: { $ref: '#/components/schemas/AutopilotPreference' }
 
     PlatformAccountDetail:
       type: object

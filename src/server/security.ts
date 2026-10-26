@@ -67,6 +67,15 @@ export const routeClassifications = {
     'GET /api/auth/invites/:token',
   ],
   operator: [
+    'GET /api/dealers/:dealershipId/autopilot',
+    'PUT /api/dealers/:dealershipId/autopilot',
+    'GET /api/dealers/:dealershipId/distribution',
+    'GET /api/dealers/:dealershipId/distribution/incidents',
+    'POST /api/dealers/:dealershipId/distribution/incidents/:incidentId/retry',
+    'POST /api/dealers/:dealershipId/distribution/incidents/:incidentId/approve',
+    'POST /api/dealers/:dealershipId/distribution/incidents/:incidentId/resolve',
+    'POST /api/dealers/:dealershipId/distribution/incidents/:incidentId/reconnect',
+
     'GET /api/dealers',
     'POST /api/dealers',
     'GET /api/dealers/:dealershipId/profile',

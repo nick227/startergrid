@@ -1,3 +1,4 @@
+import { assertAssignableRole, type AccessActor } from './accessSafety.js';
 import { randomBytes } from 'node:crypto';
 import type { DealerAccessRole, Prisma, PrismaClient } from '@prisma/client';
 import { hashSessionToken } from '../auth/sessionService.js';
@@ -31,9 +32,10 @@ export async function createInvitation(
     dealershipId: string;
     email: string;
     accessRole: DealerAccessRole;
-    invitedBy: { id: string; email: string };
+    invitedBy: AccessActor;
   },
 ): Promise<{ inviteId: string; email: string; expiresAt: string; setupUrl: string; deliveryStatus: string }> {
+  assertAssignableRole(input.invitedBy, input.accessRole);
   const email = input.email.trim().toLowerCase();
   if (input.accessRole === 'INTERNAL_SUPPORT' && !input.invitedBy.id) {
     throw new HttpError(400, 'Internal support assignment requires an actor');
@@ -58,7 +60,7 @@ export async function createInvitation(
       tokenHash: hashSessionToken(token),
       expiresAt: new Date(Date.now() + INVITE_LIFETIME_MS),
       invitedBy: input.invitedBy.id,
-      deliveryStatus: 'SENT',
+      deliveryStatus: 'PENDING',
     },
   });
 
@@ -84,7 +86,7 @@ export async function resendInvitation(
   db: Db,
   dealershipId: string,
   inviteId: string,
-  actor: { id: string; email: string },
+  actor: AccessActor,
 ): Promise<{ inviteId: string; email: string; expiresAt: string; setupUrl: string; deliveryStatus: string }> {
   const existing = await db.operatorInvitation.findFirst({
     where: { id: inviteId, dealershipId },
@@ -108,7 +110,7 @@ export async function revokeInvitation(
   db: Db,
   dealershipId: string,
   inviteId: string,
-  actor: { id: string; email: string },
+  actor: AccessActor,
 ): Promise<void> {
   const existing = await db.operatorInvitation.findFirst({
     where: { id: inviteId, dealershipId },
