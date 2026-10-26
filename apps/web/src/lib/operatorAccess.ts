@@ -1,5 +1,9 @@
 import type { OperatorUser } from '@/lib/api/auth.ts';
 
+export function isDealerFacingRole(role: string): boolean {
+  return role === 'DEALER_OPERATOR' || role === 'DEALER_OWNER' || role === 'DEALER_STAFF';
+}
+
 export function operatorHasGlobalAccess(user: OperatorUser): boolean {
   if (user.role === 'SUPER_ADMIN') return true;
   if (user.devBypass && user.dealerAccessIds.length === 0) return true;

@@ -7,6 +7,7 @@ import { useCategorySchema } from '@/contexts/CategoryContext.tsx';
 import { useAdminView } from '@/contexts/AdminViewContext.tsx';
 import { DealerLogo } from './DealerLogo.tsx';
 import { OperatorAvatar } from './OperatorAvatar.tsx';
+import { isDealerFacingRole } from '@/lib/operatorAccess.ts';
 
 type Props = {
   dealerId: string;
@@ -153,7 +154,7 @@ export function PageShell({
           </div>
 
           <div className="pb-3 flex items-center justify-between gap-3 flex-wrap border-t border-navy-800/80 pt-3">
-            {!(user?.role === 'DEALER_OPERATOR' && user.dealerAccessIds.length <= 1) ? (
+            {!(isDealerFacingRole(user?.role ?? '') && (user?.dealerAccessIds.length ?? 0) <= 1) ? (
               <button
                 type="button"
                 onClick={nav.changeDealer}

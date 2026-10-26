@@ -3,6 +3,70 @@ generator client {
   binaryTargets = ["native", "debian-openssl-3.0.x"]
 }
 
+// V5 distribution-owned records. Scalar scope keys deliberately avoid changes
+// to onboarding-owned models; services validate dealership/vehicle ownership.
+model AutopilotPolicy {
+  dealershipId String @id @db.VarChar(191)
+  mode String @default("OFF") @db.VarChar(12)
+  version Int @default(1)
+  includedChannels Json
+  excludedVehicleIds Json
+  safeguards Json
+  updatedBy String @db.VarChar(191)
+  updatedAt DateTime @updatedAt
+}
+
+model DistributionTarget {
+  id String @id @default(cuid())
+  dealershipId String @db.VarChar(191)
+  vehicleId String @db.VarChar(191)
+  channel String @db.VarChar(80)
+  generation Int @default(1)
+  desiredHash String @db.VarChar(64)
+  snapshot Json
+  operation String @db.VarChar(16)
+  status String @db.VarChar(40)
+  reasonCode String? @db.VarChar(80)
+  nextAction String? @db.Text
+  owner String @default("SYSTEM") @db.VarChar(30)
+  attemptCount Int @default(0)
+  nextAttemptAt DateTime?
+  submittedAt DateTime?
+  evidence Json?
+  verifiedSnapshot Json?
+  approvedHash String? @db.VarChar(64)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  @@unique([dealershipId, vehicleId, channel], map: "distribution_target_scope")
+  @@index([dealershipId, status])
+  @@index([status, nextAttemptAt])
+}
+
+model DistributionIncident {
+  id String @id @default(cuid())
+  key String @unique @db.VarChar(191)
+  dealershipId String @db.VarChar(191)
+  channel String @db.VarChar(80)
+  vehicleId String? @db.VarChar(191)
+  batchId String? @db.VarChar(191)
+  targetId String? @db.VarChar(191)
+  reasonCode String @db.VarChar(80)
+  severity String @db.VarChar(16)
+  businessImpact String @db.Text
+  owner String @db.VarChar(30)
+  ownerId String? @db.VarChar(191)
+  description String @db.Text
+  nextAction String @db.Text
+  technicalEvidence Json
+  state String @default("OPEN") @db.VarChar(24)
+  verificationState String @default("UNVERIFIED") @db.VarChar(24)
+  resolvedAt DateTime?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  @@index([dealershipId, state])
+  @@index([targetId])
+}
+
 datasource db {
   provider = "mysql"
   url      = env("DATABASE_URL")
@@ -139,32 +203,101 @@ enum Environment {
 // ─── Auth enums and models ────────────────────────────────────────────────────
 
 enum OperatorRole {
-  SUPER_ADMIN     // Full platform access; no dealer scoping restrictions
-  OPERATOR        // Platform access scoped to assigned dealerships
-  DEALER_OPERATOR // Read-only access to own dealership data (Phase D — defined now for schema stability)
+  SUPER_ADMIN      // Site administrator — global access
+  OPERATOR         // Legacy internal staff — migrated to INTERNAL_SUPPORT
+  DEALER_OPERATOR  // Legacy dealer owner — migrated to DEALER_OWNER
+  DEALER_OWNER     // Dealership owner
+  DEALER_STAFF     // Dealership staff
+  INTERNAL_SUPPORT // Internal support, scoped to assigned dealerships
+}
+
+enum DealershipLifecycle {
+  DRAFT
+  SETTING_UP
+  READY_TO_LAUNCH
+  ACTIVE
+  PAUSED
+  ARCHIVED
+}
+
+enum OnboardingStepKey {
+  CREATE
+  ACCESS
+  VEHICLES
+  CHANNELS
+  HANDOFF
+}
+
+enum OnboardingStepStatus {
+  NOT_STARTED
+  IN_PROGRESS
+  COMPLETE
+  BLOCKED
+  NEEDS_RECHECK
+}
+
+enum TaskOwnerKind {
+  YOU
+  OUR_TEAM
+  SYSTEM
+  PARTNER
+  DEALER
+}
+
+enum DealerAccessRole {
+  DEALER_OWNER
+  DEALER_STAFF
+  INTERNAL_SUPPORT
+}
+
+enum InvitationDeliveryStatus {
+  PENDING
+  SENT
+  FAILED
+  EXPIRED
+  ACCEPTED
+  REVOKED
+}
+
+enum AutopilotPreference {
+  OFF
+  ON
+  PAUSED
+}
+
+enum LeadWorkflowStatus {
+  NEW
+  CONTACTED
+  APPOINTMENT
+  SOLD
+  LOST
 }
 
 model OperatorAccount {
-  id           String       @id @default(cuid())
-  email        String       @unique @db.VarChar(255)
-  passwordHash String       @db.VarChar(255)
-  role         OperatorRole @default(OPERATOR)
-  isActive     Boolean      @default(true)
-  avatarUrl    String?      @db.VarChar(512)
-  lastLoginAt  DateTime?
-  createdAt    DateTime     @default(now())
-  updatedAt    DateTime     @updatedAt
+  id                  String       @id @default(cuid())
+  email               String       @unique @db.VarChar(255)
+  passwordHash        String       @db.VarChar(255)
+  role                OperatorRole @default(OPERATOR)
+  isActive            Boolean      @default(true)
+  avatarUrl           String?      @db.VarChar(512)
+  mustChangePassword  Boolean      @default(false)
+  firstLoginAt        DateTime?
+  lastLoginAt         DateTime?
+  suspendedAt         DateTime?
+  createdAt           DateTime     @default(now())
+  updatedAt           DateTime     @updatedAt
 
   sessions     OperatorSession[]
   dealerAccess OperatorDealerAccess[]
 }
 
 model OperatorDealerAccess {
-  id                String   @id @default(cuid())
+  id                String           @id @default(cuid())
   operatorAccountId String
   dealershipId      String
-  grantedAt         DateTime @default(now())
-  grantedBy         String   @db.VarChar(30) // OperatorAccount.id of the granting account (audit only, loose ref)
+  accessRole        DealerAccessRole @default(INTERNAL_SUPPORT)
+  grantedAt         DateTime         @default(now())
+  grantedBy         String           @db.VarChar(30) // OperatorAccount.id of the granting account (audit only, loose ref)
 
   operator   OperatorAccount   @relation(fields: [operatorAccountId], references: [id], onDelete: Cascade)
   dealership DealershipProfile @relation(fields: [dealershipId], references: [id], onDelete: Cascade)
@@ -202,6 +335,63 @@ model AdminAuditLog {
   createdAt  DateTime @default(now())
 
   @@index([action, createdAt])
+}
+
+model DealershipOnboardingStep {
+  id               String               @id @default(cuid())
+  dealershipId     String
+  stepKey          OnboardingStepKey
+  status           OnboardingStepStatus @default(NOT_STARTED)
+  ownerKind        TaskOwnerKind        @default(OUR_TEAM)
+  ownerOperatorId  String?              @db.VarChar(30)
+  incompleteReason String?              @db.VarChar(255)
+  evidenceJson     Json?
+  completedAt      DateTime?
+  completedBy      String?              @db.VarChar(30)
+  createdAt        DateTime             @default(now())
+  updatedAt        DateTime             @updatedAt
+
+  dealership DealershipProfile @relation(fields: [dealershipId], references: [id], onDelete: Cascade)
+
+  @@unique([dealershipId, stepKey])
+  @@index([dealershipId])
+}
+
+model OperatorInvitation {
+  id                   String                    @id @default(cuid())
+  dealershipId         String
+  email                String                    @db.VarChar(255)
+  accessRole           DealerAccessRole
+  tokenHash            String                    @unique @db.VarChar(64)
+  expiresAt            DateTime
+  acceptedAt           DateTime?
+  acceptedByAccountId  String?                   @db.VarChar(30)
+  revokedAt            DateTime?
+  deliveryStatus       InvitationDeliveryStatus  @default(PENDING)
+  deliveryError        String?                   @db.VarChar(255)
+  invitedBy            String                    @db.VarChar(30)
+  createdAt            DateTime                  @default(now())
+  updatedAt            DateTime                  @updatedAt
+
+  dealership DealershipProfile @relation(fields: [dealershipId], references: [id], onDelete: Cascade)
+
+  @@index([dealershipId])
+  @@index([email])
+  @@index([expiresAt])
+}
+
+model DealershipActivityEvent {
+  id           String   @id @default(cuid())
+  dealershipId String
+  actorId      String   @db.VarChar(30)
+  actorEmail   String   @db.VarChar(255)
+  action       String   @db.VarChar(80)
+  detail       Json?
+  createdAt    DateTime @default(now())
+
+  dealership DealershipProfile @relation(fields: [dealershipId], references: [id], onDelete: Cascade)
+
+  @@index([dealershipId, createdAt])
 }
 
 // ─── Marketplace user models ──────────────────────────────────────────────────
@@ -254,23 +444,32 @@ model MarketplaceFavorite {
 // ─── Core models ─────────────────────────────────────────────────────────────
 
 model DealershipProfile {
-  id               String           @id @default(cuid())
-  legalName        String           @db.VarChar(160)
-  dbaName          String?          @db.VarChar(160)
-  logoUrl          String?          @db.VarChar(512)
-  businessCategory BusinessCategory @default(AUTOMOTIVE)
-  dealerLicense    String?          @db.VarChar(80)
-  rooftopAddress  Json
-  rooftopLat      Float?
-  rooftopLng      Float?
-  websiteUrl      String?  @db.VarChar(255)
+  id                   String               @id @default(cuid())
+  legalName            String               @db.VarChar(160)
+  dbaName              String?              @db.VarChar(160)
+  logoUrl              String?              @db.VarChar(512)
+  businessCategory     BusinessCategory     @default(AUTOMOTIVE)
+  dealerLicense        String?              @db.VarChar(80)
+  rooftopAddress       Json
+  rooftopLat           Float?
+  rooftopLng           Float?
+  websiteUrl           String?              @db.VarChar(255)
   primaryContact       Json
+  primaryContactEmail  String?              @db.VarChar(255)
   notificationChannels Json?
   inventorySize        Int?
-  desiredChannels Json
-  documents       Json?
-  createdAt       DateTime @default(now())
-  updatedAt       DateTime @updatedAt
+  desiredChannels      Json
+  documents            Json?
+  lifecycleStatus      DealershipLifecycle  @default(SETTING_UP)
+  internalOwnerId      String?              @db.VarChar(30)
+  waitingForStock      Boolean              @default(false)
+  autopilotPreference  AutopilotPreference  @default(OFF)
+  setupVersion         Int                  @default(1)
+  launchCompletedAt    DateTime?
+  handoffCompletedAt   DateTime?
+  handoffCompletedBy   String?              @db.VarChar(30)
+  createdAt            DateTime             @default(now())
+  updatedAt            DateTime             @updatedAt
 
   vehicles                     Vehicle[]
   applications                 PlatformApplication[]
@@ -295,6 +494,9 @@ model DealershipProfile {
   platformPerformanceSummaries PlatformPerformanceSummary[]
   channelEvents                ChannelEvent[]
   operatorAccess               OperatorDealerAccess[]
+  onboardingSteps              DealershipOnboardingStep[]
+  invitations                  OperatorInvitation[]
+  activityEvents               DealershipActivityEvent[]
   platformOAuthTokens          PlatformOAuthToken[]
   socialPageAccounts           SocialPageAccount[]
   socialPosts                  SocialPost[]
@@ -303,6 +505,11 @@ model DealershipProfile {
   platformCatalogSyncs         PlatformCatalogSync[]
   leadDeliveryAttempts         LeadDeliveryAttempt[]
   buyerOutreach                BuyerOutreach[]
+
+  @@index([lifecycleStatus])
+  @@index([primaryContactEmail])
+  @@index([internalOwnerId])
+  @@index([legalName])
 }
 
 model Vehicle {
@@ -566,18 +773,25 @@ model MockValidationRun {
 // ─── Business value models ────────────────────────────────────────────────────
 
 model Lead {
-  id              String     @id @default(cuid())
-  dealershipId    String
-  vehicleId       String?
-  source          LeadSource
-  platformSlug    String     @db.VarChar(80)
-  contactName     String?    @db.VarChar(160)
-  contactEmail    String?    @db.VarChar(255)
-  contactPhone    String?    @db.VarChar(40)
-  message         String?    @db.Text
-  vehicleInterest Json?
-  adfPayload      Json?
-  createdAt       DateTime   @default(now())
+  id                  String              @id @default(cuid())
+  dealershipId        String
+  vehicleId           String?
+  source              LeadSource
+  platformSlug        String              @db.VarChar(80)
+  contactName         String?             @db.VarChar(160)
+  contactEmail        String?             @db.VarChar(255)
+  contactPhone        String?             @db.VarChar(40)
+  message             String?             @db.Text
+  vehicleInterest     Json?
+  adfPayload          Json?
+  workflowStatus      LeadWorkflowStatus  @default(NEW)
+  assigneeOperatorId  String?             @db.VarChar(30)
+  notes               String?             @db.Text
+  statusUpdatedAt     DateTime?
+  statusUpdatedBy     String?             @db.VarChar(30)
+  version             Int                 @default(1)
+  createdAt           DateTime            @default(now())
+  updatedAt           DateTime            @updatedAt
 
   dealership      DealershipProfile @relation(fields: [dealershipId], references: [id], onDelete: Cascade)
   vehicle         Vehicle?          @relation(fields: [vehicleId], references: [id])
@@ -586,6 +800,7 @@ model Lead {
 
   @@index([dealershipId])
   @@index([platformSlug])
+  @@index([dealershipId, workflowStatus])
 }
 
 model VehicleUpdate {

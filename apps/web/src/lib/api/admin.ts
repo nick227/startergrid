@@ -117,7 +117,13 @@ export type PlatformCredentialValidationResponse = {
 
 // ── Operator-user management types ────────────────────────────────────────────
 
-export type OperatorUserRole = 'SUPER_ADMIN' | 'OPERATOR' | 'DEALER_OPERATOR';
+export type OperatorUserRole =
+  | 'SUPER_ADMIN'
+  | 'OPERATOR'
+  | 'DEALER_OPERATOR'
+  | 'DEALER_OWNER'
+  | 'DEALER_STAFF'
+  | 'INTERNAL_SUPPORT';
 
 export interface OperatorUserSummary {
   id: string;

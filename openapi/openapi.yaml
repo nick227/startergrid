@@ -80,6 +80,62 @@ paths:
         '401':
           $ref: '#/components/responses/Unauthorized'
 
+  /api/auth/change-password:
+    post:
+      tags: [Auth]
+      security:
+        - OperatorAuth: []
+      x-route-classification: operator
+      operationId: changeOperatorPassword
+      summary: Change the current operator password
+      responses:
+        '200':
+          description: Password updated
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+
+  /api/auth/invites/{token}:
+    get:
+      tags: [Auth]
+      security: []
+      x-route-classification: public
+      operationId: previewOperatorInvite
+      summary: Preview an invitation without accepting it
+      parameters:
+        - name: token
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Invitation preview
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /api/auth/invites/{token}/accept:
+    post:
+      tags: [Auth]
+      security: []
+      x-route-classification: public-write
+      operationId: acceptOperatorInvite
+      summary: Accept an invitation and set a password
+      parameters:
+        - name: token
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Invitation accepted
+        '400':
+          $ref: '#/components/responses/ValidationError'
+        '409':
+          description: Already accepted
+        '410':
+          description: Expired
+
   /health:
     get:
       tags: [Health]
@@ -2873,6 +2929,262 @@ paths:
         '404':
           description: User not found
 
+  /api/admin/dealerships:
+    get:
+      tags: [Admin]
+      security:
+        - OperatorAuth: []
+      x-route-classification: operator
+      operationId: listDealershipRecords
+      summary: Search and list the central dealership records
+      parameters:
+        - name: q
+          in: query
+          schema: { type: string }
+        - name: lifecycle
+          in: query
+          schema: { type: string }
+        - name: limit
+          in: query
+          schema: { type: integer }
+      responses:
+        '200':
+          description: Dealership records
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+    post:
+      tags: [Admin]
+      security:
+        - OperatorAuth: []
+      x-route-classification: operator
+      operationId: createDealershipRecord
+      summary: Create a dealership record with persisted onboarding
+      responses:
+        '201':
+          description: Created dealership record
+        '409':
+          description: Duplicate dealership
+
+  /api/admin/dealerships/{dealershipId}:
+    get:
+      tags: [Admin]
+      security:
+        - OperatorAuth: []
+      x-route-classification: operator
+      operationId: getDealershipRecord
+      summary: Get the unified dealership record
+      parameters:
+        - name: dealershipId
+          in: path
+          required: true
+          schema: { type: string }
+      responses:
+        '200':
+          description: Dealership record
+        '404':
+          $ref: '#/components/responses/NotFound'
+    patch:
+      tags: [Admin]
+      security:
+        - OperatorAuth: []
+      x-route-classification: operator
+      operationId: patchDealershipRecord
+      summary: Update owner, Autopilot preference, or lifecycle
+      parameters:
+        - name: dealershipId
+          in: path
+          required: true
+          schema: { type: string }
+      responses:
+        '200':
+          description: Updated record
+
+  /api/admin/dealerships/{dealershipId}/onboarding:
+    get:
+      tags: [Admin]
+      security:
+        - OperatorAuth: []
+      x-route-classification: operator
+      operationId: getDealershipOnboarding
+      summary: Read persisted onboarding steps
+      parameters:
+        - name: dealershipId
+          in: path
+          required: true
+          schema: { type: string }
+      responses:
+        '200':
+          description: Onboarding snapshot
+    patch:
+      tags: [Admin]
+      security:
+        - OperatorAuth: []
+      x-route-classification: operator
+      operationId: patchDealershipOnboarding
+      summary: Update onboarding fields and refresh step evidence
+      parameters:
+        - name: dealershipId
+          in: path
+          required: true
+          schema: { type: string }
+      responses:
+        '200':
+          description: Updated onboarding
+
+  /api/admin/dealerships/{dealershipId}/handoff:
+    post:
+      tags: [Admin]
+      security:
+        - OperatorAuth: []
+      x-route-classification: operator
+      operationId: completeDealershipHandoff
+      summary: Complete verified customer handoff
+      parameters:
+        - name: dealershipId
+          in: path
+          required: true
+          schema: { type: string }
+      responses:
+        '200':
+          description: Handoff completed
+        '409':
+          description: Not ready
+
+  /api/dealers/{dealershipId}/people:
+    get:
+      tags: [Dealers]
+      security:
+        - OperatorAuth: []
+      x-route-classification: operator
+      operationId: listDealershipPeople
+      summary: List login emails, roles, and invitation status
+      parameters:
+        - name: dealershipId
+          in: path
+          required: true
+          schema: { type: string }
+      responses:
+        '200':
+          description: People and invitations
+
+  /api/dealers/{dealershipId}/people/invites:
+    post:
+      tags: [Dealers]
+      security:
+        - OperatorAuth: []
+      x-route-classification: operator
+      operationId: createDealershipInvite
+      summary: Create an expiring single-use invitation
+      parameters:
+        - name: dealershipId
+          in: path
+          required: true
+          schema: { type: string }
+      responses:
+        '201':
+          description: Invitation created
+
+  /api/dealers/{dealershipId}/people/invites/{inviteId}/resend:
+    post:
+      tags: [Dealers]
+      security:
+        - OperatorAuth: []
+      x-route-classification: operator
+      operationId: resendDealershipInvite
+      summary: Resend an invitation and invalidate the previous token
+      parameters:
+        - name: dealershipId
+          in: path
+          required: true
+          schema: { type: string }
+        - name: inviteId
+          in: path
+          required: true
+          schema: { type: string }
+      responses:
+        '200':
+          description: Invitation resent
+
+  /api/dealers/{dealershipId}/people/invites/{inviteId}/revoke:
+    post:
+      tags: [Dealers]
+      security:
+        - OperatorAuth: []
+      x-route-classification: operator
+      operationId: revokeDealershipInvite
+      summary: Revoke an unused invitation
+      parameters:
+        - name: dealershipId
+          in: path
+          required: true
+          schema: { type: string }
+        - name: inviteId
+          in: path
+          required: true
+          schema: { type: string }
+      responses:
+        '200':
+          description: Invitation revoked
+
+  /api/dealers/{dealershipId}/people/temporary-login:
+    post:
+      tags: [Dealers]
+      security:
+        - OperatorAuth: []
+      x-route-classification: operator
+      operationId: issueTemporaryLogin
+      summary: Issue a one-time temporary password
+      parameters:
+        - name: dealershipId
+          in: path
+          required: true
+          schema: { type: string }
+      responses:
+        '201':
+          description: Temporary password shown once
+
+  /api/dealers/{dealershipId}/people/{accountId}:
+    patch:
+      tags: [Dealers]
+      security:
+        - OperatorAuth: []
+      x-route-classification: operator
+      operationId: patchDealershipPerson
+      summary: Reset password, suspend, or change access role
+      parameters:
+        - name: dealershipId
+          in: path
+          required: true
+          schema: { type: string }
+        - name: accountId
+          in: path
+          required: true
+          schema: { type: string }
+      responses:
+        '200':
+          description: Person updated
+
+  /api/dealers/{dealershipId}/leads/{leadId}:
+    patch:
+      tags: [Leads]
+      security:
+        - OperatorAuth: []
+      x-route-classification: operator
+      operationId: patchDealerLead
+      summary: Update shared lead status, assignee, or notes
+      parameters:
+        - name: dealershipId
+          in: path
+          required: true
+          schema: { type: string }
+        - name: leadId
+          in: path
+          required: true
+          schema: { type: string }
+      responses:
+        '200':
+          description: Lead updated
+
   /api/admin/buyer-outreach-stats:
     get:
       tags: [Admin]
@@ -3513,12 +3825,14 @@ components:
           type: string
         role:
           type: string
-          enum: [SUPER_ADMIN, OPERATOR, DEALER_OPERATOR]
+          enum: [SUPER_ADMIN, OPERATOR, DEALER_OPERATOR, DEALER_OWNER, DEALER_STAFF, INTERNAL_SUPPORT]
         dealerAccessIds:
           type: array
           items:
             type: string
           description: Dealership IDs the operator can access. Empty for SUPER_ADMIN (global access).
+        mustChangePassword:
+          type: boolean
 
     ErrorResponse:
       type: object

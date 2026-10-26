@@ -74,11 +74,20 @@ describe('OperatorRole enum — values match schema', () => {
   it('DEALER_OPERATOR value is the string "DEALER_OPERATOR"', () =>
     assert.equal(OperatorRole.DEALER_OPERATOR, 'DEALER_OPERATOR'));
 
-  it('enum has exactly three values (no accidental additions)', () => {
+  it('DEALER_OWNER value is the string "DEALER_OWNER"', () =>
+    assert.equal(OperatorRole.DEALER_OWNER, 'DEALER_OWNER'));
+
+  it('DEALER_STAFF value is the string "DEALER_STAFF"', () =>
+    assert.equal(OperatorRole.DEALER_STAFF, 'DEALER_STAFF'));
+
+  it('INTERNAL_SUPPORT value is the string "INTERNAL_SUPPORT"', () =>
+    assert.equal(OperatorRole.INTERNAL_SUPPORT, 'INTERNAL_SUPPORT'));
+
+  it('enum includes legacy and migrated roles', () => {
     const values = Object.values(OperatorRole);
     assert.equal(
-      values.length, 3,
-      `Expected 3 OperatorRole values, got ${values.length}: ${values.join(', ')}`
+      values.length, 6,
+      `Expected 6 OperatorRole values, got ${values.length}: ${values.join(', ')}`
     );
   });
 });

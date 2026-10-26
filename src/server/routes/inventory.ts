@@ -104,6 +104,8 @@ export function registerInventoryRoutes(app: FastifyInstance, prisma: PrismaClie
       if (!body.ok) return reply.status(400).send({ error: body.error });
 
       const result = await commitImport(prisma, dealershipId, body.data.rows, body.data.mapping ?? {});
+      const { refreshOnboarding } = await import('../../services/dealership/onboardingService.js');
+      await refreshOnboarding(prisma, dealershipId).catch(() => undefined);
       return reply.send(result);
     }
   );
@@ -428,6 +430,9 @@ export function registerInventoryRoutes(app: FastifyInstance, prisma: PrismaClie
         decoded,
         adminActorId: operator.role === 'SUPER_ADMIN' ? operator.id : undefined,
       });
+
+      const { refreshOnboarding } = await import('../../services/dealership/onboardingService.js');
+      await refreshOnboarding(prisma, dealershipId, operator.id).catch(() => undefined);
 
       return reply.status(201).send(result);
     }

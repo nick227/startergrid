@@ -6,6 +6,11 @@ import {
   type OperatorIdentity,
 } from '../services/auth/sessionService.js';
 import {
+  hasCapability,
+  isInternalStaffRole,
+  type Capability,
+} from '../services/dealership/permissions.js';
+import {
   getMarketplaceUserFromSessionToken,
   MarketplaceAuthError,
   type MarketplaceUserIdentity,
@@ -59,6 +64,7 @@ export const routeClassifications = {
     'GET /api/dealers/:dealershipId/storefront',
     'GET /api/dealers/:dealershipId/vehicles/:stockNumber',
     'GET /api/oauth/callback',
+    'GET /api/auth/invites/:token',
   ],
   operator: [
     'GET /api/dealers',
@@ -132,6 +138,21 @@ export const routeClassifications = {
     'PATCH /api/dealers/:dealershipId/inventory/vehicles/:vehicleId/media/:mediaId/slot',
     'PATCH /api/dealers/:dealershipId/inventory/vehicles/:vehicleId/media/:mediaId/label',
     'GET /api/dealers/:dealershipId/leads',
+    'PATCH /api/dealers/:dealershipId/leads/:leadId',
+    'GET /api/admin/dealerships',
+    'POST /api/admin/dealerships',
+    'GET /api/admin/dealerships/:dealershipId',
+    'PATCH /api/admin/dealerships/:dealershipId',
+    'GET /api/admin/dealerships/:dealershipId/onboarding',
+    'PATCH /api/admin/dealerships/:dealershipId/onboarding',
+    'POST /api/admin/dealerships/:dealershipId/handoff',
+    'GET /api/dealers/:dealershipId/people',
+    'POST /api/dealers/:dealershipId/people/invites',
+    'POST /api/dealers/:dealershipId/people/invites/:inviteId/resend',
+    'POST /api/dealers/:dealershipId/people/invites/:inviteId/revoke',
+    'POST /api/dealers/:dealershipId/people/temporary-login',
+    'PATCH /api/dealers/:dealershipId/people/:accountId',
+    'POST /api/auth/change-password',
     'GET /api/dealers/:dealershipId/notifications',
     'GET /api/dealers/:dealershipId/notification-channels',
     'PATCH /api/dealers/:dealershipId/notification-channels',
@@ -145,6 +166,7 @@ export const routeClassifications = {
     'POST /api/dealers/signup',
     'POST /api/dealers/signup/:dealershipId/logo',
     'POST /api/dealers/:dealershipId/leads',
+    'POST /api/auth/invites/:token/accept',
   ],
   // Site-management routes — SUPER_ADMIN only (in-house operators).
   admin: [
@@ -201,6 +223,10 @@ export async function requireOperator(
       const identity = await getOperatorFromSessionToken(prisma, rawToken);
       const ctx: OperatorContext = { ...identity, devHeader: false };
       request.operator = ctx;
+      if (!allowForcedPasswordChange(request) && identity.mustChangePassword) {
+        reply.status(403).send({ error: 'Password change required', code: 'MUST_CHANGE_PASSWORD' });
+        return null;
+      }
       return ctx;
     } catch (err) {
       if (err instanceof OperatorAuthError) {
@@ -232,8 +258,9 @@ export async function requireOperator(
     email:           'dev@local',
     role:            'SUPER_ADMIN',
     dealerAccessIds: [],
-    avatarUrl:       null,
-    devHeader:       true,
+    avatarUrl:           null,
+    mustChangePassword:  false,
+    devHeader:           true,
   };
   request.operator = ctx;
   return ctx;
@@ -296,6 +323,52 @@ export async function requireDealerAccess(
     return false;
   }
   return true;
+}
+
+const PASSWORD_CHANGE_ALLOWED = new Set([
+  '/api/auth/me',
+  '/api/auth/logout',
+  '/api/auth/change-password',
+]);
+
+function allowForcedPasswordChange(request: FastifyRequest): boolean {
+  const url = request.url.split('?')[0] ?? '';
+  return PASSWORD_CHANGE_ALLOWED.has(url);
+}
+
+export async function requireInternalStaff(
+  prisma: PrismaClient,
+  request: FastifyRequest,
+  reply: FastifyReply,
+): Promise<OperatorContext | null> {
+  const operator = request.operator ?? await requireOperator(prisma, request, reply);
+  if (!operator) return null;
+  if (operator.devHeader || isInternalStaffRole(operator.role)) return operator;
+  reply.status(403).send({ error: 'Internal staff access required' });
+  return null;
+}
+
+export async function requireCapability(
+  prisma: PrismaClient,
+  request: FastifyRequest,
+  reply: FastifyReply,
+  dealershipId: string,
+  capability: Capability,
+): Promise<OperatorContext | null> {
+  if (!await requireDealerAccess(prisma, request, reply, dealershipId)) return null;
+  const operator = request.operator;
+  if (!operator) return null;
+  if (operator.devHeader || operator.role === 'SUPER_ADMIN') return operator;
+
+  const access = await prisma.operatorDealerAccess.findFirst({
+    where: { operatorAccountId: operator.id, dealershipId },
+    select: { accessRole: true },
+  });
+  if (!hasCapability(operator.role, capability, access?.accessRole)) {
+    reply.status(403).send({ error: 'Missing permission' });
+    return null;
+  }
+  return operator;
 }
 
 // Authenticates a marketplace consumer from the mp_session cookie.

@@ -242,6 +242,8 @@ export const createDealershipSchema = z.object({
   inventorySize: z.number().int().min(0).max(1_000_000).nullable().optional(),
   desiredChannels: z.array(nonEmptyString(80)).max(50).optional(),
   documents: z.array(nonEmptyString(160)).max(50).optional(),
+  internalOwnerId: optionalText(40),
+  inviteOwnerEmail: z.string().trim().email().max(255).optional(),
 }).strict();
 
 export type CreateDealershipBody = z.infer<typeof createDealershipSchema>;
@@ -299,6 +301,49 @@ export const operatorLoginSchema = z.object({
 }).strict();
 
 export type OperatorLoginBody = z.infer<typeof operatorLoginSchema>;
+
+export const changePasswordSchema = z.object({
+  currentPassword: z.string().min(8).max(128),
+  newPassword: z.string().min(8).max(128),
+}).strict();
+
+export const invitePersonSchema = z.object({
+  email: z.string().trim().email().max(255),
+  accessRole: z.enum(['DEALER_OWNER', 'DEALER_STAFF', 'INTERNAL_SUPPORT']),
+  name: optionalText(160),
+}).strict();
+
+export const temporaryLoginSchema = z.object({
+  email: z.string().trim().email().max(255),
+  accessRole: z.enum(['DEALER_OWNER', 'DEALER_STAFF', 'INTERNAL_SUPPORT']),
+  name: optionalText(160),
+}).strict();
+
+export const patchPersonSchema = z.object({
+  accessRole: z.enum(['DEALER_OWNER', 'DEALER_STAFF', 'INTERNAL_SUPPORT']).optional(),
+  isActive: z.boolean().optional(),
+  resetPassword: z.boolean().optional(),
+}).strict();
+
+export const acceptInviteSchema = z.object({
+  password: z.string().min(8).max(128),
+  name: optionalText(160),
+}).strict();
+
+export const patchOnboardingSchema = z.object({
+  stepKey: z.enum(['CREATE', 'ACCESS', 'VEHICLES', 'CHANNELS', 'HANDOFF']).optional(),
+  waitingForStock: z.boolean().optional(),
+  autopilotPreference: z.enum(['OFF', 'ON', 'PAUSED']).optional(),
+  internalOwnerId: optionalText(40),
+  lifecycleStatus: z.enum(['ACTIVE', 'PAUSED', 'ARCHIVED']).optional(),
+}).strict();
+
+export const patchLeadWorkflowSchema = z.object({
+  workflowStatus: z.enum(['NEW', 'CONTACTED', 'APPOINTMENT', 'SOLD', 'LOST']).optional(),
+  assigneeOperatorId: z.string().trim().max(40).nullable().optional(),
+  notes: z.string().trim().max(4000).nullable().optional(),
+  version: z.number().int().min(0).optional(),
+}).strict();
 
 // operationId: marketplaceLogin
 export const marketplaceLoginSchema = z.object({

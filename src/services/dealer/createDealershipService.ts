@@ -3,13 +3,18 @@ import { OperatorRole } from '@prisma/client';
 import type { CreateDealershipBody } from '../../server/requestValidation.js';
 import { upsertDefaultPlatformAccounts, upsertDefaultSyncPolicies } from '../publishing/syncPolicyService.js';
 import { hashPassword } from '../auth/passwordService.js';
+import { seedOnboardingSteps } from '../dealership/onboardingSteps.js';
+import { refreshOnboarding } from '../dealership/onboardingService.js';
+import { createInvitation } from '../dealership/invitationService.js';
+import { assignInternalOwner } from '../dealership/peopleAccessService.js';
+import { HttpError } from '../dealership/httpError.js';
 
 type CreateDealershipOptions = {
   createdByOperatorId?: string | null;
-  // The operator ID to grant explicit dealership access to. Only set this when
-  // the operator.id is a real OperatorAccount PK (not a dev bypass header value).
-  // If null/undefined, no operatorAccess row is created.
   grantAccessToOperatorId?: string | null;
+  internalOwnerId?: string | null;
+  inviteOwnerEmail?: string | null;
+  actorEmail?: string | null;
 };
 
 export type CreatedDealershipSummary = {
@@ -25,35 +30,12 @@ export type CreateDealershipResult = {
   dealer: CreatedDealershipSummary;
   duplicate: false;
   createdOperatorAccountId?: string;
+  invite?: { setupUrl: string; email: string; expiresAt: string };
 };
 
 function cleanOptional(value: string | undefined | null): string | null {
   const trimmed = value?.trim();
   return trimmed ? trimmed : null;
-}
-
-function normalizeWebsite(value: string | undefined): string | null {
-  const trimmed = cleanOptional(value);
-  if (!trimmed) return null;
-  return trimmed;
-}
-
-function toSummary(dealer: {
-  id: string;
-  legalName: string;
-  dbaName: string | null;
-  logoUrl: string | null;
-  businessCategory: BusinessCategory;
-  createdAt: Date;
-}): CreatedDealershipSummary {
-  return {
-    id: dealer.id,
-    legalName: dealer.legalName,
-    dbaName: dealer.dbaName,
-    logoUrl: dealer.logoUrl,
-    businessCategory: dealer.businessCategory,
-    createdAt: dealer.createdAt.toISOString(),
-  };
 }
 
 export async function createDealership(
@@ -64,7 +46,8 @@ export async function createDealership(
   const legalName = body.legalName.trim();
   const dbaName = cleanOptional(body.dbaName);
   const dealerLicense = cleanOptional(body.dealerLicense);
-  const websiteUrl = normalizeWebsite(body.websiteUrl);
+  const websiteUrl = cleanOptional(body.websiteUrl);
+  const contactEmail = body.primaryContact.email.trim().toLowerCase();
 
   const duplicate = await prisma.dealershipProfile.findFirst({
     where: {
@@ -76,81 +59,118 @@ export async function createDealership(
     },
     select: { id: true },
   });
+  if (duplicate) throw new HttpError(409, 'A dealership with matching business details already exists');
 
-  if (duplicate) {
-    const err = new Error('A dealership with matching business details already exists');
-    (err as Error & { statusCode?: number }).statusCode = 409;
-    throw err;
-  }
-
-  let operatorAccountIdToLink = options.grantAccessToOperatorId;
-
+  let passwordHash: string | null = null;
   if (body.password) {
-    const existingAccount = await prisma.operatorAccount.findUnique({
-      where: { email: body.primaryContact.email }
-    });
-    if (existingAccount) {
-      const err = new Error('An account with this email already exists');
-      (err as Error & { statusCode?: number }).statusCode = 409;
-      throw err;
-    }
-    const passwordHash = await hashPassword(body.password);
-    const newAccount = await prisma.operatorAccount.create({
-      data: {
-        email: body.primaryContact.email,
-        passwordHash,
-        role: OperatorRole.DEALER_OPERATOR,
-      }
-    });
-    operatorAccountIdToLink = newAccount.id;
+    const existingAccount = await prisma.operatorAccount.findUnique({ where: { email: contactEmail } });
+    if (existingAccount) throw new HttpError(409, 'An account with this email already exists');
+    passwordHash = await hashPassword(body.password);
   }
 
-  const dealer = await prisma.dealershipProfile.create({
-    data: {
-      legalName,
-      dbaName,
-      businessCategory: body.businessCategory as BusinessCategory,
-      dealerLicense,
-      websiteUrl,
-      rooftopAddress: {
-        ...body.rooftopAddress,
-        country: cleanOptional(body.rooftopAddress.country) ?? 'US',
-      } as Prisma.InputJsonValue,
-      primaryContact: {
-        ...body.primaryContact,
-        phone: cleanOptional(body.primaryContact.phone),
-        role: cleanOptional(body.primaryContact.role),
-      } as Prisma.InputJsonValue,
-      inventorySize: body.inventorySize ?? null,
-      desiredChannels: (body.desiredChannels ?? []) as unknown as Prisma.InputJsonValue,
-      documents: body.documents && body.documents.length > 0
-        ? body.documents as unknown as Prisma.InputJsonValue
-        : undefined,
-      operatorAccess: operatorAccountIdToLink
-        ? {
-            create: {
-              operatorAccountId: operatorAccountIdToLink,
-              grantedBy: operatorAccountIdToLink,
-            },
-          }
-        : undefined,
-    },
-    select: {
-      id: true,
-      legalName: true,
-      dbaName: true,
-      logoUrl: true,
-      businessCategory: true,
-      createdAt: true,
-    },
+  const created = await prisma.$transaction(async (tx) => {
+    let createdOperatorAccountId: string | undefined;
+    if (passwordHash) {
+      const account = await tx.operatorAccount.create({
+        data: {
+          email: contactEmail,
+          passwordHash,
+          role: OperatorRole.DEALER_OWNER,
+        },
+      });
+      createdOperatorAccountId = account.id;
+    }
+
+    const dealer = await tx.dealershipProfile.create({
+      data: {
+        legalName,
+        dbaName,
+        businessCategory: body.businessCategory as BusinessCategory,
+        dealerLicense,
+        websiteUrl,
+        primaryContactEmail: contactEmail,
+        lifecycleStatus: 'SETTING_UP',
+        internalOwnerId: options.internalOwnerId ?? options.createdByOperatorId ?? null,
+        rooftopAddress: {
+          ...body.rooftopAddress,
+          country: cleanOptional(body.rooftopAddress.country) ?? 'US',
+        } as Prisma.InputJsonValue,
+        primaryContact: {
+          ...body.primaryContact,
+          email: contactEmail,
+          phone: cleanOptional(body.primaryContact.phone),
+          role: cleanOptional(body.primaryContact.role),
+        } as Prisma.InputJsonValue,
+        inventorySize: body.inventorySize ?? null,
+        desiredChannels: (body.desiredChannels ?? []) as unknown as Prisma.InputJsonValue,
+        documents: body.documents && body.documents.length > 0
+          ? body.documents as unknown as Prisma.InputJsonValue
+          : undefined,
+      },
+      select: { id: true, legalName: true, dbaName: true, logoUrl: true, businessCategory: true, createdAt: true },
+    });
+
+    if (createdOperatorAccountId) {
+      await tx.operatorDealerAccess.create({
+        data: {
+          operatorAccountId: createdOperatorAccountId,
+          dealershipId: dealer.id,
+          accessRole: 'DEALER_OWNER',
+          grantedBy: options.createdByOperatorId ?? createdOperatorAccountId,
+        },
+      });
+    }
+
+    const staffId = options.grantAccessToOperatorId;
+    if (staffId && staffId !== createdOperatorAccountId) {
+      await tx.operatorDealerAccess.create({
+        data: {
+          operatorAccountId: staffId,
+          dealershipId: dealer.id,
+          accessRole: 'INTERNAL_SUPPORT',
+          grantedBy: staffId,
+        },
+      });
+    }
+
+    await seedOnboardingSteps(tx, dealer.id, options.createdByOperatorId ?? createdOperatorAccountId ?? null);
+    return { dealer, createdOperatorAccountId };
   });
 
-  await upsertDefaultSyncPolicies(prisma, dealer.id);
-  await upsertDefaultPlatformAccounts(prisma, dealer.id);
+  await upsertDefaultSyncPolicies(prisma, created.dealer.id);
+  await upsertDefaultPlatformAccounts(prisma, created.dealer.id);
 
-  return { 
-    dealer: toSummary(dealer), 
+  const actorId = options.createdByOperatorId ?? created.createdOperatorAccountId ?? null;
+  if (options.internalOwnerId && actorId) {
+    await assignInternalOwner(prisma, created.dealer.id, options.internalOwnerId, {
+      id: actorId,
+      email: options.actorEmail ?? 'system',
+    }).catch(() => undefined);
+  }
+
+  let invite: CreateDealershipResult['invite'];
+  if (options.inviteOwnerEmail && actorId) {
+    const createdInvite = await createInvitation(prisma, {
+      dealershipId: created.dealer.id,
+      email: options.inviteOwnerEmail,
+      accessRole: 'DEALER_OWNER',
+      invitedBy: { id: actorId, email: options.actorEmail ?? options.inviteOwnerEmail },
+    });
+    invite = { setupUrl: createdInvite.setupUrl, email: createdInvite.email, expiresAt: createdInvite.expiresAt };
+  }
+
+  await refreshOnboarding(prisma, created.dealer.id, actorId);
+  return {
+    dealer: {
+      id: created.dealer.id,
+      legalName: created.dealer.legalName,
+      dbaName: created.dealer.dbaName,
+      logoUrl: created.dealer.logoUrl,
+      businessCategory: created.dealer.businessCategory,
+      createdAt: created.dealer.createdAt.toISOString(),
+    },
     duplicate: false,
-    createdOperatorAccountId: body.password ? operatorAccountIdToLink ?? undefined : undefined
+    createdOperatorAccountId: created.createdOperatorAccountId,
+    invite,
   };
 }

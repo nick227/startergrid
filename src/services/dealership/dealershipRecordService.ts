@@ -1,0 +1,144 @@
+import type { DealershipLifecycle, Prisma, PrismaClient } from '@prisma/client';
+import { HttpError } from './httpError.js';
+import { getOnboarding, refreshOnboarding } from './onboardingService.js';
+import { listPeople } from './peopleAccessService.js';
+import { assignInternalOwner } from './peopleAccessService.js';
+
+type Db = PrismaClient | Prisma.TransactionClient;
+
+export async function listDealershipRecords(
+  db: Db,
+  query: { q?: string; lifecycle?: DealershipLifecycle; limit?: number },
+  scope: { global: boolean; dealerIds: string[] },
+) {
+  const take = Math.min(100, Math.max(1, query.limit ?? 50));
+  const q = query.q?.trim();
+  const where: Prisma.DealershipProfileWhereInput = {};
+  if (!scope.global) where.id = { in: scope.dealerIds };
+  if (query.lifecycle) where.lifecycleStatus = query.lifecycle;
+  if (q) {
+    where.OR = [
+      { legalName: { contains: q } },
+      { dbaName: { contains: q } },
+      { primaryContactEmail: { contains: q } },
+      { operatorAccess: { some: { operator: { email: { contains: q } } } } },
+    ];
+  }
+
+  const rows = await db.dealershipProfile.findMany({
+    where,
+    orderBy: { legalName: 'asc' },
+    take,
+    select: {
+      id: true,
+      legalName: true,
+      dbaName: true,
+      logoUrl: true,
+      businessCategory: true,
+      lifecycleStatus: true,
+      primaryContactEmail: true,
+      internalOwnerId: true,
+      waitingForStock: true,
+      autopilotPreference: true,
+      createdAt: true,
+      onboardingSteps: {
+        where: { status: { not: 'COMPLETE' } },
+        select: { stepKey: true, ownerKind: true, incompleteReason: true },
+        take: 1,
+      },
+    },
+  });
+
+  return {
+    dealerships: rows.map((row) => ({
+      id: row.id,
+      legalName: row.legalName,
+      dbaName: row.dbaName,
+      logoUrl: row.logoUrl,
+      businessCategory: row.businessCategory,
+      lifecycleStatus: row.lifecycleStatus,
+      primaryContactEmail: row.primaryContactEmail,
+      internalOwnerId: row.internalOwnerId,
+      waitingForStock: row.waitingForStock,
+      autopilotPreference: row.autopilotPreference,
+      createdAt: row.createdAt.toISOString(),
+      nextStep: row.onboardingSteps[0] ?? null,
+    })),
+  };
+}
+
+export async function getDealershipRecord(db: Db, dealershipId: string) {
+  const dealer = await db.dealershipProfile.findUnique({
+    where: { id: dealershipId },
+    select: {
+      id: true,
+      legalName: true,
+      dbaName: true,
+      logoUrl: true,
+      businessCategory: true,
+      lifecycleStatus: true,
+      primaryContactEmail: true,
+      primaryContact: true,
+      rooftopAddress: true,
+      websiteUrl: true,
+      internalOwnerId: true,
+      waitingForStock: true,
+      autopilotPreference: true,
+      launchCompletedAt: true,
+      handoffCompletedAt: true,
+      createdAt: true,
+      _count: { select: { vehicles: true, platformAccounts: true } },
+    },
+  });
+  if (!dealer) throw new HttpError(404, 'Dealership not found');
+
+  const [onboarding, people] = await Promise.all([
+    getOnboarding(db, dealershipId),
+    listPeople(db, dealershipId),
+  ]);
+
+  return {
+    ...dealer,
+    createdAt: dealer.createdAt.toISOString(),
+    launchCompletedAt: dealer.launchCompletedAt?.toISOString() ?? null,
+    handoffCompletedAt: dealer.handoffCompletedAt?.toISOString() ?? null,
+    inventory: { vehicleCount: dealer._count.vehicles, waitingForStock: dealer.waitingForStock },
+    channels: { accountCount: dealer._count.platformAccounts, autopilotPreference: dealer.autopilotPreference },
+    onboarding,
+    people,
+  };
+}
+
+export async function patchDealershipRecord(
+  db: Db,
+  dealershipId: string,
+  actor: { id: string; email: string },
+  body: {
+    internalOwnerId?: string;
+    waitingForStock?: boolean;
+    autopilotPreference?: 'OFF' | 'ON' | 'PAUSED';
+    lifecycleStatus?: DealershipLifecycle;
+  },
+) {
+  const existing = await db.dealershipProfile.findUnique({
+    where: { id: dealershipId },
+    select: { id: true },
+  });
+  if (!existing) throw new HttpError(404, 'Dealership not found');
+
+  if (body.internalOwnerId) {
+    await assignInternalOwner(db, dealershipId, body.internalOwnerId, actor);
+  }
+
+  const data: Prisma.DealershipProfileUpdateInput = {};
+  if (typeof body.waitingForStock === 'boolean') data.waitingForStock = body.waitingForStock;
+  if (body.autopilotPreference) data.autopilotPreference = body.autopilotPreference;
+  if (body.lifecycleStatus === 'PAUSED' || body.lifecycleStatus === 'ARCHIVED' || body.lifecycleStatus === 'ACTIVE') {
+    data.lifecycleStatus = body.lifecycleStatus;
+  }
+  if (Object.keys(data).length > 0) {
+    await db.dealershipProfile.update({ where: { id: dealershipId }, data });
+  }
+  await refreshOnboarding(db, dealershipId, actor.id);
+  return getDealershipRecord(db, dealershipId);
+}

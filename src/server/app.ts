@@ -24,6 +24,9 @@ import { registerCatalogSyncRoutes }          from './routes/catalogSync.js';
 import { registerLeadSyncRoutes }             from './routes/leadSync.js';
 import { registerAdminRoutes }                from './routes/admin.js';
 import { registerDealerLeadsRoutes }          from './routes/dealerLeads.js';
+import { registerDealershipRecordRoutes }     from './routes/dealershipRecord.js';
+import { registerDealershipPeopleRoutes }     from './routes/dealershipPeople.js';
+import { registerInviteAuthRoutes }           from './routes/inviteAuth.js';
 import { registerDealerNotificationsRoutes }  from './routes/dealerNotifications.js';
 import { registerBuyerOutreachRoutes }         from './routes/buyerOutreach.js';
 import { demoFeedPayload }          from '../fixtures/scenarios/connectedInventoryDemo.fixture.js';
@@ -98,7 +101,10 @@ export function buildApp(prisma: PrismaClient): FastifyInstance {
   }
 
   registerAuthRoutes(app, prisma);
+  registerInviteAuthRoutes(app, prisma);
   registerDealerRoutes(app, prisma);
+  registerDealershipRecordRoutes(app, prisma);
+  registerDealershipPeopleRoutes(app, prisma);
   registerStorefrontRoutes(app, prisma);
   registerInventoryRoutes(app, prisma);
   registerPublishRoutes(app, prisma);

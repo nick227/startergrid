@@ -9,6 +9,7 @@ export type OperatorIdentity = {
   role: OperatorRole;
   avatarUrl: string | null;
   dealerAccessIds: string[]; // dealershipId values; empty for SUPER_ADMIN (global access)
+  mustChangePassword: boolean;
 };
 
 export class OperatorAuthError extends Error {
@@ -95,5 +96,6 @@ export async function getOperatorFromSessionToken(
     role: session.account.role,
     avatarUrl: session.account.avatarUrl,
     dealerAccessIds: session.account.dealerAccess.map(d => d.dealershipId),
+    mustChangePassword: session.account.mustChangePassword === true,
   };
 }

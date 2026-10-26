@@ -180,6 +180,10 @@ export function registerAdminRoutes(app: FastifyInstance, prisma: PrismaClient):
     try {
       const result = await createDealership(prisma, parsed.data, {
         createdByOperatorId: operator.devHeader ? null : operator.id,
+        grantAccessToOperatorId: operator.devHeader ? null : operator.id,
+        internalOwnerId: parsed.data.internalOwnerId ?? (operator.devHeader ? null : operator.id),
+        inviteOwnerEmail: parsed.data.inviteOwnerEmail ?? null,
+        actorEmail: operator.email,
       });
       resetDashboardCache();
       return reply.status(201).send({
@@ -1072,7 +1076,11 @@ export function registerAdminRoutes(app: FastifyInstance, prisma: PrismaClient):
 
     const body = request.body as any;
     const email = (body?.email ?? '').trim().toLowerCase();
-    const role  = body?.role === 'SUPER_ADMIN' ? 'SUPER_ADMIN' : 'OPERATOR';
+    const allowedRoles = ['SUPER_ADMIN', 'INTERNAL_SUPPORT', 'DEALER_OWNER', 'DEALER_STAFF', 'OPERATOR', 'DEALER_OPERATOR'] as const;
+    const requestedRole = allowedRoles.includes(body?.role) ? body.role : 'INTERNAL_SUPPORT';
+    const role = requestedRole === 'OPERATOR' ? 'INTERNAL_SUPPORT'
+      : requestedRole === 'DEALER_OPERATOR' ? 'DEALER_OWNER'
+      : requestedRole;
     const dealerAccessIds = parseDealerAccessIds(body) ?? [];
 
     if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {

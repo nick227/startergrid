@@ -1,7 +1,8 @@
 import type { FastifyInstance } from 'fastify';
 import type { PrismaClient } from '@prisma/client';
-import { validateBody, operatorLoginSchema } from '../requestValidation.js';
-import { verifyPassword } from '../../services/auth/passwordService.js';
+import { validateBody, operatorLoginSchema, changePasswordSchema } from '../requestValidation.js';
+import { hashPassword, verifyPassword } from '../../services/auth/passwordService.js';
+import { requireOperator } from '../security.js';
 import {
   createOperatorSession,
   revokeOperatorSession,
@@ -61,17 +62,19 @@ export function registerAuthRoutes(app: FastifyInstance, prisma: PrismaClient): 
     ]);
 
     // Fire-and-forget lastLoginAt update — not in the critical response path.
+    const now = new Date();
     prisma.operatorAccount.update({
       where: { id: account.id },
-      data:  { lastLoginAt: new Date() },
+      data:  { lastLoginAt: now, firstLoginAt: account.firstLoginAt ?? now },
     }).catch(() => {}); // eslint-disable-line
 
     reply.header('Set-Cookie', makeSessionCookieHeader(rawToken));
     return reply.status(200).send({
-      id:             account.id,
-      email:          account.email,
-      role:           account.role,
-      dealerAccessIds: dealerAccess.map(d => d.dealershipId),
+      id:                  account.id,
+      email:               account.email,
+      role:                account.role,
+      dealerAccessIds:     dealerAccess.map(d => d.dealershipId),
+      mustChangePassword:  account.mustChangePassword,
     });
   });
 
@@ -107,6 +110,23 @@ export function registerAuthRoutes(app: FastifyInstance, prisma: PrismaClient): 
       }
       throw err;
     }
+  });
+
+  app.post('/api/auth/change-password', async (request, reply) => {
+    const operator = await requireOperator(prisma, request, reply);
+    if (!operator) return;
+    const parsed = validateBody(changePasswordSchema, request.body);
+    if (!parsed.ok) return reply.status(400).send({ error: parsed.error });
+
+    const account = await prisma.operatorAccount.findUnique({ where: { id: operator.id } });
+    if (!account || !(await verifyPassword(account.passwordHash, parsed.data.currentPassword))) {
+      return reply.status(401).send({ error: 'Current password is incorrect' });
+    }
+    await prisma.operatorAccount.update({
+      where: { id: account.id },
+      data: { passwordHash: await hashPassword(parsed.data.newPassword), mustChangePassword: false },
+    });
+    return reply.send({ ok: true });
   });
 
   // POST /api/auth/avatar

@@ -1,6 +1,11 @@
+import { randomBytes } from 'node:crypto';
 import { hash, verify } from '@node-rs/argon2';
 
 export const MIN_PASSWORD_LENGTH = 8;
+
+export function generateSecurePassword(): string {
+  return randomBytes(18).toString('base64url');
+}
 
 export async function hashPassword(password: string): Promise<string> {
   if (password.length < MIN_PASSWORD_LENGTH) {

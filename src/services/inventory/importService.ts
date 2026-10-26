@@ -270,6 +270,7 @@ export type CommitResult = {
   errors: number;
   batchId: string;
   ingressRunId: string;
+  rowErrors: Array<{ rowIndex: number; message: string }>;
 };
 
 export async function commitImport(
@@ -288,6 +289,7 @@ export async function commitImport(
     errors: 0,
     batchId: '',
     ingressRunId: '',
+    rowErrors: [],
   };
 
   for (const row of preview.rows) {
@@ -343,6 +345,10 @@ export async function commitImport(
     } catch (err: unknown) {
       console.error(`Import commit error on row ${row.rowIndex}:`, err);
       result.errors++;
+      result.rowErrors.push({
+        rowIndex: row.rowIndex,
+        message: err instanceof Error ? err.message : 'Row failed to save',
+      });
     }
   }
 

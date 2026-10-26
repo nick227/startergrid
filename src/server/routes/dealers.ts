@@ -17,9 +17,12 @@ function sendCreateDealershipError(reply: FastifyReply, err: unknown) {
 
 export function registerDealerRoutes(app: FastifyInstance, prisma: PrismaClient): void {
   app.get('/api/dealers', async (request, reply) => {
-    if (!await requireOperator(prisma, request, reply)) return;
+    const operator = await requireOperator(prisma, request, reply);
+    if (!operator) return;
 
+    const scoped = !operator.devHeader && operator.role !== 'SUPER_ADMIN';
     const dealers = await prisma.dealershipProfile.findMany({
+      where: scoped ? { id: { in: operator.dealerAccessIds } } : undefined,
       select: {
         id: true,
         legalName: true,

@@ -51,9 +51,9 @@ export async function seedDemoOperator(prisma: PrismaClient, demoDealerIds: stri
   if (!account) {
     const passwordHash = await hashPassword(password);
     account = await prisma.operatorAccount.create({
-      data: { email, passwordHash, role: OperatorRole.OPERATOR },
+      data: { email, passwordHash, role: OperatorRole.INTERNAL_SUPPORT },
     });
-    console.log(`[authSeed] Created OPERATOR: ${email} (id: ${account.id})`);
+    console.log(`[authSeed] Created INTERNAL_SUPPORT: ${email} (id: ${account.id})`);
   } else {
     console.log(`[authSeed] Demo operator already exists: ${email} (id: ${account.id})`);
   }
@@ -67,7 +67,7 @@ export async function seedDemoOperator(prisma: PrismaClient, demoDealerIds: stri
   for (const dealershipId of demoDealerIds) {
     if (granted.has(dealershipId)) continue;
     await prisma.operatorDealerAccess.create({
-      data: { operatorAccountId: account.id, dealershipId, grantedBy: 'seed' },
+      data: { operatorAccountId: account.id, dealershipId, accessRole: 'INTERNAL_SUPPORT', grantedBy: 'seed' },
     });
     console.log(`[authSeed] Granted ${email} access to ${dealershipId}`);
   }

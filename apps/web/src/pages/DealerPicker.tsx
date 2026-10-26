@@ -8,7 +8,7 @@ import { SearchField } from '@/components/ui/SearchField.tsx';
 import { ErrorState } from '@/components/operator/ErrorState.tsx';
 import { operatorCopy } from '@/lib/copy/operator.ts';
 import { useAuth } from '@/contexts/AuthContext.tsx';
-import { canAccessDealer, filterDealersForOperator } from '@/lib/operatorAccess.ts';
+import { canAccessDealer, filterDealersForOperator, isDealerFacingRole } from '@/lib/operatorAccess.ts';
 import { DealershipIntakeFlow } from '@/components/dealers/DealershipIntakeFlow.tsx';
 
 type Props = {
@@ -32,7 +32,7 @@ export default function DealerPicker({ onSelect, forbiddenDealerId }: Props) {
   );
 
   useEffect(() => {
-    if (user?.role === 'DEALER_OPERATOR' && scopedDealers.length === 1 && !forbiddenDealerId) {
+    if (isDealerFacingRole(user?.role ?? '') && scopedDealers.length === 1 && !forbiddenDealerId) {
       onSelect(scopedDealers[0].id);
     }
   }, [user, scopedDealers, onSelect, forbiddenDealerId]);
@@ -155,7 +155,7 @@ export default function DealerPicker({ onSelect, forbiddenDealerId }: Props) {
           </div>
 
           <div className="px-4 py-3 border-t border-silver-200 bg-surface-card text-center flex items-center justify-center gap-6">
-            {user?.role !== 'DEALER_OPERATOR' && (
+            {!isDealerFacingRole(user?.role ?? '') && (
               <button
                 type="button"
                 onClick={() => setShowCreateDealer(true)}
