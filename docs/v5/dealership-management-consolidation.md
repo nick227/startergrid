@@ -37,3 +37,13 @@ All are in `openapi/openapi.yaml`, `routeClassifications` and `routeContract.tes
 - Backend: `node --test dist/src/tests/*.test.js` passes all 2,584 tests, including the new `dealershipAccessSafety.test.ts` (17).
 - Web: `vitest run` passes 229 (3 skipped, a pre-existing dual-React issue), including `lib/dealershipManagement.test.ts` (12).
 - End-to-end against a disposable `startergrid_v5_test_ux` database, dropped afterwards: 45 API checks and a 30-step Playwright walk-through. Both found real bugs that are now fixed: bodiless POSTs were rejected with 400, and invite links bounced signed-out users to sign-in.
+
+## Real-API journey acceptance (2026-10-26)
+
+`npm run e2e:journey -w auto-dealer-operator-ui` builds the backend, creates `startergrid_e2e_journey` from `prisma migrate deploy` only (local MySQL only; dropped afterwards unless `JOURNEY_KEEP_DB=1`), starts the real API and Vite, and drives one dealership with no intercepted responses: staff create it in the dialog → the owner accepts the invite link in the browser → the owner adds a priced vehicle with a photo and publishes it to Auto Marketplace (manual path, Autopilot off) → handoff stays blocked → a buyer posts a public marketplace inquiry → it shows in the owner's Leads → staff confirm the handoff. Mock VIN decoder; SMTP and Twilio disabled, so nothing is sent.
+
+It asserts the evidence-backed handoff semantics that were uncommitted in the shared tree when it was written (`onboardingEvidence.ts`, `onboardingService.ts`): it fails on the earlier rules, where handoff was offered before a marketplace inquiry existed.
+
+**Review notes for the onboarding evidence change (owner: whoever lands it):**
+- `getDealershipRecord` now calls `refreshOnboarding` with no actor on every read. Completed steps are upserted with `completedAt: new Date()` and `completedBy: actorId ?? null`, so each record view resets CREATE/ACCESS/VEHICLES/CHANNELS `completedAt` to the view time and clears `completedBy` (reproduced on a real database; the HANDOFF step's `completedBy` was null after staff completed it, although `DealershipProfile.handoffCompletedBy` is set). Suggest preserving existing completion metadata when a step is already COMPLETE.
+- Pre-existing, not part of that change: `captureMarketplaceLead` accepts inquiries for any priced, unsold vehicle id, without `PUBLISHED_LISTING_GATE`. Evidence still requires the vehicle to be published at check time.

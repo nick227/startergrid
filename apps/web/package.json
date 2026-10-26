@@ -13,7 +13,8 @@
     "e2e:install": "playwright install chromium",
     "lint": "eslint src",
     "lint:fix": "eslint src --fix",
-    "e2e:v5": "playwright test --config playwright.v5.config.ts"
+    "e2e:v5": "playwright test --config playwright.v5.config.ts",
+    "e2e:journey": "npm run -s build --prefix ../.. && playwright test --config playwright.journey.config.ts"
   },
   "dependencies": {
     "@auto-dealer/api-client": "*",
