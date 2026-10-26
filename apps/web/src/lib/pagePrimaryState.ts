@@ -38,3 +38,14 @@ export function dealerSetupIncomplete(input: {
     input.missingPrimaryContact
   );
 }
+
+/** Reports: blocked listings and failed sends win; empty inventory is empty, not a six-widget dashboard. */
+export function reportsExperience(input: {
+  vehicleTotal: number;
+  blocked: number;
+  failedSends: number;
+}): PageExperience {
+  if (input.vehicleTotal === 0 && input.blocked === 0 && input.failedSends === 0) return 'empty';
+  if (input.blocked > 0 || input.failedSends > 0) return 'attention';
+  return 'running';
+}

@@ -2,8 +2,9 @@ import { useState } from 'react';
 import type { OperatorPageBaseProps } from '@/lib/operatorPage.ts';
 import { useReportsData } from '@/hooks/useReportsData.ts';
 import { triggerPerformanceCompute } from '@/lib/api/sdk.ts';
-import { OperatorPage, ErrorState, InlineCallout } from '@/components/operator';
-import { PageSituation, RowDetailDrawer } from '@/components/layout';
+import { OperatorPage, ErrorState } from '@/components/operator';
+import { RowDetailDrawer } from '@/components/layout';
+import { PagePrimaryState } from '@/components/guidance/PagePrimaryState.tsx';
 import { EmptyState } from '@/components/ui';
 import { operatorCopy } from '@/lib/copy/operator.ts';
 import { formatPerformanceUpdated } from '@/lib/performanceFreshness.ts';
@@ -31,6 +32,7 @@ import {
   topMovementRows,
 } from '@/lib/reportPresentation.ts';
 import { formatMovementBenchmarkLine } from '@/lib/movementBenchmark.ts';
+import { reportsPrimary } from '@/lib/reportsPrimary.ts';
 
 import { ReadinessAssetList } from '@/components/reports/ReadinessAssetList.tsx';
 import { ReportExposureList } from '@/components/reports/ReportExposureList.tsx';
@@ -44,16 +46,16 @@ type HubReportSlug = 'readiness' | 'throughput' | 'exposure' | 'movement' | 'dem
 
 const hubReportCopy: Record<HubReportSlug, { category: string; title: string; summary: string; actionHint: string }> = {
   readiness: {
-    category: 'Publishing',
-    title: 'Vehicles blocked from publishing',
-    summary: 'Shows active vehicles that cannot be sent to marketplaces because required data, photos, or validation rules are failing.',
-    actionHint: 'Fix these first. A blocked vehicle usually cannot appear or update on any connected channel.',
+    category: 'Listings',
+    title: 'Vehicles blocked from listing',
+    summary: 'Vehicles that cannot be sent because required data, photos, or checks are failing.',
+    actionHint: 'Fix these first. A blocked vehicle cannot appear or update on any destination.',
   },
   throughput: {
-    category: 'Publishing',
-    title: 'Channels with failed sends',
-    summary: 'Shows marketplaces where recent sync attempts failed, so listing updates may not have reached shoppers.',
-    actionHint: 'Use this when a channel looks stale, missing, or out of sync compared with Inventory.',
+    category: 'Listings',
+    title: 'Destinations with failed sends',
+    summary: 'Destinations where recent updates failed, so listings may not have reached shoppers.',
+    actionHint: 'Use this when a destination looks stale or missing compared with Vehicles.',
   },
   exposure: {
     category: 'Coverage',
@@ -64,20 +66,20 @@ const hubReportCopy: Record<HubReportSlug, { category: string; title: string; su
   movement: {
     category: 'Inventory',
     title: 'Inventory sitting too long',
-    summary: 'Highlights vehicles aging slower than similar inventory and likely needing price, photo, or merchandising attention.',
-    actionHint: 'Start here for stale stock decisions before changing channel settings.',
+    summary: 'Vehicles aging slower than similar stock and likely needing price or photo attention.',
+    actionHint: 'Start here for stale stock before changing destination settings.',
   },
   demand: {
-    category: 'Demand',
+    category: 'Interest',
     title: 'Vehicles getting little interest',
-    summary: 'Shows which vehicles have leads or inquiry events and calls out older inventory with no observed demand.',
-    actionHint: 'No demand is a merchandising signal, not proof that a vehicle cannot sell.',
+    summary: 'Which vehicles have inquiries, and which older stock has none.',
+    actionHint: 'No interest is a merchandising signal, not proof that a vehicle cannot sell.',
   },
   engagement: {
-    category: 'Demand',
-    title: 'Channels creating the most leads',
-    summary: 'Ranks connected marketplaces by observed assists so you can see where shoppers are engaging.',
-    actionHint: 'Assists are directional engagement signals, not sales attribution.',
+    category: 'Interest',
+    title: 'Destinations creating the most inquiries',
+    summary: 'Ranks connected destinations by shopper interest so you can see where people are looking.',
+    actionHint: 'Interest is a directional signal, not a sales count.',
   },
 };
 
@@ -146,6 +148,15 @@ export default function ReportsHubPage({ dealerId, nav, activeTab }: Props) {
   const topEngagement = engagementSortedPlatforms(platforms).slice(0, 3);
   const topChannelsMetric = topEngagementTotal(platforms);
 
+  const blockedCount = publish.data ? readinessCounts(publish.data.vehicles).blocked : 0;
+  const failedCount = phase2.throughput.data?.summary.failedInPeriod ?? 0;
+  const primary = reportsPrimary({
+    vehicleTotal: activeCount,
+    blocked: blockedCount,
+    failedSends: failedCount,
+    stale: typeof staleMetric === 'number' ? staleMetric : 0,
+  });
+
   const emptyListState = <EmptyState icon="📊" title="No data" subtitle="No data available for this report." />;
 
   const closeDrawer = () => setActiveDrawerSlug(null);
@@ -168,20 +179,21 @@ export default function ReportsHubPage({ dealerId, nav, activeTab }: Props) {
       lastRefresh={perf.lastRefresh ?? undefined}
       hideDealerId
     >
-      <PageSituation title={operatorCopy.reports.title} line={operatorCopy.reports.subtitle} />
-
-      <div className="mb-6 space-y-4">
-        <InlineCallout tone="neutral" icon="ℹ">
-          {operatorCopy.reports.dayToDayNote}{' '}
-          <button type="button" onClick={() => nav.goToInventory()} className="font-semibold text-orange-600 hover:underline">
-            Inventory
-          </button>
-          {' '}and{' '}
-          <button type="button" onClick={() => nav.goToPlatforms()} className="font-semibold text-orange-600 hover:underline">
-            Platforms
-          </button>
-          . {operatorCopy.reports.assistsDisclaimer}
-        </InlineCallout>
+      <div className="mb-6 space-y-3">
+        <PagePrimaryState
+          kind={primary.kind}
+          title={primary.title}
+          why={primary.why}
+          ownerKind={primary.action ? 'YOU' : undefined}
+          actionLabel={primary.actionLabel}
+          onAction={
+            primary.action === 'vehicles'
+              ? () => nav.goToInventory()
+              : primary.action === 'channels'
+                ? () => nav.goToPlatforms()
+                : undefined
+          }
+        />
 
         {perf.data && hasPerf && (
           <p className="text-xs text-ink-muted">{formatPerformanceUpdated(perf.data.computedAt!)}</p>
@@ -210,10 +222,9 @@ export default function ReportsHubPage({ dealerId, nav, activeTab }: Props) {
       {((loading && !perf.data) || perf.data || publish.data) && (
         <div className="space-y-5">
           <div>
-            <h2 className="text-base font-bold text-ink-heading tracking-tight">Reports at a glance</h2>
+            <h2 className="text-base font-bold text-ink-heading tracking-tight">More detail</h2>
             <p className="mt-1 max-w-3xl text-sm leading-relaxed text-ink-muted">
-              These cards answer the day-to-day questions operators ask most: what cannot publish,
-              which inventory needs attention, and where shopper interest is showing up.
+              What cannot list, which vehicles need a look, and where shopper interest is showing up.
             </p>
           </div>
 
@@ -260,7 +271,7 @@ export default function ReportsHubPage({ dealerId, nav, activeTab }: Props) {
               onViewAll={() => setActiveDrawerSlug('throughput')}
             >
               {topFailures.length === 0 || topFailures[0].failedInPeriod === 0 ? (
-                <div className="py-4 text-center text-xs text-ink-muted">No failures. Channels are syncing.</div>
+                <div className="py-4 text-center text-xs text-ink-muted">No failed sends.</div>
               ) : (
                 topFailures.filter(r => r.failedInPeriod > 0).map(r => (
                   <MiniGenericRow key={r.channelSlug} label={r.channelSlug} value={`${r.failedInPeriod} fails`} onClick={() => nav.goToPlatformQueue(r.channelSlug)} />
@@ -312,7 +323,7 @@ export default function ReportsHubPage({ dealerId, nav, activeTab }: Props) {
               {topEngagement.length === 0 ? (
                 <div className="py-4 text-center text-xs text-ink-muted">No channel engagement recorded.</div>
               ) : (
-                topEngagement.map(r => <MiniPlatformRow key={r.platformSlug} item={r} valueLabel={`${r.totalLeads} assists`} onClick={() => nav.goToPlatformHistory(r.platformSlug)} />)
+                topEngagement.map(r => <MiniPlatformRow key={r.platformSlug} item={r} valueLabel={`${r.totalLeads} inquiries`} onClick={() => nav.goToPlatformHistory(r.platformSlug)} />)
               )}
             </ReportWidget>
           </div>

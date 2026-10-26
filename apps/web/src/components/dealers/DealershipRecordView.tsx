@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import {
   completeHandoff,
   fetchAdminDealershipRecord,
@@ -10,7 +10,6 @@ import { Skeleton } from '@/components/ui/Skeleton.tsx';
 import { Banner } from '@/components/ui';
 import { ConfirmDialog } from '@/components/ui/ConfirmDialog.tsx';
 import { ToastView, useToast } from '@/components/ui/Toast.tsx';
-import { DealershipAutopilot } from '@/components/guidance/DealershipAutopilot.tsx';
 import { PeoplePanel } from '@/components/people/PeoplePanel.tsx';
 import { DealershipProfilePanel } from './DealershipProfilePanel.tsx';
 import { DealershipActivity } from './DealershipActivity.tsx';
@@ -31,7 +30,7 @@ type Props = {
   dealerId: string;
   initialTab?: RecordTab;
   viewer: { userId?: string | null; isSiteAdmin: boolean };
-  onOpenDealerView: (dealerId: string, page?: 'inventory') => void;
+  onOpenDealerView: (dealerId: string, page?: 'inventory' | 'leads') => void;
   onBackToDirectory: () => void;
   onRefreshDealers?: () => void;
 };
@@ -49,7 +48,8 @@ const PRIMARY_LABEL: Partial<Record<NextAction['kind'], string>> = {
   inviteOwner: 'Invite the owner',
   shareOwnerLink: 'Share the link again',
   addVehicles: 'Open dealer view: Vehicles',
-  setAutopilot: 'Record Autopilot decision',
+  setAutopilot: 'Review publication',
+  reviewLeads: 'Open Leads',
   completeHandoff: 'Complete handoff',
 };
 
@@ -64,7 +64,6 @@ export function DealershipRecordView({ dealerId, initialTab = 'overview', viewer
   const [stockBusy, setStockBusy] = useState(false);
   const [primaryBusy, setPrimaryBusy] = useState(false);
   const [activityKey, setActivityKey] = useState(0);
-  const autopilotRef = useRef<HTMLDivElement>(null);
   const { toast, show, dismiss } = useToast();
 
   const load = useCallback(async () => {
@@ -102,6 +101,7 @@ export function DealershipRecordView({ dealerId, initialTab = 'overview', viewer
   const readiness = handoffReadiness(record);
   const activeChannels = record.channels.filter(c => c.status === 'ACTIVE').length;
   const dealerPeopleCount = record.people.filter(p => !p.isInternal).length + record.invitations.length;
+  const setupIncomplete = record.onboardingSteps.some(step => step.status !== 'COMPLETE');
 
   const runPrimary = () => {
     switch (next.kind) {
@@ -132,8 +132,10 @@ export function DealershipRecordView({ dealerId, initialTab = 'overview', viewer
         onOpenDealerView(dealerId, 'inventory');
         return;
       case 'setAutopilot':
-        setTab('overview');
-        requestAnimationFrame(() => autopilotRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' }));
+        onOpenDealerView(dealerId);
+        return;
+      case 'reviewLeads':
+        onOpenDealerView(dealerId, 'leads');
         return;
       case 'completeHandoff':
         setConfirmHandoff(true);
@@ -149,7 +151,7 @@ export function DealershipRecordView({ dealerId, initialTab = 'overview', viewer
     try {
       await completeHandoff(dealerId);
       setConfirmHandoff(false);
-      show(`${record.legalName} is live.`);
+      show(`Handoff completed for ${record.legalName}.`);
       await refresh();
     } catch (err) {
       setHandoffError(err instanceof Error ? err.message : 'Handoff is not ready yet.');
@@ -254,54 +256,47 @@ export function DealershipRecordView({ dealerId, initialTab = 'overview', viewer
 
       {tab === 'overview' && (
         <div className="space-y-6">
-          <section className="surface-card-operator p-6 rounded-xl border border-silver-200 bg-white space-y-4">
-            <div>
-              <h2 className="text-base font-semibold text-ink-heading">Setup</h2>
-              <p className="text-sm text-ink-muted">Steps complete themselves when the evidence exists. Nothing here is ticked by hand.</p>
-            </div>
-            <ol className="space-y-3">
-              {record.onboardingSteps.map(step => {
-                const done = step.status === 'COMPLETE';
-                return (
-                  <li key={step.key} className="flex items-start gap-3">
-                    <span aria-hidden="true"
-                      className={`mt-0.5 w-5 h-5 rounded-full border flex items-center justify-center text-[11px] shrink-0 ${
-                        done ? 'bg-status-success-bg border-status-success-border text-status-success-text' : 'border-silver-300 text-transparent'
-                      }`}>✓</span>
-                    <div className="min-w-0 flex-1">
-                      <p className={`text-sm ${done ? 'text-ink-muted' : 'text-ink-heading font-medium'}`}>
-                        {stepTitle(step.key)}<span className="sr-only">{done ? ' (done)' : ' (not done)'}</span>
-                      </p>
-                      {!done && step.blockingReason && <p className="text-xs text-ink-muted">{step.blockingReason}</p>}
-                      {step.key === 'VEHICLES' && (record.waitingForStock || !done) && (
-                        <button type="button" onClick={() => void toggleWaitingForStock()} disabled={stockBusy}
-                          className="mt-1 text-xs font-semibold text-navy-700 hover:underline disabled:opacity-40">
-                          {record.waitingForStock ? 'They have stock now — clear "waiting for stock"' : 'No stock yet? Mark as waiting for stock'}
-                        </button>
-                      )}
-                    </div>
-                  </li>
-                );
-              })}
-            </ol>
-            {record.lifecycleStatus !== 'ACTIVE' && !readiness.ready && (
-              <div className="rounded-md bg-surface-inset border border-silver-200 px-3 py-2 text-xs text-ink-body">
-                <p className="font-semibold text-ink-heading">Before handoff</p>
-                <ul className="list-disc pl-4 mt-1 space-y-0.5">
-                  {readiness.missing.map(item => <li key={item}>{item}</li>)}
-                </ul>
+          {setupIncomplete && (
+            <section className="surface-card-operator p-6 rounded-xl border border-silver-200 bg-white space-y-4">
+              <div>
+                <h2 className="text-base font-semibold text-ink-heading">Setup</h2>
+                <p className="text-sm text-ink-muted">Steps complete themselves when the evidence exists. Nothing here is ticked by hand.</p>
               </div>
-            )}
-          </section>
-
-          <div ref={autopilotRef}>
-            <DealershipAutopilot
-              dealerId={dealerId}
-              preference={record.autopilotPreference}
-              connectedChannelCount={activeChannels}
-              onUpdated={() => { void refresh(); }}
-            />
-          </div>
+              <ol className="space-y-3">
+                {record.onboardingSteps.map(step => {
+                  const done = step.status === 'COMPLETE';
+                  return (
+                    <li key={step.key} className="flex items-start gap-3">
+                      <span aria-hidden="true"
+                        className={`mt-0.5 w-5 h-5 rounded-full border flex items-center justify-center text-[11px] shrink-0 ${
+                          done ? 'bg-status-success-bg border-status-success-border text-status-success-text' : 'border-silver-300 text-transparent'
+                        }`}>✓</span>
+                      <div className="min-w-0 flex-1">
+                        <p className={`text-sm ${done ? 'text-ink-muted' : 'text-ink-heading font-medium'}`}>
+                          {stepTitle(step.key)}<span className="sr-only">{done ? ' (done)' : ' (not done)'}</span>
+                        </p>
+                        {!done && step.blockingReason && <p className="text-xs text-ink-muted">{step.blockingReason}</p>}
+                        {step.key === 'VEHICLES' && (record.waitingForStock || !done) && (
+                          <button type="button" onClick={() => void toggleWaitingForStock()} disabled={stockBusy}
+                            className="mt-1 text-xs font-semibold text-navy-700 hover:underline disabled:opacity-40">
+                            {record.waitingForStock ? 'They have stock now — clear "waiting for stock"' : 'No stock yet? Mark as waiting for stock'}
+                          </button>
+                        )}
+                      </div>
+                    </li>
+                  );
+                })}
+              </ol>
+              {!readiness.ready && (
+                <div className="rounded-md bg-surface-inset border border-silver-200 px-3 py-2 text-xs text-ink-body">
+                  <p className="font-semibold text-ink-heading">Before handoff</p>
+                  <ul className="list-disc pl-4 mt-1 space-y-0.5">
+                    {readiness.missing.map(item => <li key={item}>{item}</li>)}
+                  </ul>
+                </div>
+              )}
+            </section>
+          )}
 
           <section className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div className="surface-card-operator p-5 rounded-xl border border-silver-200 bg-white">
@@ -329,7 +324,7 @@ export function DealershipRecordView({ dealerId, initialTab = 'overview', viewer
           <details className="surface-card-operator rounded-xl border border-silver-200 bg-white">
             <summary className="px-6 py-4 cursor-pointer text-base font-semibold text-ink-heading">
               Dealership details
-              <span className="block text-sm font-normal text-ink-muted">Address, contact, logo and website. Save any time; setup resumes where you left off.</span>
+              <span className="block text-sm font-normal text-ink-muted">Address, contact, logo, website, and lead notifications.</span>
             </summary>
             <div className="px-6 pb-6">
               <DealershipProfilePanel dealerId={dealerId} mode="admin" onDealersChanged={() => void refresh()} />
@@ -359,7 +354,7 @@ export function DealershipRecordView({ dealerId, initialTab = 'overview', viewer
           onConfirm={() => void doHandoff()}
           onCancel={() => { setConfirmHandoff(false); setHandoffError(null); }}
         >
-          <p>The dealership becomes Live and the owner takes over day-to-day work. You can still open it from the directory.</p>
+          <p>The owner takes over day-to-day work. Launch is recorded separately from verified publication. The shared inbox has received a marketplace inquiry; this does not certify email, SMS or CRM delivery.</p>
         </ConfirmDialog>
       )}
     </div>

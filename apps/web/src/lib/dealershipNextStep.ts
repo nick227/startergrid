@@ -11,6 +11,7 @@ export type NextActionKind =
   | 'waitForOwner'
   | 'addVehicles'
   | 'setAutopilot'
+  | 'reviewLeads'
   | 'completeHandoff'
   | 'none';
 
@@ -24,9 +25,9 @@ export type NextAction = {
   detail?: string;
 };
 
-type Step = { key: string; status: string; ownerKind?: string | null };
+type Step = { key: string; status: string; ownerKind?: string | null; blockingReason?: string | null };
 type Invite = { email: string; accessRole: string; deliveryStatus: string; expiresAt: string };
-type Person = { accessRole: string; isActive: boolean; firstLoginAt: string | null; lastLoginAt: string | null; isInternal?: boolean };
+type Person = { accessRole: string; isActive: boolean; firstLoginAt: string | null; lastLoginAt: string | null; isInternal?: boolean; mustChangePassword?: boolean };
 
 export function recordNextAction(record: {
   lifecycleStatus: string;
@@ -44,7 +45,7 @@ export function recordNextAction(record: {
     };
   }
   const open = (key: string) => record.onboardingSteps.find(s => s.key === key && s.status !== 'COMPLETE');
-  const owners = record.people.filter(p => p.accessRole === 'DEALER_OWNER' && !p.isInternal && p.isActive);
+  const owners = record.people.filter(p => p.accessRole === 'DEALER_OWNER' && !p.isInternal && p.isActive && !p.mustChangePassword);
   const ownerSignedIn = owners.some(p => p.firstLoginAt || p.lastLoginAt);
   const ownerInvites = record.invitations.filter(i => i.accessRole === 'DEALER_OWNER');
   const liveInvite = ownerInvites.find(i => i.deliveryStatus !== 'EXPIRED' && new Date(i.expiresAt) > now);
@@ -71,23 +72,30 @@ export function recordNextAction(record: {
     };
   }
   if (open('CHANNELS')) {
-    return { kind: 'setAutopilot', label: 'Record the Autopilot decision', owner: 'OUR_TEAM', actionable: true };
+    return { kind: 'setAutopilot', label: 'Verify a live listing', owner: 'OUR_TEAM', actionable: true, detail: open('CHANNELS')?.blockingReason ?? undefined };
   }
   if (open('HANDOFF')) {
     if (!ownerSignedIn) return { kind: 'waitForOwner', label: 'Owner to sign in before handoff', owner: 'DEALER', actionable: false };
+    if (open('HANDOFF')?.status === 'BLOCKED' || open('HANDOFF')?.status === 'NEEDS_RECHECK') {
+      return { kind: 'reviewLeads', label: 'Verify the shared Leads inbox', owner: 'OUR_TEAM', actionable: true, detail: open('HANDOFF')?.blockingReason ?? undefined };
+    }
     return { kind: 'completeHandoff', label: 'Complete the handoff', owner: 'OUR_TEAM', actionable: true };
   }
   return { kind: 'none', label: 'No setup work left', owner: 'OUR_TEAM', actionable: false };
 }
 
-/** Handoff is allowed only on evidence: owner signed in, vehicles ready, Autopilot decision recorded. */
+/** Mirror server checks; the handoff endpoint rechecks authoritative evidence. */
 export function handoffReadiness(record: { onboardingSteps: Step[]; people: Person[] }): { ready: boolean; missing: string[] } {
   const done = (key: string) => record.onboardingSteps.some(s => s.key === key && s.status === 'COMPLETE');
-  const ownerSignedIn = record.people.some(p => p.accessRole === 'DEALER_OWNER' && !p.isInternal && (p.firstLoginAt || p.lastLoginAt));
+  const ownerSignedIn = record.people.some(p => p.accessRole === 'DEALER_OWNER' && !p.isInternal && p.isActive && !p.mustChangePassword && (p.firstLoginAt || p.lastLoginAt));
   const missing: string[] = [];
   if (!done('ACCESS') || !ownerSignedIn) missing.push('The owner has signed in');
-  if (!done('VEHICLES')) missing.push('Vehicles are added, or the dealership is marked waiting for stock');
-  if (!done('CHANNELS')) missing.push('The Autopilot decision is recorded');
+  if (!done('VEHICLES')) missing.push('Stock is available for launch');
+  if (!done('CHANNELS')) missing.push('An eligible listing is verified live on Auto Marketplace');
+  const handoff = record.onboardingSteps.find(s => s.key === 'HANDOFF');
+  if (!handoff || ['BLOCKED', 'NEEDS_RECHECK', 'NOT_STARTED'].includes(handoff.status)) {
+    missing.push(handoff?.blockingReason ?? 'A marketplace inquiry has reached the shared Leads inbox');
+  }
   return { ready: missing.length === 0, missing };
 }
 
@@ -107,8 +115,9 @@ export function summaryNextAction(summary: Summary): { label: string; owner: 'OU
   switch (step.key) {
     case 'ACCESS': return dealerMoves ? { label: 'Owner to accept invitation', owner: 'DEALER' } : { label: 'Invite the owner', owner: 'OUR_TEAM' };
     case 'VEHICLES': return { label: 'Add vehicles', owner: 'DEALER' };
-    case 'CHANNELS': return { label: 'Record the Autopilot decision', owner: 'OUR_TEAM' };
-    case 'HANDOFF': return dealerMoves ? { label: 'Owner to sign in', owner: 'DEALER' } : { label: 'Complete the handoff', owner: 'OUR_TEAM' };
+    case 'CHANNELS': return { label: 'Verify a live listing', owner: 'OUR_TEAM' };
+    case 'HANDOFF': if (step.status === 'BLOCKED' || step.status === 'NEEDS_RECHECK') return { label: 'Verify the shared Leads inbox', owner: 'OUR_TEAM' };
+      return dealerMoves ? { label: 'Owner to sign in', owner: 'DEALER' } : { label: 'Complete the handoff', owner: 'OUR_TEAM' };
     default: return { label: 'Continue setup', owner: 'OUR_TEAM' };
   }
 }

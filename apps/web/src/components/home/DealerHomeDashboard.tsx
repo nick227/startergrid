@@ -9,7 +9,7 @@ import {
 import type { DealershipProfile, PublishStatusResponse } from '@/lib/types.ts';
 import { OwnershipLine } from '@/components/guidance/OwnershipLine.tsx';
 import { GuidanceNote } from '@/components/guidance/GuidanceNote.tsx';
-import { DealershipAutopilot } from '@/components/guidance/DealershipAutopilot.tsx';
+import { PagePrimaryState } from '@/components/guidance/PagePrimaryState.tsx';
 import { GettingStartedChecklist } from './GettingStartedChecklist.tsx';
 import { Skeleton } from '@/components/ui/Skeleton.tsx';
 import { dealerSetupIncomplete, platformLooksConnected } from '@/lib/pagePrimaryState.ts';
@@ -106,23 +106,37 @@ export function DealerHomeDashboard({ dealerId, nav }: Props) {
     );
   }
 
+  const top = tasks[0];
+  const more = tasks.slice(1);
+  const inquiryCount = newLeads.length;
+
   return (
     <div className="space-y-5">
-      <DealershipAutopilot
-        dealerId={dealerId}
-        preference={profile?.autopilotPreference ?? 'OFF'}
-        connectedChannelCount={connectedCount}
-        onUpdated={(preference) => {
-          if (profile) setProfile({ ...profile, autopilotPreference: preference });
-        }}
+      <PagePrimaryState
+        kind={top ? 'attention' : 'running'}
+        title={
+          top
+            ? top.action
+            : inquiryCount > 0
+              ? `${inquiryCount} new inquir${inquiryCount === 1 ? 'y' : 'ies'}`
+              : "You're caught up"
+        }
+        why={
+          top
+            ? top.detail
+            : inquiryCount > 0
+              ? 'A shopper asked about a vehicle. Statuses are shared with your team.'
+              : 'Nothing needs you right now. New buyer inquiries appear below.'
+        }
+        ownerKind={top ? top.ownerKind : inquiryCount > 0 ? 'YOU' : undefined}
+        actionLabel={top ? top.button : inquiryCount > 0 ? 'Open leads' : undefined}
+        onAction={top ? top.onAction : inquiryCount > 0 ? nav.goToLeads : undefined}
       />
 
-      <section className="surface-card-operator p-5 rounded-xl border border-silver-200 bg-white space-y-3">
-        <h3 className="text-sm font-semibold text-ink-heading">Needs attention</h3>
-        {tasks.length === 0 ? (
-          <GuidanceNote>Nothing needs you right now. New buyer inquiries appear below.</GuidanceNote>
-        ) : (
-          tasks.map(task => (
+      {more.length > 0 && (
+        <section className="surface-card-operator p-5 rounded-xl border border-silver-200 bg-white space-y-3">
+          <h3 className="text-sm font-semibold text-ink-heading">Also needs attention</h3>
+          {more.map(task => (
             <div key={task.id} className="py-3 border-t border-silver-100 first:border-0 first:pt-0 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
               <div className="space-y-1">
                 <OwnershipLine action={task.action} ownerKind={task.ownerKind} due="today" />
@@ -132,9 +146,9 @@ export function DealerHomeDashboard({ dealerId, nav }: Props) {
                 {task.button}
               </button>
             </div>
-          ))
-        )}
-      </section>
+          ))}
+        </section>
+      )}
 
       <section className="surface-card-operator p-5 rounded-xl border border-silver-200 bg-white space-y-3">
         <div className="flex items-center justify-between gap-3">

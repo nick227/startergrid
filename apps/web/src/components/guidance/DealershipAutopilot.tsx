@@ -5,8 +5,8 @@ import { AutopilotStatusCard } from './AutopilotStatusCard.tsx';
 import type { AutopilotPreference, AutopilotView } from '@/lib/autopilotStatus.ts';
 
 type Props = { dealerId: string; preference?: AutopilotPreference | null; connectedChannelCount?: number;
-  onUpdated?: (preference: AutopilotPreference) => void };
-export function DealershipAutopilot({ dealerId, onUpdated }: Props) {
+  onUpdated?: (preference: AutopilotPreference) => void; hideWhenUnavailable?: boolean };
+export function DealershipAutopilot({ dealerId, onUpdated, hideWhenUnavailable }: Props) {
   const { user } = useAuth();
   const [summary, setSummary] = useState<V5AutopilotSummary | null>(null);
   const [issues, setIssues] = useState<V5DistributionIncident[]>([]);
@@ -53,6 +53,7 @@ export function DealershipAutopilot({ dealerId, onUpdated }: Props) {
     guidance: 'Only selected qualified channels receive updates. Pausing does not freeze fields on existing marketplace listings. Sold-vehicle withdrawals continue.',
     canPause: !!summary && mode === 'ON' && canManage, canResume: !!summary && mode === 'PAUSED' && canManage,
   };
+  if (hideWhenUnavailable && !summary) return null;
   const act = (issue: V5DistributionIncident, action: string, reason?: string) => perform(async () => {
     const result = await distributionRequest<{ authUrl?: string }>(dealerId, '/distribution/incidents/' + issue.id + '/' + action,
       { ...(reason ? {reason} : {}), ...(typeof issue.technicalEvidence.desiredHash === 'string' ? {expectedHash: issue.technicalEvidence.desiredHash} : {}) });

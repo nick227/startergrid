@@ -144,7 +144,7 @@ export function SimplifiedChannelsView({
       )}
 
       {experience === 'running' && (
-        <DealershipAutopilot dealerId={dealerId} connectedChannelCount={connected.length} />
+        <DealershipAutopilot dealerId={dealerId} connectedChannelCount={connected.length} hideWhenUnavailable />
       )}
 
       {loading && <p className="text-sm text-ink-muted">Loading destinations…</p>}
