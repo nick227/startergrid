@@ -1,6 +1,5 @@
 import { useMemo, useState, useEffect } from 'react';
 import { fetchDealers } from '@/lib/api/sdk.ts';
-import { createOperatorDealership, uploadDealerLogo } from '@/lib/api/sdk.ts';
 import type { DealerSummary } from '@/lib/types.ts';
 import { useAsyncQuery } from '@/hooks/useAsyncQuery.ts';
 import { Skeleton } from '@/components/ui/Skeleton.tsx';
@@ -9,7 +8,6 @@ import { ErrorState } from '@/components/operator/ErrorState.tsx';
 import { operatorCopy } from '@/lib/copy/operator.ts';
 import { useAuth } from '@/contexts/AuthContext.tsx';
 import { canAccessDealer, filterDealersForOperator, isDealerFacingRole } from '@/lib/operatorAccess.ts';
-import { DealershipIntakeFlow } from '@/components/dealers/DealershipIntakeFlow.tsx';
 
 type Props = {
   onSelect: (id: string) => void;
@@ -17,14 +15,13 @@ type Props = {
 };
 
 export default function DealerPicker({ onSelect, forbiddenDealerId }: Props) {
-  const { user, logout, refresh } = useAuth();
+  const { user, logout } = useAuth();
   const { data, loading, error } = useAsyncQuery(() => fetchDealers(), []);
   const dealerRows = data?.dealers;
   const dealers = useMemo(() => dealerRows ?? [], [dealerRows]);
   const [query, setQuery] = useState('');
   const [manualId, setManualId] = useState('');
   const [manualError, setManualError] = useState<string | null>(null);
-  const [showCreateDealer, setShowCreateDealer] = useState(false);
 
   const scopedDealers = useMemo(
     () => (user ? filterDealersForOperator(dealers, user) : []),
@@ -57,23 +54,6 @@ export default function DealerPicker({ onSelect, forbiddenDealerId }: Props) {
 
   return (
     <div className="min-h-screen bg-navy-950 flex items-center justify-center p-6">
-      {showCreateDealer && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-navy-950/70 p-4">
-          <div className="w-full max-w-3xl max-h-[90vh] overflow-y-auto rounded-xl border border-silver-200 bg-surface-card p-6 shadow-elevation-3">
-            <DealershipIntakeFlow
-              mode="signup"
-              onSubmit={createOperatorDealership}
-              onUploadLogo={uploadDealerLogo}
-              onComplete={async response => {
-                setShowCreateDealer(false);
-                await refresh();
-                onSelect(response.dealer.id);
-              }}
-              onCancel={() => setShowCreateDealer(false)}
-            />
-          </div>
-        </div>
-      )}
       <div className="w-full max-w-lg">
         <div className="mb-10 text-center">
           <div className="w-16 h-16 rounded-xl bg-gradient-to-br from-navy-800 to-navy-700 flex items-center justify-center text-2xl mx-auto mb-4 shadow-chrome">
@@ -158,10 +138,10 @@ export default function DealerPicker({ onSelect, forbiddenDealerId }: Props) {
             {!isDealerFacingRole(user?.role ?? '') && (
               <button
                 type="button"
-                onClick={() => setShowCreateDealer(true)}
+                onClick={() => { window.location.hash = '#/admin/dealers'; }}
                 className="text-xs font-semibold text-ink-muted hover:text-orange-600 transition-colors"
               >
-                Add dealership
+                Dealership directory →
               </button>
             )}
             <button

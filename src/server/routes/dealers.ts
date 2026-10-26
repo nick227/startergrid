@@ -1,6 +1,6 @@
 import type { FastifyInstance, FastifyReply } from 'fastify';
 import type { PrismaClient } from '@prisma/client';
-import { requireOperator, requireDealerAccess } from '../security.js';
+import { requireOperator, requireDealerAccess, requireInternalStaff } from '../security.js';
 import { fileUploadService } from '../../services/storage/fileUploadService.js';
 import { createDealershipSchema, updateDealershipProfileSchema, validateBody } from '../requestValidation.js';
 import { createDealership } from '../../services/dealer/createDealershipService.js';
@@ -37,7 +37,8 @@ export function registerDealerRoutes(app: FastifyInstance, prisma: PrismaClient)
   });
 
   app.post('/api/dealers', async (request, reply) => {
-    const operator = await requireOperator(prisma, request, reply);
+    // Creating a dealership is an internal-staff action; dealer accounts must not mint rooftops or owner logins.
+    const operator = await requireInternalStaff(prisma, request, reply);
     if (!operator) return;
 
     const parsed = validateBody(createDealershipSchema, request.body);

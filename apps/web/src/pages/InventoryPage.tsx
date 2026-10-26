@@ -4,24 +4,21 @@ import {
   bulkEditVehicles,
   fetchVehiclePerformanceList,
   fetchPlatformPerformance,
-  fetchPublishStatus,
   relistVehicle,
   patchVehicleFields,
   addVehicleMedia,
+  uploadVehicleMedia,
 } from '@/lib/api/sdk.ts';
-import type { BulkEditPayload, VehiclePerformanceItem, PlatformPerformanceItem, LifecycleScope, PublishStatusResponse } from '@/lib/types.ts';
+import type { BulkEditPayload, VehiclePerformanceItem, PlatformPerformanceItem, LifecycleScope } from '@/lib/types.ts';
+import { isBenchmarksUpdating } from '@/lib/performanceFreshness.ts';
 import type { OperatorPageBaseProps } from '@/lib/operatorPage.ts';
 import { useAsyncQuery } from '@/hooks/useAsyncQuery.ts';
 import { useAutoSyncWatch } from '@/hooks/useAutoSyncWatch.ts';
-import { OperatorPage, SectionCard, InlineCallout, PageHeader } from '@/components/operator';
-import { EMPTY_STATE_COPY } from '@/lib/statusRegistry.ts';
-import { hasPerformanceData, isBenchmarksUpdating } from '@/lib/performanceFreshness.ts';
+import { OperatorPage, SectionCard, PageHeader } from '@/components/operator';
 import { isActiveLifecycleScope } from '@/lib/lifecycleDisplay.ts';
-import { countLowDataVehicles, staleStockNumbers } from '@/lib/movementBenchmark.ts';
 import { composeInventoryList, type InventoryListQuery, type MovementFilter } from '@/lib/inventoryAssetOps.ts';
 import { inventoryItemSlug } from '@/lib/rowNavScope.ts';
 import { Banner } from '@/components/ui';
-import { InfoButton } from '@/components/docs';
 import { BulkActionBar } from '@/components/generic';
 import {
   VehicleAddControls,
@@ -29,7 +26,6 @@ import {
   SongAddControls,
   DigitalArtAddControls,
   VideoAddControls,
-  BenchmarkFreshnessBar,
   bulkEditFieldDefs,
   applyCleanupFilter,
   InventoryDataGrid,
@@ -48,91 +44,11 @@ import { operatorCopy } from '@/lib/copy/index.ts';
 import { useCategorySchema } from '@/contexts/CategoryContext.tsx';
 import { useOperatorRoute } from '@/hooks/useOperatorRoute.ts';
 import { OwnershipLine } from '@/components/guidance/OwnershipLine.tsx';
+import { GuidanceNote } from '@/components/guidance/GuidanceNote.tsx';
 
 type Props = OperatorPageBaseProps;
 
 const DEFAULT_COLS = INVENTORY_COLUMN_PRESETS['Default'];
-
-function platformIsConnected(platform: PublishStatusResponse['platforms'][number]): boolean {
-  return platform.accountState === 'ACTIVE' || platform.state === 'Active' || platform.state === 'Ready' || platform.state === 'Scheduled';
-}
-
-function InventoryPublishingGuide({
-  status,
-  loading,
-  onOpenPlatforms,
-}: {
-  status?: PublishStatusResponse | null;
-  loading: boolean;
-  onOpenPlatforms: () => void;
-}) {
-  const platforms = status?.platforms ?? [];
-  const connectedCount = platforms.filter(platformIsConnected).length;
-  const storefront = platforms.find(p => p.platformSlug === 'consumer-marketplace' || p.platformSlug === 'dealer-storefront');
-  const storefrontConnected = storefront ? platformIsConnected(storefront) : false;
-  const storefrontLabel = loading && !status
-    ? 'Checking'
-    : storefrontConnected
-      ? 'Connected'
-      : storefront
-        ? 'Setup needed'
-        : 'Not configured';
-
-  return (
-    <SectionCard
-      title="Publishing management"
-      subtitle="Platform connection is the first gate for inventory-level controls."
-      action={
-        <button type="button" onClick={onOpenPlatforms} className="btn-primary-operator">
-          Open channels
-        </button>
-      }
-    >
-      <div className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_320px]">
-        <div>
-          <div className="flex flex-wrap items-center gap-2">
-            <span className="text-xs font-semibold text-ink-heading">Auto Marketplace</span>
-            <span className={`text-[10px] font-bold uppercase tracking-wide px-2 py-0.5 rounded-full border ${
-              storefrontConnected
-                ? 'bg-green-100 text-green-800 border-green-200'
-                : 'bg-amber-50 text-amber-700 border-amber-200'
-            }`}>
-              {storefrontLabel}
-            </span>
-            <span className="text-[11px] text-ink-muted">
-              {platforms.length ? `${connectedCount} of ${platforms.length} signed-up platforms connected` : 'No platform status loaded'}
-            </span>
-          </div>
-          <p className="mt-2 text-sm text-ink-muted">
-            Inventory sync starts at Dealership Platforms. A dealer may be signed up for five platforms and only run three; only the connected running set is eligible in inventory and item controls.
-          </p>
-          <div className="mt-4 grid gap-2 sm:grid-cols-4">
-            {[
-              ['Connected', 'Platform can receive inventory for this rooftop.'],
-              ['Eligible', 'Vehicle passes required fields, price, photos, and status checks.'],
-              ['Selected', 'Vehicle is allowed on that channel; unchecking is an opt-out.'],
-              ['Live', 'A queue send, catalog sync, social post, or storefront publish has completed.'],
-            ].map(([label, detail]) => (
-              <div key={label} className="rounded-md border border-silver-200 bg-silver-50 p-3">
-                <p className="text-xs font-semibold text-ink-heading">{label}</p>
-                <p className="mt-1 text-[11px] leading-4 text-ink-muted">{detail}</p>
-              </div>
-            ))}
-          </div>
-        </div>
-        <div className="rounded-md border border-navy-100 bg-navy-50 p-4">
-          <p className="text-xs font-semibold text-navy-800">Auto Marketplace checklist</p>
-          <ol className="mt-2 space-y-1.5 text-[11px] leading-5 text-ink-body list-decimal list-inside">
-            <li>Connect Auto Marketplace on Channels.</li>
-            <li>Open a vehicle and mark it Ready.</li>
-            <li>Leave Auto Marketplace selected for that vehicle.</li>
-            <li>A live listing is confirmed only after a verified destination result.</li>
-          </ol>
-        </div>
-      </div>
-    </SectionCard>
-  );
-}
 
 export default function InventoryPage({ dealerId, nav, activeTab }: Props) {
   const categorySchema = useCategorySchema();
@@ -144,6 +60,7 @@ export default function InventoryPage({ dealerId, nav, activeTab }: Props) {
   );
   const [selected, setSelected] = useState<Set<string>>(new Set());
   const [filter, setFilter] = useState<string>('All');
+  const [ageFilter, setAgeFilter] = useState<'all' | 'week'>('all');
   const [movementFilter] = useState<MovementFilter>('ALL');
   const [sortKey, setSortKey] = useState<string>('specs.make');
   const [sortDirection, setSortDirection] = useState<'asc'|'desc'>('asc');
@@ -220,6 +137,21 @@ export default function InventoryPage({ dealerId, nav, activeTab }: Props) {
     }
   };
 
+  const handleDirectPhotoUpload = async (vehicleId: string, files: FileList | null) => {
+    if (!files || files.length === 0) return;
+    try {
+      setSavingQuickFixId(vehicleId);
+      await uploadVehicleMedia(dealerId, vehicleId, Array.from(files));
+      setQuickFixToast('Photo uploaded directly from camera/device');
+      setTimeout(() => setQuickFixToast(null), 3000);
+      await load();
+    } catch (err) {
+      alert(err instanceof Error ? err.message : 'Failed to upload photo file');
+    } finally {
+      setSavingQuickFixId(null);
+    }
+  };
+
 
   useEffect(() => {
     if (route.assetRef) setSearch(route.assetRef);
@@ -227,13 +159,11 @@ export default function InventoryPage({ dealerId, nav, activeTab }: Props) {
 
   const perf = useAsyncQuery(() => fetchVehiclePerformanceList(dealerId), [dealerId]);
   const platformPerf = useAsyncQuery(() => fetchPlatformPerformance(dealerId), [dealerId]);
-  const publishStatus = useAsyncQuery(() => fetchPublishStatus(dealerId), [dealerId]);
 
   const reloadBenchmarks = useCallback(() => {
     perf.reload();
     platformPerf.reload();
-    publishStatus.reload();
-  }, [perf.reload, platformPerf.reload, publishStatus.reload]);
+  }, [perf.reload, platformPerf.reload]);
 
   const handleIntakeRefresh = useCallback(() => {
     load();
@@ -280,15 +210,16 @@ export default function InventoryPage({ dealerId, nav, activeTab }: Props) {
     [activeVehicles],
   );
 
-  const recentVehicles = useMemo(() => {
-    const list = [...activeVehicles];
-    return list.sort((a, b) => new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime()).slice(0, 50);
-  }, [activeVehicles]);
-
   const soldVehicles = useMemo(
     () => vehicles.filter(v => v.lifecycleState === 'SOLD' || v.lifecycleState === 'REMOVED'),
     [vehicles],
   );
+
+  const scopedActive = useMemo(() => {
+    if (ageFilter !== 'week') return activeVehicles;
+    const cutoff = Date.now() - 7 * 24 * 60 * 60 * 1000;
+    return activeVehicles.filter(v => new Date(v.updatedAt).getTime() >= cutoff);
+  }, [activeVehicles, ageFilter]);
 
   // Filter mapping from chip -> old cleanup filter logic (temp)
   const legacyFilterMap: Record<string, CleanupFilter> = {
@@ -309,12 +240,11 @@ export default function InventoryPage({ dealerId, nav, activeTab }: Props) {
   }), [search, resolvedFilter, movementFilter, sortDirection]);
 
   const visible = useMemo(
-    () => composeInventoryList(activeVehicles, perfMap, listQuery, applyCleanupFilter),
-    [activeVehicles, perfMap, listQuery],
+    () => composeInventoryList(scopedActive, perfMap, listQuery, applyCleanupFilter),
+    [scopedActive, perfMap, listQuery],
   );
 
   const benchmarksUpdating = isBenchmarksUpdating(autoSync.data);
-  const lowDataCount = useMemo(() => countLowDataVehicles(perf.data?.items ?? []), [perf.data]);
 
   const mappedVisible = useMemo(() => {
     const sorted = visible.map(v => mapLegacyVehicleToGridRow(v, perfMap.get(v.stockNumber)));
@@ -707,14 +637,34 @@ export default function InventoryPage({ dealerId, nav, activeTab }: Props) {
                                     </form>
                                   </div>
                                 ) : (
-                                  <button
-                                    type="button"
-                                    onClick={() => setShowPhotoInputs({ ...showPhotoInputs, [v.id]: true })}
-                                    className="text-xs font-semibold text-navy-700 hover:text-navy-900 hover:underline flex items-center gap-1"
-                                  >
-                                    <span>📷</span>
-                                    <span>+ Quick-add photo URL</span>
-                                  </button>
+                                  <div className="flex items-center gap-2 flex-wrap">
+                                    <label
+                                      className={`text-xs font-semibold px-2.5 py-1 bg-navy-50 text-navy-800 hover:bg-navy-100 rounded border border-navy-200 inline-flex items-center gap-1.5 transition-colors cursor-pointer ${
+                                        savingQuickFixId === v.id ? 'opacity-50 pointer-events-none' : ''
+                                      }`}
+                                    >
+                                      <span>📷</span>
+                                      <span>{savingQuickFixId === v.id ? 'Uploading...' : 'Direct Photo Upload'}</span>
+                                      <input
+                                        type="file"
+                                        accept="image/*"
+                                        capture="environment"
+                                        className="hidden"
+                                        disabled={savingQuickFixId === v.id}
+                                        onChange={(e) => {
+                                          void handleDirectPhotoUpload(v.id, e.target.files);
+                                          e.target.value = '';
+                                        }}
+                                      />
+                                    </label>
+                                    <button
+                                      type="button"
+                                      onClick={() => setShowPhotoInputs({ ...showPhotoInputs, [v.id]: true })}
+                                      className="text-xs font-medium text-ink-muted hover:text-ink-heading hover:underline"
+                                    >
+                                      + Add URL
+                                    </button>
+                                  </div>
                                 )}
                               </div>
                             )}

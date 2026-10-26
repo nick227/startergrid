@@ -3,14 +3,13 @@ import { ErrorState } from '@/components/operator/index.ts';
 import type { AdminDashboardResponse } from '@/lib/api/admin.ts';
 import type { DealerSummary } from '@/lib/types.ts';
 import { SystemStatusTab } from '@/features/adminOverview/tabs/system/index.ts';
-import { DealershipsTab } from '@/features/adminOverview/tabs/dealerships/index.ts';
 import { PlatformsTab } from '@/features/adminOverview/tabs/platforms/index.ts';
 import { TriageTab } from '@/features/adminOverview/tabs/triage/index.ts';
 import { AuditLogTab } from '@/features/adminOverview/tabs/audit/index.ts';
 import { AdminInsightsTab } from '@/features/adminOverview/tabs/insights/index.ts';
 import { UsersTab } from '@/features/adminOverview/tabs/users/index.ts';
 
-type AdminOverviewTab = 'system' | 'dealers' | 'platforms' | 'triage' | 'audit' | 'insights' | 'users' | 'operations';
+type AdminOverviewTab = 'system' | 'platforms' | 'triage' | 'audit' | 'insights' | 'users';
 
 type Props = {
   activeTab: AdminOverviewTab;
@@ -30,8 +29,6 @@ export default function AdminOverviewPage({
   loading,
   error,
   dealersData,
-  dealersLoading,
-  dealersError,
   onDealersChanged,
   onUsersChanged,
 }: Props) {
@@ -63,18 +60,6 @@ export default function AdminOverviewPage({
         health={data.health}
         readiness={data.readiness}
         queueSnapshot={data.queueSnapshot}
-      />
-    );
-  }
-
-  if (activeTab === 'dealers') {
-    return (
-      <DealershipsTab
-        dealersData={dealersData}
-        dealersLoading={dealersLoading}
-        dealersError={dealersError}
-        dealerAttention={data.dealerAttention ?? []}
-        onDealersChanged={onDealersChanged}
       />
     );
   }

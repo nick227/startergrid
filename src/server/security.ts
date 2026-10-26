@@ -161,6 +161,8 @@ export const routeClassifications = {
     'POST /api/dealers/:dealershipId/people/invites/:inviteId/revoke',
     'POST /api/dealers/:dealershipId/people/temporary-login',
     'PATCH /api/dealers/:dealershipId/people/:accountId',
+    'DELETE /api/dealers/:dealershipId/people/:accountId',
+    'GET /api/dealers/:dealershipId/activity',
     'POST /api/auth/change-password',
     'GET /api/dealers/:dealershipId/notifications',
     'GET /api/dealers/:dealershipId/notification-channels',

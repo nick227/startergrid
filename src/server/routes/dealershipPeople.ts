@@ -16,10 +16,31 @@ import {
   issueTemporaryLogin,
   listPeople,
   patchPerson,
+  removePerson,
 } from '../../services/dealership/peopleAccessService.js';
+import { deliverInvitation, roleLabel } from '../../services/dealership/invitationDelivery.js';
+import { listDealershipActivity } from '../../services/dealership/activityService.js';
 import { statusFromUnknown } from '../../services/dealership/httpError.js';
 
 type DealerParams = { dealershipId: string };
+
+async function sendInvite(
+  prisma: PrismaClient,
+  dealershipId: string,
+  invite: { inviteId: string; email: string; setupUrl: string; expiresAt: string },
+  accessRole: string,
+) {
+  const dealer = await prisma.dealershipProfile.findUnique({ where: { id: dealershipId }, select: { legalName: true, dbaName: true } });
+  const result = await deliverInvitation(prisma, {
+    inviteId: invite.inviteId,
+    email: invite.email,
+    dealershipName: dealer?.dbaName ?? dealer?.legalName ?? 'your dealership',
+    roleLabel: roleLabel(accessRole),
+    setupUrl: invite.setupUrl,
+  });
+  const deliveryStatus = result.delivery === 'EMAIL_SENT' ? 'SENT' : result.delivery === 'EMAIL_FAILED' ? 'FAILED' : 'PENDING';
+  return { ...invite, deliveryStatus, ...result };
+}
 
 export function registerDealershipPeopleRoutes(app: FastifyInstance, prisma: PrismaClient): void {
   app.get<{ Params: DealerParams }>('/api/dealers/:dealershipId/people', async (request, reply) => {
@@ -56,13 +77,14 @@ export function registerDealershipPeopleRoutes(app: FastifyInstance, prisma: Pri
     const parsed = validateBody(invitePersonSchema, request.body);
     if (!parsed.ok) return reply.status(400).send({ error: parsed.error });
     try {
-      const invite = await createInvitation(prisma, {
+      const created = await createInvitation(prisma, {
         dealershipId: request.params.dealershipId,
         email: parsed.data.email,
         accessRole: parsed.data.accessRole,
         invitedBy: operator,
       });
-      return reply.status(201).send({ invite, setupUrl: invite.setupUrl });
+      const invite = await sendInvite(prisma, request.params.dealershipId, created, parsed.data.accessRole);
+      return reply.status(201).send({ invite, setupUrl: invite.setupUrl, delivery: invite.delivery });
     } catch (err) {
       return reply.status(statusFromUnknown(err)).send({
         error: err instanceof Error ? err.message : 'Failed to create invitation',
@@ -76,8 +98,10 @@ export function registerDealershipPeopleRoutes(app: FastifyInstance, prisma: Pri
       const operator = await requireCapability(prisma, request, reply, request.params.dealershipId, 'send_invite');
       if (!operator) return;
       try {
-        const invite = await resendInvitation(prisma, request.params.dealershipId, request.params.inviteId, operator);
-        return reply.send({ invite, setupUrl: invite.setupUrl });
+        const replaced = await resendInvitation(prisma, request.params.dealershipId, request.params.inviteId, operator);
+        const row = await prisma.operatorInvitation.findUnique({ where: { id: replaced.inviteId }, select: { accessRole: true } });
+        const invite = await sendInvite(prisma, request.params.dealershipId, replaced, row?.accessRole ?? 'DEALER_STAFF');
+        return reply.send({ invite, setupUrl: invite.setupUrl, delivery: invite.delivery });
       } catch (err) {
         return reply.status(statusFromUnknown(err)).send({
           error: err instanceof Error ? err.message : 'Failed to resend invitation',
@@ -141,6 +165,37 @@ export function registerDealershipPeopleRoutes(app: FastifyInstance, prisma: Pri
           error: err instanceof Error ? err.message : 'Failed to update person',
         });
       }
+    },
+  );
+
+  app.delete<{ Params: DealerParams & { accountId: string } }>(
+    '/api/dealers/:dealershipId/people/:accountId',
+    async (request, reply) => {
+      const operator = await requireCapability(prisma, request, reply, request.params.dealershipId, 'manage_dealer_users');
+      if (!operator) return;
+      try {
+        return reply.send(await removePerson(prisma, {
+          dealershipId: request.params.dealershipId,
+          accountId: request.params.accountId,
+          actor: operator,
+        }));
+      } catch (err) {
+        return reply.status(statusFromUnknown(err)).send({
+          error: err instanceof Error ? err.message : 'Failed to remove person',
+        });
+      }
+    },
+  );
+
+  app.get<{ Params: DealerParams; Querystring: { limit?: string; before?: string } }>(
+    '/api/dealers/:dealershipId/activity',
+    async (request, reply) => {
+      if (!await requireCapability(prisma, request, reply, request.params.dealershipId, 'view_access')) return;
+      const limit = request.query.limit ? Number(request.query.limit) : undefined;
+      return reply.send(await listDealershipActivity(prisma, request.params.dealershipId, {
+        limit: Number.isFinite(limit) ? limit : undefined,
+        before: request.query.before,
+      }));
     },
   );
 }

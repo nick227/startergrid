@@ -39,6 +39,8 @@ export function WelcomeEmailModal({
   const [sentResult, setSentResult] = useState<{
     email: string;
     setupUrl?: string;
+    delivery?: 'EMAIL_SENT' | 'EMAIL_FAILED' | 'LINK_ONLY';
+    deliveryError?: string | null;
   } | null>(null);
   const [copied, setCopied] = useState(false);
 
@@ -106,9 +108,17 @@ export function WelcomeEmailModal({
         accessRole,
       });
 
+      const delivery = res.delivery ?? res.invite.delivery ?? (
+        res.invite.deliveryStatus === 'SENT' ? 'EMAIL_SENT' :
+        res.invite.deliveryStatus === 'FAILED' ? 'EMAIL_FAILED' :
+        'LINK_ONLY'
+      );
+
       setSentResult({
         email: res.invite.email,
         setupUrl: res.setupUrl,
+        delivery,
+        deliveryError: res.invite.deliveryError ?? null,
       });
 
       onSuccess({
@@ -157,18 +167,44 @@ export function WelcomeEmailModal({
           )}
 
           {sentResult ? (
-            /* Sent Success State */
+            /* Sent State (Differentiated by real delivery result) */
             <div className="space-y-4">
-              <div className="p-4 bg-emerald-50 border border-emerald-200 rounded-xl space-y-2">
-                <div className="flex items-center gap-2 text-emerald-800 font-bold text-sm">
-                  <span>✓</span>
-                  <span>Invitation Link Successfully Dispatched!</span>
+              {sentResult.delivery === 'EMAIL_SENT' ? (
+                <div className="p-4 bg-emerald-50 border border-emerald-200 rounded-xl space-y-2">
+                  <div className="flex items-center gap-2 text-emerald-800 font-bold text-sm">
+                    <span>✓</span>
+                    <span>Invitation Email Delivered!</span>
+                  </div>
+                  <p className="text-xs text-emerald-700">
+                    The mail server accepted and delivered the invitation email with single-use setup instructions to{' '}
+                    <strong>{sentResult.email}</strong>.
+                  </p>
                 </div>
-                <p className="text-xs text-emerald-700">
-                  An invitation email with a secure, 7-day single-use link was prepared for{' '}
-                  <strong>{sentResult.email}</strong>.
-                </p>
-              </div>
+              ) : sentResult.delivery === 'EMAIL_FAILED' ? (
+                <div className="p-4 bg-red-50 border border-red-200 rounded-xl space-y-2">
+                  <div className="flex items-center gap-2 text-red-800 font-bold text-sm">
+                    <span>⚠️</span>
+                    <span>Email Delivery Failed</span>
+                  </div>
+                  <p className="text-xs text-red-700 leading-relaxed">
+                    Outbound email transmission failed ({sentResult.deliveryError || 'Mail server rejected connection'}). The message was <strong>not</strong> delivered to the recipient's inbox.
+                  </p>
+                  <p className="text-xs text-red-900 font-semibold">
+                    The single-use activation link has been safely generated below. Please share it directly with {sentResult.email}.
+                  </p>
+                </div>
+              ) : (
+                <div className="p-4 bg-blue-50 border border-blue-200 rounded-xl space-y-2">
+                  <div className="flex items-center gap-2 text-blue-800 font-bold text-sm">
+                    <span>🔗</span>
+                    <span>Direct Activation Link Created</span>
+                  </div>
+                  <p className="text-xs text-blue-700 leading-relaxed">
+                    Outbound email transport is not configured for this environment. A secure, single-use activation link was created for{' '}
+                    <strong>{sentResult.email}</strong>. Share the link below directly with the recipient.
+                  </p>
+                </div>
+              )}
 
               {sentResult.setupUrl && (
                 <div className="space-y-2">

@@ -146,11 +146,22 @@ export function AutopilotPreviewModal({ dealerId, isOpen, onClose, onConfirm }: 
               </div>
 
               {/* Guardrail Policy Disclaimer */}
-              <div className="p-3.5 rounded-xl bg-silver-50 border border-silver-200 text-ink-muted text-xs flex items-start gap-2.5">
-                <span className="text-sm">🛡️</span>
-                <p className="leading-relaxed">
-                  <strong className="text-ink-body font-semibold">Automatic Safeguards Active:</strong> Incomplete vehicles or suspicious price variations exceeding 30% are automatically held back from syndication until manually reviewed.
-                </p>
+              <div className="space-y-2">
+                <div className="p-3.5 rounded-xl bg-silver-50 border border-silver-200 text-ink-muted text-xs flex items-start gap-2.5">
+                  <span className="text-sm">🛡️</span>
+                  <p className="leading-relaxed">
+                    <strong className="text-ink-body font-semibold">Automatic Safeguards Active:</strong> Incomplete vehicles or suspicious price variations exceeding 30% are automatically held back from syndication until manually reviewed. Sold or removed vehicles are immediately withdrawn across all destinations.
+                  </p>
+                </div>
+                <div className="px-3.5 py-2 rounded-lg bg-blue-50/70 border border-blue-200/80 text-[11px] text-blue-900 flex items-center justify-between">
+                  <span className="flex items-center gap-1.5 font-medium">
+                    <span className="w-2 h-2 rounded-full bg-blue-500 animate-pulse" />
+                    Live simulation evaluated at {new Date(simulation.evaluatedAt).toLocaleTimeString()}
+                  </span>
+                  <span className="text-blue-700">
+                    Confirmation re-evaluates live inventory on execution
+                  </span>
+                </div>
               </div>
             </>
           ) : null}

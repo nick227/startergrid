@@ -1,7 +1,6 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { Skeleton } from '@/components/ui/Skeleton.tsx';
 import { ErrorState } from '@/components/operator/index.ts';
-import { DealershipIntakeFlow } from '@/components/dealers/DealershipIntakeFlow.tsx';
 import {
   createAdminUser,
   deleteAdminUser,
@@ -10,7 +9,7 @@ import {
   type OperatorUserSummary,
   updateAdminUser,
 } from '@/lib/api/admin.ts';
-import { createAdminDealership, uploadDealerLogo } from '@/lib/api/sdk.ts';
+import { accountRoleLabel } from '@/lib/dealershipLabels.ts';
 import type { DealerSummary } from '@/lib/types.ts';
 import { CLEAR_CLS, INPUT_CLS, SELECT_CLS } from '@/features/adminOverview/constants/styles.ts';
 
@@ -22,7 +21,7 @@ type Props = {
 
 const USER_PAGE_SIZE = 20;
 
-export function UsersTab({ dealersData, onDealersChanged, onUsersChanged }: Props) {
+export function UsersTab({ dealersData, onUsersChanged }: Props) {
   const allDealers = useMemo(() => dealersData?.dealers ?? [], [dealersData]);
 
   const [userSearch, setUserSearch] = useState('');
@@ -37,7 +36,7 @@ export function UsersTab({ dealersData, onDealersChanged, onUsersChanged }: Prop
   } | null>(null);
 
   const [showCreateUser, setShowCreateUser] = useState(false);
-  const [createUserRole, setCreateUserRole] = useState<OperatorUserRole>('OPERATOR');
+  const [createUserRole, setCreateUserRole] = useState<OperatorUserRole>('INTERNAL_SUPPORT');
   const [createUserEmail, setCreateUserEmail] = useState('');
   const [createUserDealerIds, setCreateUserDealerIds] = useState<string[]>([]);
   const [createUserErr, setCreateUserErr] = useState<string | null>(null);
@@ -51,7 +50,6 @@ export function UsersTab({ dealersData, onDealersChanged, onUsersChanged }: Prop
   const [accessDealerIds, setAccessDealerIds] = useState<string[]>([]);
   const [accessBusy, setAccessBusy] = useState(false);
   const [accessErr, setAccessErr] = useState<string | null>(null);
-  const [showAccessDealerCreate, setShowAccessDealerCreate] = useState(false);
 
   const loadUsers = useCallback(async (page: number, q: string, role: string) => {
     setUsersLoading(true);
@@ -123,7 +121,6 @@ export function UsersTab({ dealersData, onDealersChanged, onUsersChanged }: Prop
     setAccessUser(user);
     setAccessDealerIds(user.dealerAccess.map(dealer => dealer.id));
     setAccessErr(null);
-    setShowAccessDealerCreate(false);
   }
 
   function toggleAccessDealer(dealerId: string) {
@@ -213,7 +210,7 @@ export function UsersTab({ dealersData, onDealersChanged, onUsersChanged }: Prop
       {showCreateUser && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-navy-950/70 p-4">
           <div className="w-full max-w-md rounded-xl border border-silver-200 bg-surface-card p-6 shadow-elevation-3">
-            <h2 className="text-base font-bold text-ink-heading mb-1">Create Operator Account</h2>
+            <h2 className="text-base font-bold text-ink-heading mb-1">Add internal staff member</h2>
             <p className="text-xs text-ink-faint mb-5">A secure password will be generated and shown once. Share it with the new user out-of-band.</p>
             <div className="space-y-4">
               <div>
@@ -235,8 +232,8 @@ export function UsersTab({ dealersData, onDealersChanged, onUsersChanged }: Prop
                   onChange={event => setCreateUserRole(event.target.value as OperatorUserRole)}
                   className={`${SELECT_CLS} w-full`}
                 >
-                  <option value="SUPER_ADMIN">Super Admin — full platform access</option>
-                  <option value="OPERATOR">Operator — scoped to assigned dealerships</option>
+                  <option value="INTERNAL_SUPPORT">Internal support — works on assigned dealerships</option>
+                  <option value="SUPER_ADMIN">Site administrator — full access, including integrations</option>
                 </select>
               </div>
               {createUserRole !== 'SUPER_ADMIN' && (
@@ -291,19 +288,7 @@ export function UsersTab({ dealersData, onDealersChanged, onUsersChanged }: Prop
       {accessUser && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-navy-950/70 p-4">
           <div className="w-full max-w-3xl max-h-[90vh] overflow-y-auto rounded-xl border border-silver-200 bg-surface-card p-6 shadow-elevation-3">
-            {showAccessDealerCreate ? (
-              <DealershipIntakeFlow
-                mode="admin"
-                onSubmit={createAdminDealership}
-                onUploadLogo={uploadDealerLogo}
-                onComplete={response => {
-                  setAccessDealerIds(ids => [...new Set([...ids, response.dealer.id])]);
-                  setShowAccessDealerCreate(false);
-                  onDealersChanged?.();
-                }}
-                onCancel={() => setShowAccessDealerCreate(false)}
-              />
-            ) : (
+            {(
               <div className="space-y-4">
                 <div>
                   <h2 className="text-base font-bold text-ink-heading">Manage Dealership Access</h2>
@@ -314,19 +299,13 @@ export function UsersTab({ dealersData, onDealersChanged, onUsersChanged }: Prop
                 )}
                 {accessUser.role === 'SUPER_ADMIN' ? (
                   <div className="rounded-md border border-status-info-border bg-status-info-bg px-3 py-3 text-sm text-status-info-text">
-                    Super admins have global dealership access and do not need scoped assignments.
+                    Site administrators can open every dealership and do not need assignments.
                   </div>
                 ) : (
                   <>
                     <div className="flex items-center justify-between">
                       <span className="text-xs text-ink-faint">{accessDealerIds.length} dealership{accessDealerIds.length !== 1 ? 's' : ''} selected</span>
-                      <button
-                        type="button"
-                        onClick={() => setShowAccessDealerCreate(true)}
-                        className="px-3 py-1.5 text-xs font-semibold bg-surface-card hover:bg-surface-inset text-ink-heading border border-silver-300 hover:border-silver-400 rounded-md transition-all"
-                      >
-                        Add New Dealership
-                      </button>
+                      <span className="text-xs text-ink-faint">New dealerships are added from the Dealerships directory.</span>
                     </div>
                     <div className="max-h-80 overflow-y-auto rounded-md border border-silver-200 bg-surface-inset p-2 grid grid-cols-1 md:grid-cols-2 gap-1">
                       {allDealers.map(dealer => (
@@ -454,10 +433,11 @@ export function UsersTab({ dealersData, onDealersChanged, onUsersChanged }: Prop
             onChange={event => handleUserSearch(userSearch, event.target.value, 1)}
             className={SELECT_CLS}
           >
-            <option value="">All Roles</option>
-            <option value="SUPER_ADMIN">Super Admin</option>
-            <option value="OPERATOR">Operator</option>
-            <option value="DEALER_OPERATOR">Dealer Operator</option>
+            <option value="">All accounts</option>
+            <option value="SUPER_ADMIN">{accountRoleLabel('SUPER_ADMIN')}</option>
+            <option value="INTERNAL_SUPPORT">{accountRoleLabel('INTERNAL_SUPPORT')}</option>
+            <option value="DEALER_OWNER">{accountRoleLabel('DEALER_OWNER')}</option>
+            <option value="DEALER_STAFF">{accountRoleLabel('DEALER_STAFF')}</option>
           </select>
           {(userSearch || userRoleFilter) && (
             <button type="button" onClick={() => handleUserSearch('', '', 1)} className={CLEAR_CLS}>
@@ -467,17 +447,17 @@ export function UsersTab({ dealersData, onDealersChanged, onUsersChanged }: Prop
           <div className="ml-auto flex gap-2">
             <button
               type="button"
-              onClick={() => { setCreateUserRole('OPERATOR'); setShowCreateUser(true); }}
+              onClick={() => { setCreateUserRole('INTERNAL_SUPPORT'); setShowCreateUser(true); }}
               className="px-3 py-1.5 text-xs font-semibold bg-surface-card hover:bg-surface-inset text-ink-heading border border-silver-300 hover:border-silver-400 rounded-md transition-all"
             >
-              + Dealership User
+              Add internal support
             </button>
             <button
               type="button"
               onClick={() => { setCreateUserRole('SUPER_ADMIN'); setShowCreateUser(true); }}
               className="px-3 py-1.5 text-xs font-semibold bg-navy-800 hover:bg-navy-700 text-silver-100 rounded-md transition-colors"
             >
-              + Add Admin
+              Add site administrator
             </button>
           </div>
         </div>
@@ -509,12 +489,12 @@ export function UsersTab({ dealersData, onDealersChanged, onUsersChanged }: Prop
                 <tbody>
                   {usersResult.users.map(user => {
                     const busy = rowBusy[user.id];
-                    const ROLE_CFG: Record<string, { label: string; cls: string }> = {
-                      SUPER_ADMIN: { label: 'Super Admin', cls: 'bg-status-info-bg text-status-info-text border-status-info-border' },
-                      OPERATOR: { label: 'Operator', cls: 'bg-status-neutral-bg text-status-neutral-text border-status-neutral-border' },
-                      DEALER_OPERATOR: { label: 'Dealer Operator', cls: 'bg-surface-inset text-ink-muted border-silver-200' },
+                    const roleCfg = {
+                      label: accountRoleLabel(user.role),
+                      cls: user.role === 'SUPER_ADMIN' ? 'bg-status-info-bg text-status-info-text border-status-info-border'
+                        : user.role === 'INTERNAL_SUPPORT' || user.role === 'OPERATOR' ? 'bg-status-neutral-bg text-status-neutral-text border-status-neutral-border'
+                        : 'bg-surface-inset text-ink-muted border-silver-200',
                     };
-                    const roleCfg = ROLE_CFG[user.role] ?? ROLE_CFG['OPERATOR'];
                     return (
                       <tr key={user.id} className={`border-b border-silver-200 last:border-0 transition-colors ${
                         busy ? 'opacity-60' : 'hover:bg-surface-inset'

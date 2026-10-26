@@ -52,7 +52,10 @@ export type DealershipRecordSummary = {
     people: number;
   };
   autopilotPreference: 'OFF' | 'ON' | 'PAUSED';
+  waitingForStock?: boolean;
   createdAt: string;
+  lastActivityAt: string;
+  blockedStepCount: number;
 };
 
 export type DealershipRecordDetail = DealershipRecordSummary & {
@@ -89,58 +92,49 @@ export type DealershipRecordDetail = DealershipRecordSummary & {
     liveVehicles?: number;
     autopilotEnabled?: boolean;
   }>;
-  people: Array<{
-    id: string;
-    email: string;
-    role: string;
-    accessRole: DealerAccessRole;
-    firstLoginAt: string | null;
-    lastLoginAt: string | null;
-    isActive: boolean;
-    mustChangePassword?: boolean;
-  }>;
-  invitations: Array<{
-    id: string;
-    email: string;
-    accessRole: DealerAccessRole;
-    deliveryStatus: 'PENDING' | 'SENT' | 'DELIVERED' | 'FAILED' | 'ACCEPTED' | 'REVOKED';
-    expiresAt: string;
-    createdAt: string;
-  }>;
+  people: Array<DealershipPerson & { id: string }>;
+  invitations: DealershipInvitation[];
+};
+
+export type DealershipPerson = {
+  accountId: string;
+  email: string;
+  role: string;
+  accessRole: DealerAccessRole;
+  firstLoginAt: string | null;
+  lastLoginAt: string | null;
+  isActive: boolean;
+  mustChangePassword: boolean;
+  activationStatus?: string;
+  isInternal: boolean;
+};
+
+export type DealershipInvitation = {
+  id: string;
+  email: string;
+  accessRole: DealerAccessRole;
+  deliveryStatus: string;
+  deliveryError?: string | null;
+  expiresAt: string;
+  createdAt: string | null;
+  acceptedAt?: string | null;
+};
+
+export type InviteDelivery = 'EMAIL_SENT' | 'EMAIL_FAILED' | 'LINK_ONLY';
+
+export type InviteResult = {
+  email: string;
+  setupUrl: string;
+  expiresAt?: string;
+  delivery: InviteDelivery;
+  deliveryError?: string | null;
 };
 
 export type PeopleResponse = {
   dealershipId?: string;
   signInUrl?: string;
-  people: Array<{
-    accountId: string;
-    email: string;
-    role: string;
-    accessRole: DealerAccessRole;
-    firstLoginAt: string | null;
-    lastLoginAt: string | null;
-    isActive: boolean;
-    mustChangePassword: boolean;
-    activationStatus?: string;
-  }>;
-  invitations?: Array<{
-    id: string;
-    email: string;
-    accessRole: DealerAccessRole;
-    deliveryStatus: string;
-    expiresAt: string;
-    createdAt?: string;
-    acceptedAt?: string | null;
-  }>;
-  invites?: Array<{
-    id: string;
-    email: string;
-    accessRole: DealerAccessRole;
-    deliveryStatus: string;
-    expiresAt: string;
-    createdAt?: string;
-    acceptedAt?: string | null;
-  }>;
+  people: DealershipPerson[];
+  invitations: DealershipInvitation[];
 };
 
 async function apiFetch<T>(path: string, init?: RequestInit): Promise<T> {
@@ -162,12 +156,14 @@ export async function fetchAdminDealerships(params: {
   q?: string;
   lifecycle?: string;
   needsAttention?: boolean;
+  mine?: boolean;
   limit?: number;
 } = {}): Promise<{ dealerships: DealershipRecordSummary[]; total: number }> {
   const qs = new URLSearchParams();
   if (params.q) qs.set('q', params.q);
   if (params.lifecycle) qs.set('lifecycle', params.lifecycle);
   if (params.needsAttention) qs.set('needsAttention', 'true');
+  if (params.mine) qs.set('mine', 'true');
   if (params.limit) qs.set('limit', String(params.limit));
   const query = qs.toString();
   const result = await apiFetch<{ dealerships: SummaryWire[] }>(`/api/admin/dealerships${query ? `?${query}` : ''}`);
@@ -236,14 +232,7 @@ export async function completeHandoff(dealershipId: string): Promise<{ ok: boole
 
 export async function fetchDealershipPeople(dealershipId: string): Promise<PeopleResponse> {
   const wire = await apiFetch<DealershipPeopleResponse>(`/api/dealers/${encodeURIComponent(dealershipId)}/people`);
-  const data = adaptPeople(wire);
-  const invitesList = data.invitations ?? [];
-  return {
-    ...data,
-    dealershipId,
-    invitations: invitesList,
-    invites: invitesList,
-  };
+  return { ...adaptPeople(wire), dealershipId };
 }
 
 export type InviteEmailPreview = {
@@ -323,10 +312,24 @@ export async function fetchAutopilotPreview(
   });
 }
 
+export type PersonInviteResponse = {
+  invite: {
+    id?: string;
+    inviteId?: string;
+    email: string;
+    accessRole: DealerAccessRole;
+    deliveryStatus?: 'SENT' | 'FAILED' | 'PENDING' | 'EXPIRED';
+    delivery?: 'EMAIL_SENT' | 'EMAIL_FAILED' | 'LINK_ONLY';
+    deliveryError?: string | null;
+  };
+  setupUrl?: string;
+  delivery?: 'EMAIL_SENT' | 'EMAIL_FAILED' | 'LINK_ONLY';
+};
+
 export async function createPersonInvite(
   dealershipId: string,
   payload: { email: string; accessRole: DealerAccessRole; name?: string },
-): Promise<{ invite: { id: string; email: string; accessRole: DealerAccessRole }; setupUrl?: string }> {
+): Promise<PersonInviteResponse> {
   return apiFetch(`/api/dealers/${dealershipId}/people/invites`, {
     method: 'POST',
     body: JSON.stringify(payload),
@@ -340,6 +343,32 @@ export async function resendPersonInvite(
   return apiFetch(`/api/dealers/${dealershipId}/people/invites/${inviteId}/resend`, {
     method: 'POST',
   });
+}
+
+function adaptInvite(wire: PersonInviteResponse & { invite: { setupUrl?: string; expiresAt?: string } }): InviteResult {
+  return {
+    email: wire.invite.email,
+    setupUrl: wire.setupUrl ?? wire.invite.setupUrl ?? '',
+    expiresAt: wire.invite.expiresAt,
+    delivery: wire.delivery ?? wire.invite.delivery ?? 'LINK_ONLY',
+    deliveryError: wire.invite.deliveryError ?? null,
+  };
+}
+
+/** Add Person: creates the invitation and reports honestly whether anyone was emailed. */
+export async function invitePerson(
+  dealershipId: string,
+  payload: { email: string; accessRole: DealerAccessRole; name?: string },
+): Promise<InviteResult> {
+  return adaptInvite(await createPersonInvite(dealershipId, payload));
+}
+
+/** Creates a replacement setup link; the previous link stops working. */
+export async function replaceInviteLink(dealershipId: string, inviteId: string): Promise<InviteResult> {
+  return adaptInvite(await apiFetch<PersonInviteResponse>(
+    `/api/dealers/${encodeURIComponent(dealershipId)}/people/invites/${encodeURIComponent(inviteId)}/resend`,
+    { method: 'POST' },
+  ));
 }
 
 export async function revokePersonInvite(dealershipId: string, inviteId: string): Promise<{ ok: boolean }> {
@@ -362,11 +391,68 @@ export async function patchPersonAccess(
   dealershipId: string,
   accountId: string,
   payload: { accessRole?: DealerAccessRole; isActive?: boolean; resetPassword?: boolean },
-): Promise<unknown> {
-  return apiFetch(`/api/dealers/${dealershipId}/people/${accountId}`, {
+): Promise<{ person: { email: string }; temporaryPassword?: string }> {
+  return apiFetch(`/api/dealers/${encodeURIComponent(dealershipId)}/people/${encodeURIComponent(accountId)}`, {
     method: 'PATCH',
     body: JSON.stringify(payload),
   });
+}
+
+/** Removes access to this dealership only; the login itself is kept. */
+export async function removePerson(dealershipId: string, accountId: string): Promise<{ ok: boolean }> {
+  return apiFetch(`/api/dealers/${encodeURIComponent(dealershipId)}/people/${encodeURIComponent(accountId)}`, {
+    method: 'DELETE',
+  });
+}
+
+export type DealershipActivityEvent = {
+  id: string;
+  action: string;
+  actorEmail: string;
+  detail: unknown;
+  createdAt: string;
+};
+
+export async function fetchDealershipActivity(
+  dealershipId: string,
+  params: { before?: string | null; limit?: number } = {},
+): Promise<{ events: DealershipActivityEvent[]; nextBefore: string | null }> {
+  const qs = new URLSearchParams();
+  if (params.before) qs.set('before', params.before);
+  if (params.limit) qs.set('limit', String(params.limit));
+  const query = qs.toString();
+  return apiFetch(`/api/dealers/${encodeURIComponent(dealershipId)}/activity${query ? `?${query}` : ''}`);
+}
+
+export type CreateDealershipRecordInput = {
+  legalName: string;
+  businessCategory: string;
+  ownerName?: string;
+  ownerEmail: string;
+};
+
+export async function createDealershipRecord(input: CreateDealershipRecordInput): Promise<{
+  dealerId: string;
+  legalName: string;
+  invite: InviteResult | null;
+}> {
+  const wire = await apiFetch<{
+    dealer: { id: string; legalName: string };
+    invite: { inviteId: string; email: string; setupUrl: string; expiresAt?: string; delivery?: InviteDelivery; deliveryError?: string | null } | null;
+  }>('/api/admin/dealerships', {
+    method: 'POST',
+    body: JSON.stringify({
+      legalName: input.legalName.trim(),
+      businessCategory: input.businessCategory,
+      primaryContact: { email: input.ownerEmail.trim(), ...(input.ownerName?.trim() ? { name: input.ownerName.trim() } : {}) },
+      inviteOwnerEmail: input.ownerEmail.trim(),
+    }),
+  });
+  return {
+    dealerId: wire.dealer.id,
+    legalName: wire.dealer.legalName,
+    invite: wire.invite ? adaptInvite({ invite: { ...wire.invite, accessRole: 'DEALER_OWNER' } }) : null,
+  };
 }
 
 // ── Leads API ───────────────────────────────────────────────────────────────
@@ -392,6 +478,7 @@ const STEP_LABELS: Record<OnboardingStepKey, string> = { CREATE: 'Create dealers
 export function adaptPeople(wire: DealershipPeopleResponse): PeopleResponse {
   return {
     dealershipId: '',
+    signInUrl: wire.signInUrl,
     people: wire.people.map(p => ({
       accountId: p.accountId,
       email: p.email,
@@ -402,14 +489,26 @@ export function adaptPeople(wire: DealershipPeopleResponse): PeopleResponse {
       firstLoginAt: p.firstLoginAt ?? null,
       lastLoginAt: p.lastLoginAt ?? null,
       activationStatus: p.activationStatus,
+      isInternal: p.isInternal ?? p.accessRole === 'INTERNAL_SUPPORT',
     })),
-    invitations: wire.invitations,
-    invites: wire.invitations,
+    invitations: wire.invitations.map(invite => ({
+      id: invite.id,
+      email: invite.email,
+      accessRole: invite.accessRole,
+      deliveryStatus: invite.deliveryStatus,
+      deliveryError: invite.deliveryError ?? null,
+      expiresAt: invite.expiresAt,
+      createdAt: invite.createdAt ?? null,
+      acceptedAt: invite.acceptedAt ?? null,
+    })),
   };
 }
 export function adaptSummary(wire: SummaryWire): DealershipRecordSummary {
   return { ...wire, dbaName: wire.dbaName ?? null, logoUrl: wire.logoUrl ?? null,
     primaryContactEmail: wire.primaryContactEmail ?? null, autopilotPreference: wire.autopilotPreference ?? 'OFF',
+    internalOwner: wire.internalOwner ?? null,
+    lastActivityAt: wire.lastActivityAt ?? wire.createdAt,
+    blockedStepCount: wire.blockedStepCount ?? 0,
     nextStep: wire.nextStep?.stepKey ? { key: wire.nextStep.stepKey, label: STEP_LABELS[wire.nextStep.stepKey],
       ownerKind: wire.nextStep.ownerKind as TaskOwnerKind, nextAction: wire.nextStep.incompleteReason } : null };
 }
@@ -417,6 +516,7 @@ export function adaptRecord(wire: RecordWire): DealershipRecordDetail {
   const steps = (wire.onboarding?.steps ?? []).map(step => ({ key: step.stepKey, label: STEP_LABELS[step.stepKey],
     status: step.status, ownerKind: step.ownerKind as TaskOwnerKind, blockingReason: step.incompleteReason,
     nextAction: step.incompleteReason, evidence: step.evidence, updatedAt: step.completedAt ?? wire.createdAt }));
+  const people = wire.people ? adaptPeople(wire.people) : { people: [], invitations: [] };
   return { ...adaptSummary(wire), internalOwner: wire.internalOwner?.id && wire.internalOwner.email ? { id: wire.internalOwner.id, email: wire.internalOwner.email } : null,
     websiteUrl: wire.websiteUrl ?? null, dealerLicense: null, rooftopAddress: wire.rooftopAddress ?? null,
     primaryContact: wire.primaryContact ?? null, waitingForStock: wire.waitingForStock ?? false,
@@ -428,16 +528,7 @@ export function adaptRecord(wire: RecordWire): DealershipRecordDetail {
       ...channel,
       eligibleVehicles: 0,
     })),
-    people: wire.people
-      ? adaptPeople(wire.people).people.map((person) => ({ ...person, id: person.accountId }))
-      : [],
-    invitations: (wire.people?.invitations ?? []).map((invite) => ({
-      id: invite.id,
-      email: invite.email,
-      accessRole: invite.accessRole,
-      deliveryStatus: invite.deliveryStatus as DealershipRecordDetail['invitations'][number]['deliveryStatus'],
-      expiresAt: invite.expiresAt,
-      createdAt: invite.expiresAt,
-    })),
+    people: people.people.map((person) => ({ ...person, id: person.accountId })),
+    invitations: people.invitations,
   };
 }

@@ -221,6 +221,11 @@ export function adminDealerHash(dealerId: string): string {
   return `#/admin/dealers/${dealerId}`;
 }
 
+/** The one way staff open a dealership as the dealer sees it. */
+export function dealerViewHash(dealerId: string, page?: 'inventory'): string {
+  return `#/${dealerId}${page ? `/${page}` : ''}?support=true`;
+}
+
 export function adminPlatformHash(slug: string): string {
   return `#/admin/platforms/${slug}`;
 }

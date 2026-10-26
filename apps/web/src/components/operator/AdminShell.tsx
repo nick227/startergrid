@@ -20,8 +20,10 @@ export function AdminShell({ nav, action, children }: Props) {
                 📡
               </div>
               <div className="min-w-0">
-                <h1 className="font-bold text-sm tracking-tight">Admin Operations</h1>
-                <p className="text-ink-faint text-[10px] mt-0.5">Site administration · SUPER_ADMIN</p>
+                <h1 className="font-bold text-sm tracking-tight">StarterGrid</h1>
+                <p className="text-ink-faint text-[10px] mt-0.5">
+                  {user?.role === 'SUPER_ADMIN' ? 'Site administration' : 'Internal workspace'}
+                </p>
               </div>
             </div>
             <div className="flex items-center gap-2 shrink-0">

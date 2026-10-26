@@ -1097,8 +1097,9 @@ export function registerAdminRoutes(app: FastifyInstance, prisma: PrismaClient):
     const plainPassword = generateSecurePassword();
     const passwordHash  = await hashPassword(plainPassword);
 
+    // Generated passwords are one-time handoffs: the person must choose their own at first sign-in.
     const account = await prisma.operatorAccount.create({
-      data: { email, passwordHash, role },
+      data: { email, passwordHash, role, mustChangePassword: true },
       select: userSelectWithAccess,
     });
 
@@ -1153,7 +1154,7 @@ export function registerAdminRoutes(app: FastifyInstance, prisma: PrismaClient):
 
       await prisma.operatorAccount.update({
         where: { id: userId },
-        data: { passwordHash },
+        data: { passwordHash, mustChangePassword: true },
       });
 
       // Revoke all existing sessions for this user

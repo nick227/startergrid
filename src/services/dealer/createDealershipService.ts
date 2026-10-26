@@ -8,6 +8,7 @@ import { refreshOnboarding } from '../dealership/onboardingService.js';
 import { createInvitation } from '../dealership/invitationService.js';
 import { assignInternalOwner } from '../dealership/peopleAccessService.js';
 import { HttpError } from '../dealership/httpError.js';
+import { recordDealershipActivity } from '../dealership/activityService.js';
 
 type CreateDealershipOptions = {
   createdByOperatorId?: string | null;
@@ -30,7 +31,7 @@ export type CreateDealershipResult = {
   dealer: CreatedDealershipSummary;
   duplicate: false;
   createdOperatorAccountId?: string;
-  invite?: { setupUrl: string; email: string; expiresAt: string };
+  invite?: { inviteId: string; setupUrl: string; email: string; expiresAt: string };
 };
 
 function cleanOptional(value: string | undefined | null): string | null {
@@ -92,11 +93,12 @@ export async function createDealership(
         lifecycleStatus: 'SETTING_UP',
         internalOwnerId: options.internalOwnerId ?? options.createdByOperatorId ?? null,
         rooftopAddress: {
-          ...body.rooftopAddress,
-          country: cleanOptional(body.rooftopAddress.country) ?? 'US',
+          ...(body.rooftopAddress ?? {}),
+          country: cleanOptional(body.rooftopAddress?.country) ?? 'US',
         } as Prisma.InputJsonValue,
         primaryContact: {
           ...body.primaryContact,
+          name: cleanOptional(body.primaryContact.name),
           email: contactEmail,
           phone: cleanOptional(body.primaryContact.phone),
           role: cleanOptional(body.primaryContact.role),
@@ -133,33 +135,52 @@ export async function createDealership(
       });
     }
 
-    await seedOnboardingSteps(tx, dealer.id, options.createdByOperatorId ?? createdOperatorAccountId ?? null);
-    return { dealer, createdOperatorAccountId };
+    const actorId = options.createdByOperatorId ?? createdOperatorAccountId ?? null;
+    await seedOnboardingSteps(tx, dealer.id, actorId);
+
+    if (options.internalOwnerId && actorId) {
+      await assignInternalOwner(tx, dealer.id, options.internalOwnerId, {
+        id: actorId,
+        email: options.actorEmail ?? 'system',
+      });
+    }
+
+    if (actorId) {
+      await recordDealershipActivity(tx, {
+        dealershipId: dealer.id,
+        actorId,
+        actorEmail: options.actorEmail ?? contactEmail,
+        action: 'DEALERSHIP_CREATED',
+        detail: { legalName, businessCategory: body.businessCategory },
+      });
+    }
+
+    // The owner invitation is created with the dealership so a failure leaves neither behind.
+    let invite: (CreateDealershipResult['invite'] & { inviteId: string }) | undefined;
+    if (options.inviteOwnerEmail && actorId) {
+      const createdInvite = await createInvitation(tx, {
+        dealershipId: dealer.id,
+        email: options.inviteOwnerEmail,
+        accessRole: 'DEALER_OWNER',
+        invitedBy: { id: actorId, email: options.actorEmail ?? options.inviteOwnerEmail },
+      });
+      invite = {
+        inviteId: createdInvite.inviteId,
+        setupUrl: createdInvite.setupUrl,
+        email: createdInvite.email,
+        expiresAt: createdInvite.expiresAt,
+      };
+    } else {
+      await refreshOnboarding(tx, dealer.id, actorId);
+    }
+    return { dealer, createdOperatorAccountId, invite };
   });
 
+  // Default channel accounts and sync policies are idempotent distribution setup.
   await upsertDefaultSyncPolicies(prisma, created.dealer.id);
   await upsertDefaultPlatformAccounts(prisma, created.dealer.id);
+  const invite = created.invite;
 
-  const actorId = options.createdByOperatorId ?? created.createdOperatorAccountId ?? null;
-  if (options.internalOwnerId && actorId) {
-    await assignInternalOwner(prisma, created.dealer.id, options.internalOwnerId, {
-      id: actorId,
-      email: options.actorEmail ?? 'system',
-    }).catch(() => undefined);
-  }
-
-  let invite: CreateDealershipResult['invite'];
-  if (options.inviteOwnerEmail && actorId) {
-    const createdInvite = await createInvitation(prisma, {
-      dealershipId: created.dealer.id,
-      email: options.inviteOwnerEmail,
-      accessRole: 'DEALER_OWNER',
-      invitedBy: { id: actorId, email: options.actorEmail ?? options.inviteOwnerEmail },
-    });
-    invite = { setupUrl: createdInvite.setupUrl, email: createdInvite.email, expiresAt: createdInvite.expiresAt };
-  }
-
-  await refreshOnboarding(prisma, created.dealer.id, actorId);
   return {
     dealer: {
       id: created.dealer.id,

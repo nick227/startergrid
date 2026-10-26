@@ -137,11 +137,13 @@ export async function previewInvitation(db: Db, token: string) {
     where: { id: invite.dealershipId },
     select: { id: true, legalName: true },
   });
+  const account = await db.operatorAccount.findUnique({ where: { email: invite.email }, select: { id: true } });
   return {
     email: invite.email,
     accessRole: invite.accessRole,
     dealershipId: invite.dealershipId,
     dealershipName: dealer?.legalName ?? null,
+    accountExists: Boolean(account),
     expiresAt: invite.expiresAt.toISOString(),
     signInUrl: signInBaseUrl(),
   };
@@ -154,12 +156,24 @@ export async function acceptInvitation(
   name?: string,
 ): Promise<{ accountId: string; dealershipId: string; email: string }> {
   const invite = await loadUsableInvite(db, token);
+  if (invite.accessRole === 'INTERNAL_SUPPORT') {
+    // Defense in depth for invites created before role checks existed.
+    const inviter = await db.operatorAccount.findUnique({ where: { id: invite.invitedBy }, select: { role: true } });
+    if (inviter?.role !== 'SUPER_ADMIN') throw new HttpError(403, 'This invitation is not valid. Ask StarterGrid support for a new one.');
+  }
   const existing = await db.operatorAccount.findUnique({ where: { email: invite.email } });
 
   let accountId: string;
   if (existing) {
     const matches = await verifyPassword(existing.passwordHash, password);
-    if (!matches) throw new HttpError(401, 'Existing account password is required to accept this invitation');
+    if (!matches) throw new HttpError(401, 'Existing account password incorrect. Enter the current password for this existing account to accept the invitation');
+    if (!existing.isActive) throw new HttpError(403, 'This account is suspended. Contact StarterGrid support.');
+    const currentAccess = await db.operatorDealerAccess.findFirst({
+      where: { operatorAccountId: existing.id, dealershipId: invite.dealershipId },
+      select: { accessRole: true },
+    });
+    // Never let a dealer-issued invite downgrade an internal membership.
+    const accessRole = currentAccess?.accessRole === 'INTERNAL_SUPPORT' ? 'INTERNAL_SUPPORT' : invite.accessRole;
     await db.operatorDealerAccess.upsert({
       where: {
         operatorAccountId_dealershipId: {
@@ -170,12 +184,17 @@ export async function acceptInvitation(
       create: {
         operatorAccountId: existing.id,
         dealershipId: invite.dealershipId,
-        accessRole: invite.accessRole,
+        accessRole,
         grantedBy: invite.invitedBy,
       },
-      update: { accessRole: invite.accessRole },
+      update: { accessRole },
     });
     accountId = existing.id;
+    // Accepting signs the person in, so it counts as a sign-in for onboarding evidence.
+    await db.operatorAccount.update({
+      where: { id: existing.id },
+      data: { lastLoginAt: new Date(), firstLoginAt: existing.firstLoginAt ?? new Date() },
+    });
   } else {
     const created = await db.operatorAccount.create({
       data: {
@@ -183,6 +202,8 @@ export async function acceptInvitation(
         passwordHash: await hashPassword(password),
         role: accountRoleForAccess(invite.accessRole),
         mustChangePassword: false,
+        firstLoginAt: new Date(),
+        lastLoginAt: new Date(),
         dealerAccess: {
           create: {
             dealershipId: invite.dealershipId,

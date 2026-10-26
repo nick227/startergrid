@@ -1,8 +1,15 @@
-import { assertAssignableRole, assertManageableAccount, type AccessActor } from './accessSafety.js';
+import {
+  assertAssignableRole,
+  assertKeepsAnOwner,
+  assertManageableAccount,
+  assertNotSelfChange,
+  assertSingleDealershipLogin,
+  type AccessActor,
+} from './accessSafety.js';
 import type { DealerAccessRole, Prisma, PrismaClient } from '@prisma/client';
 import { generateSecurePassword, hashPassword } from '../auth/passwordService.js';
 import { HttpError } from './httpError.js';
-import { accountRoleForAccess } from './permissions.js';
+import { accountRoleForAccess, isInternalStaffRole } from './permissions.js';
 import { refreshOnboarding } from './onboardingService.js';
 import { recordDealershipActivity } from './activityService.js';
 import { signInBaseUrl } from './invitationService.js';
@@ -24,7 +31,7 @@ export async function listPeople(db: Db, dealershipId: string) {
       orderBy: { grantedAt: 'asc' },
     }),
     db.operatorInvitation.findMany({
-      where: { dealershipId },
+      where: { dealershipId, acceptedAt: null, revokedAt: null },
       orderBy: { createdAt: 'desc' },
     }),
   ]);
@@ -41,16 +48,22 @@ export async function listPeople(db: Db, dealershipId: string) {
       firstLoginAt: row.operator.firstLoginAt?.toISOString() ?? null,
       lastLoginAt: row.operator.lastLoginAt?.toISOString() ?? null,
       activationStatus: activationStatus(row.operator),
+      isInternal: row.accessRole === 'INTERNAL_SUPPORT' || isInternalStaffRole(row.operator.role),
     })),
-    invitations: invites.map((invite) => ({
-      id: invite.id,
-      email: invite.email,
-      accessRole: invite.accessRole,
-      deliveryStatus: invite.expiresAt <= new Date() && !invite.acceptedAt ? 'EXPIRED' : invite.deliveryStatus,
-      expiresAt: invite.expiresAt.toISOString(),
-      acceptedAt: invite.acceptedAt?.toISOString() ?? null,
-      invitedBy: invite.invitedBy,
-    })),
+    // Only open invitations: accepted ones appear as people, revoked ones are history.
+    invitations: invites
+      .filter((invite) => !invite.acceptedAt && !invite.revokedAt)
+      .map((invite) => ({
+        id: invite.id,
+        email: invite.email,
+        accessRole: invite.accessRole,
+        deliveryStatus: invite.expiresAt <= new Date() ? 'EXPIRED' : invite.deliveryStatus,
+        deliveryError: invite.deliveryError ?? null,
+        createdAt: invite.createdAt?.toISOString() ?? null,
+        expiresAt: invite.expiresAt.toISOString(),
+        acceptedAt: null,
+        invitedBy: invite.invitedBy,
+      })),
   };
 }
 
@@ -130,13 +143,13 @@ export async function patchPerson(
   if (!access) throw new HttpError(404, 'Person not found on this dealership');
   assertAssignableRole(input.actor, input.accessRole);
   assertManageableAccount(input.actor, access.operator.role);
-  if ((input.resetPassword || input.isActive !== undefined) && input.actor.role !== 'SUPER_ADMIN' && !input.actor.devHeader) {
-    const memberships = await db.operatorDealerAccess.findMany({ where: { operatorAccountId: input.accountId }, select: { dealershipId: true } });
-    if (memberships.some(m => m.dealershipId !== input.dealershipId))
-      throw new HttpError(403, 'This account has access to other dealerships. Ask a site administrator to manage its login.');
+  if (input.resetPassword || input.isActive !== undefined) {
+    await assertSingleDealershipLogin(db, input.actor, input.accountId, input.dealershipId);
   }
-  if (input.accountId === input.actor.id && input.isActive === false) {
-    throw new HttpError(400, 'You cannot suspend your own account');
+  if (input.isActive === false) assertNotSelfChange(input.actor, input.accountId, 'suspend');
+  if (input.accessRole && input.accessRole !== access.accessRole) assertNotSelfChange(input.actor, input.accountId, 'role');
+  if (input.isActive === false || (input.accessRole && input.accessRole !== 'DEALER_OWNER')) {
+    await assertKeepsAnOwner(db, input.dealershipId, input.accountId);
   }
 
   let temporaryPassword: string | undefined;
@@ -170,14 +183,48 @@ export async function patchPerson(
     dealershipId: input.dealershipId,
     actorId: input.actor.id,
     actorEmail: input.actor.email,
-    action: input.resetPassword ? 'PASSWORD_RESET' : input.isActive === false ? 'USER_SUSPENDED' : 'PERSON_UPDATED',
-    detail: { email: access.operator.email, accessRole: input.accessRole ?? access.accessRole },
+    action: input.resetPassword ? 'PASSWORD_RESET'
+      : input.isActive === false ? 'USER_SUSPENDED'
+      : input.isActive === true ? 'USER_REINSTATED'
+      : input.accessRole && input.accessRole !== access.accessRole ? 'ROLE_CHANGED'
+      : 'PERSON_UPDATED',
+    detail: { email: access.operator.email, accessRole: input.accessRole ?? access.accessRole, previousAccessRole: access.accessRole },
   });
 
   const listed = await listPeople(db, input.dealershipId);
   const person = listed.people.find((row) => row.accountId === input.accountId);
   if (!person) throw new HttpError(404, 'Person not found on this dealership');
   return { person, temporaryPassword };
+}
+
+// Removes the person's access to this dealership only; the login itself is kept because it
+// may belong to other dealerships and is managed by site administrators.
+export async function removePerson(
+  db: Db,
+  input: { dealershipId: string; accountId: string; actor: AccessActor },
+): Promise<{ ok: true }> {
+  const access = await db.operatorDealerAccess.findFirst({
+    where: { dealershipId: input.dealershipId, operatorAccountId: input.accountId },
+    include: { operator: true },
+  });
+  if (!access) throw new HttpError(404, 'Person not found on this dealership');
+  assertManageableAccount(input.actor, access.operator.role);
+  assertNotSelfChange(input.actor, input.accountId, 'remove');
+  await assertKeepsAnOwner(db, input.dealershipId, input.accountId);
+  const dealer = await db.dealershipProfile.findUnique({ where: { id: input.dealershipId }, select: { internalOwnerId: true } });
+  if (dealer?.internalOwnerId === input.accountId)
+    throw new HttpError(409, 'This person is the internal owner. Assign a different internal owner first.');
+
+  await db.operatorDealerAccess.delete({ where: { id: access.id } });
+  await recordDealershipActivity(db, {
+    dealershipId: input.dealershipId,
+    actorId: input.actor.id,
+    actorEmail: input.actor.email,
+    action: 'PERSON_REMOVED',
+    detail: { email: access.operator.email, accessRole: access.accessRole },
+  });
+  await refreshOnboarding(db, input.dealershipId, input.actor.id);
+  return { ok: true };
 }
 
 export async function assignInternalOwner(

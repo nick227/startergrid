@@ -246,7 +246,14 @@ export const createDealershipSchema = z.object({
   inviteOwnerEmail: z.string().trim().email().max(255).optional(),
 }).strict();
 
-export type CreateDealershipBody = z.infer<typeof createDealershipSchema>;
+// Internal staff create a dealership from the essentials; address, branding and
+// channels are completed later in setup. Public signup keeps the full schema.
+export const createDealershipRecordSchema = createDealershipSchema.extend({
+  rooftopAddress: dealershipAddressSchema.partial().optional(),
+  primaryContact: dealershipContactSchema.extend({ name: optionalText(160) }),
+}).strict();
+
+export type CreateDealershipBody = z.infer<typeof createDealershipRecordSchema>;
 
 const updateDealershipAddressSchema = z.object({
   street: nonEmptyString(160).optional(),
@@ -324,7 +331,10 @@ export const patchPersonSchema = z.object({
   accessRole: z.enum(['DEALER_OWNER', 'DEALER_STAFF', 'INTERNAL_SUPPORT']).optional(),
   isActive: z.boolean().optional(),
   resetPassword: z.boolean().optional(),
-}).strict();
+}).strict().refine(
+  body => Object.keys(body).length > 0,
+  'Choose a change to make',
+);
 
 export const acceptInviteSchema = z.object({
   password: z.string().min(8).max(128),

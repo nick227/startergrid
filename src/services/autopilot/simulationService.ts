@@ -102,16 +102,23 @@ export async function simulateAutopilotDistribution(
   let totalScheduledUpserts = 0;
   let totalScheduledWithdraws = 0;
 
-  for (const channel of policy.includedChannels) {
+  const channels = new Set([...policy.includedChannels, ...priorTargets.map(p => p.channel)]);
+
+  for (const channel of channels) {
     const profile = platformProfiles.find(p => p.slug === channel);
     const channelName = profile?.name ?? channel;
     const capability = capabilities.find(c => c.channel === channel);
     const account = accounts.find(a => a.platformSlug === channel);
     const isConnected = Boolean(account?.dealerEnabled && account.state === 'ACTIVE');
 
-    const channelPrior = priorTargets.filter(p => p.channel === channel);
-    const removalCount = channelPrior.filter(p => vehicles.some(v => v.id === p.vehicleId && (v.soldAt || v.removedAt))).length;
-    const massRemovalHeld = removalGuard(removalCount, channelPrior.length, policy.safeguards);
+    // Identical to service.ts: channelPrior only counts active verified targets for mass removal protection
+    const channelPriorActive = priorTargets.filter(
+      p => p.channel === channel && p.verifiedSnapshot !== null &&
+      !(p.verifiedSnapshot as unknown as VehicleSnapshot).sold &&
+      !(p.verifiedSnapshot as unknown as VehicleSnapshot).removed
+    );
+    const removalCount = channelPriorActive.filter(p => vehicles.some(v => v.id === p.vehicleId && (v.soldAt || v.removedAt))).length;
+    const massRemovalHeld = removalGuard(removalCount, channelPriorActive.length, policy.safeguards);
 
     let scheduledUpserts = 0;
     let scheduledWithdraws = 0;
@@ -128,7 +135,7 @@ export async function simulateAutopilotDistribution(
 
     for (const vehicle of vehicles) {
       const snapshot = vehicleSnapshot(vehicle);
-      const previous = channelPrior.find(p => p.vehicleId === vehicle.id);
+      const previous = priorTargets.find(p => p.vehicleId === vehicle.id && p.channel === channel);
       const isSelected = !deselections.some(d => d.vehicleId === vehicle.id && d.channelKey === channel);
 
       const decision = decideDistribution({
@@ -197,23 +204,25 @@ export async function simulateAutopilotDistribution(
       }
     }
 
-    channelSimulations.push({
-      channel,
-      name: channelName,
-      connected: isConnected,
-      qualification: capability?.qualification ?? 'UNAVAILABLE',
-      eligibleCount,
-      blockedCount,
-      scheduledUpserts,
-      scheduledWithdraws,
-      blockers: Array.from(blockerMap.values()).map(b => ({
-        reasonCode: b.reasonCode,
-        message: b.message,
-        owner: b.owner,
-        vehicleCount: b.vehicleCount,
-        sampleStockNumbers: Array.from(b.stocks),
-      })),
-    });
+    if (policy.includedChannels.includes(channel) || scheduledWithdraws > 0 || scheduledUpserts > 0) {
+      channelSimulations.push({
+        channel,
+        name: channelName,
+        connected: isConnected,
+        qualification: capability?.qualification ?? 'UNAVAILABLE',
+        eligibleCount,
+        blockedCount,
+        scheduledUpserts,
+        scheduledWithdraws,
+        blockers: Array.from(blockerMap.values()).map(b => ({
+          reasonCode: b.reasonCode,
+          message: b.message,
+          owner: b.owner,
+          vehicleCount: b.vehicleCount,
+          sampleStockNumbers: Array.from(b.stocks),
+        })),
+      });
+    }
   }
 
   return {

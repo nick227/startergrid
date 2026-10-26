@@ -4,18 +4,29 @@ import { HttpError } from './httpError.js';
 import { getOnboarding, refreshOnboarding } from './onboardingService.js';
 import { listPeople } from './peopleAccessService.js';
 import { assignInternalOwner } from './peopleAccessService.js';
+import { recordDealershipActivity } from './activityService.js';
+import { ONBOARDING_STEP_KEYS } from './onboardingSteps.js';
 
 type Db = PrismaClient | Prisma.TransactionClient;
 
 const ATTENTION_LIFECYCLES: DealershipLifecycle[] = ['DRAFT', 'SETTING_UP', 'READY_TO_LAUNCH'];
 
+export type DealershipListQuery = {
+  q?: string;
+  lifecycle?: DealershipLifecycle;
+  needsAttention?: boolean;
+  internalOwnerId?: string;
+  limit?: number;
+};
+
 export function dealershipListWhere(
-  query: { q?: string; lifecycle?: DealershipLifecycle; needsAttention?: boolean },
+  query: DealershipListQuery,
   scope: { global: boolean; dealerIds: string[] },
 ): Prisma.DealershipProfileWhereInput {
   const clauses: Prisma.DealershipProfileWhereInput[] = [];
   if (!scope.global) clauses.push({ id: { in: scope.dealerIds } });
   if (query.lifecycle) clauses.push({ lifecycleStatus: query.lifecycle });
+  if (query.internalOwnerId) clauses.push({ internalOwnerId: query.internalOwnerId });
   const q = query.q?.trim();
   if (q) {
     clauses.push({
@@ -39,12 +50,17 @@ export function dealershipListWhere(
   return clauses.length > 0 ? { AND: clauses } : {};
 }
 
+function firstOpenStep<T extends { stepKey: string }>(steps: T[]): T | null {
+  return [...steps].sort((a, b) =>
+    ONBOARDING_STEP_KEYS.indexOf(a.stepKey as never) - ONBOARDING_STEP_KEYS.indexOf(b.stepKey as never))[0] ?? null;
+}
+
 export async function listDealershipRecords(
   db: Db,
-  query: { q?: string; lifecycle?: DealershipLifecycle; needsAttention?: boolean; limit?: number },
+  query: DealershipListQuery,
   scope: { global: boolean; dealerIds: string[] },
 ) {
-  const take = Math.min(100, Math.max(1, query.limit ?? 50));
+  const take = Math.min(200, Math.max(1, query.limit ?? 50));
   const where = dealershipListWhere(query, scope);
 
   const rows = await db.dealershipProfile.findMany({
@@ -65,11 +81,27 @@ export async function listDealershipRecords(
       createdAt: true,
       onboardingSteps: {
         where: { status: { not: 'COMPLETE' } },
-        select: { stepKey: true, ownerKind: true, incompleteReason: true },
-        take: 1,
+        select: { stepKey: true, status: true, ownerKind: true, incompleteReason: true },
       },
     },
   });
+
+  const ids = rows.map((row) => row.id);
+  const ownerIds = [...new Set(rows.map((row) => row.internalOwnerId).filter((id): id is string => Boolean(id)))];
+  const [owners, lastActivity] = await Promise.all([
+    ownerIds.length > 0
+      ? db.operatorAccount.findMany({ where: { id: { in: ownerIds } }, select: { id: true, email: true } })
+      : [],
+    ids.length > 0
+      ? db.dealershipActivityEvent.groupBy({
+        by: ['dealershipId'],
+        where: { dealershipId: { in: ids } },
+        _max: { createdAt: true },
+      })
+      : [],
+  ]);
+  const ownerById = new Map(owners.map((owner) => [owner.id, owner]));
+  const lastActivityById = new Map(lastActivity.map((row) => [row.dealershipId, row._max.createdAt]));
 
   return {
     dealerships: rows.map((row) => ({
@@ -81,10 +113,16 @@ export async function listDealershipRecords(
       lifecycleStatus: row.lifecycleStatus,
       primaryContactEmail: row.primaryContactEmail,
       internalOwnerId: row.internalOwnerId,
+      internalOwner: row.internalOwnerId ? ownerById.get(row.internalOwnerId) ?? null : null,
       waitingForStock: row.waitingForStock,
       autopilotPreference: row.autopilotPreference,
       createdAt: row.createdAt.toISOString(),
-      nextStep: row.onboardingSteps[0] ?? null,
+      lastActivityAt: (lastActivityById.get(row.id) ?? row.createdAt).toISOString(),
+      blockedStepCount: row.onboardingSteps.filter((step) => step.status === 'BLOCKED' || step.status === 'NEEDS_RECHECK').length,
+      nextStep: (() => {
+        const step = firstOpenStep(row.onboardingSteps);
+        return step ? { stepKey: step.stepKey, ownerKind: step.ownerKind, incompleteReason: step.incompleteReason } : null;
+      })(),
     })),
   };
 }
@@ -121,6 +159,11 @@ export async function getDealershipRecord(db: Db, dealershipId: string) {
     db.platformAccount.findMany({ where: { dealershipId }, select: { platformSlug: true, state: true, dealerEnabled: true } }),
     dealer.internalOwnerId ? db.operatorAccount.findUnique({ where: { id: dealer.internalOwnerId }, select: { id: true, email: true } }) : null,
   ]);
+  const latestEvent = await db.dealershipActivityEvent.findFirst({
+    where: { dealershipId },
+    orderBy: { createdAt: 'desc' },
+    select: { createdAt: true },
+  });
 
   return {
     ...dealer,
@@ -128,6 +171,7 @@ export async function getDealershipRecord(db: Db, dealershipId: string) {
     launchCompletedAt: dealer.launchCompletedAt?.toISOString() ?? null,
     handoffCompletedAt: dealer.handoffCompletedAt?.toISOString() ?? null,
     internalOwner: owner,
+    lastActivityAt: (latestEvent?.createdAt ?? dealer.createdAt).toISOString(),
     inventory: { vehicleCount: dealer._count.vehicles, waitingForStock: dealer.waitingForStock,
       ready: vehicles.filter(v => v.listingStatus === 'READY' && !v.soldAt && !v.removedAt).length,
       needsAttention: vehicles.filter(v => v.listingStatus !== 'READY' && !v.soldAt && !v.removedAt).length,
@@ -153,7 +197,7 @@ export async function patchDealershipRecord(
 ) {
   const existing = await db.dealershipProfile.findUnique({
     where: { id: dealershipId },
-    select: { id: true },
+    select: { id: true, waitingForStock: true, autopilotPreference: true, lifecycleStatus: true },
   });
   if (!existing) throw new HttpError(404, 'Dealership not found');
 
@@ -169,6 +213,21 @@ export async function patchDealershipRecord(
   }
   if (Object.keys(data).length > 0) {
     await db.dealershipProfile.update({ where: { id: dealershipId }, data });
+  }
+  const changes: Array<[string, unknown, unknown]> = [
+    ['WAITING_FOR_STOCK_CHANGED', existing.waitingForStock, data.waitingForStock],
+    ['AUTOPILOT_PREFERENCE_CHANGED', existing.autopilotPreference, data.autopilotPreference],
+    ['LIFECYCLE_CHANGED', existing.lifecycleStatus, data.lifecycleStatus],
+  ];
+  for (const [action, from, to] of changes) {
+    if (to === undefined || to === from) continue;
+    await recordDealershipActivity(db, {
+      dealershipId,
+      actorId: actor.id,
+      actorEmail: actor.email,
+      action,
+      detail: { from: from as Prisma.InputJsonValue, to: to as Prisma.InputJsonValue },
+    });
   }
   await refreshOnboarding(db, dealershipId, actor.id);
   return getDealershipRecord(db, dealershipId);

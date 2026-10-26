@@ -1,7 +1,8 @@
 import type { FastifyInstance } from 'fastify';
 import type { DealershipLifecycle, Prisma, PrismaClient } from '@prisma/client';
 import { requireInternalStaff, requireDealerAccess } from '../security.js';
-import { createDealershipSchema, patchOnboardingSchema, validateBody } from '../requestValidation.js';
+import { createDealershipRecordSchema, patchOnboardingSchema, validateBody } from '../requestValidation.js';
+import { deliverInvitation, roleLabel } from '../../services/dealership/invitationDelivery.js';
 import { createDealership } from '../../services/dealer/createDealershipService.js';
 import {
   getDealershipRecord,
@@ -16,12 +17,14 @@ export function registerDealershipRecordRoutes(app: FastifyInstance, prisma: Pri
   app.get('/api/admin/dealerships', async (request, reply) => {
     const operator = await requireInternalStaff(prisma, request, reply);
     if (!operator) return;
-    const query = request.query as { q?: string; lifecycle?: string; needsAttention?: string; limit?: string };
+    const query = request.query as { q?: string; lifecycle?: string; needsAttention?: string; mine?: string; limit?: string };
     const lifecycle = query.lifecycle as DealershipLifecycle | undefined;
+    const mine = query.mine === 'true' || query.mine === '1';
     const result = await listDealershipRecords(prisma, {
       q: query.q,
       lifecycle,
       needsAttention: query.needsAttention === 'true' || query.needsAttention === '1',
+      internalOwnerId: mine ? operator.id : undefined,
       limit: query.limit ? Number(query.limit) : undefined,
     }, {
       global: operator.devHeader || operator.role === 'SUPER_ADMIN',
@@ -33,7 +36,7 @@ export function registerDealershipRecordRoutes(app: FastifyInstance, prisma: Pri
   app.post('/api/admin/dealerships', async (request, reply) => {
     const operator = await requireInternalStaff(prisma, request, reply);
     if (!operator) return;
-    const parsed = validateBody(createDealershipSchema, request.body);
+    const parsed = validateBody(createDealershipRecordSchema, request.body);
     if (!parsed.ok) return reply.status(400).send({ error: parsed.error });
     try {
       const actorId = operator.devHeader ? null : operator.id;
@@ -44,10 +47,20 @@ export function registerDealershipRecordRoutes(app: FastifyInstance, prisma: Pri
         inviteOwnerEmail: parsed.data.inviteOwnerEmail ?? null,
         actorEmail: operator.email,
       });
+      // Email (when configured) is sent only after the dealership and invitation are committed.
+      const delivery = result.invite
+        ? await deliverInvitation(prisma, {
+          inviteId: result.invite.inviteId,
+          email: result.invite.email,
+          dealershipName: result.dealer.dbaName ?? result.dealer.legalName,
+          roleLabel: roleLabel('DEALER_OWNER'),
+          setupUrl: result.invite.setupUrl,
+        })
+        : null;
       return reply.status(201).send({
         dealer: result.dealer,
-        invite: result.invite ?? null,
-        nextHref: `#/admin/dealerships/${result.dealer.id}`,
+        invite: result.invite ? { ...result.invite, ...delivery } : null,
+        nextHref: `#/admin/dealers/${result.dealer.id}`,
       });
     } catch (err) {
       return reply.status(statusFromUnknown(err)).send({

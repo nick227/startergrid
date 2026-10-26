@@ -3339,6 +3339,10 @@ paths:
         - name: needsAttention
           in: query
           schema: { type: boolean }
+        - name: mine
+          in: query
+          description: Only dealerships whose internal owner is the signed-in staff member
+          schema: { type: boolean }
         - name: limit
           in: query
           schema: { type: integer }
@@ -3363,7 +3367,7 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/CreateDealershipRequest'
+              $ref: '#/components/schemas/CreateDealershipRecordRequest'
       responses:
         '201':
           description: Created dealership record
@@ -3646,6 +3650,61 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/PatchDealershipPersonResponse'
+    delete:
+      tags: [Dealers]
+      security:
+        - OperatorAuth: []
+      x-route-classification: operator
+      operationId: removeDealershipPerson
+      summary: Remove a person's access to this dealership (the login itself is kept)
+      parameters:
+        - name: dealershipId
+          in: path
+          required: true
+          schema: { type: string }
+        - name: accountId
+          in: path
+          required: true
+          schema: { type: string }
+      responses:
+        '200':
+          description: Access removed
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OkResponse'
+        '409':
+          description: Would leave the dealership without an active owner, or the person is the internal owner
+
+  /api/dealers/{dealershipId}/activity:
+    get:
+      tags: [Dealers]
+      security:
+        - OperatorAuth: []
+      x-route-classification: operator
+      operationId: listDealershipActivity
+      summary: Recorded dealership activity, newest first
+      parameters:
+        - name: dealershipId
+          in: path
+          required: true
+          schema: { type: string }
+        - name: limit
+          in: query
+          required: false
+          schema: { type: integer, minimum: 1, maximum: 100 }
+        - name: before
+          in: query
+          required: false
+          description: Return events created before this timestamp (from nextBefore)
+          schema: { type: string, format: date-time }
+      responses:
+        '200':
+          description: Activity page
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DealershipActivityResponse'
 
   /api/dealers/{dealershipId}/leads/{leadId}:
     patch:
@@ -5498,9 +5557,18 @@ components:
         lifecycleStatus: { $ref: '#/components/schemas/DealershipLifecycle' }
         primaryContactEmail: { type: string, nullable: true }
         internalOwnerId: { type: string, nullable: true }
+        internalOwner:
+          type: object
+          nullable: true
+          required: [id, email]
+          properties:
+            id: { type: string }
+            email: { type: string }
         waitingForStock: { type: boolean }
         autopilotPreference: { $ref: '#/components/schemas/AutopilotPreference' }
         createdAt: { type: string, format: date-time }
+        lastActivityAt: { type: string, format: date-time }
+        blockedStepCount: { type: integer }
         nextStep:
           type: object
           nullable: true
@@ -5517,6 +5585,40 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/DealershipRecordSummary'
+
+    CreateDealershipRecordRequest:
+      type: object
+      description: Internal-staff creation from essentials. Address, branding and channels are completed during setup.
+      required: [legalName, businessCategory, primaryContact]
+      properties:
+        legalName: { type: string }
+        dbaName: { type: string }
+        businessCategory:
+          $ref: '#/components/schemas/BusinessCategory'
+        dealerLicense: { type: string }
+        websiteUrl: { type: string, format: uri }
+        rooftopAddress:
+          type: object
+          properties:
+            street: { type: string }
+            city: { type: string }
+            state: { type: string }
+            postalCode: { type: string }
+            country: { type: string }
+        primaryContact:
+          type: object
+          required: [email]
+          properties:
+            name: { type: string }
+            email: { type: string, format: email }
+            phone: { type: string }
+            role: { type: string }
+        inventorySize: { type: integer, nullable: true }
+        desiredChannels:
+          type: array
+          items: { type: string }
+        internalOwnerId: { type: string }
+        inviteOwnerEmail: { type: string, format: email }
 
     DealershipRecordCreateResponse:
       type: object
@@ -5663,6 +5765,7 @@ components:
         firstLoginAt: { type: string, format: date-time, nullable: true }
         lastLoginAt: { type: string, format: date-time, nullable: true }
         activationStatus: { type: string }
+        isInternal: { type: boolean }
 
     DealershipInvitation:
       type: object
@@ -5671,7 +5774,11 @@ components:
         id: { type: string }
         email: { type: string, format: email }
         accessRole: { $ref: '#/components/schemas/DealerAccessRole' }
-        deliveryStatus: { type: string }
+        deliveryStatus:
+          type: string
+          description: PENDING means the link exists but no email was accepted by a mail server; SENT only after acceptance.
+        deliveryError: { type: string, nullable: true }
+        createdAt: { type: string, format: date-time, nullable: true }
         expiresAt: { type: string, format: date-time }
         acceptedAt: { type: string, format: date-time, nullable: true }
         invitedBy: { type: string, nullable: true }
@@ -5707,6 +5814,13 @@ components:
         expiresAt: { type: string, format: date-time }
         setupUrl: { type: string }
         deliveryStatus: { type: string }
+        delivery: { $ref: '#/components/schemas/InviteDelivery' }
+        deliveryError: { type: string, nullable: true }
+
+    InviteDelivery:
+      type: string
+      description: EMAIL_SENT only when a mail server accepted the message; LINK_ONLY when the link must be shared manually.
+      enum: [EMAIL_SENT, EMAIL_FAILED, LINK_ONLY]
 
     InvitePersonResponse:
       type: object
@@ -5714,6 +5828,27 @@ components:
       properties:
         invite: { $ref: '#/components/schemas/InviteCreated' }
         setupUrl: { type: string }
+        delivery: { $ref: '#/components/schemas/InviteDelivery' }
+
+    DealershipActivityEvent:
+      type: object
+      required: [id, action, actorEmail, createdAt]
+      properties:
+        id: { type: string }
+        action: { type: string }
+        actorEmail: { type: string }
+        detail: { type: object, additionalProperties: true, nullable: true }
+        createdAt: { type: string, format: date-time }
+
+    DealershipActivityResponse:
+      type: object
+      required: [events, nextBefore]
+      properties:
+        events:
+          type: array
+          items:
+            $ref: '#/components/schemas/DealershipActivityEvent'
+        nextBefore: { type: string, format: date-time, nullable: true }
 
     TemporaryLoginResponse:
       type: object
@@ -5772,6 +5907,9 @@ components:
         accessRole: { $ref: '#/components/schemas/DealerAccessRole' }
         dealershipId: { type: string }
         dealershipName: { type: string, nullable: true }
+        accountExists:
+          type: boolean
+          description: True when the invited email already has a login; the invitee then confirms with that password.
         expiresAt: { type: string, format: date-time }
         signInUrl: { type: string }
 

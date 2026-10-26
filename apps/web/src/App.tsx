@@ -77,7 +77,7 @@ function OperatorApp() {
   if (!authReady) return <AuthLoadingScreen />;
   if (inviteToken) return <AccountSetupPage key={inviteToken} token={inviteToken} />;
   if (user?.mustChangePassword) return <AccountSetupPage />;
-  if (internalStaff && (!dealerId || page === 'admin')) return <InternalWorkspace dealerId={adminDealerId} />;
+  if (internalStaff && (!dealerId || page === 'admin')) return <InternalWorkspace dealerId={adminDealerId} dealerPage={adminDealerPage} />;
   if (signupStandalone) return <DealershipSignupPage />;
   if (!user) return <LoginPage />;
 

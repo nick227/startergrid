@@ -6,6 +6,7 @@ import type {
 } from '@prisma/client';
 import { HttpError } from './httpError.js';
 import { defaultIncomplete, defaultOwner, upsertStep } from './onboardingSteps.js';
+import { recordDealershipActivity } from './activityService.js';
 
 type Db = PrismaClient | Prisma.TransactionClient;
 
@@ -59,7 +60,8 @@ export async function refreshOnboarding(db: Db, dealershipId: string, actorId?: 
   const ownerAccess = dealer.operatorAccess.find((row) => row.accessRole === 'DEALER_OWNER');
   const ownerLoggedIn = Boolean(ownerAccess?.operator.firstLoginAt ?? ownerAccess?.operator.lastLoginAt);
   const inviteAccepted = dealer.invitations.some((row) => row.acceptedAt);
-  const inviteOpen = dealer.invitations.some((row) => row.deliveryStatus === 'SENT' || row.deliveryStatus === 'PENDING');
+  const inviteOpen = dealer.invitations.some((row) =>
+    !row.acceptedAt && (row.deliveryStatus === 'SENT' || row.deliveryStatus === 'PENDING' || row.deliveryStatus === 'FAILED'));
   const hasOwnerAccess = Boolean(ownerAccess);
   const hasVehicles = dealer._count.vehicles > 0;
   const vehiclesReady = hasVehicles || dealer.waitingForStock;
@@ -268,6 +270,12 @@ export async function completeHandoff(
       launchCompletedAt: new Date(),
       lifecycleStatus: 'ACTIVE',
     },
+  });
+  await recordDealershipActivity(db, {
+    dealershipId,
+    actorId: actor.id,
+    actorEmail: actor.email,
+    action: 'HANDOFF_COMPLETED',
   });
   return refreshOnboarding(db, dealershipId, actor.id);
 }

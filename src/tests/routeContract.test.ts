@@ -83,6 +83,8 @@ const REGISTERED_ROUTES = new Set([
   'POST   /api/dealers/{dealershipId}/people/invites/{inviteId}/revoke',
   'POST   /api/dealers/{dealershipId}/people/temporary-login',
   'PATCH  /api/dealers/{dealershipId}/people/{accountId}',
+  'DELETE /api/dealers/{dealershipId}/people/{accountId}',
+  'GET    /api/dealers/{dealershipId}/activity',
   'GET    /api/admin/dealerships',
   'POST   /api/admin/dealerships',
   'GET    /api/admin/dealerships/{dealershipId}',
