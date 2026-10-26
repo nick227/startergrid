@@ -3,87 +3,38 @@ import { useAsyncQuery } from '@/hooks/useAsyncQuery.ts';
 import { fetchAdminDashboard, fetchAdminUsers, fetchBlockedDealers } from '@/lib/api/admin.ts';
 import { fetchDealers } from '@/lib/api/sdk.ts';
 import { AdminShell } from '@/components/operator/AdminShell.tsx';
-import { AdminViewContext } from '@/contexts/AdminViewContext.tsx';
-import { CategoryProvider } from '@/contexts/CategoryContext.tsx';
-import { useDealerCategorySchema } from '@/hooks/useDealerCategorySchema.ts';
-import { appendRowNavScope, inventoryItemSlug } from '@/lib/rowNavScope.ts';
-import type { OperatorNavHandlers } from '@/lib/operatorNav.ts';
-import type { ReportRangePreset } from '@/lib/reportsCatalog.ts';
+import { useAuth } from '@/contexts/AuthContext.tsx';
+import { AdminWorkTab } from '@/features/adminOverview/tabs/work/AdminWorkTab.tsx';
+import { DealershipRecordView } from '@/components/dealers/DealershipRecordView.tsx';
 import AdminOverviewPage from './AdminOverviewPage.tsx';
-import AdminDealerPage from './AdminDealerPage.tsx';
-import PlatformsPage from './PlatformsPage.tsx';
-import QueuePage from './QueuePage.tsx';
-import HistoryPage from './HistoryPage.tsx';
-import SettingsPage from './SettingsPage.tsx';
-import InventoryPage from './InventoryPage.tsx';
-import LeadsPage from './LeadsPage.tsx';
-import KnowledgeBasePage from './KnowledgeBasePage.tsx';
 import { Skeleton } from '@/components/ui/Skeleton.tsx';
 
-const AdminPlatformDetailPage     = lazy(() => import('./AdminPlatformDetailPage.tsx'));
-const PlatformDetailPage          = lazy(() => import('./PlatformDetailPage.tsx'));
-const PlatformQueuePage     = lazy(() => import('./PlatformQueuePage.tsx'));
-const PlatformHistoryPage   = lazy(() => import('./PlatformHistoryPage.tsx'));
-const ReportsRouter         = lazy(() => import('./ReportsRouter.tsx'));
-const OperationsPage        = lazy(() => import('./OperationsPage.tsx'));
+const AdminPlatformDetailPage = lazy(() => import('./AdminPlatformDetailPage.tsx'));
+const OperationsPage           = lazy(() => import('./OperationsPage.tsx'));
 
 const LAZY_FALLBACK = <div className="surface-card-operator p-6"><Skeleton rows={6} /></div>;
 
-type AdminSection = 'system' | 'dealers' | 'platforms' | 'triage' | 'audit' | 'insights' | 'users' | 'operations';
-type OverviewTab = 'system' | 'dealers' | 'platforms' | 'triage' | 'audit' | 'insights' | 'users' | 'operations';
+type AdminSection = 'work' | 'dealers' | 'platforms' | 'system' | 'audit' | 'users' | 'operations';
 
 const SECTION_HASHES: Record<AdminSection, string> = {
-  system:    '#/admin',
-  dealers:   '#/admin/dealers',
-  platforms: '#/admin/platforms',
-  triage:    '#/admin/blockers',
-  insights:  '#/admin/insights',
-  audit:     '#/admin/audit',
-  users:     '#/admin/users',
-  operations:'#/admin/operations',
+  work:       '#/admin/work',
+  dealers:    '#/admin/dealers',
+  platforms:  '#/admin/platforms',
+  system:     '#/admin/system',
+  audit:      '#/admin/audit',
+  users:      '#/admin/users',
+  operations: '#/admin/operations',
 };
 
 function routeToSection(adminDealerId: string | null, platformSlug: string | null): AdminSection {
-  // 'triage' and 'blocked-dealers' are legacy URL segments kept for old bookmarks/links —
-  // the tab is labeled "Blockers" and now links out as '#/admin/blockers'.
-  if (platformSlug === 'blockers')             return 'triage';
-  if (platformSlug === 'blocked-dealers')      return 'triage';
-  if (platformSlug === 'insights')             return 'insights';
-  if (platformSlug === 'users')                return 'users';
-  if (platformSlug === 'operations')           return 'operations';
   if (platformSlug === 'dealers' || adminDealerId) return 'dealers';
-  if (platformSlug === 'platforms') return 'platforms';
-  if (platformSlug === 'triage')    return 'triage';
-  if (platformSlug === 'audit')     return 'audit';
-  return 'system';
-}
-
-function isOverviewTab(s: AdminSection): s is OverviewTab {
-  return s === 'system' || s === 'dealers' || s === 'platforms' || s === 'triage' || s === 'audit' || s === 'insights' || s === 'users' || s === 'operations';
-}
-
-function buildAdminDealerNav(dealerId: string): OperatorNavHandlers {
-  const base = `#/admin/dealers/${dealerId}`;
-  return {
-    goToHome:           ()           => { window.location.hash = base; },
-    goToPlatforms:      ()           => { window.location.hash = `${base}/platforms`; },
-    goToQueue:          (scope)      => { window.location.hash = appendRowNavScope(`${base}/queue`, scope); },
-    goToHistory:        (scope)      => { window.location.hash = appendRowNavScope(`${base}/history`, scope); },
-    goToReports:        ()           => { window.location.hash = `${base}/reports`; },
-    goToInventory:      (scope)      => { window.location.hash = appendRowNavScope(`${base}/inventory`, scope); },
-    goToInventoryItem:  (item, scope) => { window.location.hash = appendRowNavScope(`${base}/inventory/${inventoryItemSlug(item)}`, scope); },
-    goToHelp:           ()           => { window.location.hash = `${base}/help`; },
-    goToPlatformDetail: (slug, scope) => { window.location.hash = appendRowNavScope(`${base}/platforms/${slug}`, scope); },
-    goToPlatformQueue:  (slug, scope) => { window.location.hash = appendRowNavScope(`${base}/platforms/${slug}/queue`, scope); },
-    goToPlatformHistory:(slug, scope) => { window.location.hash = appendRowNavScope(`${base}/platforms/${slug}/history`, scope); },
-    goToSync:           ()           => { window.location.hash = `${base}/platforms`; },
-    goToAccounts:       ()           => { window.location.hash = `${base}/platforms`; },
-    goToInsights:       ()           => { window.location.hash = `${base}/reports`; },
-    goToKnowledge:      ()           => { window.location.hash = `${base}/help`; },
-    goToLeads:          ()           => { window.location.hash = `${base}/leads`; },
-    goToSettings:       ()           => { window.location.hash = `${base}/settings`; },
-    changeDealer:       ()           => { window.location.hash = '#/admin/dealers'; },
-  };
+  if (platformSlug === 'platforms' || platformSlug === 'integrations') return 'platforms';
+  if (platformSlug === 'system') return 'system';
+  if (platformSlug === 'audit') return 'audit';
+  if (platformSlug === 'users') return 'users';
+  if (platformSlug === 'operations' || platformSlug === 'insights') return 'operations';
+  // 'work', 'blockers', 'triage', 'blocked-dealers', or default root '#/admin' route to 'work'
+  return 'work';
 }
 
 type Props = {
@@ -92,7 +43,7 @@ type Props = {
   adminDealerPage: string | null;
   platformView: 'queue' | 'history' | null;
   reportSlug: string | null;
-  reportRange: ReportRangePreset;
+  reportRange: import('@/lib/reportsCatalog.ts').ReportRangePreset;
   adminPlatformSlug: string | null;
 };
 
@@ -100,11 +51,9 @@ export default function AdminApp({
   adminDealerId,
   platformSlug,
   adminDealerPage,
-  platformView,
-  reportSlug,
-  reportRange,
   adminPlatformSlug,
 }: Props) {
+  const { user } = useAuth();
   const routeSection = useMemo(
     () => routeToSection(adminDealerId, platformSlug),
     [adminDealerId, platformSlug],
@@ -118,32 +67,14 @@ export default function AdminApp({
     window.location.assign(SECTION_HASHES[s]);
   }
 
-  const showDealerDetail  = section === 'dealers' && adminDealerId !== null;
+  const showDealerDetail   = section === 'dealers' && adminDealerId !== null;
   const showPlatformDetail = section === 'platforms' && !!adminPlatformSlug;
-  const showOverview      = isOverviewTab(section) && !showDealerDetail && !showPlatformDetail;
-
-  const adminNav = useMemo(
-    () => adminDealerId ? buildAdminDealerNav(adminDealerId) : null,
-    [adminDealerId],
-  );
-
-  const dealerCategorySchema = useDealerCategorySchema(showDealerDetail ? adminDealerId : null);
-
-  const activeOperatorTab =
-    !adminDealerPage                ? 'home'
-    : adminDealerPage === 'reports' ? 'reports'
-    : adminDealerPage === 'inventory' ? 'inventory'
-    : adminDealerPage === 'leads'   ? 'leads'
-    : adminDealerPage === 'settings' ? 'settings'
-    : adminDealerPage === 'help'    ? 'help'
-    // 'queue' and 'history' are retired tabs; their deprecated stub pages fall back to Platforms.
-    : 'platforms';
 
   // Data fetching
   const { data, loading, error }                     = useAsyncQuery(() => fetchAdminDashboard(), []);
   const { data: dealersData, loading: dealersLoading, error: dealersError, reload: reloadDealers } = useAsyncQuery(() => fetchDealers(), []);
   const { data: usersData, reload: reloadUsers }     = useAsyncQuery(() => fetchAdminUsers({ limit: 1 }), []);
-  const { data: blockersData }                        = useAsyncQuery(() => fetchBlockedDealers({ limit: 1 }), []);
+  const { data: blockersData }                       = useAsyncQuery(() => fetchBlockedDealers({ limit: 1 }), []);
 
   const allDealers       = dealersData?.dealers ?? [];
   const platformOverview = data?.platformOverview ?? [];
@@ -152,74 +83,155 @@ export default function AdminApp({
   const blockerCount     = blockersData?.summary.total ?? null;
   const userCount        = usersData?.pagination.total ?? null;
 
-  const adminAction = (
-    <></>
-  );
+  // Active primary tab
+  const activePrimaryTab = showDealerDetail ? 'dealers' : section;
 
-  const TABS = [
-    { id: 'system'    as AdminSection, label: 'System Status', count: null,                     alert: false },
-    { id: 'operations'as AdminSection, label: 'Operations',    count: null,                     alert: false },
-    { id: 'insights'  as AdminSection, label: 'Finances',      count: null,                      alert: false },
-    { id: 'dealers'   as AdminSection, label: 'Dealerships',   count: allDealers.length || null, alert: false },
-    { id: 'platforms' as AdminSection, label: 'Platforms',     count: platformOverview.length,   alert: false },
-    { id: 'triage'    as AdminSection, label: 'Blockers', count: blockerCount,                       alert: false },
-    { id: 'audit'     as AdminSection, label: 'Audit Log',     count: recentEvents.length,       alert: false },
-    { id: 'users'     as AdminSection, label: 'Users',         count: userCount,                 alert: false },
+  const PRIMARY_TABS: Array<{ id: AdminSection; label: string; count: number | null }> = [
+    { id: 'work',      label: 'Work',         count: blockerCount },
+    { id: 'dealers',   label: 'Dealerships',  count: allDealers.length || null },
+    { id: 'platforms', label: 'Integrations', count: platformOverview.length || null },
   ];
 
-  const activeTabId = showDealerDetail ? 'dealers' : section;
+  const SECONDARY_TABS: Array<{ id: AdminSection; label: string; count?: number | null }> = [
+    { id: 'system',     label: 'System Status' },
+    { id: 'audit',      label: 'Audit Log' },
+    { id: 'users',      label: 'Users', count: userCount },
+    { id: 'operations', label: 'Operations' },
+  ];
 
   const tabNav = (
-    <nav className="flex overflow-x-auto">
-      {TABS.map(t => (
-        <button
-          key={t.id}
-          type="button"
-          onClick={() => navigate(t.id)}
-          className={`px-5 py-3 text-sm font-semibold whitespace-nowrap border-b-2 transition-colors flex items-center gap-2 shrink-0 ${
-            activeTabId === t.id
-              ? 'border-orange-500 text-white'
-              : 'border-transparent text-silver-400 hover:text-silver-200 hover:border-silver-600'
-          }`}
-        >
-          <span className={t.alert && activeTabId !== t.id ? 'text-status-error-text' : ''}>{t.label}</span>
-          {t.count !== null && (
-            <span className={`px-1.5 py-0.5 rounded text-[10px] font-mono ${
-              t.alert
-                ? 'bg-status-error-bg text-status-error-text'
-                : activeTabId === t.id
-                ? 'bg-navy-800 text-silver-300'
-                : 'bg-navy-800 text-silver-400'
-            }`}>
-              {t.count}
-            </span>
-          )}
-        </button>
-      ))}
-    </nav>
+    <div className="flex items-center justify-between gap-4 overflow-x-auto">
+      <nav className="flex items-center gap-1 py-1" aria-label="Primary destinations">
+        {PRIMARY_TABS.map(t => {
+          const isActive = activePrimaryTab === t.id;
+          return (
+            <button
+              key={t.id}
+              type="button"
+              onClick={() => navigate(t.id)}
+              className={`px-4 py-2.5 text-xs font-semibold rounded-lg transition-all flex items-center gap-2 ${
+                isActive
+                  ? 'bg-navy-800 text-white shadow-elevation-1'
+                  : 'text-silver-300 hover:text-white hover:bg-navy-800/50'
+              }`}
+            >
+              <span>{t.label}</span>
+              {t.count !== null && (
+                <span className={`px-1.5 py-0.5 rounded text-[10px] font-mono ${
+                  isActive ? 'bg-navy-700 text-silver-100' : 'bg-navy-900 text-silver-400'
+                }`}>
+                  {t.count}
+                </span>
+              )}
+            </button>
+          );
+        })}
+      </nav>
+
+      <div className="flex items-center gap-2 py-1 border-l border-navy-800/80 pl-3">
+        <span className="text-[10px] uppercase font-bold tracking-wider text-silver-400 hidden xl:inline">
+          Admin:
+        </span>
+        {SECONDARY_TABS.map(t => {
+          const isActive = activePrimaryTab === t.id;
+          return (
+            <button
+              key={t.id}
+              type="button"
+              onClick={() => navigate(t.id)}
+              className={`px-2.5 py-1.5 text-xs font-medium rounded transition-colors whitespace-nowrap ${
+                isActive
+                  ? 'text-white bg-navy-800 font-semibold'
+                  : 'text-silver-300 hover:text-white hover:bg-navy-900/60'
+              }`}
+            >
+              {t.label}
+            </button>
+          );
+        })}
+      </div>
+    </div>
   );
 
   return (
-    <AdminShell nav={tabNav} action={adminAction}>
-      {showDealerDetail && (
-        <div className="bg-orange-600 text-white px-6 py-2 text-sm font-semibold flex items-center justify-between">
-          <span>
-            Viewing {allDealers.find(d => d.id === adminDealerId)?.legalName || adminDealerId}
-            <span className="opacity-50 text-xs ml-2 font-mono hidden sm:inline">({adminDealerId})</span>
-          </span>
-          <button className="text-orange-100 hover:text-white underline" onClick={() => navigate('dealers')}>
-            Exit Dealer View
-          </button>
-        </div>
+    <AdminShell nav={tabNav}>
+      {/* 1. WORK HUB */}
+      {section === 'work' && (
+        <AdminWorkTab
+          dealers={allDealers as any}
+          blockedData={blockersData}
+          dashboardData={data}
+          currentUserEmail={user?.email}
+          onSelectDealer={(dealerId, subTab) => {
+            window.location.hash = subTab ? `#/admin/dealers/${dealerId}/${subTab}` : `#/admin/dealers/${dealerId}`;
+          }}
+        />
       )}
 
-      {showOverview && section === 'operations' && (
+      {/* 2. DEALERSHIP DIRECTORY & CENTRAL DEALERSHIP RECORD */}
+      {section === 'dealers' && !showDealerDetail && (
+        <AdminOverviewPage
+          activeTab="dealers"
+          data={data}
+          loading={loading}
+          error={error}
+          dealersData={dealersData}
+          dealersLoading={dealersLoading}
+          dealersError={dealersError}
+          onDealersChanged={reloadDealers}
+          onUsersChanged={reloadUsers}
+        />
+      )}
+
+      {section === 'dealers' && showDealerDetail && adminDealerId && (
+        <DealershipRecordView
+          dealerId={adminDealerId}
+          initialSubTab={
+            adminDealerPage === 'platforms' || adminDealerPage === 'channels' ? 'channels' :
+            adminDealerPage === 'inventory' || adminDealerPage === 'vehicles' ? 'vehicles' :
+            adminDealerPage === 'setup' ? 'setup' :
+            adminDealerPage === 'people' ? 'people' :
+            adminDealerPage === 'activity' ? 'activity' :
+            'overview'
+          }
+          onOpenDealerView={(id) => {
+            window.location.hash = `#/${id}?support=true`;
+          }}
+          onBackToDirectory={() => navigate('dealers')}
+          onRefreshDealers={reloadDealers}
+        />
+      )}
+
+      {/* 3. INTEGRATIONS / PLATFORMS DIRECTORY & DETAIL */}
+      {section === 'platforms' && !showPlatformDetail && (
+        <AdminOverviewPage
+          activeTab="platforms"
+          data={data}
+          loading={loading}
+          error={error}
+          dealersData={dealersData}
+          dealersLoading={dealersLoading}
+          dealersError={dealersError}
+          onDealersChanged={reloadDealers}
+          onUsersChanged={reloadUsers}
+        />
+      )}
+
+      {section === 'platforms' && showPlatformDetail && adminPlatformSlug && (
         <Suspense fallback={LAZY_FALLBACK}>
-          <OperationsPage />
+          <AdminPlatformDetailPage
+            slug={adminPlatformSlug}
+            platformOverview={platformOverview}
+            dealerAttention={dealerAttention}
+            recentEvents={recentEvents}
+            queueSnapshot={data?.queueSnapshot ?? null}
+            loading={loading}
+          />
         </Suspense>
       )}
 
-      {showOverview && section !== 'operations' && (
+      {/* 4. SECONDARY ADMINISTRATION TABS */}
+      {(section === 'system' || section === 'audit' || section === 'users') && (
         <AdminOverviewPage
           activeTab={section}
           data={data}
@@ -233,66 +245,11 @@ export default function AdminApp({
         />
       )}
 
-      {showDealerDetail && adminNav && (
-        <CategoryProvider schema={dealerCategorySchema}>
-          <AdminViewContext.Provider value={true}>
-            {!adminDealerPage && (
-              <AdminDealerPage dealerId={adminDealerId} nav={adminNav} activeTab="home" />
-            )}
-            {adminDealerPage === 'platforms' && !platformSlug && (
-              <PlatformsPage dealerId={adminDealerId} nav={adminNav} activeTab="platforms" />
-            )}
-            {adminDealerPage === 'platforms' && platformSlug && !platformView && (
-              <Suspense fallback={LAZY_FALLBACK}>
-                <PlatformDetailPage dealerId={adminDealerId} nav={adminNav} activeTab="platforms" platformSlug={platformSlug} />
-              </Suspense>
-            )}
-            {adminDealerPage === 'platforms' && platformSlug && platformView === 'queue' && (
-              <PlatformQueuePage dealerId={adminDealerId} nav={adminNav} activeTab="platforms" platformSlug={platformSlug} />
-            )}
-            {adminDealerPage === 'platforms' && platformSlug && platformView === 'history' && (
-              <PlatformHistoryPage dealerId={adminDealerId} nav={adminNav} activeTab="platforms" platformSlug={platformSlug} />
-            )}
-            {adminDealerPage === 'queue' && (
-              <QueuePage dealerId={adminDealerId} nav={adminNav} activeTab="platforms" />
-            )}
-            {adminDealerPage === 'history' && (
-              <HistoryPage dealerId={adminDealerId} nav={adminNav} activeTab="platforms" />
-            )}
-            {adminDealerPage === 'settings' && (
-              <SettingsPage dealerId={adminDealerId} nav={adminNav} activeTab="settings" />
-            )}
-            {adminDealerPage === 'reports' && (
-              <Suspense fallback={LAZY_FALLBACK}>
-                <ReportsRouter dealerId={adminDealerId} nav={adminNav} activeTab={activeOperatorTab} reportSlug={reportSlug} reportRange={reportRange} />
-              </Suspense>
-            )}
-            {adminDealerPage === 'inventory' && (
-              <InventoryPage dealerId={adminDealerId} nav={adminNav} activeTab="inventory" />
-            )}
-            {adminDealerPage === 'leads' && (
-              <LeadsPage dealerId={adminDealerId} nav={adminNav} activeTab="leads" />
-            )}
-            {adminDealerPage === 'help' && (
-              <KnowledgeBasePage dealerId={adminDealerId} nav={adminNav} activeTab="help" />
-            )}
-          </AdminViewContext.Provider>
-        </CategoryProvider>
-      )}
-
-      {showPlatformDetail && adminPlatformSlug && (
+      {section === 'operations' && (
         <Suspense fallback={LAZY_FALLBACK}>
-          <AdminPlatformDetailPage
-            slug={adminPlatformSlug}
-            platformOverview={platformOverview}
-            dealerAttention={dealerAttention}
-            recentEvents={recentEvents}
-            queueSnapshot={data?.queueSnapshot ?? null}
-            loading={loading}
-          />
+          <OperationsPage />
         </Suspense>
       )}
-
     </AdminShell>
   );
 }

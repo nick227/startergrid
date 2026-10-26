@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
-import { fetchInventory, bulkEditVehicles, fetchVehiclePerformanceList, fetchPlatformPerformance, fetchPublishStatus } from '@/lib/api/sdk.ts';
+import { fetchInventory, bulkEditVehicles, fetchVehiclePerformanceList, fetchPlatformPerformance, fetchPublishStatus, relistVehicle } from '@/lib/api/sdk.ts';
 import type { BulkEditPayload, VehiclePerformanceItem, PlatformPerformanceItem, LifecycleScope, PublishStatusResponse } from '@/lib/types.ts';
 import type { OperatorPageBaseProps } from '@/lib/operatorPage.ts';
 import { useAsyncQuery } from '@/hooks/useAsyncQuery.ts';
@@ -127,7 +127,7 @@ function InventoryPublishingGuide({
 export default function InventoryPage({ dealerId, nav, activeTab }: Props) {
   const categorySchema = useCategorySchema();
   const { route } = useOperatorRoute();
-  const [lifecycleScope] = useState<LifecycleScope>('active');
+  const [lifecycleScope] = useState<LifecycleScope>('all');
   const { data, loading, error, reload: load, lastRefresh } = useAsyncQuery(
     () => fetchInventory(dealerId, { lifecycleScope }),
     [dealerId, lifecycleScope],
@@ -139,6 +139,7 @@ export default function InventoryPage({ dealerId, nav, activeTab }: Props) {
   const [sortDirection, setSortDirection] = useState<'asc'|'desc'>('asc');
   const [search, setSearch] = useState(route.assetRef ?? '');
   const [createPostTarget, setCreatePostTarget] = useState<{ vehicleId: string; vehicleTitle: string } | null>(null);
+  const [relistingId, setRelistingId] = useState<string | null>(null);
 
   // Persistence for grid view/columns
   const [viewMode, setViewMode] = useState<'table' | 'card'>(() => (localStorage.getItem('inventoryViewMode') as 'table'|'card') || 'table');
@@ -179,6 +180,18 @@ export default function InventoryPage({ dealerId, nav, activeTab }: Props) {
     reloadBenchmarks();
   }, [load, reloadBenchmarks]);
 
+  const handleRelist = useCallback(async (vehicleId: string) => {
+    setRelistingId(vehicleId);
+    try {
+      await relistVehicle(dealerId, vehicleId);
+      load();
+    } catch (err) {
+      console.error('Failed to relist vehicle', err);
+    } finally {
+      setRelistingId(null);
+    }
+  }, [dealerId, load]);
+
   const { autoSync } = useAutoSyncWatch(dealerId, reloadBenchmarks);
 
   const perfMap = useMemo<Map<string, VehiclePerformanceItem>>(() => {
@@ -196,6 +209,26 @@ export default function InventoryPage({ dealerId, nav, activeTab }: Props) {
   const vehicleRows = data?.vehicles;
   const vehicles = useMemo(() => vehicleRows ?? [], [vehicleRows]);
   const summary = data?.summary;
+
+  const activeVehicles = useMemo(
+    () => vehicles.filter(v => v.lifecycleState !== 'SOLD' && v.lifecycleState !== 'REMOVED'),
+    [vehicles],
+  );
+
+  const attentionVehicles = useMemo(
+    () => activeVehicles.filter(v => v.readiness === 'BLOCKED' || (v.issues && v.issues.length > 0) || v.mediaCount === 0 || v.priceCents <= 0),
+    [activeVehicles],
+  );
+
+  const recentVehicles = useMemo(() => {
+    const list = [...activeVehicles];
+    return list.sort((a, b) => new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime()).slice(0, 50);
+  }, [activeVehicles]);
+
+  const soldVehicles = useMemo(
+    () => vehicles.filter(v => v.lifecycleState === 'SOLD' || v.lifecycleState === 'REMOVED'),
+    [vehicles],
+  );
 
   // Filter mapping from chip -> old cleanup filter logic (temp)
   const legacyFilterMap: Record<string, CleanupFilter> = {
@@ -216,8 +249,8 @@ export default function InventoryPage({ dealerId, nav, activeTab }: Props) {
   }), [search, resolvedFilter, movementFilter, sortDirection]);
 
   const visible = useMemo(
-    () => composeInventoryList(vehicles, perfMap, listQuery, applyCleanupFilter),
-    [vehicles, perfMap, listQuery],
+    () => composeInventoryList(activeVehicles, perfMap, listQuery, applyCleanupFilter),
+    [activeVehicles, perfMap, listQuery],
   );
 
   const benchmarksUpdating = isBenchmarksUpdating(autoSync.data);
@@ -384,6 +417,7 @@ export default function InventoryPage({ dealerId, nav, activeTab }: Props) {
                 handleIntakeRefresh();
                 setDetailId(newId);
               }}
+              onImportCommitted={handleIntakeRefresh}
             />
           ) : categorySchema.id === 'SONGS' ? (
             <SongAddControls
@@ -465,8 +499,233 @@ export default function InventoryPage({ dealerId, nav, activeTab }: Props) {
           <InventoryWorkspace
             dealerId={dealerId}
             tabCounts={{
-              attention: isPhysicalInventory ? summaryCounts.blocked : 0,
+              browse: isPhysicalInventory ? activeVehicles.length : 0,
+              attention: isPhysicalInventory ? attentionVehicles.length : 0,
+              recent: isPhysicalInventory ? recentVehicles.length : 0,
+              sold: isPhysicalInventory ? soldVehicles.length : 0,
             }}
+            attentionContent={
+              <div className="space-y-4">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <h3 className="text-sm font-semibold text-ink-heading">Vehicles Needing Attention ({attentionVehicles.length})</h3>
+                    <p className="text-xs text-ink-muted">Actionable blockers, missing photos, and incomplete pricing preventing live syndication.</p>
+                  </div>
+                </div>
+                {attentionVehicles.length === 0 ? (
+                  <div className="p-8 text-center bg-white border border-silver-200 rounded-xl shadow-sm">
+                    <div className="text-3xl mb-2">🎉</div>
+                    <p className="text-sm font-semibold text-ink-heading">All active vehicles are ready to distribute!</p>
+                    <p className="text-xs text-ink-muted mt-1">No missing photos, prices, or distribution blockers detected.</p>
+                  </div>
+                ) : (
+                  <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+                    {attentionVehicles.map(v => {
+                      const missingPhotos = v.mediaCount === 0;
+                      const missingPrice = v.priceCents <= 0;
+                      const isBlocked = v.readiness === 'BLOCKED';
+                      return (
+                        <div key={v.id} className="p-4 bg-white border border-silver-200 rounded-xl shadow-sm flex flex-col justify-between hover:border-silver-400 transition-all">
+                          <div>
+                            <div className="flex items-start gap-3">
+                              <div className="w-14 h-14 rounded-lg bg-silver-100 border border-silver-200 flex items-center justify-center shrink-0 overflow-hidden">
+                                {v.thumbnailUrl ? (
+                                  <img src={v.thumbnailUrl} alt="" className="w-full h-full object-cover" />
+                                ) : (
+                                  <span className="text-xl opacity-40">🚙</span>
+                                )}
+                              </div>
+                              <div className="min-w-0 flex-1">
+                                <h4 className="font-semibold text-sm text-ink-heading truncate">
+                                  {v.year} {v.make} {v.model} {v.trim || ''}
+                                </h4>
+                                <div className="text-xs text-ink-muted font-mono mt-0.5">
+                                  Stock #{v.stockNumber} · {v.priceCents > 0 ? `$${(v.priceCents / 100).toLocaleString()}` : 'Price not set'}
+                                </div>
+                              </div>
+                            </div>
+
+                            <div className="mt-3 flex flex-wrap gap-1.5">
+                              {missingPhotos && (
+                                <span className="px-2 py-0.5 rounded text-[10px] font-semibold bg-amber-50 text-amber-700 border border-amber-200">
+                                  📷 Missing Photos
+                                </span>
+                              )}
+                              {missingPrice && (
+                                <span className="px-2 py-0.5 rounded text-[10px] font-semibold bg-amber-50 text-amber-700 border border-amber-200">
+                                  💲 Price is $0
+                                </span>
+                              )}
+                              {isBlocked && (
+                                <span className="px-2 py-0.5 rounded text-[10px] font-semibold bg-red-50 text-red-700 border border-red-200">
+                                  ⛔ Readiness Blocked
+                                </span>
+                              )}
+                              {v.issues && v.issues.slice(0, 2).map((iss, i) => (
+                                <span key={i} className="px-2 py-0.5 rounded text-[10px] font-medium bg-silver-100 text-ink-muted border border-silver-200 truncate max-w-full">
+                                  {iss.message}
+                                </span>
+                              ))}
+                            </div>
+                          </div>
+
+                          <div className="mt-4 pt-3 border-t border-silver-100 flex items-center justify-between">
+                            <span className="text-[11px] text-ink-faint font-mono truncate max-w-[120px]">{v.vin}</span>
+                            <button
+                              type="button"
+                              onClick={() => {
+                                nav.goToInventoryItem({
+                                  year: v.year,
+                                  make: v.make,
+                                  model: v.model,
+                                  stockNumber: v.stockNumber,
+                                });
+                                setDetailId(v.id);
+                              }}
+                              className="px-3 py-1.5 text-xs font-semibold bg-navy-900 text-white hover:bg-navy-800 rounded-lg transition-colors flex items-center gap-1"
+                            >
+                              <span>Fix & Review</span>
+                              <span>→</span>
+                            </button>
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                )}
+              </div>
+            }
+            recentContent={
+              <div className="space-y-4">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <h3 className="text-sm font-semibold text-ink-heading">Recently Changed Vehicles ({recentVehicles.length})</h3>
+                    <p className="text-xs text-ink-muted">Vehicles created or modified most recently.</p>
+                  </div>
+                </div>
+                {recentVehicles.length === 0 ? (
+                  <div className="p-8 text-center bg-white border border-silver-200 rounded-xl text-sm text-ink-muted">
+                    No recent updates found.
+                  </div>
+                ) : (
+                  <div className="divide-y divide-silver-200 bg-white border border-silver-200 rounded-xl overflow-hidden shadow-sm">
+                    {recentVehicles.map(v => (
+                      <div key={v.id} className="p-4 flex items-center justify-between gap-4 hover:bg-surface-inset transition-colors">
+                        <div className="flex items-center gap-3 min-w-0">
+                          <div className="w-12 h-12 rounded-lg bg-silver-100 border border-silver-200 flex items-center justify-center shrink-0 overflow-hidden">
+                            {v.thumbnailUrl ? (
+                              <img src={v.thumbnailUrl} alt="" className="w-full h-full object-cover" />
+                            ) : (
+                              <span className="text-lg opacity-40">🚙</span>
+                            )}
+                          </div>
+                          <div className="min-w-0">
+                            <h4 className="font-semibold text-sm text-ink-heading truncate">
+                              {v.year} {v.make} {v.model} {v.trim || ''}
+                            </h4>
+                            <div className="text-xs text-ink-muted font-mono mt-0.5 flex items-center gap-2">
+                              <span>Stock #{v.stockNumber}</span>
+                              <span>·</span>
+                              <span>{v.priceCents > 0 ? `$${(v.priceCents / 100).toLocaleString()}` : 'Price not set'}</span>
+                              <span>·</span>
+                              <span>{v.mediaCount} photos</span>
+                            </div>
+                          </div>
+                        </div>
+
+                        <div className="flex items-center gap-3 shrink-0">
+                          <span className="text-xs text-ink-faint font-mono hidden sm:inline">
+                            {new Date(v.updatedAt).toLocaleDateString()}
+                          </span>
+                          <button
+                            type="button"
+                            onClick={() => {
+                              nav.goToInventoryItem({
+                                year: v.year,
+                                make: v.make,
+                                model: v.model,
+                                stockNumber: v.stockNumber,
+                              });
+                              setDetailId(v.id);
+                            }}
+                            className="px-3 py-1.5 text-xs font-semibold bg-silver-100 hover:bg-silver-200 text-ink-heading rounded-lg transition-colors"
+                          >
+                            View
+                          </button>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            }
+            soldContent={
+              <div className="space-y-4">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <h3 className="text-sm font-semibold text-ink-heading">Sold & Removed Vehicles ({soldVehicles.length})</h3>
+                    <p className="text-xs text-ink-muted">Historical records preserved. You can relist any vehicle at any time.</p>
+                  </div>
+                </div>
+                {soldVehicles.length === 0 ? (
+                  <div className="p-8 text-center bg-white border border-silver-200 rounded-xl text-sm text-ink-muted">
+                    No sold or removed vehicles in this dealership.
+                  </div>
+                ) : (
+                  <div className="divide-y divide-silver-200 bg-white border border-silver-200 rounded-xl overflow-hidden shadow-sm">
+                    {soldVehicles.map(v => {
+                      const isSold = v.lifecycleState === 'SOLD';
+                      const isBusy = relistingId === v.id;
+                      return (
+                        <div key={v.id} className="p-4 flex items-center justify-between gap-4 hover:bg-surface-inset transition-colors">
+                          <div className="flex items-center gap-3 min-w-0">
+                            <div className="w-12 h-12 rounded-lg bg-silver-100 border border-silver-200 flex items-center justify-center shrink-0 overflow-hidden opacity-60">
+                              {v.thumbnailUrl ? (
+                                <img src={v.thumbnailUrl} alt="" className="w-full h-full object-cover" />
+                              ) : (
+                                <span className="text-lg opacity-40">🚙</span>
+                              )}
+                            </div>
+                            <div className="min-w-0">
+                              <div className="flex items-center gap-2">
+                                <h4 className="font-semibold text-sm text-ink-heading truncate">
+                                  {v.year} {v.make} {v.model} {v.trim || ''}
+                                </h4>
+                                <span className={`px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider ${
+                                  isSold
+                                    ? 'bg-emerald-100 text-emerald-800 border border-emerald-200'
+                                    : 'bg-silver-200 text-ink-muted border border-silver-300'
+                                }`}>
+                                  {isSold ? 'Sold' : 'Removed'}
+                                </span>
+                              </div>
+                              <div className="text-xs text-ink-muted font-mono mt-0.5 flex items-center gap-2">
+                                <span>Stock #{v.stockNumber}</span>
+                                <span>·</span>
+                                <span>VIN: {v.vin}</span>
+                                {v.soldAt && <span>· Sold on {new Date(v.soldAt).toLocaleDateString()}</span>}
+                                {v.removedAt && !v.soldAt && <span>· Archived {new Date(v.removedAt).toLocaleDateString()}</span>}
+                              </div>
+                            </div>
+                          </div>
+
+                          <div className="flex items-center gap-2 shrink-0">
+                            <button
+                              type="button"
+                              disabled={isBusy}
+                              onClick={() => handleRelist(v.id)}
+                              className="px-3 py-1.5 text-xs font-semibold bg-emerald-600 hover:bg-emerald-500 text-white rounded-lg transition-colors disabled:opacity-50 flex items-center gap-1.5 shadow-sm"
+                            >
+                              <span>{isBusy ? 'Relisting…' : '🔄 Relist Vehicle'}</span>
+                            </button>
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                )}
+              </div>
+            }
             browseContent={
               isPhysicalInventory ? (
                 <>

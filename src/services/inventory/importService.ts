@@ -1,3 +1,4 @@
+import { guardInventoryMutation } from '../autopilot/inventoryGuard.js';
 import type { PrismaClient, Prisma, InventorySourceKind } from '@prisma/client';
 import {
   getOrCreateDefaultSource,
@@ -333,6 +334,7 @@ export async function commitImport(
       } else {
         const existing = await prisma.vehicle.findFirst({ where: { dealershipId, stockNumber: m.stockNumber } });
         if (!existing) { result.skipped++; continue; }
+        await guardInventoryMutation(prisma, dealershipId, existing.id, commonData);
         await prisma.vehicle.update({
           where: { id: existing.id },
           data: {
@@ -611,6 +613,7 @@ export async function ingestJsonVehicles(
         });
         result.created++;
       } else {
+        await guardInventoryMutation(prisma, dealershipId, existingId, commonData);
         await prisma.vehicle.update({
           where: { id: existingId },
           data: {

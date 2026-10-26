@@ -1162,6 +1162,10 @@ export type DealerLead = {
   contactPhone: string | null;
   message: string | null;
   vehicleInterest: unknown;
+  workflowStatus?: 'NEW' | 'CONTACTED' | 'APPOINTMENT' | 'SOLD' | 'LOST' | null;
+  assigneeOperatorId?: string | null;
+  notes?: string | null;
+  version?: number;
   createdAt: string;
   vehicle: DealerLeadVehicle | null;
 };

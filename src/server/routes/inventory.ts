@@ -1,3 +1,4 @@
+import { guardInventoryMutation } from '../../services/autopilot/inventoryGuard.js';
 import type { FastifyInstance } from 'fastify';
 import type { PrismaClient } from '@prisma/client';
 import {
@@ -205,6 +206,10 @@ export function registerInventoryRoutes(app: FastifyInstance, prisma: PrismaClie
       const body = validateBody(bulkEditSchema, request.body);
       if (!body.ok) return reply.status(400).send({ error: body.error });
 
+      if (process.env['V5_AUTOPILOT_ENABLED'] === 'true') {
+        const affected = await prisma.vehicle.findMany({ where: { dealershipId, stockNumber: { in: body.data.stockNumbers } }, select: { id: true } });
+        for (const v of affected) await guardInventoryMutation(prisma, dealershipId, v.id, body.data.fields);
+      }
       const result = await prisma.vehicle.updateMany({
         where: { dealershipId, stockNumber: { in: body.data.stockNumbers } },
         data: body.data.fields
@@ -793,6 +798,13 @@ export function registerInventoryRoutes(app: FastifyInstance, prisma: PrismaClie
       }
 
       if (Object.keys(otherFields).length > 0) {
+        if ('make' in otherFields || 'model' in otherFields || 'year' in otherFields) {
+          await guardInventoryMutation(prisma, dealershipId, vehicleId, {
+            make: (otherFields as Record<string, unknown>).make as string | undefined,
+            model: (otherFields as Record<string, unknown>).model as string | undefined,
+            year: (otherFields as Record<string, unknown>).year as number | undefined,
+          });
+        }
         await prisma.vehicle.update({ where: { id: vehicleId }, data: otherFields as import('@prisma/client').Prisma.VehicleUpdateInput });
         const effectiveStockNumber = typeof otherFields.stockNumber === 'string' ? otherFields.stockNumber : vehicle.stockNumber;
         try {

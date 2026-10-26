@@ -8,6 +8,7 @@ import { EbookEntryPanel } from './EbookEntryPanel.tsx';
 import { SongEntryPanel } from './SongEntryPanel.tsx';
 import { DigitalArtEntryPanel } from './DigitalArtEntryPanel.tsx';
 import { VideoEntryPanel } from './VideoEntryPanel.tsx';
+import { ImportModal } from './ImportModal.tsx';
 
 type Tab = 'browse' | 'attention' | 'recent' | 'sold';
 
@@ -126,9 +127,12 @@ export type VehicleAddControlsProps = {
   dealerId: string;
   onVehicleCreated?: (vehicleId: string, stockNumber: string) => void;
   onCreatedGoToBrowse?: () => void;
+  onImportCommitted?: () => void;
 };
 
-export function VehicleAddControls({ dealerId, onVehicleCreated, onCreatedGoToBrowse }: VehicleAddControlsProps) {
+export function VehicleAddControls({ dealerId, onVehicleCreated, onCreatedGoToBrowse, onImportCommitted }: VehicleAddControlsProps) {
+  const [showImportModal, setShowImportModal] = useState(false);
+
   const handleCreated = (vehicleId: string, stockNumber: string) => {
     onVehicleCreated?.(vehicleId, stockNumber);
     onCreatedGoToBrowse?.();
@@ -171,12 +175,28 @@ export function VehicleAddControls({ dealerId, onVehicleCreated, onCreatedGoToBr
              <div className="text-2xl mb-2">📥</div>
              <p className="text-xs font-medium text-ink-body mb-1">Got a dealer export?</p>
              <p className="text-[11px] text-ink-muted mb-4">Upload a CSV file containing multiple vehicles and their specs.</p>
-             <button type="button" className="btn-primary-operator !py-2 !px-4 text-xs" onClick={() => window.alert('Use the main Import CSV button in the inventory toolbar.')}>
+             <button
+               type="button"
+               className="btn-primary-operator !py-2 !px-4 text-xs font-semibold"
+               onClick={() => setShowImportModal(true)}
+             >
                Import CSV
              </button>
           </div>
         </div>
       </div>
+
+      {showImportModal && (
+        <ImportModal
+          dealerId={dealerId}
+          onClose={() => setShowImportModal(false)}
+          onCommitted={() => {
+            setShowImportModal(false);
+            onImportCommitted?.();
+            onCreatedGoToBrowse?.();
+          }}
+        />
+      )}
     </div>
   );
 }

@@ -1,3 +1,4 @@
+import { guardRemovalBatch } from '../autopilot/inventoryGuard.js';
 import type { PrismaClient } from '@prisma/client';
 import { applyVehicleUpdate } from './inventoryUpdateService.js';
 import {
@@ -123,6 +124,10 @@ export async function reconcileSalesStatusFromIngest(
     opts.commitSnapshotRemovals === true;
 
   const feedStocks = new Set(rows.map(r => r.stockNumber));
+  const removalStocks = rows.filter(r => r.availability === 'sold' || r.availability === 'removed').map(r => r.stockNumber);
+  const removalVehicles = removalStocks.length ? await prisma.vehicle.findMany({ where: { dealershipId, stockNumber: { in: removalStocks } }, select: { id: true } }) : [];
+  const snapshotCandidates = canApplySnapshot ? await detectSnapshotRemovedCandidates(prisma, dealershipId, feedStocks) : [];
+  await guardRemovalBatch(prisma, dealershipId, [...removalVehicles.map(v => v.id), ...snapshotCandidates.map(v => v.vehicleId)], opts.ingressRunId);
   const rowResult = await applyRowAvailability(
     prisma,
     dealershipId,
@@ -177,6 +182,7 @@ export async function commitSnapshotRemovals(
   const allowed = await readSnapshotCandidatesFromIngress(prisma, dealershipId, ingressRunId);
   const allowedByStock = new Map(allowed.map(c => [c.stockNumber, c]));
   const uniqueStocks = [...new Set(stockNumbers)];
+  await guardRemovalBatch(prisma, dealershipId, uniqueStocks.flatMap(s => allowedByStock.get(s)?.vehicleId ? [allowedByStock.get(s)!.vehicleId] : []), ingressRunId);
 
   const result: SnapshotCommitResult = { applied: 0, skipped: 0, rejected: [] };
 

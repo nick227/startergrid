@@ -38,6 +38,33 @@ describe('parseOperatorRoute', () => {
     expect(tabFromPage(route.page)).toBe('platforms');
   });
 
+  it('parses /settings segment as settings', () => {
+    const route = parseOperatorRoute('#/dealer-a/settings');
+    expect(route).toMatchObject({
+      dealerId: 'dealer-a',
+      page: 'settings',
+    });
+    expect(tabFromPage(route.page)).toBe('settings');
+  });
+
+  it('parses /channels alias as platforms', () => {
+    const route = parseOperatorRoute('#/dealer-a/channels');
+    expect(route).toMatchObject({
+      dealerId: 'dealer-a',
+      page: 'platforms',
+    });
+    expect(tabFromPage(route.page)).toBe('platforms');
+  });
+
+  it('parses /vehicles alias as inventory', () => {
+    const route = parseOperatorRoute('#/dealer-a/vehicles');
+    expect(route).toMatchObject({
+      dealerId: 'dealer-a',
+      page: 'inventory',
+    });
+    expect(tabFromPage(route.page)).toBe('inventory');
+  });
+
   it('parses global queue with asset scope', () => {
     const route = parseOperatorRoute('#/dealer-a/queue?ref=STK1&assetId=v-1');
     expect(route).toMatchObject({

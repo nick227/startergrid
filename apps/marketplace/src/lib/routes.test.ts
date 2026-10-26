@@ -48,8 +48,12 @@ describe('parseRoute', () => {
     expect(withHash('#')).toEqual({ page: 'sites' });
   });
 
-  it('parses category feed routes', () => {
+  it('parses category home and feed routes', () => {
     expect(withHash('#/automotive/')).toEqual({
+      page: 'home',
+      slug: 'automotive',
+    });
+    expect(withHash('#/automotive/list')).toEqual({
       page: 'list',
       slug: 'automotive',
       query: {},
@@ -128,7 +132,7 @@ describe('parseRoute', () => {
 
 describe('href builders', () => {
   it('builds category-scoped hrefs', () => {
-    expect(listHref('automotive', { make: 'Honda' })).toBe('#/automotive/?make=Honda');
+    expect(listHref('automotive', { make: 'Honda' })).toBe('#/automotive/list?make=Honda');
     expect(listingHref('watches', 'x1')).toBe('#/watches/listing/x1');
     expect(listingHref('automotive', 'veh_0069', '2022 Chevrolet Silverado 1500')).toBe('#/automotive/listing/2022-chevrolet-silverado-1500?id=veh_0069');
     expect(sellerHref('ebooks', 'seller-9')).toBe('#/ebooks/seller/seller-9');
@@ -141,7 +145,7 @@ describe('href builders', () => {
       make: 'Toyota',
       facets: { bodyStyle: 'Sedan', drivetrain: 'AWD' },
     });
-    expect(href).toBe('#/automotive/?make=Toyota&facet.bodyStyle=Sedan&facet.drivetrain=AWD');
+    expect(href).toBe('#/automotive/list?make=Toyota&facet.bodyStyle=Sedan&facet.drivetrain=AWD');
     expect(parseRouteFromHash(href)).toEqual({
       page: 'list',
       slug: 'automotive',
@@ -154,7 +158,7 @@ describe('href builders', () => {
 
   it('serializes sellerName as a distinct URL param, not make', () => {
     const href = listHref('apartments', { sellerName: 'Coldwell Banker' });
-    expect(href).toBe('#/apartments/?sellerName=Coldwell+Banker');
+    expect(href).toBe('#/apartments/list?sellerName=Coldwell+Banker');
     expect(href).not.toContain('make=');
   });
 

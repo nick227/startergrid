@@ -35,16 +35,17 @@ export type OperatorNavHandlers = {
   /** @deprecated use goToReports */
   goToInsights: () => void;
   /** @deprecated use goToHelp */
-  goToKnowledge: () => void;
+  goToKnowledge?: () => void;
+  goToVehicles?: (scope?: RowNavScope) => void;
+  goToChannels?: () => void;
   changeDealer: () => void;
 };
 
 export const OPERATOR_TABS: Array<{ id: OperatorTab; label: string; short: string }> = [
   { id: 'home', label: 'Home', short: 'Home' },
-  { id: 'inventory', label: 'Inventory', short: 'Inventory' },
+  { id: 'inventory', label: 'Vehicles', short: 'Vehicles' },
+  { id: 'platforms', label: 'Channels', short: 'Channels' },
   { id: 'leads', label: 'Leads', short: 'Leads' },
-  { id: 'platforms', label: 'Platforms', short: 'Platforms' },
-  { id: 'settings', label: 'Settings', short: 'Settings' },
 ];
 
 export type OperatorPageSegment =

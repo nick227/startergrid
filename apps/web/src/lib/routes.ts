@@ -33,6 +33,8 @@ function parsePageSegment(segment: string | undefined): OperatorPageSegment | nu
   // Bare #/{dealerId} and #/{dealerId}/home are the dealership profile Home tab.
   if (!segment || segment === 'home') return null;
   if (segment === 'knowledge') return 'help';
+  if (segment === 'vehicles') return 'inventory';
+  if (segment === 'channels') return 'platforms';
   const legacy = LEGACY_SEGMENT_MAP[segment];
   if (legacy) return legacy;
   if (
@@ -42,6 +44,7 @@ function parsePageSegment(segment: string | undefined): OperatorPageSegment | nu
     segment === 'reports' ||
     segment === 'inventory' ||
     segment === 'leads' ||
+    segment === 'settings' ||
     segment === 'help'
   ) {
     return segment;
@@ -164,7 +167,7 @@ export function parseOperatorRoute(hash = window.location.hash): OperatorRoute {
   const dealerId = match[1] ?? null;
   const rest = match[2] ?? '';
 
-  const platformMatch = rest.match(/^platforms\/([^/]+)(?:\/(queue|history))?$/);
+  const platformMatch = rest.match(/^(?:platforms|channels)\/([^/]+)(?:\/(queue|history))?$/);
   if (platformMatch) {
     return routeWithReports(
       {
@@ -189,7 +192,7 @@ export function parseOperatorRoute(hash = window.location.hash): OperatorRoute {
     );
   }
 
-  const inventoryItemMatch = rest.match(/^inventory\/([^/?#]+)$/);
+  const inventoryItemMatch = rest.match(/^(?:inventory|vehicles)\/([^/?#]+)$/);
   if (inventoryItemMatch) {
     return routeWithReports(
       {
@@ -275,6 +278,8 @@ export function buildOperatorNav(dealerId: string): OperatorNavHandlers {
     goToHistory: scope => { window.location.hash = operatorHash(dealerId, 'history', scope); },
     goToReports: () => { window.location.hash = operatorHash(dealerId, 'reports'); },
     goToInventory: scope => { window.location.hash = operatorHash(dealerId, 'inventory', scope); },
+    goToVehicles: scope => { window.location.hash = operatorHash(dealerId, 'inventory', scope); },
+    goToChannels: () => { window.location.hash = operatorHash(dealerId, 'platforms'); },
     goToInventoryItem: (item, scope) => { window.location.hash = inventoryItemHash(dealerId, item, scope); },
     goToLeads: () => { window.location.hash = operatorHash(dealerId, 'leads'); },
     goToSettings: () => { window.location.hash = operatorHash(dealerId, 'settings'); },

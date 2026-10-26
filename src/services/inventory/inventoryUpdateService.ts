@@ -1,4 +1,5 @@
-﻿import type { PrismaClient } from '@prisma/client';
+import { guardInventoryMutation } from '../autopilot/inventoryGuard.js';
+import type { PrismaClient } from '@prisma/client';
 import type { VehicleUpdateKind } from '../../lib/types.js';
 import { platformProfiles } from '../../data/platformProfiles.js';
 import { propagateVehicleUpdate, summarizeUpdatePropagations } from './vehicleUpdateService.js';
@@ -95,6 +96,7 @@ export async function applyVehicleUpdate(
   if (kind === 'PRICE_CHANGE' && opts.priceCents !== undefined) {
     previousValue['priceCents'] = dbVehicle.priceCents;
     newValue['priceCents'] = opts.priceCents;
+    await guardInventoryMutation(prisma, dealershipId, dbVehicle.id, { priceCents: opts.priceCents });
     await prisma.vehicle.update({ where: { id: dbVehicle.id }, data: { priceCents: opts.priceCents } });
   } else if (kind === 'PHOTO_CHANGE' && opts.photoUrls) {
     previousValue['mediaCount'] = dbVehicle.media.length;

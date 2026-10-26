@@ -7,15 +7,13 @@ import { useAsyncQuery } from '@/hooks/useAsyncQuery.ts';
 import { OperatorPage, ErrorState, InlineCallout } from '@/components/operator';
 import { PageSituation } from '@/components/layout';
 import { FilterChips } from '@/components/generic';
-import { PlatformChannelList } from '@/components/platforms/PlatformChannelList.tsx';
+import { SimplifiedChannelsView } from '@/components/platforms/SimplifiedChannelsView.tsx';
 import { OAuthConnectBanner } from '@/components/platforms/OAuthConnectBanner.tsx';
 import { PlatformLogo } from '@/components/platforms/PlatformLogo.tsx';
 import { Button } from '@/components/ui/Button.tsx';
 import {
   PLATFORM_CONNECTION_FILTERS,
-  platformMatchesFilter,
   platformSituationSummary,
-  sortPlatformsForDisplay,
   type PlatformConnectionFilter,
 } from '@/lib/platformPresentation.ts';
 import { getSetupReadiness, severityToPill } from '@/lib/setupReadiness.ts';
@@ -26,7 +24,6 @@ import { platformStatsBySlug } from '@/lib/platformQueueStats.ts';
 import {
   AUTO_MARKETPLACE_NAME,
   AUTO_MARKETPLACE_SLUG,
-  hideFromPlatformsChannelList,
   platformDisplayName,
 } from '@/lib/marketplaceBrand.ts';
 
@@ -117,7 +114,6 @@ export default function PlatformsPage({ dealerId, nav, activeTab, initialPlatfor
   const queueQuery = useAsyncQuery(() => fetchPublishQueue(dealerId), [dealerId]);
 
   const [filter, setFilter] = useState<PlatformConnectionFilter>('configured');
-  const [sort] = useState<'urgency' | 'name'>('urgency');
   const [selectedSlug, setSelectedSlug] = useState<string | null>(initialPlatformSlug ?? null);
   const [connectedSlug, setConnectedSlug] = useState<string | null>(null);
 
@@ -165,12 +161,7 @@ export default function PlatformsPage({ dealerId, nav, activeTab, initialPlatfor
     return (fromPlatform ?? 'automotive').toLowerCase();
   }, [categorySchema, featuredMarketplace]);
 
-  const visible = useMemo(() => {
-    const list = platforms
-      .filter(p => !hideFromPlatformsChannelList(p.platformSlug))
-      .filter(p => platformMatchesFilter(p, filter));
-    return sortPlatformsForDisplay(list, sort);
-  }, [platforms, filter, sort]);
+
 
   const handleRefresh = () => {
     reload();
@@ -265,8 +256,8 @@ export default function PlatformsPage({ dealerId, nav, activeTab, initialPlatfor
         }}
       />
 
-      <PlatformChannelList
-        platforms={visible}
+      <SimplifiedChannelsView
+        platforms={platforms}
         perfBySlug={perfBySlug}
         accountBySlug={accountBySlug}
         socialPageBySlug={socialPageBySlug}

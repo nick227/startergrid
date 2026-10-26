@@ -116,8 +116,45 @@ export function PageShell({
     );
   }
 
+  const isSupportMode = user?.role === 'SUPER_ADMIN' || (typeof window !== 'undefined' && window.location.hash.includes('support=true'));
+
   return (
     <div className={`min-h-screen bg-surface-page ${footerPad ? 'pb-20' : ''}`}>
+      {/* Explicit Dealer Support Mode Top Banner (No nested application shell) */}
+      {isSupportMode && (
+        <aside aria-label="Dealer Support Mode" className="bg-amber-950/90 border-b border-amber-500/30 text-amber-200 px-4 sm:px-6 py-2.5 flex items-center justify-between text-xs font-medium sticky top-0 z-40 backdrop-blur-md">
+          <div className="flex items-center gap-2.5">
+            <span className="flex h-2 w-2 relative">
+              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-amber-400 opacity-75"></span>
+              <span className="relative inline-flex rounded-full h-2 w-2 bg-amber-500"></span>
+            </span>
+            <span className="text-amber-100 font-bold tracking-wide uppercase text-[11px]">Dealer Support Mode</span>
+            <span className="text-silver-400">·</span>
+            <span className="text-white font-semibold">{displayDealerName}</span>
+            <span className="text-amber-300/60 font-mono hidden sm:inline">({dealerId})</span>
+            {user?.email && (
+              <span className="hidden md:inline text-amber-200/50">| Staff: {user.email}</span>
+            )}
+          </div>
+          <div className="flex items-center gap-3">
+            <button
+              type="button"
+              onClick={() => { window.location.hash = `#/admin/dealers/${dealerId}`; }}
+              className="text-amber-300 hover:text-white underline font-semibold flex items-center gap-1 transition-colors"
+            >
+              Central Dealership Record ↗
+            </button>
+            <button
+              type="button"
+              onClick={() => { window.location.hash = '#/admin/dealers'; }}
+              className="bg-amber-600 hover:bg-amber-500 text-white font-semibold px-2.5 py-1 rounded text-xs transition-colors shadow-sm"
+            >
+              Exit Support Mode ✕
+            </button>
+          </div>
+        </aside>
+      )}
+
       <header className="bg-navy-950 text-white sticky top-0 z-30 shadow-chrome">
         <div className="max-w-7xl mx-auto px-4 sm:px-6">
           <div className="py-4 flex flex-col gap-4">
@@ -164,6 +201,20 @@ export function PageShell({
               </button>
             ) : <div />}
             <div className="flex items-center gap-2">
+              <button
+                type="button"
+                onClick={nav.goToSettings}
+                className={`px-2.5 py-1 text-xs font-medium rounded-md transition-colors flex items-center gap-1.5 ${
+                  activeTab === 'settings'
+                    ? 'bg-navy-800 text-white shadow-elevation-1'
+                    : 'text-silver-300 hover:text-white hover:bg-navy-900/60'
+                }`}
+                title="Dealership Settings"
+              >
+                <span>⚙</span>
+                <span>Settings</span>
+              </button>
+
               {user && (
                 <OperatorAvatar user={user} onAvatarUpdated={refresh} />
               )}
