@@ -12,6 +12,7 @@ import { VehicleChannelMatrix } from './VehicleChannelMatrix.tsx';
 import { MarketplacePublishPanel } from './MarketplacePublishPanel.tsx';
 import { VehicleDangerZone } from './VehicleDangerZone.tsx';
 import { AssetLifecycleHistory } from './AssetLifecycleHistory.tsx';
+import { GuidanceNote } from '@/components/guidance/GuidanceNote.tsx';
 
 import type { OperatorNavHandlers } from '@/lib/operatorNav.ts';
 
@@ -157,7 +158,7 @@ export function InventoryDetailPanel({
       key: 'channels' as const,
       label: 'Channels',
       status: combineSectionStatus(marketplaceStatus, matrixStatus) ?? channelDistributionStatus(vehicle),
-      detail: vehicle.distribution.nextAction ?? `${vehicle.distribution.liveCount} live`,
+      detail: vehicle.distribution.nextAction ?? (vehicle.distribution.liveCount > 0 ? `Sent to ${vehicle.distribution.liveCount}` : 'Not sent yet'),
     },
   ];
 
@@ -277,6 +278,11 @@ export function InventoryDetailPanel({
                 {activeWizardTab === 'channels' && (
                   <section>
                     <SectionHeader title="Channels" />
+                    <div className="mt-3">
+                      <GuidanceNote>
+                        Ready means this vehicle can be sent. Selected includes it on that destination. Publish online is only for your StarterGrid storefront. A send is not verified live until the destination confirms it.
+                      </GuidanceNote>
+                    </div>
                     <div className="mt-4 space-y-4">
                       <div className="rounded-lg border border-navy-100 bg-navy-50 p-4">
                         <MarketplacePublishPanel
@@ -315,11 +321,10 @@ export function InventoryDetailPanel({
                 </div>
                 <button
                   type="button"
-                  disabled={!nextTab}
-                  onClick={() => nextTab && setActiveWizardTab(nextTab.key)}
-                  className="btn-primary-operator px-3 py-2 text-xs disabled:cursor-not-allowed disabled:opacity-40"
+                  onClick={() => nextTab ? setActiveWizardTab(nextTab.key) : onClose()}
+                  className="btn-primary-operator px-3 py-2 text-xs"
                 >
-                  {nextTab ? `Next: ${nextTab.label}` : 'Complete'}
+                  {nextTab ? `Next: ${nextTab.label}` : 'Done'}
                 </button>
               </div>
             </div>

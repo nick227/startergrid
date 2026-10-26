@@ -122,19 +122,16 @@ export function PageShell({
 
   return (
     <div className={`min-h-screen bg-surface-page ${footerPad ? 'pb-20' : ''}`}>
-      {/* Explicit Dealer Support Mode Top Banner (No nested application shell) */}
+      <div className="sticky top-0 z-30">
       {isSupportMode && (
-        <aside aria-label="Dealer view" className="bg-amber-950/90 border-b border-amber-500/30 text-amber-200 px-4 sm:px-6 py-2.5 flex items-center justify-between text-xs font-medium sticky top-0 z-40 backdrop-blur-md">
+        <aside aria-label="Dealer view" className="bg-amber-950/90 border-b border-amber-500/30 text-amber-200 px-4 sm:px-6 py-2.5 flex items-center justify-between text-xs font-medium backdrop-blur-md">
           <div className="flex items-center gap-2.5">
-            <span className="flex h-2 w-2 relative">
-              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-amber-400 opacity-75"></span>
-              <span className="relative inline-flex rounded-full h-2 w-2 bg-amber-500"></span>
-            </span>
-            <span className="text-amber-100 font-bold tracking-wide uppercase text-[11px]">Dealer view</span>
+            <span className="relative inline-flex rounded-full h-2 w-2 bg-amber-500" />
+            <span className="text-amber-100 font-bold tracking-wide uppercase text-[11px]">Staff view</span>
             <span className="text-silver-400">·</span>
             <span className="text-white font-semibold">{displayDealerName}</span>
             {user?.email && (
-              <span className="hidden md:inline text-amber-200/50">| Staff: {user.email}</span>
+              <span className="hidden md:inline text-amber-200/50">Working as {user.email}</span>
             )}
           </div>
           <div className="flex items-center gap-3">
@@ -143,7 +140,7 @@ export function PageShell({
               onClick={() => { window.location.hash = `#/admin/dealers/${dealerId}`; }}
               className="text-amber-300 hover:text-white underline font-semibold flex items-center gap-1 transition-colors"
             >
-              Back to dealership page
+              Back to dealership record
             </button>
             <button
               type="button"
@@ -156,7 +153,7 @@ export function PageShell({
         </aside>
       )}
 
-      <header className="bg-navy-950 text-white sticky top-0 z-30 shadow-chrome">
+      <header className="bg-navy-950 text-white shadow-chrome">
         <div className="max-w-7xl mx-auto px-4 sm:px-6">
           <div className="py-4 flex flex-col gap-4">
             <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
@@ -164,18 +161,7 @@ export function PageShell({
                 <DealerLogo dealershipId={dealerId} />
                 <div className="min-w-0 flex flex-col gap-1">
                   <div className="flex items-center gap-2 flex-wrap">
-                    {user?.role === 'SUPER_ADMIN' ? (
-                      <>
-                        <h1 className="font-bold text-base sm:text-lg tracking-tight truncate text-ink-muted">
-                          Viewing <span className="text-ink-heading">{displayDealerName}</span>
-                        </h1>
-                        <span className="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-semibold bg-orange-500/20 text-orange-600 border border-orange-500/30">
-                          Internal access
-                        </span>
-                      </>
-                    ) : (
-                      <h1 className="font-bold text-base sm:text-lg tracking-tight truncate">{displayDealerName}</h1>
-                    )}
+                    <h1 className="font-bold text-base sm:text-lg tracking-tight truncate">{displayDealerName}</h1>
                   </div>
                   {!hideDealerId && !isDealerFacingRole(user?.role ?? '') && (
                     <p className="text-ink-faint text-xs font-mono truncate">{dealerId}</p>
@@ -256,6 +242,7 @@ export function PageShell({
           </div>
         </div>
       </header>
+      </div>
 
       <main className="max-w-7xl mx-auto px-4 sm:px-6 py-6">{children}</main>
     </div>

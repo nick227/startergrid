@@ -34,24 +34,24 @@ export function VehicleDangerZone({ vehicle, onReload }: Props) {
   return (
     <section className="bg-white rounded-xl shadow-sm border border-red-200 p-6">
       <h2 className="text-[10px] font-bold text-red-600 uppercase tracking-widest pb-2 border-b border-red-100">
-        Danger Zone
+        Remove from the lot
       </h2>
       <div className="mt-4 flex items-start justify-between gap-4">
         <div className="min-w-0">
-          <p className="text-xs font-bold text-ink-heading">Archive vehicle (remove from inventory)</p>
+          <p className="text-xs font-bold text-ink-heading">Take this vehicle off the lot</p>
           <ul className="mt-1.5 text-[11px] text-ink-muted space-y-0.5 list-disc list-inside">
-            <li>Removes it from the public storefront and marketplace</li>
+            <li>Removes it from your StarterGrid storefront</li>
             <li>
               {liveCount > 0
-                ? `Queues takedown from ${liveCount} live channel${liveCount === 1 ? '' : 's'}`
-                : 'Not currently live on any channel'}
+                ? `Asks ${liveCount} destination${liveCount === 1 ? '' : 's'} to take the listing down`
+                : 'It has not been sent to other destinations yet'}
             </li>
             <li>
               {queuedCount > 0
-                ? `Cancels ${queuedCount} pending sync update${queuedCount === 1 ? '' : 's'}`
-                : 'No pending sync updates to cancel'}
+                ? `Cancels ${queuedCount} send${queuedCount === 1 ? '' : 's'} still waiting`
+                : 'Nothing is waiting to send'}
             </li>
-            <li>Preserves sales, lead, performance, and history records — relist any time</li>
+            <li>Keeps history. You can relist it later.</li>
           </ul>
         </div>
         <div className="shrink-0 flex flex-col items-end gap-2">
@@ -61,7 +61,7 @@ export function VehicleDangerZone({ vehicle, onReload }: Props) {
               onClick={() => setConfirming(true)}
               className="px-3 py-1.5 text-xs font-bold rounded-lg bg-white border border-red-200 text-red-600 hover:bg-red-50 transition-all shadow-sm"
             >
-              Archive Vehicle
+              Remove from lot
             </button>
           ) : (
             <div className="flex items-center gap-2">

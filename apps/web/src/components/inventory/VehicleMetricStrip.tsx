@@ -31,9 +31,9 @@ export function VehicleMetricStrip({ vehicle, perf }: Props) {
   const chips: { label: string; value: string; color?: string }[] = [
     { label: 'Photos', value: `${capturedSlots}/${totalSlots}` },
     { label: 'Required', value: `${capturedRequired}/${requiredSlots}` },
-    { label: 'Live', value: `${liveCount}${totalEligiblePlatforms > 0 ? `/${totalEligiblePlatforms}` : ''}` },
-    ...(queuedCount > 0 ? [{ label: 'Queued', value: String(queuedCount) }] : []),
-    { label: 'Inv.', value: `${daysInInventory}d` },
+    { label: 'Sent', value: `${liveCount}${totalEligiblePlatforms > 0 ? `/${totalEligiblePlatforms}` : ''}` },
+    ...(queuedCount > 0 ? [{ label: 'Waiting', value: String(queuedCount) }] : []),
+    { label: 'Days on lot', value: `${daysInInventory}d` },
     ...(daysOnline != null ? [{ label: 'Online', value: `${daysOnline}d` }] : []),
     ...(signal ? [{ label: 'Signal', value: signal, color: signalColor[signal] ?? 'text-ink-muted' }] : []),
   ];

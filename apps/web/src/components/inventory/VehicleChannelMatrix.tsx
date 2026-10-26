@@ -23,12 +23,12 @@ type Props = {
 };
 
 const liveStatusChip: Record<VehicleChannelLiveStatus, { label: string; cls: string }> = {
-  LIVE:           { label: 'Live',           cls: 'bg-green-100 text-green-700 border-green-200' },
-  QUEUED:         { label: 'Queued',         cls: 'bg-blue-50 text-blue-700 border-blue-200' },
+  LIVE:           { label: 'Sent',           cls: 'bg-green-100 text-green-700 border-green-200' },
+  QUEUED:         { label: 'Waiting to send', cls: 'bg-blue-50 text-blue-700 border-blue-200' },
   NEEDS_APPROVAL: { label: 'Needs approval', cls: 'bg-amber-100 text-amber-700 border-amber-200' },
-  HELD:           { label: 'Held',           cls: 'bg-amber-50 text-amber-600 border-amber-200' },
-  FAILED:         { label: 'Failed',         cls: 'bg-red-100 text-red-700 border-red-200' },
-  NOT_LIVE:       { label: '—',              cls: 'bg-silver-100 text-ink-muted border-silver-200' },
+  HELD:           { label: 'On hold',        cls: 'bg-amber-50 text-amber-600 border-amber-200' },
+  FAILED:         { label: 'Could not send', cls: 'bg-red-100 text-red-700 border-red-200' },
+  NOT_LIVE:       { label: 'Not sent',       cls: 'bg-silver-100 text-ink-muted border-silver-200' },
 };
 
 const laneLabel: Record<string, string> = {
@@ -239,7 +239,7 @@ export function VehicleChannelMatrix({
         <p className="text-[11px] text-ink-muted">
           {isDraft
             ? 'Vehicle is in Draft — channels resume when it is marked Ready.'
-            : `Live on ${liveCount} of ${channels.length} partner channel${channels.length === 1 ? '' : 's'}.`}
+            : `Sent on ${liveCount} of ${channels.length} destination${channels.length === 1 ? '' : 's'}. Sent is not verified live.`}
         </p>
         {toggleError && <span className="text-[11px] text-red-600">{toggleError}</span>}
       </div>

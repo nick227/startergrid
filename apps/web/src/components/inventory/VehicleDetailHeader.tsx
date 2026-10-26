@@ -1,15 +1,16 @@
 import { useState } from 'react';
 import type { VehicleDetailDto } from '@/lib/api/sdk.ts';
 import { markVehicleSold, relistVehicle, setVehicleListingStatus } from '@/lib/api/sdk.ts';
+import { VEHICLE_READINESS_REGISTRY } from '@/lib/statusRegistry.ts';
 
 function formatPrice(cents: number) {
   return cents > 0 ? `$${(cents / 100).toLocaleString(undefined, { maximumFractionDigits: 0 })}` : '—';
 }
 
-const readinessBg: Record<'READY' | 'WARNING' | 'BLOCKED', string> = {
-  READY:   'bg-green-100 text-green-700 border-green-200',
-  WARNING: 'bg-amber-100 text-amber-700 border-amber-200',
-  BLOCKED: 'bg-red-100 text-red-700 border-red-200',
+const READINESS_LABEL: Record<'READY' | 'WARNING' | 'BLOCKED', string> = {
+  READY: 'Ready',
+  WARNING: VEHICLE_READINESS_REGISTRY.WARNING.label,
+  BLOCKED: 'Needs a fix',
 };
 
 type Props = {
@@ -42,17 +43,16 @@ export function VehicleDetailHeader({ vehicle, onClose, onReload }: Props) {
     }
   };
 
-  // Derived display state: Draft → Ready → Live on N → Sold/Removed
-  const liveCount = vehicle.distribution.liveCount;
+  const sentCount = vehicle.distribution.liveCount;
   const stateChip = isSold
-    ? { label: 'SOLD', cls: 'bg-navy-50 text-navy-600 border-navy-200' }
+    ? { label: 'Sold', cls: 'bg-navy-50 text-navy-600 border-navy-200' }
     : isRemoved
-      ? { label: 'REMOVED', cls: 'bg-silver-100 text-ink-muted border-silver-200' }
+      ? { label: 'Removed', cls: 'bg-silver-100 text-ink-muted border-silver-200' }
       : isDraft
-        ? { label: 'DRAFT', cls: 'bg-silver-100 text-ink-body border-silver-300' }
-        : liveCount > 0
-          ? { label: `LIVE ON ${liveCount}`, cls: 'bg-green-100 text-green-700 border-green-200' }
-          : { label: 'READY', cls: 'bg-blue-50 text-blue-700 border-blue-200' };
+        ? { label: 'Draft', cls: 'bg-silver-100 text-ink-body border-silver-300' }
+        : sentCount > 0
+          ? { label: `Sent to ${sentCount}`, cls: 'bg-green-100 text-green-700 border-green-200' }
+          : { label: 'Ready', cls: 'bg-blue-50 text-blue-700 border-blue-200' };
 
   return (
     <div className="sticky top-0 z-10 bg-white border-b border-silver-200 px-6 pt-5 pb-4 shrink-0 shadow-sm">
@@ -74,8 +74,8 @@ export function VehicleDetailHeader({ vehicle, onClose, onReload }: Props) {
           <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold border ${stateChip.cls}`}>
             {stateChip.label}
           </span>
-          <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold border ${readinessBg[readiness]}`}>
-            {readiness}
+          <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold border ${VEHICLE_READINESS_REGISTRY[readiness].pill}`}>
+            {READINESS_LABEL[readiness]}
           </span>
           <button
             type="button"
@@ -115,9 +115,11 @@ export function VehicleDetailHeader({ vehicle, onClose, onReload }: Props) {
                 Ready
               </button>
             </div>
-            {isDraft && (
-              <span className="text-[11px] text-ink-muted">Internal only — not distributed to storefront or platforms.</span>
-            )}
+            <span className="text-[11px] text-ink-muted">
+              {isDraft
+                ? 'Draft stays on this lot only. Ready means it can be sent to selected destinations.'
+                : 'Ready vehicles can be sent to selected destinations. Sent is not the same as verified live.'}
+            </span>
 
             <span className="grow" />
 
@@ -127,7 +129,7 @@ export function VehicleDetailHeader({ vehicle, onClose, onReload }: Props) {
               onClick={() => run('sold', () => markVehicleSold(vehicle.dealershipId, vehicle.id))}
               className="px-3 py-1.5 text-xs font-bold rounded-lg bg-navy-700 text-white hover:bg-navy-800 disabled:opacity-50 transition-all shadow-sm"
             >
-              {busy === 'sold' ? 'Marking Sold…' : 'Mark Sold'}
+              {busy === 'sold' ? 'Marking sold…' : 'Mark sold'}
             </button>
           </>
         )}
@@ -138,7 +140,7 @@ export function VehicleDetailHeader({ vehicle, onClose, onReload }: Props) {
             onClick={() => run('relist', () => relistVehicle(vehicle.dealershipId, vehicle.id))}
             className="px-3 py-1.5 text-xs font-bold rounded-lg bg-green-600 text-white hover:bg-green-700 disabled:opacity-50 transition-all shadow-sm"
           >
-            {busy === 'relist' ? 'Relisting…' : 'Relist Vehicle'}
+            {busy === 'relist' ? 'Relisting…' : 'Relist vehicle'}
           </button>
         )}
         {actionError && (

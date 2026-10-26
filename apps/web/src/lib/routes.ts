@@ -154,6 +154,9 @@ export function parseOperatorRoute(hash = window.location.hash): OperatorRoute {
     );
   }
 
+  // Invitation links (#/invite/:token) are handled by App before any dealer route.
+  if (path.startsWith('/invite/') || path.startsWith('invite/')) return emptyRoute();
+
   if (path === '/signup' || path === 'signup') {
     return routeWithReports(
       { dealerId: null, page: 'signup', platformSlug: null, platformView: null, assetRef, assetId, inventoryItemSlug: null, adminDealerId: null, adminDealerPage: null },
@@ -222,7 +225,7 @@ export function adminDealerHash(dealerId: string): string {
 }
 
 /** The one way staff open a dealership as the dealer sees it. */
-export function dealerViewHash(dealerId: string, page?: 'inventory'): string {
+export function dealerViewHash(dealerId: string, page?: 'inventory' | 'platforms'): string {
   return `#/${dealerId}${page ? `/${page}` : ''}?support=true`;
 }
 

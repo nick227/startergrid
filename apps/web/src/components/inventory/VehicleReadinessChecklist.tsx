@@ -6,10 +6,14 @@ type Props = {
 };
 
 const statusConfig = {
-  READY:   { bg: 'bg-green-100 text-green-700 border-green-200',  label: 'READY'   },
-  WARNING: { bg: 'bg-amber-100 text-amber-700 border-amber-200',  label: 'WARNING' },
-  BLOCKED: { bg: 'bg-red-100 text-red-700 border-red-200',        label: 'BLOCKED' },
+  READY:   { bg: 'bg-green-100 text-green-700 border-green-200',  label: 'Ready' },
+  WARNING: { bg: 'bg-amber-100 text-amber-700 border-amber-200',  label: 'Needs review' },
+  BLOCKED: { bg: 'bg-red-100 text-red-700 border-red-200',        label: 'Needs a fix' },
 };
+
+function slotLabel(slot: string): string {
+  return slot.replace(/_/g, ' ').toLowerCase();
+}
 
 export function VehicleReadinessChecklist({ readiness }: Props) {
   const config = statusConfig[readiness.status];
@@ -22,7 +26,7 @@ export function VehicleReadinessChecklist({ readiness }: Props) {
         <span className={`px-2.5 py-0.5 rounded-full text-[11px] font-bold border ${config.bg}`}>
           {config.label}
         </span>
-        {allClear && <span className="text-xs text-green-600 font-medium">All checks pass — ready to publish</span>}
+        {allClear && <span className="text-xs text-green-600 font-medium">Photos and details are complete</span>}
         {!allClear && <span className="text-[11px] text-ink-muted">{totalIssues} issue{totalIssues !== 1 ? 's' : ''}</span>}
         <InfoButton docId="inventory/warnings-vs-blocked" />
       </div>
@@ -32,7 +36,7 @@ export function VehicleReadinessChecklist({ readiness }: Props) {
         {readiness.missingRequiredMediaSlots.map(s => (
           <li key={`ms${s}`} className="flex items-start gap-2 text-xs whitespace-nowrap">
             <span className="shrink-0 mt-0.5 w-4 h-4 rounded-full bg-red-100 text-red-600 flex items-center justify-center text-[10px] font-bold">✕</span>
-            <span className="text-red-700">Missing photo: <span className="font-medium">{s}</span></span>
+            <span className="text-red-700">Missing photo: <span className="font-medium">{slotLabel(s)}</span></span>
           </li>
         ))}
         {/* Invalid fields */}
@@ -53,7 +57,7 @@ export function VehicleReadinessChecklist({ readiness }: Props) {
         {readiness.missingRecommendedMediaSlots.slice(0, 3).map(s => (
           <li key={`rec${s}`} className="flex items-start gap-2 text-xs whitespace-nowrap">
             <span className="shrink-0 mt-0.5 w-4 h-4 rounded-full bg-silver-100 text-ink-faint flex items-center justify-center text-[10px]">·</span>
-            <span className="text-ink-muted">Consider adding: <span className="font-medium">{s}</span></span>
+            <span className="text-ink-muted">Consider adding: <span className="font-medium">{slotLabel(s)}</span></span>
           </li>
         ))}
         {readiness.missingRecommendedMediaSlots.length > 3 && (
@@ -63,7 +67,7 @@ export function VehicleReadinessChecklist({ readiness }: Props) {
         {allClear && (
           <li className="flex items-start gap-2 text-xs whitespace-nowrap">
             <span className="shrink-0 mt-0.5 w-4 h-4 rounded-full bg-green-100 text-green-600 flex items-center justify-center text-[10px] font-bold">✓</span>
-            <span className="text-green-700 font-medium">All required fields and media complete</span>
+            <span className="text-green-700 font-medium">Required photos and details are in place. Next, choose where to send this vehicle.</span>
           </li>
         )}
       </ul>

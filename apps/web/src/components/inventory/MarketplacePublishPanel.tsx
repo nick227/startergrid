@@ -28,7 +28,7 @@ function statusBadge(status: MarketplaceListingRecord['status']) {
     return (
       <span className="inline-flex items-center gap-1 text-[10px] font-bold uppercase tracking-wide px-1.5 py-0.5 rounded bg-green-100 text-green-800">
         <span className="w-1.5 h-1.5 rounded-full bg-green-500 inline-block" />
-        Live
+        Listed
       </span>
     );
   }
@@ -145,13 +145,13 @@ export function MarketplacePublishPanel({
   return (
     <div className="space-y-2">
       <p className="text-[11px] leading-5 text-ink-muted">
-        Ready makes this vehicle eligible. Selected includes it on this channel. Publish creates the live listing.
+        Ready means this vehicle can be sent. Selected includes it on your StarterGrid storefront. Publish online submits it — that is not a verified-live confirmation.
       </p>
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div className="flex items-center gap-2">
           <span className="text-xs text-ink-body font-semibold">Auto Marketplace</span>
           {listing ? statusBadge(listing.status) : (
-            <span className="text-[10px] text-ink-faint">Not published</span>
+            <span className="text-[10px] text-ink-faint">Not listed</span>
           )}
           {!channel?.connected && (
             <span className="text-[9px] font-bold px-1.5 py-0.5 rounded border bg-silver-100 text-ink-muted border-silver-200 uppercase">
@@ -210,7 +210,7 @@ export function MarketplacePublishPanel({
 
       {isActive && listing?.listedAt && (
         <p className="text-[10px] text-ink-muted">
-          Live since {new Date(listing.listedAt).toLocaleDateString()}.{' '}
+          Listed since {new Date(listing.listedAt).toLocaleDateString()}. Not verified live.{' '}
           <a
             href={buildConsumerMarketplaceListingUrl(vehicleId, { title: listingTitle })}
             target="_blank"

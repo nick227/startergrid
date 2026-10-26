@@ -30,7 +30,7 @@ type Props = {
   dealerId: string;
   initialTab?: RecordTab;
   viewer: { userId?: string | null; isSiteAdmin: boolean };
-  onOpenDealerView: (dealerId: string, page?: 'inventory') => void;
+  onOpenDealerView: (dealerId: string, page?: 'inventory' | 'platforms') => void;
   onBackToDirectory: () => void;
   onRefreshDealers?: () => void;
 };
@@ -291,14 +291,27 @@ export function DealershipRecordView({ dealerId, initialTab = 'overview', viewer
               <h3 className="text-xs font-semibold uppercase tracking-wide text-ink-muted">Vehicles</h3>
               <p className="mt-2 text-lg font-semibold text-ink-heading">{record.inventory.total} in stock</p>
               <p className="text-sm text-ink-muted">
-                {record.inventory.ready} ready · {record.inventory.needsAttention} need details
+                {record.inventory.ready} ready · {record.inventory.needsAttention} need details · {record.inventory.sold} sold
                 {record.waitingForStock && ' · waiting for stock'}
               </p>
+              <button type="button" onClick={() => onOpenDealerView(dealerId, 'inventory')} className="mt-3 text-xs font-semibold text-navy-700 hover:underline">
+                Open vehicles
+              </button>
             </div>
             <div className="surface-card-operator p-5 rounded-xl border border-silver-200 bg-white">
               <h3 className="text-xs font-semibold uppercase tracking-wide text-ink-muted">Destinations</h3>
               <p className="mt-2 text-lg font-semibold text-ink-heading">{activeChannels} of {record.channels.length} connected</p>
-              <p className="text-sm text-ink-muted">Connected does not mean listings are live. Check each destination in dealer view.</p>
+              <p className="text-sm text-ink-muted">Connected does not mean listings are live.</p>
+              {record.channels.length > 0 && (
+                <ul className="mt-2 space-y-1 text-sm text-ink-body">
+                  {record.channels.slice(0, 4).map(channel => (
+                    <li key={channel.slug}>{channel.name} · {channel.status === 'ACTIVE' ? 'Connected' : channel.status === 'NEEDS_LOGIN' ? 'Needs a sign-in' : channel.status === 'PAUSED' ? 'Paused' : 'Not connected'}</li>
+                  ))}
+                </ul>
+              )}
+              <button type="button" onClick={() => onOpenDealerView(dealerId, 'platforms')} className="mt-3 text-xs font-semibold text-navy-700 hover:underline">
+                Open channels
+              </button>
             </div>
           </section>
 
