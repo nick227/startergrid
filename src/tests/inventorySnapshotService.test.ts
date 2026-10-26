@@ -1,4 +1,4 @@
-﻿import assert from 'node:assert/strict';
+import assert from 'node:assert/strict';
 import { describe, it } from 'node:test';
 import { dbVehicleToPayload, type DbVehicle } from '../services/inventory/inventorySnapshotService.js';
 import { dbDealershipToPayload, type DbDealership } from '../services/platform/readinessRunService.js';
@@ -122,7 +122,16 @@ describe('dbDealershipToPayload', () => {
     documents: null,
     notificationChannels: null,
     createdAt: new Date('2026-01-01'),
-    updatedAt: new Date('2026-01-01')
+    updatedAt: new Date('2026-01-01'),
+    primaryContactEmail: 'avery@example.com',
+    lifecycleStatus: 'ACTIVE',
+    internalOwnerId: null,
+    waitingForStock: false,
+    autopilotPreference: 'ON',
+    setupVersion: 1,
+    launchCompletedAt: null,
+    handoffCompletedAt: null,
+    handoffCompletedBy: null,
   };
 
   it('maps legalName', () => {

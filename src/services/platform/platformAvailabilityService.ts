@@ -60,7 +60,11 @@ export function resolveAutoSyncReadyInventory(
 export async function loadSiteAvailabilityMap(
   prisma: PrismaClient,
 ): Promise<Map<string, boolean>> {
-  const rows = await prisma.platformSiteAvailability.findMany({
+  const availability = prisma.platformSiteAvailability;
+  if (typeof availability?.findMany !== 'function') {
+    return new Map();
+  }
+  const rows = await availability.findMany({
     select: { platformSlug: true, siteEnabled: true },
   });
   return new Map(rows.map(r => [r.platformSlug, r.siteEnabled]));

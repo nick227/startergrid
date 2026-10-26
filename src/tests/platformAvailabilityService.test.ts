@@ -1,8 +1,10 @@
 import assert from 'node:assert/strict';
 import { describe, it } from 'node:test';
+import type { PrismaClient } from '@prisma/client';
 import {
   defaultAutoSyncReadyInventory,
   filterOfferedPlatformProfiles,
+  loadSiteAvailabilityMap,
   parseDesiredChannels,
   resolveAutoSyncReadyInventory,
   resolveDealerPlatformEnabled,
@@ -62,5 +64,23 @@ describe('resolveAutoSyncReadyInventory', () => {
 describe('parseDesiredChannels', () => {
   it('filters non-strings', () => {
     assert.deepEqual(parseDesiredChannels(['a', 1, 'b']), ['a', 'b']);
+  });
+});
+
+describe('loadSiteAvailabilityMap', () => {
+  it('treats a missing Prisma delegate as no overrides', async () => {
+    const map = await loadSiteAvailabilityMap({} as PrismaClient);
+    assert.equal(map.size, 0);
+    assert.equal(resolveSiteEnabled('cars-com', map), true);
+  });
+
+  it('loads explicit site-disabled rows', async () => {
+    const map = await loadSiteAvailabilityMap({
+      platformSiteAvailability: {
+        findMany: async () => [{ platformSlug: 'cars-com', siteEnabled: false }],
+      },
+    } as unknown as PrismaClient);
+    assert.equal(resolveSiteEnabled('cars-com', map), false);
+    assert.equal(resolveSiteEnabled('consumer-marketplace', map), true);
   });
 });

@@ -337,7 +337,7 @@ function makeFullPrisma(overrides: Record<string, unknown> = {}): PrismaClient {
   const noopMany = async () => [];
 
   const base: Record<string, unknown> = {
-    dealershipProfile: { findUnique: async () => ({ id: DEALER_ID }), findFirst: noop },
+    dealershipProfile: { findUnique: async () => ({ id: DEALER_ID, businessCategory: 'AUTOMOTIVE' }), findFirst: noop },
     operatorSession:   { findUnique: noop },
     platformAccount:   { findMany: noopMany, updateMany: async () => ({ count: 0 }) },
     platformOAuthToken: { findUnique: noop, upsert: noop, deleteMany: noop },

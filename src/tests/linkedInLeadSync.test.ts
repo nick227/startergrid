@@ -252,14 +252,14 @@ describe('LinkedInLeadCaptureBridge', () => {
 // ── HTTP routes ───────────────────────────────────────────────────────────────
 
 describe('GET /linkedin-lead-gen-forms/lead-forms', () => {
-  it('returns 400 for unknown platform slug', async () => {
+  it('returns 404 for unknown platform slug', async () => {
     const app = buildApp(makePrisma());
     const res = await app.inject({
       method: 'GET',
       url: `/api/dealers/${DEALER_ID}/platforms/not-a-lead-platform/lead-forms`,
       headers: { cookie: 'op_session=mock' },
     });
-    assert.equal(res.statusCode, 400);
+    assert.equal(res.statusCode, 404);
   });
 
   it('returns 400 when accountId not configured', async () => {
@@ -306,14 +306,14 @@ describe('GET /linkedin-lead-gen-forms/lead-forms', () => {
 });
 
 describe('POST /linkedin-lead-gen-forms/lead-sync', () => {
-  it('returns 400 for unknown platform slug', async () => {
+  it('returns 404 for unknown platform slug', async () => {
     const app = buildApp(makePrisma());
     const res = await app.inject({
       method: 'POST',
       url: `/api/dealers/${DEALER_ID}/platforms/not-a-lead-platform/lead-sync`,
       headers: { cookie: 'op_session=mock' },
     });
-    assert.equal(res.statusCode, 400);
+    assert.equal(res.statusCode, 404);
   });
 
   it('returns 402 when no OAuth token', async () => {

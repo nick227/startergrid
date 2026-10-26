@@ -93,10 +93,15 @@ export function buildApp(prisma: PrismaClient): FastifyInstance {
   registerSpa('/marketplace/', path.join(process.cwd(), 'apps/marketplace/dist'));
   registerSpa('/', path.join(process.cwd(), 'apps/splash/dist'));
 
-  // Dev-only demo feed — not registered in production.
+  // Dev-only demo feed. Production registers an explicit 404 so the splash
+  // SPA fallback at `/` cannot serve index.html for this path.
   if (process.env['NODE_ENV'] !== 'production') {
     app.get('/dev/demo-feed', async (_req, reply) => {
       return reply.send(demoFeedPayload);
+    });
+  } else {
+    app.get('/dev/demo-feed', async (_req, reply) => {
+      return reply.code(404).send({ error: 'Not found' });
     });
   }
 

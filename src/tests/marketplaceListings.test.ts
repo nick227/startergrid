@@ -155,6 +155,9 @@ function makePrisma(opts: PrismaStubOpts = {}): PrismaClient {
       findMany: async () => (existing ? [existing] : []),
       updateMany: async () => ({ count: 1 }),
     },
+    syncEvent: {
+      create: async () => ({ id: 'se-1' }),
+    },
   } as unknown as PrismaClient;
 }
 
@@ -412,6 +415,9 @@ describe('MarketplaceListingStore.upsert', () => {
           capturedWhere = args.where;
           return ACTIVE_LISTING;
         },
+      },
+      syncEvent: {
+        create: async () => ({ id: 'se-1' }),
       },
     } as unknown as PrismaClient;
 

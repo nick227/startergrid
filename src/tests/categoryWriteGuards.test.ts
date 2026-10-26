@@ -88,6 +88,9 @@ describe('MarketplaceListingStore.upsert — category write guard', () => {
           return { id: 'ml-1', dealershipId: DEALER_ID, platformSlug: EBOOK_SLUG, status: 'ACTIVE' };
         },
       },
+      syncEvent: {
+        create: async () => ({ id: 'se-1' }),
+      },
     } as unknown as PrismaClient;
 
     await MarketplaceListingStore.upsert(
@@ -122,6 +125,15 @@ describe('enqueueFromVehicleUpdate — category propagation guard', () => {
       },
       syncEvent: {
         create: async () => ({ id: 'se-1' }),
+      },
+      platformAccount: {
+        findMany: async () => [],
+      },
+      vehicleChannelSelection: {
+        findMany: async () => [],
+      },
+      platformOAuthToken: {
+        findMany: async () => [],
       },
       syncPolicy: {
         findMany: async () => [],
