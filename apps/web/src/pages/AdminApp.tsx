@@ -158,9 +158,6 @@ export default function AdminApp({
       {/* 1. WORK HUB */}
       {section === 'work' && (
         <AdminWorkTab
-          dealers={allDealers as any}
-          blockedData={blockersData}
-          dashboardData={data}
           currentUserEmail={user?.email}
           onSelectDealer={(dealerId, subTab) => {
             window.location.hash = subTab ? `#/admin/dealers/${dealerId}/${subTab}` : `#/admin/dealers/${dealerId}`;

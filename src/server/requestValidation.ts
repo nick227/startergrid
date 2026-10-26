@@ -269,6 +269,7 @@ export const updateDealershipProfileSchema = z.object({
   websiteUrl: z.string().trim().url().max(255).optional().or(z.literal('')),
   primaryContact: updateDealershipContactSchema.optional(),
   rooftopAddress: updateDealershipAddressSchema.optional(),
+  autopilotPreference: z.enum(['OFF', 'ON', 'PAUSED']).optional(),
 }).strict().refine(
   body => Object.keys(body).length > 0,
   'At least one profile field must be provided',

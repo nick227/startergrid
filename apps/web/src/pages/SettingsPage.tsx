@@ -45,7 +45,7 @@ export default function SettingsPage({ dealerId, nav, activeTab }: Props) {
         accessRole: inviteRole,
         name: inviteName || undefined,
       });
-      setInviteMsg('Invitation sent successfully!');
+      setInviteMsg('Invitation link created. Copy and share it with the recipient.');
       if (res.setupUrl) setGeneratedLink(res.setupUrl);
       reloadPeople();
     } catch (err: unknown) {
@@ -57,7 +57,9 @@ export default function SettingsPage({ dealerId, nav, activeTab }: Props) {
 
   const handleResend = async (id: string) => {
     try {
-      await resendPersonInvite(dealerId, id);
+      const result = await resendPersonInvite(dealerId, id);
+      setGeneratedLink(result.setupUrl);
+      setInviteMsg('Replacement link created. The previous link no longer works.');
       reloadPeople();
     } catch (err) {
       console.error('Failed to resend invite', err);

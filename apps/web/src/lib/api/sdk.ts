@@ -1234,6 +1234,7 @@ export type DealershipProfilePatch = {
   websiteUrl?: string;
   primaryContact?: Partial<DealershipContactInput>;
   rooftopAddress?: Partial<DealershipAddressInput>;
+  autopilotPreference?: 'OFF' | 'ON' | 'PAUSED';
 };
 
 export async function updateDealershipProfile(

@@ -25,10 +25,10 @@ type Props = {
 };
 
 const TAB_LABELS: Record<OperatorTab, string> = {
-  home: 'Overview',
-  platforms: 'Platforms',
+  home: 'Home',
+  platforms: 'Channels',
   reports: 'Reports',
-  inventory: 'Inventory',
+  inventory: 'Vehicles',
   leads: 'Leads',
   settings: 'Settings',
   help: 'Help',
@@ -176,7 +176,7 @@ export function PageShell({
                       <h1 className="font-bold text-base sm:text-lg tracking-tight truncate">{displayDealerName}</h1>
                     )}
                   </div>
-                  {!hideDealerId && (
+                  {!hideDealerId && !isDealerFacingRole(user?.role ?? '') && (
                     <p className="text-ink-faint text-xs font-mono truncate">{dealerId}</p>
                   )}
                   <p className="text-ink-faint text-xs mt-1 hidden sm:block">
@@ -203,16 +203,25 @@ export function PageShell({
             <div className="flex items-center gap-2">
               <button
                 type="button"
+                onClick={nav.goToReports}
+                className={`px-2.5 py-1 text-xs font-medium rounded-md transition-colors ${
+                  activeTab === 'reports'
+                    ? 'bg-navy-800 text-white shadow-elevation-1'
+                    : 'text-silver-300 hover:text-white hover:bg-navy-900/60'
+                }`}
+              >
+                Reports
+              </button>
+              <button
+                type="button"
                 onClick={nav.goToSettings}
-                className={`px-2.5 py-1 text-xs font-medium rounded-md transition-colors flex items-center gap-1.5 ${
+                className={`px-2.5 py-1 text-xs font-medium rounded-md transition-colors ${
                   activeTab === 'settings'
                     ? 'bg-navy-800 text-white shadow-elevation-1'
                     : 'text-silver-300 hover:text-white hover:bg-navy-900/60'
                 }`}
-                title="Dealership Settings"
               >
-                <span>⚙</span>
-                <span>Settings</span>
+                Settings
               </button>
 
               {user && (

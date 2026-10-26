@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import type { OperatorNavHandlers } from '@/lib/operatorNav.ts';
-import { fetchDealershipProfile, fetchPublishStatus, fetchPublishHistory } from '@/lib/api/sdk.ts';
+import { fetchDealershipProfile, fetchPublishStatus } from '@/lib/api/sdk.ts';
 import type { DealershipProfile, PublishStatusResponse } from '@/lib/types.ts';
 import { hasOptionalChannelConfigured } from '@/components/dealers/DealershipProfilePanel.tsx';
 import { SectionCard } from '@/components/operator';
@@ -24,7 +24,7 @@ function platformIsConnected(platform: PublishStatusResponse['platforms'][number
   return platform.accountState === 'ACTIVE' || platform.state === 'Active' || platform.state === 'Ready' || platform.state === 'Scheduled';
 }
 
-function buildSteps(nav: OperatorNavHandlers, profile: DealershipProfile, status: PublishStatusResponse, hasPublished: boolean): Step[] {
+function buildSteps(nav: OperatorNavHandlers, profile: DealershipProfile, status: PublishStatusResponse): Step[] {
   return [
     {
       key: 'profile',
@@ -45,21 +45,21 @@ function buildSteps(nav: OperatorNavHandlers, profile: DealershipProfile, status
       label: 'Connect a sales channel',
       done: status.platforms.some(platformIsConnected),
       onGo: nav.goToPlatforms,
-      ctaLabel: 'Go to Platforms',
+      ctaLabel: 'Open channels',
     },
     {
       key: 'vehicle',
       label: 'Add your first vehicle',
       done: status.vehicles.total > 0,
       onGo: () => nav.goToInventory(),
-      ctaLabel: 'Go to Inventory',
+      ctaLabel: 'Open vehicles',
     },
     {
-      key: 'publish',
-      label: 'Publish your first listing',
-      done: hasPublished,
+      key: 'ready',
+      label: 'Make at least one vehicle ready to list',
+      done: status.vehicles.ready > 0,
       onGo: () => nav.goToInventory(),
-      ctaLabel: 'Go to Inventory',
+      ctaLabel: 'Open vehicles',
     },
   ];
 }
@@ -78,11 +78,10 @@ export function GettingStartedChecklist({ dealerId, nav }: Props) {
     Promise.all([
       fetchDealershipProfile(dealerId),
       fetchPublishStatus(dealerId),
-      fetchPublishHistory(dealerId, { limit: 1 }),
     ])
-      .then(([profile, status, history]) => {
+      .then(([profile, status]) => {
         if (!active) return;
-        setSteps(buildSteps(nav, profile, status, history.events.length > 0));
+        setSteps(buildSteps(nav, profile, status));
       })
       .catch(() => {
         // Setup guidance is a nice-to-have, not a load-bearing surface — fail silently

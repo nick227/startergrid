@@ -1,3 +1,5 @@
+import type { DealershipRecordDetail as RecordWire, DealershipRecordSummary as SummaryWire,
+  DealershipPeopleResponse, OnboardingSnapshot, TemporaryLoginResponse } from '@auto-dealer/api-client';
 /**
  * API client for V5 Dealership Record, Guided Onboarding, People & Access, and Leads.
  */
@@ -84,8 +86,8 @@ export type DealershipRecordDetail = DealershipRecordSummary & {
     name: string;
     status: 'ACTIVE' | 'NEEDS_LOGIN' | 'SETUP_NEEDED' | 'PAUSED' | 'NOT_CONFIGURED';
     eligibleVehicles: number;
-    liveVehicles: number;
-    autopilotEnabled: boolean;
+    liveVehicles?: number;
+    autopilotEnabled?: boolean;
   }>;
   people: Array<{
     id: string;
@@ -159,20 +161,21 @@ async function apiFetch<T>(path: string, init?: RequestInit): Promise<T> {
 export async function fetchAdminDealerships(params: {
   q?: string;
   lifecycle?: string;
+  needsAttention?: boolean;
   limit?: number;
 } = {}): Promise<{ dealerships: DealershipRecordSummary[]; total: number }> {
   const qs = new URLSearchParams();
   if (params.q) qs.set('q', params.q);
   if (params.lifecycle) qs.set('lifecycle', params.lifecycle);
+  if (params.needsAttention) qs.set('needsAttention', 'true');
   if (params.limit) qs.set('limit', String(params.limit));
   const query = qs.toString();
-  return apiFetch<{ dealerships: DealershipRecordSummary[]; total: number }>(
-    `/api/admin/dealerships${query ? `?${query}` : ''}`,
-  );
+  const result = await apiFetch<{ dealerships: SummaryWire[] }>(`/api/admin/dealerships${query ? `?${query}` : ''}`);
+  return { dealerships: result.dealerships.map(adaptSummary), total: result.dealerships.length };
 }
 
 export async function fetchAdminDealershipRecord(dealershipId: string): Promise<DealershipRecordDetail> {
-  return apiFetch<DealershipRecordDetail>(`/api/admin/dealerships/${dealershipId}`);
+  return adaptRecord(await apiFetch<RecordWire>(`/api/admin/dealerships/${dealershipId}`));
 }
 
 export async function patchAdminDealershipRecord(
@@ -186,10 +189,11 @@ export async function patchAdminDealershipRecord(
     status?: OnboardingStepStatus;
   },
 ): Promise<DealershipRecordDetail> {
-  return apiFetch<DealershipRecordDetail>(`/api/admin/dealerships/${dealershipId}`, {
+  await apiFetch<RecordWire>(`/api/admin/dealerships/${dealershipId}`, {
     method: 'PATCH',
     body: JSON.stringify(data),
   });
+  return fetchAdminDealershipRecord(dealershipId);
 }
 
 // ── Onboarding ───────────────────────────────────────────────────────────────
@@ -200,7 +204,10 @@ export async function fetchOnboarding(dealershipId: string): Promise<{
   nextStep: OnboardingStepDto | null;
   overallStatus: string;
 }> {
-  return apiFetch(`/api/admin/dealerships/${dealershipId}/onboarding`);
+  const wire = await apiFetch<OnboardingSnapshot>(`/api/admin/dealerships/${dealershipId}/onboarding`);
+  const steps = wire.steps.map(s => ({ key: s.stepKey, label: STEP_LABELS[s.stepKey], status: s.status,
+    ownerKind: s.ownerKind as TaskOwnerKind, blockingReason: s.incompleteReason, updatedAt: s.completedAt ?? '' }));
+  return { dealershipId, steps, nextStep: steps.find(s => s.status !== 'COMPLETE') ?? null, overallStatus: wire.lifecycleStatus ?? 'SETTING_UP' };
 }
 
 export async function patchOnboarding(
@@ -228,8 +235,9 @@ export async function completeHandoff(dealershipId: string): Promise<{ ok: boole
 // ── People & Access ─────────────────────────────────────────────────────────
 
 export async function fetchDealershipPeople(dealershipId: string): Promise<PeopleResponse> {
-  const data = await apiFetch<PeopleResponse>(`/api/dealers/${encodeURIComponent(dealershipId)}/people`);
-  const invitesList = data.invitations ?? data.invites ?? [];
+  const wire = await apiFetch<DealershipPeopleResponse>(`/api/dealers/${encodeURIComponent(dealershipId)}/people`);
+  const data = adaptPeople(wire);
+  const invitesList = data.invitations ?? [];
   return {
     ...data,
     dealershipId,
@@ -251,7 +259,7 @@ export async function createPersonInvite(
 export async function resendPersonInvite(
   dealershipId: string,
   inviteId: string,
-): Promise<{ invite: { id: string; email: string } }> {
+): Promise<{ setupUrl: string }> {
   return apiFetch(`/api/dealers/${dealershipId}/people/invites/${inviteId}/resend`, {
     method: 'POST',
   });
@@ -266,7 +274,7 @@ export async function revokePersonInvite(dealershipId: string, inviteId: string)
 export async function createTemporaryLogin(
   dealershipId: string,
   payload: { email: string; accessRole: DealerAccessRole; name?: string },
-): Promise<{ person: { id: string; email: string }; temporaryPassword: string; message: string }> {
+): Promise<TemporaryLoginResponse> {
   return apiFetch(`/api/dealers/${dealershipId}/people/temporary-login`, {
     method: 'POST',
     body: JSON.stringify(payload),
@@ -300,4 +308,59 @@ export async function updateLeadWorkflow(
     method: 'PATCH',
     body: JSON.stringify(payload),
   });
+}
+
+const STEP_LABELS: Record<OnboardingStepKey, string> = { CREATE: 'Create dealership', ACCESS: 'Owner access',
+  VEHICLES: 'Prepare inventory', CHANNELS: 'Choose destinations', HANDOFF: 'Complete handoff' };
+export function adaptPeople(wire: DealershipPeopleResponse): PeopleResponse {
+  return {
+    dealershipId: '',
+    people: wire.people.map(p => ({
+      accountId: p.accountId,
+      email: p.email,
+      role: p.role ?? '',
+      accessRole: p.accessRole,
+      isActive: p.isActive,
+      mustChangePassword: p.mustChangePassword ?? false,
+      firstLoginAt: p.firstLoginAt ?? null,
+      lastLoginAt: p.lastLoginAt ?? null,
+      activationStatus: p.activationStatus,
+    })),
+    invitations: wire.invitations,
+    invites: wire.invitations,
+  };
+}
+export function adaptSummary(wire: SummaryWire): DealershipRecordSummary {
+  return { ...wire, dbaName: wire.dbaName ?? null, logoUrl: wire.logoUrl ?? null,
+    primaryContactEmail: wire.primaryContactEmail ?? null, autopilotPreference: wire.autopilotPreference ?? 'OFF',
+    nextStep: wire.nextStep?.stepKey ? { key: wire.nextStep.stepKey, label: STEP_LABELS[wire.nextStep.stepKey],
+      ownerKind: wire.nextStep.ownerKind as TaskOwnerKind, nextAction: wire.nextStep.incompleteReason } : null };
+}
+export function adaptRecord(wire: RecordWire): DealershipRecordDetail {
+  const steps = (wire.onboarding?.steps ?? []).map(step => ({ key: step.stepKey, label: STEP_LABELS[step.stepKey],
+    status: step.status, ownerKind: step.ownerKind as TaskOwnerKind, blockingReason: step.incompleteReason,
+    nextAction: step.incompleteReason, evidence: step.evidence, updatedAt: step.completedAt ?? wire.createdAt }));
+  return { ...adaptSummary(wire), internalOwner: wire.internalOwner?.id && wire.internalOwner.email ? { id: wire.internalOwner.id, email: wire.internalOwner.email } : null,
+    websiteUrl: wire.websiteUrl ?? null, dealerLicense: null, rooftopAddress: wire.rooftopAddress ?? null,
+    primaryContact: wire.primaryContact ?? null, waitingForStock: wire.waitingForStock ?? false,
+    launchCompletedAt: wire.launchCompletedAt ?? null, handoffCompletedAt: wire.handoffCompletedAt ?? null, handoffCompletedBy: null,
+    onboardingSteps: steps, nextStep: steps.find(s => s.status !== 'COMPLETE') ?? null,
+    inventory: { total: wire.inventory?.vehicleCount ?? 0, ready: wire.inventory?.ready ?? 0,
+      needsAttention: wire.inventory?.needsAttention ?? 0, sold: wire.inventory?.sold ?? 0 },
+    channels: (wire.channels?.items ?? []).map((channel) => ({
+      ...channel,
+      eligibleVehicles: 0,
+    })),
+    people: wire.people
+      ? adaptPeople(wire.people).people.map((person) => ({ ...person, id: person.accountId }))
+      : [],
+    invitations: (wire.people?.invitations ?? []).map((invite) => ({
+      id: invite.id,
+      email: invite.email,
+      accessRole: invite.accessRole,
+      deliveryStatus: invite.deliveryStatus as DealershipRecordDetail['invitations'][number]['deliveryStatus'],
+      expiresAt: invite.expiresAt,
+      createdAt: invite.expiresAt,
+    })),
+  };
 }

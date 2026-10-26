@@ -16,6 +16,10 @@ import {
 } from '@/lib/api/dealershipRecordApi.ts';
 import { Skeleton } from '@/components/ui/Skeleton.tsx';
 import { Banner } from '@/components/ui';
+import { OwnershipLine } from '@/components/guidance/OwnershipLine.tsx';
+import { DealershipAutopilot } from '@/components/guidance/DealershipAutopilot.tsx';
+import { describeAutopilot } from '@/lib/autopilotStatus.ts';
+import { GuidanceNote } from '@/components/guidance/GuidanceNote.tsx';
 
 type SubTab = 'overview' | 'setup' | 'people' | 'vehicles' | 'channels' | 'activity';
 
@@ -98,19 +102,6 @@ export function DealershipRecordView({
     }
   };
 
-  // Autopilot toggle handler
-  const handleToggleAutopilot = async () => {
-    if (!record) return;
-    const nextPref = record.autopilotPreference === 'ON' ? 'PAUSED' : 'ON';
-    try {
-      await patchAdminDealershipRecord(dealerId, { autopilotPreference: nextPref });
-      showToast(`Autopilot set to ${nextPref}`);
-      await loadData();
-    } catch (err) {
-      showToast(err instanceof Error ? err.message : 'Failed to update Autopilot');
-    }
-  };
-
   // Send Invite
   const handleSendInvite = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -146,8 +137,8 @@ export function DealershipRecordView({
       });
       setShowTempLoginModal(false);
       setInviteEmail('');
-      setTempPasswordReveal({ email: res.person.email, tempPass: res.temporaryPassword });
-      showToast(`Temporary login generated for ${res.person.email}`);
+      setTempPasswordReveal({ email: res.email, tempPass: res.temporaryPassword });
+      showToast(`Temporary login generated for ${res.email}`);
       await loadData();
     } catch (err) {
       alert(err instanceof Error ? err.message : 'Failed to generate temporary login');
@@ -157,8 +148,9 @@ export function DealershipRecordView({
   // Resend Invite
   const handleResendInvite = async (inviteId: string) => {
     try {
-      await resendPersonInvite(dealerId, inviteId);
-      showToast('Invitation resent successfully');
+      const result = await resendPersonInvite(dealerId, inviteId);
+      setGeneratedSetupUrl(result.setupUrl);
+      showToast('New invitation link created — copy and share it');
       await loadData();
     } catch (err) {
       showToast(err instanceof Error ? err.message : 'Failed to resend invitation');
@@ -295,7 +287,7 @@ The StarterGrid Team`;
                       : 'bg-silver-100 text-ink-muted border border-silver-300'
                   }`}
                 >
-                  {record.lifecycleStatus.replace('_', ' ')}
+                  {record.lifecycleStatus.replace(/_/g, ' ')}
                 </span>
                 <span className="px-2 py-0.5 rounded text-[11px] font-medium bg-silver-100 text-ink-muted">
                   {record.businessCategory}
@@ -324,46 +316,26 @@ The StarterGrid Team`;
             </div>
           </div>
 
-          {/* Autopilot Quick Status Indicator */}
-          <div className="flex md:flex-col items-center md:items-end justify-between gap-2 p-3 bg-silver-50 rounded-lg border border-silver-200">
-            <div className="flex items-center gap-2">
-              <span
-                className={`w-2.5 h-2.5 rounded-full ${
-                  record.autopilotPreference === 'ON' ? 'bg-status-success-text animate-pulse' : 'bg-status-warning-text'
-                }`}
-              />
-              <span className="text-xs font-bold text-ink-heading">
-                Autopilot: {record.autopilotPreference}
-              </span>
-            </div>
-            <button
-              type="button"
-              onClick={handleToggleAutopilot}
-              className="text-[11px] font-semibold text-orange-600 hover:text-orange-700 underline"
-            >
-              {record.autopilotPreference === 'ON' ? 'Pause Autopilot' : 'Activate Autopilot'}
-            </button>
+          <div className="flex md:flex-col items-end gap-2">
+            <span className="text-xs font-medium text-ink-heading">
+              Autopilot {describeAutopilot({ preference: record.autopilotPreference }).label}
+            </span>
           </div>
         </div>
 
-        {/* Ownership Line: What needs to happen next */}
-        <div className="mt-5 pt-4 border-t border-silver-200/80 flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-silver-50/60 -mx-6 -mb-6 p-4 rounded-b-xl">
-          <div className="flex items-center gap-2.5 text-xs text-ink-heading">
-            <span className="font-bold text-orange-600 uppercase tracking-wider text-[10px]">Next Task:</span>
-            <span>
-              {record.nextStep?.label || 'Confirm inventory readiness and connect launch channels'}
-            </span>
-            <span className="text-silver-300">·</span>
-            <span className="text-ink-muted font-medium">
-              Owner: <strong>{record.nextStep?.ownerKind || 'OUR_TEAM'}</strong>
-            </span>
-          </div>
+        <div className="mt-4 pt-4 border-t border-silver-200 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+          <OwnershipLine
+            action={record.nextStep?.nextAction || record.nextStep?.label || 'Continue setup'}
+            ownerKind={record.nextStep?.ownerKind ?? 'OUR_TEAM'}
+            ownerName={record.nextStep?.ownerName ?? record.internalOwner?.email}
+            due={record.lifecycleStatus === 'ACTIVE' ? null : 'due today'}
+          />
           <button
             type="button"
             onClick={() => setSubTab('setup')}
-            className="px-3 py-1 text-xs font-semibold rounded-md bg-navy-800 text-white hover:bg-navy-700 shrink-0"
+            className="btn-primary-operator text-xs shrink-0"
           >
-            Continue Setup →
+            Continue setup
           </button>
         </div>
       </div>
@@ -408,6 +380,16 @@ The StarterGrid Team`;
       {/* Tab 1: Overview */}
       {subTab === 'overview' && (
         <div className="space-y-6">
+          <DealershipAutopilot
+            dealerId={dealerId}
+            preference={record.autopilotPreference}
+            connectedChannelCount={record.channels?.filter(channel => channel.status === 'ACTIVE').length ?? 0}
+            persist={async (preference) => {
+              const next = await patchAdminDealershipRecord(dealerId, { autopilotPreference: preference });
+              setRecord(next);
+            }}
+          />
+
           {/* Summary Metric Cards */}
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
             <div className="surface-card-operator p-5 rounded-xl border border-silver-200 bg-white">
@@ -423,7 +405,7 @@ The StarterGrid Team`;
                   : 'Needs Invite'}
               </p>
               <p className="text-xs text-ink-muted mt-1">
-                {primaryOwnerInvite ? `Sent to ${primaryOwnerInvite.email}` : 'No active invite'}
+                {primaryOwnerInvite ? `Link created for ${primaryOwnerInvite.email}` : 'No active invite'}
               </p>
               <button
                 type="button"
@@ -462,9 +444,12 @@ The StarterGrid Team`;
               <p className="mt-3 text-lg font-bold text-ink-heading">
                 {record.channels?.filter(c => c.status === 'ACTIVE').length ?? 0} Active Channels
               </p>
-              <p className="text-xs text-ink-muted mt-1">
-                Autopilot is {record.autopilotPreference}
-              </p>
+              <GuidanceNote>
+                {describeAutopilot({
+                  preference: record.autopilotPreference,
+                  connectedChannelCount: record.channels?.filter(channel => channel.status === 'ACTIVE').length ?? 0,
+                }).summary}
+              </GuidanceNote>
               <button
                 type="button"
                 onClick={() => setSubTab('channels')}
@@ -869,9 +854,9 @@ The StarterGrid Team`;
         <div className="surface-card-operator p-6 rounded-xl border border-silver-200 bg-white space-y-4">
           <div className="flex items-center justify-between">
             <div>
-              <h2 className="text-base font-bold text-ink-heading">Syndication Channels</h2>
+              <h2 className="text-base font-bold text-ink-heading">Destinations</h2>
               <p className="text-xs text-ink-muted mt-0.5">
-                Active destination channels and verified live listing coverage.
+                Connected is not the same as live. Open dealer view to inspect a destination.
               </p>
             </div>
             <button
@@ -889,7 +874,8 @@ The StarterGrid Team`;
                 <div>
                   <h4 className="text-sm font-bold text-ink-heading">{channel.name}</h4>
                   <p className="text-xs text-ink-muted mt-0.5">
-                    {channel.liveVehicles} live vehicles · Autopilot {channel.autopilotEnabled ? 'Enabled' : 'Off'}
+                    {channel.status === 'ACTIVE' ? 'Connected' : channel.status.replace(/_/g, ' ').toLowerCase()}
+                    {channel.eligibleVehicles ? ` · ${channel.eligibleVehicles} eligible` : ''}
                   </p>
                 </div>
                 <span

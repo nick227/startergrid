@@ -1,367 +1,158 @@
-import { useEffect, useState, useMemo } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import type { OperatorNavHandlers } from '@/lib/operatorNav.ts';
 import {
   fetchDealershipProfile,
   fetchPublishStatus,
   fetchDealerLeads,
-  fetchPublishHistory,
   type DealerLead,
 } from '@/lib/api/sdk.ts';
-import type {
-  DealershipProfile,
-  PublishStatusResponse,
-  HistoryResponse,
-} from '@/lib/types.ts';
+import type { DealershipProfile, PublishStatusResponse } from '@/lib/types.ts';
+import { OwnershipLine } from '@/components/guidance/OwnershipLine.tsx';
+import { GuidanceNote } from '@/components/guidance/GuidanceNote.tsx';
+import { DealershipAutopilot } from '@/components/guidance/DealershipAutopilot.tsx';
 import { GettingStartedChecklist } from './GettingStartedChecklist.tsx';
 import { Skeleton } from '@/components/ui/Skeleton.tsx';
 
-type Props = {
-  dealerId: string;
-  nav: OperatorNavHandlers;
+type Props = { dealerId: string; nav: OperatorNavHandlers };
+
+type HomeTask = {
+  id: string;
+  action: string;
+  detail: string;
+  ownerKind: 'YOU' | 'OUR_TEAM';
+  button: string;
+  onAction: () => void;
 };
 
-type ActionableIssue = {
-  id: string;
-  title: string;
-  detail: string;
-  channels: string;
-  owner: 'Dealership (You)' | 'Our Team (Support)' | 'Partner';
-  actionLabel: string;
-  onAction: () => void;
-  severity: 'warning' | 'error';
-};
+function platformIsConnected(platform: PublishStatusResponse['platforms'][number]): boolean {
+  return platform.accountState === 'ACTIVE' || platform.state === 'Active' || platform.state === 'Ready' || platform.state === 'Scheduled';
+}
 
 export function DealerHomeDashboard({ dealerId, nav }: Props) {
   const [profile, setProfile] = useState<DealershipProfile | null>(null);
   const [status, setStatus] = useState<PublishStatusResponse | null>(null);
   const [leads, setLeads] = useState<DealerLead[]>([]);
-  const [history, setHistory] = useState<HistoryResponse | null>(null);
   const [loading, setLoading] = useState(true);
-  const [autopilotActive, setAutopilotActive] = useState(true);
 
   useEffect(() => {
-    let active = true;
+    let live = true;
     Promise.all([
       fetchDealershipProfile(dealerId).catch(() => null),
       fetchPublishStatus(dealerId).catch(() => null),
       fetchDealerLeads(dealerId, { limit: 5 }).catch(() => ({ leads: [] })),
-      fetchPublishHistory(dealerId, { limit: 5 }).catch(() => null),
-    ])
-      .then(([prof, stat, leadRes, hist]) => {
-        if (!active) return;
-        setProfile(prof);
-        setStatus(stat);
-        setLeads(leadRes?.leads ?? []);
-        setHistory(hist);
-        setLoading(false);
-      })
-      .catch(() => {
-        if (active) setLoading(false);
-      });
-    return () => {
-      active = false;
-    };
+    ]).then(([nextProfile, nextStatus, leadRes]) => {
+      if (!live) return;
+      setProfile(nextProfile);
+      setStatus(nextStatus);
+      setLeads(leadRes?.leads ?? []);
+      setLoading(false);
+    }).catch(() => { if (live) setLoading(false); });
+    return () => { live = false; };
   }, [dealerId]);
 
-  // Derived metrics
-  const activePlatforms = useMemo(() => {
-    if (!status?.platforms) return [];
-    return status.platforms.filter(
-      p => p.accountState === 'ACTIVE' || p.state === 'Active' || p.state === 'Ready' || p.state === 'Scheduled',
-    );
-  }, [status]);
+  const newLeads = leads.filter(lead => !lead.workflowStatus || lead.workflowStatus === 'NEW');
+  const blocked = status?.vehicles?.blocked ?? 0;
+  const emptyLot = (status?.vehicles.total ?? 0) === 0;
+  const connectedCount = (status?.platforms ?? []).filter(platformIsConnected).length;
 
-  const totalVehicles = status?.vehicles.total ?? 0;
-  const readyVehicles = status?.vehicles.ready ?? 0;
-
-  // Actionable issues with the signature Ownership Line
-  const actionableIssues: ActionableIssue[] = useMemo(() => {
-    const list: ActionableIssue[] = [];
-
-    // Critical profile warnings
-    if (profile?.publishingWarnings) {
-      profile.publishingWarnings
-        .filter(w => w.severity === 'critical')
-        .forEach((w, idx) => {
-          list.push({
-            id: `prof-${idx}`,
-            title: `Dealership Profile: ${w.field} is missing`,
-            detail: w.message,
-            channels: 'Required by all advertising channels',
-            owner: 'Dealership (You)',
-            actionLabel: 'Update Profile',
-            onAction: nav.goToSettings,
-            severity: 'error',
-          });
-        });
-    }
-
-    // Platform connection issues (e.g. Expired credentials or setup needed)
-    if (status?.platforms) {
-      status.platforms.forEach(p => {
-        if (p.accountState === 'DISCONNECTED' || p.accountState === 'ERROR') {
-          list.push({
-            id: `plat-${p.platformSlug}`,
-            title: `${p.platformName} requires re-authentication`,
-            detail: 'Channel distribution is paused until credentials are refreshed.',
-            channels: p.platformName,
-            owner: 'Dealership (You)',
-            actionLabel: 'Reconnect Channel',
-            onAction: nav.goToPlatforms,
-            severity: 'warning',
-          });
-        }
-      });
-    }
-
-    // Vehicle readiness issues if any exist
-    const blockedCount = status?.vehicles?.blocked ?? 0;
-    if (blockedCount > 0) {
+  const tasks = useMemo<HomeTask[]>(() => {
+    const list: HomeTask[] = [];
+    profile?.publishingWarnings?.filter(w => w.severity === 'critical').forEach((warning, index) => {
       list.push({
-        id: 'veh-errors',
-        title: `${blockedCount} vehicle${blockedCount === 1 ? '' : 's'} missing required pricing or photos`,
-        detail: 'Incomplete vehicles cannot be syndicated to Google or Meta until required fields are added.',
-        channels: 'Google Vehicle Ads & Meta Automotive',
-        owner: 'Dealership (You)',
-        actionLabel: 'Review Vehicles',
+        id: `profile-${index}`,
+        action: `Add ${warning.label || warning.field}`,
+        detail: warning.message,
+        ownerKind: 'YOU',
+        button: 'Open settings',
+        onAction: nav.goToSettings,
+      });
+    });
+    if (blocked > 0) {
+      list.push({
+        id: 'vehicles',
+        action: `Fix ${blocked} vehicle${blocked === 1 ? '' : 's'} that cannot list`,
+        detail: 'Usually a missing price or photos.',
+        ownerKind: 'YOU',
+        button: 'Review vehicles',
         onAction: () => nav.goToInventory(),
-        severity: 'warning',
       });
     }
-
+    (status?.platforms ?? []).forEach(platform => {
+      if (platform.accountState === 'ERROR') {
+        list.push({
+          id: platform.platformSlug,
+          action: `Reconnect ${platform.platformName}`,
+          detail: 'This channel stopped accepting updates.',
+          ownerKind: 'YOU',
+          button: 'Open channels',
+          onAction: nav.goToPlatforms,
+        });
+      }
+    });
     return list;
-  }, [profile, status, nav]);
+  }, [profile, status, nav, blocked]);
 
   if (loading) {
-    return (
-      <div className="space-y-6">
-        <div className="surface-card-operator p-6 rounded-xl">
-          <Skeleton rows={6} />
-        </div>
-      </div>
-    );
+    return <div className="surface-card-operator p-6 rounded-xl"><Skeleton rows={6} /></div>;
   }
 
-  const isBrandNew = totalVehicles === 0 || activePlatforms.length === 0;
-
   return (
-    <div className="space-y-6">
-      {/* 1. Overall Distribution Status & Autopilot Card */}
-      <div className="surface-card-operator p-6 rounded-xl border border-silver-200 bg-white shadow-elevation-1">
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-          <div className="space-y-1">
-            <div className="flex items-center gap-2.5">
-              <span
-                className={`w-3 h-3 rounded-full ${
-                  autopilotActive ? 'bg-status-success-text animate-pulse' : 'bg-status-warning-text'
-                }`}
-              />
-              <h2 className="text-lg font-bold text-ink-heading">
-                {autopilotActive ? 'Autopilot Active' : 'Autopilot Paused'}
-              </h2>
-              <span className="px-2 py-0.5 rounded text-[11px] font-bold bg-status-success-bg text-status-success-text border border-status-success-border">
-                {activePlatforms.length} Channels Connected
-              </span>
-            </div>
-            <p className="text-xs text-ink-muted">
-              Distributing <strong className="text-ink-heading font-semibold">{readyVehicles}</strong> eligible vehicles
-              across {activePlatforms.length} active sales channels. Automated inventory sync runs on vehicle updates.
-            </p>
-          </div>
+    <div className="space-y-5">
+      <DealershipAutopilot
+        dealerId={dealerId}
+        preference={profile?.autopilotPreference ?? 'OFF'}
+        connectedChannelCount={connectedCount}
+        onUpdated={(preference) => {
+          if (profile) setProfile({ ...profile, autopilotPreference: preference });
+        }}
+      />
 
-          <div className="flex items-center gap-2.5 shrink-0">
-            <button
-              type="button"
-              onClick={() => setAutopilotActive(!autopilotActive)}
-              className={`px-3.5 py-1.5 text-xs font-bold rounded-lg border transition-colors ${
-                autopilotActive
-                  ? 'bg-silver-100 hover:bg-silver-200 text-ink-heading border-silver-300'
-                  : 'bg-navy-900 hover:bg-navy-800 text-white border-navy-950'
-              }`}
-            >
-              {autopilotActive ? 'Pause Autopilot' : 'Resume Autopilot'}
-            </button>
-            <button
-              type="button"
-              onClick={nav.goToPlatforms}
-              className="px-3.5 py-1.5 text-xs font-bold rounded-lg bg-orange-600 hover:bg-orange-500 text-white transition-colors"
-            >
-              Manage Channels →
-            </button>
-          </div>
-        </div>
+      {emptyLot && <GettingStartedChecklist dealerId={dealerId} nav={nav} />}
 
-        {/* Quick Channel Pill List */}
-        {activePlatforms.length > 0 && (
-          <div className="mt-4 pt-3 border-t border-silver-200/70 flex items-center gap-2 flex-wrap">
-            <span className="text-[11px] font-bold text-ink-faint uppercase tracking-wider">Active:</span>
-            {activePlatforms.map(p => (
-              <span
-                key={p.platformSlug}
-                className="px-2.5 py-0.5 rounded-full text-xs font-medium bg-silver-100 text-ink-heading border border-silver-200"
-              >
-                {p.platformName} <span className="font-mono text-[10px] text-ink-faint">({readyVehicles})</span>
-              </span>
-            ))}
-          </div>
-        )}
-      </div>
-
-      {/* 2. Onboarding Stepper (Minimal guidance, only when dealer is brand new) */}
-      {isBrandNew && (
-        <div className="mb-6">
-          <GettingStartedChecklist dealerId={dealerId} nav={nav} />
-        </div>
-      )}
-
-      {/* 3. Actionable Issues: Needs Attention */}
-      <div className="surface-card-operator p-6 rounded-xl border border-silver-200 bg-white shadow-elevation-1 space-y-4">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <h3 className="text-sm font-bold text-ink-heading">Needs Attention</h3>
-            {actionableIssues.length > 0 && (
-              <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-amber-100 text-amber-800 border border-amber-200">
-                {actionableIssues.length} action item{actionableIssues.length === 1 ? '' : 's'}
-              </span>
-            )}
-          </div>
-          {actionableIssues.length > 0 && (
-            <span className="text-xs text-ink-faint">Resolved issues disappear automatically</span>
-          )}
-        </div>
-
-        {actionableIssues.length > 0 ? (
-          <div className="space-y-3">
-            {actionableIssues.map(issue => (
-              <div
-                key={issue.id}
-                className="p-4 rounded-xl border border-amber-200 bg-amber-50/40 flex flex-col sm:flex-row sm:items-center justify-between gap-3"
-              >
-                <div className="space-y-1">
-                  <div className="flex items-center gap-2">
-                    <span className="text-sm">⚠️</span>
-                    <span className="text-xs font-bold text-ink-heading">{issue.title}</span>
-                  </div>
-                  <p className="text-xs text-ink-muted">{issue.detail}</p>
-                  <div className="flex items-center gap-2 text-[11px] text-ink-faint pt-1">
-                    <span>{issue.channels}</span>
-                    <span>•</span>
-                    <span className="font-semibold text-ink-heading">Owner: {issue.owner}</span>
-                  </div>
-                </div>
-
-                <button
-                  type="button"
-                  onClick={issue.onAction}
-                  className="px-3.5 py-1.5 text-xs font-bold rounded-lg bg-navy-900 hover:bg-navy-800 text-white self-end sm:self-center shrink-0 shadow-sm"
-                >
-                  {issue.actionLabel} →
-                </button>
-              </div>
-            ))}
-          </div>
+      <section className="surface-card-operator p-5 rounded-xl border border-silver-200 bg-white space-y-3">
+        <h3 className="text-sm font-semibold text-ink-heading">Needs attention</h3>
+        {tasks.length === 0 ? (
+          <GuidanceNote>Nothing needs you right now. New buyer inquiries appear below.</GuidanceNote>
         ) : (
-          <div className="p-6 text-center bg-silver-50 rounded-xl border border-dashed border-silver-200">
-            <p className="text-xs font-semibold text-status-success-text flex items-center justify-center gap-1.5">
-              <span>✓</span>
-              <span>All systems healthy. No blocking issues detected on your inventory or channels.</span>
-            </p>
-          </div>
+          tasks.map(task => (
+            <div key={task.id} className="py-3 border-t border-silver-100 first:border-0 first:pt-0 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+              <div className="space-y-1">
+                <OwnershipLine action={task.action} ownerKind={task.ownerKind} due="today" />
+                <GuidanceNote>{task.detail}</GuidanceNote>
+              </div>
+              <button type="button" onClick={task.onAction} className="btn-primary-operator text-xs shrink-0">
+                {task.button}
+              </button>
+            </div>
+          ))
         )}
-      </div>
+      </section>
 
-      {/* 4. Meaningful Activity & New Inquiries (2-column layout) */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        {/* Today's Meaningful Activity */}
-        <div className="surface-card-operator p-6 rounded-xl border border-silver-200 bg-white shadow-elevation-1 space-y-4">
-          <div className="flex items-center justify-between">
-            <h3 className="text-sm font-bold text-ink-heading">Recent Distribution Activity</h3>
-            <span className="text-xs text-ink-faint">Automated updates</span>
-          </div>
-
-          <div className="space-y-3 text-xs text-ink-body">
-            <div className="p-3 bg-silver-50 rounded-lg flex items-start gap-2.5">
-              <span className="text-status-success-text font-bold">✓</span>
-              <div>
-                <p className="font-medium text-ink-heading">
-                  Automated sync active across {activePlatforms.length} channels
-                </p>
-                <p className="text-[11px] text-ink-muted mt-0.5">
-                  Eligible vehicles verified and formatted for public syndication.
-                </p>
-              </div>
-            </div>
-
-            {history?.events?.slice(0, 3).map((event: any, idx: number) => (
-              <div key={idx} className="p-3 border border-silver-200 rounded-lg flex items-start gap-2.5">
-                <span className="text-ink-muted">📡</span>
-                <div className="min-w-0 flex-1">
-                  <p className="font-medium text-ink-heading truncate">{event.platformSlug || 'Syndication Engine'}</p>
-                  <p className="text-[11px] text-ink-muted">{event.action || 'Inventory state synchronized'}</p>
-                </div>
-                <span className="text-[10px] text-ink-faint shrink-0 font-mono">
-                  {new Date(event.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-                </span>
-              </div>
-            ))}
-          </div>
+      <section className="surface-card-operator p-5 rounded-xl border border-silver-200 bg-white space-y-3">
+        <div className="flex items-center justify-between gap-3">
+          <h3 className="text-sm font-semibold text-ink-heading">New inquiries</h3>
+          <button type="button" onClick={nav.goToLeads} className="text-xs font-medium text-ink-heading underline">
+            Open leads
+          </button>
         </div>
-
-        {/* New Buyer Inquiries Preview */}
-        <div className="surface-card-operator p-6 rounded-xl border border-silver-200 bg-white shadow-elevation-1 space-y-4">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-2">
-              <h3 className="text-sm font-bold text-ink-heading">Inbound Buyer Inquiries</h3>
-              {leads.length > 0 && (
-                <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-blue-100 text-blue-800 border border-blue-200">
-                  {leads.length} new
-                </span>
-              )}
-            </div>
+        {newLeads.length === 0 ? (
+          <GuidanceNote>No new inquiries. Statuses are shared with your team.</GuidanceNote>
+        ) : (
+          newLeads.slice(0, 4).map(lead => (
             <button
+              key={lead.id}
               type="button"
               onClick={nav.goToLeads}
-              className="text-xs font-semibold text-orange-600 hover:underline"
+              className="w-full text-left py-2 border-t border-silver-100 first:border-0 first:pt-0"
             >
-              Open Inbox →
+              <p className="text-sm font-medium text-ink-heading">{lead.contactName || 'Buyer'}</p>
+              <p className="text-xs text-ink-muted">
+                {lead.vehicle ? `${lead.vehicle.year} ${lead.vehicle.make} ${lead.vehicle.model}` : 'Inventory inquiry'}
+              </p>
             </button>
-          </div>
-
-          {leads.length > 0 ? (
-            <div className="space-y-3">
-              {leads.slice(0, 3).map(lead => (
-                <div
-                  key={lead.id}
-                  onClick={nav.goToLeads}
-                  className="p-3.5 rounded-lg border border-silver-200 hover:border-silver-300 hover:bg-silver-50/50 cursor-pointer transition-colors flex items-center justify-between gap-3 text-xs"
-                >
-                  <div className="min-w-0 flex-1">
-                    <div className="flex items-center gap-2">
-                      <span className="font-bold text-ink-heading truncate">
-                        {lead.contactName || 'Anonymous Buyer'}
-                      </span>
-                      <span className="px-1.5 py-0.2 rounded text-[10px] font-medium bg-silver-100 text-ink-muted">
-                        {lead.platformSlug}
-                      </span>
-                    </div>
-                    <p className="text-xs text-ink-muted truncate mt-0.5">
-                      {lead.vehicle
-                        ? `${lead.vehicle.year} ${lead.vehicle.make} ${lead.vehicle.model}`
-                        : lead.message || 'Interested in vehicle'}
-                    </p>
-                  </div>
-                  <span className="text-[11px] font-semibold text-orange-600 shrink-0">Reply →</span>
-                </div>
-              ))}
-            </div>
-          ) : (
-            <div className="p-8 text-center bg-silver-50 rounded-xl border border-dashed border-silver-200">
-              <p className="text-xs text-ink-muted">No new buyer inquiries yet today.</p>
-              <p className="text-[11px] text-ink-faint mt-1">Leads from all channels appear in your shared inbox.</p>
-            </div>
-          )}
-        </div>
-      </div>
+          ))
+        )}
+      </section>
     </div>
   );
 }

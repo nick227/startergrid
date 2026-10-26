@@ -38,6 +38,9 @@ const BASE_ROW = {
     discord: { webhookUrl: 'https://discord.com/api/webhooks/abc/xyz' },
     autoResponse: { enabled: true },
   },
+  lifecycleStatus: 'SETTING_UP',
+  waitingForStock: false,
+  autopilotPreference: 'OFF' as const,
   createdAt: new Date('2026-01-01T00:00:00Z'),
   updatedAt: new Date('2026-06-01T00:00:00Z'),
 };
@@ -93,6 +96,9 @@ function makePrisma(opts: {
         }
         if (data.rooftopAddress !== undefined) {
           row.rooftopAddress = data.rooftopAddress as typeof BASE_ROW.rooftopAddress;
+        }
+        if (data.autopilotPreference !== undefined) {
+          row.autopilotPreference = data.autopilotPreference as typeof BASE_ROW.autopilotPreference;
         }
         row.updatedAt = new Date('2026-06-14T00:00:00Z');
         return row;

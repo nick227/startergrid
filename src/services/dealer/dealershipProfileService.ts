@@ -45,6 +45,9 @@ export type DealershipProfileResponse = {
   rooftopAddress: DealershipAddress;
   notificationChannels: NotificationChannelSummary;
   publishingWarnings: ProfileReadinessWarning[];
+  lifecycleStatus: string;
+  waitingForStock: boolean;
+  autopilotPreference: 'OFF' | 'ON' | 'PAUSED';
   createdAt: string;
   updatedAt: string;
 };
@@ -60,6 +63,9 @@ const PROFILE_SELECT = {
   primaryContact: true,
   rooftopAddress: true,
   notificationChannels: true,
+  lifecycleStatus: true,
+  waitingForStock: true,
+  autopilotPreference: true,
   createdAt: true,
   updatedAt: true,
 } as const;
@@ -186,6 +192,9 @@ function shapeProfile(row: {
   primaryContact: unknown;
   rooftopAddress: unknown;
   notificationChannels: unknown;
+  lifecycleStatus: string;
+  waitingForStock: boolean;
+  autopilotPreference: 'OFF' | 'ON' | 'PAUSED';
   createdAt: Date;
   updatedAt: Date;
 }): DealershipProfileResponse {
@@ -207,6 +216,9 @@ function shapeProfile(row: {
       primaryContact,
       rooftopAddress,
     }),
+    lifecycleStatus: row.lifecycleStatus,
+    waitingForStock: row.waitingForStock,
+    autopilotPreference: row.autopilotPreference,
     createdAt: row.createdAt.toISOString(),
     updatedAt: row.updatedAt.toISOString(),
   };
@@ -273,6 +285,9 @@ export async function updateDealershipProfile(
   }
   if (body.rooftopAddress !== undefined) {
     data.rooftopAddress = mergedAddress as unknown as Prisma.InputJsonValue;
+  }
+  if (body.autopilotPreference !== undefined) {
+    data.autopilotPreference = body.autopilotPreference;
   }
 
   const updated = await prisma.dealershipProfile.update({

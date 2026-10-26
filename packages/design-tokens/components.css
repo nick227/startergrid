@@ -7,6 +7,10 @@
     @apply focus-ring inline-flex items-center justify-center rounded-lg bg-orange-600 px-3.5 py-2 text-sm font-semibold text-white transition hover:bg-orange-500 disabled:cursor-not-allowed disabled:opacity-40;
   }
 
+  .btn-secondary-operator {
+    @apply focus-ring inline-flex items-center justify-center rounded-lg border border-silver-300 bg-surface-card px-3.5 py-2 text-sm font-semibold text-ink-heading transition hover:bg-silver-100 disabled:cursor-not-allowed disabled:opacity-40;
+  }
+
   .btn-primary-marketplace {
     @apply focus-ring inline-flex min-h-[48px] items-center justify-center rounded-pill bg-cta px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-cta-hover disabled:cursor-not-allowed disabled:opacity-40;
   }

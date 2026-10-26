@@ -1,3 +1,4 @@
+import { platformProfiles } from '../../data/platformProfiles.js';
 import type { DealershipLifecycle, Prisma, PrismaClient } from '@prisma/client';
 import { HttpError } from './httpError.js';
 import { getOnboarding, refreshOnboarding } from './onboardingService.js';
@@ -113,9 +114,12 @@ export async function getDealershipRecord(db: Db, dealershipId: string) {
   });
   if (!dealer) throw new HttpError(404, 'Dealership not found');
 
-  const [onboarding, people] = await Promise.all([
+  const [onboarding, people, vehicles, accounts, owner] = await Promise.all([
     getOnboarding(db, dealershipId),
     listPeople(db, dealershipId),
+    db.vehicle.findMany({ where: { dealershipId }, select: { listingStatus: true, soldAt: true, removedAt: true } }),
+    db.platformAccount.findMany({ where: { dealershipId }, select: { platformSlug: true, state: true, dealerEnabled: true } }),
+    dealer.internalOwnerId ? db.operatorAccount.findUnique({ where: { id: dealer.internalOwnerId }, select: { id: true, email: true } }) : null,
   ]);
 
   return {
@@ -123,8 +127,14 @@ export async function getDealershipRecord(db: Db, dealershipId: string) {
     createdAt: dealer.createdAt.toISOString(),
     launchCompletedAt: dealer.launchCompletedAt?.toISOString() ?? null,
     handoffCompletedAt: dealer.handoffCompletedAt?.toISOString() ?? null,
-    inventory: { vehicleCount: dealer._count.vehicles, waitingForStock: dealer.waitingForStock },
-    channels: { accountCount: dealer._count.platformAccounts, autopilotPreference: dealer.autopilotPreference },
+    internalOwner: owner,
+    inventory: { vehicleCount: dealer._count.vehicles, waitingForStock: dealer.waitingForStock,
+      ready: vehicles.filter(v => v.listingStatus === 'READY' && !v.soldAt && !v.removedAt).length,
+      needsAttention: vehicles.filter(v => v.listingStatus !== 'READY' && !v.soldAt && !v.removedAt).length,
+      sold: vehicles.filter(v => v.soldAt || v.removedAt).length },
+    channels: { accountCount: dealer._count.platformAccounts, autopilotPreference: dealer.autopilotPreference,
+      items: accounts.map(a => ({ slug: a.platformSlug, name: platformProfiles.find(p => p.slug === a.platformSlug)?.name ?? a.platformSlug,
+        status: !a.dealerEnabled ? 'PAUSED' : a.state === 'ACTIVE' ? 'ACTIVE' : a.state === 'CREDENTIALS_NEEDED' ? 'NEEDS_LOGIN' : 'SETUP_NEEDED' })) },
     onboarding,
     people,
   };
@@ -153,7 +163,7 @@ export async function patchDealershipRecord(
 
   const data: Prisma.DealershipProfileUpdateInput = {};
   if (typeof body.waitingForStock === 'boolean') data.waitingForStock = body.waitingForStock;
-  if (body.autopilotPreference) data.autopilotPreference = body.autopilotPreference;
+  if (body.autopilotPreference !== undefined) data.autopilotPreference = body.autopilotPreference;
   if (body.lifecycleStatus === 'PAUSED' || body.lifecycleStatus === 'ARCHIVED' || body.lifecycleStatus === 'ACTIVE') {
     data.lifecycleStatus = body.lifecycleStatus;
   }

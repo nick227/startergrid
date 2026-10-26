@@ -211,6 +211,9 @@ export type DealershipProfile = {
   rooftopAddress: DealershipAddressInput;
   notificationChannels: NotificationChannelSummary;
   publishingWarnings: ProfileReadinessWarning[];
+  lifecycleStatus?: string;
+  waitingForStock?: boolean;
+  autopilotPreference?: 'OFF' | 'ON' | 'PAUSED';
   createdAt: string;
   updatedAt: string;
 };

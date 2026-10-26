@@ -27,7 +27,7 @@ export function useInventoryWorkspace() {
 }
 
 const TABS: { key: Tab; label: string; icon: string }[] = [
-  { key: 'browse',    label: 'Browse',           icon: '◻' },
+  { key: 'browse',    label: 'Active',           icon: '◻' },
   { key: 'attention', label: 'Needs Attention',   icon: '!' },
   { key: 'recent',    label: 'Recently Changed',  icon: '✎' },
   { key: 'sold',      label: 'Sold / Removed',    icon: '✕' },

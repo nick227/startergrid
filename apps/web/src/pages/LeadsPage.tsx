@@ -93,25 +93,6 @@ function leadSearchText(lead: DealerLead): string {
   ].filter(Boolean).join(' ').toLowerCase();
 }
 
-function storageKey(dealerId: string): string {
-  return `dealerLeadStatuses:${dealerId}`;
-}
-
-function readSavedStatuses(dealerId: string): Record<string, LeadStatus> {
-  try {
-    const raw = localStorage.getItem(storageKey(dealerId));
-    if (!raw) return {};
-    const parsed = JSON.parse(raw) as Record<string, LeadStatus>;
-    return parsed && typeof parsed === 'object' ? parsed : {};
-  } catch {
-    return {};
-  }
-}
-
-function writeSavedStatuses(dealerId: string, statuses: Record<string, LeadStatus>) {
-  localStorage.setItem(storageKey(dealerId), JSON.stringify(statuses));
-}
-
 function LeadThumbnail({ lead, title }: { lead: DealerLead; title: string }) {
   const thumbnail = lead.vehicle?.thumbnailUrl;
   if (thumbnail) {
@@ -423,13 +404,14 @@ export default function LeadsPage({ dealerId, nav, activeTab }: Props) {
   const [statusFilter, setStatusFilter] = useState<StatusFilter>('all');
   const [sourceFilter, setSourceFilter] = useState('all');
   const [sort, setSort] = useState<SortKey>('newest');
-  const [statuses, setStatuses] = useState<Record<string, LeadStatus>>(() => readSavedStatuses(dealerId));
+  const [statuses, setStatuses] = useState<Record<string, LeadStatus>>({});
   const [assignees, setAssignees] = useState<Record<string, string | null>>({});
 
   const leads = data?.leads ?? [];
 
   useEffect(() => {
-    setStatuses(readSavedStatuses(dealerId));
+    setStatuses({});
+    setAssignees({});
   }, [dealerId]);
 
   const statusFor = useCallback(
@@ -488,11 +470,7 @@ export default function LeadsPage({ dealerId, nav, activeTab }: Props) {
   }, [leads, statusFor]);
 
   const handleStatusChange = async (lead: DealerLead, nextStatus: LeadStatus) => {
-    setStatuses(current => {
-      const next = { ...current, [lead.id]: nextStatus };
-      writeSavedStatuses(dealerId, next);
-      return next;
-    });
+    setStatuses(current => ({ ...current, [lead.id]: nextStatus }));
 
     try {
       await updateLeadWorkflow(dealerId, lead.id, {
@@ -536,8 +514,8 @@ export default function LeadsPage({ dealerId, nav, activeTab }: Props) {
     >
       <div className="space-y-5">
         <PageHeader
-          title="Inquiries & Leads"
-          subtitle="Shared buyer inbox. Review customer requests, assign owners, and track sales pipeline."
+          title="Leads"
+          subtitle="Shared team inbox. Status and assignment save for everyone on this dealership."
         />
 
         <NotificationChannelsPanel dealerId={dealerId} />

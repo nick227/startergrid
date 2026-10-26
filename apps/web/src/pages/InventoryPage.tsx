@@ -38,6 +38,7 @@ import { CreatePostModal } from '@/components/social/index.ts';
 import { operatorCopy } from '@/lib/copy/index.ts';
 import { useCategorySchema } from '@/contexts/CategoryContext.tsx';
 import { useOperatorRoute } from '@/hooks/useOperatorRoute.ts';
+import { OwnershipLine } from '@/components/guidance/OwnershipLine.tsx';
 
 type Props = OperatorPageBaseProps;
 
@@ -58,7 +59,7 @@ function InventoryPublishingGuide({
 }) {
   const platforms = status?.platforms ?? [];
   const connectedCount = platforms.filter(platformIsConnected).length;
-  const storefront = platforms.find(p => p.platformSlug === 'dealer-storefront');
+  const storefront = platforms.find(p => p.platformSlug === 'consumer-marketplace' || p.platformSlug === 'dealer-storefront');
   const storefrontConnected = storefront ? platformIsConnected(storefront) : false;
   const storefrontLabel = loading && !status
     ? 'Checking'
@@ -74,14 +75,14 @@ function InventoryPublishingGuide({
       subtitle="Platform connection is the first gate for inventory-level controls."
       action={
         <button type="button" onClick={onOpenPlatforms} className="btn-primary-operator">
-          Dealership platforms
+          Open channels
         </button>
       }
     >
       <div className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_320px]">
         <div>
           <div className="flex flex-wrap items-center gap-2">
-            <span className="text-xs font-semibold text-ink-heading">Dealer Storefront canary</span>
+            <span className="text-xs font-semibold text-ink-heading">Auto Marketplace</span>
             <span className={`text-[10px] font-bold uppercase tracking-wide px-2 py-0.5 rounded-full border ${
               storefrontConnected
                 ? 'bg-green-100 text-green-800 border-green-200'
@@ -111,12 +112,12 @@ function InventoryPublishingGuide({
           </div>
         </div>
         <div className="rounded-md border border-navy-100 bg-navy-50 p-4">
-          <p className="text-xs font-semibold text-navy-800">Storefront online checklist</p>
+          <p className="text-xs font-semibold text-navy-800">Auto Marketplace checklist</p>
           <ol className="mt-2 space-y-1.5 text-[11px] leading-5 text-ink-body list-decimal list-inside">
-            <li>Connect Dealer Storefront on Platforms.</li>
+            <li>Connect Auto Marketplace on Channels.</li>
             <li>Open a vehicle and mark it Ready.</li>
-            <li>Leave Dealer Storefront selected for that vehicle.</li>
-            <li>Use Publish in the vehicle channel panel to create the live listing.</li>
+            <li>Leave Auto Marketplace selected for that vehicle.</li>
+            <li>A live listing is confirmed only after a verified destination result.</li>
           </ol>
         </div>
       </div>
@@ -569,6 +570,12 @@ export default function InventoryPage({ dealerId, nav, activeTab }: Props) {
                             </div>
                           </div>
 
+                          <div className="mt-3">
+                            <OwnershipLine
+                              action={missingPrice ? 'Add a listing price' : missingPhotos ? 'Add photos' : 'Fix listing blockers'}
+                              ownerKind="YOU"
+                            />
+                          </div>
                           <div className="mt-4 pt-3 border-t border-silver-100 flex items-center justify-between">
                             <span className="text-[11px] text-ink-faint font-mono truncate max-w-[120px]">{v.vin}</span>
                             <button

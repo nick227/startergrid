@@ -1,4 +1,7 @@
 import { useState, useMemo } from 'react';
+import { DealershipAutopilot } from '@/components/guidance/DealershipAutopilot.tsx';
+import { OwnershipLine } from '@/components/guidance/OwnershipLine.tsx';
+import { GuidanceNote } from '@/components/guidance/GuidanceNote.tsx';
 import type {
   PlatformPublishResult,
   PlatformAccountDetail,
@@ -47,8 +50,6 @@ export function SimplifiedChannelsView({
   const [filter, setFilter] = useState<ChannelFilter>('all');
   const [search, setSearch] = useState('');
   const [expandedAdvanced, setExpandedAdvanced] = useState<Record<string, boolean>>({});
-  const [masterAutopilot, setMasterAutopilot] = useState(true);
-  const [channelAutopilot, setChannelAutopilot] = useState<Record<string, boolean>>({});
 
   // Toggle advanced drawer per channel
   const toggleAdvanced = (slug: string) => {
@@ -109,45 +110,7 @@ export function SimplifiedChannelsView({
 
   return (
     <div className="space-y-6">
-      {/* 1. Master Dealership Autopilot Switch */}
-      <div className="surface-card-operator p-6 rounded-xl border border-silver-200 bg-white shadow-elevation-1">
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-          <div className="space-y-1">
-            <div className="flex items-center gap-2.5">
-              <span
-                className={`w-3 h-3 rounded-full ${
-                  masterAutopilot ? 'bg-status-success-text animate-pulse' : 'bg-status-warning-text'
-                }`}
-              />
-              <h2 className="text-base font-bold text-ink-heading">
-                {masterAutopilot ? 'Distribution Autopilot: ACTIVE' : 'Distribution Autopilot: PAUSED'}
-              </h2>
-              <span className="px-2 py-0.5 rounded text-[11px] font-bold bg-status-success-bg text-status-success-text border border-status-success-border">
-                {activeCount} of {platforms.length} Channels Live
-              </span>
-            </div>
-            <p className="text-xs text-ink-muted">
-              {masterAutopilot
-                ? 'Eligible vehicles are automatically distributed and kept current across all connected sales channels.'
-                : 'Automated distribution is temporarily paused. Manual sync only.'}
-            </p>
-          </div>
-
-          <div className="flex items-center gap-2.5 shrink-0">
-            <button
-              type="button"
-              onClick={() => setMasterAutopilot(!masterAutopilot)}
-              className={`px-4 py-2 text-xs font-bold rounded-lg border transition-colors ${
-                masterAutopilot
-                  ? 'bg-silver-100 hover:bg-silver-200 text-ink-heading border-silver-300'
-                  : 'bg-navy-900 hover:bg-navy-800 text-white border-navy-950'
-              }`}
-            >
-              {masterAutopilot ? 'Pause All Distribution' : 'Resume Autopilot'}
-            </button>
-          </div>
-        </div>
-      </div>
+      <DealershipAutopilot dealerId={dealerId} connectedChannelCount={activeCount} />
 
       {/* 2. Filter Pills & Search */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
@@ -192,7 +155,6 @@ export function SimplifiedChannelsView({
       {/* 3. Destination Channel Cards */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         {filteredChannels.map(({ platform, isConnected, hasErrors, isFirstParty }) => {
-          const isAutopilotOn = channelAutopilot[platform.platformSlug] ?? isConnected;
           const isAdvancedOpen = expandedAdvanced[platform.platformSlug] ?? false;
 
           return (
@@ -222,12 +184,12 @@ export function SimplifiedChannelsView({
                         </span>
                       )}
                     </div>
-                    <p className="text-xs text-ink-muted mt-0.5 line-clamp-1">
+                    <p className="text-xs text-ink-muted mt-0.5 line-clamp-2">
                       {isFirstParty
-                        ? 'Direct public consumer marketplace'
+                        ? 'First-party Auto Marketplace listing destination'
                         : isConnected
-                        ? 'Automated syndication active'
-                        : 'Assisted partner setup available'}
+                        ? 'Connected. Connected is not the same as live.'
+                        : 'Our team turns this on after it qualifies.'}
                     </p>
                   </div>
                 </div>
@@ -245,25 +207,18 @@ export function SimplifiedChannelsView({
                 </span>
               </div>
 
-              {/* Status details & Autopilot toggle */}
-              <div className="mt-4 pt-3 border-t border-silver-200/70 flex items-center justify-between text-xs">
-                <label className="flex items-center gap-2 cursor-pointer select-none">
-                  <input
-                    type="checkbox"
-                    checked={isAutopilotOn && isConnected}
-                    disabled={!isConnected}
-                    onChange={e =>
-                      setChannelAutopilot(prev => ({
-                        ...prev,
-                        [platform.platformSlug]: e.target.checked,
-                      }))
-                    }
-                    className="rounded border-silver-300 text-navy-800 focus:ring-navy-500"
+              {hasErrors && (
+                <div className="mt-3">
+                  <OwnershipLine
+                    action={`Fix ${platformDisplayName(platform.platformSlug, platform.platformName)}`}
+                    ownerKind="YOU"
+                    due="today"
                   />
-                  <span className={isConnected ? 'text-ink-heading font-medium' : 'text-ink-faint'}>
-                    Autopilot Sync
-                  </span>
-                </label>
+                </div>
+              )}
+
+              <div className="mt-4 pt-3 border-t border-silver-200/70 flex items-center justify-between text-xs">
+                <GuidanceNote>Connection status only. Publication needs a verified result.</GuidanceNote>
 
                 <div className="flex items-center gap-2">
                   <button
@@ -299,14 +254,7 @@ export function SimplifiedChannelsView({
                       onClick={() => nav.goToPlatformDetail(platform.platformSlug)}
                       className="px-2.5 py-1 text-[11px] font-semibold rounded border border-silver-300 bg-white text-ink-heading hover:bg-silver-100"
                     >
-                      Technical Diagnostics
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => nav.goToPlatformDetail(platform.platformSlug)}
-                      className="px-2.5 py-1 text-[11px] font-bold rounded bg-orange-600 text-white hover:bg-orange-500"
-                    >
-                      Force Publish
+                      Channel details
                     </button>
                   </div>
                 </div>
