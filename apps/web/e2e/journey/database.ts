@@ -25,6 +25,10 @@ export function journeyDatabaseUrl(): string {
   return url.toString();
 }
 
+export function journeyDb() {
+  return prismaFor(journeyDatabaseUrl());
+}
+
 function prismaFor(url: string) {
   const { PrismaClient } = createRequire(path.join(ROOT, 'package.json'))('@prisma/client');
   return new PrismaClient({ datasources: { db: { url } } });

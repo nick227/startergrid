@@ -5976,12 +5976,17 @@ components:
                   items: { type: string }
     PatchDealershipOnboardingRequest:
       type: object
+      description: Steps complete only from server-side evidence. Sending stepKey, status or evidence is rejected with 400.
       properties:
-        stepKey: { $ref: '#/components/schemas/OnboardingStepKey' }
-        status: { $ref: '#/components/schemas/OnboardingStepStatus' }
+        stepKey:
+          deprecated: true
+          allOf: [{ $ref: '#/components/schemas/OnboardingStepKey' }]
+        status:
+          deprecated: true
+          allOf: [{ $ref: '#/components/schemas/OnboardingStepStatus' }]
         waitingForStock: { type: boolean }
         autopilotPreference: { $ref: '#/components/schemas/AutopilotPreference' }
-        evidence: { type: object, additionalProperties: true }
+        evidence: { type: object, additionalProperties: true, deprecated: true }
         internalOwnerId: { type: string }
         lifecycleStatus:
           type: string

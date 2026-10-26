@@ -1,6 +1,7 @@
 import type { PrismaClient } from '@prisma/client';
 import { MARKETPLACE_PLATFORM_SLUG } from '../channel/channelMetrics.js';
 import { recordChannelEvent } from '../channel/channelEventService.js';
+import { PUBLISHED_LISTING_GATE } from './marketplaceQueryService.js';
 import { persistLead } from '../publishing/lifecyclePersistenceService.js';
 import { notifyLeadCaptured } from '../dealer/dealerNotificationService.js';
 import { planAndPersistMarketplaceLeadDeliveries } from '../leadDelivery/marketplaceLeadDelivery.js';
@@ -50,7 +51,9 @@ export async function captureMarketplaceLead(
   options: CaptureMarketplaceLeadOptions = {},
 ): Promise<{ leadId: string; queuedDeliveryCount: number } | null> {
   const listing = await prisma.vehicle.findFirst({
-    where:  { id: listingId, soldAt: null, removedAt: null, priceCents: { gt: 0 } },
+    // Same visibility as the public detail page: drafts, opted-out and withdrawn vehicles
+    // cannot collect inquiries (or notify the dealer) through a stale or guessed id.
+    where:  { id: listingId, soldAt: null, removedAt: null, priceCents: { gt: 0 }, ...PUBLISHED_LISTING_GATE },
     select: LISTING_FOR_LEAD_SELECT,
   });
   if (!listing) return null;

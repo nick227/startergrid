@@ -44,6 +44,11 @@ All are in `openapi/openapi.yaml`, `routeClassifications` and `routeContract.tes
 
 It asserts the evidence-backed handoff semantics that were uncommitted in the shared tree when it was written (`onboardingEvidence.ts`, `onboardingService.ts`): it fails on the earlier rules, where handoff was offered before a marketplace inquiry existed.
 
-**Review notes for the onboarding evidence change (owner: whoever lands it):**
-- `getDealershipRecord` now calls `refreshOnboarding` with no actor on every read. Completed steps are upserted with `completedAt: new Date()` and `completedBy: actorId ?? null`, so each record view resets CREATE/ACCESS/VEHICLES/CHANNELS `completedAt` to the view time and clears `completedBy` (reproduced on a real database; the HANDOFF step's `completedBy` was null after staff completed it, although `DealershipProfile.handoffCompletedBy` is set). Suggest preserving existing completion metadata when a step is already COMPLETE.
-- Pre-existing, not part of that change: `captureMarketplaceLead` accepts inquiries for any priced, unsold vehicle id, without `PUBLISHED_LISTING_GATE`. Evidence still requires the vehicle to be published at check time.
+**Resolved review findings (integrated after `23201bc`):**
+- Record reads no longer rewrite completion history. `upsertStep` keeps `completedAt`, `completedBy` and `evidenceJson` while a step stays COMPLETE; only a real status change clears or re-records them, and unchanged steps are not written. HANDOFF attribution comes from `DealershipProfile.handoffCompletedBy`. Covered by `onboardingStepHistory.test.ts` and the journey's real-database history check (both fail on the previous code).
+- `PATCH /api/admin/dealerships/{id}/onboarding` rejects `stepKey`, `status` and `evidence` with 400 (documented as deprecated). Steps were already recomputed from evidence, but the hand-set path could demote a completed step and so re-stamp its history.
+- `captureMarketplaceLead` now applies `PUBLISHED_LISTING_GATE`, matching the public detail page: drafts, opted-out and withdrawn vehicles return 404 and cannot notify the dealer.
+
+The journey also checks, against the real API, that a dealer owner cannot open internal records, complete handoff, edit onboarding, retry channel setup, create dealerships, invite or issue logins for internal support, reset an internal account, or read/invite into another dealership — while still inviting their own staff.
+
+These are automated correctness checks. They are not usability validation: no timed tasks, no first-time users, no observation of comprehension.

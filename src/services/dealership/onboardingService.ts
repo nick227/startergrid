@@ -43,6 +43,7 @@ export async function refreshOnboarding(db: Db, dealershipId: string, actorId?: 
       autopilotPreference: true,
       launchCompletedAt: true,
       handoffCompletedAt: true,
+      handoffCompletedBy: true,
       _count: { select: { vehicles: true, invitations: true, operatorAccess: true } },
       invitations: {
         where: { accessRole: 'DEALER_OWNER', revokedAt: null },
@@ -159,7 +160,7 @@ export async function refreshOnboarding(db: Db, dealershipId: string, actorId?: 
       incompleteReason: null,
       evidenceJson: { ownerLoggedIn, inboxLeadId: evidence.inboxLeadId, handoffCompletedAt: dealer.handoffCompletedAt.toISOString() },
       completedAt: dealer.handoffCompletedAt,
-      completedBy: actorId ?? null,
+      completedBy: dealer.handoffCompletedBy ?? actorId ?? null,
     });
   } else if (readyForHandoff && !ownerLoggedIn) {
     await upsertStep(db, dealershipId, 'HANDOFF', {

@@ -1,5 +1,5 @@
 import type { FastifyInstance } from 'fastify';
-import type { DealershipLifecycle, Prisma, PrismaClient } from '@prisma/client';
+import type { DealershipLifecycle, PrismaClient } from '@prisma/client';
 import { requireInternalStaff, requireDealerAccess } from '../security.js';
 import { createDealershipRecordSchema, patchOnboardingSchema, validateBody } from '../requestValidation.js';
 import { deliverInvitation, roleLabel } from '../../services/dealership/invitationDelivery.js';
@@ -10,7 +10,6 @@ import {
   patchDealershipRecord,
 } from '../../services/dealership/dealershipRecordService.js';
 import { completeHandoff, refreshOnboarding } from '../../services/dealership/onboardingService.js';
-import { upsertStep } from '../../services/dealership/onboardingSteps.js';
 import { DuplicateDealershipError, statusFromUnknown } from '../../services/dealership/httpError.js';
 import { provisionDefaultChannels } from '../../services/dealership/channelSetupService.js';
 
@@ -137,18 +136,13 @@ export function registerDealershipRecordRoutes(app: FastifyInstance, prisma: Pri
     if (!await requireDealerAccess(prisma, request, reply, dealershipId)) return;
     const parsed = validateBody(patchOnboardingSchema, request.body);
     if (!parsed.ok) return reply.status(400).send({ error: parsed.error });
+    // Steps are derived from server-side evidence only; a hand-set status or client evidence
+    // could rewrite completion history or claim publication/lead routing that never happened.
+    if (parsed.data.stepKey || parsed.data.status || parsed.data.evidence) {
+      return reply.status(400).send({ error: 'Onboarding steps complete from evidence and cannot be set by hand' });
+    }
     try {
       await patchDealershipRecord(prisma, dealershipId, operator, parsed.data);
-      if (parsed.data.stepKey && (parsed.data.status || parsed.data.evidence)) {
-        await upsertStep(prisma, dealershipId, parsed.data.stepKey, {
-          status: parsed.data.status ?? 'IN_PROGRESS',
-          ownerKind: 'OUR_TEAM',
-          incompleteReason: null,
-          evidenceJson: parsed.data.evidence as Prisma.InputJsonValue | undefined,
-          completedAt: parsed.data.status === 'COMPLETE' ? new Date() : undefined,
-          completedBy: parsed.data.status === 'COMPLETE' ? operator.id : undefined,
-        });
-      }
       return reply.send(await refreshOnboarding(prisma, dealershipId, operator.id));
     } catch (err) {
       return reply.status(statusFromUnknown(err)).send({

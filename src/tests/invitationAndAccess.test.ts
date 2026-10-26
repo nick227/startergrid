@@ -134,6 +134,7 @@ function memoryDb() {
       update: async () => ({}),
     },
     dealershipOnboardingStep: {
+      findUnique: async () => null,
       upsert: async () => ({}),
     },
     lead: {

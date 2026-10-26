@@ -49,6 +49,7 @@ function createPrisma(opts: { duplicate?: boolean; failAfterAccount?: boolean } 
         created.steps += data.length;
         return { count: data.length };
       },
+      findUnique: async () => null,
       upsert: async () => ({}),
     },
     dealershipActivityEvent: { create: async () => ({}) },

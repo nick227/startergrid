@@ -55,15 +55,43 @@ export type StepPatch = {
   completedBy?: string | null;
 };
 
+/**
+ * Writes a step derived from evidence. Completion history is immutable while the milestone
+ * holds: re-deriving a step that is already COMPLETE (every record read does this) keeps its
+ * original completedAt, completedBy and evidence. Only a real change of status clears or
+ * re-records it. Unchanged steps are not written at all.
+ */
 export async function upsertStep(
   db: Db,
   dealershipId: string,
   stepKey: OnboardingStepKey,
   patch: StepPatch,
 ): Promise<void> {
+  const where = { dealershipId_stepKey: { dealershipId, stepKey } };
+  const existing = await db.dealershipOnboardingStep.findUnique({
+    where,
+    select: { status: true, ownerKind: true, incompleteReason: true, evidenceJson: true, completedAt: true },
+  });
+  const sameGuidance = existing?.ownerKind === patch.ownerKind && existing.incompleteReason === patch.incompleteReason;
+
+  if (patch.status === 'COMPLETE' && existing?.status === 'COMPLETE' && existing.completedAt) {
+    if (!sameGuidance) {
+      await db.dealershipOnboardingStep.update({
+        where,
+        data: { ownerKind: patch.ownerKind, incompleteReason: patch.incompleteReason },
+      });
+    }
+    return;
+  }
+
   const state = patch.status === 'COMPLETE' ? patch : { ...patch, completedAt: null, completedBy: null };
+  if (existing && patch.status !== 'COMPLETE' && existing.status === patch.status && sameGuidance
+    && existing.completedAt === null
+    && JSON.stringify(existing.evidenceJson ?? null) === JSON.stringify(patch.evidenceJson ?? null)) {
+    return;
+  }
   await db.dealershipOnboardingStep.upsert({
-    where: { dealershipId_stepKey: { dealershipId, stepKey } },
+    where,
     create: {
       dealershipId,
       stepKey,

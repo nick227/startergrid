@@ -138,6 +138,14 @@ function memoryPrisma() {
     },
     dealershipOnboardingStep: {
       createMany: async ({ data }: Row) => { data.forEach((d: Row) => t.steps.push({ createdAt: new Date(), ...d })); return { count: data.length }; },
+      findUnique: async ({ where }: Row) => {
+        const key = where.dealershipId_stepKey;
+        return t.steps.find(r => r.dealershipId === key.dealershipId && r.stepKey === key.stepKey) ?? null;
+      },
+      update: async ({ where, data }: Row) => {
+        const key = where.dealershipId_stepKey;
+        return Object.assign(t.steps.find(r => r.dealershipId === key.dealershipId && r.stepKey === key.stepKey)!, data);
+      },
       upsert: async ({ where, create, update }: Row) => {
         const key = where.dealershipId_stepKey;
         const row = t.steps.find(r => r.dealershipId === key.dealershipId && r.stepKey === key.stepKey);

@@ -45,7 +45,10 @@ function fixture(options: { live?: boolean; lead?: boolean; waiting?: boolean; o
       assert.equal(where.source, 'PLATFORM_FORM');
       return state.lead ? { id: 'lead-a' } : null;
     } },
-    dealershipOnboardingStep: { upsert: async ({ where, create, update }: any) => {
+    dealershipOnboardingStep: {
+      findUnique: async ({ where }: any) => steps.get(where.dealershipId_stepKey.stepKey) ?? null,
+      update: async ({ where, data }: any) => Object.assign(steps.get(where.dealershipId_stepKey.stepKey), data),
+      upsert: async ({ where, create, update }: any) => {
       const key = where.dealershipId_stepKey.stepKey;
       steps.set(key, { ...(steps.get(key) ?? create), ...update });
       return steps.get(key);
