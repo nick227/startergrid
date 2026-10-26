@@ -68,7 +68,9 @@ POST   /api/dealers/:dealershipId/people/temporary-login
 PATCH  /api/dealers/:dealershipId/people/:accountId
 ```
 
-Prepare body is the same invite payload; it returns copy only and does not create an invitation.  
+`POST .../people/invites/prepare` is preview-only: same body as invite, returns subject and body copy. It does not generate an invitation, token, or setup URL, and does not send email. Antigravity must not treat prepare as send.
+
+`POST .../people/invites` creates the invitation and may send email.  
 Invite body: `{ email, accessRole, name? }` → `{ invite, setupUrl }` (raw token only in `setupUrl`, never logged).  
 Temp login body: `{ email, accessRole, name? }` → `{ person, temporaryPassword }` once.  
 Patch body: `{ accessRole?, isActive?, resetPassword? }`.
@@ -101,7 +103,7 @@ This records intent. Codex owns execution, verification, and incidents.
 POST   /api/dealers/:dealershipId/autopilot/preview
 ```
 
-Read-only simulation of what Autopilot would send. Optional body `{ mode?, includedChannels? }`. Does not require `V5_AUTOPILOT_ENABLED` and does not claim listings are verified live.
+Read-only simulation of what Autopilot would send. Optional body `{ mode?, includedChannels? }`. Does not change policy, does not activate distribution, and does not persist targets. Does not require `V5_AUTOPILOT_ENABLED` and does not claim listings are verified live. Distinct from `PUT /autopilot`.
 
 ## GET /api/dealers
 

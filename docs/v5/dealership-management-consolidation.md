@@ -25,7 +25,7 @@ All are in `openapi/openapi.yaml`, `routeClassifications` and `routeContract.tes
 
 - No distribution, Autopilot policy or publishing code was changed. `DealershipAutopilot` is reused as-is on the dealership Overview.
 - `createDealership` still calls `upsertDefaultSyncPolicies` / `upsertDefaultPlatformAccounts` **after** the transaction that creates the dealership, owner invite, internal owner, activity and onboarding. If those defaults fail, the dealership exists but the request returns 500.
-- **Schema:** `prisma/migrations/20261026030000_platform_account_dealer_enabled` adds `PlatformAccount.dealerEnabled` and `autoSyncReadyInventory`. Existing rows are backfilled: `dealerEnabled` for `consumer-marketplace` and any slug in `DealershipProfile.desiredChannels`; `autoSyncReadyInventory` for `consumer-marketplace`. Local databases created with `db push` may already have the columns — use `prisma migrate resolve` if deploy reports they exist.
+- **Schema:** `20261026030000_platform_account_dealer_enabled` adds `PlatformAccount.dealerEnabled` and `autoSyncReadyInventory` (backfill: marketplace + `desiredChannels`). `20261026040000_platform_site_availability` creates `PlatformSiteAvailability` and drops the extra `Lead.updatedAt` DEFAULT so it matches `@updatedAt`. Local databases created with `db push` may already have these objects — use `prisma migrate resolve` if deploy reports they exist.
 
 ## Orphaned UI
 

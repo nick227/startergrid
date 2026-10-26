@@ -100,8 +100,9 @@ paths:
       operationId: previewV5Autopilot
       summary: Preview Autopilot distribution without changing policy
       description: >-
-        Read-only simulation of what Autopilot would send. Does not require V5_AUTOPILOT_ENABLED
-        and does not claim listings are verified live.
+        Read-only simulation of what Autopilot would send. Does not change policy, does not
+        activate distribution, and does not persist targets. Does not require V5_AUTOPILOT_ENABLED
+        and does not claim listings are verified live. Distinct from PUT /autopilot.
       x-route-classification: operator
       security:
         - OperatorAuth: []
@@ -3561,7 +3562,9 @@ paths:
       x-route-classification: operator
       operationId: prepareDealershipInvite
       summary: Preview invitation copy before sending
-      description: Does not create an invitation or send email.
+      description: >-
+        Returns subject and body copy only. Does not generate an invitation, token, or setup URL,
+        and does not send email. Distinct from POST /people/invites, which creates the invitation.
       parameters:
         - name: dealershipId
           in: path
