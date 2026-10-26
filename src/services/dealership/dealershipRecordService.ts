@@ -136,6 +136,8 @@ export async function listDealershipRecords(
 }
 
 export async function getDealershipRecord(db: Db, dealershipId: string) {
+  // Inventory and inbox evidence can change without an onboarding PATCH.
+  await refreshOnboarding(db, dealershipId);
   const dealer = await db.dealershipProfile.findUnique({
     where: { id: dealershipId },
     select: {

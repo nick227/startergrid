@@ -94,7 +94,8 @@
     "openapi:validate": "redocly lint openapi/openapi.yaml",
     "openapi:validate:marketplace": "redocly lint openapi/openapi-marketplace.yaml",
     "client:generate": "node node_modules/openapi-typescript-codegen/bin/index.js --input openapi/openapi.yaml --output packages/api-client/generated --client fetch --useOptions --exportCore true",
-    "client:generate:marketplace": "node node_modules/openapi-typescript-codegen/bin/index.js --input openapi/openapi-marketplace.yaml --output packages/marketplace-client/generated --client fetch --useOptions --exportCore true"
+    "client:generate:marketplace": "node node_modules/openapi-typescript-codegen/bin/index.js --input openapi/openapi-marketplace.yaml --output packages/marketplace-client/generated --client fetch --useOptions --exportCore true",
+    "verify:redesign": "npm run build && node scripts/redesign/verify.mjs"
   },
   "dependencies": {
     "@aws-sdk/client-s3": "^3.1067.0",

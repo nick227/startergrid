@@ -8,6 +8,7 @@ import { HttpError } from './httpError.js';
 import { defaultIncomplete, defaultOwner, upsertStep } from './onboardingSteps.js';
 import { recordDealershipActivity } from './activityService.js';
 import { channelSetupStatus } from './channelSetupStatus.js';
+import { readOnboardingEvidence } from './onboardingEvidence.js';
 
 type Db = PrismaClient | Prisma.TransactionClient;
 
@@ -51,26 +52,30 @@ export async function refreshOnboarding(db: Db, dealershipId: string, actorId?: 
         where: { accessRole: { in: ['DEALER_OWNER', 'DEALER_STAFF'] } },
         select: {
           accessRole: true,
-          operator: { select: { firstLoginAt: true, lastLoginAt: true, isActive: true } },
+          operator: { select: { firstLoginAt: true, lastLoginAt: true, isActive: true, mustChangePassword: true } },
         },
       },
     },
   });
   if (!dealer) throw new HttpError(404, 'Dealership not found');
 
-  const ownerAccess = dealer.operatorAccess.find((row) => row.accessRole === 'DEALER_OWNER');
-  const ownerLoggedIn = Boolean(ownerAccess?.operator.firstLoginAt ?? ownerAccess?.operator.lastLoginAt);
+  const owners = dealer.operatorAccess.filter((row) => row.accessRole === 'DEALER_OWNER' && row.operator.isActive && !row.operator.mustChangePassword);
+  const ownerLoggedIn = owners.some(row => Boolean(row.operator.firstLoginAt ?? row.operator.lastLoginAt));
   const inviteAccepted = dealer.invitations.some((row) => row.acceptedAt);
   const inviteOpen = dealer.invitations.some((row) =>
     !row.acceptedAt && (row.deliveryStatus === 'SENT' || row.deliveryStatus === 'PENDING' || row.deliveryStatus === 'FAILED'));
-  const hasOwnerAccess = Boolean(ownerAccess);
+  const hasOwnerAccess = owners.length > 0;
   const hasVehicles = dealer._count.vehicles > 0;
-  const vehiclesReady = hasVehicles || dealer.waitingForStock;
+  const vehiclesReady = hasVehicles && !dealer.waitingForStock;
+  const evidence = vehiclesReady
+    ? await readOnboardingEvidence(db, dealershipId)
+    : { vehicleId: null, inboxLeadId: null };
   // Missing default channel rows block setup until a retry repairs them. Live dealerships
   // are not re-flagged here; their record still reports the channel setup status.
   const inSetup = !['ACTIVE', 'PAUSED', 'ARCHIVED'].includes(dealer.lifecycleStatus);
   const channelSetup = inSetup ? await channelSetupStatus(db, dealershipId) : { ready: true, missing: [] };
-  const channelsReady = channelSetup.ready && (dealer.autopilotPreference !== 'OFF' || Boolean(dealer.launchCompletedAt));
+  const channelsReady = Boolean(evidence.vehicleId);
+  const handoffReady = hasOwnerAccess && ownerLoggedIn && vehiclesReady && channelsReady && Boolean(evidence.inboxLeadId);
 
   await upsertStep(db, dealershipId, 'CREATE', {
     status: 'COMPLETE',
@@ -116,11 +121,11 @@ export async function refreshOnboarding(db: Db, dealershipId: string, actorId?: 
     await upsertStep(db, dealershipId, 'VEHICLES', {
       status: 'IN_PROGRESS',
       ownerKind: 'DEALER',
-      incompleteReason: defaultIncomplete('VEHICLES'),
+      incompleteReason: dealer.waitingForStock ? 'Waiting for stock; launch requires an eligible published vehicle' : defaultIncomplete('VEHICLES'),
     });
   }
 
-  if (!channelSetup.ready) {
+  if (!channelSetup.ready && !channelsReady) {
     await upsertStep(db, dealershipId, 'CHANNELS', {
       status: 'BLOCKED',
       ownerKind: 'OUR_TEAM',
@@ -134,7 +139,7 @@ export async function refreshOnboarding(db: Db, dealershipId: string, actorId?: 
       status: 'COMPLETE',
       ownerKind: 'OUR_TEAM',
       incompleteReason: null,
-      evidenceJson: { autopilotPreference: dealer.autopilotPreference },
+      evidenceJson: { channel: 'consumer-marketplace', vehicleId: evidence.vehicleId, method: 'OWNED_READ_MODEL' },
       completedAt: new Date(),
       completedBy: actorId ?? null,
     });
@@ -142,17 +147,17 @@ export async function refreshOnboarding(db: Db, dealershipId: string, actorId?: 
     await upsertStep(db, dealershipId, 'CHANNELS', {
       status: 'IN_PROGRESS',
       ownerKind: 'OUR_TEAM',
-      incompleteReason: defaultIncomplete('CHANNELS'),
+      incompleteReason: 'Publish an eligible vehicle and verify it is visible on Auto Marketplace; an Autopilot preference is not publication',
     });
   }
 
   const readyForHandoff = hasOwnerAccess && vehiclesReady && channelsReady;
-  if (dealer.handoffCompletedAt && ownerLoggedIn) {
+  if (dealer.handoffCompletedAt && handoffReady) {
     await upsertStep(db, dealershipId, 'HANDOFF', {
       status: 'COMPLETE',
       ownerKind: 'OUR_TEAM',
       incompleteReason: null,
-      evidenceJson: { ownerLoggedIn, handoffCompletedAt: dealer.handoffCompletedAt.toISOString() },
+      evidenceJson: { ownerLoggedIn, inboxLeadId: evidence.inboxLeadId, handoffCompletedAt: dealer.handoffCompletedAt.toISOString() },
       completedAt: dealer.handoffCompletedAt,
       completedBy: actorId ?? null,
     });
@@ -164,9 +169,10 @@ export async function refreshOnboarding(db: Db, dealershipId: string, actorId?: 
     });
   } else if (readyForHandoff) {
     await upsertStep(db, dealershipId, 'HANDOFF', {
-      status: 'IN_PROGRESS',
+      status: evidence.inboxLeadId ? 'IN_PROGRESS' : 'BLOCKED',
       ownerKind: 'OUR_TEAM',
-      incompleteReason: 'Verify distribution readiness and complete handoff',
+      incompleteReason: evidence.inboxLeadId ? 'Complete handoff; the owner has signed in and a marketplace inquiry reached the shared inbox' : 'Verify a marketplace inquiry reaches this dealership’s shared Leads inbox',
+      evidenceJson: { inboxLeadId: evidence.inboxLeadId },
     });
   } else {
     await upsertStep(db, dealershipId, 'HANDOFF', {
@@ -177,11 +183,7 @@ export async function refreshOnboarding(db: Db, dealershipId: string, actorId?: 
   }
 
   await syncLifecycle(db, dealershipId, {
-    ownerReady: hasOwnerAccess,
-    vehiclesReady,
-    channelsReady,
-    ownerLoggedIn,
-    handoffComplete: Boolean(dealer.handoffCompletedAt && ownerLoggedIn),
+    launched: hasOwnerAccess && vehiclesReady && channelsReady,
   });
 
   return getOnboarding(db, dealershipId);
@@ -227,29 +229,24 @@ async function syncLifecycle(
   db: Db,
   dealershipId: string,
   flags: {
-    ownerReady: boolean;
-    vehiclesReady: boolean;
-    channelsReady: boolean;
-    ownerLoggedIn: boolean;
-    handoffComplete: boolean;
+    launched: boolean;
   },
 ): Promise<void> {
   const current = await db.dealershipProfile.findUnique({
     where: { id: dealershipId },
-    select: { lifecycleStatus: true },
+    select: { lifecycleStatus: true, launchCompletedAt: true },
   });
   if (!current) return;
   if (current.lifecycleStatus === 'PAUSED' || current.lifecycleStatus === 'ARCHIVED') return;
 
   let lifecycleStatus = current.lifecycleStatus;
-  if (flags.handoffComplete) lifecycleStatus = 'ACTIVE';
-  else if (flags.ownerReady && flags.vehiclesReady && flags.channelsReady) lifecycleStatus = 'READY_TO_LAUNCH';
+  if (flags.launched || (current.lifecycleStatus === 'ACTIVE' && current.launchCompletedAt)) lifecycleStatus = 'ACTIVE';
   else lifecycleStatus = 'SETTING_UP';
 
-  if (lifecycleStatus !== current.lifecycleStatus) {
+  if (lifecycleStatus !== current.lifecycleStatus || (flags.launched && !current.launchCompletedAt)) {
     await db.dealershipProfile.update({
       where: { id: dealershipId },
-      data: { lifecycleStatus },
+      data: { lifecycleStatus, ...(flags.launched && !current.launchCompletedAt ? { launchCompletedAt: new Date() } : {}) },
     });
   }
 }
@@ -259,6 +256,14 @@ export async function completeHandoff(
   dealershipId: string,
   actor: { id: string; email: string },
 ): Promise<OnboardingSnapshot> {
+  // Serialize repeated handoff submissions and commit evidence, milestone and audit
+  // together. A transaction client is also accepted by internal callers.
+  if ('$transaction' in db) {
+    return db.$transaction(async tx => {
+      await tx.$queryRaw`SELECT id FROM DealershipProfile WHERE id = ${dealershipId} FOR UPDATE`;
+      return completeHandoff(tx, dealershipId, actor);
+    });
+  }
   const snapshot = await refreshOnboarding(db, dealershipId, actor.id);
   const access = snapshot.steps.find((step) => step.stepKey === 'ACCESS');
   const vehicles = snapshot.steps.find((step) => step.stepKey === 'VEHICLES');
@@ -267,13 +272,13 @@ export async function completeHandoff(
     throw new HttpError(409, snapshot.nextStep?.incompleteReason ?? 'Onboarding is not ready for handoff');
   }
 
-  const owner = await db.operatorDealerAccess.findFirst({
-    where: { dealershipId, accessRole: 'DEALER_OWNER' },
-    select: { operator: { select: { firstLoginAt: true, lastLoginAt: true } } },
-  });
-  const ownerLoggedIn = Boolean(owner?.operator.firstLoginAt ?? owner?.operator.lastLoginAt);
-  if (!ownerLoggedIn) {
-    throw new HttpError(409, 'Handoff requires the owner to have signed in');
+  const handoff = snapshot.steps.find(step => step.stepKey === 'HANDOFF');
+  if (!handoff || handoff.ownerKind === 'DEALER' || !['IN_PROGRESS', 'COMPLETE'].includes(handoff.status)) {
+    throw new HttpError(409, handoff?.incompleteReason ?? 'Handoff evidence is incomplete');
+  }
+  if (handoff?.status === 'COMPLETE') return snapshot;
+  if (snapshot.lifecycleStatus === 'PAUSED' || snapshot.lifecycleStatus === 'ARCHIVED') {
+    throw new HttpError(409, 'Resume the dealership before completing handoff');
   }
 
   await db.dealershipProfile.update({
@@ -281,8 +286,6 @@ export async function completeHandoff(
     data: {
       handoffCompletedAt: new Date(),
       handoffCompletedBy: actor.id,
-      launchCompletedAt: new Date(),
-      lifecycleStatus: 'ACTIVE',
     },
   });
   await recordDealershipActivity(db, {

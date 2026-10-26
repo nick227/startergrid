@@ -9,7 +9,7 @@ import {
   listDealershipRecords,
   patchDealershipRecord,
 } from '../../services/dealership/dealershipRecordService.js';
-import { completeHandoff, getOnboarding, refreshOnboarding } from '../../services/dealership/onboardingService.js';
+import { completeHandoff, refreshOnboarding } from '../../services/dealership/onboardingService.js';
 import { upsertStep } from '../../services/dealership/onboardingSteps.js';
 import { DuplicateDealershipError, statusFromUnknown } from '../../services/dealership/httpError.js';
 import { provisionDefaultChannels } from '../../services/dealership/channelSetupService.js';
@@ -122,7 +122,7 @@ export function registerDealershipRecordRoutes(app: FastifyInstance, prisma: Pri
     const { dealershipId } = request.params as { dealershipId: string };
     if (!await requireDealerAccess(prisma, request, reply, dealershipId)) return;
     try {
-      return reply.send(await getOnboarding(prisma, dealershipId));
+      return reply.send(await refreshOnboarding(prisma, dealershipId));
     } catch (err) {
       return reply.status(statusFromUnknown(err)).send({
         error: err instanceof Error ? err.message : 'Onboarding not found',

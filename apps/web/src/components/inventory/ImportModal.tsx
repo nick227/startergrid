@@ -27,9 +27,13 @@ export function ImportModal({ dealerId, onClose, onCommitted }: Props) {
   const [loading, setLoading] = useState(false);
   const [committing, setCommitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [previewDirty, setPreviewDirty] = useState(false);
 
   const handleTextChange = (text: string) => {
     setRawText(text);
+    setPreview(null);
+    setPreviewDirty(false);
+    setError(null);
     if (!text.trim()) { setParsed(null); return; }
     const p = parseCSV(text);
     setParsed(p.rows.length > 0 ? p : null);
@@ -42,7 +46,8 @@ export function ImportModal({ dealerId, onClose, onCommitted }: Props) {
     try {
       const result = await previewInventoryImport(dealerId, parsed.rows, mapping);
       setPreview(result);
-      setUserSkips(new Set());
+      setPreviewDirty(false);
+      if (step !== 2) setUserSkips(new Set());
       setStep(2);
     } catch (e: unknown) {
       setError(e instanceof Error ? e.message : 'Preview failed');
@@ -52,7 +57,7 @@ export function ImportModal({ dealerId, onClose, onCommitted }: Props) {
   };
 
   const handleCommit = async () => {
-    if (!parsed || !preview) return;
+    if (!parsed || !preview || previewDirty || loading) return;
     setCommitting(true);
     try {
       const rowsToCommit = parsed.rows.filter((_, i) => {
@@ -75,6 +80,18 @@ export function ImportModal({ dealerId, onClose, onCommitted }: Props) {
       return n;
     });
 
+  const editRow = (rowIndex: number, header: string, value: string) => {
+    if (!parsed || loading || committing) return;
+    const rows = parsed.rows.map((row, i) => i === rowIndex - 1 ? { ...row, [header]: value } : row);
+    setParsed({ ...parsed, rows });
+    // Keep Back → Upload consistent with the corrected preview, including commas/quotes.
+    const quote = (value: string) => `"${value.replace(/"/g, '""')}"`;
+    setRawText([parsed.headers, ...rows.map(row => parsed.headers.map(h => row[h] ?? ''))]
+      .map(values => values.map(quote).join(',')).join('\n'));
+    setPreviewDirty(true);
+    setError(null);
+  };
+
   const commitableCount = preview
     ? preview.rows.filter(r =>
         (r.action === 'CREATE' || r.action === 'UPDATE') && !userSkips.has(r.rowIndex)
@@ -89,7 +106,7 @@ export function ImportModal({ dealerId, onClose, onCommitted }: Props) {
   const primaryDisabled =
     step === 0 ? !parsed :
     step === 1 ? loading :
-    committing || commitableCount === 0;
+    committing || loading || previewDirty || commitableCount === 0;
 
   const handlePrimary = () => {
     if (step === 0) { setMapping({}); setStep(1); return; }
@@ -128,6 +145,12 @@ export function ImportModal({ dealerId, onClose, onCommitted }: Props) {
           error={error}
           userSkips={userSkips}
           onSkipToggle={toggleSkip}
+          headers={parsed?.headers ?? []}
+          rawRows={parsed?.rows ?? []}
+          onEdit={editRow}
+          dirty={previewDirty}
+          busy={loading || committing}
+          onRevalidate={() => void handlePreview()}
         />
       )}
     </WizardModal>

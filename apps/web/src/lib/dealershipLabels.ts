@@ -55,7 +55,7 @@ export const STEP_TITLE: Record<string, string> = {
   CREATE: 'Dealership created',
   ACCESS: 'Owner can sign in',
   VEHICLES: 'Vehicles added',
-  CHANNELS: 'Autopilot decision recorded',
+  CHANNELS: 'Live listing verified',
   HANDOFF: 'Handoff complete',
 };
 

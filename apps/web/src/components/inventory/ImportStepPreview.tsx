@@ -8,6 +8,12 @@ type Props = {
   error: string | null;
   userSkips: Set<number>;
   onSkipToggle: (rowIndex: number) => void;
+  headers: string[];
+  rawRows: Record<string, string>[];
+  onEdit: (rowIndex: number, header: string, value: string) => void;
+  dirty: boolean;
+  busy: boolean;
+  onRevalidate: () => void;
 };
 
 function fmt$$(cents: number) { return `$${(cents / 100).toLocaleString()}`; }
@@ -29,7 +35,7 @@ function ChangeSummary({ existing, mapped }: { existing: ExistingSnapshot; mappe
   );
 }
 
-export function ImportStepPreview({ preview, error, userSkips, onSkipToggle }: Props) {
+export function ImportStepPreview({ preview, error, userSkips, onSkipToggle, headers, rawRows, onEdit, dirty, busy, onRevalidate }: Props) {
   const labels = useInventoryLabels();
   const effectiveCommit = preview.rows.filter(
     r => (r.action === 'CREATE' || r.action === 'UPDATE') && !userSkips.has(r.rowIndex)
@@ -41,6 +47,15 @@ export function ImportStepPreview({ preview, error, userSkips, onSkipToggle }: P
 
   return (
     <div className="space-y-4">
+      {dirty && (
+        <div role="status" className="rounded-lg border border-amber-200 bg-amber-50 p-3 text-sm text-amber-800">
+          <p>Rows have changed. Check them again before importing; the counts below are from the last check.</p>
+          <button type="button" disabled={busy} onClick={onRevalidate}
+            className="mt-2 rounded border border-amber-400 px-3 py-1 font-semibold disabled:opacity-50">
+            {busy ? 'Checking rows…' : 'Check corrected rows'}
+          </button>
+        </div>
+      )}
       {/* Summary */}
       <div className="grid grid-cols-4 gap-3">
         {[
@@ -84,6 +99,10 @@ export function ImportStepPreview({ preview, error, userSkips, onSkipToggle }: P
             row={row}
             skipped={userSkips.has(row.rowIndex)}
             onSkipToggle={() => onSkipToggle(row.rowIndex)}
+            headers={headers}
+            raw={rawRows[row.rowIndex - 1] ?? {}}
+            onEdit={(header, value) => onEdit(row.rowIndex, header, value)}
+            busy={busy}
           />
         ))}
       </div>
@@ -91,7 +110,7 @@ export function ImportStepPreview({ preview, error, userSkips, onSkipToggle }: P
       {preview.summary.blocked > 0 && (
         <p className="text-xs text-ink-muted">
           {preview.summary.blocked} blocked row{preview.summary.blocked !== 1 ? 's' : ''} will be skipped automatically.
-          Go back to fix column mappings or correct the source data.
+          Choose Edit row to correct values here, then check the corrected rows. Go back if column mappings need changing.
         </p>
       )}
     </div>
@@ -99,13 +118,18 @@ export function ImportStepPreview({ preview, error, userSkips, onSkipToggle }: P
 }
 
 function PreviewRowItem({
-  row, skipped, onSkipToggle
+  row, skipped, onSkipToggle, headers, raw, onEdit, busy
 }: {
   row: ImportPreviewRow;
   skipped: boolean;
   onSkipToggle: () => void;
+  headers: string[];
+  raw: Record<string, string>;
+  onEdit: (header: string, value: string) => void;
+  busy: boolean;
 }) {
   const [expanded, setExpanded] = useState(false);
+  const [editing, setEditing] = useState(false);
   const m = row.mapped;
   const title = [m.year, m.make, m.model, m.trim].filter(Boolean).join(' ');
   const canSkip = row.action === 'CREATE' || row.action === 'UPDATE';
@@ -127,8 +151,16 @@ function PreviewRowItem({
         <ActionBadge action={skipped ? 'SKIP' : row.action} />
         {/* Skip toggle */}
         <div onClick={e => e.stopPropagation()}>
+          <button type="button" disabled={busy} aria-expanded={editing}
+            aria-label={`Edit row ${row.rowIndex}`}
+            onClick={() => { setEditing(v => !v); setExpanded(true); }}
+            className="text-xs font-semibold text-navy-700 hover:underline disabled:opacity-50">
+            {editing ? 'Close' : 'Edit row'}
+          </button>
           {canSkip && (
             <button
+              type="button"
+              disabled={busy}
               onClick={onSkipToggle}
               className={`text-xs px-1.5 py-0.5 rounded border transition-colors
                 ${skipped
@@ -140,6 +172,20 @@ function PreviewRowItem({
           )}
         </div>
       </div>
+
+      {editing && (
+        <fieldset disabled={busy} className="grid grid-cols-1 gap-3 border-b border-silver-200 bg-white p-4 sm:grid-cols-2">
+          <legend className="sr-only">Correct row {row.rowIndex}</legend>
+          {headers.map(header => (
+            <label key={header} className="text-xs text-ink-muted">
+              {header}
+              <input aria-label={`Row ${row.rowIndex}: ${header}`} value={raw[header] ?? ''}
+                onChange={e => onEdit(header, e.target.value)}
+                className="mt-1 block w-full rounded border border-silver-300 px-2 py-1.5 text-sm text-ink-body focus:ring-2 focus:ring-navy-500/30" />
+            </label>
+          ))}
+        </fieldset>
+      )}
 
       {/* Expanded detail */}
       {expanded && (

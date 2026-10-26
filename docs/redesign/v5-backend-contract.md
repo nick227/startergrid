@@ -54,7 +54,13 @@ Step status: `NOT_STARTED` | `IN_PROGRESS` | `COMPLETE` | `BLOCKED` | `NEEDS_REC
 Owner: `YOU` | `OUR_TEAM` | `SYSTEM` | `PARTNER` | `DEALER`
 
 `PATCH` body: `{ stepKey, status?, waitingForStock?, autopilotPreference?, evidence? }`  
-Completion is evidence-backed. Handoff requires owner first login plus verified vehicle or explicit waiting-for-stock, and Autopilot preference recorded.
+Completion is derived from server evidence. Waiting for stock keeps setup open and cannot satisfy launch or handoff. Autopilot preference is intent, not publication evidence.
+
+For the currently supported owned-channel launch, the server reads the same publication gate as the public marketplace: READY, priced, unsold/unremoved inventory with an ACTIVE Auto Marketplace listing, no channel opt-out, and media. This works for manual publication with Autopilot OFF too. Observing an eligible publication records `launchCompletedAt` independently of handoff. Existing active dealerships keep their operating lifecycle when stock later sells out; their current setup evidence can require rechecking.
+
+Handoff additionally requires an active owner who has signed in and completed any mandatory password change, plus a persisted marketplace-form inquiry routed to this dealership's shared Leads inbox for currently public inventory. The inbox receipt does **not** certify email, SMS or CRM delivery. External publication/contact-route qualification remains separate work; queue receipts, manual lead entries and arbitrary PATCH evidence cannot substitute for these checks.
+
+Record/onboarding reads refresh the evidence. Handoff rechecks it transactionally, serializes concurrent submissions, and records one handoff activity event. It does not overwrite the launch timestamp or resume a paused/archived dealership.
 
 ## People and access
 

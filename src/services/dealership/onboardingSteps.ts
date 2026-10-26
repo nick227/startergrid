@@ -40,9 +40,9 @@ export function defaultIncomplete(stepKey: OnboardingStepKey): string {
   switch (stepKey) {
     case 'CREATE': return '';
     case 'ACCESS': return 'Invite the dealership owner or issue a temporary login';
-    case 'VEHICLES': return 'Add at least one vehicle or mark waiting for stock';
-    case 'CHANNELS': return 'Record Autopilot preference and agreed destinations';
-    case 'HANDOFF': return 'Owner must sign in and launch checks must pass';
+    case 'VEHICLES': return 'Add stock before launch; waiting for stock keeps setup open';
+    case 'CHANNELS': return 'Verify an eligible published vehicle on Auto Marketplace';
+    case 'HANDOFF': return 'Owner must sign in and a marketplace inquiry must reach the shared inbox';
   }
 }
 
@@ -61,13 +61,14 @@ export async function upsertStep(
   stepKey: OnboardingStepKey,
   patch: StepPatch,
 ): Promise<void> {
+  const state = patch.status === 'COMPLETE' ? patch : { ...patch, completedAt: null, completedBy: null };
   await db.dealershipOnboardingStep.upsert({
     where: { dealershipId_stepKey: { dealershipId, stepKey } },
     create: {
       dealershipId,
       stepKey,
-      ...patch,
+      ...state,
     },
-    update: patch,
+    update: state,
   });
 }
