@@ -177,8 +177,12 @@ export async function createDealership(
   });
 
   // Default channel accounts and sync policies are idempotent distribution setup.
-  await upsertDefaultSyncPolicies(prisma, created.dealer.id);
-  await upsertDefaultPlatformAccounts(prisma, created.dealer.id);
+  try {
+    await upsertDefaultSyncPolicies(prisma, created.dealer.id);
+    await upsertDefaultPlatformAccounts(prisma, created.dealer.id);
+  } catch (syncErr) {
+    console.warn(`[createDealership] Default channel sync policies or accounts setup encountered an issue for ${created.dealer.id}:`, syncErr);
+  }
   const invite = created.invite;
 
   return {

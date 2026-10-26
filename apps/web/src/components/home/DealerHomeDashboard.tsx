@@ -103,6 +103,8 @@ export function DealerHomeDashboard({ dealerId, nav }: Props) {
 
   return (
     <div className="space-y-5">
+      <GettingStartedChecklist dealerId={dealerId} nav={nav} />
+
       <DealershipAutopilot
         dealerId={dealerId}
         preference={profile?.autopilotPreference ?? 'OFF'}
@@ -159,8 +161,6 @@ export function DealerHomeDashboard({ dealerId, nav }: Props) {
           </button>
         </div>
       </section>
-
-      <GettingStartedChecklist dealerId={dealerId} nav={nav} />
 
       <section className="surface-card-operator p-5 rounded-xl border border-silver-200 bg-white space-y-3">
         <h3 className="text-sm font-semibold text-ink-heading">Needs attention</h3>
