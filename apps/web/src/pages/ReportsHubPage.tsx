@@ -57,9 +57,9 @@ const hubReportCopy: Record<HubReportSlug, { category: string; title: string; su
   },
   exposure: {
     category: 'Coverage',
-    title: 'Where listings are not live',
-    summary: 'Compares connected channels against active inventory so you can see where coverage is low or incomplete.',
-    actionHint: 'Low coverage means some active vehicles are not live on that marketplace.',
+    title: 'Where listings have not been sent',
+    summary: 'Compares connected destinations against vehicles on the lot so you can see coverage gaps.',
+    actionHint: 'Low coverage means some active vehicles have not been sent to that destination.',
   },
   movement: {
     category: 'Inventory',

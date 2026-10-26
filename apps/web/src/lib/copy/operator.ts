@@ -42,9 +42,9 @@ export const operatorCopy = {
      */
     rowActions: {
       details: 'Details',
-      queue: 'Queue',
-      history: 'History',
-      inventory: 'Inventory',
+      queue: 'Open',
+      history: 'Open channels',
+      inventory: 'Open vehicles',
     },
   },
   platforms: {
@@ -167,7 +167,7 @@ export const operatorCopy = {
     importCsv: 'Import CSV',
     importInventory: 'Import inventory',
     skipToQueue: 'Skip to Queue',
-    goToQueue: 'Go to Queue',
+    goToQueue: 'Open vehicles',
     readyToSync: 'Ready to publish',
     cleanupRecommended: 'Cleanup recommended',
     showBlocked: 'Show blocked',

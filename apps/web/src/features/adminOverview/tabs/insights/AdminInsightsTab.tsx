@@ -1,5 +1,3 @@
-import { DealerDashboard } from '@/components/dashboard';
-import { buildAdminOverviewNav } from '@/features/adminOverview/utils/adminOverviewNav.ts';
 import { useAsyncQuery } from '@/hooks/useAsyncQuery.ts';
 import { fetchAdminOutreachStats } from '@/lib/api/sdk.ts';
 
@@ -60,10 +58,6 @@ export function AdminInsightsTab() {
   return (
     <div className="space-y-4">
       <OutreachStatsCard />
-      <DealerDashboard
-        isAdmin={true}
-        nav={buildAdminOverviewNav()}
-      />
     </div>
   );
 }

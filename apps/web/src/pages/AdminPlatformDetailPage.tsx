@@ -729,7 +729,7 @@ export default function AdminPlatformDetailPage({
                         : 'bg-status-error-bg text-status-error-text border-status-error-border'
                   }`}>
                     <span className={`h-2 w-2 rounded-full ${healthClass(finalHealth)}`} />
-                    {finalHealth}
+                    {finalHealth === 'green' ? 'Healthy' : finalHealth === 'yellow' ? 'Needs a look' : 'Broken'}
                   </span>
                   <span className={`px-2 py-0.5 rounded text-[10px] font-semibold border ${
                     platform.configured
@@ -827,7 +827,7 @@ export default function AdminPlatformDetailPage({
 
           <div className="grid grid-cols-2 md:grid-cols-4 xl:grid-cols-7 gap-3">
             <StatCard value={platform.dealersUsing} label="Connected dealers" sub={`${platform.eligibleDealers ?? 0} eligible`} />
-            <StatCard value={platform.liveInventory ?? 0} label="Live inventory" sub="active evidence" />
+            <StatCard value={platform.liveInventory ?? 0} label="Listings sent" sub="not verified live" />
             <StatCard value={platform.outboundToday ?? 0} label="Outbound 24h" sub={`${platform.outbound7d ?? 0} in 7d`} />
             <StatCard value={platform.outboundAllTime ?? 0} label="Outbound all" />
             <StatCard value={platform.recentFailures ?? 0} label="Failures 24h" valueClass={(platform.recentFailures ?? 0) > 0 ? 'text-status-error-text' : 'text-ink-heading'} />
@@ -844,12 +844,18 @@ export default function AdminPlatformDetailPage({
               {credLoading || !credentialContract ? (
                 <div className="surface-card-operator p-4"><Skeleton rows={6} /></div>
               ) : (
-                <CredentialPanel
-                  slug={slug}
-                  provider={provider}
-                  contract={credentialContract}
-                  onContractUpdate={setContractOverride}
-                />
+                <details className="surface-card-operator p-4">
+                  <summary className="cursor-pointer text-sm font-semibold text-ink-heading">Technical credentials and diagnostics</summary>
+                  <p className="mt-2 text-xs text-ink-muted">Keys, validation, and provider diagnostics. Dealership connections stay in the list below.</p>
+                  <div className="mt-3">
+                    <CredentialPanel
+                      slug={slug}
+                      provider={provider}
+                      contract={credentialContract}
+                      onContractUpdate={setContractOverride}
+                    />
+                  </div>
+                </details>
               )}
 
               <div className="surface-card-operator p-4">
@@ -1102,7 +1108,9 @@ export default function AdminPlatformDetailPage({
                 )}
               </div>
 
-              <div className="surface-card-operator p-4 space-y-5">
+              <details className="surface-card-operator p-4 space-y-5">
+                <summary className="cursor-pointer text-sm font-semibold text-ink-heading">Setup guide and developer fields</summary>
+                <div className="pt-3">
                 <SectionHeader title="Setup Guide" />
                 {!credentialContract ? (
                   <div className="py-4 text-center text-xs text-ink-faint border border-dashed border-silver-200 rounded-md">
@@ -1162,7 +1170,8 @@ export default function AdminPlatformDetailPage({
                     </div>
                   </>
                 )}
-              </div>
+                </div>
+              </details>
 
               <div className="surface-card-operator p-4">
                 <SectionHeader title="Related Platforms" />

@@ -7,7 +7,6 @@ import { PlatformLogo } from '@/components/platforms/PlatformLogo.tsx';
 import { oauthProviderDisplayName } from '@/lib/platformPresentation.ts';
 import { getSetupReadiness, severityToPill } from '@/lib/setupReadiness.ts';
 import { platformOutcomeMeta } from '@/lib/syncPresentation.ts';
-import { operatorCopy } from '@/lib/copy/operator.ts';
 import { platformDisplayName } from '@/lib/marketplaceBrand.ts';
 import { ConnectionSetupPanel } from '@/components/platforms/ConnectionSetupPanel.tsx';
 import { PlatformAvailabilityPanel } from '@/components/platforms/PlatformAvailabilityPanel.tsx';
@@ -233,17 +232,10 @@ export default function PlatformDetailPage({ dealerId, nav, activeTab, platformS
         <div className="flex gap-2">
           <button
             type="button"
-            onClick={() => nav.goToPlatformQueue(platform.platformSlug)}
+            onClick={() => nav.goToPlatforms()}
             className="px-4 py-2 text-sm font-bold bg-white border border-silver-200 text-ink-body rounded-lg hover:bg-silver-50 transition-colors"
           >
-            {operatorCopy.channels.rowActions.queue}
-          </button>
-          <button
-            type="button"
-            onClick={() => nav.goToPlatformHistory(platform.platformSlug)}
-            className="px-4 py-2 text-sm font-bold bg-white border border-silver-200 text-ink-body rounded-lg hover:bg-silver-50 transition-colors"
-          >
-            {operatorCopy.channels.rowActions.history}
+            All channels
           </button>
         </div>
       </div>

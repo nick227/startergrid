@@ -2,7 +2,6 @@ import { useAsyncQuery } from '@/hooks/useAsyncQuery.ts';
 import { fetchPublishQueue } from '@/lib/api/sdk.ts';
 import type { OperatorNavHandlers } from '@/lib/operatorNav.ts';
 import { formatQueueSchedule, postingModeLabel } from '@/lib/queueControl.ts';
-import { operatorCopy } from '@/lib/copy/operator.ts';
 
 type Props = {
   dealerId: string;
@@ -35,7 +34,7 @@ export function PlatformQueueSummaryCard({ dealerId, platformSlug, nav }: Props)
         )}
         {inFlight > 0 && (
           <div className="flex justify-between gap-3">
-            <dt className="text-ink-muted">In queue</dt>
+            <dt className="text-ink-muted">Waiting to send</dt>
             <dd className="font-semibold text-ink-body">{inFlight}</dd>
           </div>
         )}
@@ -57,11 +56,8 @@ export function PlatformQueueSummaryCard({ dealerId, platformSlug, nav }: Props)
         onClick={() => nav.goToPlatformQueue(platformSlug)}
         className="text-sm font-semibold text-navy-600 hover:text-navy-800"
       >
-        {operatorCopy.platforms.viewQueueForPlatform} →
+        Open this channel
       </button>
-      <p className="text-[11px] text-ink-muted leading-snug pt-1">
-        {operatorCopy.queue.scheduleNote}
-      </p>
     </div>
   );
 }
