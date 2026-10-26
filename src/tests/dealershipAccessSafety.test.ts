@@ -51,7 +51,11 @@ function memoryPrisma() {
     failChannels: null as null | 'platformAccount' | 'syncPolicy',
   };
   const upsertKeyed = (rows: Row[], where: Row, create: Row, model: 'platformAccount' | 'syncPolicy') => {
-    if (t.failChannels === model) throw new Error(`simulated ${model} outage`);
+    // Shaped like a real Prisma connector error: call-site boilerplate first, the cause last.
+    if (t.failChannels === model) {
+      throw new Error(`\nInvalid \`prisma.${model}.upsert()\` invocation:\n\n\nError in batch request 0: Error occurred during query execution:\n`
+        + `ConnectorError(ConnectorError { user_facing_error: None, kind: QueryError(Server(MysqlError { code: 1644, message: "simulated ${model} outage", state: "45000" })), transient: false })`);
+    }
     const key = where.dealershipId_platformSlug;
     const row = rows.find(r => r.dealershipId === key.dealershipId && r.platformSlug === key.platformSlug);
     if (row) return row;
@@ -549,7 +553,7 @@ describe('default channel setup is recoverable, never ambiguous', () => {
     assert.equal(step?.ownerKind, 'OUR_TEAM');
     const recorded = t.activity.find(e => e.action === 'CHANNEL_SETUP_INCOMPLETE');
     assert.ok(recorded, 'the failure is recorded, not just logged');
-    assert.match(String(recorded.detail.error), /simulated platformAccount outage/);
+    assert.equal(recorded.detail.error, 'simulated platformAccount outage', 'the cause, not Prisma boilerplate');
   });
 
   it('a retry repairs setup idempotently and clears the blocked step', async () => {

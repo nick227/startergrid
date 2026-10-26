@@ -15,6 +15,18 @@ export type ChannelSetupResult = {
 };
 
 /**
+ * Prisma messages open with call-site boilerplate ("Invalid `prisma.x.upsert()` invocation");
+ * keep the database's own message, which is what an operator needs from the activity log.
+ */
+function failureCause(err: unknown): string {
+  const text = err instanceof Error ? err.message : String(err);
+  const dbMessage = /message: "((?:[^"\\]|\\.)*)"/.exec(text)?.[1];
+  const code = (err as { code?: unknown }).code;
+  const cause = dbMessage ?? text.split('\n').map((l) => l.trim()).filter(Boolean).pop() ?? text;
+  return (typeof code === 'string' ? `${code}: ${cause}` : cause).slice(0, 200);
+}
+
+/**
  * Creates the default channel accounts and sync policies. Idempotent: every write is an
  * upsert keyed on (dealershipId, platformSlug), so retrying never duplicates anything.
  * Never throws for provisioning failures; the dealership already exists and the result
@@ -52,7 +64,7 @@ export async function provisionDefaultChannels(
       action: status.ready ? 'CHANNEL_SETUP_COMPLETED' : 'CHANNEL_SETUP_INCOMPLETE',
       detail: {
         missingCount: status.missing.length,
-        ...(failure ? { error: (failure instanceof Error ? failure.message : String(failure)).slice(0, 200) } : {}),
+        ...(failure ? { error: failureCause(failure) } : {}),
       },
     });
   }
