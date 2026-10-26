@@ -16,6 +16,7 @@ async function requireDemoDealer(request: APIRequestContext): Promise<string | n
 
 async function openJsonIngestPanel(page: import('@playwright/test').Page, dealerId: string) {
   await page.goto(`/#/${dealerId}/inventory`);
+  await page.getByTestId('import-from-source').click();
   await page.getByTestId('json-ingest-toggle').click();
   await expect(page.getByTestId('json-ingest-textarea')).toBeVisible();
 }

@@ -1,106 +1,22 @@
 import { useMemo, useState, useEffect } from 'react';
 import { fetchPublishStatus, fetchAccounts, fetchPlatformPerformance, fetchSelectedSocialPages, fetchPublishQueue } from '@/lib/api/sdk.ts';
-import type { PlatformAccountDetail, PlatformPerformanceItem, PlatformPublishResult, SelectedSocialPage } from '@/lib/types.ts';
+import type { PlatformAccountDetail, PlatformPerformanceItem, SelectedSocialPage } from '@/lib/types.ts';
 import type { OperatorPageBaseProps } from '@/lib/operatorPage.ts';
-import type { OperatorNavHandlers } from '@/lib/operatorNav.ts';
 import { useAsyncQuery } from '@/hooks/useAsyncQuery.ts';
-import { OperatorPage, ErrorState, InlineCallout } from '@/components/operator';
-import { PageSituation } from '@/components/layout';
-import { FilterChips } from '@/components/generic';
+import { OperatorPage, ErrorState, PageHeader } from '@/components/operator';
 import { SimplifiedChannelsView } from '@/components/platforms/SimplifiedChannelsView.tsx';
 import { OAuthConnectBanner } from '@/components/platforms/OAuthConnectBanner.tsx';
-import { PlatformLogo } from '@/components/platforms/PlatformLogo.tsx';
-import { Button } from '@/components/ui/Button.tsx';
-import {
-  PLATFORM_CONNECTION_FILTERS,
-  platformSituationSummary,
-  type PlatformConnectionFilter,
-} from '@/lib/platformPresentation.ts';
-import { getSetupReadiness, severityToPill } from '@/lib/setupReadiness.ts';
+import { platformDisplayName, AUTO_MARKETPLACE_SLUG, DEALER_STOREFRONT_FEED_SLUG } from '@/lib/marketplaceBrand.ts';
 import { operatorCopy } from '@/lib/copy/operator.ts';
 import { useCategorySchema } from '@/contexts/CategoryContext.tsx';
 import { PlatformConnectBanner } from '@/components/platforms/PlatformConnectBanner.tsx';
 import { platformStatsBySlug } from '@/lib/platformQueueStats.ts';
-import {
-  AUTO_MARKETPLACE_NAME,
-  AUTO_MARKETPLACE_SLUG,
-  platformDisplayName,
-} from '@/lib/marketplaceBrand.ts';
 
 const MARKETPLACE_URL = (import.meta.env['VITE_MARKETPLACE_URL'] as string | undefined) ?? 'http://localhost:5174';
 
 type Props = OperatorPageBaseProps & {
   initialPlatformSlug?: string | null;
 };
-
-function FeaturedMarketplaceSection({
-  platform,
-  account,
-  dealerId,
-  categorySlug,
-  nav,
-}: {
-  platform: PlatformPublishResult;
-  account: PlatformAccountDetail | null;
-  dealerId: string;
-  categorySlug: string;
-  nav: OperatorNavHandlers;
-}) {
-  const readiness = getSetupReadiness(platform, account);
-  const sellerUrl = `${MARKETPLACE_URL}#/${categorySlug}/seller/${encodeURIComponent(dealerId)}`;
-
-  return (
-    <section className="pb-4">
-      <article className="surface-card-operator p-4 ring-1 ring-navy-500/20">
-        <div className="flex gap-3 items-start">
-          <div className="pt-0.5 shrink-0">
-            <PlatformLogo slug={platform.platformSlug} name={AUTO_MARKETPLACE_NAME} />
-          </div>
-          <div className="min-w-0 flex-1 space-y-1.5">
-            <div className="flex items-start gap-3">
-              <div className="min-w-0 flex-1">
-                <p className="text-[10px] font-bold uppercase tracking-widest text-ink-faint mb-0.5">In-house marketplace</p>
-                <div className="flex flex-wrap items-center gap-2">
-                  <button
-                    type="button"
-                    onClick={() => nav.goToPlatformDetail(platform.platformSlug)}
-                    className="text-sm font-semibold text-ink-heading hover:text-orange-600 hover:underline text-left"
-                  >
-                    {platformDisplayName(platform.platformSlug, platform.platformName)}
-                  </button>
-                  <span className={`shrink-0 px-2 py-0.5 rounded-md text-[11px] font-bold border ${severityToPill(readiness.severity)}`}>
-                    {readiness.statusLabel}
-                  </span>
-                </div>
-              </div>
-              <div className="shrink-0 flex items-center gap-2">
-                <a
-                  href={sellerUrl}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="inline-flex items-center px-3 py-1.5 text-xs font-semibold rounded-md text-ink-muted hover:text-ink-heading transition-colors whitespace-nowrap"
-                >
-                  View storefront →
-                </a>
-                <Button
-                  size="sm"
-                  variant="secondary"
-                  className="whitespace-nowrap"
-                  onClick={() => nav.goToPlatformDetail(platform.platformSlug)}
-                >
-                  Manage →
-                </Button>
-              </div>
-            </div>
-            <p className="text-xs text-ink-muted leading-snug">
-              Your first-party storefront — inventory published here is live in the public marketplace immediately.
-            </p>
-          </div>
-        </div>
-      </article>
-    </section>
-  );
-}
 
 export default function PlatformsPage({ dealerId, nav, activeTab, initialPlatformSlug }: Props) {
   const categorySchema = useCategorySchema();
@@ -113,7 +29,6 @@ export default function PlatformsPage({ dealerId, nav, activeTab, initialPlatfor
   const socialPagesQuery = useAsyncQuery(() => fetchSelectedSocialPages(dealerId), [dealerId]);
   const queueQuery = useAsyncQuery(() => fetchPublishQueue(dealerId), [dealerId]);
 
-  const [filter, setFilter] = useState<PlatformConnectionFilter>('configured');
   const [selectedSlug, setSelectedSlug] = useState<string | null>(initialPlatformSlug ?? null);
   const [connectedSlug, setConnectedSlug] = useState<string | null>(null);
 
@@ -144,16 +59,11 @@ export default function PlatformsPage({ dealerId, nav, activeTab, initialPlatfor
     [queueQuery.data],
   );
 
-  // Backend already scopes platforms to the dealer's businessCategory (fail-closed in
-  // resolvePublishTargets). Do not re-filter by categorySchema.id here — while
-  // fetchDealers is loading, categorySchema is the WATCHES loading sentinel and
-  // would hide every platform even though the API returned the correct set.
-  const platforms = useMemo(() => data?.platforms ?? [], [data]);
-
-  const featuredMarketplace = useMemo(
-    () => platforms.find(p => p.platformSlug === AUTO_MARKETPLACE_SLUG) ?? null,
-    [platforms]
+  const platforms = useMemo(
+    () => (data?.platforms ?? []).filter(p => p.platformSlug !== DEALER_STOREFRONT_FEED_SLUG),
+    [data],
   );
+  const featuredMarketplace = platforms.find(p => p.platformSlug === AUTO_MARKETPLACE_SLUG) ?? null;
 
   const marketplaceCategorySlug = useMemo(() => {
     if (categorySchema.status !== 'placeholder') return categorySchema.id.toLowerCase();
@@ -161,7 +71,9 @@ export default function PlatformsPage({ dealerId, nav, activeTab, initialPlatfor
     return (fromPlatform ?? 'automotive').toLowerCase();
   }, [categorySchema, featuredMarketplace]);
 
-
+  const storefrontHref = featuredMarketplace
+    ? `${MARKETPLACE_URL}#/${marketplaceCategorySlug}/seller/${encodeURIComponent(dealerId)}`
+    : undefined;
 
   const handleRefresh = () => {
     reload();
@@ -179,15 +91,10 @@ export default function PlatformsPage({ dealerId, nav, activeTab, initialPlatfor
     );
   }
 
-  const situation = data ? platformSituationSummary(platforms) : operatorCopy.platforms.loading;
-
-  // Distinguish "category has no platforms" from "user filter excluded results".
-  const noUserFilter = filter === 'ALL';
   const noCategoryPlatforms = !!data && platforms.length === 0;
-  const channelEmptyMessage =
-    noCategoryPlatforms && noUserFilter
-      ? `No platforms are configured for ${categorySchema.label} yet.`
-      : operatorCopy.platforms.emptyFilter;
+  const channelEmptyMessage = noCategoryPlatforms
+    ? `No destinations are available for ${categorySchema.label} yet.`
+    : operatorCopy.platforms.emptyFilter;
 
   return (
     <OperatorPage
@@ -200,18 +107,10 @@ export default function PlatformsPage({ dealerId, nav, activeTab, initialPlatfor
       lastRefresh={lastRefresh ?? undefined}
       hideDealerId
     >
-      <PageSituation title={operatorCopy.platforms.title} line={situation} />
-
-      <div className="mb-5 -mt-1 max-w-3xl">
-        <InlineCallout title={operatorCopy.platforms.educationTitle}>
-          <p className="text-xs leading-relaxed">{operatorCopy.platforms.educationIntro}</p>
-          <ul className="mt-2 list-disc pl-4 space-y-1 text-xs">
-            {operatorCopy.platforms.educationPoints.map(point => (
-              <li key={point}>{point}</li>
-            ))}
-          </ul>
-        </InlineCallout>
-      </div>
+      <PageHeader
+        title="Channels"
+        subtitle="Destinations where your vehicles can appear. Connect one, then send ready vehicles."
+      />
 
       {connectedSlug && (
         <PlatformConnectBanner
@@ -226,24 +125,6 @@ export default function PlatformsPage({ dealerId, nav, activeTab, initialPlatfor
           onDismiss={() => setConnectedSlug(null)}
         />
       )}
-
-      {featuredMarketplace && (
-        <FeaturedMarketplaceSection
-          platform={featuredMarketplace}
-          account={accountBySlug.get(featuredMarketplace.platformSlug) ?? null}
-          dealerId={dealerId}
-          categorySlug={marketplaceCategorySlug}
-          nav={nav}
-        />
-      )}
-
-      <div className="mb-4">
-        <FilterChips
-          chips={PLATFORM_CONNECTION_FILTERS.map(f => ({ key: f.key, label: f.label }))}
-          activeKey={filter}
-          onSelect={key => setFilter(key as PlatformConnectionFilter)}
-        />
-      </div>
 
       <OAuthConnectBanner
         platforms={platforms}
@@ -278,16 +159,8 @@ export default function PlatformsPage({ dealerId, nav, activeTab, initialPlatfor
         }}
         loading={loading && !data}
         emptyMessage={channelEmptyMessage}
+        storefrontHref={storefrontHref}
       />
-
-      {filter === 'connected' && (
-        <div className="mt-8 text-center border-t border-silver-200 pt-6">
-          <p className="text-sm text-ink-muted mb-3">Looking to connect a new platform?</p>
-          <Button variant="secondary" onClick={() => setFilter('ALL')}>
-            Discover Available Integrations
-          </Button>
-        </div>
-      )}
     </OperatorPage>
   );
 }

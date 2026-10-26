@@ -4,8 +4,8 @@ import { fetchDealerLeads, fetchBuyerOutreach, type DealerLead, type BuyerOutrea
 import { updateLeadWorkflow, fetchDealershipPeople } from '@/lib/api/dealershipRecordApi.ts';
 import type { OperatorPageBaseProps } from '@/lib/operatorPage.ts';
 import { OperatorPage, PageHeader } from '@/components/operator';
-import { NotificationChannelsPanel } from '@/components/operator/NotificationChannelsPanel.tsx';
 import { InfoButton } from '@/components/docs/index.ts';
+import { GuidanceNote } from '@/components/guidance/GuidanceNote.tsx';
 import { Banner, SearchField, Select } from '@/components/ui';
 import { AUTO_MARKETPLACE_NAME, AUTO_MARKETPLACE_SLUG } from '@/lib/marketplaceBrand.ts';
 
@@ -142,7 +142,7 @@ function OutreachRow({ row }: { row: BuyerOutreachRecord }) {
             ? 'border-green-200 bg-green-50 text-green-700'
             : 'border-red-200 bg-red-50 text-red-700'
         }`}>
-          {row.status}
+          {row.status === 'SENT' ? 'Sent' : 'Could not send'}
         </span>
       </div>
       <div className="text-xs text-ink-muted lg:text-right">
@@ -230,12 +230,12 @@ function CommunicationsLog({ dealerId }: { dealerId: string }) {
         </div>
 
         {loading && records.length === 0 ? (
-          <div className="p-8 text-center text-sm text-ink-muted">Loading communications log...</div>
+          <div className="p-8 text-center text-sm text-ink-muted">Loading sent messages…</div>
         ) : records.length === 0 ? (
           <div className="p-8 text-center">
-            <p className="text-sm font-semibold text-ink-heading">No communications yet</p>
+            <p className="text-sm font-semibold text-ink-heading">No messages sent yet</p>
             <p className="mt-1 text-xs text-ink-muted">
-              Outbound notifications sent to buyers will be logged here.
+              When StarterGrid emails or texts a shopper, that send appears here.
             </p>
           </div>
         ) : visible.length === 0 ? (
@@ -317,7 +317,7 @@ function LeadRow({
 
       {/* 2. Contact details */}
       <div className="min-w-0">
-        <p className="truncate text-sm font-semibold text-ink-heading">{lead.contactName ?? 'Anonymous Buyer'}</p>
+        <p className="truncate text-sm font-semibold text-ink-heading">{lead.contactName ?? 'No name given'}</p>
         {lead.contactEmail && (
           <a href={`mailto:${lead.contactEmail}`} className="truncate text-xs text-ink-muted hover:text-navy-700 hover:underline block mt-0.5">
             ✉ {lead.contactEmail}
@@ -515,25 +515,36 @@ export default function LeadsPage({ dealerId, nav, activeTab }: Props) {
       <div className="space-y-5">
         <PageHeader
           title="Leads"
-          subtitle="Shared team inbox. Status and assignment save for everyone on this dealership."
+          subtitle="Shopper inquiries about your vehicles. Status and assignment save for everyone at this dealership."
         />
 
-        <NotificationChannelsPanel dealerId={dealerId} />
+        {leads.length === 0 && !loading && view === 'leads' && (
+          <GuidanceNote>
+            When a shopper asks about a vehicle, the inquiry lands here. Reply from this inbox, then mark the next step so the rest of the team can see it.
+          </GuidanceNote>
+        )}
 
-        {/* Sub-tab bar */}
+        <p className="text-xs text-ink-muted">
+          Change email and text alerts in{' '}
+          <button type="button" onClick={nav.goToSettings} className="font-semibold text-navy-700 hover:underline">
+            Settings
+          </button>
+          .
+        </p>
+
         <div className="flex gap-1 border-b border-silver-200">
           {(['leads', 'communications'] as PageView[]).map(v => (
             <button
               key={v}
               type="button"
               onClick={() => setView(v)}
-              className={`px-4 py-2 text-sm font-semibold border-b-2 transition-colors capitalize ${
+              className={`px-4 py-2 text-sm font-semibold border-b-2 transition-colors ${
                 view === v
                   ? 'border-orange-500 text-orange-700'
                   : 'border-transparent text-ink-muted hover:text-ink-body hover:border-silver-400'
               }`}
             >
-              {v === 'leads' ? `Inbox (${leads.length})` : 'Delivery Log'}
+              {v === 'leads' ? `Inbox (${leads.length})` : 'Delivery log'}
             </button>
           ))}
         </div>
@@ -587,12 +598,12 @@ export default function LeadsPage({ dealerId, nav, activeTab }: Props) {
               </div>
 
               {loading && leads.length === 0 ? (
-                <div className="p-8 text-center text-sm text-ink-muted">Loading leads...</div>
+                <div className="p-8 text-center text-sm text-ink-muted">Loading inquiries…</div>
               ) : leads.length === 0 ? (
                 <div className="p-8 text-center">
-                  <p className="text-sm font-semibold text-ink-heading">No leads yet</p>
+                  <p className="text-sm font-semibold text-ink-heading">No inquiries yet</p>
                   <p className="mt-1 text-xs text-ink-muted">
-                    When a buyer clicks "Request Info" on the marketplace or your storefront, it will appear here.
+                    Inquiries appear when a shopper requests info on your storefront or a connected destination.
                   </p>
                 </div>
               ) : visibleLeads.length === 0 ? (

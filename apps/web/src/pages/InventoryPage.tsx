@@ -40,7 +40,6 @@ import { CategoryItemsBrowse } from '@/components/inventory/CategoryItemsBrowse.
 import { CategoryItemDetailPanel } from '@/components/inventory/CategoryItemDetailPanel.tsx';
 import type { CleanupFilter } from '@/components/inventory/inventoryConfig.tsx';
 import { CreatePostModal } from '@/components/social/index.ts';
-import { operatorCopy } from '@/lib/copy/index.ts';
 import { useCategorySchema } from '@/contexts/CategoryContext.tsx';
 import { useOperatorRoute } from '@/hooks/useOperatorRoute.ts';
 import { OwnershipLine } from '@/components/guidance/OwnershipLine.tsx';
@@ -304,16 +303,14 @@ export default function InventoryPage({ dealerId, nav, activeTab }: Props) {
   // the old copy ("No inventory found matching criteria") told every brand-new dealer their search was
   // broken instead of pointing at the add-vehicle controls already on screen.
   const isFilteredEmpty = !loading && vehicles.length > 0 && mappedVisible.length === 0;
-  const hasActiveFilter = search.trim() !== '' || filter !== 'All';
+  const hasActiveFilter = search.trim() !== '' || filter !== 'All' || ageFilter !== 'all';
   const inventoryEmptyMessage = isEmpty ? (
-    <>
-      No vehicles yet. Use <strong>Single VIN</strong>, <strong>Bulk VIN Paste</strong>, or <strong>CSV Import</strong> above to add your first one.
-    </>
+    <>No vehicles yet. Use Add vehicle or Import spreadsheet above.</>
   ) : isFilteredEmpty && hasActiveFilter ? (
     <>
-      No vehicles match your current search or filter.{' '}
-      <button type="button" onClick={() => { setSearch(''); setFilter('All'); }} className="text-navy-600 hover:text-navy-700 font-medium underline underline-offset-2">
-        Clear filters
+      No vehicles match this search or filter.{' '}
+      <button type="button" onClick={() => { setSearch(''); setFilter('All'); setAgeFilter('all'); }} className="text-navy-600 hover:text-navy-700 font-medium underline underline-offset-2">
+        Show all vehicles
       </button>
     </>
   ) : undefined;
@@ -322,11 +319,10 @@ export default function InventoryPage({ dealerId, nav, activeTab }: Props) {
     active: summary?.total ?? 0,
     ready: summary?.ready ?? 0,
     needsPhotos: vehicles.filter(v => v.issues.some(i => i.path === 'media')).length,
-    queued: 0, // Mocked
+    queued: 0,
     blocked: summary?.blocked ?? 0,
   };
 
-  const staleStocks = useMemo(() => staleStockNumbers(perf.data?.items ?? []), [perf.data]);
   const isActiveScope = isActiveLifecycleScope(lifecycleScope);
 
   const [detailId, setDetailId] = useState<string | null>(null);
@@ -355,21 +351,10 @@ export default function InventoryPage({ dealerId, nav, activeTab }: Props) {
       dealerId={dealerId}
       activeTab={activeTab}
       nav={nav}
-      onRefresh={() => {
-        load();
-        publishStatus.reload();
-      }}
+      onRefresh={load}
       refreshing={loading}
       lastRefresh={lastRefresh ?? undefined}
       footerPad={selected.size > 0}
-      headerAction={
-        <span className="inline-flex items-center gap-2">
-          <span className="inline-flex items-center gap-1 text-xs font-semibold text-ink-body">
-            Inventory System
-            <InfoButton docId="inventory/inventory-readiness" />
-          </span>
-        </span>
-      }
     >
       {categoryItemDetailId ? (
         <div className="mt-4 flex-1 bg-white rounded-xl shadow-sm border border-silver-200 overflow-hidden flex flex-col">
@@ -395,20 +380,27 @@ export default function InventoryPage({ dealerId, nav, activeTab }: Props) {
       ) : (
         <div className="space-y-5">
           <PageHeader
-            title={operatorCopy.inventory.title}
-            infoDocId="inventory/inventory-readiness"
-            subtitle={operatorCopy.inventory.subtitle}
+            title="Vehicles"
+            subtitle="Keep prices, photos, and details accurate. Ready vehicles can be sent to your channels."
           />
 
           {isPhysicalInventory ? (
-            <VehicleAddControls
-              dealerId={dealerId}
-              onVehicleCreated={(newId) => {
-                handleIntakeRefresh();
-                setDetailId(newId);
-              }}
-              onImportCommitted={handleIntakeRefresh}
-            />
+            <>
+              {isEmpty && (
+                <GuidanceNote>
+                  You have no vehicles yet. Add one by VIN, or import a spreadsheet of your current lot.
+                </GuidanceNote>
+              )}
+              <VehicleAddControls
+                dealerId={dealerId}
+                compact={!isEmpty}
+                onVehicleCreated={(newId) => {
+                  handleIntakeRefresh();
+                  setDetailId(newId);
+                }}
+                onImportCommitted={handleIntakeRefresh}
+              />
+            </>
           ) : categorySchema.id === 'SONGS' ? (
             <SongAddControls
               dealerId={dealerId}
@@ -431,75 +423,26 @@ export default function InventoryPage({ dealerId, nav, activeTab }: Props) {
             />
           )}
 
-          {(hasPerformanceData(perf.data?.computedAt) || isBenchmarksUpdating(autoSync.data) || !hasPerformanceData(perf.data?.computedAt)) && (
-            <BenchmarkFreshnessBar
-              dealerId={dealerId}
-              computedAt={perf.data?.computedAt}
-              autoSync={autoSync.data}
-              onRefreshed={reloadBenchmarks}
-              compact
-            />
-          )}
-
-          <InventoryPublishingGuide
-            status={publishStatus.data}
-            loading={publishStatus.loading}
-            onOpenPlatforms={nav.goToPlatforms}
-          />
-
-          {!isEmpty && summary && summary.blocked > 0 && (
-            <InlineCallout
-              tone="warning"
-              title={operatorCopy.inventory.cleanupRecommended}
-              icon="!"
-              action={
-                <button type="button" onClick={() => setFilter('Blocked')} className="text-xs font-bold">
-                  {operatorCopy.inventory.showBlocked}
-                </button>
-              }
-            >
-              {operatorCopy.inventory.blockedCallout(summary.blocked)}
-            </InlineCallout>
-          )}
-
-          {benchmarksUpdating && (
-            <InlineCallout tone="warning" title={EMPTY_STATE_COPY.postImportBenchmarksPending.title} icon="⟳">
-              {EMPTY_STATE_COPY.postImportBenchmarksPending.subtitle}
-            </InlineCallout>
-          )}
-
-          {!benchmarksUpdating && lowDataCount > 0 && lowDataCount >= vehicles.length - 1 && vehicles.length > 0 && (
-            <InlineCallout tone="neutral" title={EMPTY_STATE_COPY.movementLowDataFleet.title} icon="ℹ">
-              {EMPTY_STATE_COPY.movementLowDataFleet.subtitle}
-            </InlineCallout>
-          )}
-
-          {staleStocks.length > 0 && (
-            <InlineCallout tone="warning" title={operatorCopy.inventory.slowerThanPeers} icon="!">
-              {operatorCopy.inventory.staleReview(staleStocks.join(', '))}
-            </InlineCallout>
-          )}
-
           {error && (
             <Banner variant="error" action={<button type="button" onClick={load} className="text-xs underline">Retry</button>}>
               {error}
             </Banner>
           )}
 
+          {(!isPhysicalInventory || !isEmpty) && (
           <InventoryWorkspace
             dealerId={dealerId}
             tabCounts={{
               browse: isPhysicalInventory ? activeVehicles.length : 0,
               attention: isPhysicalInventory ? attentionVehicles.length : 0,
-              recent: isPhysicalInventory ? recentVehicles.length : 0,
               sold: isPhysicalInventory ? soldVehicles.length : 0,
             }}
             attentionContent={
               <div className="space-y-4">
                 <div className="flex items-center justify-between">
                   <div>
-                    <h3 className="text-sm font-semibold text-ink-heading">Vehicles Needing Attention ({attentionVehicles.length})</h3>
-                    <p className="text-xs text-ink-muted">Actionable blockers, missing photos, and incomplete pricing preventing live syndication.</p>
+                    <h3 className="text-sm font-semibold text-ink-heading">Needs a fix ({attentionVehicles.length})</h3>
+                    <p className="text-xs text-ink-muted">These vehicles are missing photos, a price, or another required detail.</p>
                   </div>
                 </div>
 
@@ -512,8 +455,8 @@ export default function InventoryPage({ dealerId, nav, activeTab }: Props) {
                 {attentionVehicles.length === 0 ? (
                   <div className="p-8 text-center bg-white border border-silver-200 rounded-xl shadow-sm">
                     <div className="text-3xl mb-2">🎉</div>
-                    <p className="text-sm font-semibold text-ink-heading">All active vehicles are ready to distribute!</p>
-                    <p className="text-xs text-ink-muted mt-1">No missing photos, prices, or distribution blockers detected.</p>
+                    <p className="text-sm font-semibold text-ink-heading">Nothing needs a fix right now</p>
+                    <p className="text-xs text-ink-muted mt-1">Every active vehicle has photos and a price.</p>
                   </div>
                 ) : (
                   <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
@@ -569,7 +512,7 @@ export default function InventoryPage({ dealerId, nav, activeTab }: Props) {
                             {missingPrice && (
                               <div className="mt-3 p-2.5 bg-amber-50/80 border border-amber-200 rounded-lg space-y-1">
                                 <span className="block text-[11px] font-bold text-amber-900">
-                                  Quick Fix: Set Listing Price
+                                  Set this vehicle&apos;s price
                                 </span>
                                 <form
                                   onSubmit={(e) => {
@@ -644,7 +587,7 @@ export default function InventoryPage({ dealerId, nav, activeTab }: Props) {
                                       }`}
                                     >
                                       <span>📷</span>
-                                      <span>{savingQuickFixId === v.id ? 'Uploading...' : 'Direct Photo Upload'}</span>
+                                      <span>{savingQuickFixId === v.id ? 'Uploading…' : 'Add photos'}</span>
                                       <input
                                         type="file"
                                         accept="image/*"
@@ -691,7 +634,7 @@ export default function InventoryPage({ dealerId, nav, activeTab }: Props) {
                               }}
                               className="px-3 py-1.5 text-xs font-semibold bg-navy-900 text-white hover:bg-navy-800 rounded-lg transition-colors flex items-center gap-1"
                             >
-                              <span>Fix & Review</span>
+                              <span>{missingPhotos ? 'Fix missing photos' : missingPrice ? 'Add a price' : 'Open vehicle'}</span>
                               <span>→</span>
                             </button>
                           </div>
@@ -702,81 +645,17 @@ export default function InventoryPage({ dealerId, nav, activeTab }: Props) {
                 )}
               </div>
             }
-            recentContent={
-              <div className="space-y-4">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <h3 className="text-sm font-semibold text-ink-heading">Recently Changed Vehicles ({recentVehicles.length})</h3>
-                    <p className="text-xs text-ink-muted">Vehicles created or modified most recently.</p>
-                  </div>
-                </div>
-                {recentVehicles.length === 0 ? (
-                  <div className="p-8 text-center bg-white border border-silver-200 rounded-xl text-sm text-ink-muted">
-                    No recent updates found.
-                  </div>
-                ) : (
-                  <div className="divide-y divide-silver-200 bg-white border border-silver-200 rounded-xl overflow-hidden shadow-sm">
-                    {recentVehicles.map(v => (
-                      <div key={v.id} className="p-4 flex items-center justify-between gap-4 hover:bg-surface-inset transition-colors">
-                        <div className="flex items-center gap-3 min-w-0">
-                          <div className="w-12 h-12 rounded-lg bg-silver-100 border border-silver-200 flex items-center justify-center shrink-0 overflow-hidden">
-                            {v.thumbnailUrl ? (
-                              <img src={v.thumbnailUrl} alt="" className="w-full h-full object-cover" />
-                            ) : (
-                              <span className="text-lg opacity-40">🚙</span>
-                            )}
-                          </div>
-                          <div className="min-w-0">
-                            <h4 className="font-semibold text-sm text-ink-heading truncate">
-                              {v.year} {v.make} {v.model} {v.trim || ''}
-                            </h4>
-                            <div className="text-xs text-ink-muted font-mono mt-0.5 flex items-center gap-2">
-                              <span>Stock #{v.stockNumber}</span>
-                              <span>·</span>
-                              <span>{v.priceCents > 0 ? `$${(v.priceCents / 100).toLocaleString()}` : 'Price not set'}</span>
-                              <span>·</span>
-                              <span>{v.mediaCount} photos</span>
-                            </div>
-                          </div>
-                        </div>
-
-                        <div className="flex items-center gap-3 shrink-0">
-                          <span className="text-xs text-ink-faint font-mono hidden sm:inline">
-                            {new Date(v.updatedAt).toLocaleDateString()}
-                          </span>
-                          <button
-                            type="button"
-                            onClick={() => {
-                              nav.goToInventoryItem({
-                                year: v.year,
-                                make: v.make,
-                                model: v.model,
-                                stockNumber: v.stockNumber,
-                              });
-                              setDetailId(v.id);
-                            }}
-                            className="px-3 py-1.5 text-xs font-semibold bg-silver-100 hover:bg-silver-200 text-ink-heading rounded-lg transition-colors"
-                          >
-                            View
-                          </button>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                )}
-              </div>
-            }
             soldContent={
               <div className="space-y-4">
                 <div className="flex items-center justify-between">
                   <div>
-                    <h3 className="text-sm font-semibold text-ink-heading">Sold & Removed Vehicles ({soldVehicles.length})</h3>
-                    <p className="text-xs text-ink-muted">Historical records preserved. You can relist any vehicle at any time.</p>
+                    <h3 className="text-sm font-semibold text-ink-heading">Sold and removed ({soldVehicles.length})</h3>
+                    <p className="text-xs text-ink-muted">Vehicles taken off the lot. Relist one to put it back on the market.</p>
                   </div>
                 </div>
                 {soldVehicles.length === 0 ? (
                   <div className="p-8 text-center bg-white border border-silver-200 rounded-xl text-sm text-ink-muted">
-                    No sold or removed vehicles in this dealership.
+                    No sold or removed vehicles yet.
                   </div>
                 ) : (
                   <div className="divide-y divide-silver-200 bg-white border border-silver-200 rounded-xl overflow-hidden shadow-sm">
@@ -823,7 +702,7 @@ export default function InventoryPage({ dealerId, nav, activeTab }: Props) {
                               onClick={() => handleRelist(v.id)}
                               className="px-3 py-1.5 text-xs font-semibold bg-emerald-600 hover:bg-emerald-500 text-white rounded-lg transition-colors disabled:opacity-50 flex items-center gap-1.5 shadow-sm"
                             >
-                              <span>{isBusy ? 'Relisting…' : '🔄 Relist Vehicle'}</span>
+                              <span>{isBusy ? 'Relisting…' : 'Relist vehicle'}</span>
                             </button>
                           </div>
                         </div>
@@ -849,6 +728,20 @@ export default function InventoryPage({ dealerId, nav, activeTab }: Props) {
                         search={search}
                         onSearchChange={setSearch}
                         selectedCount={selected.size}
+                        extra={
+                          <button
+                            type="button"
+                            aria-pressed={ageFilter === 'week'}
+                            onClick={() => setAgeFilter(ageFilter === 'week' ? 'all' : 'week')}
+                            className={`px-3 py-1.5 text-xs font-semibold rounded-md border ${
+                              ageFilter === 'week'
+                                ? 'bg-navy-900 text-white border-navy-900'
+                                : 'bg-white text-ink-body border-silver-200 hover:bg-surface-raised'
+                            }`}
+                          >
+                            Changed this week
+                          </button>
+                        }
                       />
                       <InventoryDataGrid
                         dealerId={dealerId}
@@ -900,24 +793,6 @@ export default function InventoryPage({ dealerId, nav, activeTab }: Props) {
               )
             }
           />
-
-          {isActiveScope && summary && summary.ready > 0 && (
-            <InlineCallout
-              tone="success"
-              title={operatorCopy.inventory.readyToSync}
-              icon="✓"
-              action={
-                <button
-                  type="button"
-                  onClick={() => nav.goToQueue()}
-                  className="btn-primary-operator"
-                >
-                  {operatorCopy.inventory.goToQueue}
-                </button>
-              }
-            >
-              {operatorCopy.inventory.readyCallout(summary.ready)}
-            </InlineCallout>
           )}
         </div>
       )}

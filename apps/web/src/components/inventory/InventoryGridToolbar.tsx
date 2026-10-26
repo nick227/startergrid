@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect } from 'react';
+import { useState, useRef, useEffect, type ReactNode } from 'react';
 import { INVENTORY_FIELD_REGISTRY, INVENTORY_COLUMN_PRESETS } from './fieldRegistry.ts';
 
 type Props = {
@@ -9,10 +9,11 @@ type Props = {
   search: string;
   onSearchChange: (s: string) => void;
   selectedCount: number;
+  extra?: ReactNode;
 };
 
 export function InventoryGridToolbar({
-  viewMode, onChangeViewMode, activeColumns, onChangeColumns, search, onSearchChange, selectedCount
+  viewMode, onChangeViewMode, activeColumns, onChangeColumns, search, onSearchChange, selectedCount, extra
 }: Props) {
   const [pickerOpen, setPickerOpen] = useState(false);
   const pickerRef = useRef<HTMLDivElement>(null);
@@ -41,13 +42,14 @@ export function InventoryGridToolbar({
     <div className="flex flex-wrap items-center gap-3 py-2 border-b border-silver-100">
       <input
         type="text"
-        placeholder="Search inventory..."
+        placeholder="Search vehicles…"
         value={search}
         onChange={e => onSearchChange(e.target.value)}
         className="flex-1 min-w-[200px] max-w-sm px-3 py-1.5 text-sm border border-silver-200 rounded-md focus:outline-none focus:border-navy-500"
       />
 
       <div className="ml-auto flex items-center gap-2">
+        {extra}
         {selectedCount > 0 && (
           <span className="text-xs font-semibold text-orange-600 mr-2">{selectedCount} selected</span>
         )}

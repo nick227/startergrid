@@ -1,7 +1,6 @@
 import type { PlatformQueueStats } from '@/lib/types.ts';
 import { formatQueueSchedule, postingModeLabel } from '@/lib/queueControl.ts';
 import type { OperatorNavHandlers } from '@/lib/operatorNav.ts';
-import { operatorCopy } from '@/lib/copy/operator.ts';
 import { Button } from '@/components/ui/Button.tsx';
 
 type Props = {
@@ -31,9 +30,12 @@ export function PlatformConnectBanner({
       <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
         <div className="space-y-2 min-w-0">
           <p className="text-sm font-bold text-green-900">{platformName} is connected.</p>
+          <p className="text-sm text-green-800">
+            Connected is not the same as live. Open the channel to send ready vehicles and check whether a send has been verified.
+          </p>
           {readyVehicleCount != null && readyVehicleCount > 0 && (
             <p className="text-sm text-green-800">
-              {readyVehicleCount} selected {readyVehicleCount === 1 ? 'item is' : 'items are'} ready for first publish.
+              {readyVehicleCount} {readyVehicleCount === 1 ? 'vehicle is' : 'vehicles are'} ready to send.
             </p>
           )}
           <ul className="text-sm text-green-800 space-y-0.5">
@@ -46,7 +48,7 @@ export function PlatformConnectBanner({
               <li>{needsApproval} need approval before they can go out.</li>
             )}
             {queued === 0 && needsApproval === 0 && (
-              <li>Inventory changes will appear here when they are queued for this channel.</li>
+              <li>Nothing is waiting to send yet.</li>
             )}
             {stats && (
               <li className="text-xs text-green-700/80 pt-1">
@@ -54,16 +56,10 @@ export function PlatformConnectBanner({
               </li>
             )}
           </ul>
-          <p className="text-xs text-green-700/90 leading-relaxed pt-1">
-            {operatorCopy.queue.scheduleNote}
-          </p>
         </div>
         <div className="flex flex-wrap gap-2 shrink-0">
-          <Button size="sm" onClick={() => nav.goToPlatformQueue(platformSlug)}>
-            {operatorCopy.platforms.openQueue}
-          </Button>
-          <Button size="sm" variant="secondary" onClick={() => nav.goToPlatformDetail(platformSlug)}>
-            Channel settings
+          <Button size="sm" onClick={() => nav.goToPlatformDetail(platformSlug)}>
+            Open {platformName}
           </Button>
           <button
             type="button"

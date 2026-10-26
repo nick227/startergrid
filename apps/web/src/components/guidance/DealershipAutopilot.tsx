@@ -69,7 +69,7 @@ export function DealershipAutopilot({
             onClick={() => setShowPreview(true)}
             className="text-xs text-navy-700 hover:text-navy-900 font-semibold px-2.5 py-1.5 rounded-md hover:bg-navy-50 transition-colors border border-silver-200"
           >
-            Preview Impact
+            See what Autopilot would send
           </button>
         }
       />

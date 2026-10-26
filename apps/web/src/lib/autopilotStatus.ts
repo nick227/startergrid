@@ -52,7 +52,7 @@ export function describeAutopilot(input: {
     label: 'Off',
     tone: 'off',
     summary: 'Autopilot is not on for this dealership.',
-    guidance: 'Our team turns this on after the first qualified channel is ready.',
+    guidance: 'Autopilot sends ready vehicles to your destinations on a schedule. Our team turns it on after a destination qualifies. Connect one below.',
     canPause: false,
     canResume: false,
   };
