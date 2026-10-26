@@ -13,6 +13,7 @@ const yaml = _require('js-yaml') as { load(src: string): unknown };
 const REGISTERED_ROUTES = new Set([
   "GET    /api/dealers/{dealershipId}/autopilot",
   "PUT    /api/dealers/{dealershipId}/autopilot",
+  "POST   /api/dealers/{dealershipId}/autopilot/preview",
   "GET    /api/dealers/{dealershipId}/distribution",
   "GET    /api/dealers/{dealershipId}/distribution/incidents",
   "POST   /api/dealers/{dealershipId}/distribution/incidents/{incidentId}/retry",
@@ -78,6 +79,7 @@ const REGISTERED_ROUTES = new Set([
   'GET    /api/dealers/{dealershipId}/leads',
   'PATCH  /api/dealers/{dealershipId}/leads/{leadId}',
   'GET    /api/dealers/{dealershipId}/people',
+  'POST   /api/dealers/{dealershipId}/people/invites/prepare',
   'POST   /api/dealers/{dealershipId}/people/invites',
   'POST   /api/dealers/{dealershipId}/people/invites/{inviteId}/resend',
   'POST   /api/dealers/{dealershipId}/people/invites/{inviteId}/revoke',

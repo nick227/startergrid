@@ -60,6 +60,7 @@ Completion is evidence-backed. Handoff requires owner first login plus verified 
 
 ```
 GET    /api/dealers/:dealershipId/people
+POST   /api/dealers/:dealershipId/people/invites/prepare
 POST   /api/dealers/:dealershipId/people/invites
 POST   /api/dealers/:dealershipId/people/invites/:inviteId/resend
 POST   /api/dealers/:dealershipId/people/invites/:inviteId/revoke
@@ -67,6 +68,7 @@ POST   /api/dealers/:dealershipId/people/temporary-login
 PATCH  /api/dealers/:dealershipId/people/:accountId
 ```
 
+Prepare body is the same invite payload; it returns copy only and does not create an invitation.  
 Invite body: `{ email, accessRole, name? }` → `{ invite, setupUrl }` (raw token only in `setupUrl`, never logged).  
 Temp login body: `{ email, accessRole, name? }` → `{ person, temporaryPassword }` once.  
 Patch body: `{ accessRole?, isActive?, resetPassword? }`.
@@ -94,6 +96,12 @@ Statuses: `NEW` | `CONTACTED` | `APPOINTMENT` | `SOLD` | `LOST`. Server-persiste
 
 `DealershipProfile.autopilotPreference`: `OFF` | `ON` | `PAUSED`.  
 This records intent. Codex owns execution, verification, and incidents.
+
+```
+POST   /api/dealers/:dealershipId/autopilot/preview
+```
+
+Read-only simulation of what Autopilot would send. Optional body `{ mode?, includedChannels? }`. Does not require `V5_AUTOPILOT_ENABLED` and does not claim listings are verified live.
 
 ## GET /api/dealers
 

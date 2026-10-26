@@ -69,6 +69,7 @@ export const routeClassifications = {
   operator: [
     'GET /api/dealers/:dealershipId/autopilot',
     'PUT /api/dealers/:dealershipId/autopilot',
+    'POST /api/dealers/:dealershipId/autopilot/preview',
     'GET /api/dealers/:dealershipId/distribution',
     'GET /api/dealers/:dealershipId/distribution/incidents',
     'POST /api/dealers/:dealershipId/distribution/incidents/:incidentId/retry',
@@ -156,6 +157,7 @@ export const routeClassifications = {
     'PATCH /api/admin/dealerships/:dealershipId/onboarding',
     'POST /api/admin/dealerships/:dealershipId/handoff',
     'GET /api/dealers/:dealershipId/people',
+    'POST /api/dealers/:dealershipId/people/invites/prepare',
     'POST /api/dealers/:dealershipId/people/invites',
     'POST /api/dealers/:dealershipId/people/invites/:inviteId/resend',
     'POST /api/dealers/:dealershipId/people/invites/:inviteId/revoke',

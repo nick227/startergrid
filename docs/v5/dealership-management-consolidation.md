@@ -17,14 +17,15 @@ All are in `openapi/openapi.yaml`, `routeClassifications` and `routeContract.tes
 | New query | `GET /api/admin/dealerships?mine=true` (internal owner = caller). |
 | Authorization | `POST /api/dealers` now requires internal staff (dealer accounts could create dealerships and owner logins). |
 | Authorization | Admin-created users and admin password resets set `mustChangePassword`. |
-
-Still undocumented (not added by this change): `POST /people/invites/prepare` and `POST /autopilot/preview` are registered in Fastify but absent from OpenAPI and `routeContract`. `redocly lint` also fails on the `V5PublicationEvidence` `allOf` + `nullable` at the `evidence` property. Both errors exist at HEAD.
+| Documented | `POST /api/dealers/{dealershipId}/people/invites/prepare` — preview-only invite copy (`InviteEmailPreview`). Requires `send_invite`. Does not create an invitation. |
+| Documented | `POST /api/dealers/{dealershipId}/autopilot/preview` — read-only `AutopilotSimulationResult`. Optional `{ mode?, includedChannels? }`. Requires dealer access; does not require `V5_AUTOPILOT_ENABLED`. |
+| Schema | `V5DistributionOutcome.evidence` is a nullable `$ref` with `type: object` so `redocly lint` accepts it. |
 
 ## Distribution boundary (Codex)
 
 - No distribution, Autopilot policy or publishing code was changed. `DealershipAutopilot` is reused as-is on the dealership Overview.
 - `createDealership` still calls `upsertDefaultSyncPolicies` / `upsertDefaultPlatformAccounts` **after** the transaction that creates the dealership, owner invite, internal owner, activity and onboarding. If those defaults fail, the dealership exists but the request returns 500.
-- **Schema drift:** `PlatformAccount.dealerEnabled` (commit `fb15345`) has no migration. On a database built with `prisma migrate deploy`, dealership creation and the dealership record fail with "column `dealerEnabled` does not exist". A migration is needed.
+- **Schema:** `prisma/migrations/20261026030000_platform_account_dealer_enabled` adds `PlatformAccount.dealerEnabled` and `autoSyncReadyInventory`. Existing rows are backfilled: `dealerEnabled` for `consumer-marketplace` and any slug in `DealershipProfile.desiredChannels`; `autoSyncReadyInventory` for `consumer-marketplace`. Local databases created with `db push` may already have the columns — use `prisma migrate resolve` if deploy reports they exist.
 
 ## Orphaned UI
 

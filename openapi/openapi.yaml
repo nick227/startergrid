@@ -93,6 +93,43 @@ paths:
           application/json:
             schema:
               $ref: '#/components/schemas/V5AutopilotPolicyUpdate'
+  /api/dealers/{dealershipId}/autopilot/preview:
+    post:
+      tags:
+        - Publish
+      operationId: previewV5Autopilot
+      summary: Preview Autopilot distribution without changing policy
+      description: >-
+        Read-only simulation of what Autopilot would send. Does not require V5_AUTOPILOT_ENABLED
+        and does not claim listings are verified live.
+      x-route-classification: operator
+      security:
+        - OperatorAuth: []
+      parameters:
+        - name: dealershipId
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AutopilotPreviewRequest'
+      responses:
+        '200':
+          description: Simulation result
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AutopilotSimulationResult'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '500':
+          description: Simulation failed
   /api/dealers/{dealershipId}/distribution:
     get:
       tags:
@@ -3516,6 +3553,40 @@ paths:
               schema:
                 $ref: '#/components/schemas/DealershipPeopleResponse'
 
+  /api/dealers/{dealershipId}/people/invites/prepare:
+    post:
+      tags: [Dealers]
+      security:
+        - OperatorAuth: []
+      x-route-classification: operator
+      operationId: prepareDealershipInvite
+      summary: Preview invitation copy before sending
+      description: Does not create an invitation or send email.
+      parameters:
+        - name: dealershipId
+          in: path
+          required: true
+          schema: { type: string }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/InvitePersonRequest'
+      responses:
+        '200':
+          description: Invitation preview
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InviteEmailPreview'
+        '400':
+          description: Invalid body
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+
   /api/dealers/{dealershipId}/people/invites:
     post:
       tags: [Dealers]
@@ -4179,6 +4250,90 @@ components:
             type: string
         safeguards:
           $ref: '#/components/schemas/V5AutopilotSafeguards'
+    AutopilotPreviewRequest:
+      type: object
+      properties:
+        mode:
+          type: string
+          enum: ['OFF', 'ON', PAUSED]
+        includedChannels:
+          type: array
+          maxItems: 100
+          items:
+            type: string
+            minLength: 1
+            maxLength: 80
+    AutopilotSimulationResult:
+      type: object
+      required: [dealershipId, dealerName, evaluatedAt, simulatedMode, currentMode, summary, channels, heldVehicles]
+      properties:
+        dealershipId: { type: string }
+        dealerName: { type: string }
+        evaluatedAt: { type: string, format: date-time }
+        simulatedMode: { type: string, enum: ['OFF', 'ON', PAUSED] }
+        currentMode: { type: string, enum: ['OFF', 'ON', PAUSED] }
+        summary:
+          type: object
+          required: [totalInventory, qualifiedCount, heldCount, needsAttentionCount, scheduledOperations]
+          properties:
+            totalInventory: { type: integer }
+            qualifiedCount: { type: integer }
+            heldCount: { type: integer }
+            needsAttentionCount: { type: integer }
+            scheduledOperations:
+              type: object
+              required: [upsert, withdraw]
+              properties:
+                upsert: { type: integer }
+                withdraw: { type: integer }
+        channels:
+          type: array
+          items:
+            $ref: '#/components/schemas/AutopilotChannelSimulation'
+        heldVehicles:
+          type: array
+          items:
+            $ref: '#/components/schemas/AutopilotHeldVehicle'
+    AutopilotChannelSimulation:
+      type: object
+      required: [channel, name, connected, qualification, eligibleCount, blockedCount, scheduledUpserts, scheduledWithdraws, blockers]
+      properties:
+        channel: { type: string }
+        name: { type: string }
+        connected: { type: boolean }
+        qualification: { type: string }
+        eligibleCount: { type: integer }
+        blockedCount: { type: integer }
+        scheduledUpserts: { type: integer }
+        scheduledWithdraws: { type: integer }
+        blockers:
+          type: array
+          items:
+            $ref: '#/components/schemas/AutopilotChannelBlocker'
+    AutopilotChannelBlocker:
+      type: object
+      required: [reasonCode, message, owner, vehicleCount, sampleStockNumbers]
+      properties:
+        reasonCode: { type: string }
+        message: { type: string }
+        owner: { type: string, enum: [DEALERSHIP, INTERNAL_SUPPORT, SYSTEM, PARTNER] }
+        vehicleCount: { type: integer }
+        sampleStockNumbers:
+          type: array
+          items: { type: string }
+    AutopilotHeldVehicle:
+      type: object
+      required: [vehicleId, stockNumber, year, make, model, reasonCode, nextAction, owner, channel]
+      properties:
+        vehicleId: { type: string }
+        stockNumber: { type: string }
+        year: { type: integer }
+        make: { type: string }
+        model: { type: string }
+        reasonCode: { type: string }
+        nextAction: { type: string }
+        owner: { type: string, enum: [DEALERSHIP, INTERNAL_SUPPORT, SYSTEM, PARTNER] }
+        channel: { type: string }
     V5ChannelCapability:
       type: object
       required:
@@ -4327,9 +4482,10 @@ components:
           format: date-time
           nullable: true
         evidence:
+          type: object
+          nullable: true
           allOf:
             - $ref: '#/components/schemas/V5PublicationEvidence'
-          nullable: true
         updatedAt:
           type: string
           format: date-time
@@ -5804,6 +5960,19 @@ components:
         email: { type: string, format: email }
         accessRole: { $ref: '#/components/schemas/DealerAccessRole' }
         name: { type: string }
+
+    InviteEmailPreview:
+      type: object
+      required: [dealershipName, recipientEmail, accessRole, roleLabel, supportEmail, subject, previewBody]
+      properties:
+        dealershipName: { type: string }
+        recipientEmail: { type: string, format: email }
+        recipientName: { type: string, nullable: true }
+        accessRole: { $ref: '#/components/schemas/DealerAccessRole' }
+        roleLabel: { type: string }
+        supportEmail: { type: string }
+        subject: { type: string }
+        previewBody: { type: string }
 
     InviteCreated:
       type: object
