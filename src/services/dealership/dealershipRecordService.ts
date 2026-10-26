@@ -6,24 +6,45 @@ import { assignInternalOwner } from './peopleAccessService.js';
 
 type Db = PrismaClient | Prisma.TransactionClient;
 
+const ATTENTION_LIFECYCLES: DealershipLifecycle[] = ['DRAFT', 'SETTING_UP', 'READY_TO_LAUNCH'];
+
+export function dealershipListWhere(
+  query: { q?: string; lifecycle?: DealershipLifecycle; needsAttention?: boolean },
+  scope: { global: boolean; dealerIds: string[] },
+): Prisma.DealershipProfileWhereInput {
+  const clauses: Prisma.DealershipProfileWhereInput[] = [];
+  if (!scope.global) clauses.push({ id: { in: scope.dealerIds } });
+  if (query.lifecycle) clauses.push({ lifecycleStatus: query.lifecycle });
+  const q = query.q?.trim();
+  if (q) {
+    clauses.push({
+      OR: [
+        { legalName: { contains: q } },
+        { dbaName: { contains: q } },
+        { primaryContactEmail: { contains: q } },
+        { operatorAccess: { some: { operator: { email: { contains: q } } } } },
+      ],
+    });
+  }
+  if (query.needsAttention) {
+    clauses.push({
+      OR: [
+        { waitingForStock: true },
+        { lifecycleStatus: { in: ATTENTION_LIFECYCLES } },
+        { onboardingSteps: { some: { status: { in: ['BLOCKED', 'NEEDS_RECHECK'] } } } },
+      ],
+    });
+  }
+  return clauses.length > 0 ? { AND: clauses } : {};
+}
+
 export async function listDealershipRecords(
   db: Db,
-  query: { q?: string; lifecycle?: DealershipLifecycle; limit?: number },
+  query: { q?: string; lifecycle?: DealershipLifecycle; needsAttention?: boolean; limit?: number },
   scope: { global: boolean; dealerIds: string[] },
 ) {
   const take = Math.min(100, Math.max(1, query.limit ?? 50));
-  const q = query.q?.trim();
-  const where: Prisma.DealershipProfileWhereInput = {};
-  if (!scope.global) where.id = { in: scope.dealerIds };
-  if (query.lifecycle) where.lifecycleStatus = query.lifecycle;
-  if (q) {
-    where.OR = [
-      { legalName: { contains: q } },
-      { dbaName: { contains: q } },
-      { primaryContactEmail: { contains: q } },
-      { operatorAccess: { some: { operator: { email: { contains: q } } } } },
-    ];
-  }
+  const where = dealershipListWhere(query, scope);
 
   const rows = await db.dealershipProfile.findMany({
     where,

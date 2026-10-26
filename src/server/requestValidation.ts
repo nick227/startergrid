@@ -332,8 +332,10 @@ export const acceptInviteSchema = z.object({
 
 export const patchOnboardingSchema = z.object({
   stepKey: z.enum(['CREATE', 'ACCESS', 'VEHICLES', 'CHANNELS', 'HANDOFF']).optional(),
+  status: z.enum(['NOT_STARTED', 'IN_PROGRESS', 'COMPLETE', 'BLOCKED', 'NEEDS_RECHECK']).optional(),
   waitingForStock: z.boolean().optional(),
   autopilotPreference: z.enum(['OFF', 'ON', 'PAUSED']).optional(),
+  evidence: z.record(z.string(), z.unknown()).optional(),
   internalOwnerId: optionalText(40),
   lifecycleStatus: z.enum(['ACTIVE', 'PAUSED', 'ARCHIVED']).optional(),
 }).strict();

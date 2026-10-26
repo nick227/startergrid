@@ -40,7 +40,7 @@ export function registerDealershipPeopleRoutes(app: FastifyInstance, prisma: Pri
         accessRole: parsed.data.accessRole,
         invitedBy: operator,
       });
-      return reply.status(201).send({ invite });
+      return reply.status(201).send({ invite, setupUrl: invite.setupUrl });
     } catch (err) {
       return reply.status(statusFromUnknown(err)).send({
         error: err instanceof Error ? err.message : 'Failed to create invitation',
@@ -55,7 +55,7 @@ export function registerDealershipPeopleRoutes(app: FastifyInstance, prisma: Pri
       if (!operator) return;
       try {
         const invite = await resendInvitation(prisma, request.params.dealershipId, request.params.inviteId, operator);
-        return reply.send({ invite });
+        return reply.send({ invite, setupUrl: invite.setupUrl });
       } catch (err) {
         return reply.status(statusFromUnknown(err)).send({
           error: err instanceof Error ? err.message : 'Failed to resend invitation',

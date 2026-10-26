@@ -1,5 +1,5 @@
 import type { FastifyInstance } from 'fastify';
-import type { DealershipLifecycle, PrismaClient } from '@prisma/client';
+import type { DealershipLifecycle, Prisma, PrismaClient } from '@prisma/client';
 import { requireInternalStaff, requireDealerAccess } from '../security.js';
 import { createDealershipSchema, patchOnboardingSchema, validateBody } from '../requestValidation.js';
 import { createDealership } from '../../services/dealer/createDealershipService.js';
@@ -9,17 +9,19 @@ import {
   patchDealershipRecord,
 } from '../../services/dealership/dealershipRecordService.js';
 import { completeHandoff, getOnboarding, refreshOnboarding } from '../../services/dealership/onboardingService.js';
+import { upsertStep } from '../../services/dealership/onboardingSteps.js';
 import { statusFromUnknown } from '../../services/dealership/httpError.js';
 
 export function registerDealershipRecordRoutes(app: FastifyInstance, prisma: PrismaClient): void {
   app.get('/api/admin/dealerships', async (request, reply) => {
     const operator = await requireInternalStaff(prisma, request, reply);
     if (!operator) return;
-    const query = request.query as { q?: string; lifecycle?: string; limit?: string };
+    const query = request.query as { q?: string; lifecycle?: string; needsAttention?: string; limit?: string };
     const lifecycle = query.lifecycle as DealershipLifecycle | undefined;
     const result = await listDealershipRecords(prisma, {
       q: query.q,
       lifecycle,
+      needsAttention: query.needsAttention === 'true' || query.needsAttention === '1',
       limit: query.limit ? Number(query.limit) : undefined,
     }, {
       global: operator.devHeader || operator.role === 'SUPER_ADMIN',
@@ -107,6 +109,16 @@ export function registerDealershipRecordRoutes(app: FastifyInstance, prisma: Pri
     if (!parsed.ok) return reply.status(400).send({ error: parsed.error });
     try {
       await patchDealershipRecord(prisma, dealershipId, operator, parsed.data);
+      if (parsed.data.stepKey && (parsed.data.status || parsed.data.evidence)) {
+        await upsertStep(prisma, dealershipId, parsed.data.stepKey, {
+          status: parsed.data.status ?? 'IN_PROGRESS',
+          ownerKind: 'OUR_TEAM',
+          incompleteReason: null,
+          evidenceJson: parsed.data.evidence as Prisma.InputJsonValue | undefined,
+          completedAt: parsed.data.status === 'COMPLETE' ? new Date() : undefined,
+          completedBy: parsed.data.status === 'COMPLETE' ? operator.id : undefined,
+        });
+      }
       return reply.send(await refreshOnboarding(prisma, dealershipId, operator.id));
     } catch (err) {
       return reply.status(statusFromUnknown(err)).send({
