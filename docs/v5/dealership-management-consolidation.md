@@ -24,12 +24,13 @@ All are in `openapi/openapi.yaml`, `routeClassifications` and `routeContract.tes
 ## Distribution boundary (Codex)
 
 - No distribution, Autopilot policy or publishing code was changed. `DealershipAutopilot` is reused as-is on the dealership Overview.
-- `createDealership` still calls `upsertDefaultSyncPolicies` / `upsertDefaultPlatformAccounts` **after** the transaction that creates the dealership, owner invite, internal owner, activity and onboarding. If those defaults fail, the dealership exists but the request returns 500.
+- `createDealership` still calls `upsertDefaultSyncPolicies` / `upsertDefaultPlatformAccounts` **after** the transaction that creates the dealership, owner invite, internal owner, activity and onboarding (now via `services/dealership/channelSetupService.ts`, `6268b1f`). If those defaults fail, the request still returns `201` with `channelSetup: NEEDS_ATTENTION` and the missing destinations; the failure is logged to Activity and blocks the CHANNELS onboarding step. `POST /api/admin/dealerships/{id}/channel-setup` retries idempotently. A repeated create returns `409` with `existingDealershipId` (staff with access only). `syncPolicyService` itself is unchanged.
+- Only dealerships still setting up appear under "Needs action" for channel setup; live dealerships show the status and retry on their record only.
 - **Schema:** `20261026030000_platform_account_dealer_enabled` adds `PlatformAccount.dealerEnabled` and `autoSyncReadyInventory` (backfill: marketplace + `desiredChannels`). `20261026040000_platform_site_availability` creates `PlatformSiteAvailability` and drops the extra `Lead.updatedAt` DEFAULT so it matches `@updatedAt`. Local databases created with `db push` may already have these objects — use `prisma migrate resolve` if deploy reports they exist.
 
-## Orphaned UI
+## Removed UI
 
-`components/dealers/WelcomeEmailModal.tsx` is no longer mounted. Add Person (`components/people/AddPersonDialog.tsx`) replaces it, showing a copyable link and welcome message with honest delivery wording. The modal was being edited concurrently, so it was left in place for its owner to fold in or delete.
+`components/dealers/WelcomeEmailModal.tsx` was deleted after nothing mounted it. Add Person (`components/people/AddPersonDialog.tsx`) replaces it, showing a copyable link and welcome message with honest delivery wording.
 
 ## Verification
 
