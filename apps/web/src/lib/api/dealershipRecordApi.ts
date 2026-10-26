@@ -30,6 +30,7 @@ export type OnboardingStepDto = {
 };
 
 export type DealershipRecordSummary = {
+  openDistributionIncidents?: number;
   id: string;
   legalName: string;
   dbaName: string | null;

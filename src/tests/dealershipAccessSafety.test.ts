@@ -282,6 +282,17 @@ describe('dealership people — authorization boundaries', () => {
     assert.ok(db.t.access.some(r => r.operatorAccountId === support.id));
   });
 
+  it('staff cannot bypass capability checks through legacy profile or connection endpoints', async () => {
+    for (const [method,url,payload] of [
+      ['PATCH','/api/dealers/dealer-a/profile',{autopilotPreference:'PAUSED'}],
+      ['PATCH','/api/dealers/dealer-a/accounts/consumer-marketplace',{dealerEnabled:false}],
+      ['POST','/api/dealers/dealer-a/accounts/consumer-marketplace/validate',{}],
+    ] as const) {
+      const response=await call(staffA.cookie,method,url,payload);
+      assert.equal(response.statusCode,403,response.body);
+    }
+  });
+
   it('a dealer owner cannot take over an existing login through temporary login', async () => {
     const res = await call(ownerA.cookie, 'POST', '/api/dealers/dealer-a/people/temporary-login', { email: 'admin@startergrid.test', accessRole: 'DEALER_STAFF' });
     assert.equal(res.statusCode, 409, res.body);

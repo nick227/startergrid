@@ -1,3 +1,4 @@
+import { withInventoryTransaction } from '../services/autopilot/inventoryTransaction.js';
 import assert from 'node:assert/strict';
 import { after, before, describe, it } from 'node:test';
 import { PrismaClient } from '@prisma/client';
@@ -118,6 +119,30 @@ describe('Autopilot durable first-party integration (isolated MySQL)', { skip: !
       const resolved=await app.inject({method:'POST',url:url+'/resolve',headers});
       assert.equal(resolved.statusCode,200,resolved.body);
     } finally {await app.close();}
+  });
+  it('serializes split removal batches and preserves the held incident after rollback',async()=>{
+    const {dealer,vehicles}=await fixture('ON',4);await reconcileDealer(db,dealer.id);
+    const remove = (ids: string[]) => withInventoryTransaction(db,dealer.id,async tx=>{
+      await guardRemovalBatch(tx,dealer.id,ids);
+      await tx.vehicle.updateMany({where:{id:{in:ids}},data:{removedAt:new Date()}});
+    });
+    const results=await Promise.allSettled([remove(vehicles.slice(0,2).map(v=>v.id)),remove(vehicles.slice(2).map(v=>v.id))]);
+    assert.equal(results.filter(r=>r.status==='fulfilled').length,1);
+    assert.equal(results.filter(r=>r.status==='rejected' && r.reason instanceof InventorySafetyHold).length,1);
+    assert.equal(await db.vehicle.count({where:{dealershipId:dealer.id,removedAt:null}}),2);
+    const incident=await db.distributionIncident.findFirstOrThrow({where:{dealershipId:dealer.id,reasonCode:'REMOVAL_BATCH'}});
+    assert.equal(incident.state,'OPEN');
+  });
+  it('a later hold rolls back earlier source writes without losing the proposal',async()=>{
+    const {dealer,vehicles:[v]}=await fixture();await reconcileDealer(db,dealer.id);
+    await assert.rejects(withInventoryTransaction(db,dealer.id,async tx=>{
+      await tx.vehicle.update({where:{id:v!.id},data:{mileage:9999}});
+      await guardInventoryMutation(tx,dealer.id,v!.id,{priceCents:1000});
+    }),InventorySafetyHold);
+    assert.equal((await db.vehicle.findUniqueOrThrow({where:{id:v!.id}})).mileage,1000);
+    const incident=await db.distributionIncident.findFirstOrThrow({where:{dealershipId:dealer.id,reasonCode:'PRICE_MUTATION_HELD'}});
+    assert.equal((incident.technicalEvidence as {sourceUpdatedAt:string}).sourceUpdatedAt,
+      (await db.vehicle.findUniqueOrThrow({where:{id:v!.id}})).updatedAt.toISOString());
   });
   it('API rejects unqualified activation, version conflicts, and cross-dealer read without session',async()=>{
     const {dealer}=await fixture();

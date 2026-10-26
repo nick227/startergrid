@@ -1,6 +1,6 @@
 import type { FastifyInstance } from 'fastify';
 import type { PrismaClient } from '@prisma/client';
-import { requireDealerAccess } from '../security.js';
+import { requireDealerAccess, requireCapability } from '../security.js';
 import { isDealerPlatformAccessible } from '../dealerPlatformGuard.js';
 import { loadSiteAvailabilityMap, resolveSiteEnabled } from '../../services/platform/platformAvailabilityService.js';
 import { CredentialStore } from '../../services/platform/clients/CredentialStore.js';
@@ -62,7 +62,7 @@ export function registerSocialPageRoutes(app: FastifyInstance, prisma: PrismaCli
     '/api/dealers/:dealershipId/platforms/:platformSlug/pages/:pageId/select',
     async (request, reply) => {
       const { dealershipId, platformSlug, pageId } = request.params;
-      if (!await requireDealerAccess(prisma, request, reply, dealershipId)) return;
+      if (!await requireCapability(prisma, request, reply, dealershipId, 'connect_channels')) return;
       if (!await isDealerPlatformAccessible(prisma, dealershipId, platformSlug)) {
         return reply.status(404).send({ error: 'Platform not found.' });
       }

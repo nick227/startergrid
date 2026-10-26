@@ -1,3 +1,4 @@
+import { useAuth } from '@/contexts/AuthContext.tsx';
 import { useMemo } from 'react';
 import { resolveCategorySchema, type CategorySchema } from '@auto-dealer/category-schemas';
 import { useAsyncQuery } from './useAsyncQuery.ts';
@@ -9,7 +10,9 @@ const PICKER_DEFAULT: CategorySchema = resolveCategorySchema('AUTOMOTIVE');
 
 /** Resolve org businessCategory → CategorySchema after dealer pick. */
 export function useDealerCategorySchema(dealerId: string | null): CategorySchema {
-  const { data } = useAsyncQuery(() => fetchDealers(), []);
+  const { user, authReady } = useAuth();
+  const { data } = useAsyncQuery(() => authReady && user && !user.mustChangePassword
+    ? fetchDealers() : Promise.resolve({ dealers: [] }), [authReady, user?.id, user?.mustChangePassword]);
 
   return useMemo(() => {
     if (!dealerId) return PICKER_DEFAULT;

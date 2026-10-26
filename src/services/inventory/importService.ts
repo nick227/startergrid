@@ -1,4 +1,5 @@
-import { guardInventoryMutation } from '../autopilot/inventoryGuard.js';
+import { needsInventoryTransaction, withInventoryTransaction } from '../autopilot/inventoryTransaction.js';
+import { guardInventoryMutation, InventorySafetyHold } from '../autopilot/inventoryGuard.js';
 import type { PrismaClient, Prisma, InventorySourceKind } from '@prisma/client';
 import {
   getOrCreateDefaultSource,
@@ -280,6 +281,7 @@ export async function commitImport(
   rawRows: Record<string, string>[],
   mapping: Record<string, string>
 ): Promise<CommitResult> {
+  if (needsInventoryTransaction(prisma)) return withInventoryTransaction(prisma, dealershipId, tx => commitImport(tx, dealershipId, rawRows, mapping));
   const receivedAt = new Date();
   const preview = await previewImport(prisma, dealershipId, rawRows, mapping);
   const result: CommitResult = {
@@ -345,6 +347,7 @@ export async function commitImport(
         result.updated++;
       }
     } catch (err: unknown) {
+      if (err instanceof InventorySafetyHold) throw err;
       console.error(`Import commit error on row ${row.rowIndex}:`, err);
       result.errors++;
       result.rowErrors.push({
@@ -417,6 +420,7 @@ export async function commitImport(
     });
     result.batchId = event.id;
   } catch (err) {
+      if (err instanceof InventorySafetyHold) throw err;
     console.error('Failed to record import batch:', err);
   }
 
@@ -543,6 +547,7 @@ export async function ingestJsonVehicles(
   vehicles: IngestVehicleInput[],
   opts: JsonIngestOpts = {}
 ): Promise<JsonIngestResult> {
+  if (needsInventoryTransaction(prisma)) return withInventoryTransaction(prisma, dealershipId, tx => ingestJsonVehicles(tx, dealershipId, vehicles, opts));
   const receivedAt  = new Date();
   const sourceSlug  = opts.sourceSlug  ?? DEFAULT_JSON_SOURCE.slug;
   const sourceLabel = opts.sourceLabel ?? DEFAULT_JSON_SOURCE.label;
@@ -624,6 +629,7 @@ export async function ingestJsonVehicles(
         result.updated++;
       }
     } catch (err: unknown) {
+      if (err instanceof InventorySafetyHold) throw err;
       console.error(`JSON ingest error on row ${i + 1}:`, err);
       result.errors++;
     }
@@ -677,6 +683,7 @@ export async function ingestJsonVehicles(
     });
     result.batchId = event.id;
   } catch (err) {
+      if (err instanceof InventorySafetyHold) throw err;
     console.error('Failed to record JSON ingest run:', err);
   }
 
@@ -725,6 +732,7 @@ export async function ingestJsonVehicles(
             },
           });
         } catch (err) {
+      if (err instanceof InventorySafetyHold) throw err;
           console.error('Failed to persist snapshot reconcile summary:', err);
         }
       }

@@ -1,6 +1,6 @@
 import type { FastifyInstance, FastifyReply } from 'fastify';
 import type { PrismaClient } from '@prisma/client';
-import { requireOperator, requireDealerAccess, requireInternalStaff } from '../security.js';
+import { requireOperator, requireDealerAccess, requireInternalStaff, requireCapability } from '../security.js';
 import { fileUploadService } from '../../services/storage/fileUploadService.js';
 import { createDealershipSchema, updateDealershipProfileSchema, validateBody } from '../requestValidation.js';
 import { createDealership } from '../../services/dealer/createDealershipService.js';
@@ -136,6 +136,7 @@ export function registerDealerRoutes(app: FastifyInstance, prisma: PrismaClient)
     const parsed = validateBody(updateDealershipProfileSchema, request.body);
     if (!parsed.ok) return reply.status(400).send({ error: parsed.error });
 
+    if (parsed.data.autopilotPreference !== undefined && !await requireCapability(prisma, request, reply, dealershipId, 'change_autopilot')) return;
     const profile = await updateDealershipProfile(prisma, dealershipId, parsed.data);
     if (!profile) return reply.status(404).send({ error: 'Dealer not found' });
     return reply.send({ profile });

@@ -3415,6 +3415,10 @@ paths:
                 $ref: '#/components/schemas/DealershipRecordCreateResponse'
         '409':
           description: Duplicate dealership
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DuplicateDealershipResponse'
 
   /api/admin/dealerships/{dealershipId}:
     get:
@@ -5739,6 +5743,9 @@ components:
       type: object
       required: [id, legalName, businessCategory, lifecycleStatus, createdAt]
       properties:
+        openDistributionIncidents:
+          type: integer
+          minimum: 0
         id: { type: string }
         legalName: { type: string }
         dbaName: { type: string, nullable: true }

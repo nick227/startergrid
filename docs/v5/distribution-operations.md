@@ -35,12 +35,12 @@ Regression coverage includes scheduler, inventory distribution/update/import, pr
 ## Boundaries before broad rollout
 
 - Auto Marketplace reads current inventory. OFF/PAUSED stops listing operations, not changes to already public fields. Frozen publication requires a different read model.
-- Guards cover the wired inventory price/detail, bulk lifecycle, CSV/JSON import and connected-source lifecycle paths. Direct SQL, new ingestion paths, channel deselection and custom mutations need equivalent guards. Guard checks and source writes are separate transactions; concurrent source writers need further transactional integration.
+- Guards cover the wired inventory price/detail, bulk lifecycle, CSV/JSON import and connected-source lifecycle paths. Direct SQL, new ingestion paths, channel deselection and custom mutations need equivalent guards. The wired write paths now hold the same policy/vehicle locks as reconciliation; guards and mutations share a transaction. Held batches roll back and preserve their incident outside the rollback. A 15-minute cumulative removal window also prevents split batches from bypassing the threshold.
 - Reconciliation scans and locks a dealership in a transaction with a 30-second timeout. Load-test large rooftops; partitioning and external job leases/outboxes are needed before network adapters join.
 - Hard deletion loses the source snapshot; use sold/removed lifecycle markers. Missing-source targets require review; hash checks prevent falsely reporting current live status.
 - Scalar references avoid changes to Cursor's account relations; account deletion/retention cleanup needs agreement.
 - External retries and confirmation have pure decision tests, not provider-account certification. verificationTimeoutMs is reserved for future asynchronous confirmation; the owned path verifies immediately.
-- New incidents have real actions. Migrating every historical failure source and wiring Antigravity's existing issue UI remain coordinated follow-up. Legacy diagnostics do not certify publication.
+- New incidents have real actions. The shared dealer/admin Autopilot component now exposes persisted policy, qualification and incident actions; the directory includes open distribution incidents. Migrating every historical failure source remains follow-up. Legacy diagnostics do not certify publication.
 
 ## Implementation file inventory
 
@@ -55,3 +55,16 @@ Existing integration points: src/services/publishing/autoReconcileService.ts, pu
 Tests: src/tests/autopilot.test.ts, autopilotDatabase.test.ts, routeContract.test.ts. Some core files were included in concurrent V5 commits; the working-tree diff alone does not represent this entire implementation.
 
 Validation: TypeScript check passed; 154 targeted regression tests passed; 11 disposable-MySQL integration tests passed, including concurrent workers and audited approval/verification flows. No production database was migrated.
+
+
+## Collective integration repairs — 2026-10-26
+
+The collective review findings were addressed across concurrent account/onboarding/UI changes and distribution integration:
+- Existing-account temporary-login resets are rejected. Protected-role assignment, internal-account management, shared-account recovery and legacy connection/profile mutations enforce authorization.
+- Generated API wire types feed explicit record/people/onboarding adapters. Invitation delivery distinguishes link-only from confirmed email, and rotated links are surfaced.
+- Public invitation acceptance and forced password replacement have browser screens. Internal support receives a scoped directory/workspace. Category loading waits for authentication so it cannot redirect public invite links.
+- Home, Channels and the dealership record share the persisted Autopilot control. It ignores onboarding preference as execution authority, handles disabled/conflict responses, qualifies channel selection, and shows actionable incidents.
+- Source mutation transactions fence price/import/lifecycle/bulk writes. Concurrent split-removal and rollback-with-incident tests run against disposable MySQL.
+- The directory includes unresolved distribution incident counts, including for scoped support users.
+
+Additional checks: full backend suite passed (2,594 tests), operator suite passed (239 tests, 3 existing skips), disposable MySQL suite passed (13 tests). OpenAPI validation passed with 15 existing-style warnings. Three Chromium contract tests passed for invite acceptance, password replacement and scoped staff directory/record/People access. They use intercepted API responses, not real provider accounts; run npm run e2e:v5 -w auto-dealer-operator-ui.

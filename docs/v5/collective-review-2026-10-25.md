@@ -2,7 +2,7 @@
 
 Scope: combined changes since cff3f88, through b9889ce plus the current working tree. Reviewed UI, onboarding/account APIs, distribution engine and their contracts. This is a source and targeted-test review, not production/provider certification. No implementation files were changed during this review.
 
-Recommendation: do not roll out this combined version yet. The principal problems are authorization boundaries and disconnected contracts, not navigation.
+Original review recommendation: do not roll out this combined version yet. The principal problems are authorization boundaries and disconnected contracts, not navigation.
 
 ## Findings, ordered by severity
 
@@ -114,3 +114,12 @@ Passing tests do not contradict these findings: handwritten client casts conceal
 4. Wire Autopilot and incident UI to persisted qualified/evidence-backed APIs.
 5. Make ingestion guards atomic and run concurrent lifecycle tests.
 6. Run browser acceptance tests with real API responses for a new internal hire and a dealership owner, then review deployment/provider qualification separately.
+
+
+## Repair status — 2026-10-26
+
+The authorization, response-shape, first-login, staff-routing and delivery findings above have been repaired in the shared tree. The distribution control now uses the V5 policy/evidence APIs instead of React state or preference-only callbacks. Account/profile/connection mutations have additional capability checks. Inventory guards and writes share policy/vehicle locks and a rollback-safe incident path, with cumulative removal protection against split batches.
+
+Validation after integration: 2,594 backend tests passed, 239 operator UI tests passed (3 pre-existing skips), 13 disposable MySQL tests passed, and 3 Chromium contract workflows passed. Browser tests cover invite acceptance, temporary-password replacement, and scoped staff directory/record/People access using intercepted API responses. An additional browser-discovered issue—authenticated category fetching redirecting public invitations—was fixed by deferring that request until login is complete.
+
+The original findings remain above as review history. See [current rollout boundaries and implementation notes](distribution-operations.md). These checks do not certify external providers, production deployment or large-inventory performance.

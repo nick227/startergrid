@@ -103,6 +103,10 @@ export async function listDealershipRecords(
       })
       : [],
   ]);
+  const distributionCounts = process.env['V5_AUTOPILOT_ENABLED'] === 'true' && ids.length
+    ? await db.distributionIncident.groupBy({ by: ['dealershipId'], where: { dealershipId: { in: ids }, state: { not: 'RESOLVED' } }, _count: { id: true } })
+    : [];
+  const issuesByDealer = new Map(distributionCounts.map(row => [row.dealershipId, row._count.id]));
   const ownerById = new Map(owners.map((owner) => [owner.id, owner]));
   const lastActivityById = new Map(lastActivity.map((row) => [row.dealershipId, row._max.createdAt]));
 
@@ -121,6 +125,7 @@ export async function listDealershipRecords(
       autopilotPreference: row.autopilotPreference,
       createdAt: row.createdAt.toISOString(),
       lastActivityAt: (lastActivityById.get(row.id) ?? row.createdAt).toISOString(),
+      openDistributionIncidents: issuesByDealer.get(row.id) ?? 0,
       blockedStepCount: row.onboardingSteps.filter((step) => step.status === 'BLOCKED' || step.status === 'NEEDS_RECHECK').length,
       nextStep: (() => {
         const step = firstOpenStep(row.onboardingSteps);

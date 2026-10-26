@@ -299,11 +299,7 @@ export function DealershipRecordView({ dealerId, initialTab = 'overview', viewer
               dealerId={dealerId}
               preference={record.autopilotPreference}
               connectedChannelCount={activeChannels}
-              persist={async (preference) => {
-                setRecord(await patchAdminDealershipRecord(dealerId, { autopilotPreference: preference }));
-                setActivityKey(k => k + 1);
-                onRefreshDealers?.();
-              }}
+              onUpdated={() => { void refresh(); }}
             />
           </div>
 

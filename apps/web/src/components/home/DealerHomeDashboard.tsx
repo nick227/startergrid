@@ -10,7 +10,6 @@ import type { DealershipProfile, PublishStatusResponse } from '@/lib/types.ts';
 import { OwnershipLine } from '@/components/guidance/OwnershipLine.tsx';
 import { GuidanceNote } from '@/components/guidance/GuidanceNote.tsx';
 import { DealershipAutopilot } from '@/components/guidance/DealershipAutopilot.tsx';
-import { PagePrimaryState } from '@/components/guidance/PagePrimaryState.tsx';
 import { GettingStartedChecklist } from './GettingStartedChecklist.tsx';
 import { Skeleton } from '@/components/ui/Skeleton.tsx';
 import { dealerSetupIncomplete, platformLooksConnected } from '@/lib/pagePrimaryState.ts';
@@ -102,11 +101,6 @@ export function DealerHomeDashboard({ dealerId, nav }: Props) {
   if (firstTime) {
     return (
       <div className="space-y-5">
-        <PagePrimaryState
-          kind="empty"
-          title="This is your dealership home"
-          why="Add vehicles once. Connect a destination so shoppers can find them. Buyer questions arrive here as inquiries."
-        />
         <GettingStartedChecklist dealerId={dealerId} nav={nav} profile={profile} status={status} />
       </div>
     );

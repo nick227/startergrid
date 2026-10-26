@@ -8,7 +8,7 @@ import {
   type AccountUpdatePayload,
 } from '../../services/publishing/platformAccountService.js';
 import { platformProfiles } from '../../data/platformProfiles.js';
-import { requireDealerAccess } from '../security.js';
+import { requireDealerAccess, requireCapability } from '../security.js';
 import { accountUpdateSchema, validateBody } from '../requestValidation.js';
 import { PartnerConnectionValidator } from '../../services/validation/PartnerConnectionValidator.js';
 import { decryptSecret } from '../../lib/secrets.js';
@@ -45,7 +45,7 @@ export function registerAccountRoutes(app: FastifyInstance, prisma: PrismaClient
     '/api/dealers/:dealershipId/accounts/:platformSlug',
     async (request, reply) => {
       const { dealershipId, platformSlug } = request.params;
-      if (!await requireDealerAccess(prisma, request, reply, dealershipId)) return;
+      if (!await requireCapability(prisma, request, reply, dealershipId, 'connect_channels')) return;
       const parsed = validateBody(accountUpdateSchema, request.body ?? {});
       if (!parsed.ok) return reply.status(400).send({ error: parsed.error });
 
@@ -96,7 +96,7 @@ export function registerAccountRoutes(app: FastifyInstance, prisma: PrismaClient
     '/api/dealers/:dealershipId/accounts/:platformSlug/validate',
     async (request, reply) => {
       const { dealershipId, platformSlug } = request.params;
-      if (!await requireDealerAccess(prisma, request, reply, dealershipId)) return;
+      if (!await requireCapability(prisma, request, reply, dealershipId, 'connect_channels')) return;
       if (!await requireDealer(prisma, dealershipId))
         return reply.status(404).send({ error: 'Dealer not found' });
 

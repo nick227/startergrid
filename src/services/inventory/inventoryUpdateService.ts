@@ -1,4 +1,5 @@
-import { guardInventoryMutation } from '../autopilot/inventoryGuard.js';
+import { needsInventoryTransaction, withInventoryTransaction } from '../autopilot/inventoryTransaction.js';
+import { guardInventoryMutation, guardRemovalBatch } from '../autopilot/inventoryGuard.js';
 import type { PrismaClient } from '@prisma/client';
 import type { VehicleUpdateKind } from '../../lib/types.js';
 import { platformProfiles } from '../../data/platformProfiles.js';
@@ -76,6 +77,7 @@ export async function applyVehicleUpdate(
   kind: VehicleUpdateKind,
   opts: VehicleUpdateOptions = {}
 ): Promise<VehicleUpdateResult> {
+  if (needsInventoryTransaction(prisma)) return withInventoryTransaction(prisma, dealershipId, tx => applyVehicleUpdate(tx, dealershipId, stockNumber, kind, opts));
   const dbVehicle = await prisma.vehicle.findUnique({
     where: { dealershipId_stockNumber: { dealershipId, stockNumber } },
     include: { media: true }
@@ -89,6 +91,7 @@ export async function applyVehicleUpdate(
     throw new Error(`Vehicle ${stockNumber} is already available`);
   }
 
+  if (kind === 'SOLD' || kind === 'REMOVED') await guardRemovalBatch(prisma, dealershipId, [dbVehicle.id], opts.ingressRunId);
   const previousValue: Record<string, unknown> = {};
   const newValue: Record<string, unknown> = {};
 

@@ -91,8 +91,11 @@ export function GettingStartedChecklist({ dealerId, nav, profile: profileProp, s
 
   const steps = buildSetupSteps(nav, profile, status);
   const allSetupDone = steps.every(s => s.done);
+  const connectedCount = status.platforms.filter(platformLooksConnected).length;
+  const autopilotOn = (profile.autopilotPreference ?? 'OFF') === 'ON';
 
-  if (allSetupDone) {
+  // If both setup steps and autopilot distribution are live, auto-dismiss.
+  if (allSetupDone && autopilotOn && connectedCount > 0) {
     localStorage.setItem(DISMISS_KEY_PREFIX + dealerId, '1');
     return null;
   }
@@ -107,10 +110,11 @@ export function GettingStartedChecklist({ dealerId, nav, profile: profileProp, s
       <div className="flex items-start justify-between gap-4">
         <div className="space-y-1">
           <div className="flex items-center gap-2">
-            <h2 className="text-sm font-bold text-ink-heading">Your setup</h2>
+            <span className="text-base" aria-hidden="true">🚀</span>
+            <h2 className="text-sm font-bold text-ink-heading">Getting started with StarterGrid</h2>
           </div>
           <p className="text-xs text-ink-muted leading-relaxed max-w-2xl">
-            Do the next step below. You can skip this list after the four setup tasks are done.
+            Add your vehicles once. StarterGrid helps keep your listings updated across connected advertising and sales channels. Buyer inquiries arrive in one place.
           </p>
         </div>
         <button
@@ -142,7 +146,7 @@ export function GettingStartedChecklist({ dealerId, nav, profile: profileProp, s
       {/* Part 1: Account & Lot Setup */}
       <div className="space-y-2 pt-2 border-t border-silver-100">
         <div className="flex items-center justify-between text-xs">
-          <span className="font-semibold text-ink-heading">Setup</span>
+          <span className="font-semibold text-ink-heading">Account & Lot Setup</span>
           <span className="text-ink-muted">{doneCount} of {steps.length} completed ({progressPercent}%)</span>
         </div>
         <div className="w-full h-1.5 bg-silver-100 rounded-full overflow-hidden">
@@ -179,6 +183,39 @@ export function GettingStartedChecklist({ dealerId, nav, profile: profileProp, s
         </ul>
       </div>
 
+      {/* Part 2: Channel Distribution & Live Outcomes (Distinct from internal setup) */}
+      <div className="p-3 bg-surface-page rounded-lg border border-silver-200 space-y-2 text-xs">
+        <div className="flex items-center justify-between">
+          <span className="font-semibold text-ink-heading flex items-center gap-1.5">
+            <span className={`w-2 h-2 rounded-full ${autopilotOn && connectedCount > 0 ? 'bg-status-success-text' : 'bg-amber-500'}`} />
+            Channel Distribution & Listing Outcomes
+          </span>
+          <span className="text-[11px] text-ink-muted font-medium">
+            {status.vehicles.ready} vehicle{status.vehicles.ready === 1 ? '' : 's'} qualified
+          </span>
+        </div>
+
+        <p className="text-ink-muted leading-relaxed">
+          {autopilotOn
+            ? connectedCount === 0
+              ? 'Autopilot is active, but requires at least one connected channel to deliver catalog feeds.'
+              : `Autopilot delivers catalog feeds across ${connectedCount} connected channel${connectedCount === 1 ? '' : 's'}.`
+            : 'Autopilot is currently off. Ready vehicles will not be sent to connected channels automatically until Autopilot is turned on.'}
+        </p>
+
+        <div className="pt-1.5 border-t border-silver-200/60 flex flex-col sm:flex-row sm:items-center justify-between gap-2 text-[11px] text-ink-muted">
+          <span>
+            <strong className="text-ink-heading">Connected ≠ Live:</strong> Advertising channels review and verify listings after feed delivery.
+          </span>
+          <button
+            type="button"
+            onClick={nav.goToPlatforms}
+            className="text-navy-700 hover:text-navy-900 font-semibold underline shrink-0"
+          >
+            Review channels →
+          </button>
+        </div>
+      </div>
     </div>
   );
 }

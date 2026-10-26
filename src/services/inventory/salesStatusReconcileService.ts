@@ -1,5 +1,6 @@
+import { needsInventoryTransaction, withInventoryTransaction } from '../autopilot/inventoryTransaction.js';
 import { autopilotEnabled } from '../autopilot/service.js';
-import { guardRemovalBatch } from '../autopilot/inventoryGuard.js';
+import { guardRemovalBatch, InventorySafetyHold } from '../autopilot/inventoryGuard.js';
 import type { PrismaClient } from '@prisma/client';
 import { applyVehicleUpdate } from './inventoryUpdateService.js';
 import {
@@ -98,7 +99,8 @@ async function applyRowAvailability(
         source: 'ingress_row',
         ingressRunId,
       });
-    } catch {
+    } catch (error) {
+      if (error instanceof InventorySafetyHold) throw error;
       result.skipped++;
       continue;
     }
@@ -117,6 +119,7 @@ export async function reconcileSalesStatusFromIngest(
   rows: SalesStatusIngestRow[],
   opts: SalesStatusReconcileOpts = {},
 ): Promise<SalesStatusReconcileResult> {
+  if (needsInventoryTransaction(prisma)) return withInventoryTransaction(prisma, dealershipId, tx => reconcileSalesStatusFromIngest(tx, dealershipId, rows, opts));
   const snapshotMode = opts.snapshotMode === true;
   const snapshotDryRun = snapshotMode && opts.dryRun !== false;
   const canApplySnapshot =
@@ -159,7 +162,8 @@ export async function reconcileSalesStatusFromIngest(
       });
       result.snapshotRemovalsApplied++;
       result.removed++;
-    } catch {
+    } catch (error) {
+      if (error instanceof InventorySafetyHold) throw error;
       result.skipped++;
     }
   }
@@ -180,6 +184,7 @@ export async function commitSnapshotRemovals(
   stockNumbers: string[],
   opts: { statusChangedAt?: Date } = {},
 ): Promise<SnapshotCommitResult> {
+  if (needsInventoryTransaction(prisma)) return withInventoryTransaction(prisma, dealershipId, tx => commitSnapshotRemovals(tx, dealershipId, ingressRunId, stockNumbers, opts));
   const allowed = await readSnapshotCandidatesFromIngress(prisma, dealershipId, ingressRunId);
   const allowedByStock = new Map(allowed.map(c => [c.stockNumber, c]));
   const uniqueStocks = [...new Set(stockNumbers)];
@@ -211,7 +216,8 @@ export async function commitSnapshotRemovals(
         lifecycleNote: 'Missing from latest feed',
       });
       result.applied++;
-    } catch {
+    } catch (error) {
+      if (error instanceof InventorySafetyHold) throw error;
       result.skipped++;
     }
   }

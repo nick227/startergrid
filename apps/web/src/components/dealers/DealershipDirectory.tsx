@@ -61,10 +61,10 @@ export function DealershipDirectory({ currentUserId, includeChannelIssues, onOpe
 
   const rows = useMemo(() => dealers.data?.dealerships ?? [], [dealers.data]);
   const channelIssues = useMemo(() => {
-    const counts: Record<string, number> = {};
+    const counts: Record<string, number> = Object.fromEntries(rows.map(row => [row.id, row.openDistributionIncidents ?? 0]));
     for (const item of blocked.data?.items ?? []) counts[item.dealerId] = (counts[item.dealerId] ?? 0) + 1;
     return counts;
-  }, [blocked.data]);
+  }, [blocked.data, rows]);
 
   // Start on "Mine" when the viewer owns dealerships, otherwise on "Needs action".
   const hasMine = rows.some(row => currentUserId && row.internalOwner?.id === currentUserId);

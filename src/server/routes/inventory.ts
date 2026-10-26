@@ -1,4 +1,5 @@
-import { guardInventoryMutation } from '../../services/autopilot/inventoryGuard.js';
+import { withInventoryTransaction } from '../../services/autopilot/inventoryTransaction.js';
+import { guardInventoryMutation, InventorySafetyHold } from '../../services/autopilot/inventoryGuard.js';
 import type { FastifyInstance } from 'fastify';
 import type { PrismaClient } from '@prisma/client';
 import {
@@ -206,13 +207,15 @@ export function registerInventoryRoutes(app: FastifyInstance, prisma: PrismaClie
       const body = validateBody(bulkEditSchema, request.body);
       if (!body.ok) return reply.status(400).send({ error: body.error });
 
+      const result = await withInventoryTransaction(prisma, dealershipId, async tx => {
       if (process.env['V5_AUTOPILOT_ENABLED'] === 'true') {
-        const affected = await prisma.vehicle.findMany({ where: { dealershipId, stockNumber: { in: body.data.stockNumbers } }, select: { id: true } });
-        for (const v of affected) await guardInventoryMutation(prisma, dealershipId, v.id, body.data.fields);
+        const affected = await tx.vehicle.findMany({ where: { dealershipId, stockNumber: { in: body.data.stockNumbers } }, select: { id: true } });
+        for (const v of affected) await guardInventoryMutation(tx, dealershipId, v.id, body.data.fields);
       }
-      const result = await prisma.vehicle.updateMany({
+      return tx.vehicle.updateMany({
         where: { dealershipId, stockNumber: { in: body.data.stockNumbers } },
         data: body.data.fields
+      });
       });
 
       if (result.count > 0) {
@@ -788,30 +791,18 @@ export function registerInventoryRoutes(app: FastifyInstance, prisma: PrismaClie
       if (!vehicle) return reply.status(404).send({ error: 'Vehicle not found' });
 
       const { priceCents, ...otherFields } = data;
-
-      if (priceCents !== undefined) {
-        try {
-          await applyVehicleUpdate(prisma, dealershipId, vehicle.stockNumber, 'PRICE_CHANGE', { priceCents });
-        } catch (e) {
-          return reply.status(422).send({ error: (e as Error).message });
-        }
-      }
-
-      if (Object.keys(otherFields).length > 0) {
-        if ('make' in otherFields || 'model' in otherFields || 'year' in otherFields) {
-          await guardInventoryMutation(prisma, dealershipId, vehicleId, {
-            make: (otherFields as Record<string, unknown>).make as string | undefined,
-            model: (otherFields as Record<string, unknown>).model as string | undefined,
-            year: (otherFields as Record<string, unknown>).year as number | undefined,
-          });
-        }
-        await prisma.vehicle.update({ where: { id: vehicleId }, data: otherFields as import('@prisma/client').Prisma.VehicleUpdateInput });
-        const effectiveStockNumber = typeof otherFields.stockNumber === 'string' ? otherFields.stockNumber : vehicle.stockNumber;
-        try {
-          await applyVehicleUpdate(prisma, dealershipId, effectiveStockNumber, 'DETAILS_CHANGE');
-        } catch {
-          // propagation failure is non-fatal
-        }
+      try {
+        await withInventoryTransaction(prisma, dealershipId, async tx => {
+          if (priceCents !== undefined) await applyVehicleUpdate(tx, dealershipId, vehicle.stockNumber, 'PRICE_CHANGE', { priceCents });
+          if (Object.keys(otherFields).length > 0) {
+            await guardInventoryMutation(tx, dealershipId, vehicleId, {});
+            await tx.vehicle.update({ where: { id: vehicleId }, data: otherFields as import('@prisma/client').Prisma.VehicleUpdateInput });
+            const effectiveStockNumber = typeof otherFields.stockNumber === 'string' ? otherFields.stockNumber : vehicle.stockNumber;
+            await applyVehicleUpdate(tx, dealershipId, effectiveStockNumber, 'DETAILS_CHANGE');
+          }
+        });
+      } catch (error) {
+        return reply.status(error instanceof InventorySafetyHold ? 409 : 422).send({ error: (error as Error).message });
       }
 
       return reply.send({ ok: true });

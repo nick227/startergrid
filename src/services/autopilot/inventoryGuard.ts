@@ -1,3 +1,4 @@
+import { inventoryTransactionActive, removalPermits } from './inventoryTransaction.js';
 import { createHash } from 'node:crypto';
 import type { Prisma, PrismaClient } from '@prisma/client';
 import { autopilotEnabled, OWNED_CHANNEL, readPolicy } from './service.js';
@@ -5,7 +6,7 @@ import { removalGuard } from './policy.js';
 
 export class InventorySafetyHold extends Error {
   readonly statusCode = 409;
-  constructor(public readonly incidentId: string, message: string) { super(message); }
+  constructor(public readonly incidentId: string, message: string, public readonly incidentData?: Prisma.DistributionIncidentUncheckedCreateInput) { super(message); }
 }
 
 /** Runs BEFORE live inventory mutation: marketplace reads current vehicle fields,
@@ -22,6 +23,7 @@ export async function guardInventoryMutation(db: PrismaClient, dealershipId: str
     !(patch.make ?? vehicle.make).trim() || !(patch.model ?? vehicle.model).trim() ||
     !Number.isInteger(patch.year ?? vehicle.year) || (patch.year ?? vehicle.year) < 1886;
   const baseline = await db.distributionTarget.findFirst({ where: { dealershipId, vehicleId, channel: OWNED_CHANNEL } });
+  if (vehicle.listingStatus !== 'READY' && !baseline?.verifiedSnapshot) return;
   const previous = baseline?.verifiedSnapshot as { priceCents?: number } | null;
   const referencePrice = previous?.priceCents ?? vehicle.priceCents;
   const suspicious = patch.priceCents !== undefined && referencePrice > 0 &&
@@ -35,27 +37,35 @@ export async function guardInventoryMutation(db: PrismaClient, dealershipId: str
     owner: invalid ? 'DEALERSHIP' : 'INTERNAL_SUPPORT', description: nextAction, nextAction, state: 'OPEN', verificationState: 'UNVERIFIED',
     technicalEvidence: { previousPriceCents: vehicle.priceCents, proposedPriceCents: nextPrice, sourceUpdatedAt: vehicle.updatedAt.toISOString() } as Prisma.InputJsonValue };
   const incident = await db.distributionIncident.upsert({ where: { key }, create: { key, ...data }, update: data });
-  throw new InventorySafetyHold(incident.id, `${nextAction} Incident: ${incident.id}`);
+  throw new InventorySafetyHold(incident.id, `${nextAction} Incident: ${incident.id}`, { id: incident.id, key, ...data });
 }
 
 /** Validate the complete source/bulk removal set before any lifecycle writes. */
 export async function guardRemovalBatch(db: PrismaClient, dealershipId: string, vehicleIds: string[], batchId?: string): Promise<void> {
   if (!autopilotEnabled() || !vehicleIds.length) return;
+  if (inventoryTransactionActive(db) && vehicleIds.every(id => removalPermits.get(db)?.has(id))) return;
+  const permit = (ids: string[]) => {
+    if (!inventoryTransactionActive(db)) return;
+    const allowed = removalPermits.get(db) ?? new Set<string>();
+    ids.forEach(id => allowed.add(id)); removalPermits.set(db, allowed);
+  };
   const policy = await readPolicy(db, dealershipId);
   if (!policy.version) return;
   const active = await db.vehicle.findMany({ where: { dealershipId, soldAt: null, removedAt: null }, select: { id: true } });
   const ids = [...new Set(vehicleIds)].filter(id => active.some(v => v.id === id)).sort();
-  if (!removalGuard(ids.length, active.length, policy.safeguards)) return;
+  const recent = await db.vehicle.findMany({ where: { dealershipId, updatedAt: { gte: new Date(Date.now() - 15 * 60_000) },
+    OR: [{ soldAt: { not: null } }, { removedAt: { not: null } }] }, select: { id: true } });
+  if (!ids.length || !removalGuard(ids.length + recent.length, active.length + recent.length, policy.safeguards)) { permit(ids); return; }
   const key = createHash('sha256').update(JSON.stringify([dealershipId, 'REMOVAL_BATCH', ids])).digest('hex');
   const existing = await db.distributionIncident.findUnique({ where: { key } });
   const ev = existing?.technicalEvidence as { approvedVehicleIds?: string[]; approvalExpiresAt?: string } | null;
   if (existing?.state === 'ACKNOWLEDGED' && ev?.approvalExpiresAt && Date.parse(ev.approvalExpiresAt) > Date.now() &&
-    JSON.stringify(ev.approvedVehicleIds) === JSON.stringify(ids)) return;
+    JSON.stringify(ev.approvedVehicleIds) === JSON.stringify(ids)) { permit(ids); return; }
   const nextAction = 'Review the full removal batch, approve it explicitly, then retry the source operation.';
   const data = { dealershipId, channel: OWNED_CHANNEL, batchId: batchId ?? null, reasonCode: 'REMOVAL_BATCH', severity: 'CRITICAL',
     businessImpact: `${ids.length} of ${active.length} available vehicles would be withdrawn.`, owner: 'INTERNAL_SUPPORT',
     description: 'A large inventory removal was stopped before changing public availability.', nextAction, state: 'OPEN', verificationState: 'UNVERIFIED',
-    technicalEvidence: { vehicleIds: ids, activeCount: active.length } as Prisma.InputJsonValue };
+    technicalEvidence: { vehicleIds: ids, activeCount: active.length, recentRemovalCount: recent.length } as Prisma.InputJsonValue };
   const incident = await db.distributionIncident.upsert({ where: { key }, create: { key, ...data }, update: data });
-  throw new InventorySafetyHold(incident.id, `${nextAction} Incident: ${incident.id}`);
+  throw new InventorySafetyHold(incident.id, `${nextAction} Incident: ${incident.id}`, { id: incident.id, key, ...data });
 }

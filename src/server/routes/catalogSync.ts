@@ -1,6 +1,6 @@
 import type { FastifyInstance } from 'fastify';
 import type { PrismaClient } from '@prisma/client';
-import { requireDealerAccess } from '../security.js';
+import { requireDealerAccess, requireCapability } from '../security.js';
 import { isDealerPlatformAccessible } from '../dealerPlatformGuard.js';
 import { CredentialStore } from '../../services/platform/clients/CredentialStore.js';
 import type { OAuthClient } from '../../services/platform/clients/OAuthClient.js';
@@ -71,7 +71,7 @@ export function registerCatalogSyncRoutes(app: FastifyInstance, prisma: PrismaCl
     '/api/dealers/:dealershipId/platforms/:platformSlug/catalog-config',
     async (request, reply) => {
       const { dealershipId, platformSlug } = request.params;
-      if (!await requireDealerAccess(prisma, request, reply, dealershipId)) return;
+      if (!await requireCapability(prisma, request, reply, dealershipId, 'connect_channels')) return;
       if (!await isDealerPlatformAccessible(prisma, dealershipId, platformSlug)) {
         return reply.status(404).send({ error: 'Platform not found.' });
       }
