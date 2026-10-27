@@ -5,6 +5,8 @@ import {
   sendLeadToCrm,
 } from '../services/leads/leadCrmHandoffService.js';
 import { HttpError } from '../services/dealership/httpError.js';
+import { buildApp } from '../server/app.js';
+import { startFakeSmtp } from './helpers/fakeSmtpServer.js';
 
 describe('leadCrmHandoffService', () => {
   const fakeDealership = {
@@ -227,4 +229,77 @@ describe('leadCrmHandoffService', () => {
       (err: any) => err instanceof HttpError && err.statusCode === 404,
     );
   });
+
+  it('records SMTP rejection as failed, then sent after a retry the server accepts', async () => {
+    const { db, rows } = makeDb('crm@apexmotors.com');
+    const rejecting = await startFakeSmtp({ rejectRecipients: true });
+    try {
+      const failed = await sendLeadToCrm(db, 'dealer-123', 'lead-789', { env: rejecting.env });
+      assert.equal(failed.deliveryStatus, 'FAILED');
+      assert.equal(rows[0].deliveredAt, null);
+      assert.match(rows[0].errorMessage, /550|rejected/i);
+    } finally { await rejecting.close(); }
+
+    const accepting = await startFakeSmtp({ rejectRecipients: false });
+    try {
+      const sent = await sendLeadToCrm(db, 'dealer-123', 'lead-789', { env: accepting.env });
+      assert.equal(sent.deliveryStatus, 'SENT_TO_CRM_ADDRESS');
+      assert.equal(accepting.messages.length, 1);
+      assert.deepEqual(accepting.recipients, ['crm@apexmotors.com'], 'only the configured CRM address receives buyer data');
+      assert.match(accepting.messages[0]!, /<adf>/, 'the ADF/XML payload is what the server received');
+      assert.deepEqual(sent.attempts.map(a => a.status), ['SENT', 'FAILED']);
+    } finally { await accepting.close(); }
+  });
+
+  describe('CRM delivery routes', () => {
+    function routeDb() {
+      let created = 0;
+      const { db } = makeDb('crm@apexmotors.com');
+      db.leadDeliveryAttempt.create = async () => { created++; throw new Error('must not record an attempt'); };
+      return { db, created: () => created };
+    }
+
+    it('requires a signed-in operator', async () => {
+      const app = buildApp(routeDb().db);
+      const res = await app.inject({ method: 'POST', url: '/api/dealers/dealer-123/leads/lead-789/delivery/retry' });
+      assert.equal(res.statusCode, 401);
+    });
+
+    it('refuses operators outside the dealership for both reading and sending', async () => {
+      const previous = process.env['DEV_OPERATOR_DEALER_IDS'];
+      process.env['DEV_OPERATOR_DEALER_IDS'] = 'dealer-other';
+      try {
+        const { db, created } = routeDb();
+        const app = buildApp(db);
+        const headers = { 'x-operator-id': 'dev-operator' };
+        const read = await app.inject({ method: 'GET', url: '/api/dealers/dealer-123/leads/lead-789/delivery', headers });
+        const send = await app.inject({ method: 'POST', url: '/api/dealers/dealer-123/leads/lead-789/delivery/retry', headers });
+        assert.equal(read.statusCode, 403);
+        assert.equal(send.statusCode, 403);
+        assert.equal(created(), 0);
+      } finally {
+        if (previous === undefined) delete process.env['DEV_OPERATOR_DEALER_IDS']; else process.env['DEV_OPERATOR_DEALER_IDS'] = previous;
+      }
+    });
+
+    it('ignores a client-supplied address and delivered flag', async () => {
+      const { db, created } = routeDb();
+      const app = buildApp(db);
+      const res = await app.inject({
+        method: 'POST',
+        url: '/api/dealers/dealer-123/leads/lead-789/delivery/retry',
+        headers: { 'x-operator-id': 'dev-operator' },
+        payload: { destinationEmail: 'attacker@evil.test', markDelivered: true },
+      });
+      // Test env has no real email transport, so the send is refused before any attempt exists.
+      assert.equal(res.statusCode, 409);
+      assert.match(res.json().error, /Email sending is not set up/);
+      assert.equal(created(), 0);
+
+      const details = await app.inject({ method: 'GET', url: '/api/dealers/dealer-123/leads/lead-789/delivery', headers: { 'x-operator-id': 'dev-operator' } });
+      assert.equal(details.json().crmEndpoint, 'crm@apexmotors.com');
+      assert.equal(details.json().deliveryStatus, 'NOT_SENT');
+    });
+  });
 });
+

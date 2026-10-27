@@ -15,6 +15,7 @@ import path from 'node:path';
 import fs from 'node:fs/promises';
 import type { PrismaClient } from '@prisma/client';
 import { emailTransport, realEmailDeliveryEnabled, type EmailMessage } from '../services/dealer/emailTransport.js';
+import { startFakeSmtp } from './helpers/fakeSmtpServer.js';
 import { notifyLeadCaptured } from '../services/dealer/dealerNotificationService.js';
 import type { NotificationChannelsConfig, LeadNotificationPayload } from '../services/dealer/notificationFanout.js';
 
@@ -126,6 +127,23 @@ describe('emailTransport — production', () => {
       else process.env['MOCK_OUTBOX_DIR'] = prevDir;
       await fs.rm(tmpDir, { recursive: true, force: true });
     }
+  });
+
+  it('resolves only after an SMTP server accepts the message', async () => {
+    const smtp = await startFakeSmtp({ rejectRecipients: false });
+    try {
+      await emailTransport(SAMPLE_MSG, smtp.env);
+      assert.equal(smtp.messages.length, 1);
+      assert.match(smtp.messages[0]!, /A lead was received\./);
+    } finally { await smtp.close(); }
+  });
+
+  it('throws when the SMTP server rejects the recipient', async () => {
+    const smtp = await startFakeSmtp({ rejectRecipients: true });
+    try {
+      await assert.rejects(() => emailTransport(SAMPLE_MSG, smtp.env), /550|rejected/i);
+      assert.equal(smtp.messages.length, 0);
+    } finally { await smtp.close(); }
   });
 
   it('reports real delivery only for production with SMTP_ENABLED=true', () => {
