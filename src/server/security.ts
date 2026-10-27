@@ -155,6 +155,7 @@ export const routeClassifications = {
     'PATCH /api/dealers/:dealershipId/leads/:leadId',
     'GET /api/dealers/:dealershipId/leads/:leadId/delivery',
     'POST /api/dealers/:dealershipId/leads/:leadId/delivery/retry',
+    'GET /api/dealers/:dealershipId/attention',
     'GET /api/admin/dealerships',
     'POST /api/admin/dealerships',
     'GET /api/admin/dealerships/:dealershipId',

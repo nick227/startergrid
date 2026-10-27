@@ -4146,6 +4146,36 @@ paths:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
 
+  /api/dealers/{dealershipId}/attention:
+    get:
+      tags: [Dealers]
+      security:
+        - OperatorAuth: []
+      x-route-classification: operator
+      operationId: getDealershipAttention
+      summary: Everything that needs a person, with who acts and the action
+      description: >-
+        One grouped list across vehicles (readiness), sold-vehicle removals (evidence-based removalStatus),
+        channels (account setup and open distribution incidents) and leads (failed CRM delivery). Built only
+        from recorded state; each problem appears once. When a source fails it is listed in unavailableAreas
+        and the list must not be presented as all clear.
+      parameters:
+        - name: dealershipId
+          in: path
+          required: true
+          schema: { type: string }
+      responses:
+        '200':
+          description: Attention list
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AttentionResponse'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+
   /api/admin/buyer-outreach-stats:
     get:
       tags: [Admin]
@@ -6444,6 +6474,84 @@ components:
         statusUpdatedAt: { type: string, format: date-time, nullable: true }
         statusUpdatedBy: { type: string, nullable: true }
         updatedAt: { type: string, format: date-time }
+
+    AttentionResponse:
+      type: object
+      required: [dealershipId, generatedAt, counts, items, unavailableAreas]
+      properties:
+        dealershipId: { type: string }
+        generatedAt: { type: string, format: date-time }
+        counts:
+          type: object
+          required: [total, blocking, dealershipActions, waiting]
+          properties:
+            total: { type: integer }
+            blocking: { type: integer }
+            dealershipActions: { type: integer, description: 'Items the dealership can act on now (owner DEALERSHIP, action enabled).' }
+            waiting: { type: integer }
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/AttentionItem'
+        unavailableAreas:
+          type: array
+          description: Sources that failed to load; the list is incomplete when non-empty.
+          items:
+            type: string
+            enum: [VEHICLES, REMOVALS, CHANNELS, LEADS]
+
+    AttentionItem:
+      type: object
+      required: [key, area, kind, severity, owner, ownerId, count, summary, nextAction, action, records]
+      properties:
+        key: { type: string, description: Stable for the same problem and owner. }
+        area: { type: string, enum: [VEHICLES, REMOVALS, CHANNELS, LEADS] }
+        kind:
+          type: string
+          enum:
+            - VEHICLE_INFORMATION_MISSING
+            - VEHICLE_PHOTOS_MISSING
+            - SOLD_LISTING_TAKE_DOWN_NEEDED
+            - SOLD_LISTING_EXTERNAL_REMOVAL
+            - SOLD_LISTING_REMOVAL_FAILED
+            - SOLD_LISTING_REMOVAL_IN_PROGRESS
+            - CHANNEL_SETUP_INCOMPLETE
+            - DISTRIBUTION_PROBLEM
+            - CRM_DELIVERY_FAILED
+        severity:
+          type: string
+          enum: [BLOCKING, WARNING, WAITING]
+          description: BLOCKING needs action now; WAITING means someone other than the viewer is on it.
+        owner:
+          type: string
+          enum: [DEALERSHIP, INTERNAL_SUPPORT, PARTNER, SYSTEM]
+          description: Who has to act. SYSTEM means StarterGrid is still working on it.
+        ownerId: { type: string, nullable: true }
+        count: { type: integer, description: All affected records; records holds at most 50. }
+        summary: { type: string }
+        nextAction: { type: string }
+        action:
+          type: object
+          required: [kind, enabled, disabledReason, channel]
+          properties:
+            kind:
+              type: string
+              enum: [FIX_VEHICLES, ADD_PHOTOS, REVIEW_REMOVALS, END_EXTERNAL_LISTING, COMPLETE_CHANNEL_SETUP, RETRY_CRM_DELIVERY, CONTACT_SUPPORT, NONE]
+            enabled: { type: boolean }
+            disabledReason: { type: string, nullable: true }
+            channel: { type: string, nullable: true, description: Set when every record is on one channel. }
+        records:
+          type: array
+          items:
+            type: object
+            required: [type, id, label, detail, channel, vehicleId]
+            properties:
+              type: { type: string, enum: [VEHICLE, LISTING, CHANNEL, LEAD] }
+              id: { type: string }
+              label: { type: string }
+              detail: { type: string, nullable: true }
+              channel: { type: string, nullable: true }
+              vehicleId: { type: string, nullable: true }
 
     RemovalStatus:
       type: string

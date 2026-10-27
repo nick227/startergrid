@@ -84,6 +84,7 @@ const REGISTERED_ROUTES = new Set([
   'PATCH  /api/dealers/{dealershipId}/leads/{leadId}',
   'GET    /api/dealers/{dealershipId}/leads/{leadId}/delivery',
   'POST   /api/dealers/{dealershipId}/leads/{leadId}/delivery/retry',
+  'GET    /api/dealers/{dealershipId}/attention',
   'GET    /api/dealers/{dealershipId}/people',
   'POST   /api/dealers/{dealershipId}/people/invites/prepare',
   'POST   /api/dealers/{dealershipId}/people/invites',

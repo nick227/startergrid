@@ -73,7 +73,7 @@ type AttemptRow = {
 
 // Only rows written by sendLeadToCrm count. The marketplace planner also stores ADF/XML rows
 // (attemptCount 0) that nothing has dispatched; they are not CRM sends.
-function isCrmSend(a: AttemptRow): boolean {
+export function isCrmSend(a: AttemptRow): boolean {
   return a.destinationType === 'ADF_XML_EMAIL' && a.attemptCount > 0;
 }
 
@@ -81,7 +81,8 @@ function isInFlight(a: AttemptRow, now: Date): boolean {
   return a.status === 'PENDING' && now.getTime() - (a.lastAttemptAt ?? a.createdAt).getTime() < SEND_IN_FLIGHT_MS;
 }
 
-function deriveStatus(latest: AttemptRow | undefined, now: Date): LeadCrmDeliveryStatus {
+/** Delivery status from a lead's most recent CRM send (see isCrmSend). Shared with the attention list. */
+export function crmDeliveryStatus(latest: AttemptRow | undefined, now: Date): LeadCrmDeliveryStatus {
   if (!latest) return 'NOT_SENT';
   if (latest.status === 'SENT') return 'SENT_TO_CRM_ADDRESS';
   if (latest.status === 'PENDING') return isInFlight(latest, now) ? 'SENDING' : 'FAILED';
@@ -192,7 +193,7 @@ export async function getLeadCrmHandoffDetails(
 
   return {
     leadId: lead.id,
-    deliveryStatus: deriveStatus(latest, now),
+    deliveryStatus: crmDeliveryStatus(latest, now),
     adfXmlPayload: adfXml,
     crmEndpoint,
     canSend: blocked === null,
