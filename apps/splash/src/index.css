@@ -1399,3 +1399,14 @@ ul, ol {
 .gap-4 { gap: var(--space-4); }
 .gap-6 { gap: var(--space-6); }
 .w-full { width: 100%; }
+
+/* Responsive navigation utilities */
+@media (min-width: 860px) {
+  .desktop-nav {
+    display: flex !important;
+  }
+  .desktop-status-pill {
+    display: inline-flex !important;
+  }
+}
+
