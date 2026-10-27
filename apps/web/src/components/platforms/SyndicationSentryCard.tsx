@@ -11,11 +11,17 @@ type Props = {
   hideWhenClean?: boolean;
 };
 
+export type RemovalFeedback = {
+  type: 'confirmed' | 'pending' | 'attention';
+  headline: string;
+  detail: string;
+};
+
 export function SyndicationSentryCard({ dealerId, onReconciled, hideWhenClean = true }: Props) {
   const [audit, setAudit] = useState<SyndicationSentryAuditResult | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
   const [reconciling, setReconciling] = useState<boolean>(false);
-  const [successMessage, setSuccessMessage] = useState<{ text: string; done: boolean } | null>(null);
+  const [feedback, setFeedback] = useState<RemovalFeedback | null>(null);
   const [error, setError] = useState<string | null>(null);
 
   const loadAudit = useCallback(async () => {
@@ -47,11 +53,34 @@ export function SyndicationSentryCard({ dealerId, onReconciled, hideWhenClean = 
       setReconciling(true);
       setError(null);
       const result = await reconcileSyndicationGhostListings(dealerId);
-      const isVerified = result.status === 'RECONCILED';
-      const text = isVerified
-        ? `Removal verified: ${result.reconciledCount} vehicle${result.reconciledCount === 1 ? '' : 's'} removed from advertising.`
-        : `Removal requested: Submitted removal to connected channels. External sites may take 24–48 hours to update.`;
-      setSuccessMessage({ text, done: isVerified });
+      if (result.status === 'RECONCILED' || result.status === 'CLEAN') {
+        setFeedback({
+          type: 'confirmed',
+          headline: 'Removal confirmed',
+          detail:
+            result.reconciledCount > 0
+              ? `${result.reconciledCount} vehicle${result.reconciledCount === 1 ? '' : 's'} verified removed from advertising.`
+              : 'All advertised vehicles match your active lot inventory.',
+        });
+      } else if (result.reconciledCount > 0) {
+        setFeedback({
+          type: 'attention',
+          headline: 'Removal needs attention',
+          detail: `Removal confirmed for ${result.reconciledCount} listing${
+            result.reconciledCount === 1 ? '' : 's'
+          }. Removal pending for ${result.remaining.length} listing${
+            result.remaining.length === 1 ? '' : 's'
+          } requiring action on the destination portal.`,
+        });
+      } else {
+        setFeedback({
+          type: 'pending',
+          headline: 'Removal pending',
+          detail: `Removal requested: Local operation recorded. External removal is not confirmed—${result.remaining.length} listing${
+            result.remaining.length === 1 ? '' : 's'
+          } require${result.remaining.length === 1 ? '' : 's'} manual action on the destination portal.`,
+        });
+      }
       await loadAudit();
       onReconciled?.();
       window.dispatchEvent(new Event('distribution-updated'));
@@ -64,7 +93,7 @@ export function SyndicationSentryCard({ dealerId, onReconciled, hideWhenClean = 
 
   const isClean = audit?.status === 'CLEAN' || (audit?.activeGhostListingsCount ?? 0) === 0;
 
-  if (hideWhenClean && isClean && !successMessage) {
+  if (hideWhenClean && isClean && !feedback) {
     return null;
   }
 
@@ -145,16 +174,28 @@ export function SyndicationSentryCard({ dealerId, onReconciled, hideWhenClean = 
         </div>
       </div>
 
-      {successMessage && (
-        <div role={successMessage.done ? undefined : 'alert'} className={`mt-3 p-2.5 rounded-lg border text-xs flex items-center justify-between ${
-          successMessage.done
-            ? 'bg-emerald-100/80 border-emerald-300/80 text-emerald-900'
-            : 'bg-amber-100/80 border-amber-300/80 text-amber-900'
-        }`}>
-          <span>{successMessage.done ? '✓ ' : 'ℹ '}{successMessage.text}</span>
+      {feedback && (
+        <div
+          role="alert"
+          className={`mt-3 p-3 rounded-lg border text-xs flex items-start justify-between gap-3 ${
+            feedback.type === 'confirmed'
+              ? 'bg-emerald-100/90 border-emerald-300 text-emerald-950'
+              : feedback.type === 'attention'
+              ? 'bg-rose-100/90 border-rose-300 text-rose-950'
+              : 'bg-amber-100/90 border-amber-300 text-amber-950'
+          }`}
+        >
+          <div className="space-y-0.5">
+            <span className="font-bold flex items-center gap-1.5">
+              <span>{feedback.type === 'confirmed' ? '✓' : 'ℹ'}</span>
+              <span>{feedback.headline}</span>
+            </span>
+            <p className="leading-relaxed">{feedback.detail}</p>
+          </div>
           <button
-            onClick={() => setSuccessMessage(null)}
-            className="text-ink-muted hover:text-ink-heading font-bold ml-2"
+            onClick={() => setFeedback(null)}
+            className="text-ink-muted hover:text-ink-heading font-bold text-sm shrink-0"
+            aria-label="Dismiss message"
           >
             ✕
           </button>
@@ -182,6 +223,7 @@ export function SyndicationSentryCard({ dealerId, onReconciled, hideWhenClean = 
                   <th className="pb-1.5 font-semibold">Channel</th>
                   <th className="pb-1.5 font-semibold">Lot Status</th>
                   <th className="pb-1.5 font-semibold">Advertised</th>
+                  <th className="pb-1.5 font-semibold">Status</th>
                   <th className="pb-1.5 font-semibold">Next step</th>
                 </tr>
               </thead>
@@ -209,6 +251,14 @@ export function SyndicationSentryCard({ dealerId, onReconciled, hideWhenClean = 
                         }`}
                       >
                         {ghost.exposureDays} day{ghost.exposureDays === 1 ? '' : 's'} since sold
+                      </span>
+                    </td>
+                    <td className="py-2">
+                      <span
+                        className="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-semibold bg-amber-100 text-amber-900 border border-amber-300"
+                        title="External removal not confirmed without provider evidence"
+                      >
+                        Removal pending
                       </span>
                     </td>
                     <td className="py-2 text-ink-muted">{ghost.nextAction}</td>

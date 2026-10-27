@@ -107,19 +107,25 @@ export function LeadCrmHandoffModal({ dealershipId, leadId, isOpen, onClose }: P
     ? `${data.vehicle.year || ''} ${data.vehicle.make || ''} ${data.vehicle.model || ''} (#${data.vehicle.stockNumber})`.trim()
     : 'General Vehicle Inquiry';
 
-  const status = dispatching ? 'SENDING' : data?.deliveryStatus;
-  const isSent = status === 'SENT_TO_CRM_ADDRESS';
-  const isSending = status === 'SENDING';
-  const isFailed = status === 'FAILED';
+  const isNotConfigured = Boolean(data && !data.canSend && data.sendBlocker !== 'SEND_IN_PROGRESS');
+  const isSending = Boolean(dispatching || (data?.canSend && data?.deliveryStatus === 'SENDING'));
+  const isSent = Boolean(!dispatching && data?.deliveryStatus === 'SENT_TO_CRM_ADDRESS');
+  const isFailed = Boolean(!dispatching && data?.deliveryStatus === 'FAILED');
+  const isReady = Boolean(!dispatching && data?.canSend && data?.deliveryStatus === 'NOT_SENT');
 
   const lastAttempt = data?.attempts && data.attempts.length > 0 ? data.attempts[0] : null;
   const destination = lastAttempt?.destinationAddress || data?.crmEndpoint || 'your CRM address';
-  const statusLabel = isSent
+
+  const statusLabel = isSending
+    ? 'Sending to mail server…'
+    : isSent
     ? 'Transmission accepted by mail server'
     : isFailed
     ? 'Transmission failed'
-    : isSending
-    ? 'Sending to mail server…'
+    : isNotConfigured
+    ? 'Not configured'
+    : isReady
+    ? 'Ready to send'
     : 'Not sent to CRM';
 
   return (
@@ -170,6 +176,8 @@ export function LeadCrmHandoffModal({ dealershipId, leadId, isOpen, onClose }: P
                     ? 'bg-red-50/70 border-red-200 text-red-950'
                     : isSending
                     ? 'bg-amber-50/70 border-amber-200 text-amber-950'
+                    : isNotConfigured
+                    ? 'bg-amber-50/70 border-amber-200 text-amber-950'
                     : 'bg-blue-50/70 border-blue-200 text-blue-950'
                 }`}
               >
@@ -189,7 +197,9 @@ export function LeadCrmHandoffModal({ dealershipId, leadId, isOpen, onClose }: P
                     ? `Could not send to ${destination}${lastAttempt?.errorMessage ? `: ${lastAttempt.errorMessage}` : '.'}`
                     : isSending
                     ? `Sending to ${destination}…`
-                    : 'This lead has not been sent to your CRM.'}
+                    : isNotConfigured
+                    ? data.sendBlockerMessage || 'CRM lead routing is not configured. Automatic email delivery is unavailable.'
+                    : `Ready to send this lead to ${destination} in standard ADF/XML format.`}
                 </p>
 
                 <div className="pt-2 border-t border-black/10 text-xs font-medium">
@@ -199,7 +209,11 @@ export function LeadCrmHandoffModal({ dealershipId, leadId, isOpen, onClose }: P
                     </p>
                   ) : isFailed ? (
                     <p className="text-red-900">
-                      <strong>Next step:</strong> Verify your CRM lead email in Channels &gt; ADF/XML Lead Routing, or copy the lead summary below.
+                      <strong>Next step:</strong> {data.canSend ? 'Click "Retry send" to try again, or use manual export below.' : 'Verify your CRM lead routing in Channels, or use manual export below.'}
+                    </p>
+                  ) : isNotConfigured ? (
+                    <p className="text-amber-900">
+                      <strong>Next step:</strong> Manual export available. Copy raw XML or download the file below to enter into your CRM manually.
                     </p>
                   ) : (
                     <p className="text-blue-900">
@@ -208,12 +222,6 @@ export function LeadCrmHandoffModal({ dealershipId, leadId, isOpen, onClose }: P
                   )}
                 </div>
               </div>
-
-              {!data.canSend && data.sendBlocker !== 'SEND_IN_PROGRESS' && data.sendBlockerMessage && (
-                <div className="rounded-xl border border-silver-200 bg-silver-50 p-3.5 text-xs text-ink-body">
-                  {data.sendBlockerMessage}
-                </div>
-              )}
 
               {/* Inquiry & Buyer Summary Cards */}
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
@@ -237,25 +245,54 @@ export function LeadCrmHandoffModal({ dealershipId, leadId, isOpen, onClose }: P
                 </div>
               </div>
 
-              {/* One-click Action Row */}
+              {/* Contextual Action Row: reflects actual available operations */}
               <div className="flex flex-wrap items-center gap-2 pt-1">
-                {data.canSend && (
-                  <button
-                    type="button"
-                    disabled={dispatching}
-                    onClick={handleSend}
-                    className="px-4 py-2 text-xs font-bold rounded-lg bg-navy-800 hover:bg-navy-900 text-white transition-all shadow-sm disabled:opacity-50 flex items-center gap-1.5"
-                  >
-                    <span>{dispatching ? 'Sending…' : isSent ? 'Send again' : isFailed ? 'Retry send' : 'Send to CRM'}</span>
-                  </button>
+                {data.canSend ? (
+                  <>
+                    <button
+                      type="button"
+                      disabled={dispatching}
+                      onClick={handleSend}
+                      className="px-4 py-2 text-xs font-bold rounded-lg bg-navy-800 hover:bg-navy-900 text-white transition-all shadow-sm disabled:opacity-50 flex items-center gap-1.5"
+                    >
+                      <span>
+                        {dispatching ? 'Sending…' : isSent ? 'Send again' : isFailed ? 'Retry send' : 'Send to CRM'}
+                      </span>
+                    </button>
+                    <button
+                      type="button"
+                      onClick={handleCopySummary}
+                      className="px-3.5 py-2 text-xs font-semibold rounded-lg border border-silver-300 bg-white hover:bg-silver-100 text-ink-heading transition-all shadow-sm"
+                    >
+                      {copiedSummary ? '✓ Copied Summary' : 'Copy Lead Summary'}
+                    </button>
+                  </>
+                ) : (
+                  <>
+                    {/* When sending is unavailable, prominent manual export options are offered */}
+                    <button
+                      type="button"
+                      onClick={handleCopyXml}
+                      className="px-4 py-2 text-xs font-bold rounded-lg bg-navy-800 hover:bg-navy-900 text-white transition-all shadow-sm flex items-center gap-1.5"
+                    >
+                      <span>{copied ? '✓ Copied XML!' : 'Copy raw XML'}</span>
+                    </button>
+                    <button
+                      type="button"
+                      onClick={handleDownload}
+                      className="px-3.5 py-2 text-xs font-semibold rounded-lg border border-silver-300 bg-white hover:bg-silver-100 text-ink-heading transition-all shadow-sm"
+                    >
+                      Download .xml
+                    </button>
+                    <button
+                      type="button"
+                      onClick={handleCopySummary}
+                      className="px-3.5 py-2 text-xs font-semibold rounded-lg border border-silver-300 bg-white hover:bg-silver-100 text-ink-heading transition-all shadow-sm"
+                    >
+                      {copiedSummary ? '✓ Copied Summary' : 'Copy Lead Summary'}
+                    </button>
+                  </>
                 )}
-                <button
-                  type="button"
-                  onClick={handleCopySummary}
-                  className="px-3.5 py-2 text-xs font-semibold rounded-lg border border-silver-300 bg-white hover:bg-silver-100 text-ink-heading transition-all shadow-sm"
-                >
-                  {copiedSummary ? '✓ Copied Summary' : 'Copy Lead Summary'}
-                </button>
               </div>
 
               {/* Contextual Disclosure: Advanced ADF/XML & Technical Log */}
@@ -345,7 +382,7 @@ export function LeadCrmHandoffModal({ dealershipId, leadId, isOpen, onClose }: P
         {/* Modal Footer */}
         <div className="px-6 py-3.5 border-t border-silver-200 bg-silver-50 flex items-center justify-between shrink-0 text-xs">
           <span className="text-ink-muted">
-            Status: <strong>{statusLabel}</strong>
+            Status: <strong>{data ? statusLabel : 'Checking…'}</strong>
           </span>
           <button
             type="button"

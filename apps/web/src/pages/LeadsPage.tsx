@@ -369,17 +369,20 @@ function LeadRow({
       </div>
 
       {/* 6. Received Date */}
-      <div className="text-xs text-ink-muted lg:text-right">
-        <p className="font-semibold text-ink-body">{relativeTime(lead.createdAt)}</p>
-        <p className="font-mono text-[11px] text-ink-faint">{new Date(lead.createdAt).toLocaleDateString()}</p>
+      <div className="text-xs text-ink-muted flex items-center justify-between lg:block lg:text-right">
+        <span className="font-semibold text-ink-faint uppercase text-[10px] tracking-wider lg:hidden">Received</span>
+        <div>
+          <p className="font-semibold text-ink-body">{relativeTime(lead.createdAt)}</p>
+          <p className="font-mono text-[11px] text-ink-faint">{new Date(lead.createdAt).toLocaleDateString()}</p>
+        </div>
       </div>
 
       {/* 7. Contextual CRM Handoff Action */}
-      <div className="flex items-center lg:justify-end">
+      <div className="flex items-center justify-end pt-2 border-t border-silver-100 lg:border-0 lg:pt-0">
         <button
           type="button"
           onClick={() => onOpenCrmHandoff(lead.id)}
-          className="inline-flex items-center justify-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold bg-white hover:bg-silver-100 text-ink-heading border border-silver-300 hover:border-silver-400 transition-colors shadow-2xs w-full lg:w-auto"
+          className="inline-flex items-center justify-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold bg-white hover:bg-silver-100 text-ink-heading border border-silver-300 hover:border-silver-400 transition-colors shadow-2xs w-full sm:w-auto"
           title="Send to CRM or view delivery status"
         >
           <span>Send to CRM</span>
@@ -632,7 +635,7 @@ export default function LeadsPage({ dealerId, nav, activeTab }: Props) {
                   <p className="mt-1 text-xs text-ink-muted">Adjust search, status, or source filters.</p>
                 </div>
               ) : (
-                <div>
+                <div className="overflow-x-auto min-w-0">
                   <div className="hidden border-b border-silver-200 bg-silver-50 px-4 py-2 text-[10px] font-bold uppercase tracking-wide text-ink-faint lg:grid lg:grid-cols-[minmax(16rem,1.3fr)_minmax(11rem,1fr)_6.5rem_8rem_8rem_6rem_7.5rem] lg:gap-3">
                     <span>Vehicle & Inquiry</span>
                     <span>Buyer Contact</span>

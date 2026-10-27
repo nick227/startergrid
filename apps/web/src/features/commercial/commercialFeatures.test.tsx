@@ -80,7 +80,7 @@ describe('Commercial Feature 1: Ghost Listing Audit (Sold Vehicle Take-Down)', (
     expect(fullHtml).not.toContain('purge');
   });
 
-  it('clearly distinguishes removal request from verified removal on submission', async () => {
+  it('clearly grounds removal feedback in provider evidence without false claims', async () => {
     const fetchMock = vi.fn(async (url: string, init?: RequestInit) => {
       if (init?.method === 'POST') {
         return {
@@ -91,8 +91,16 @@ describe('Commercial Feature 1: Ghost Listing Audit (Sold Vehicle Take-Down)', (
             reconciledCount: 0,
             marketplaceListingsEnded: 0,
             distributionTargetsWithdrawn: 0,
-            remaining: [],
-            message: 'Removal requested on CarGurus. Awaiting channel confirmation.',
+            remaining: [
+              {
+                id: 'g1',
+                channel: 'cargurus',
+                stockNumber: '1234',
+                exposureDays: 7,
+                nextAction: 'Remove in CarGurus dealer portal',
+              },
+            ],
+            message: '1 listing still requires action on the destination; see each next step.',
             reconciledAt: new Date().toISOString(),
           }),
         };
@@ -125,7 +133,7 @@ describe('Commercial Feature 1: Ghost Listing Audit (Sold Vehicle Take-Down)', (
               inactiveSince: '2026-10-20T00:00:00Z',
               exposureDays: 7,
               ftcComplianceRisk: 'HIGH',
-              nextAction: 'Awaiting channel removal',
+              nextAction: 'Remove in CarGurus dealer portal',
             },
           ],
         }),
@@ -135,9 +143,65 @@ describe('Commercial Feature 1: Ghost Listing Audit (Sold Vehicle Take-Down)', (
 
     render(<SyndicationSentryCard dealerId="d1" hideWhenClean={false} />);
     const btn = await screen.findByText('Request removal');
-    fireEvent.click(btn);
+    act(() => {
+      fireEvent.click(btn);
+    });
 
-    await screen.findByText(/Removal requested: Submitted removal to connected channels/);
+    // Check grounded feedback
+    await waitFor(() => {
+      expect(screen.getByText(/Local operation recorded. External removal is not confirmed/)).toBeTruthy();
+    });
+
+    // Verify ungrounded claims are absent
+    const html = document.body.innerHTML;
+    expect(html).not.toContain('Submitted removal to connected channels');
+    expect(html).not.toContain('24–48 hours');
+    expect(html).not.toContain('24-48 hours');
+  });
+
+  it('shows removal confirmed only when verified by backend provider evidence', async () => {
+    const fetchMock = vi.fn(async (url: string, init?: RequestInit) => {
+      if (init?.method === 'POST') {
+        return {
+          ok: true,
+          json: async () => ({
+            dealershipId: 'd1',
+            status: 'RECONCILED',
+            reconciledCount: 2,
+            marketplaceListingsEnded: 2,
+            distributionTargetsWithdrawn: 0,
+            remaining: [],
+            message: 'Took down 2 listings and confirmed removal.',
+            reconciledAt: new Date().toISOString(),
+          }),
+        };
+      }
+      return {
+        ok: true,
+        json: async () => ({
+          dealershipId: 'd1',
+          status: 'GHOST_LISTINGS_DETECTED',
+          auditedCount: 5,
+          activeGhostListingsCount: 2,
+          verifiedLiveCount: 3,
+          channelsAudited: ['auto_marketplace'],
+          lastAuditedAt: new Date().toISOString(),
+          summary: '2 sold vehicles may still be advertised',
+          ghostListings: [],
+        }),
+      };
+    });
+    vi.stubGlobal('fetch', fetchMock);
+
+    render(<SyndicationSentryCard dealerId="d1" hideWhenClean={false} />);
+    const btn = await screen.findByText('Request removal');
+    act(() => {
+      fireEvent.click(btn);
+    });
+
+    await waitFor(() => {
+      expect(screen.getByText(/2 vehicles verified removed from advertising/)).toBeTruthy();
+    });
   });
 });
 
@@ -321,7 +385,138 @@ describe('Commercial Feature 4: Lead CRM Handoff Modal', () => {
 
     // Advanced details contains raw XML and download XML
     expect(screen.getByText(/Advanced: Raw ADF\/XML 1.0 & send history/)).toBeTruthy();
-    expect(screen.getByText('Copy raw XML')).toBeTruthy();
-    expect(screen.getByText('Download .xml')).toBeTruthy();
+    expect(screen.getAllByText('Copy raw XML').length).toBeGreaterThan(0);
+    expect(screen.getAllByText('Download .xml').length).toBeGreaterThan(0);
+  });
+
+  it('clearly presents Not configured state and promotes manual export when sending is unavailable', async () => {
+    vi.stubGlobal('fetch', vi.fn(async (url: string) => {
+      if (url.includes('/delivery')) {
+        return {
+          ok: true,
+          json: async () => ({
+            leadId: 'lead-2',
+            deliveryStatus: 'NOT_SENT',
+            canSend: false,
+            sendBlocker: 'NO_CRM_ADDRESS',
+            sendBlockerMessage: 'No CRM lead email is set. Add the address your CRM vendor gave you on the ADF/XML Lead Routing destination, or copy the ADF/XML below.',
+            crmEndpoint: null,
+            adfXmlPayload: '<adf><prospect><customer><contact><name>Jane Smith</name></contact></customer></prospect></adf>',
+            attempts: [],
+            customer: {
+              name: 'Jane Smith',
+              email: 'jane@example.com',
+              phone: '555-987-6543',
+            },
+            vehicle: null,
+          }),
+        };
+      }
+      return { ok: true, json: async () => ({}) };
+    }));
+
+    render(
+      <LeadCrmHandoffModal
+        dealershipId="d1"
+        leadId="lead-2"
+        isOpen={true}
+        onClose={vi.fn()}
+      />
+    );
+
+    const badges = await screen.findAllByText('Not configured');
+    expect(badges.length).toBeGreaterThan(0);
+    expect(screen.getByText(/Manual export available. Copy raw XML or download the file below/)).toBeTruthy();
+
+    // Primary action row offers Copy raw XML and Download .xml directly
+    expect(screen.getAllByText('Copy raw XML').length).toBeGreaterThanOrEqual(1);
+    expect(screen.getAllByText('Download .xml').length).toBeGreaterThanOrEqual(1);
+    expect(screen.getByText('Copy Lead Summary')).toBeTruthy();
+
+    // Send to CRM action button is not offered
+    expect(screen.queryByRole('button', { name: 'Send to CRM' })).toBeNull();
+  });
+
+  it('presents Ready to send state with Send to CRM when configured', async () => {
+    vi.stubGlobal('fetch', vi.fn(async (url: string) => {
+      if (url.includes('/delivery')) {
+        return {
+          ok: true,
+          json: async () => ({
+            leadId: 'lead-3',
+            deliveryStatus: 'NOT_SENT',
+            canSend: true,
+            sendBlocker: null,
+            sendBlockerMessage: null,
+            crmEndpoint: 'leads@dealer-crm.com',
+            adfXmlPayload: '<adf></adf>',
+            attempts: [],
+            customer: { name: 'Bob', email: 'bob@test.com', phone: null },
+            vehicle: null,
+          }),
+        };
+      }
+      return { ok: true, json: async () => ({}) };
+    }));
+
+    render(
+      <LeadCrmHandoffModal
+        dealershipId="d1"
+        leadId="lead-3"
+        isOpen={true}
+        onClose={vi.fn()}
+      />
+    );
+
+    const readyBadges = await screen.findAllByText('Ready to send');
+    expect(readyBadges.length).toBeGreaterThan(0);
+    expect(screen.getByRole('button', { name: 'Send to CRM' })).toBeTruthy();
+    expect(screen.getByText(/Ready to send this lead to leads@dealer-crm.com/)).toBeTruthy();
+  });
+
+  it('presents Failed state with Retry send when transmission fails', async () => {
+    vi.stubGlobal('fetch', vi.fn(async (url: string) => {
+      if (url.includes('/delivery')) {
+        return {
+          ok: true,
+          json: async () => ({
+            leadId: 'lead-4',
+            deliveryStatus: 'FAILED',
+            canSend: true,
+            sendBlocker: null,
+            sendBlockerMessage: null,
+            crmEndpoint: 'leads@dealer-crm.com',
+            adfXmlPayload: '<adf></adf>',
+            attempts: [
+              {
+                id: 'att-fail',
+                destinationAddress: 'leads@dealer-crm.com',
+                status: 'FAILED',
+                errorMessage: 'Mail server connection timeout',
+                deliveredAt: null,
+                createdAt: new Date().toISOString(),
+              },
+            ],
+            customer: { name: 'Bob', email: 'bob@test.com', phone: null },
+            vehicle: null,
+          }),
+        };
+      }
+      return { ok: true, json: async () => ({}) };
+    }));
+
+    render(
+      <LeadCrmHandoffModal
+        dealershipId="d1"
+        leadId="lead-4"
+        isOpen={true}
+        onClose={vi.fn()}
+      />
+    );
+
+    const failedBadges = await screen.findAllByText('Transmission failed');
+    expect(failedBadges.length).toBeGreaterThan(0);
+    expect(screen.getAllByText(/Mail server connection timeout/).length).toBeGreaterThan(0);
+    expect(screen.getByText('Retry send')).toBeTruthy();
   });
 });
