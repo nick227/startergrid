@@ -87,7 +87,9 @@ export function buildApp(prisma: PrismaClient): FastifyInstance {
     if (!fs.existsSync(path.join(distDir, 'index.html'))) return;
     app.register(async (scoped) => {
       scoped.register(fastifyStatic, { root: distDir, prefix: '/' });
-      scoped.setNotFoundHandler((_req, reply) => {
+      scoped.setNotFoundHandler((req, reply) => {
+        // An unknown API path is a 404, never the splash page with a 200.
+        if (req.url.startsWith('/api/')) return reply.status(404).send({ error: 'Not found' });
         return reply.sendFile('index.html', distDir);
       });
     }, { prefix });
