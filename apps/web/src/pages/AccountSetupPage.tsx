@@ -2,6 +2,7 @@ import { HelpButton } from '@/components/docs/HelpButton.tsx';
 import { useEffect, useState, type FormEvent } from 'react';
 import { useAuth } from '@/contexts/AuthContext.tsx';
 import { roleLabel } from '@/lib/dealershipLabels.ts';
+import { AppHeader } from '@/components/operator/AppHeader.tsx';
 
 type InvitePreview = { email: string; dealershipName: string | null; accessRole: string; accountExists?: boolean; expiresAt: string };
 
@@ -86,8 +87,10 @@ export default function AccountSetupPage({ token }: { token?: string }) {
     : `Set up your login${invitation?.dealershipName ? ` for ${invitation.dealershipName}` : ''}`;
 
   return (
-    <main className="min-h-screen bg-surface-page flex items-center justify-center p-6">
-      <div className="w-full max-w-md rounded-xl border border-silver-200 bg-surface-card p-8 shadow-elevation-1 space-y-5">
+    <div className="min-h-screen bg-surface-page">
+      <AppHeader publicRoute="login" />
+      <main className="flex justify-center px-4 py-10 sm:px-6">
+      <div className="w-full max-w-md space-y-5 rounded-xl border border-silver-200 bg-surface-card p-8 shadow-elevation-2">
         <h1 className="text-xl font-bold text-ink-heading">{title}</h1>
         <HelpButton topic="app/team-access" />
 
@@ -146,6 +149,7 @@ export default function AccountSetupPage({ token }: { token?: string }) {
           </>
         )}
       </div>
-    </main>
+      </main>
+    </div>
   );
 }

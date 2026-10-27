@@ -1,11 +1,14 @@
 import { useMemo, useState, type FormEvent } from 'react';
 import { BUSINESS_CATEGORY_IDS } from '@auto-dealer/category-schemas';
 import type { CreateDealershipPayload, CreateDealershipResponse } from '@/lib/types.ts';
+import { IntakeSteps } from './IntakeSteps.tsx';
 
 type Mode = 'signup' | 'admin';
+type StepPresentation = 'chips' | 'rail';
 
 type Props = {
   mode: Mode;
+  steps?: StepPresentation;
   onSubmit: (payload: CreateDealershipPayload) => Promise<CreateDealershipResponse>;
   onUploadLogo?: (dealershipId: string, file: File) => Promise<{ logoUrl: string }>;
   onComplete: (response: CreateDealershipResponse) => void;
@@ -114,7 +117,7 @@ function validateStep(step: Step, payload: CreateDealershipPayload, mode: Mode, 
   return null;
 }
 
-export function DealershipIntakeFlow({ mode, onSubmit, onUploadLogo, onComplete, onCancel }: Props) {
+export function DealershipIntakeFlow({ mode, steps = 'chips', onSubmit, onUploadLogo, onComplete, onCancel }: Props) {
   const [payload, setPayload] = useState<CreateDealershipPayload>(EMPTY_PAYLOAD);
   const [confirmPassword, setConfirmPassword] = useState('');
   const [logoFile, setLogoFile] = useState<File | null>(null);
@@ -197,32 +200,20 @@ export function DealershipIntakeFlow({ mode, onSubmit, onUploadLogo, onComplete,
     }
   }
 
+  const rail = steps === 'rail';
+  const stepItems = STEPS.map(id => ({ id, label: stepLabel(id) }));
+
   return (
-    <form onSubmit={submit} className="space-y-5">
-      <div>
-        <h2 className="text-xl font-bold text-ink-heading">{title}</h2>
-        <p className="text-sm text-ink-muted mt-1">{subtitle}</p>
-      </div>
-
-      <div className="flex flex-wrap gap-2">
-        {STEPS.map((s, idx) => (
-          <button
-            key={s}
-            type="button"
-            onClick={() => idx <= stepIndex && setStepIndex(idx)}
-            className={`px-3 py-1.5 rounded-md text-xs font-semibold border transition-colors ${
-              idx === stepIndex
-                ? 'bg-navy-800 text-silver-100 border-navy-800'
-                : idx < stepIndex
-                ? 'bg-status-success-bg text-status-success-text border-status-success-border'
-                : 'bg-surface-inset text-ink-muted border-silver-200'
-            }`}
-          >
-            {idx + 1}. {stepLabel(s)}
-          </button>
-        ))}
-      </div>
-
+    <form onSubmit={submit} className={rail ? 'lg:grid lg:grid-cols-[13rem_minmax(0,1fr)] lg:items-start lg:gap-8' : 'space-y-5'}>
+      <IntakeSteps
+        presentation={steps}
+        items={stepItems}
+        stepIndex={stepIndex}
+        onSelect={index => { setError(null); setStepIndex(index); }}
+        title={rail ? undefined : title}
+        subtitle={rail ? undefined : subtitle}
+      />
+      <div className="min-w-0 space-y-5">
       {error && (
         <div role="alert" className="rounded-md border border-status-error-border bg-status-error-bg px-3 py-2 text-sm text-status-error-text">
           {error}
@@ -383,6 +374,7 @@ export function DealershipIntakeFlow({ mode, onSubmit, onUploadLogo, onComplete,
             {submitting ? 'Creating...' : isLastStep ? 'Create Dealership' : 'Continue'}
           </button>
         </div>
+      </div>
       </div>
     </form>
   );
