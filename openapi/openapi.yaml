@@ -4303,6 +4303,82 @@ paths:
         '403':
           $ref: '#/components/responses/Forbidden'
 
+  /api/dealers/{dealershipId}/channels/setup:
+    get:
+      tags: [Accounts]
+      security:
+        - OperatorAuth: []
+      x-route-classification: operator
+      operationId: listChannelSetupPlans
+      summary: Plain-language setup plans for the channels the dealership turned on
+      description: >-
+        Each plan has at most four steps, each owned by one party (DEALERSHIP, INTERNAL_SUPPORT or PARTNER), and one current step. viewerCanAct is false when the viewer lacks connect_channels, so the UI can say who completes dealership steps. READY means setup is complete, not that listings are live.
+      parameters:
+        - name: dealershipId
+          in: path
+          required: true
+          schema: { type: string }
+      responses:
+        '200':
+          description: Setup plan(s)
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [viewerCanAct, plans]
+                properties:
+                  viewerCanAct: { type: boolean }
+                  plans:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/ChannelSetupPlan'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+
+  /api/dealers/{dealershipId}/channels/{channel}/setup:
+    get:
+      tags: [Accounts]
+      security:
+        - OperatorAuth: []
+      x-route-classification: operator
+      operationId: getChannelSetupPlan
+      summary: Plain-language setup plan for one channel
+      description: >-
+        Same plan as the list, for one offered channel whether or not it is turned on.
+      parameters:
+        - name: dealershipId
+          in: path
+          required: true
+          schema: { type: string }
+        - name: channel
+          in: path
+          required: true
+          schema: { type: string }
+      responses:
+        '200':
+          description: Setup plan(s)
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [viewerCanAct, plan]
+                properties:
+                  viewerCanAct: { type: boolean }
+                  plan:
+                    $ref: '#/components/schemas/ChannelSetupPlan'
+        '404':
+          description: Channel not offered for this dealership
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+
   /api/admin/buyer-outreach-stats:
     get:
       tags: [Admin]
@@ -6719,6 +6795,76 @@ components:
           type: object
           additionalProperties: { type: integer }
         note: { type: string }
+
+    ChannelSetupPlan:
+      type: object
+      required: [channel, name, status, headline, currentStepId, progress, postingNote, providerEstimate, steps]
+      properties:
+        channel: { type: string }
+        name: { type: string, description: Short brand name for display. }
+        status:
+          type: string
+          enum: [READY, NEEDS_YOU, WAITING, BLOCKED]
+          description: READY nothing left; NEEDS_YOU the dealership's turn; WAITING StarterGrid's or the provider's turn; BLOCKED stuck on StarterGrid.
+        headline: { type: string }
+        currentStepId: { type: string, nullable: true }
+        progress:
+          type: object
+          required: [done, total]
+          properties:
+            done: { type: integer }
+            total: { type: integer }
+        postingNote: { type: string, nullable: true, description: Set when StarterGrid cannot post to this channel; the dealership posts there itself. }
+        providerEstimate: { type: string, nullable: true, description: "The provider's own time estimate, shown as-is." }
+        steps:
+          type: array
+          maxItems: 4
+          items:
+            $ref: '#/components/schemas/ChannelSetupStep'
+
+    ChannelSetupStep:
+      type: object
+      required: [id, title, instruction, owner, state, action]
+      properties:
+        id: { type: string }
+        title: { type: string }
+        instruction: { type: string }
+        owner: { type: string, enum: [DEALERSHIP, INTERNAL_SUPPORT, PARTNER] }
+        state: { type: string, enum: [DONE, TODO, WAITING, BLOCKED] }
+        action:
+          type: object
+          required: [kind, label, url, fields, markDone]
+          properties:
+            kind: { type: string, enum: [CONNECT_ACCOUNT, ENTER_DETAILS, OPEN_PROVIDER_SITE, CONTACT_SUPPORT, NONE] }
+            label: { type: string, nullable: true }
+            url: { type: string, nullable: true }
+            fields:
+              type: array
+              description: For ENTER_DETAILS; save through PATCH /api/dealers/{dealershipId}/accounts/{channel}.
+              items:
+                type: object
+                required: [key, label, hint, placeholder, pattern, validationHint, saveAs, filled]
+                properties:
+                  key: { type: string }
+                  label: { type: string }
+                  hint: { type: string, nullable: true }
+                  placeholder: { type: string, nullable: true }
+                  pattern: { type: string, nullable: true }
+                  validationHint: { type: string, nullable: true }
+                  saveAs: { type: string, enum: [accountId, connectionConfig] }
+                  filled: { type: boolean }
+            markDone:
+              type: object
+              nullable: true
+              description: Self-reported completion for a step StarterGrid cannot observe; send patch to PATCH /accounts/{channel}.
+              required: [label, patch]
+              properties:
+                label: { type: string }
+                patch:
+                  type: object
+                  required: [state]
+                  properties:
+                    state: { type: string, enum: [PENDING_REVIEW, ACTIVE] }
 
     AttentionResponse:
       type: object

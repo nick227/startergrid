@@ -159,6 +159,8 @@ export const routeClassifications = {
     'POST /api/dealers/:dealershipId/inventory/bulk-edits/preview',
     'POST /api/dealers/:dealershipId/inventory/bulk-edits',
     'POST /api/dealers/:dealershipId/inventory/bulk-edits/:batchId/undo',
+    'GET /api/dealers/:dealershipId/channels/setup',
+    'GET /api/dealers/:dealershipId/channels/:channel/setup',
     'GET /api/admin/dealerships',
     'POST /api/admin/dealerships',
     'GET /api/admin/dealerships/:dealershipId',

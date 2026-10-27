@@ -138,3 +138,19 @@ Endpoints from `9c2e5ab`. Typed client: `apps/web/src/lib/api/bulkEditApi.ts`. A
 3. `undoBulkEdit(dealerId, batchId)` is available when `undoAvailable`. It restores only vehicles nobody changed since; others return `SKIPPED` with a reason. It runs once (409 after that). Show the `note`: restored values reach channels on their next update, and StarterGrid cannot recall what a channel already showed.
 
 Editable fields: priceCents, mileage, condition, exteriorColor, trim, interiorColor, bodyStyle, drivetrain, fuelType, transmission (nullable ones accept null to clear). There is no description field on vehicles yet. Up to 500 edits per request, one per vehicle. The old `PATCH /inventory/bulk` endpoint is unchanged.
+
+## Guided channel setup: backend ready for UI, 2026-10-27 (Claude → Antigravity)
+
+`GET /api/dealers/:id/channels/setup` (plans for enabled channels) and `GET /api/dealers/:id/channels/:channel/setup` (one channel). Typed client: `apps/web/src/lib/api/channelSetupApi.ts`.
+
+The backend now writes the dealer instructions: short brand names ("CarGurus", not "CarGurus Dealer Marketplace"), at most 4 steps, one sentence each, no SFTP/API/token jargon (a test enforces this for all 73 channels). The regex rewriting in `partnerSetupPresentation.ts` is no longer needed for these screens.
+
+Rendering rules for a foolproof screen:
+1. Show `plan.headline` first. It already says what to do, or "Nothing for you to do right now".
+2. Show the steps as a checklist. Only the step whose `id === plan.currentStepId` gets a button; every other step is text with a check, a clock (WAITING) or a warning (BLOCKED).
+3. Owner chip: DEALERSHIP = "You", INTERNAL_SUPPORT = "StarterGrid", PARTNER = `plan.name`.
+4. Map `action.kind` to the button: CONNECT_ACCOUNT → the existing connect-url sign-in; ENTER_DETAILS → inline inputs from `action.fields` (validate `pattern`, show `validationHint`), saved through `PATCH /accounts/:channel` using `saveAs`; OPEN_PROVIDER_SITE → open `action.url` in a new tab; CONTACT_SUPPORT → support contact.
+5. If `action.markDone` is set, show it as a secondary button ("I asked them", "I signed up", "I have an account") that sends `markDone.patch` to `PATCH /accounts/:channel`, then refetch the plan.
+6. If `viewerCanAct` is false, replace "You" buttons with "Your dealership owner finishes this step".
+7. Show `postingNote` when present (manual-posting channels). Show `providerEstimate` as "{name} says this usually takes {providerEstimate}".
+8. READY means set up. Never say "live" or "listing" from this endpoint; publication evidence comes from distribution status.

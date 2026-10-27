@@ -88,6 +88,8 @@ const REGISTERED_ROUTES = new Set([
   'POST   /api/dealers/{dealershipId}/inventory/bulk-edits/preview',
   'POST   /api/dealers/{dealershipId}/inventory/bulk-edits',
   'POST   /api/dealers/{dealershipId}/inventory/bulk-edits/{batchId}/undo',
+  'GET    /api/dealers/{dealershipId}/channels/setup',
+  'GET    /api/dealers/{dealershipId}/channels/{channel}/setup',
   'GET    /api/dealers/{dealershipId}/people',
   'POST   /api/dealers/{dealershipId}/people/invites/prepare',
   'POST   /api/dealers/{dealershipId}/people/invites',
