@@ -6,7 +6,7 @@ import { updateLeadWorkflow } from '../../services/leads/leadWorkflowService.js'
 import { statusFromUnknown } from '../../services/dealership/httpError.js';
 import {
   getLeadCrmHandoffDetails,
-  retryOrRecordLeadDelivery,
+  sendLeadToCrm,
 } from '../../services/leads/leadCrmHandoffService.js';
 
 type DealerParams = { dealershipId: string };
@@ -125,11 +125,9 @@ export function registerDealerLeadsRoutes(app: FastifyInstance, prisma: PrismaCl
   );
 
   // POST /api/dealers/:dealershipId/leads/:leadId/delivery/retry
-  // Retries or records CRM ADF/XML lead delivery
-  app.post<{
-    Params: DealerParams & { leadId: string };
-    Body: { destinationEmail?: string; markDelivered?: boolean };
-  }>(
+  // Emails the ADF/XML lead to the dealership's configured CRM address (send or retry).
+  // The destination always comes from the dealership's ADF/XML destination, never the request.
+  app.post<{ Params: DealerParams & { leadId: string } }>(
     '/api/dealers/:dealershipId/leads/:leadId/delivery/retry',
     async (request, reply) => {
       const { dealershipId, leadId } = request.params;
@@ -137,12 +135,7 @@ export function registerDealerLeadsRoutes(app: FastifyInstance, prisma: PrismaCl
       if (!operator) return;
 
       try {
-        const details = await retryOrRecordLeadDelivery(
-          prisma,
-          dealershipId,
-          leadId,
-          request.body,
-        );
+        const details = await sendLeadToCrm(prisma, dealershipId, leadId);
         return reply.send(details);
       } catch (err) {
         return reply.status(statusFromUnknown(err)).send({

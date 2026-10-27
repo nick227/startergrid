@@ -14,7 +14,7 @@ import os from 'node:os';
 import path from 'node:path';
 import fs from 'node:fs/promises';
 import type { PrismaClient } from '@prisma/client';
-import { emailTransport, type EmailMessage } from '../services/dealer/emailTransport.js';
+import { emailTransport, realEmailDeliveryEnabled, type EmailMessage } from '../services/dealer/emailTransport.js';
 import { notifyLeadCaptured } from '../services/dealer/dealerNotificationService.js';
 import type { NotificationChannelsConfig, LeadNotificationPayload } from '../services/dealer/notificationFanout.js';
 
@@ -126,6 +126,12 @@ describe('emailTransport — production', () => {
       else process.env['MOCK_OUTBOX_DIR'] = prevDir;
       await fs.rm(tmpDir, { recursive: true, force: true });
     }
+  });
+
+  it('reports real delivery only for production with SMTP_ENABLED=true', () => {
+    assert.equal(realEmailDeliveryEnabled({ ...PROD_ENV, SMTP_ENABLED: 'true' }), true);
+    assert.equal(realEmailDeliveryEnabled(PROD_ENV), false);
+    assert.equal(realEmailDeliveryEnabled({ NODE_ENV: 'development', SMTP_ENABLED: 'true' }), false);
   });
 });
 

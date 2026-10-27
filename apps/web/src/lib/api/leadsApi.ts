@@ -1,4 +1,7 @@
-export type LeadCrmDeliveryStatus = 'DELIVERED' | 'FAILED' | 'PENDING' | 'READY_TO_EXPORT';
+// SENT_TO_CRM_ADDRESS means a mail server accepted the email; CRM import is never confirmed.
+export type LeadCrmDeliveryStatus = 'NOT_SENT' | 'SENDING' | 'SENT_TO_CRM_ADDRESS' | 'FAILED';
+
+export type LeadCrmSendBlocker = 'NO_CRM_ADDRESS' | 'CRM_ADDRESS_NOT_EMAIL' | 'EMAIL_NOT_CONFIGURED' | 'SEND_IN_PROGRESS';
 
 export type LeadDeliveryAttemptItem = {
   id: string;
@@ -19,6 +22,9 @@ export type LeadDeliveryDetailsDto = {
   deliveryStatus: LeadCrmDeliveryStatus;
   adfXmlPayload: string;
   crmEndpoint: string | null;
+  canSend: boolean;
+  sendBlocker: LeadCrmSendBlocker | null;
+  sendBlockerMessage: string | null;
   attempts: LeadDeliveryAttemptItem[];
   vehicle: {
     stockNumber: string;
@@ -47,16 +53,14 @@ export async function fetchLeadDeliveryDetails(
   return res.json();
 }
 
-export async function retryLeadDelivery(
+// Emails the lead to the dealership's configured CRM address. The server picks the address.
+export async function sendLeadToCrm(
   dealershipId: string,
   leadId: string,
-  payload?: { destinationEmail?: string; markDelivered?: boolean },
 ): Promise<LeadDeliveryDetailsDto> {
   const res = await fetch(`/api/dealers/${dealershipId}/leads/${leadId}/delivery/retry`, {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
     credentials: 'include',
-    body: JSON.stringify(payload ?? {}),
   });
   if (!res.ok) {
     const body = await res.json().catch(() => ({}));

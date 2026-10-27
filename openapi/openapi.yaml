@@ -4094,7 +4094,13 @@ paths:
         - OperatorAuth: []
       x-route-classification: operator
       operationId: retryLeadDelivery
-      summary: Retry or record CRM ADF/XML lead delivery attempt
+      summary: Email the ADF/XML lead to the dealership's configured CRM address (send or retry)
+      description: >
+        Sends through the shared email transport to the CRM address on the dealership's
+        ADF/XML Lead Routing destination; the request cannot choose the address. Each call
+        records one attempt. The attempt is SENT only after the mail server accepts the
+        message, and FAILED with the transport error otherwise; a failed send can be retried.
+        Requires the manage_leads capability.
       parameters:
         - name: dealershipId
           in: path
@@ -4104,26 +4110,21 @@ paths:
           in: path
           required: true
           schema: { type: string }
-      requestBody:
-        required: false
-        content:
-          application/json:
-            schema:
-              type: object
-              properties:
-                destinationEmail:
-                  type: string
-                markDelivered:
-                  type: boolean
       responses:
         '200':
-          description: Updated delivery details
+          description: Delivery details after the attempt; check deliveryStatus for SENT_TO_CRM_ADDRESS or FAILED
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/LeadDeliveryDetails'
         '404':
           description: Lead not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '409':
+          description: Cannot send (no CRM email address, email sending not configured, or a send already in progress)
           content:
             application/json:
               schema:
@@ -6434,16 +6435,30 @@ components:
         - leadId
         - deliveryStatus
         - adfXmlPayload
+        - canSend
         - attempts
       properties:
         leadId:
           type: string
         deliveryStatus:
           type: string
-          enum: [DELIVERED, FAILED, PENDING, READY_TO_EXPORT]
+          enum: [NOT_SENT, SENDING, SENT_TO_CRM_ADDRESS, FAILED]
+          description: >
+            SENT_TO_CRM_ADDRESS means a mail server accepted the ADF/XML email. StarterGrid
+            cannot observe whether the CRM imported the lead.
         adfXmlPayload:
           type: string
         crmEndpoint:
+          type: string
+          nullable: true
+          description: CRM lead address from the dealership's ADF/XML Lead Routing destination, or null when none is set
+        canSend:
+          type: boolean
+        sendBlocker:
+          type: string
+          nullable: true
+          enum: [NO_CRM_ADDRESS, CRM_ADDRESS_NOT_EMAIL, EMAIL_NOT_CONFIGURED, SEND_IN_PROGRESS, null]
+        sendBlockerMessage:
           type: string
           nullable: true
         attempts:

@@ -21,11 +21,16 @@ function smtpEnabled(env: Record<string, string | undefined>): boolean {
   return env['SMTP_ENABLED']?.trim().toLowerCase() === 'true';
 }
 
+/** True only when emailTransport hands messages to a real SMTP server instead of the mock outbox. */
+export function realEmailDeliveryEnabled(env: Record<string, string | undefined> = process.env): boolean {
+  return env['NODE_ENV'] === 'production' && smtpEnabled(env);
+}
+
 export async function emailTransport(
   msg: EmailMessage,
   env: Record<string, string | undefined> = process.env
 ): Promise<void> {
-  if (env['NODE_ENV'] === 'production' && smtpEnabled(env)) {
+  if (realEmailDeliveryEnabled(env)) {
     await smtpSend(msg, env);
   } else {
     await writeMockEmail({
@@ -60,10 +65,14 @@ async function smtpSend(
         secure,
         auth: { user, pass },
       });
-  await transporter.sendMail({
+  const info = await transporter.sendMail({
     from,
     to:      msg.to,
     subject: msg.subject,
     text:    msg.body,
   });
+  const rejected = (info as { rejected?: unknown[] }).rejected ?? [];
+  if (rejected.length > 0) {
+    throw new Error(`Mail server rejected recipient ${rejected.map(String).join(', ')}.`);
+  }
 }
