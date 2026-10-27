@@ -27,9 +27,12 @@ export interface SetupStep {
   instruction: string;
   owner: SetupOwner;
   state: SetupStepState;
+  /** OBSERVED: StarterGrid saw it (token, saved details, passed check). REPORTED: someone said so. */
+  doneBasis: 'OBSERVED' | 'REPORTED' | null;
   action: {
     kind: SetupActionKind;
     label: string | null;
+    /** OPEN_PROVIDER_SITE: their site. CONTACT_SUPPORT: a mailto: link to StarterGrid support. */
     url: string | null;
     fields: SetupField[];
     /** "I've done this" for steps StarterGrid cannot see; send `patch` to PATCH /accounts/:channel. */

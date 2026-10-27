@@ -48,7 +48,7 @@ export function PlatformAvailabilityPanel({ dealerId, platform, account, onRefre
     <div className="bg-white border border-silver-200 rounded-xl shadow-sm p-5 space-y-4">
       <h2 className="text-[11px] font-bold uppercase tracking-widest text-ink-faint">Use this destination</h2>
       <p className="text-sm text-ink-muted leading-snug">
-        Turn it on for this dealership, then finish connecting below. Both are needed before vehicles are sent here.
+        Turn it on for this dealership and finish the setup steps. Both are needed before vehicles are sent here.
       </p>
 
       <label className="flex items-start gap-3 cursor-pointer">

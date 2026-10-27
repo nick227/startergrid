@@ -6824,13 +6824,18 @@ components:
 
     ChannelSetupStep:
       type: object
-      required: [id, title, instruction, owner, state, action]
+      required: [id, title, instruction, owner, state, doneBasis, action]
       properties:
         id: { type: string }
         title: { type: string }
         instruction: { type: string }
         owner: { type: string, enum: [DEALERSHIP, INTERNAL_SUPPORT, PARTNER] }
         state: { type: string, enum: [DONE, TODO, WAITING, BLOCKED] }
+        doneBasis:
+          type: string
+          nullable: true
+          enum: [OBSERVED, REPORTED, null]
+          description: Why a DONE step counts as done. OBSERVED means StarterGrid holds the evidence; REPORTED means someone said so. Null while not done.
         action:
           type: object
           required: [kind, label, url, fields, markDone]

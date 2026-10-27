@@ -107,6 +107,39 @@ describe('channel setup plan', () => {
     assert.ok(!plan.steps.some(s => s.id === 'provider-approval'));
   });
 
+  it('says whether a finished step was observed by StarterGrid or reported by someone', () => {
+    const reported = buildSetupPlan(account('cargurus-dealer', { state: 'PENDING_REVIEW' }));
+    assert.equal(reported.steps[0]!.doneBasis, 'REPORTED', '"I asked them" is self-reported');
+    const observed = buildSetupPlan(account('cargurus-dealer', { state: 'PENDING_REVIEW', accountId: 'CG-12345' }));
+    assert.equal(observed.steps[0]!.doneBasis, 'OBSERVED');
+    assert.equal(observed.steps[1]!.doneBasis, 'OBSERVED');
+    assert.equal(observed.steps[3]!.doneBasis, null, 'not done yet');
+    const handActive = buildSetupPlan(account('etsy', { state: 'ACTIVE' }));
+    assert.equal(handActive.steps[0]!.doneBasis, 'REPORTED');
+    const checked = buildSetupPlan(account('facebook-business-page', { oauthConnected: true, state: 'READY' }));
+    assert.deepEqual(checked.steps.map(s => s.doneBasis), ['OBSERVED', 'OBSERVED']);
+    const handActiveOauth = buildSetupPlan(account('facebook-business-page', { oauthConnected: true, state: 'ACTIVE' }));
+    assert.equal(handActiveOauth.steps[1]!.doneBasis, 'REPORTED');
+  });
+
+  it('links support steps to the configured support address', () => {
+    const plan = buildSetupPlan(account('cargurus-dealer', { state: 'CREDENTIALS_NEEDED', accountId: 'CG-12345' }), { supportEmail: 'help@sg.test' });
+    const support = plan.steps.find(s => s.action.kind === 'CONTACT_SUPPORT')!;
+    assert.equal(support.action.url, 'mailto:help@sg.test?subject=CarGurus%20setup%20help');
+  });
+
+  it('gives every field format a regex that accepts a real example', () => {
+    const examples: Record<string, string> = { 'cargurus-dealer': 'CG-12345', 'truecar-dealer-network': 'TC-123', 'carfax-for-dealers': 'CFX-9' };
+    for (const p of platformProfiles) {
+      for (const f of p.connectionFields ?? []) {
+        if (!f.pattern) continue;
+        const re = new RegExp(f.pattern);
+        assert.doesNotMatch(f.pattern, /\\\\/, `${p.slug}.${f.field} pattern is double-escaped`);
+        if (examples[p.slug]) assert.match(examples[p.slug]!, re, `${p.slug} rejects a valid ID`);
+      }
+    }
+  });
+
   it('needs no setup for StarterGrid-owned channels', () => {
     const plan = buildSetupPlan(account('consumer-marketplace'));
     assert.equal(plan.status, 'READY');

@@ -4,7 +4,7 @@ import { API_PORT, ROOT, WEB_PORT, journeyDatabaseUrl } from './e2e/journey/data
 // Real API + real (disposable, migrate-only) MySQL database. No intercepted responses.
 // Run `npm run build` at the repository root first; `npm run e2e:journey` does both.
 export default defineConfig({
-  testDir: './e2e', testMatch: 'v5-journey.spec.ts', timeout: 120_000, workers: 1,
+  testDir: './e2e', testMatch: ['v5-journey.spec.ts', 'channel-setup.spec.ts'], timeout: 120_000, workers: 1,
   globalSetup: './e2e/journey/global-setup.ts',
   globalTeardown: './e2e/journey/global-teardown.ts',
   use: { baseURL: `http://localhost:${WEB_PORT}/app/`, trace: 'retain-on-failure' },

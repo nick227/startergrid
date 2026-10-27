@@ -34,6 +34,12 @@ export type SetupStep = {
   instruction: string;
   owner: SetupOwner;
   state: SetupStepState;
+  /**
+   * Why a DONE step counts as done. OBSERVED: StarterGrid holds the evidence (sign-in token,
+   * saved details, a passed connection check). REPORTED: someone said so (a "mark done" button
+   * or an account state set by hand). Null while not done.
+   */
+  doneBasis: 'OBSERVED' | 'REPORTED' | null;
   action: {
     kind: SetupActionKind;
     label: string | null;
@@ -90,10 +96,18 @@ function toField(account: PlatformAccountDetail, f: ConnectionField): SetupField
   };
 }
 
-const step = (s: Omit<SetupStep, 'action'> & { action?: Partial<SetupStep['action']> }): SetupStep => ({
+type StepInput = Omit<SetupStep, 'action' | 'doneBasis'> & { action?: Partial<SetupStep['action']>; doneBasis?: SetupStep['doneBasis'] };
+let supportUrl: string | null = null; // set per buildSetupPlan call
+const step = (s: StepInput): SetupStep => ({
   ...s,
-  action: { kind: 'NONE', label: null, url: null, fields: [], markDone: null, ...s.action },
+  doneBasis: s.state === 'DONE' ? s.doneBasis ?? 'OBSERVED' : null,
+  action: {
+    kind: 'NONE', label: null, url: null, fields: [], markDone: null, ...s.action,
+    ...(s.action?.kind === 'CONTACT_SUPPORT' && !s.action.url ? { url: supportUrl } : {}),
+  },
 });
+// READY comes from a passed connection check; ACTIVE is set by a person.
+const stateBasis = (state: string): SetupStep['doneBasis'] => (state === 'READY' ? 'OBSERVED' : 'REPORTED');
 
 const ADF_SLUG = 'adf-xml-lead-routing';
 const EMAIL_PATTERN = '^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$';
@@ -120,8 +134,10 @@ function sequence(steps: SetupStep[]): SetupStep[] {
   });
 }
 
-export function buildSetupPlan(account: PlatformAccountDetail): ChannelSetupPlan {
+export function buildSetupPlan(account: PlatformAccountDetail, options: { supportEmail?: string } = {}): ChannelSetupPlan {
   const name = account.platformName;
+  const supportEmail = options.supportEmail ?? 'support@startergrid.com';
+  supportUrl = `mailto:${supportEmail}?subject=${encodeURIComponent(`${brandName(name)} setup help`)}`;
   const ready = READY_STATES.has(account.state);
   const fields = account.connectionFields ?? [];
   const dealerFields = fields.filter(f => !isTechnicalField(f) && !OPTIONAL_FIELDS.has(f.field)).map(f => toField(account, f));
@@ -166,6 +182,7 @@ export function buildSetupPlan(account: PlatformAccountDetail): ChannelSetupPlan
         : `Sign up for ${article(brand)} ${brand} business account.`,
       owner: 'DEALERSHIP',
       state: dealerDetailsDone || account.state !== 'ACCOUNT_NEEDED' ? 'DONE' : 'TODO',
+      doneBasis: dealerDetailsDone ? 'OBSERVED' : 'REPORTED',
       action: {
         kind: signupUrl ? 'OPEN_PROVIDER_SITE' : 'NONE', label: signupUrl ? `Go to ${brand}` : null, url: signupUrl,
         markDone: manual
@@ -191,6 +208,7 @@ export function buildSetupPlan(account: PlatformAccountDetail): ChannelSetupPlan
     steps.push(step({ id: 'support-connect', title: 'StarterGrid connects the feed',
       instruction: `When ${brand} emails you file-transfer details, forward that email to StarterGrid support. Support enters them for you.`,
       owner: 'INTERNAL_SUPPORT', state: done ? 'DONE' : 'TODO',
+      doneBasis: technicalFields.every(f => f.filled) ? 'OBSERVED' : stateBasis(account.state),
       action: { kind: 'CONTACT_SUPPORT', label: 'Send to support' } }));
   }
 
@@ -202,6 +220,7 @@ export function buildSetupPlan(account: PlatformAccountDetail): ChannelSetupPlan
         : `${brand} reviews your account. They contact you if they need anything.`,
       owner: needsInfo ? 'DEALERSHIP' : 'PARTNER',
       state: ready ? 'DONE' : needsInfo ? 'TODO' : PROVIDER_REVIEW_STATES.has(account.state) ? 'WAITING' : 'TODO',
+      doneBasis: stateBasis(account.state),
       action: needsInfo && signupUrl ? { kind: 'OPEN_PROVIDER_SITE', label: `Go to ${brand}`, url: signupUrl } : {} }));
   } else if (account.connectionType === 'OAUTH') {
     steps.push(step({ id: 'check-connection', title: 'StarterGrid checks the connection',
@@ -209,6 +228,7 @@ export function buildSetupPlan(account: PlatformAccountDetail): ChannelSetupPlan
         ? `The connection check failed. StarterGrid support will look into it.`
         : `StarterGrid confirms it can reach your ${brand} account.`,
       owner: 'INTERNAL_SUPPORT', state: ready ? 'DONE' : account.state === 'FAILED' ? 'BLOCKED' : 'TODO',
+      doneBasis: stateBasis(account.state),
       action: account.state === 'FAILED' ? { kind: 'CONTACT_SUPPORT', label: 'Ask support' } : {} }));
   }
 
@@ -268,5 +288,5 @@ export async function getChannelSetupPlans(db: PrismaClient, dealershipId: strin
   const { accounts } = await listPlatformAccounts(db, dealershipId);
   return accounts
     .filter(a => a.siteEnabled !== false && (channel ? a.platformSlug === channel : a.dealerEnabled))
-    .map(buildSetupPlan);
+    .map(account => buildSetupPlan(account, { supportEmail: process.env['SUPPORT_EMAIL'] }));
 }

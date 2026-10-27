@@ -455,7 +455,7 @@ export const platformProfiles: PlatformProfileSeed[] = [
     requiredMediaRules: { minImages: 3, notes: 'Assisted marketplace packet should include feed sample with image URLs.' },
     testFixtures: { validatesFeed: true, supportsReferralCredit: 'partner-dependent', requiresDealerAccount: false },
     connectionFields: [
-      { field: 'accountId', label: 'CarGurus Dealer ID', hint: 'Located in your CarGurus Dealer Center', placeholder: 'CG-XXXXX', docsLink: 'https://dealer.cargurus.com/', pattern: '^CG-\\\\d{5}$', validationHint: 'Must start with CG- followed by 5 digits' },
+      { field: 'accountId', label: 'CarGurus Dealer ID', hint: 'Located in your CarGurus Dealer Center', placeholder: 'CG-XXXXX', docsLink: 'https://dealer.cargurus.com/', pattern: '^CG-\\d{5}$', validationHint: 'Must start with CG- followed by 5 digits' },
       { field: 'sftpUsername', label: 'SFTP Username', hint: 'Provided by CarGurus integration team', placeholder: 'dealer_12345' },
       { field: 'sftpPassword', label: 'SFTP Password', isSecret: true, hint: 'Leave blank to keep existing password', placeholder: '********' },
       { field: 'platformRepName', label: 'CarGurus Account Rep', placeholder: 'Jane Doe' },
@@ -836,7 +836,7 @@ export const platformProfiles: PlatformProfileSeed[] = [
     requiredMediaRules: { minImages: 3 },
     testFixtures: { validatesFeed: true, supportsReferralCredit: 'partner-dependent', requiresDealerAccount: false },
     connectionFields: [
-      { field: 'accountId', label: 'TrueCar Dealer ID', hint: 'Located in Account Settings', placeholder: 'TC-12345', docsLink: 'https://dealerportal.truecar.com/', pattern: '^TC-\\\\d+$', validationHint: 'Must begin with TC-' },
+      { field: 'accountId', label: 'TrueCar Dealer ID', hint: 'Located in Account Settings', placeholder: 'TC-12345', docsLink: 'https://dealerportal.truecar.com/', pattern: '^TC-\\d+$', validationHint: 'Must begin with TC-' },
       { field: 'sftpUsername', label: 'TrueCar SFTP Username', placeholder: 'tc_dealer' },
       { field: 'sftpPassword', label: 'SFTP Password', isSecret: true, placeholder: '********' },
       { field: 'platformRepName', label: 'TrueCar Support Rep', placeholder: 'Sarah Connor' },
@@ -896,7 +896,7 @@ export const platformProfiles: PlatformProfileSeed[] = [
     requiredMediaRules: { minImages: 1 },
     testFixtures: { validatesFeed: true, supportsReferralCredit: 'no', requiresDealerAccount: true },
     connectionFields: [
-      { field: 'accountId', label: 'CARFAX Dealer ID', hint: 'Your CARFAX account ID', placeholder: 'CFX-12345', docsLink: 'https://www.carfaxonline.com/', pattern: '^CFX-\\\\d+$', validationHint: 'Must begin with CFX-' },
+      { field: 'accountId', label: 'CARFAX Dealer ID', hint: 'Your CARFAX account ID', placeholder: 'CFX-12345', docsLink: 'https://www.carfaxonline.com/', pattern: '^CFX-\\d+$', validationHint: 'Must begin with CFX-' },
       { field: 'sftpUsername', label: 'CARFAX SFTP Username', placeholder: 'cfx_dealer' },
       { field: 'sftpPassword', label: 'SFTP Password', isSecret: true, placeholder: '********' },
       { field: 'platformRepName', label: 'CARFAX Support Rep', placeholder: 'Tom Hanks' },

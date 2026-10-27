@@ -9,6 +9,7 @@ import { getSetupReadiness, severityToPill } from '@/lib/setupReadiness.ts';
 import { platformOutcomeMeta } from '@/lib/syncPresentation.ts';
 import { platformDisplayName } from '@/lib/marketplaceBrand.ts';
 import { DestinationPrimarySetup } from '@/components/platforms/DestinationPrimarySetup.tsx';
+import { ChannelSetupGuide } from '@/components/platforms/ChannelSetupGuide.tsx';
 import { AccountEditForm } from '@/components/platforms/AccountEditForm.tsx';
 import { PlatformQueueSummaryCard } from '@/components/platforms/PlatformQueueSummaryCard.tsx';
 import { PagePrimaryState } from '@/components/guidance/PagePrimaryState.tsx';
@@ -126,6 +127,8 @@ export default function PlatformDetailPage({ dealerId, nav, activeTab, platformS
   );
 
   const tabs = useMemo(() => (platform ? buildTabs(platform) : []), [platform]);
+  const { user } = useAuth();
+  const isInternal = isInternalSupportRole(user?.role ?? '');
 
   const loading = statusLoading || accountsLoading;
   const error = statusError || accountsError;
@@ -177,12 +180,13 @@ export default function PlatformDetailPage({ dealerId, nav, activeTab, platformS
     );
   }
 
-  const { user } = useAuth();
-  const isInternal = isInternalSupportRole(user?.role ?? '');
   const publishMeta = platformOutcomeMeta(platform);
   const readiness = getSetupReadiness(platform, account || null);
   const ownedState = platform.integrationClass === 'OWNED' ? ownedMarketplaceStateCopy(platform) : null;
   const displayName = platformDisplayName(platform.platformSlug, platform.platformName);
+  const guided = platform.integrationClass !== 'OWNED';
+  // Only a passed connection check counts as verified; an account marked ACTIVE by hand does not.
+  const connectionVerified = account?.state === 'READY' || account?.highestConfirmedLevel === 'CONNECTION_TESTED';
 
   return (
     <OperatorPage
@@ -200,7 +204,7 @@ export default function PlatformDetailPage({ dealerId, nav, activeTab, platformS
         </button>
       </div>
 
-      <div className="mb-6">
+      {!guided && <div className="mb-6">
         <PagePrimaryState
           kind={destinationExperience(readiness)}
           title={readiness.statusLabel === 'Connected' || readiness.statusLabel === 'Ready to send'
@@ -210,7 +214,7 @@ export default function PlatformDetailPage({ dealerId, nav, activeTab, platformS
           next={readiness.nextAction ?? undefined}
           ownerKind={readiness.nextAction ? 'YOU' : undefined}
         />
-      </div>
+      </div>}
 
       <div className="bg-white border border-silver-200 rounded-xl shadow-sm mb-6 p-6 flex flex-col md:flex-row md:items-center justify-between gap-6">
         <div className="flex items-center gap-4">
@@ -267,11 +271,23 @@ export default function PlatformDetailPage({ dealerId, nav, activeTab, platformS
           {/* Left Column */}
           <div className="lg:col-span-2 space-y-6">
 
+            {guided && (
+              <ChannelSetupGuide
+                dealerId={dealerId}
+                channel={platform.platformSlug}
+                account={account}
+                connectionVerified={connectionVerified}
+                listingOutcome={publishMeta.outcome}
+                onChanged={handleRefresh}
+              />
+            )}
+
             <DestinationPrimarySetup
               dealerId={dealerId}
               platform={platform}
               account={account}
               onRefresh={handleRefresh}
+              collapseConnection={guided}
             />
 
             <details className="bg-white border border-silver-200 rounded-xl shadow-sm">
