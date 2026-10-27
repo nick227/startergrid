@@ -16,7 +16,7 @@ type Props = {
 };
 
 const HEALTH_TILES = [
-  { key: 'api', label: 'Sign-in and pages', field: 'api' as const, hint: 'People can open StarterGrid' },
+  { key: 'api', label: 'Sign-in and pages', field: 'api' as const, hint: 'People can open DealerGrid' },
   { key: 'db', label: 'Dealership records', field: 'db' as const, hint: 'Names, vehicles, and people' },
   { key: 'queue', label: 'Sending vehicles', field: 'queue' as const, hint: 'Updates waiting to go out' },
   { key: 'credentials', label: 'Shared credentials', field: 'credentials' as const, hint: 'Site keys for destinations' },

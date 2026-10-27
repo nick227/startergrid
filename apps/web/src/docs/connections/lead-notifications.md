@@ -14,7 +14,7 @@ keywords: lead, notification, alert, discord, telegram, sms, webhook, email
 updated: 2026-10-27
 ---
 
-When a buyer asks about a vehicle, StarterGrid can notify every method you turned on. One method failing does not stop the others.
+When a buyer asks about a vehicle, DealerGrid can notify every method you turned on. One method failing does not stop the others.
 
 ## What to do
 

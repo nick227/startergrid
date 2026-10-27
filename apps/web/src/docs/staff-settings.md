@@ -21,7 +21,7 @@ Site administration Settings is for authorized site administrators. Dealership *
 | Site-wide tool | Use it for |
 | --- | --- |
 | Destinations we support | Shared destination availability and integration configuration |
-| Is StarterGrid up | System status information |
+| Is DealerGrid up | System status information |
 | Who can sign in | Internal staff accounts and dealership assignments |
 | Recent changes | Recorded staff changes across the site |
 

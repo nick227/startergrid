@@ -17,7 +17,7 @@ export function welcomeMessage(input: {
   return [
     `Hi${input.name?.trim() ? ` ${input.name.trim()}` : ''},`,
     '',
-    `You've been invited to ${input.dealershipName} on StarterGrid as ${roleLabel(input.accessRole).toLowerCase()}.`,
+    `You've been invited to ${input.dealershipName} on DealerGrid as ${roleLabel(input.accessRole).toLowerCase()}.`,
     '',
     `Set up your login with this link (it works once):${expires}`,
     input.setupUrl,

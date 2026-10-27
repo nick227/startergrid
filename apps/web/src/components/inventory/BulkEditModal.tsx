@@ -567,10 +567,10 @@ export function BulkEditModal({ dealerId, isOpen, onClose, vehicles, onSuccess }
                   </div>
                   <div className="pt-2 border-t border-amber-200/80 text-[10px] text-amber-900 space-y-0.5">
                     <p>
-                      <strong>Scope of undo:</strong> Reverts values in StarterGrid inventory database immediately.
+                      <strong>Scope of undo:</strong> Reverts values in DealerGrid inventory database immediately.
                     </p>
                     <p className="text-amber-800">
-                      Restored values reach channels on their next update. StarterGrid cannot recall what a channel already showed.
+                      Restored values reach channels on their next update. DealerGrid cannot recall what a channel already showed.
                     </p>
                   </div>
                 </div>
@@ -583,7 +583,7 @@ export function BulkEditModal({ dealerId, isOpen, onClose, vehicles, onSuccess }
                       <div>
                         <h4 className="font-bold text-indigo-950 text-sm">Batch Restored</h4>
                         <p className="text-indigo-900 text-xs mt-0.5">
-                          {undoResult.note || 'Restored values reach channels on their next update. StarterGrid cannot recall what a channel already showed.'}
+                          {undoResult.note || 'Restored values reach channels on their next update. DealerGrid cannot recall what a channel already showed.'}
                         </p>
                       </div>
                       <div className="flex items-center gap-2 shrink-0">
@@ -605,7 +605,7 @@ export function BulkEditModal({ dealerId, isOpen, onClose, vehicles, onSuccess }
                       <div className="flex items-center justify-between gap-2">
                         <div className="flex items-center gap-1.5 font-bold text-emerald-950 text-xs">
                           <span className="w-2 h-2 rounded-full bg-emerald-600 shrink-0" aria-hidden="true" />
-                          <span>StarterGrid Lot Inventory</span>
+                          <span>DealerGrid Lot Inventory</span>
                         </div>
                         <span className="text-[10px] uppercase tracking-wider px-1.5 py-0.5 bg-emerald-50 text-emerald-800 border border-emerald-200 rounded font-bold">
                           Restored in Database

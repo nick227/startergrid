@@ -60,7 +60,7 @@ export default function DealerPicker({ onSelect, forbiddenDealerId }: Props) {
           <div className="w-16 h-16 rounded-xl bg-gradient-to-br from-navy-800 to-navy-700 flex items-center justify-center text-2xl mx-auto mb-4 shadow-chrome">
             📡
           </div>
-          <h1 className="text-2xl font-bold text-white tracking-tight">StarterGrid</h1>
+          <h1 className="text-2xl font-bold text-white tracking-tight">DealerGrid</h1>
           <p className="text-ink-faint mt-2 text-sm max-w-sm mx-auto leading-relaxed">
             {operatorCopy.scope.pickerTitle} — {operatorCopy.app.tagline}
           </p>

@@ -120,7 +120,7 @@ test('channels: overview, one page per channel, and setup from start to connecte
     await expect(currentStep(ownerPage).getByText('Must start with CG- followed by 5 digits')).toBeVisible();
     await id.fill('CG-12345');
     await currentStep(ownerPage).getByRole('button', { name: 'Save' }).click();
-    await expect(ownerPage.getByRole('heading', { name: 'StarterGrid support is on it. Nothing for you to do right now.' })).toBeVisible();
+    await expect(ownerPage.getByRole('heading', { name: 'DealerGrid support is on it. Nothing for you to do right now.' })).toBeVisible();
     await expect(currentStep(ownerPage).getByRole('link', { name: 'Send to support' })).toHaveAttribute('href', /^mailto:.+subject=CarGurus%20setup%20help$/);
   });
 

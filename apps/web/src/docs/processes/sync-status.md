@@ -26,7 +26,7 @@ Send status is a snapshot for the selected dealership. It is not a full event lo
 | Running | Updating | Checking vehicles or sending now. |
 | Failed | Needs fix | The run stopped. Fix the vehicle or destination, then save again. |
 
-Updating ends when StarterGrid finishes — not when Cars.com already shows the new price.
+Updating ends when DealerGrid finishes — not when Cars.com already shows the new price.
 
 ## Counts
 

@@ -18,7 +18,7 @@ Vehicles uses two problem states. They are not the same as already sent.
 
 ## Cannot list
 
-At least one required item is missing or invalid — no price, too few photos, a bad VIN, or a sold unit still marked available. StarterGrid will not send that vehicle until you fix it.
+At least one required item is missing or invalid — no price, too few photos, a bad VIN, or a sold unit still marked available. DealerGrid will not send that vehicle until you fix it.
 
 ## Needs details
 

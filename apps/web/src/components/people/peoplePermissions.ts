@@ -1,7 +1,7 @@
 import type { DealershipPerson } from '@/lib/api/dealershipRecordApi.ts';
 
 export type PeopleViewer = {
-  /** internal: StarterGrid staff on the dealership record; dealer: the dealership's own Settings → Team. */
+  /** internal: DealerGrid staff on the dealership record; dealer: the dealership's own Settings → Team. */
   kind: 'internal' | 'dealer';
   userId?: string | null;
   isSiteAdmin?: boolean;
@@ -22,7 +22,7 @@ export type PersonActions = { changeRole: boolean; resetPassword: boolean; remov
 export function personActions(viewer: PeopleViewer, person: DealershipPerson, people: DealershipPerson[]): PersonActions {
   const none = (reason: string): PersonActions => ({ changeRole: false, resetPassword: false, remove: false, reason });
   if (!canManagePeople(viewer, people)) return none('Only owners can manage people.');
-  if (person.isInternal && !viewer.isSiteAdmin) return none('Managed by StarterGrid.');
+  if (person.isInternal && !viewer.isSiteAdmin) return none('Managed by DealerGrid.');
   if (person.accountId === viewer.userId) return none('This is you.');
   const activeOwners = people.filter(p => p.accessRole === 'DEALER_OWNER' && p.isActive);
   const lastOwner = person.accessRole === 'DEALER_OWNER' && activeOwners.length <= 1;

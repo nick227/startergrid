@@ -9,7 +9,7 @@ synonyms: photos, images, minimum, recon
 aliases: industry/photo-standards
 related: inventory-inventory-readiness
 title: How many photos a vehicle needs
-summary: StarterGrid holds a vehicle until it meets the photo minimum. Some destinations then require more.
+summary: DealerGrid holds a vehicle until it meets the photo minimum. Some destinations then require more.
 keywords: photos, images, minimum, recon
 updated: 2026-10-26
 ---

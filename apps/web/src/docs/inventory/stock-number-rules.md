@@ -14,7 +14,7 @@ keywords: stock number, import, duplicate, VIN
 updated: 2026-10-27
 ---
 
-Stock number is how StarterGrid finds a vehicle when you import or edit. Keep it the same while that unit is on the lot.
+Stock number is how DealerGrid finds a vehicle when you import or edit. Keep it the same while that unit is on the lot.
 
 ## What to do
 

@@ -363,7 +363,7 @@ export function DealershipProfilePanel({ dealerId, mode = 'operator', onDealersC
             )}
           </button>
           <div className="text-sm text-ink-muted space-y-1">
-            <p>Shown at the top of StarterGrid and on your listings.</p>
+            <p>Shown at the top of DealerGrid and on your listings.</p>
             <p className="text-xs text-ink-faint">PNG, JPEG, or WebP · click logo to upload</p>
           </div>
           <input

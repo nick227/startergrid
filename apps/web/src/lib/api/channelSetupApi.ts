@@ -1,7 +1,7 @@
 /**
  * Client for per-channel setup plans. Render the plan as-is: `headline`, then the steps, with
  * a button only on the current step. Owners: DEALERSHIP = "You", INTERNAL_SUPPORT =
- * "StarterGrid", PARTNER = the channel. When `viewerCanAct` is false, say the dealership owner
+ * "DealerGrid", PARTNER = the channel. When `viewerCanAct` is false, say the dealership owner
  * completes "You" steps. READY means set up, not that listings are live.
  */
 export type SetupOwner = 'DEALERSHIP' | 'INTERNAL_SUPPORT' | 'PARTNER';
@@ -27,15 +27,15 @@ export interface SetupStep {
   instruction: string;
   owner: SetupOwner;
   state: SetupStepState;
-  /** OBSERVED: StarterGrid saw it (token, saved details, passed check). REPORTED: someone said so. */
+  /** OBSERVED: DealerGrid saw it (token, saved details, passed check). REPORTED: someone said so. */
   doneBasis: 'OBSERVED' | 'REPORTED' | null;
   action: {
     kind: SetupActionKind;
     label: string | null;
-    /** OPEN_PROVIDER_SITE: their site. CONTACT_SUPPORT: a mailto: link to StarterGrid support. */
+    /** OPEN_PROVIDER_SITE: their site. CONTACT_SUPPORT: a mailto: link to DealerGrid support. */
     url: string | null;
     fields: SetupField[];
-    /** "I've done this" for steps StarterGrid cannot see; send `patch` to PATCH /accounts/:channel. */
+    /** "I've done this" for steps DealerGrid cannot see; send `patch` to PATCH /accounts/:channel. */
     markDone: { label: string; patch: { state: 'PENDING_REVIEW' | 'ACTIVE' } } | null;
   };
 }

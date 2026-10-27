@@ -20,11 +20,11 @@ First check that the correct vehicle is marked **Sold** or **Removed** in the co
 
 Open Channels and review the listing’s result and next action. A request to remove a listing is not the same as confirmation that it has disappeared. Connection problems or the destination’s processing schedule can delay removal.
 
-The sold-listing check compares StarterGrid’s inventory and listing records. A clean result means those records agree; it does not independently inspect every external website.
+The sold-listing check compares DealerGrid’s inventory and listing records. A clean result means those records agree; it does not independently inspect every external website.
 
 ## If the listing is still public
 
-- Check whether StarterGrid manages the listing or someone posted it manually.
+- Check whether DealerGrid manages the listing or someone posted it manually.
 - Use the supported removal action and review its result.
 - For a manual or partner-managed listing, remove it with that provider or ask the person responsible to do so.
 - If a removal fails or remains unconfirmed, give support the stock number and destination. Follow the next action rather than assuming another wait will fix it.

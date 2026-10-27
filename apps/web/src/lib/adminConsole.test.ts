@@ -33,7 +33,7 @@ describe('settingsJobFromSlug', () => {
 describe('SETTINGS_JOB_COPY', () => {
   it('names the four jobs, not the old subsystems', () => {
     expect(SETTINGS_JOB_COPY.platforms.title).toBe('Destinations we support');
-    expect(SETTINGS_JOB_COPY.system.title).toBe('Is StarterGrid up');
+    expect(SETTINGS_JOB_COPY.system.title).toBe('Is DealerGrid up');
     expect(SETTINGS_JOB_COPY.users.title).toBe('Who can sign in');
     expect(SETTINGS_JOB_COPY.audit.title).toBe('Recent changes');
   });

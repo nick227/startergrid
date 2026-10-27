@@ -17,7 +17,7 @@ advanced: true
 
 A destination is a marketplace or advertising site that can receive this dealership’s vehicles.
 
-## What StarterGrid stores
+## What DealerGrid stores
 
 | Record | Contents |
 | --- | --- |

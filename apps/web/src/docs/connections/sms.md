@@ -18,7 +18,7 @@ A text is a short alert when a new inquiry arrives, for example: “New lead fro
 
 ## What to do
 
-In StarterGrid, open **Settings → How you hear about new inquiries → Optional delivery methods**.
+In DealerGrid, open **Settings → How you hear about new inquiries → Optional delivery methods**.
 
 1. Enter one mobile number using country code, no spaces: `+15551234567`.
 2. Save. Ask support to confirm texting is enabled for your dealership.

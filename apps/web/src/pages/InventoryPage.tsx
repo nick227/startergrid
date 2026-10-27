@@ -744,7 +744,7 @@ export default function InventoryPage({ dealerId, nav, activeTab }: Props) {
                                     Aging inventory repricing suggestion
                                   </span>
                                   <span className="text-[10px] text-indigo-700 font-semibold">
-                                    {repriceMap.get(v.id)!.daysOnLot} days in StarterGrid
+                                    {repriceMap.get(v.id)!.daysOnLot} days in DealerGrid
                                   </span>
                                 </div>
                                 <p className="text-xs text-indigo-900">
@@ -910,9 +910,9 @@ export default function InventoryPage({ dealerId, nav, activeTab }: Props) {
                                   ? 'bg-navy-900 text-white border-navy-900'
                                   : 'bg-white text-ink-body border-silver-200 hover:bg-surface-raised'
                               }`}
-                              title="Sort vehicles by days in StarterGrid"
+                              title="Sort vehicles by days in DealerGrid"
                             >
-                              {sortKey === 'performance.daysOnline' && sortDirection === 'desc' ? 'Oldest in StarterGrid ↓' : 'Oldest in StarterGrid'}
+                              {sortKey === 'performance.daysOnline' && sortDirection === 'desc' ? 'Oldest in DealerGrid ↓' : 'Oldest in DealerGrid'}
                             </button>
                             <button
                               type="button"
@@ -1027,7 +1027,7 @@ export default function InventoryPage({ dealerId, nav, activeTab }: Props) {
             <div className="rounded-xl bg-silver-50 p-4 border border-silver-200 space-y-3">
               <div className="flex items-center justify-between text-xs">
                 <span className="font-semibold text-ink-muted uppercase tracking-wider text-[10px]">Price Comparison</span>
-                <span className="font-semibold text-ink-body">{reviewRepriceVehicle.daysOnLot} days in StarterGrid</span>
+                <span className="font-semibold text-ink-body">{reviewRepriceVehicle.daysOnLot} days in DealerGrid</span>
               </div>
 
               <div className="flex items-center justify-between gap-3 bg-white p-3 rounded-lg border border-silver-200">
@@ -1056,10 +1056,10 @@ export default function InventoryPage({ dealerId, nav, activeTab }: Props) {
 
             <div className="rounded-xl border border-silver-200 bg-silver-50 p-3.5 space-y-2">
               <p className="text-sm font-semibold text-ink-heading leading-snug">
-                This updates the price in StarterGrid. Connected channels will receive updates according to their synchronization settings.
+                This updates the price in DealerGrid. Connected channels will receive updates according to their synchronization settings.
               </p>
               <p className="text-xs text-ink-muted leading-relaxed">
-                Channels without automated synchronization require manual updates. Suggested adjustments are based on days in StarterGrid ({reviewRepriceVehicle.daysOnLot} days) and do not guarantee sales.
+                Channels without automated synchronization require manual updates. Suggested adjustments are based on days in DealerGrid ({reviewRepriceVehicle.daysOnLot} days) and do not guarantee sales.
               </p>
               <HelpLink docId="inventory-older-inventory">How price suggestions and channel updates work</HelpLink>
             </div>
@@ -1083,7 +1083,7 @@ export default function InventoryPage({ dealerId, nav, activeTab }: Props) {
                       dealerId,
                       reviewRepriceVehicle.id,
                       reviewRepriceVehicle.suggestedPriceCents,
-                      `Contextual repricing: ${reviewRepriceVehicle.daysOnLot} days in StarterGrid`,
+                      `Contextual repricing: ${reviewRepriceVehicle.daysOnLot} days in DealerGrid`,
                     );
                     setReviewRepriceVehicle(null);
                     await Promise.all([load(), loadVelocity()]);

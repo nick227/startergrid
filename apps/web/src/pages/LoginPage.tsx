@@ -4,7 +4,7 @@ import { OperatorAuthError } from '@/lib/api/auth.ts';
 import { useAuth } from '@/contexts/AuthContext.tsx';
 import { isDevBypassConfigured } from '@/lib/devAuth.ts';
 import { operatorCopy } from '@/lib/copy/operator.ts';
-import { AuthFrame, authFieldClass, authLabelClass } from '@/components/operator/AuthFrame.tsx';
+import { AuthFrame, authFieldClass, authLabelClass, authRowClass } from '@/components/operator/AuthFrame.tsx';
 
 export default function LoginPage() {
   const { login } = useAuth();
@@ -33,7 +33,7 @@ export default function LoginPage() {
   return (
     <AuthFrame route="login">
       <div className="w-full text-center">
-        <h1 className="text-xl font-bold tracking-tight">{operatorCopy.auth.signInTitle}</h1>
+        <h1 className="font-brand text-2xl font-medium tracking-tight">{operatorCopy.auth.signInTitle}</h1>
         <p className="mx-auto mt-2 max-w-xs text-sm leading-relaxed text-white/50">{operatorCopy.auth.signInSubtitle}</p>
       </div>
 
@@ -44,8 +44,8 @@ export default function LoginPage() {
           </p>
         )}
 
-        <label className="block space-y-1.5 text-left">
-          <span className={authLabelClass}>{operatorCopy.auth.emailLabel}</span>
+        <label className={`${authRowClass} text-left`}>
+          <span className={`${authLabelClass} sm:text-right`}>{operatorCopy.auth.emailLabel}</span>
           <input
             type="email"
             autoComplete="email"
@@ -58,8 +58,8 @@ export default function LoginPage() {
           />
         </label>
 
-        <label className="block space-y-1.5 text-left">
-          <span className={authLabelClass}>{operatorCopy.auth.passwordLabel}</span>
+        <label className={`${authRowClass} text-left`}>
+          <span className={`${authLabelClass} sm:text-right`}>{operatorCopy.auth.passwordLabel}</span>
           <input
             type="password"
             autoComplete="current-password"
@@ -78,7 +78,7 @@ export default function LoginPage() {
         <button
           type="submit"
           disabled={submitting || !email.trim() || !password}
-          className="w-full rounded-full bg-orange-500 py-3 text-sm font-semibold text-white transition-colors hover:bg-orange-600 disabled:opacity-40"
+          className="btn-primary-operator w-full"
         >
           {submitting ? operatorCopy.auth.signingIn : operatorCopy.auth.signInAction}
         </button>

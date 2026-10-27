@@ -9,12 +9,12 @@ synonyms: advertising, price, disclaimer, photos, compliance
 aliases: law/advertising-disclaimers
 related: inventory-sold-removed
 title: Advertising rules you still own
-summary: StarterGrid blocks missing VIN, photos, and price. You still own fee disclosures, mileage truth, and real photos.
+summary: DealerGrid blocks missing VIN, photos, and price. You still own fee disclosures, mileage truth, and real photos.
 keywords: advertising, price, disclaimer, photos, compliance
 updated: 2026-10-26
 ---
 
-What you advertise is still your responsibility. StarterGrid can block a missing VIN or photo count. It does not interpret state fee rules or OEM co-op language.
+What you advertise is still your responsibility. DealerGrid can block a missing VIN or photo count. It does not interpret state fee rules or OEM co-op language.
 
 ## What to do
 

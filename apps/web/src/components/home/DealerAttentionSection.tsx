@@ -91,9 +91,9 @@ export function DealerAttentionSection({ dealerId: _dealerId, attention, nav }: 
 
   const getOwnerLabel = (owner: string): string => {
     switch (owner) {
-      case 'INTERNAL_SUPPORT': return 'StarterGrid Support';
+      case 'INTERNAL_SUPPORT': return 'DealerGrid Support';
       case 'PARTNER': return 'Channel Partner';
-      case 'SYSTEM': return 'StarterGrid Automated System';
+      case 'SYSTEM': return 'DealerGrid Automated System';
       default: return owner;
     }
   };
@@ -302,7 +302,7 @@ export function DealerAttentionSection({ dealerId: _dealerId, attention, nav }: 
           {showWaiting && (
             <div className="mt-3 space-y-2 border-t border-silver-200 pt-3">
               <p className="text-[11px] text-ink-muted">
-                These items are currently being processed by partners or StarterGrid support. No dealership action is required right now.
+                These items are currently being processed by partners or DealerGrid support. No dealership action is required right now.
               </p>
               {waitingItems.map(item => (
                 <div key={item.key} className="p-3 bg-white rounded-lg border border-silver-200 text-xs space-y-1">

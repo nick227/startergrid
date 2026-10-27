@@ -27,6 +27,6 @@ Franchise rooftops often send inventory to a manufacturer program as well as cla
 
 A destination that says waiting on partner usually needs a contract on file before sends start.
 
-StarterGrid does not certify co-op language. Marketing still owns CPO, APR, and photo-composition rules.
+DealerGrid does not certify co-op language. Marketing still owns CPO, APR, and photo-composition rules.
 
 See [Advertising rules you still own](doc:law/advertising-disclaimers).

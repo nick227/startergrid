@@ -8,7 +8,7 @@ tags: product navigation
 synonyms: home, getting started, navigation, help, channels, leads
 aliases: app/getting-started
 related: app-channels, inventory-inventory-readiness, app-lead-status
-title: Find your way around StarterGrid
+title: Find your way around DealerGrid
 summary: Where to add vehicles, check listings, follow up on inquiries and get help.
 keywords: home, getting started, navigation, help, channels, leads
 updated: 2026-10-27
@@ -21,7 +21,7 @@ Use the dealership name at the top of the page to confirm which business you are
 - **Home:** see what needs your attention and choose the next task.
 - **Vehicles:** add stock, correct details and photos, and mark vehicles sold or removed.
 - **Channels:** choose marketplace and advertising sites, complete their setup, and check listing results.
-- **Leads:** follow up on buyer inquiries received by StarterGrid. Your team shares the status and notes.
+- **Leads:** follow up on buyer inquiries received by DealerGrid. Your team shares the status and notes.
 
 Use **Settings** for dealership details, team access and notification preferences. **Reports** contains additional information about inventory and activity.
 

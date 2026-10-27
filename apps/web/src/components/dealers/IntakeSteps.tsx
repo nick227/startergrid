@@ -36,8 +36,8 @@ function RailSteps({ items, stepIndex, onSelect, title, subtitle }: Omit<Props, 
   const current = items[stepIndex];
   return (
     <div className="mb-8 w-full text-center">
-      <h1 className="text-xl font-bold tracking-tight text-white">{title}</h1>
-      {subtitle && <p className="mx-auto mt-2 max-w-xs text-sm leading-relaxed text-white/50">{subtitle}</p>}
+      <h1 className="font-brand text-2xl font-medium tracking-tight text-white">{title}</h1>
+      {subtitle && <p className="mx-auto mt-3 max-w-md text-sm leading-relaxed text-white/55">{subtitle}</p>}
       <p className="mt-5 text-sm text-white/70">{current.label}</p>
       <ol aria-label="Registration steps" className="mt-3 flex items-center justify-center gap-2">
         {items.map((item, index) => {
@@ -49,7 +49,7 @@ function RailSteps({ items, stepIndex, onSelect, title, subtitle }: Omit<Props, 
                 onClick={() => reached && onSelect(index)}
                 aria-current={index === stepIndex ? 'step' : undefined}
                 aria-label={item.label}
-                className={`block h-1.5 w-6 rounded-full ${index === stepIndex ? 'bg-orange-500' : index < stepIndex ? 'bg-white' : 'bg-white/20'}`}
+                className={`block h-1 w-6 rounded-sm ${index === stepIndex ? 'bg-orange-500' : index < stepIndex ? 'bg-white' : 'bg-white/20'}`}
               />
             </li>
           );

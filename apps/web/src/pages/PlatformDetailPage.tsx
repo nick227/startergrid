@@ -96,8 +96,8 @@ type FocusedView = 'social' | 'catalog' | 'listings' | 'leads';
 const FOCUSED: Record<FocusedView, { title: string; blurb: string; flag: 'socialPosting' | 'catalogSync' | 'marketplaceListing' | 'leadSync' }> = {
   social: { title: 'Social posts', blurb: 'Choose the page to post to and see what was posted.', flag: 'socialPosting' },
   catalog: { title: 'Catalog', blurb: 'The product catalog this channel reads your vehicles from.', flag: 'catalogSync' },
-  listings: { title: 'Listings', blurb: 'Listings StarterGrid manages on this channel.', flag: 'marketplaceListing' },
-  leads: { title: 'Leads', blurb: 'Inquiries this channel sends back to StarterGrid.', flag: 'leadSync' },
+  listings: { title: 'Listings', blurb: 'Listings DealerGrid manages on this channel.', flag: 'marketplaceListing' },
+  leads: { title: 'Leads', blurb: 'Inquiries this channel sends back to DealerGrid.', flag: 'leadSync' },
 };
 
 const STATUS_PILL: Record<ChannelDisplayStatus, string> = {
@@ -324,7 +324,7 @@ export default function PlatformDetailPage({ dealerId, nav, activeTab, platformS
                   <div>
                     <dt className="text-[10px] font-bold uppercase tracking-wider text-ink-faint">Connection</dt>
                     <dd className="mt-0.5 text-sm font-semibold text-ink-body">
-                      {item.connection.state === 'VERIFIED' ? 'Checked by StarterGrid' : item.connection.state === 'FAILED' ? 'Failed' : item.connection.state === 'NOT_APPLICABLE' ? 'Built in' : 'Not checked yet'}
+                      {item.connection.state === 'VERIFIED' ? 'Checked by DealerGrid' : item.connection.state === 'FAILED' ? 'Failed' : item.connection.state === 'NOT_APPLICABLE' ? 'Built in' : 'Not checked yet'}
                     </dd>
                   </div>
                   <div>
@@ -355,7 +355,7 @@ export default function PlatformDetailPage({ dealerId, nav, activeTab, platformS
 
             {platform.integrationClass === 'OWNED' && (
               <div className="bg-white border border-silver-200 rounded-xl shadow-sm p-5">
-                <h2 className="text-[11px] font-bold uppercase tracking-widest text-ink-faint mb-3">Your StarterGrid storefront</h2>
+                <h2 className="text-[11px] font-bold uppercase tracking-widest text-ink-faint mb-3">Your DealerGrid storefront</h2>
                 <p className="text-sm text-ink-body leading-relaxed">
                   This is your own storefront. You do not sign in to another company. Ready vehicles can appear here; that is not a verified-live confirmation until a send succeeds.
                 </p>
@@ -596,7 +596,7 @@ export default function PlatformDetailPage({ dealerId, nav, activeTab, platformS
                 )}
                 <li>
                   <button type="button" onClick={() => nav.goToHelp()} className="text-sm text-navy-600 hover:text-navy-800 font-medium flex items-center gap-1.5">
-                    Help in StarterGrid
+                    Help in DealerGrid
                   </button>
                 </li>
               </ul>
@@ -610,7 +610,7 @@ export default function PlatformDetailPage({ dealerId, nav, activeTab, platformS
               </summary>
               <div className="px-5 pb-5 space-y-4">
                 {platform.connectionType === 'OAUTH' && account?.oauthProvider ? (
-                  <p className="text-sm text-ink-body">Sign in with {oauthProviderDisplayName(account.oauthProvider)}. StarterGrid never sees your password.</p>
+                  <p className="text-sm text-ink-body">Sign in with {oauthProviderDisplayName(account.oauthProvider)}. DealerGrid never sees your password.</p>
                 ) : platform.connectionType === 'PARTNER_FEED' ? (
                   <p className="text-sm text-ink-body">They receive listings from us after you add the details they need.</p>
                 ) : (

@@ -22,7 +22,7 @@ The dealership directory is a work list. Each record brings together setup progr
 
 1. Open **Dealerships**, search for the business, and confirm its identity before opening the record. Use **Mine** when you want records assigned to you and that filter is available.
 2. Read the record's current state and next action. **Overview**, **Channels**, **People**, and **Activity** cover different parts of the same dealership.
-3. Check responsibility before acting. **Dealership** means the dealership must supply or correct something; **Our team** means internal staff; **Partner** means an external provider; **System** means processing owned by StarterGrid. **Unassigned** does not identify a responsible person.
+3. Check responsibility before acting. **Dealership** means the dealership must supply or correct something; **Our team** means internal staff; **Partner** means an external provider; **System** means processing owned by DealerGrid. **Unassigned** does not identify a responsible person.
 4. Open the relevant section and complete the available action within your permissions. Use **Open dealer view** when you need the dealership-facing screens. Confirm the dealership in the support banner and use its return link when finished.
 
 ## Check completion

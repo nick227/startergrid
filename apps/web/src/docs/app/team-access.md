@@ -28,7 +28,7 @@ Resending creates a new setup link and invalidates the old one. Share the newest
 
 ## Accept an invitation
 
-Open the setup link. New users choose a password. If you already have a StarterGrid account, enter that account’s password to accept access to the additional dealership.
+Open the setup link. New users choose a password. If you already have a DealerGrid account, enter that account’s password to accept access to the additional dealership.
 
 If the link expired or was revoked, ask the person who invited you for a new one. An invitation does not let you view another person’s password.
 

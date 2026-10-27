@@ -249,7 +249,7 @@ export function InventoryDetailPanel({
 
                 {activeWizardTab === 'details' && (
                   <section className="space-y-6">
-                    {/* Unobtrusive Pricing & Days in StarterGrid context */}
+                    {/* Unobtrusive Pricing & Days in DealerGrid context */}
                     <div className="rounded-xl border border-silver-200 bg-white p-4 shadow-2xs">
                       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
                         <div className="space-y-1">
@@ -262,7 +262,7 @@ export function InventoryDetailPanel({
                             </span>
                             <span className="text-silver-300">·</span>
                             <span className="text-xs text-ink-muted font-medium">
-                              {repriceItem ? `${repriceItem.daysOnLot} days in StarterGrid` : perf ? `${perf.daysOnline} days online` : 'Active in StarterGrid'}
+                              {repriceItem ? `${repriceItem.daysOnLot} days in DealerGrid` : perf ? `${perf.daysOnline} days online` : 'Active in DealerGrid'}
                             </span>
                             {repriceItem?.milestone && (
                               <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold border ${
@@ -337,7 +337,7 @@ export function InventoryDetailPanel({
                     <SectionHeader title="Channels" />
                     <div className="mt-3">
                       <GuidanceNote>
-                        Ready means this vehicle can be sent. Selected includes it on that destination. Publish online is only for your StarterGrid storefront. A send is not verified live until the destination confirms it.
+                        Ready means this vehicle can be sent. Selected includes it on that destination. Publish online is only for your DealerGrid storefront. A send is not verified live until the destination confirms it.
                       </GuidanceNote>
                     </div>
                     <div className="mt-4 space-y-4">

@@ -27,7 +27,7 @@ export function inviteProblem(status: number): string {
   return 'This invitation link is not valid. It may have been replaced by a newer link. Ask for a new one.';
 }
 
-const FIELD = 'block w-full mt-1 px-3 py-2 text-sm border border-silver-300 rounded-md bg-surface-card focus:outline-none focus:ring-2 focus:ring-navy-500/30';
+const FIELD = 'field-input mt-1.5';
 
 /**
  * First sign-in: either accepting an invitation link (#/invite/:token) or replacing a
@@ -113,7 +113,7 @@ export default function AccountSetupPage({ token }: { token?: string }) {
             )}
             <p className="text-sm text-ink-muted">
               {!token ? 'You signed in with a temporary password. Replace it to continue.'
-                : existingAccount ? 'You already have a StarterGrid login. Enter its password to accept.'
+                : existingAccount ? 'You already have a DealerGrid login. Enter its password to accept.'
                 : 'Choose a password of at least 8 characters.'}
             </p>
 
@@ -138,7 +138,7 @@ export default function AccountSetupPage({ token }: { token?: string }) {
               )}
               {error && <p role="alert" className="rounded-md border border-status-error-border bg-status-error-bg px-3 py-2 text-sm text-status-error-text">{error}</p>}
               <button type="submit" disabled={busy}
-                className="w-full rounded-md bg-navy-900 text-white px-4 py-2 text-sm font-semibold hover:bg-navy-800 disabled:opacity-50">
+                className="btn-primary-operator w-full">
                 {busy ? 'Saving…' : token ? (existingAccount ? 'Accept invitation' : 'Create login and continue') : 'Save and continue'}
               </button>
             </form>

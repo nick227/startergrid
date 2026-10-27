@@ -67,7 +67,7 @@ export const CAPABILITY_LABEL: Record<ChannelCapability, string> = {
 /** Who a setting-up channel is waiting on, for "Setting up · waiting on CarGurus". */
 export function waitingLabel(item: Pick<ChannelOverviewItem, 'waitingOn' | 'name'>): string | null {
   if (item.waitingOn === 'DEALERSHIP') return 'your next step';
-  if (item.waitingOn === 'INTERNAL_SUPPORT') return 'StarterGrid';
+  if (item.waitingOn === 'INTERNAL_SUPPORT') return 'DealerGrid';
   if (item.waitingOn === 'PARTNER') return item.name;
   return null;
 }

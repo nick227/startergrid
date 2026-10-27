@@ -61,7 +61,7 @@ export default function KnowledgeBasePage(_props: Props) {
   }, [doc, retry]);
 
   useEffect(() => {
-    document.title = `${doc?.frontmatter.title ?? 'Documentation'} · StarterGrid`;
+    document.title = `${doc?.frontmatter.title ?? 'Documentation'} · DealerGrid`;
     if (location.id) heading.current?.focus();
     window.scrollTo(0, 0);
   }, [location.id, doc]);
@@ -83,8 +83,8 @@ export default function KnowledgeBasePage(_props: Props) {
     <div className="min-h-screen bg-surface-page text-ink-body">
       <header className="border-b border-silver-200 bg-white">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 py-5 flex flex-wrap items-center justify-between gap-3">
-          <a href="#/docs" className="font-bold text-ink-heading">StarterGrid <span className="font-normal text-ink-muted">/ Documentation</span></a>
-          <a href="#/" className="text-sm text-navy-700 underline">Open StarterGrid</a>
+          <a href="#/docs" className="font-bold text-ink-heading">DealerGrid <span className="font-normal text-ink-muted">/ Documentation</span></a>
+          <a href="#/" className="text-sm text-navy-700 underline">Open DealerGrid</a>
         </div>
       </header>
       <main className="max-w-4xl mx-auto px-4 sm:px-6 py-8">

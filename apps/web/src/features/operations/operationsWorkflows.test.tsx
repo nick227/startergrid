@@ -395,7 +395,7 @@ describe('Bulk Vehicle Correction Interface: BulkEditModal', () => {
     vi.spyOn(bulkEditApi, 'undoBulkEdit').mockResolvedValueOnce({
       batchId: 'batch-999',
       counts: { RESTORED: 1 },
-      note: 'Restored values reach channels on their next update. StarterGrid cannot recall what a channel already showed.',
+      note: 'Restored values reach channels on their next update. DealerGrid cannot recall what a channel already showed.',
       rows: [
         {
           vehicleId: 'veh-1',
@@ -461,7 +461,7 @@ describe('Bulk Vehicle Correction Interface: BulkEditModal', () => {
     await waitFor(() => {
       expect(screen.getByText(/Batch Restored/)).toBeTruthy();
       expect(screen.getByText(/Restored values reach channels on their next update/)).toBeTruthy();
-      expect(screen.getByText(/StarterGrid Lot Inventory/)).toBeTruthy();
+      expect(screen.getByText(/DealerGrid Lot Inventory/)).toBeTruthy();
       expect(screen.getByText(/Restored in Database/)).toBeTruthy();
       expect(screen.getByText(/Connected Marketplaces/)).toBeTruthy();
       expect(screen.getByText(/Sync Pending/)).toBeTruthy();

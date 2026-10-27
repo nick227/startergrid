@@ -398,7 +398,7 @@ describe('Commercial Feature 4: Lead CRM Handoff Modal', () => {
     const matches = await screen.findAllByText('Transmission accepted by mail server');
     expect(matches.length).toBeGreaterThan(0);
     // Notice distinction: confirms mail server handoff, does NOT claim verified CRM import
-    expect(screen.getByText(/StarterGrid confirmed transmission handoff, but cannot verify whether your external CRM imported it/)).toBeTruthy();
+    expect(screen.getByText(/DealerGrid confirmed transmission handoff, but cannot verify whether your external CRM imported it/)).toBeTruthy();
     // Next action
     expect(screen.getByText(/Check your CRM inbox or activity log to confirm that your CRM imported this lead/)).toBeTruthy();
 
@@ -777,7 +777,7 @@ describe('Usability Improvement 2: Batch Vehicle Document Printing & FTC Warrant
 });
 
 describe('Usability Improvement 3: Vehicle Detail Aging and Contextual Repricing', () => {
-  it('displays Days in StarterGrid and contextual Review suggested price in details tab', async () => {
+  it('displays Days in DealerGrid and contextual Review suggested price in details tab', async () => {
     vi.stubGlobal('fetch', vi.fn(async (url: string) => {
       if (url.includes('/detail') || url.includes('/inventory/vehicles/')) {
         return {
@@ -848,7 +848,7 @@ describe('Usability Improvement 3: Vehicle Detail Aging and Contextual Repricing
       suggestedMarkdownCents: 150000,
       suggestedMarkdownPercent: 4.3,
       recommendationAction: 'SUGGEST_PRICE_ADJUSTMENT' as const,
-      recommendationReason: '48 days in StarterGrid without price adjustment',
+      recommendationReason: '48 days in DealerGrid without price adjustment',
       recommendedAt: new Date().toISOString(),
     };
 
@@ -868,8 +868,8 @@ describe('Usability Improvement 3: Vehicle Detail Aging and Contextual Repricing
       fireEvent.click(screen.getByText('Vehicle details'));
     });
 
-    // Verify "Days in StarterGrid" is rendered truthfully
-    expect(await screen.findByText('48 days in StarterGrid')).toBeTruthy();
+    // Verify "Days in DealerGrid" is rendered truthfully
+    expect(await screen.findByText('48 days in DealerGrid')).toBeTruthy();
     expect(document.body.innerHTML).not.toContain('48 days on lot');
 
     // Verify suggested adjustment and Review suggested price button

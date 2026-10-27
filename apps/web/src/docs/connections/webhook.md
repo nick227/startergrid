@@ -19,7 +19,7 @@ A webhook sends the full inquiry to an HTTPS URL as a JSON POST. Use it for Zapi
 
 ## What to do
 
-In StarterGrid, open **Settings → How you hear about new inquiries → Optional delivery methods**.
+In DealerGrid, open **Settings → How you hear about new inquiries → Optional delivery methods**.
 
 1. Create a catch-hook URL in Zapier, Make, or your server.
 2. Paste it into How you hear about new inquiries → Webhook and save.

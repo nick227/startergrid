@@ -14,7 +14,7 @@ keywords: price, mismatch, stale, internet price
 updated: 2026-10-26
 ---
 
-A site shows the last price it accepted from StarterGrid. That can differ from your DMS or website if those were changed somewhere else.
+A site shows the last price it accepted from DealerGrid. That can differ from your DMS or website if those were changed somewhere else.
 
 ## What to do
 

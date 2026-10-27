@@ -127,7 +127,7 @@ export function ConnectionSetupPanel({ dealerId, platform, account, onRefresh, h
           <div className="p-4 bg-silver-50 border border-silver-200 rounded-lg">
             <h3 className="text-[11px] font-bold text-ink-heading mb-1 uppercase tracking-wide">Not ready yet</h3>
             <p className="text-sm text-ink-muted">
-              {account?.systemSetupMessage ?? 'StarterGrid is still preparing this destination. You can come back shortly.'}
+              {account?.systemSetupMessage ?? 'DealerGrid is still preparing this destination. You can come back shortly.'}
             </p>
           </div>
         )}
@@ -207,7 +207,7 @@ export function ConnectionSetupPanel({ dealerId, platform, account, onRefresh, h
           <div className="space-y-3">
             <h3 className="text-sm font-semibold text-ink-body">Sign in to connect</h3>
             <p className="text-sm text-ink-muted">
-              You'll sign in with {oauthProviderDisplayName(account.oauthProvider ?? 'this destination')}. StarterGrid never sees your password.
+              You'll sign in with {oauthProviderDisplayName(account.oauthProvider ?? 'this destination')}. DealerGrid never sees your password.
             </p>
             <div className="pt-2">
               <OAuthConnectButton

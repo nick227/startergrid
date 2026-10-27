@@ -8,7 +8,7 @@ export type DealershipRole = 'DEALER_OWNER' | 'DEALER_STAFF' | 'INTERNAL_SUPPORT
 export const ROLE_LABEL: Record<DealershipRole, string> = {
   DEALER_OWNER: 'Owner',
   DEALER_STAFF: 'Staff',
-  INTERNAL_SUPPORT: 'StarterGrid team',
+  INTERNAL_SUPPORT: 'DealerGrid team',
 };
 
 export const ROLE_DESCRIPTION: Record<'DEALER_OWNER' | 'DEALER_STAFF', string> = {
@@ -90,7 +90,7 @@ export type InviteDelivery = 'EMAIL_SENT' | 'EMAIL_FAILED' | 'LINK_ONLY';
 export function deliveryMessage(delivery: InviteDelivery | undefined, email: string, error?: string | null): string {
   if (delivery === 'EMAIL_SENT') return `Invitation emailed to ${email}. You can also copy the link below.`;
   if (delivery === 'EMAIL_FAILED') return `The email to ${email} could not be sent${error ? ` (${error})` : ''}. Share the link below instead.`;
-  return `Share this link with ${email}. StarterGrid does not email it automatically.`;
+  return `Share this link with ${email}. DealerGrid does not email it automatically.`;
 }
 
 function str(detail: unknown, key: string): string | null {

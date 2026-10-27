@@ -40,7 +40,7 @@ export function VehicleDangerZone({ vehicle, onReload }: Props) {
         <div className="min-w-0">
           <p className="text-xs font-bold text-ink-heading">Take this vehicle off the lot</p>
           <ul className="mt-1.5 text-[11px] text-ink-muted space-y-0.5 list-disc list-inside">
-            <li>Removes it from your StarterGrid storefront</li>
+            <li>Removes it from your DealerGrid storefront</li>
             <li>
               {liveCount > 0
                 ? `Asks ${liveCount} destination${liveCount === 1 ? '' : 's'} to take the listing down`

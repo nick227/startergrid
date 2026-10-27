@@ -237,7 +237,7 @@ function CommunicationsLog({ dealerId }: { dealerId: string }) {
           <div className="p-8 text-center">
             <p className="text-sm font-semibold text-ink-heading">No messages sent yet</p>
             <p className="mt-1 text-xs text-ink-muted">
-              When StarterGrid emails or texts a shopper, that send appears here.
+              When DealerGrid emails or texts a shopper, that send appears here.
             </p>
           </div>
         ) : visible.length === 0 ? (

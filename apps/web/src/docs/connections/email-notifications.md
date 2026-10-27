@@ -18,7 +18,7 @@ Email alerts go to the **email** on your dealership’s primary contact. You do 
 
 ## What to do
 
-In StarterGrid, open **Settings → How you hear about new inquiries → Optional delivery methods**.
+In DealerGrid, open **Settings → How you hear about new inquiries → Optional delivery methods**.
 
 1. Confirm the primary contact email in Settings.
 2. Leave email enabled if you want alerts, or turn it off and save if you do not.

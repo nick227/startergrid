@@ -16,7 +16,7 @@ type Props = {
   channel: string;
   /** Used to keep saved connection details when one field changes; secrets are never resent. */
   account: PlatformAccountDetail | null;
-  /** Passed connection check recorded by StarterGrid. */
+  /** Passed connection check recorded by DealerGrid. */
   connectionVerified: boolean;
   /** Listing outcome for this channel from publish status. */
   listingOutcome: 'live' | 'ready' | 'waiting' | 'blocked';
@@ -25,7 +25,7 @@ type Props = {
 
 /**
  * Plain-language setup checklist from the backend plan. Only the current step has a button;
- * finished steps say whether StarterGrid saw it happen or someone marked it done.
+ * finished steps say whether DealerGrid saw it happen or someone marked it done.
  */
 export function ChannelSetupGuide({ dealerId, channel, account, connectionVerified, listingOutcome, onChanged }: Props) {
   const { data, loading, error, reload } = useAsyncQuery(() => fetchChannelSetupPlan(dealerId, channel), [dealerId, channel]);
@@ -45,7 +45,7 @@ export function ChannelSetupGuide({ dealerId, channel, account, connectionVerifi
   }
 
   const { plan, viewerCanAct } = data;
-  if (plan.steps.length === 0) return null; // StarterGrid-owned channels need no setup.
+  if (plan.steps.length === 0) return null; // DealerGrid-owned channels need no setup.
   const current = plan.steps.find(s => s.id === plan.currentStepId) ?? null;
 
   return (
@@ -101,7 +101,7 @@ function Progress({ plan }: { plan: ChannelSetupPlan }) {
 }
 
 function ownerLabel(owner: SetupOwner, plan: ChannelSetupPlan): string {
-  return owner === 'DEALERSHIP' ? 'You' : owner === 'INTERNAL_SUPPORT' ? 'StarterGrid' : plan.name;
+  return owner === 'DEALERSHIP' ? 'You' : owner === 'INTERNAL_SUPPORT' ? 'DealerGrid' : plan.name;
 }
 
 const MARKER: Record<SetupStep['state'], { icon: string; className: string; label: string }> = {
@@ -130,7 +130,7 @@ function StepRow({ step, index, plan, isCurrent, canAct, dealerId, account, onDo
               {ownerLabel(step.owner, plan)}
             </span>
             {step.doneBasis === 'REPORTED' && (
-              <span className="text-[11px] text-ink-faint" title="StarterGrid has not confirmed this itself.">Marked done, not confirmed</span>
+              <span className="text-[11px] text-ink-faint" title="DealerGrid has not confirmed this itself.">Marked done, not confirmed</span>
             )}
           </div>
           {isCurrent && <p className="mt-1 text-sm text-ink-body">{step.instruction}</p>}
@@ -277,7 +277,7 @@ function StatusStrip({ plan, connectionVerified, listingOutcome }: { plan: Chann
   const listingStatus = plan.status !== 'READY' && listingOutcome !== 'live' ? 'Starts after setup' : LISTING_LABEL[listingOutcome];
   const items = [
     { label: 'Setup', value: plan.status === 'READY' ? (reported ? 'Done (some steps marked by your team)' : 'Done') : `${plan.progress.done} of ${plan.progress.total} done` },
-    { label: 'Connection', value: connectionVerified ? 'Checked by StarterGrid' : 'Not checked yet' },
+    { label: 'Connection', value: connectionVerified ? 'Checked by DealerGrid' : 'Not checked yet' },
     { label: 'Listings', value: listingStatus },
   ];
   return (

@@ -76,7 +76,7 @@ export function LeadCrmHandoffModal({ dealershipId, leadId, isOpen, onClose, onS
       const vTitle = [v.year, v.make, v.model].filter(Boolean).join(' ');
       lines.push(`Vehicle: ${vTitle ? `${vTitle} (Stock #${v.stockNumber})` : `Stock #${v.stockNumber}`}`);
     }
-    lines.push(`StarterGrid Lead ID: ${leadId}`);
+    lines.push(`DealerGrid Lead ID: ${leadId}`);
 
     navigator.clipboard.writeText(lines.join('\n'));
     setCopiedSummary(true);
@@ -210,7 +210,7 @@ export function LeadCrmHandoffModal({ dealershipId, leadId, isOpen, onClose, onS
 
                 <p className="text-xs leading-relaxed">
                   {isSent
-                    ? `The mail server accepted this lead for ${destination}. StarterGrid confirmed transmission handoff, but cannot verify whether your external CRM imported it into your database.`
+                    ? `The mail server accepted this lead for ${destination}. DealerGrid confirmed transmission handoff, but cannot verify whether your external CRM imported it into your database.`
                     : isFailed
                     ? `Could not send to ${destination}${lastAttempt?.errorMessage ? `: ${lastAttempt.errorMessage}` : '.'}`
                     : isSending

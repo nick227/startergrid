@@ -26,11 +26,11 @@ A saved vehicle is not automatically listed. It can sit on Vehicles until it has
 
 ## Destinations first
 
-Channels controls which sites can receive vehicles. Only connected destinations appear as options on a vehicle. Your StarterGrid storefront is the first one to turn on because you do not sign in to another company.
+Channels controls which sites can receive vehicles. Only connected destinations appear as options on a vehicle. Your DealerGrid storefront is the first one to turn on because you do not sign in to another company.
 
 ## Ready to send is not published
 
-Turning a vehicle ready, or checking a destination on that vehicle, does not put it live. It only means StarterGrid is allowed to send it. A listing is sent after you send it or Autopilot sends it. Sent is not a verified-live confirmation.
+Turning a vehicle ready, or checking a destination on that vehicle, does not put it live. It only means DealerGrid is allowed to send it. A listing is sent after you send it or Autopilot sends it. Sent is not a verified-live confirmation.
 
 ## After you fix a vehicle
 

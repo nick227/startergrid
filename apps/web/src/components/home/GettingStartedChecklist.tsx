@@ -56,7 +56,7 @@ function buildSetupSteps(nav: OperatorNavHandlers, profile: DealershipProfile, s
 
 /**
  * First-time dealership orientation.
- * Explains how StarterGrid works in plain language and distinguishes internal
+ * Explains how DealerGrid works in plain language and distinguishes internal
  * lot/account setup from ongoing external distribution outcomes.
  */
 export function GettingStartedChecklist({ dealerId, nav, profile: profileProp, status: statusProp }: Props) {
@@ -111,10 +111,10 @@ export function GettingStartedChecklist({ dealerId, nav, profile: profileProp, s
         <div className="space-y-1">
           <div className="flex items-center gap-2">
             <span className="text-base" aria-hidden="true">🚀</span>
-            <h2 className="text-sm font-bold text-ink-heading">Getting started with StarterGrid</h2>
+            <h2 className="text-sm font-bold text-ink-heading">Getting started with DealerGrid</h2>
           </div>
           <p className="text-xs text-ink-muted leading-relaxed max-w-2xl">
-            Add your vehicles once. StarterGrid helps keep your listings updated across connected advertising and sales channels. Buyer inquiries arrive in one place.
+            Add your vehicles once. DealerGrid helps keep your listings updated across connected advertising and sales channels. Buyer inquiries arrive in one place.
           </p>
         </div>
         <button

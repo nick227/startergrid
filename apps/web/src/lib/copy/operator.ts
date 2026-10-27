@@ -2,7 +2,7 @@
 
 export const operatorCopy = {
   app: {
-    title: 'StarterGrid',
+    title: 'DealerGrid',
     tagline: 'Open a dealership to continue setup or help a customer.',
   },
   scope: {
@@ -16,8 +16,8 @@ export const operatorCopy = {
     manualOpen: 'Open',
   },
   auth: {
-    signInTitle: 'Sign in to StarterGrid',
-    signInSubtitle: 'Use the email you were invited with.',
+    signInTitle: 'Sign in',
+    signInSubtitle: 'Your dealership workspace.',
     emailLabel: 'Email',
     passwordLabel: 'Password',
     signInAction: 'Sign in',

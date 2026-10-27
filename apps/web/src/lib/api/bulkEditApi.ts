@@ -38,7 +38,7 @@ export interface BulkUndoResult {
   batchId: string;
   rows: Array<{ vehicleId: string; stockNumber: string | null; status: BulkUndoRowStatus; changes: BulkFieldChange[]; reason: string | null; incidentId: string | null }>;
   counts: Partial<Record<BulkUndoRowStatus, number>>;
-  /** Undo saves values in StarterGrid; channels get them on their next update. */
+  /** Undo saves values in DealerGrid; channels get them on their next update. */
   note: string;
 }
 

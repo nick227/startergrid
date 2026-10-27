@@ -67,7 +67,7 @@ describe('rewriteSetupStep', () => {
   });
 
   it('turns leftover technical steps into a dealer action', () => {
-    expect(rewriteSetupStep('Generate the SFTP/XML packet and place it on the host.')).toMatch(/Ask StarterGrid support/);
+    expect(rewriteSetupStep('Generate the SFTP/XML packet and place it on the host.')).toMatch(/Ask DealerGrid support/);
     expect(rewriteSetupStep('Clicks Connect to start the OAuth flow (uses our system app credentials).')).toMatch(/use Connect/);
     expect(rewriteSetupStep('System generates and delivers the inventory feed to the platform on schedule.')).toMatch(/send ready vehicles/);
     expect(rewriteSetupStep('Obtain the dealer\'s CRM ADF/XML inbound email address from their CRM vendor.')).toMatch(/lead inbox/);

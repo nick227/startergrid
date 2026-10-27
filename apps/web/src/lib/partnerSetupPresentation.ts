@@ -12,11 +12,11 @@ export function isTechnicalField(field: { field: string; label: string; isSecret
 const STEP_RULES: Array<{ test: (s: string) => boolean; text: string }> = [
   {
     test: s => /(sftp|ftp|homenet).*(enter|credential|username|password)/.test(s) || /enter.*(sftp|ftp|credential|username|password|homenet)/.test(s),
-    text: 'Ask StarterGrid support to enter the file-transfer details they gave you.',
+    text: 'Ask DealerGrid support to enter the file-transfer details they gave you.',
   },
   {
     test: s => s.includes('whitelist') || (s.includes('ip') && (s.includes('provider') || s.includes('allow'))),
-    text: 'They may need to allow StarterGrid. Support handles that with them.',
+    text: 'They may need to allow DealerGrid. Support handles that with them.',
   },
   {
     test: s => /(provides?|provided).*(feed|credential)/.test(s) || /feed (endpoint|url|credential)/.test(s),
@@ -56,7 +56,7 @@ const STEP_RULES: Array<{ test: (s: string) => boolean; text: string }> = [
   },
   {
     test: s => /authoriz|grants? the requested|signs? in to their/.test(s),
-    text: 'Sign in and allow StarterGrid to send listings for your store.',
+    text: 'Sign in and allow DealerGrid to send listings for your store.',
   },
   {
     test: s => /returns? to the portal|token is stored|connection is confirmed/.test(s),
@@ -68,7 +68,7 @@ const STEP_RULES: Array<{ test: (s: string) => boolean; text: string }> = [
   },
   {
     test: s => /(operator|enter).*(credential|token|key|endpoint)/.test(s) || /enter.*(portal|settings)/.test(s),
-    text: 'Ask StarterGrid support to enter the details they gave you.',
+    text: 'Ask DealerGrid support to enter the details they gave you.',
   },
   {
     test: s => /(system|we).*(generat|deliver|push|send).*(feed|listing|catalog|inventory)/.test(s) || /deliver.*(feed|inventory|listing)/.test(s),
@@ -114,7 +114,7 @@ export function rewriteSetupStep(step: string): string {
     if (rule.test(s)) return rule.text;
   }
   if (isTechnicalText(step)) {
-    return 'Ask StarterGrid support to finish this step with them. You do not enter technical details.';
+    return 'Ask DealerGrid support to finish this step with them. You do not enter technical details.';
   }
   return step;
 }

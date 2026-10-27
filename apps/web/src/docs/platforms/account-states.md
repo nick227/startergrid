@@ -32,7 +32,7 @@ Internal records may still store Active, Account needed, Credentials needed, Par
 
 | Class | Typical setup |
 | --- | --- |
-| Owned | Your StarterGrid storefront — no outside sign-in |
+| Owned | Your DealerGrid storefront — no outside sign-in |
 | They receive listings | File or partner connection after they accept |
 | Assisted | An agency posts for the dealership |
 | Partner dependent | A contract must be on file before sends |

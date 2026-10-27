@@ -145,7 +145,7 @@ export function MarketplacePublishPanel({
   return (
     <div className="space-y-2">
       <p className="text-[11px] leading-5 text-ink-muted">
-        Ready means this vehicle can be sent. Selected includes it on your StarterGrid storefront. Publish online submits it — that is not a verified-live confirmation.
+        Ready means this vehicle can be sent. Selected includes it on your DealerGrid storefront. Publish online submits it — that is not a verified-live confirmation.
       </p>
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div className="flex items-center gap-2">

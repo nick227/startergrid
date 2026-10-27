@@ -9,7 +9,7 @@ synonyms: discord, webhook, lead, alert
 aliases: connections/discord
 related: connections-lead-notifications
 title: Get new inquiries in Discord
-summary: Create a Discord webhook and paste it into StarterGrid so new leads post in your channel.
+summary: Create a Discord webhook and paste it into DealerGrid so new leads post in your channel.
 keywords: discord, webhook, lead, alert
 updated: 2026-10-27
 ---
@@ -18,12 +18,12 @@ Discord posts each new inquiry as a card in the channel you choose.
 
 ## What to do
 
-In StarterGrid, open **Settings → How you hear about new inquiries → Optional delivery methods**.
+In DealerGrid, open **Settings → How you hear about new inquiries → Optional delivery methods**.
 
 1. In Discord, open the server and choose the channel.
 2. Edit Channel → Integrations → Webhooks → New Webhook.
 3. Copy the webhook URL.
-4. In StarterGrid, open How you hear about new inquiries, paste the URL, and save.
+4. In DealerGrid, open How you hear about new inquiries, paste the URL, and save.
 
 The next inquiry posts to that channel with stock number, destination, and buyer details.
 

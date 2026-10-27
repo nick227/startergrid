@@ -4,11 +4,11 @@
   }
 
   .btn-primary-operator {
-    @apply focus-ring inline-flex items-center justify-center rounded-lg bg-orange-600 px-3.5 py-2 text-sm font-semibold text-white transition hover:bg-orange-500 disabled:cursor-not-allowed disabled:opacity-40;
+    @apply focus-ring inline-flex h-10 items-center justify-center rounded-md bg-orange-500 px-3.5 text-sm font-semibold text-navy-950 transition hover:bg-orange-600 disabled:cursor-not-allowed disabled:bg-silver-200 disabled:text-navy-950/45 disabled:hover:bg-silver-200;
   }
 
   .btn-secondary-operator {
-    @apply focus-ring inline-flex items-center justify-center rounded-lg border border-silver-300 bg-surface-card px-3.5 py-2 text-sm font-semibold text-ink-heading transition hover:bg-silver-100 disabled:cursor-not-allowed disabled:opacity-40;
+    @apply focus-ring inline-flex h-10 items-center justify-center rounded-md border border-silver-300 bg-surface-card px-3.5 text-sm font-semibold text-ink-heading transition hover:bg-silver-100 disabled:cursor-not-allowed disabled:opacity-40;
   }
 
   .btn-primary-marketplace {
@@ -28,6 +28,6 @@
   }
 
   .field-input-base {
-    @apply w-full rounded-sm border border-silver-200 bg-surface-card px-3.5 py-2 text-sm text-ink-heading focus:outline-none focus:ring-2 focus:ring-navy-500/30 transition-colors;
+    @apply min-h-10 w-full rounded-md border border-silver-300 bg-surface-card px-3 py-2 text-sm text-ink-heading transition-colors placeholder:text-ink-faint focus:border-navy-700 focus:outline-none focus:ring-2 focus:ring-navy-500/20;
   }
 }

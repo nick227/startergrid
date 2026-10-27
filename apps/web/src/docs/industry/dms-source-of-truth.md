@@ -8,14 +8,14 @@ tags: inventory import, inventory
 synonyms: DMS, import, price, sold, overwrite
 aliases: industry/dms-source-of-truth
 related: inventory-csv-import, troubleshooting-price-mismatch
-title: How the DMS relates to StarterGrid
-summary: StarterGrid sends the copy stored here. Your DMS still owns deals, accounting, and the floor.
+title: How the DMS relates to DealerGrid
+summary: DealerGrid sends the copy stored here. Your DMS still owns deals, accounting, and the floor.
 keywords: DMS, import, price, sold, overwrite
 updated: 2026-10-26
 advanced: true
 ---
 
-Most rooftops keep inventory in a DMS, on the website, and in StarterGrid. Destinations receive the copy stored here.
+Most rooftops keep inventory in a DMS, on the website, and in DealerGrid. Destinations receive the copy stored here.
 
 ## What to do
 

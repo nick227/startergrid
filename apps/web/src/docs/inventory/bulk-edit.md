@@ -26,4 +26,4 @@ Photos and VIN are not bulk-edited. Open each vehicle or re-import those.
 
 ## What happens next
 
-StarterGrid rechecks the lot and can send ready vehicles again. Vehicles that still cannot be listed stay held until their own problem is fixed. A price change does not skip a missing photo.
+DealerGrid rechecks the lot and can send ready vehicles again. Vehicles that still cannot be listed stay held until their own problem is fixed. A price change does not skip a missing photo.

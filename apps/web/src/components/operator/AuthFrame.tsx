@@ -6,24 +6,23 @@ type Props = {
   children: ReactNode;
 };
 
-const MARK = 'pointer-events-none absolute text-sm leading-none text-orange-500';
-
 export const authFieldClass =
-  'w-full rounded-lg border border-white/10 bg-white/[0.06] px-3.5 py-3 text-sm text-white [color-scheme:dark] ' +
-  'placeholder:text-white/35 focus:border-orange-500 focus:outline-none focus:ring-2 focus:ring-orange-500/30';
+  'h-10 w-full rounded-md border border-white/15 bg-white/[0.06] px-3 text-sm text-white [color-scheme:dark] ' +
+  'placeholder:text-white/35 focus:border-orange-400 focus:outline-none focus:ring-2 focus:ring-orange-400/25';
 
-export const authLabelClass = 'text-xs font-medium text-white/55';
+export const authLabelClass = 'text-sm font-medium text-white/70';
+
+export const authRowClass =
+  'grid grid-cols-1 items-center gap-1.5 sm:grid-cols-[11rem_minmax(0,1fr)] sm:gap-x-4';
 
 export function AuthFrame({ route, children }: Props) {
   return (
-    <div className="relative min-h-screen bg-navy-950 text-white">
-      <span aria-hidden="true" className={`${MARK} left-5 top-24 sm:left-8`}>+</span>
-      <span aria-hidden="true" className={`${MARK} right-5 top-24 sm:right-8`}>+</span>
-      <span aria-hidden="true" className={`${MARK} bottom-8 left-5 sm:left-8`}>+</span>
-      <span aria-hidden="true" className={`${MARK} bottom-8 right-5 sm:right-8`}>+</span>
+    <div className="flex min-h-screen flex-col bg-navy-950 text-white">
       <AppHeader publicRoute={route} />
-      <main className="mx-auto flex w-full max-w-md flex-col items-center px-5 py-12 sm:py-16">
-        {children}
+      <main className="mx-auto flex w-full max-w-lg flex-1 flex-col px-5">
+        <div className="my-auto flex w-full flex-col py-10">
+          {children}
+        </div>
       </main>
     </div>
   );

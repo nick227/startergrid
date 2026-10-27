@@ -48,7 +48,7 @@ export const SETTINGS_JOB_COPY: Record<SettingsJobId, SettingsJobCopy> = {
   },
   system: {
     id: 'system',
-    title: 'Is StarterGrid up',
+    title: 'Is DealerGrid up',
     why: 'Whether the site can sign people in and send vehicles.',
     href: '#/admin/system',
   },

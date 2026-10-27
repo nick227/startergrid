@@ -45,7 +45,7 @@ export function DestinationPrimarySetup({ dealerId, platform, account, onRefresh
       {platform.integrationClass !== 'OWNED' && (
         <section className="bg-white border border-silver-200 rounded-xl shadow-sm p-5">
           <h2 className="text-sm font-semibold text-ink-heading">Connection details</h2>
-          <p className="text-xs text-ink-muted mt-0.5 mb-4">Every field for this channel, including ones StarterGrid support usually fills in.</p>
+          <p className="text-xs text-ink-muted mt-0.5 mb-4">Every field for this channel, including ones DealerGrid support usually fills in.</p>
           <ConnectionSetupPanel
             dealerId={dealerId}
             platform={platform}

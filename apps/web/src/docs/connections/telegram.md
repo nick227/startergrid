@@ -9,7 +9,7 @@ synonyms: telegram, bot, chat id, lead, alert
 aliases: connections/telegram
 related: connections-lead-notifications
 title: Get new inquiries in Telegram
-summary: Create a Telegram bot, add your chat ID, and paste both into StarterGrid.
+summary: Create a Telegram bot, add your chat ID, and paste both into DealerGrid.
 keywords: telegram, bot, chat id, lead, alert
 updated: 2026-10-27
 ---
@@ -18,12 +18,12 @@ Telegram can send each new inquiry to you, a group, or a channel. You own the bo
 
 ## What to do
 
-In StarterGrid, open **Settings → How you hear about new inquiries → Optional delivery methods**.
+In DealerGrid, open **Settings → How you hear about new inquiries → Optional delivery methods**.
 
 1. In Telegram, message **@BotFather**, send `/newbot`, and save the bot token.
 2. Find your chat ID with **@userinfobot** (your user ID, or the group/channel ID).
 3. Send any message to your new bot so it can reply.
-4. In StarterGrid, paste the bot token and chat ID, then save.
+4. In DealerGrid, paste the bot token and chat ID, then save.
 
 ## If nothing arrives
 

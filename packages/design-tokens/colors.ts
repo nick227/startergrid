@@ -73,14 +73,15 @@ export const companyColors = {
 
 export const companyFontFamily = {
   sans: ['Inter', 'system-ui', '-apple-system', 'Segoe UI', 'sans-serif'],
+  brand: ['Outfit', 'Inter', 'system-ui', 'sans-serif'],
   mono: ['ui-monospace', 'SFMono-Regular', 'Menlo', 'monospace'],
 };
 
 export const companyBorderRadius = {
-  sm: '8px',
-  md: '12px',
-  lg: '16px',
-  xl: '24px',
+  sm: '4px',
+  md: '6px',
+  lg: '8px',
+  xl: '12px',
   pill: '9999px',
 };
 

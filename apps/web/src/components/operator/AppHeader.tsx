@@ -12,7 +12,7 @@ type Props = {
 };
 
 const QUIET = 'whitespace-nowrap text-sm font-medium text-white/70 transition-colors hover:text-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-orange-500';
-const PILL = 'whitespace-nowrap rounded-full bg-orange-500 px-4 py-1.5 text-sm font-semibold text-white transition-colors hover:bg-orange-600 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-orange-500';
+const PILL = 'whitespace-nowrap rounded-md bg-orange-500 px-3.5 py-1.5 text-sm font-semibold text-navy-950 transition-colors hover:bg-orange-600 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-navy-950';
 
 function PublicAuthLinks({ route }: { route: PublicAuthRoute }) {
   const loginActive = route === 'login';

@@ -16,7 +16,7 @@ updated: 2026-10-27
 
 ## Open the delivery details
 
-On **Leads**, use the inquiry's CRM action to inspect its delivery details. A CRM (customer relationship management system) is separate from StarterGrid's shared inbox and the team's lead status.
+On **Leads**, use the inquiry's CRM action to inspect its delivery details. A CRM (customer relationship management system) is separate from DealerGrid's shared inbox and the team's lead status.
 
 ## Choose the next step
 

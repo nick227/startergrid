@@ -38,7 +38,7 @@ export function PlatformAvailabilityPanel({ dealerId, platform, account, onRefre
       <div className="bg-amber-50 border border-amber-200 rounded-xl p-5 space-y-2">
         <h2 className="text-[11px] font-bold uppercase tracking-widest text-amber-900/70">Not available</h2>
         <p className="text-sm text-amber-900/90">
-          StarterGrid has this destination turned off for everyone right now. You cannot send vehicles here until it is turned back on.
+          DealerGrid has this destination turned off for everyone right now. You cannot send vehicles here until it is turned back on.
         </p>
       </div>
     );
