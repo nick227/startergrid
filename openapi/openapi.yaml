@@ -246,7 +246,7 @@ paths:
                   ghostListings:
                     type: array
                     items:
-                      type: object
+                      $ref: '#/components/schemas/SoldVehicleListing'
                   summary:
                     type: string
         '401':
@@ -261,7 +261,12 @@ paths:
         - Publish
       operationId: reconcileGhostListings
       summary: Take down sold vehicles that StarterGrid can verify
-      description: Ends Auto Marketplace listings after confirming the vehicle is no longer public, and runs the Autopilot engine's verified withdrawal for distribution targets. External listings are never marked removed without evidence; whatever remains is returned with its next action (NEEDS_ACTION).
+      description: >-
+        Ends Auto Marketplace listings after confirming the vehicle is no longer public, and runs the Autopilot
+        engine's withdrawal for distribution targets. A listing counts as removed only with VERIFIED_REMOVED
+        evidence; every listing found is reported in removalCounts by its evidence-based removalStatus, and
+        anything not confirmed removed is returned in remaining with its next action (NEEDS_ACTION). StarterGrid
+        does not currently submit removals to external marketplaces; those listings report UNSUPPORTED.
       x-route-classification: operator
       security:
         - OperatorAuth: []
@@ -284,6 +289,8 @@ paths:
                   - reconciledCount
                   - marketplaceListingsEnded
                   - distributionTargetsWithdrawn
+                  - removalCounts
+                  - notPublishedCount
                   - remaining
                   - message
                   - reconciledAt
@@ -293,12 +300,21 @@ paths:
                   status:
                     type: string
                     enum: [RECONCILED, CLEAN, NEEDS_ACTION]
+                    description: RECONCILED only when every listing found is VERIFIED_REMOVED or was never published by StarterGrid.
                   remaining:
                     type: array
                     items:
-                      type: object
+                      $ref: '#/components/schemas/SoldVehicleListing'
+                  removalCounts:
+                    type: object
+                    description: Final removalStatus of every listing found at the start of the run.
+                    additionalProperties:
+                      type: integer
+                  notPublishedCount:
+                    type: integer
                   reconciledCount:
                     type: integer
+                    description: Listings confirmed removed (VERIFIED_REMOVED) during this run.
                   marketplaceListingsEnded:
                     type: integer
                   distributionTargetsWithdrawn:
@@ -6428,6 +6444,42 @@ components:
         statusUpdatedAt: { type: string, format: date-time, nullable: true }
         statusUpdatedBy: { type: string, nullable: true }
         updatedAt: { type: string, format: date-time }
+
+    RemovalStatus:
+      type: string
+      enum: [NOT_REQUESTED, QUEUED_LOCALLY, SUBMISSION_ATTEMPTED, PROVIDER_ACCEPTED, VERIFIED_REMOVED, FAILED, UNSUPPORTED]
+      description: >-
+        Evidence-based take-down state. NOT_REQUESTED: no take-down started. QUEUED_LOCALLY: a withdrawal is
+        recorded in StarterGrid and nothing was sent. SUBMISSION_ATTEMPTED: sent to the destination, no response
+        recorded. PROVIDER_ACCEPTED: the destination acknowledged it with a reference; removal not observed.
+        VERIFIED_REMOVED: a readback confirmed the vehicle is no longer public (the only removed state).
+        FAILED: failed or not confirmable. UNSUPPORTED: StarterGrid cannot remove it there; a person must.
+
+    SoldVehicleListing:
+      type: object
+      required: [id, source, dealershipId, stockNumber, title, channel, channelDisplayName, status, inactiveSince, exposureDays, removalStatus, submittedAt, providerReference, nextAction]
+      properties:
+        id: { type: string }
+        source: { type: string, enum: [MARKETPLACE_LISTING, DISTRIBUTION_TARGET] }
+        dealershipId: { type: string }
+        vehicleId: { type: string, nullable: true }
+        categoryItemId: { type: string, nullable: true }
+        stockNumber: { type: string }
+        title: { type: string }
+        vin: { type: string }
+        channel: { type: string }
+        channelDisplayName: { type: string }
+        status: { type: string, description: Raw listing or distribution status. Display removalStatus instead. }
+        soldAt: { type: string, format: date-time, nullable: true }
+        removedAt: { type: string, format: date-time, nullable: true }
+        inactiveSince: { type: string, format: date-time }
+        exposureDays: { type: integer }
+        ftcComplianceRisk: { type: string, enum: [HIGH, CRITICAL] }
+        removalStatus:
+          $ref: '#/components/schemas/RemovalStatus'
+        submittedAt: { type: string, format: date-time, nullable: true }
+        providerReference: { type: string, nullable: true }
+        nextAction: { type: string }
 
     LeadDeliveryDetails:
       type: object

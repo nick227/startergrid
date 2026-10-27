@@ -1,3 +1,17 @@
+/**
+ * Evidence-based take-down state from the server. Only VERIFIED_REMOVED means the vehicle is
+ * confirmed gone; QUEUED_LOCALLY means nothing was sent anywhere, and UNSUPPORTED means a
+ * person must end the listing on that site. Never present another value as a removal.
+ */
+export type RemovalStatus =
+  | 'NOT_REQUESTED'
+  | 'QUEUED_LOCALLY'
+  | 'SUBMISSION_ATTEMPTED'
+  | 'PROVIDER_ACCEPTED'
+  | 'VERIFIED_REMOVED'
+  | 'FAILED'
+  | 'UNSUPPORTED';
+
 export interface GhostListingItem {
   id: string;
   source: 'MARKETPLACE_LISTING' | 'DISTRIBUTION_TARGET';
@@ -15,6 +29,9 @@ export interface GhostListingItem {
   inactiveSince: string;
   exposureDays: number;
   ftcComplianceRisk: 'HIGH' | 'CRITICAL';
+  removalStatus: RemovalStatus;
+  submittedAt: string | null;
+  providerReference: string | null;
   nextAction: string;
 }
 
@@ -36,6 +53,9 @@ export interface SyndicationSentryReconcileResult {
   reconciledCount: number;
   marketplaceListingsEnded: number;
   distributionTargetsWithdrawn: number;
+  /** Final removal state of every listing found; RECONCILED only when all are VERIFIED_REMOVED. */
+  removalCounts: Record<RemovalStatus, number>;
+  notPublishedCount: number;
   remaining: GhostListingItem[];
   message: string;
   reconciledAt: string;

@@ -4,6 +4,9 @@ import {
   formatChannelName,
   auditDealershipSyndication,
   reconcileGhostListings,
+  reconcileMessage,
+  targetRemovalStatus,
+  REMOVAL_STATUSES,
 } from '../services/distribution/syndicationSentryService.js';
 import type { PrismaClient } from '@prisma/client';
 
@@ -187,4 +190,130 @@ describe('Syndication Sentry Service', () => {
       if (previous === undefined) delete process.env['V5_AUTOPILOT_ENABLED']; else process.env['V5_AUTOPILOT_ENABLED'] = previous;
     }
   });
+
+  // ── Evidence-based removal contract ───────────────────────────────────────
+
+  const removedEvidence = (over: Record<string, unknown> = {}) => ({
+    channel: 'consumer-marketplace', vehicleId: 'veh_sold_1', desiredHash: 'h1', operation: 'WITHDRAW',
+    method: 'OWNED_READ_MODEL', observedAt: new Date(Date.now() - 30 * 24 * 3600_000).toISOString(),
+    result: 'REMOVED', reference: 'ref-1', ...over,
+  });
+  const withdraw = (over: Record<string, unknown>) => ({
+    vehicleId: 'veh_sold_1', channel: 'consumer-marketplace', desiredHash: 'h1', operation: 'WITHDRAW',
+    status: 'PROCESSING', reasonCode: null, submittedAt: null, evidence: null, ...over,
+  });
+
+  it('maps every engine state to a removal status from evidence only', () => {
+    assert.equal(targetRemovalStatus(withdraw({ operation: 'UPSERT', status: 'VERIFIED_LIVE' })), 'NOT_REQUESTED');
+    assert.equal(targetRemovalStatus(withdraw({ status: 'PROCESSING' })), 'QUEUED_LOCALLY');
+    assert.equal(targetRemovalStatus(withdraw({ status: 'HELD' })), 'QUEUED_LOCALLY');
+    assert.equal(targetRemovalStatus(withdraw({ status: 'PAUSED' })), 'QUEUED_LOCALLY');
+    assert.equal(targetRemovalStatus(withdraw({ status: 'SUBMITTED' })), 'QUEUED_LOCALLY', 'no submittedAt means nothing was sent');
+    assert.equal(targetRemovalStatus(withdraw({ status: 'SUBMITTED', submittedAt: new Date() })), 'SUBMISSION_ATTEMPTED');
+    assert.equal(targetRemovalStatus(withdraw({ status: 'SUBMITTED', submittedAt: new Date(), evidence: removedEvidence({ result: 'PENDING' }) })), 'PROVIDER_ACCEPTED');
+    assert.equal(targetRemovalStatus(withdraw({ status: 'VERIFIED_REMOVED', evidence: removedEvidence() })), 'VERIFIED_REMOVED', 'old removal evidence still counts');
+    assert.equal(targetRemovalStatus(withdraw({ status: 'NEEDS_SETUP', reasonCode: 'CHANNEL_UNQUALIFIED' })), 'UNSUPPORTED');
+    assert.equal(targetRemovalStatus(withdraw({ status: 'NEEDS_SETUP', reasonCode: 'CONNECTION_REQUIRED' })), 'FAILED');
+    assert.equal(targetRemovalStatus(withdraw({ status: 'FAILED' })), 'FAILED');
+    assert.equal(targetRemovalStatus(withdraw({ status: 'UNKNOWN' })), 'FAILED');
+    assert.equal(targetRemovalStatus(withdraw({ status: 'EXCLUDED' })), null);
+  });
+
+  it('never treats a VERIFIED_REMOVED row as removed without matching evidence', () => {
+    assert.equal(targetRemovalStatus(withdraw({ status: 'VERIFIED_REMOVED', evidence: null })), 'FAILED');
+    assert.equal(targetRemovalStatus(withdraw({ status: 'VERIFIED_REMOVED', evidence: removedEvidence({ vehicleId: 'other' }) })), 'FAILED');
+    assert.equal(targetRemovalStatus(withdraw({ status: 'VERIFIED_REMOVED', evidence: removedEvidence({ result: 'PENDING' }) })), 'FAILED');
+    assert.equal(targetRemovalStatus(withdraw({ status: 'VERIFIED_REMOVED', evidence: removedEvidence({ reference: '' }) })), 'FAILED');
+  });
+
+  it('keeps unconfirmed withdrawals on the audit (they once counted as removed)', async () => {
+    for (const status of ['NEEDS_SETUP', 'FAILED', 'SUBMITTED', 'PROCESSING', 'UNKNOWN', 'PAUSED']) {
+      const f = reconcileDb({ targets: [{ id: 't1', vehicleId: 'veh_sold_1', channel: 'cargurus', operation: 'WITHDRAW', status, reasonCode: 'CHANNEL_UNQUALIFIED' }] });
+      const audit = await auditDealershipSyndication(f.db, 'dealer_123');
+      assert.equal(audit.activeGhostListingsCount, 1, `${status} withdrawal must stay listed`);
+      assert.notEqual(audit.ghostListings[0]!.removalStatus, 'VERIFIED_REMOVED');
+    }
+  });
+
+  // Simulates the engine changing a target between the two audits of one take-down run.
+  function phasedDb(before: any, after: any) {
+    const f = reconcileDb({ targets: [before] });
+    let calls = 0;
+    f.db.distributionTarget.findMany = async (args: any) => {
+      if (args?.distinct) return [];
+      calls++;
+      return [{ dealershipId: 'dealer_123', ...(calls === 1 ? before : after) }];
+    };
+    return f;
+  }
+  const liveTarget = { id: 't1', vehicleId: 'veh_sold_1', channel: 'cargurus', desiredHash: 'h1', operation: 'UPSERT', status: 'VERIFIED_LIVE' };
+  const NO_SUCCESS_CLAIM = /confirmed removed|removed from|successfully|submitted to connected|\bverified\b/i;
+
+  it('reports an unsupported external removal as needing a person, not as taken down', async () => {
+    const f = phasedDb(liveTarget, { ...liveTarget, operation: 'WITHDRAW', status: 'NEEDS_SETUP', reasonCode: 'CHANNEL_UNQUALIFIED', nextAction: 'Ask support to confirm removal with the destination.' });
+    const result = await reconcileGhostListings(f.db, 'dealer_123', actor);
+    assert.equal(result.status, 'NEEDS_ACTION');
+    assert.equal(result.reconciledCount, 0);
+    assert.equal(result.distributionTargetsWithdrawn, 0);
+    assert.equal(result.removalCounts.UNSUPPORTED, 1);
+    assert.equal(result.remaining[0]!.removalStatus, 'UNSUPPORTED');
+    assert.doesNotMatch(result.message, NO_SUCCESS_CLAIM);
+  });
+
+  it('reports a locally queued withdrawal as not sent', async () => {
+    const f = phasedDb(liveTarget, { ...liveTarget, operation: 'WITHDRAW', status: 'PROCESSING' });
+    const result = await reconcileGhostListings(f.db, 'dealer_123', actor);
+    assert.equal(result.status, 'NEEDS_ACTION');
+    assert.equal(result.removalCounts.QUEUED_LOCALLY, 1);
+    assert.match(result.message, /not sent to the destination/);
+    assert.doesNotMatch(result.message, NO_SUCCESS_CLAIM);
+  });
+
+  it('reports provider acceptance as unconfirmed removal', async () => {
+    const f = phasedDb(liveTarget, { ...liveTarget, operation: 'WITHDRAW', status: 'SUBMITTED', submittedAt: new Date(), evidence: removedEvidence({ channel: 'cargurus', result: 'PENDING' }) });
+    const result = await reconcileGhostListings(f.db, 'dealer_123', actor);
+    assert.equal(result.status, 'NEEDS_ACTION');
+    assert.equal(result.removalCounts.PROVIDER_ACCEPTED, 1);
+    assert.equal(result.remaining[0]!.providerReference, 'ref-1');
+    assert.doesNotMatch(result.message, NO_SUCCESS_CLAIM);
+  });
+
+  it('claims removal only when the target carries matching removal evidence', async () => {
+    const f = phasedDb(liveTarget, { ...liveTarget, operation: 'WITHDRAW', status: 'VERIFIED_REMOVED', evidence: removedEvidence({ channel: 'cargurus' }) });
+    const result = await reconcileGhostListings(f.db, 'dealer_123', actor);
+    assert.equal(result.status, 'RECONCILED');
+    assert.equal(result.reconciledCount, 1);
+    assert.equal(result.distributionTargetsWithdrawn, 1);
+    assert.match(result.message, /Confirmed removed: 1 listing/);
+  });
+
+  it('does not count a listing StarterGrid never published as removed', async () => {
+    const unverified = { ...liveTarget, status: 'SUBMITTED' };
+    const f = phasedDb(unverified, { ...unverified, operation: 'WITHDRAW', status: 'EXCLUDED', reasonCode: 'NOT_MANAGED' });
+    const result = await reconcileGhostListings(f.db, 'dealer_123', actor);
+    assert.equal(result.reconciledCount, 0);
+    assert.equal(result.notPublishedCount, 1);
+    assert.match(result.message, /never published by StarterGrid/);
+    assert.doesNotMatch(result.message, NO_SUCCESS_CLAIM);
+  });
+
+  it('marks an owned listing that is still public as failed, not removed', async () => {
+    const f = reconcileDb({ listings: [{ id: 'owned_1', vehicleId: 'veh_sold_1', platformSlug: 'consumer-marketplace' }] });
+    f.db.vehicle.findFirst = async () => ({ id: 'veh_sold_1', createdAt: new Date(), updatedAt: new Date(), media: [], dealership: {} }); // public read model still returns it
+    const result = await reconcileGhostListings(f.db, 'dealer_123', actor);
+    assert.equal(result.status, 'NEEDS_ACTION');
+    assert.equal(result.marketplaceListingsEnded, 0);
+    assert.equal(result.removalCounts.FAILED, 1);
+    assert.equal(f.listings[0].status, 'ACTIVE');
+  });
+
+  it('only the verified status produces a completed-removal sentence', () => {
+    for (const status of REMOVAL_STATUSES) {
+      const counts = Object.fromEntries(REMOVAL_STATUSES.map(s => [s, s === status ? 2 : 0])) as any;
+      const message = reconcileMessage(counts);
+      if (status === 'VERIFIED_REMOVED') assert.match(message, /Confirmed removed/);
+      else assert.doesNotMatch(message, NO_SUCCESS_CLAIM, `${status}: ${message}`);
+    }
+  });
 });
+
