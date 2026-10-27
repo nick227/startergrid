@@ -13,6 +13,17 @@ The ROI and attribution work should not ship, and no further intelligence dashbo
 5. Public observations are never presented as verified buyers.
 6. Route classification and authorization tests cover the sold endpoint.
 
+## Model principle — lifecycle is not attribution
+
+A vehicle marked sold is an inventory event. It does not establish the sale price, buyer, lead source or channel responsible. Keep these as distinct facts:
+
+- **Inventory outcome:** vehicle marked sold, with source and timestamp of the status change.
+- **Sale details:** actual transaction date and sale price, only when provided.
+- **Attribution:** channel association, only when an explicit matching rule supports it.
+- **Evidence:** where each recorded or inferred fact originated.
+
+This matters most for DMS integrations, which often update availability without transaction details: the lifecycle event is recorded, sale details stay empty, attribution stays absent. Avoid collapsing them into single `Vehicle` columns (`soldAt` doubling as transaction date, `salesAttributedChannel` with no evidence record).
+
 ## P0 — One lifecycle path for every sale
 
 `POST /api/marketplace/vehicles/:listingId/sold` (`src/server/routes/marketplace.ts`) is now dealership-authorized (commit `40383d8`) but still writes `vehicle.soldAt` directly, ends the marketplace listing and creates a notification. It records no `VehicleLifecycleEvent`, no `VehicleUpdate` and no `SyncEvent`, so downstream channels are not told to remove the vehicle.
