@@ -1,4 +1,13 @@
 ---
+visibility: public
+id: inventory-csv-import
+feature: inventory-import
+type: task
+audience: user, staff
+tags: inventory import, inventory
+synonyms: CSV, spreadsheet, import, drag drop, correction, invalid, skipped, stock number
+aliases: inventory/csv-import
+related: troubleshooting-import-errors, inventory-inventory-readiness
 title: Import and correct a spreadsheet
 summary: Drop a CSV file, match its columns, fix problem rows and check the results before importing.
 keywords: CSV, spreadsheet, import, drag drop, correction, invalid, skipped, stock number

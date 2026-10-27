@@ -1,4 +1,13 @@
 ---
+visibility: public
+id: app-reports
+feature: reporting
+type: task
+audience: user, staff
+tags: reporting
+synonyms: reports, metrics, dates, inventory, performance, analytics
+aliases: app/reports
+related: app-sync-vs-accounts, inventory-older-inventory
 title: Find and read reports
 summary: Use reports for inventory and activity details, and check the scope and date range before acting.
 keywords: reports, metrics, dates, inventory, performance, analytics

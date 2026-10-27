@@ -1,4 +1,13 @@
 ---
+visibility: public
+id: processes-auto-sync
+feature: automatic-updates
+type: task
+audience: user, staff
+tags: automatic updates, channels
+synonyms: autopilot, automatic, pause, off, sold, updates, distribution, safeguards
+aliases: processes/auto-sync
+related: app-channels, troubleshooting-sold-listing-still-live
 title: Automatic updates and pausing
 summary: What Autopilot updates, which destinations it supports and what continues when you pause.
 keywords: autopilot, automatic, pause, off, sold, updates, distribution, safeguards

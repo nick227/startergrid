@@ -1,4 +1,13 @@
 ---
+visibility: public
+id: connections-telegram
+feature: lead-notifications
+type: task
+audience: user, staff
+tags: lead notifications, leads
+synonyms: telegram, bot, chat id, lead, alert
+aliases: connections/telegram
+related: connections-lead-notifications
 title: Get new inquiries in Telegram
 summary: Create a Telegram bot, add your chat ID, and paste both into StarterGrid.
 keywords: telegram, bot, chat id, lead, alert

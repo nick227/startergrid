@@ -1,8 +1,8 @@
 import { readFileSync, readdirSync } from 'node:fs';
 import { join } from 'node:path';
 import { describe, expect, it } from 'vitest';
-import { getDoc, listDocIds } from './registry.ts';
-import { HELP_TASKS, HELP_TOPICS } from '../helpTasks.ts';
+import { getDoc, listDocIds, loadDoc } from './registry.ts';
+import { HELP_TOPICS } from '../helpTasks.ts';
 
 describe('published help', () => {
   it('resolves static article references in UI components and pages', () => {
@@ -24,22 +24,19 @@ describe('published help', () => {
   it('provides a published contextual article for every main screen', () => {
     for (const [tab, id] of Object.entries(HELP_TOPICS)) expect(getDoc(id), tab).not.toBeNull();
   });
-  it('provides search metadata and readable content for every article', () => {
+  it('provides search metadata and readable content for every article', async () => {
     for (const id of listDocIds()) {
       const doc = getDoc(id)!;
       expect(doc.frontmatter.title, id).toBeTruthy();
       expect(doc.frontmatter.summary, id).toBeTruthy();
       expect(doc.frontmatter.keywords, id).toBeTruthy();
       expect(doc.frontmatter.updated, id).toMatch(/^\d{4}-\d{2}-\d{2}$/);
-      expect(doc.body.trim().length, id).toBeGreaterThan(100);
+      expect((await loadDoc(id)).body.trim().length, id).toBeGreaterThan(100);
     }
   });
-  it('resolves every common question to a published article', () => {
-    for (const task of HELP_TASKS) expect(getDoc(task.docId), task.question).not.toBeNull();
-  });
-  it('has no broken internal article links', () => {
+  it('has no broken internal article links', async () => {
     for (const id of listDocIds()) {
-      for (const match of getDoc(id)!.body.matchAll(/\]\(doc:([^\s)]+)\)/g)) {
+      for (const match of (await loadDoc(id)).body.matchAll(/\]\(doc:([^\s)]+)\)/g)) {
         expect(getDoc(match[1]), `${id} links to ${match[1]}`).not.toBeNull();
       }
     }

@@ -1,4 +1,13 @@
 ---
+visibility: public
+id: connections-lead-notifications
+feature: lead-notifications
+type: task
+audience: user, staff
+tags: lead notifications, leads
+synonyms: lead, notification, alert, discord, telegram, sms, webhook, email
+aliases: connections/lead-notifications
+related: connections-email-notifications, connections-discord, connections-telegram, connections-sms, connections-webhook
 title: Choose how you hear about new inquiries
 summary: Turn on email, Discord, Telegram, SMS, or a webhook so new leads reach the right people.
 keywords: lead, notification, alert, discord, telegram, sms, webhook, email

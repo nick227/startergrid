@@ -1,4 +1,13 @@
 ---
+visibility: public
+id: processes-platform-readiness
+feature: listing-delivery
+type: task
+audience: user, staff
+tags: listing delivery, channels
+synonyms: destination, connected, ready to send, photos, account, automatic
+aliases: processes/platform-readiness
+related: app-channels, inventory-inventory-readiness
 title: When a destination can receive vehicles
 summary: Check the connection, supported update method, and vehicle requirements separately.
 keywords: destination, connected, ready to send, photos, account, automatic

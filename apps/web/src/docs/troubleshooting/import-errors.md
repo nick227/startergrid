@@ -1,4 +1,13 @@
 ---
+visibility: public
+id: troubleshooting-import-errors
+feature: inventory-import
+type: troubleshooting
+audience: user, staff
+tags: inventory import, inventory
+synonyms: import errors, CSV, skipped, blocked, invalid, duplicate
+aliases: troubleshooting/import-errors
+related: inventory-csv-import
 title: Fix import errors
 summary: Correct a row or its column matches, check it again and review which rows actually saved.
 keywords: import errors, CSV, skipped, blocked, invalid, duplicate

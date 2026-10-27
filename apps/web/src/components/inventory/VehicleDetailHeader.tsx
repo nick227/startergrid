@@ -1,3 +1,4 @@
+import { HelpLink } from '@/components/docs/HelpButton.tsx';
 import { useState } from 'react';
 import type { VehicleDetailDto } from '@/lib/api/sdk.ts';
 import { markVehicleSold, relistVehicle, setVehicleListingStatus } from '@/lib/api/sdk.ts';
@@ -144,6 +145,7 @@ export function VehicleDetailHeader({ vehicle, onClose, onReload }: Props) {
             >
               {busy === 'sold' ? 'Marking sold…' : 'Mark sold'}
             </button>
+            <HelpLink docId="inventory-sold-removed">What marking sold changes</HelpLink>
           </>
         )}
         {(isSold || isRemoved) && (

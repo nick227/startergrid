@@ -1,4 +1,13 @@
 ---
+visibility: public
+id: industry-oem-program-feeds
+feature: listing-delivery
+type: reference
+audience: user, staff
+tags: listing delivery, channels
+synonyms: OEM, manufacturer, program, franchise, CPO
+aliases: industry/oem-program-feeds
+related: law-advertising-disclaimers
 title: Manufacturer inventory programs
 summary: Franchise programs add brand photo, price, and disclaimer rules on top of ordinary classified sites.
 keywords: OEM, manufacturer, program, franchise, CPO

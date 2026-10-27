@@ -14,7 +14,11 @@
     "lint": "eslint src",
     "lint:fix": "eslint src --fix",
     "e2e:v5": "playwright test --config playwright.v5.config.ts",
-    "e2e:journey": "npm run -s build --prefix ../.. && playwright test --config playwright.journey.config.ts"
+    "e2e:journey": "npm run -s build --prefix ../.. && playwright test --config playwright.journey.config.ts",
+    "docs:generate": "node ../../scripts/export-documentation.mjs --write",
+    "predev": "npm run docs:generate",
+    "prebuild": "npm run docs:generate",
+    "pretest": "npm run docs:generate"
   },
   "dependencies": {
     "@auto-dealer/api-client": "*",

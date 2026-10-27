@@ -1,4 +1,13 @@
 ---
+visibility: public
+id: industry-dms-source-of-truth
+feature: inventory-import
+type: reference
+audience: user, staff
+tags: inventory import, inventory
+synonyms: DMS, import, price, sold, overwrite
+aliases: industry/dms-source-of-truth
+related: inventory-csv-import, troubleshooting-price-mismatch
 title: How the DMS relates to StarterGrid
 summary: StarterGrid sends the copy stored here. Your DMS still owns deals, accounting, and the floor.
 keywords: DMS, import, price, sold, overwrite

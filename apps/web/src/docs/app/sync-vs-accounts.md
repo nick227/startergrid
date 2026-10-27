@@ -1,4 +1,13 @@
 ---
+visibility: public
+id: app-sync-vs-accounts
+feature: listing-delivery
+type: troubleshooting
+audience: user, staff
+tags: listing delivery, channels
+synonyms: channels, vehicles, blocked, connection, send
+aliases: app/sync-vs-accounts
+related:
 title: Vehicles look fine but a site did not update
 summary: Fix missing vehicle details first, then the destination connection, then check whether the last send went through.
 keywords: channels, vehicles, blocked, connection, send

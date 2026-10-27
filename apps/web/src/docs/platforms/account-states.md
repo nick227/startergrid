@@ -1,4 +1,13 @@
 ---
+visibility: public
+id: platforms-account-states
+feature: channel-accounts
+type: reference
+audience: user, staff
+tags: channel accounts, channels
+synonyms: connected, sign-in, partner, blocked, destination
+aliases: platforms/account-states
+related:
 title: What destination connection means
 summary: A destination must be connected before vehicles can be sent there. Vehicle quality does not override a closed connection.
 keywords: connected, sign-in, partner, blocked, destination

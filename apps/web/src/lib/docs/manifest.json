@@ -1,0 +1,885 @@
+[
+  {
+    "id": "app-channels",
+    "source": "app/channels.md",
+    "frontmatter": {
+      "visibility": "public",
+      "id": "app-channels",
+      "feature": "listing-delivery",
+      "type": "task",
+      "audience": "user, staff",
+      "tags": "listing delivery, channels",
+      "synonyms": "channels, destinations, platforms, connect, setup, live, partner, manual",
+      "aliases": "app/channels",
+      "related": "processes-auto-sync, app-sync-vs-accounts",
+      "title": "Connect a marketplace or advertising site",
+      "summary": "Choose a destination, finish its setup and understand the difference between connected, sent and live.",
+      "keywords": "channels, destinations, platforms, connect, setup, live, partner, manual",
+      "updated": "2026-10-26"
+    }
+  },
+  {
+    "id": "app-getting-started",
+    "source": "app/getting-started.md",
+    "frontmatter": {
+      "visibility": "public",
+      "id": "app-getting-started",
+      "feature": "product-navigation",
+      "type": "task",
+      "audience": "user, staff",
+      "tags": "product navigation",
+      "synonyms": "home, getting started, navigation, help, channels, leads",
+      "aliases": "app/getting-started",
+      "related": "app-channels, inventory-inventory-readiness, app-lead-status",
+      "title": "Find your way around StarterGrid",
+      "summary": "Where to add vehicles, check listings, follow up on inquiries and get help.",
+      "keywords": "home, getting started, navigation, help, channels, leads",
+      "updated": "2026-10-27"
+    }
+  },
+  {
+    "id": "app-lead-status",
+    "source": "app/lead-status.md",
+    "frontmatter": {
+      "visibility": "public",
+      "id": "app-lead-status",
+      "feature": "lead-management",
+      "type": "reference",
+      "audience": "user, staff",
+      "tags": "lead management, leads",
+      "synonyms": "lead, status, new, contacted, appointment, closed, lost, team",
+      "aliases": "app/lead-status",
+      "related": "connections-lead-notifications",
+      "title": "What lead statuses mean",
+      "summary": "Mark New, Contacted, Appointment, Closed / Won, or Lost so the rest of the team knows who still needs a call.",
+      "keywords": "lead, status, new, contacted, appointment, closed, lost, team",
+      "updated": "2026-10-27"
+    }
+  },
+  {
+    "id": "app-reports",
+    "source": "app/reports.md",
+    "frontmatter": {
+      "visibility": "public",
+      "id": "app-reports",
+      "feature": "reporting",
+      "type": "task",
+      "audience": "user, staff",
+      "tags": "reporting",
+      "synonyms": "reports, metrics, dates, inventory, performance, analytics",
+      "aliases": "app/reports",
+      "related": "app-sync-vs-accounts, inventory-older-inventory",
+      "title": "Find and read reports",
+      "summary": "Use reports for inventory and activity details, and check the scope and date range before acting.",
+      "keywords": "reports, metrics, dates, inventory, performance, analytics",
+      "updated": "2026-10-26"
+    }
+  },
+  {
+    "id": "app-sync-vs-accounts",
+    "source": "app/sync-vs-accounts.md",
+    "frontmatter": {
+      "visibility": "public",
+      "id": "app-sync-vs-accounts",
+      "feature": "listing-delivery",
+      "type": "troubleshooting",
+      "audience": "user, staff",
+      "tags": "listing delivery, channels",
+      "synonyms": "channels, vehicles, blocked, connection, send",
+      "aliases": "app/sync-vs-accounts",
+      "related": "",
+      "title": "Vehicles look fine but a site did not update",
+      "summary": "Fix missing vehicle details first, then the destination connection, then check whether the last send went through.",
+      "keywords": "channels, vehicles, blocked, connection, send",
+      "updated": "2026-10-26"
+    }
+  },
+  {
+    "id": "app-team-access",
+    "source": "app/team-access.md",
+    "frontmatter": {
+      "visibility": "public",
+      "id": "app-team-access",
+      "feature": "team-access",
+      "type": "task",
+      "audience": "user, staff",
+      "tags": "team access",
+      "synonyms": "invite, invitation, login, sign in, password, expired, access, email, team",
+      "aliases": "app/team-access",
+      "related": "",
+      "title": "Invitations and sign-in help",
+      "summary": "Invite a teammate, use a setup link, replace a temporary password or recover from an expired invitation.",
+      "keywords": "invite, invitation, login, sign in, password, expired, access, email, team",
+      "updated": "2026-10-26"
+    }
+  },
+  {
+    "id": "connections-auto-response",
+    "source": "connections/auto-response.md",
+    "frontmatter": {
+      "visibility": "public",
+      "id": "connections-auto-response",
+      "feature": "lead-notifications",
+      "type": "task",
+      "audience": "user, staff",
+      "tags": "lead notifications, leads",
+      "synonyms": "auto-response, buyer, email, sms, acknowledgment",
+      "aliases": "connections/auto-response",
+      "related": "",
+      "title": "Send an automatic thank-you to the buyer",
+      "summary": "Enable an automatic email or text acknowledgment and check its delivery result.",
+      "keywords": "auto-response, buyer, email, sms, acknowledgment",
+      "updated": "2026-10-27"
+    }
+  },
+  {
+    "id": "connections-discord",
+    "source": "connections/discord.md",
+    "frontmatter": {
+      "visibility": "public",
+      "id": "connections-discord",
+      "feature": "lead-notifications",
+      "type": "task",
+      "audience": "user, staff",
+      "tags": "lead notifications, leads",
+      "synonyms": "discord, webhook, lead, alert",
+      "aliases": "connections/discord",
+      "related": "connections-lead-notifications",
+      "title": "Get new inquiries in Discord",
+      "summary": "Create a Discord webhook and paste it into StarterGrid so new leads post in your channel.",
+      "keywords": "discord, webhook, lead, alert",
+      "updated": "2026-10-27"
+    }
+  },
+  {
+    "id": "connections-email-notifications",
+    "source": "connections/email-notifications.md",
+    "frontmatter": {
+      "visibility": "public",
+      "id": "connections-email-notifications",
+      "feature": "lead-notifications",
+      "type": "task",
+      "audience": "user, staff",
+      "tags": "lead notifications, leads",
+      "synonyms": "email, notification, lead, primary contact",
+      "aliases": "connections/email-notifications",
+      "related": "connections-lead-notifications",
+      "title": "Get new inquiries by email",
+      "summary": "Email goes to the primary contact on the dealership profile. Turn it off in Settings if you do not want it.",
+      "keywords": "email, notification, lead, primary contact",
+      "updated": "2026-10-27"
+    }
+  },
+  {
+    "id": "connections-lead-notifications",
+    "source": "connections/lead-notifications.md",
+    "frontmatter": {
+      "visibility": "public",
+      "id": "connections-lead-notifications",
+      "feature": "lead-notifications",
+      "type": "task",
+      "audience": "user, staff",
+      "tags": "lead notifications, leads",
+      "synonyms": "lead, notification, alert, discord, telegram, sms, webhook, email",
+      "aliases": "connections/lead-notifications",
+      "related": "connections-email-notifications, connections-discord, connections-telegram, connections-sms, connections-webhook",
+      "title": "Choose how you hear about new inquiries",
+      "summary": "Turn on email, Discord, Telegram, SMS, or a webhook so new leads reach the right people.",
+      "keywords": "lead, notification, alert, discord, telegram, sms, webhook, email",
+      "updated": "2026-10-27"
+    }
+  },
+  {
+    "id": "connections-sms",
+    "source": "connections/sms.md",
+    "frontmatter": {
+      "visibility": "public",
+      "id": "connections-sms",
+      "feature": "lead-notifications",
+      "type": "task",
+      "audience": "user, staff",
+      "tags": "lead notifications, leads",
+      "synonyms": "sms, text, phone, lead, alert",
+      "aliases": "connections/sms",
+      "related": "connections-lead-notifications",
+      "title": "Get new inquiries by text",
+      "summary": "Enter a mobile number to receive a short text. Support must enable texting before messages go out.",
+      "keywords": "sms, text, phone, lead, alert",
+      "updated": "2026-10-27"
+    }
+  },
+  {
+    "id": "connections-telegram",
+    "source": "connections/telegram.md",
+    "frontmatter": {
+      "visibility": "public",
+      "id": "connections-telegram",
+      "feature": "lead-notifications",
+      "type": "task",
+      "audience": "user, staff",
+      "tags": "lead notifications, leads",
+      "synonyms": "telegram, bot, chat id, lead, alert",
+      "aliases": "connections/telegram",
+      "related": "connections-lead-notifications",
+      "title": "Get new inquiries in Telegram",
+      "summary": "Create a Telegram bot, add your chat ID, and paste both into StarterGrid.",
+      "keywords": "telegram, bot, chat id, lead, alert",
+      "updated": "2026-10-27"
+    }
+  },
+  {
+    "id": "connections-webhook",
+    "source": "connections/webhook.md",
+    "frontmatter": {
+      "visibility": "public",
+      "id": "connections-webhook",
+      "feature": "lead-notifications",
+      "type": "reference",
+      "audience": "staff, developer",
+      "tags": "lead notifications, leads",
+      "synonyms": "webhook, https, payload, json, hmac, zapier",
+      "aliases": "connections/webhook",
+      "related": "connections-lead-notifications",
+      "title": "Send inquiries to another system",
+      "summary": "Post each new lead as JSON to an HTTPS address you control. Signing is optional.",
+      "keywords": "webhook, https, payload, json, hmac, zapier",
+      "updated": "2026-10-27",
+      "advanced": "true"
+    }
+  },
+  {
+    "id": "crm-delivery",
+    "source": "crm-delivery.md",
+    "frontmatter": {
+      "visibility": "public",
+      "id": "crm-delivery",
+      "feature": "crm-delivery",
+      "type": "troubleshooting",
+      "audience": "user, staff",
+      "title": "Why did my lead not reach my CRM?",
+      "summary": "Check the delivery attempt, destination, and manual handoff options before sending again.",
+      "tags": "crm, leads, delivery",
+      "synonyms": "inquiry, lead, crm, not received, missing, didnt reach, send, failed, email, adf, xml",
+      "keywords": "inquiry, lead, crm, not received, missing, didnt reach, send, failed, email, adf, xml",
+      "related": "app-lead-status, connections-lead-notifications",
+      "implementation": "apps/web/src/components/leads/LeadCrmHandoffModal.tsx, apps/web/src/lib/api/leadsApi.ts, src/server/routes/dealerLeads.ts",
+      "updated": "2026-10-27"
+    }
+  },
+  {
+    "id": "dealerships-dealer-context",
+    "source": "dealerships/dealer-context.md",
+    "frontmatter": {
+      "visibility": "public",
+      "id": "dealerships-dealer-context",
+      "feature": "dealership-management",
+      "type": "task",
+      "audience": "user, staff",
+      "tags": "dealership management",
+      "synonyms": "dealership, dealership, group, switch",
+      "aliases": "dealerships/dealer-context",
+      "related": "",
+      "title": "Make sure you are in the right dealership",
+      "summary": "Vehicles, destinations, and inquiries belong to one dealership at a time.",
+      "keywords": "dealership, dealership, group, switch",
+      "updated": "2026-10-27"
+    }
+  },
+  {
+    "id": "dealerships-setup-and-handoff",
+    "source": "dealerships/setup-and-handoff.md",
+    "frontmatter": {
+      "visibility": "public",
+      "id": "dealerships-setup-and-handoff",
+      "feature": "dealership-management",
+      "type": "task",
+      "audience": "staff",
+      "tags": "dealership management",
+      "synonyms": "onboarding, setup, handoff, launch, owner, internal support, waiting for stock",
+      "aliases": "dealerships/setup-and-handoff",
+      "related": "app-team-access, connections-lead-notifications",
+      "title": "Set up a dealership and complete handoff",
+      "summary": "Check owner access, vehicle publication and the shared inbox before completing setup.",
+      "keywords": "onboarding, setup, handoff, launch, owner, internal support, waiting for stock",
+      "updated": "2026-10-26"
+    }
+  },
+  {
+    "id": "documentation-records",
+    "source": "documentation-records.md",
+    "frontmatter": {
+      "visibility": "public",
+      "id": "documentation-records",
+      "feature": "documentation-index",
+      "type": "reference",
+      "audience": "developer",
+      "title": "Maintain feature documentation",
+      "summary": "Keep stable product records, task instructions, and implementation references aligned as the interface changes.",
+      "tags": "documentation, development, metadata",
+      "synonyms": "agents, ai, feature id, docs, index, schema, maintenance",
+      "keywords": "agents, ai, feature id, docs, index, schema, maintenance",
+      "related": "inventory-import, staff-dealership-assistance",
+      "implementation": "docs/development/documentation-authoring.md, apps/web/src/lib/docs/registry.ts, apps/web/src/lib/docs/catalog.ts, scripts/export-documentation.mjs",
+      "updated": "2026-10-27"
+    }
+  },
+  {
+    "id": "industry-dms-source-of-truth",
+    "source": "industry/dms-source-of-truth.md",
+    "frontmatter": {
+      "visibility": "public",
+      "id": "industry-dms-source-of-truth",
+      "feature": "inventory-import",
+      "type": "reference",
+      "audience": "user, staff",
+      "tags": "inventory import, inventory",
+      "synonyms": "DMS, import, price, sold, overwrite",
+      "aliases": "industry/dms-source-of-truth",
+      "related": "inventory-csv-import, troubleshooting-price-mismatch",
+      "title": "How the DMS relates to StarterGrid",
+      "summary": "StarterGrid sends the copy stored here. Your DMS still owns deals, accounting, and the floor.",
+      "keywords": "DMS, import, price, sold, overwrite",
+      "updated": "2026-10-26",
+      "advanced": "true"
+    }
+  },
+  {
+    "id": "industry-oem-program-feeds",
+    "source": "industry/oem-program-feeds.md",
+    "frontmatter": {
+      "visibility": "public",
+      "id": "industry-oem-program-feeds",
+      "feature": "listing-delivery",
+      "type": "reference",
+      "audience": "user, staff",
+      "tags": "listing delivery, channels",
+      "synonyms": "OEM, manufacturer, program, franchise, CPO",
+      "aliases": "industry/oem-program-feeds",
+      "related": "law-advertising-disclaimers",
+      "title": "Manufacturer inventory programs",
+      "summary": "Franchise programs add brand photo, price, and disclaimer rules on top of ordinary classified sites.",
+      "keywords": "OEM, manufacturer, program, franchise, CPO",
+      "updated": "2026-10-26",
+      "advanced": "true"
+    }
+  },
+  {
+    "id": "industry-photo-standards",
+    "source": "industry/photo-standards.md",
+    "frontmatter": {
+      "visibility": "public",
+      "id": "industry-photo-standards",
+      "feature": "listing-readiness",
+      "type": "reference",
+      "audience": "user, staff",
+      "tags": "listing readiness, channels",
+      "synonyms": "photos, images, minimum, recon",
+      "aliases": "industry/photo-standards",
+      "related": "inventory-inventory-readiness",
+      "title": "How many photos a vehicle needs",
+      "summary": "StarterGrid holds a vehicle until it meets the photo minimum. Some destinations then require more.",
+      "keywords": "photos, images, minimum, recon",
+      "updated": "2026-10-26"
+    }
+  },
+  {
+    "id": "industry-syndication-lag",
+    "source": "industry/syndication-lag.md",
+    "frontmatter": {
+      "visibility": "public",
+      "id": "industry-syndication-lag",
+      "feature": "listing-delivery",
+      "type": "reference",
+      "audience": "user, staff",
+      "tags": "listing delivery, channels",
+      "synonyms": "lag, delay, feed, ingest, sent",
+      "aliases": "industry/syndication-lag",
+      "related": "troubleshooting-sold-listing-still-live",
+      "title": "Why a site updates later than StarterGrid",
+      "summary": "A finished send means we delivered the update. Each destination still refreshes on its own clock.",
+      "keywords": "lag, delay, feed, ingest, sent",
+      "updated": "2026-10-26",
+      "advanced": "true"
+    }
+  },
+  {
+    "id": "industry-vin-decode-limits",
+    "source": "industry/vin-decode-limits.md",
+    "frontmatter": {
+      "visibility": "public",
+      "id": "industry-vin-decode-limits",
+      "feature": "inventory-entry",
+      "type": "reference",
+      "audience": "user, staff",
+      "tags": "inventory entry, inventory",
+      "synonyms": "VIN, decode, trim, cab, body style",
+      "aliases": "industry/vin-decode-limits",
+      "related": "troubleshooting-blocked-but-complete",
+      "title": "What VIN decode does not fill in",
+      "summary": "A valid VIN can still leave color, mileage, cab type, and packages blank. Fill those if a destination asks.",
+      "keywords": "VIN, decode, trim, cab, body style",
+      "updated": "2026-10-26",
+      "advanced": "true"
+    }
+  },
+  {
+    "id": "inventory-bulk-edit",
+    "source": "inventory/bulk-edit.md",
+    "frontmatter": {
+      "visibility": "public",
+      "id": "inventory-bulk-edit",
+      "feature": "inventory-editing",
+      "type": "task",
+      "audience": "user, staff",
+      "tags": "inventory editing, inventory",
+      "synonyms": "bulk edit, price, mileage, multi-select",
+      "aliases": "inventory/bulk-edit",
+      "related": "",
+      "title": "Change many vehicles at once",
+      "summary": "Select vehicles, enter shared values, and choose Apply. Ready vehicles can be sent again after the save.",
+      "keywords": "bulk edit, price, mileage, multi-select",
+      "updated": "2026-10-27"
+    }
+  },
+  {
+    "id": "inventory-csv-import",
+    "source": "inventory/csv-import.md",
+    "frontmatter": {
+      "visibility": "public",
+      "id": "inventory-csv-import",
+      "feature": "inventory-import",
+      "type": "task",
+      "audience": "user, staff",
+      "tags": "inventory import, inventory",
+      "synonyms": "CSV, spreadsheet, import, drag drop, correction, invalid, skipped, stock number",
+      "aliases": "inventory/csv-import",
+      "related": "troubleshooting-import-errors, inventory-inventory-readiness",
+      "title": "Import and correct a spreadsheet",
+      "summary": "Drop a CSV file, match its columns, fix problem rows and check the results before importing.",
+      "keywords": "CSV, spreadsheet, import, drag drop, correction, invalid, skipped, stock number",
+      "updated": "2026-10-26"
+    }
+  },
+  {
+    "id": "inventory-import",
+    "source": "inventory-import.md",
+    "frontmatter": {
+      "visibility": "public",
+      "id": "inventory-import",
+      "feature": "inventory-import",
+      "type": "feature",
+      "audience": "user, staff, developer",
+      "title": "Spreadsheet inventory import",
+      "summary": "Preview spreadsheet rows and update inventory matched by dealership and stock number.",
+      "tags": "inventory, import, stock numbers",
+      "synonyms": "csv, spreadsheet, upload, duplicate, overwrite, mapping",
+      "keywords": "csv, spreadsheet, upload, duplicate, overwrite, mapping",
+      "related": "inventory-csv-import, inventory-stock-number-rules, troubleshooting-import-errors",
+      "implementation": "apps/web/src/components/inventory/ImportModal.tsx, src/services/inventory/importService.ts",
+      "updated": "2026-10-27"
+    }
+  },
+  {
+    "id": "inventory-inventory-readiness",
+    "source": "inventory/inventory-readiness.md",
+    "frontmatter": {
+      "visibility": "public",
+      "id": "inventory-inventory-readiness",
+      "feature": "listing-readiness",
+      "type": "task",
+      "audience": "user, staff",
+      "tags": "listing readiness, channels",
+      "synonyms": "readiness, ready to send, cannot list, photos, price, VIN, storefront",
+      "aliases": "inventory/inventory-readiness",
+      "related": "inventory-warnings-vs-blocked, processes-auto-sync",
+      "title": "When a vehicle can be listed",
+      "summary": "A vehicle is ready to send after it has the required details. Ready to send is not the same as already sent.",
+      "keywords": "readiness, ready to send, cannot list, photos, price, VIN, storefront",
+      "updated": "2026-10-27"
+    }
+  },
+  {
+    "id": "inventory-older-inventory",
+    "source": "inventory/older-inventory.md",
+    "frontmatter": {
+      "visibility": "public",
+      "id": "inventory-older-inventory",
+      "feature": "inventory-pricing",
+      "type": "task",
+      "audience": "user, staff",
+      "tags": "inventory pricing, inventory",
+      "synonyms": "inventory age, days on lot, aging, velocity, repricing, price, discount",
+      "aliases": "inventory/older-inventory",
+      "related": "troubleshooting-price-mismatch",
+      "title": "Review older inventory",
+      "summary": "Understand age groups and price suggestions before changing an advertised price.",
+      "keywords": "inventory age, days on lot, aging, velocity, repricing, price, discount",
+      "updated": "2026-10-27"
+    }
+  },
+  {
+    "id": "inventory-sold-removed",
+    "source": "inventory/sold-removed.md",
+    "frontmatter": {
+      "visibility": "public",
+      "id": "inventory-sold-removed",
+      "feature": "listing-removal",
+      "type": "task",
+      "audience": "user, staff",
+      "tags": "listing removal, channels",
+      "synonyms": "sold, removed, take down, availability, manual listing",
+      "aliases": "inventory/sold-removed",
+      "related": "troubleshooting-sold-listing-still-live",
+      "title": "Mark a vehicle sold or removed",
+      "summary": "Update availability, then check the removal result for each destination.",
+      "keywords": "sold, removed, take down, availability, manual listing",
+      "updated": "2026-10-27"
+    }
+  },
+  {
+    "id": "inventory-stock-number-rules",
+    "source": "inventory/stock-number-rules.md",
+    "frontmatter": {
+      "visibility": "public",
+      "id": "inventory-stock-number-rules",
+      "feature": "inventory-import",
+      "type": "reference",
+      "audience": "user, staff",
+      "tags": "inventory import, inventory",
+      "synonyms": "stock number, import, duplicate, VIN",
+      "aliases": "inventory/stock-number-rules",
+      "related": "inventory-csv-import",
+      "title": "Keep stock numbers stable",
+      "summary": "Use one stock number for the life of a unit so imports update the right vehicle.",
+      "keywords": "stock number, import, duplicate, VIN",
+      "updated": "2026-10-27"
+    }
+  },
+  {
+    "id": "inventory-warnings-vs-blocked",
+    "source": "inventory/warnings-vs-blocked.md",
+    "frontmatter": {
+      "visibility": "public",
+      "id": "inventory-warnings-vs-blocked",
+      "feature": "listing-readiness",
+      "type": "reference",
+      "audience": "user, staff",
+      "tags": "listing readiness, channels",
+      "synonyms": "warning, blocked, needs details, cannot list, photos, price",
+      "aliases": "inventory/warnings-vs-blocked",
+      "related": "inventory-inventory-readiness",
+      "title": "Needs details vs cannot list",
+      "summary": "Cannot list means the vehicle is held back. Needs details means it can still go to some destinations.",
+      "keywords": "warning, blocked, needs details, cannot list, photos, price",
+      "updated": "2026-10-26"
+    }
+  },
+  {
+    "id": "law-advertising-disclaimers",
+    "source": "law/advertising-disclaimers.md",
+    "frontmatter": {
+      "visibility": "public",
+      "id": "law-advertising-disclaimers",
+      "feature": "listing-readiness",
+      "type": "reference",
+      "audience": "user, staff",
+      "tags": "listing readiness, channels",
+      "synonyms": "advertising, price, disclaimer, photos, compliance",
+      "aliases": "law/advertising-disclaimers",
+      "related": "inventory-sold-removed",
+      "title": "Advertising rules you still own",
+      "summary": "StarterGrid blocks missing VIN, photos, and price. You still own fee disclosures, mileage truth, and real photos.",
+      "keywords": "advertising, price, disclaimer, photos, compliance",
+      "updated": "2026-10-26"
+    }
+  },
+  {
+    "id": "platforms-account-states",
+    "source": "platforms/account-states.md",
+    "frontmatter": {
+      "visibility": "public",
+      "id": "platforms-account-states",
+      "feature": "channel-accounts",
+      "type": "reference",
+      "audience": "user, staff",
+      "tags": "channel accounts, channels",
+      "synonyms": "connected, sign-in, partner, blocked, destination",
+      "aliases": "platforms/account-states",
+      "related": "",
+      "title": "What destination connection means",
+      "summary": "A destination must be connected before vehicles can be sent there. Vehicle quality does not override a closed connection.",
+      "keywords": "connected, sign-in, partner, blocked, destination",
+      "updated": "2026-10-27",
+      "advanced": "true"
+    }
+  },
+  {
+    "id": "platforms-credential-rotation",
+    "source": "platforms/credential-rotation.md",
+    "frontmatter": {
+      "visibility": "public",
+      "id": "platforms-credential-rotation",
+      "feature": "channel-accounts",
+      "type": "troubleshooting",
+      "audience": "user, staff",
+      "tags": "channel accounts, channels",
+      "synonyms": "sign-in, password, expired, credentials",
+      "aliases": "platforms/credential-rotation",
+      "related": "",
+      "title": "Sign-in expired or password changed",
+      "summary": "When a destination password or key changes, open Channels and sign in again. Do not re-import the lot.",
+      "keywords": "sign-in, password, expired, credentials",
+      "updated": "2026-10-27",
+      "advanced": "true"
+    }
+  },
+  {
+    "id": "platforms-platform",
+    "source": "platforms/platform.md",
+    "frontmatter": {
+      "visibility": "public",
+      "id": "platforms-platform",
+      "feature": "listing-delivery",
+      "type": "reference",
+      "audience": "staff, developer",
+      "tags": "listing delivery, channels",
+      "synonyms": "destination, profile, account, feed, API",
+      "aliases": "platforms/platform",
+      "related": "processes-platform-readiness",
+      "title": "How a destination is stored",
+      "summary": "Each destination has a profile, an account, and a send result. Those three are not the same record.",
+      "keywords": "destination, profile, account, feed, API",
+      "updated": "2026-10-26",
+      "advanced": "true"
+    }
+  },
+  {
+    "id": "processes-approval-holds",
+    "source": "processes/approval-holds.md",
+    "frontmatter": {
+      "visibility": "public",
+      "id": "processes-approval-holds",
+      "feature": "listing-delivery",
+      "type": "troubleshooting",
+      "audience": "user, staff",
+      "tags": "listing delivery, channels",
+      "synonyms": "approval, hold, pending, first send",
+      "aliases": "processes/approval-holds",
+      "related": "",
+      "title": "A destination is waiting on approval",
+      "summary": "Some first-time or large updates wait for you or the destination to approve before listings go out.",
+      "keywords": "approval, hold, pending, first send",
+      "updated": "2026-10-26"
+    }
+  },
+  {
+    "id": "processes-auto-sync",
+    "source": "processes/auto-sync.md",
+    "frontmatter": {
+      "visibility": "public",
+      "id": "processes-auto-sync",
+      "feature": "automatic-updates",
+      "type": "task",
+      "audience": "user, staff",
+      "tags": "automatic updates, channels",
+      "synonyms": "autopilot, automatic, pause, off, sold, updates, distribution, safeguards",
+      "aliases": "processes/auto-sync",
+      "related": "app-channels, troubleshooting-sold-listing-still-live",
+      "title": "Automatic updates and pausing",
+      "summary": "What Autopilot updates, which destinations it supports and what continues when you pause.",
+      "keywords": "autopilot, automatic, pause, off, sold, updates, distribution, safeguards",
+      "updated": "2026-10-26"
+    }
+  },
+  {
+    "id": "processes-platform-readiness",
+    "source": "processes/platform-readiness.md",
+    "frontmatter": {
+      "visibility": "public",
+      "id": "processes-platform-readiness",
+      "feature": "listing-delivery",
+      "type": "task",
+      "audience": "user, staff",
+      "tags": "listing delivery, channels",
+      "synonyms": "destination, connected, ready to send, photos, account, automatic",
+      "aliases": "processes/platform-readiness",
+      "related": "app-channels, inventory-inventory-readiness",
+      "title": "When a destination can receive vehicles",
+      "summary": "Check the connection, supported update method, and vehicle requirements separately.",
+      "keywords": "destination, connected, ready to send, photos, account, automatic",
+      "updated": "2026-10-26"
+    }
+  },
+  {
+    "id": "processes-sync-status",
+    "source": "processes/sync-status.md",
+    "frontmatter": {
+      "visibility": "public",
+      "id": "processes-sync-status",
+      "feature": "listing-delivery",
+      "type": "reference",
+      "audience": "user, staff",
+      "tags": "listing delivery, channels",
+      "synonyms": "send status, idle, updating, failed",
+      "aliases": "processes/sync-status",
+      "related": "",
+      "title": "How to read send status",
+      "summary": "Distinguish a scheduled or running update from a failed run and from a confirmed live listing.",
+      "keywords": "send status, idle, updating, failed",
+      "updated": "2026-10-27",
+      "advanced": "true"
+    }
+  },
+  {
+    "id": "staff-dealership-assistance",
+    "source": "staff-dealership-assistance.md",
+    "frontmatter": {
+      "visibility": "public",
+      "id": "staff-dealership-assistance",
+      "feature": "dealership-management",
+      "type": "feature",
+      "audience": "staff",
+      "title": "Find a dealership and help with its next task",
+      "summary": "Use the dealership record to understand status, responsibility, and the next action.",
+      "tags": "dealerships, ownership, support",
+      "synonyms": "find dealer, assigned, mine, rooftop, internal employee",
+      "keywords": "find dealer, assigned, mine, rooftop, internal employee",
+      "related": "dealerships-setup-and-handoff, staff-problems, app-team-access",
+      "implementation": "apps/web/src/components/dealers/DealershipDirectory.tsx, apps/web/src/components/dealers/DealershipRecordView.tsx, apps/web/src/lib/taskOwnership.ts",
+      "updated": "2026-10-27"
+    }
+  },
+  {
+    "id": "staff-integration-setup",
+    "source": "staff-integration-setup.md",
+    "frontmatter": {
+      "visibility": "public",
+      "id": "staff-integration-setup",
+      "feature": "channel-accounts",
+      "type": "task",
+      "audience": "staff",
+      "title": "Check dealership connections and shared integration settings",
+      "summary": "Distinguish one dealership account from settings that affect every dealership.",
+      "tags": "integrations, channels, accounts",
+      "synonyms": "credentials, shared, setup, provider, connection",
+      "keywords": "credentials, shared, setup, provider, connection",
+      "related": "app-channels, platforms-credential-rotation, staff-settings",
+      "implementation": "apps/web/src/pages/AdminPlatformDetailPage.tsx, apps/web/src/components/platforms/AccountEditForm.tsx",
+      "updated": "2026-10-27"
+    }
+  },
+  {
+    "id": "staff-problems",
+    "source": "staff-problems.md",
+    "frontmatter": {
+      "visibility": "public",
+      "id": "staff-problems",
+      "feature": "problem-diagnosis",
+      "type": "troubleshooting",
+      "audience": "staff",
+      "title": "Diagnose an operational problem",
+      "summary": "Identify the affected scope, take an available recovery action, and check the recorded outcome.",
+      "tags": "problems, errors, support",
+      "synonyms": "failed, retry, reauthenticate, responsibility, incidents",
+      "keywords": "failed, retry, reauthenticate, responsibility, incidents",
+      "related": "staff-dealership-assistance, staff-integration-setup",
+      "implementation": "apps/web/src/features/operations/ActivityIssuesSurface.tsx, apps/web/src/features/operations/api.ts",
+      "updated": "2026-10-27"
+    }
+  },
+  {
+    "id": "staff-settings",
+    "source": "staff-settings.md",
+    "frontmatter": {
+      "visibility": "public",
+      "id": "staff-settings",
+      "feature": "staff-administration",
+      "type": "reference",
+      "audience": "staff",
+      "title": "Understand site administration settings",
+      "summary": "Choose the site-wide tool that matches the issue without confusing it with dealership Settings.",
+      "tags": "settings, administration, permissions",
+      "synonyms": "system, staff accounts, audit, users, site admin",
+      "keywords": "system, staff accounts, audit, users, site admin",
+      "related": "staff-integration-setup, staff-dealership-assistance",
+      "implementation": "apps/web/src/lib/adminConsole.ts, apps/web/src/pages/AdminSettingsIndex.tsx",
+      "updated": "2026-10-27"
+    }
+  },
+  {
+    "id": "troubleshooting-blocked-but-complete",
+    "source": "troubleshooting/blocked-but-complete.md",
+    "frontmatter": {
+      "visibility": "public",
+      "id": "troubleshooting-blocked-but-complete",
+      "feature": "listing-readiness",
+      "type": "troubleshooting",
+      "audience": "user, staff",
+      "tags": "listing readiness, channels",
+      "synonyms": "cannot list, missing field, body style, VIN, photos",
+      "aliases": "troubleshooting/blocked-but-complete",
+      "related": "inventory-warnings-vs-blocked",
+      "title": "The vehicle looks complete but cannot be listed",
+      "summary": "A required field can still be empty even when year, make, model, price, and photos look filled in.",
+      "keywords": "cannot list, missing field, body style, VIN, photos",
+      "updated": "2026-10-26"
+    }
+  },
+  {
+    "id": "troubleshooting-import-errors",
+    "source": "troubleshooting/import-errors.md",
+    "frontmatter": {
+      "visibility": "public",
+      "id": "troubleshooting-import-errors",
+      "feature": "inventory-import",
+      "type": "troubleshooting",
+      "audience": "user, staff",
+      "tags": "inventory import, inventory",
+      "synonyms": "import errors, CSV, skipped, blocked, invalid, duplicate",
+      "aliases": "troubleshooting/import-errors",
+      "related": "inventory-csv-import",
+      "title": "Fix import errors",
+      "summary": "Correct a row or its column matches, check it again and review which rows actually saved.",
+      "keywords": "import errors, CSV, skipped, blocked, invalid, duplicate",
+      "updated": "2026-10-26"
+    }
+  },
+  {
+    "id": "troubleshooting-price-mismatch",
+    "source": "troubleshooting/price-mismatch.md",
+    "frontmatter": {
+      "visibility": "public",
+      "id": "troubleshooting-price-mismatch",
+      "feature": "inventory-pricing",
+      "type": "troubleshooting",
+      "audience": "user, staff",
+      "tags": "inventory pricing, inventory",
+      "synonyms": "price, mismatch, stale, internet price",
+      "aliases": "troubleshooting/price-mismatch",
+      "related": "law-advertising-disclaimers",
+      "title": "The price on a site does not match Vehicles",
+      "summary": "The public price is the last price that destination accepted, not necessarily today’s DMS or website price.",
+      "keywords": "price, mismatch, stale, internet price",
+      "updated": "2026-10-26"
+    }
+  },
+  {
+    "id": "troubleshooting-sold-listing-still-live",
+    "source": "troubleshooting/sold-listing-still-live.md",
+    "frontmatter": {
+      "visibility": "public",
+      "id": "troubleshooting-sold-listing-still-live",
+      "feature": "listing-removal",
+      "type": "troubleshooting",
+      "audience": "user, staff",
+      "tags": "listing removal, channels",
+      "synonyms": "sold, removed, still live, ghost, sentry, take down, removal",
+      "aliases": "troubleshooting/sold-listing-still-live",
+      "related": "inventory-sold-removed, processes-auto-sync",
+      "title": "A sold vehicle is still listed",
+      "summary": "Check the vehicle status, the recorded removal result and whether the listing needs manual removal.",
+      "keywords": "sold, removed, still live, ghost, sentry, take down, removal",
+      "updated": "2026-10-26"
+    }
+  }
+]

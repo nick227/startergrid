@@ -1,4 +1,13 @@
 ---
+visibility: public
+id: industry-vin-decode-limits
+feature: inventory-entry
+type: reference
+audience: user, staff
+tags: inventory entry, inventory
+synonyms: VIN, decode, trim, cab, body style
+aliases: industry/vin-decode-limits
+related: troubleshooting-blocked-but-complete
 title: What VIN decode does not fill in
 summary: A valid VIN can still leave color, mileage, cab type, and packages blank. Fill those if a destination asks.
 keywords: VIN, decode, trim, cab, body style

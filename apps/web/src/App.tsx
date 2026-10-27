@@ -24,7 +24,7 @@ import { useAuth } from '@/contexts/AuthContext.tsx';
 import { useOperatorRoute } from '@/hooks/useOperatorRoute.ts';
 import { useDealerCategorySchema } from '@/hooks/useDealerCategorySchema.ts';
 import { CategoryProvider } from '@/contexts/CategoryContext.tsx';
-import { DocReaderProvider, DocReaderSheet } from '@/components/docs';
+import { DocReaderProvider } from '@/components/docs';
 import { canAccessDealer } from '@/lib/operatorAccess.ts';
 import type { OperatorNavHandlers, OperatorTab } from '@/lib/operatorNav.ts';
 
@@ -74,10 +74,10 @@ function OperatorApp() {
     window.location.hash = '#/';
   }, [user, page, internalStaff]);
 
+  if (helpStandalone) return <KnowledgeBasePage />;
   if (!authReady) return <AuthLoadingScreen />;
   if (inviteToken) return <AccountSetupPage key={inviteToken} token={inviteToken} />;
   if (user?.mustChangePassword) return <AccountSetupPage />;
-  if (helpStandalone) return <KnowledgeBasePage onBack={() => { window.location.hash = '#/'; }} />;
   if (internalStaff && (!dealerId || page === 'admin')) {
     return (
       <CategoryProvider schema={categorySchema}>
@@ -151,7 +151,6 @@ export default function App() {
   return (
     <DocReaderProvider>
       <OperatorApp />
-      <DocReaderSheet />
     </DocReaderProvider>
   );
 }

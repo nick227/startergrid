@@ -1,4 +1,13 @@
 ---
+visibility: public
+id: processes-approval-holds
+feature: listing-delivery
+type: troubleshooting
+audience: user, staff
+tags: listing delivery, channels
+synonyms: approval, hold, pending, first send
+aliases: processes/approval-holds
+related:
 title: A destination is waiting on approval
 summary: Some first-time or large updates wait for you or the destination to approve before listings go out.
 keywords: approval, hold, pending, first send

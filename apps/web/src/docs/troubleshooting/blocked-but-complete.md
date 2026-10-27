@@ -1,4 +1,13 @@
 ---
+visibility: public
+id: troubleshooting-blocked-but-complete
+feature: listing-readiness
+type: troubleshooting
+audience: user, staff
+tags: listing readiness, channels
+synonyms: cannot list, missing field, body style, VIN, photos
+aliases: troubleshooting/blocked-but-complete
+related: inventory-warnings-vs-blocked
 title: The vehicle looks complete but cannot be listed
 summary: A required field can still be empty even when year, make, model, price, and photos look filled in.
 keywords: cannot list, missing field, body style, VIN, photos

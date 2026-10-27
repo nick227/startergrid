@@ -1,4 +1,13 @@
 ---
+visibility: public
+id: connections-email-notifications
+feature: lead-notifications
+type: task
+audience: user, staff
+tags: lead notifications, leads
+synonyms: email, notification, lead, primary contact
+aliases: connections/email-notifications
+related: connections-lead-notifications
 title: Get new inquiries by email
 summary: Email goes to the primary contact on the dealership profile. Turn it off in Settings if you do not want it.
 keywords: email, notification, lead, primary contact

@@ -1,4 +1,13 @@
 ---
+visibility: public
+id: troubleshooting-price-mismatch
+feature: inventory-pricing
+type: troubleshooting
+audience: user, staff
+tags: inventory pricing, inventory
+synonyms: price, mismatch, stale, internet price
+aliases: troubleshooting/price-mismatch
+related: law-advertising-disclaimers
 title: The price on a site does not match Vehicles
 summary: The public price is the last price that destination accepted, not necessarily today’s DMS or website price.
 keywords: price, mismatch, stale, internet price

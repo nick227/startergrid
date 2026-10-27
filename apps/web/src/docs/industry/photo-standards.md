@@ -1,4 +1,13 @@
 ---
+visibility: public
+id: industry-photo-standards
+feature: listing-readiness
+type: reference
+audience: user, staff
+tags: listing readiness, channels
+synonyms: photos, images, minimum, recon
+aliases: industry/photo-standards
+related: inventory-inventory-readiness
 title: How many photos a vehicle needs
 summary: StarterGrid holds a vehicle until it meets the photo minimum. Some destinations then require more.
 keywords: photos, images, minimum, recon

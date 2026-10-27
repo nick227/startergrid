@@ -1,4 +1,13 @@
 ---
+visibility: public
+id: connections-discord
+feature: lead-notifications
+type: task
+audience: user, staff
+tags: lead notifications, leads
+synonyms: discord, webhook, lead, alert
+aliases: connections/discord
+related: connections-lead-notifications
 title: Get new inquiries in Discord
 summary: Create a Discord webhook and paste it into StarterGrid so new leads post in your channel.
 keywords: discord, webhook, lead, alert

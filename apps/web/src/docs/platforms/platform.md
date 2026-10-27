@@ -1,4 +1,13 @@
 ---
+visibility: public
+id: platforms-platform
+feature: listing-delivery
+type: reference
+audience: staff, developer
+tags: listing delivery, channels
+synonyms: destination, profile, account, feed, API
+aliases: platforms/platform
+related: processes-platform-readiness
 title: How a destination is stored
 summary: Each destination has a profile, an account, and a send result. Those three are not the same record.
 keywords: destination, profile, account, feed, API

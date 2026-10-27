@@ -1,4 +1,13 @@
 ---
+visibility: public
+id: connections-webhook
+feature: lead-notifications
+type: reference
+audience: staff, developer
+tags: lead notifications, leads
+synonyms: webhook, https, payload, json, hmac, zapier
+aliases: connections/webhook
+related: connections-lead-notifications
 title: Send inquiries to another system
 summary: Post each new lead as JSON to an HTTPS address you control. Signing is optional.
 keywords: webhook, https, payload, json, hmac, zapier

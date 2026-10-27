@@ -1,3 +1,4 @@
+import { openDocumentation } from './docs/urls.ts';
 import type { OperatorNavHandlers, OperatorPageSegment } from './operatorNav.ts';
 import { appendRowNavScope, inventoryItemSlug, parseRowNavScope, splitOperatorHash, type RowNavScope } from './rowNavScope.ts';
 import { parseReportRoute } from './reportRoutes.ts';
@@ -147,7 +148,7 @@ export function parseOperatorRoute(hash = window.location.hash): OperatorRoute {
     );
   }
 
-  if (path === '/help' || path === 'help' || path === '/knowledge' || path === 'knowledge') {
+  if (path === '/docs' || path.startsWith('/docs/') || path === '/help' || path === 'help' || path === '/knowledge' || path === 'knowledge') {
     return routeWithReports(
       { dealerId: null, page: 'help', platformSlug: null, platformView: null, assetRef, assetId, inventoryItemSlug: null, adminDealerId: null, adminDealerPage: null },
       hash,
@@ -291,14 +292,14 @@ export function buildOperatorNav(dealerId: string): OperatorNavHandlers {
     goToInventoryItem: (item, scope) => { window.location.hash = inventoryItemHash(dealerId, item, scope); },
     goToLeads: () => { window.location.hash = operatorHash(dealerId, 'leads'); },
     goToSettings: () => { window.location.hash = operatorHash(dealerId, 'settings'); },
-    goToHelp: () => { window.location.hash = operatorHash(dealerId, 'help'); },
+    goToHelp: () => openDocumentation(),
     goToPlatformDetail: (slug, scope) => { window.location.hash = platformDetailHash(dealerId, slug, scope); },
     goToPlatformQueue: (slug, scope) => { window.location.hash = platformDetailHash(dealerId, slug, scope); },
     goToPlatformHistory: (slug, scope) => { window.location.hash = platformDetailHash(dealerId, slug, scope); },
     goToSync: () => { window.location.hash = operatorHash(dealerId, 'platforms'); },
     goToAccounts: () => { window.location.hash = operatorHash(dealerId, 'platforms'); },
     goToInsights: () => { window.location.hash = operatorHash(dealerId, 'reports'); },
-    goToKnowledge: () => { window.location.hash = operatorHash(dealerId, 'help'); },
+    goToKnowledge: () => openDocumentation(),
     changeDealer: () => { window.location.hash = dealerPickerHash(); },
   };
 }

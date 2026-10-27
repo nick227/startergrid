@@ -1,4 +1,13 @@
 ---
+visibility: public
+id: connections-auto-response
+feature: lead-notifications
+type: task
+audience: user, staff
+tags: lead notifications, leads
+synonyms: auto-response, buyer, email, sms, acknowledgment
+aliases: connections/auto-response
+related:
 title: Send an automatic thank-you to the buyer
 summary: Enable an automatic email or text acknowledgment and check its delivery result.
 keywords: auto-response, buyer, email, sms, acknowledgment

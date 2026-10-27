@@ -1,4 +1,13 @@
 ---
+visibility: public
+id: troubleshooting-sold-listing-still-live
+feature: listing-removal
+type: troubleshooting
+audience: user, staff
+tags: listing removal, channels
+synonyms: sold, removed, still live, ghost, sentry, take down, removal
+aliases: troubleshooting/sold-listing-still-live
+related: inventory-sold-removed, processes-auto-sync
 title: A sold vehicle is still listed
 summary: Check the vehicle status, the recorded removal result and whether the listing needs manual removal.
 keywords: sold, removed, still live, ghost, sentry, take down, removal

@@ -1,4 +1,13 @@
 ---
+visibility: public
+id: inventory-stock-number-rules
+feature: inventory-import
+type: reference
+audience: user, staff
+tags: inventory import, inventory
+synonyms: stock number, import, duplicate, VIN
+aliases: inventory/stock-number-rules
+related: inventory-csv-import
 title: Keep stock numbers stable
 summary: Use one stock number for the life of a unit so imports update the right vehicle.
 keywords: stock number, import, duplicate, VIN

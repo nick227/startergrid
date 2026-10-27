@@ -1,4 +1,13 @@
 ---
+visibility: public
+id: inventory-bulk-edit
+feature: inventory-editing
+type: task
+audience: user, staff
+tags: inventory editing, inventory
+synonyms: bulk edit, price, mileage, multi-select
+aliases: inventory/bulk-edit
+related:
 title: Change many vehicles at once
 summary: Select vehicles, enter shared values, and choose Apply. Ready vehicles can be sent again after the save.
 keywords: bulk edit, price, mileage, multi-select

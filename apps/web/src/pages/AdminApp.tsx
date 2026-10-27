@@ -86,7 +86,7 @@ export default function AdminApp({
   };
 
   return (
-    <AdminShell nav={tabNav}>
+    <AdminShell nav={tabNav} helpTopic={primary === 'problems' ? 'staff-problems' : primary === 'settings' ? (settingsJob === 'platforms' ? 'staff-integration-setup' : 'staff-settings') : 'staff-dealership-assistance'}>
       {primary === 'dealers' && !adminDealerId && (
         <DealershipDirectory
           currentUserId={user?.id}

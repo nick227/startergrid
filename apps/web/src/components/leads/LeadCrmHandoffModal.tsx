@@ -1,3 +1,4 @@
+import { HelpLink } from '@/components/docs/HelpButton.tsx';
 import { useState, useEffect } from 'react';
 import {
   fetchLeadDeliveryDetails,
@@ -145,6 +146,7 @@ export function LeadCrmHandoffModal({ dealershipId, leadId, isOpen, onClose, onS
             <p className="text-xs text-ink-muted mt-0.5">
               Send this lead to your dealership CRM, or copy details to enter manually.
             </p>
+            <HelpLink docId="crm-delivery">Understand delivery results and manual handoff</HelpLink>
           </div>
           <button
             type="button"

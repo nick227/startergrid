@@ -1,4 +1,13 @@
 ---
+visibility: public
+id: industry-syndication-lag
+feature: listing-delivery
+type: reference
+audience: user, staff
+tags: listing delivery, channels
+synonyms: lag, delay, feed, ingest, sent
+aliases: industry/syndication-lag
+related: troubleshooting-sold-listing-still-live
 title: Why a site updates later than StarterGrid
 summary: A finished send means we delivered the update. Each destination still refreshes on its own clock.
 keywords: lag, delay, feed, ingest, sent

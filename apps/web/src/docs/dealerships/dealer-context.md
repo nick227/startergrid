@@ -1,4 +1,13 @@
 ---
+visibility: public
+id: dealerships-dealer-context
+feature: dealership-management
+type: task
+audience: user, staff
+tags: dealership management
+synonyms: dealership, dealership, group, switch
+aliases: dealerships/dealer-context
+related:
 title: Make sure you are in the right dealership
 summary: Vehicles, destinations, and inquiries belong to one dealership at a time.
 keywords: dealership, dealership, group, switch

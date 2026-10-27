@@ -1,4 +1,13 @@
 ---
+visibility: public
+id: inventory-inventory-readiness
+feature: listing-readiness
+type: task
+audience: user, staff
+tags: listing readiness, channels
+synonyms: readiness, ready to send, cannot list, photos, price, VIN, storefront
+aliases: inventory/inventory-readiness
+related: inventory-warnings-vs-blocked, processes-auto-sync
 title: When a vehicle can be listed
 summary: A vehicle is ready to send after it has the required details. Ready to send is not the same as already sent.
 keywords: readiness, ready to send, cannot list, photos, price, VIN, storefront

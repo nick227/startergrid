@@ -1,8 +1,8 @@
-import type { DocFrontmatter } from './types.ts';
+import { DOC_TYPES, type DocFrontmatter, type DocType } from './types.ts';
 
 const FRONTMATTER_RE = /^---\r?\n([\s\S]*?)\r?\n---\r?\n?([\s\S]*)$/;
 
-const FRONTMATTER_KEYS = new Set(['title', 'summary', 'keywords', 'updated', 'advanced']);
+const FRONTMATTER_KEYS = new Set(['visibility', 'title', 'summary', 'keywords', 'updated', 'advanced', 'id', 'feature', 'type', 'audience', 'tags', 'synonyms', 'aliases', 'related', 'implementation']);
 
 export function parseFrontmatter(raw: string): { frontmatter: DocFrontmatter; body: string } {
   const match = raw.match(FRONTMATTER_RE);
@@ -15,6 +15,9 @@ export function parseFrontmatter(raw: string): { frontmatter: DocFrontmatter; bo
     const key = line.slice(0, idx).trim();
     if (!FRONTMATTER_KEYS.has(key)) continue;
     const value = line.slice(idx + 1).trim();
+    if (key === 'visibility' && value === 'public') frontmatter.visibility = 'public';
+    if (key === 'type' && DOC_TYPES.includes(value as DocType)) frontmatter.type = value as DocType;
+    if (key === 'id' || key === 'feature' || key === 'audience' || key === 'tags' || key === 'synonyms' || key === 'aliases' || key === 'related' || key === 'implementation') frontmatter[key] = value;
     if (key === 'title') frontmatter.title = value;
     if (key === 'summary') frontmatter.summary = value;
     if (key === 'keywords') frontmatter.keywords = value;

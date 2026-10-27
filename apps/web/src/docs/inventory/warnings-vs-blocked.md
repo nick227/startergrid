@@ -1,4 +1,13 @@
 ---
+visibility: public
+id: inventory-warnings-vs-blocked
+feature: listing-readiness
+type: reference
+audience: user, staff
+tags: listing readiness, channels
+synonyms: warning, blocked, needs details, cannot list, photos, price
+aliases: inventory/warnings-vs-blocked
+related: inventory-inventory-readiness
 title: Needs details vs cannot list
 summary: Cannot list means the vehicle is held back. Needs details means it can still go to some destinations.
 keywords: warning, blocked, needs details, cannot list, photos, price

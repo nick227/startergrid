@@ -1,4 +1,13 @@
 ---
+visibility: public
+id: app-channels
+feature: listing-delivery
+type: task
+audience: user, staff
+tags: listing delivery, channels
+synonyms: channels, destinations, platforms, connect, setup, live, partner, manual
+aliases: app/channels
+related: processes-auto-sync, app-sync-vs-accounts
 title: Connect a marketplace or advertising site
 summary: Choose a destination, finish its setup and understand the difference between connected, sent and live.
 keywords: channels, destinations, platforms, connect, setup, live, partner, manual

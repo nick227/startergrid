@@ -1,3 +1,4 @@
+import { HelpLink } from '@/components/docs/HelpButton.tsx';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import {
   fetchInventory,
@@ -1024,6 +1025,7 @@ export default function InventoryPage({ dealerId, nav, activeTab }: Props) {
               <p className="text-xs text-ink-muted leading-relaxed">
                 Channels without automated synchronization require manual updates. Suggested adjustments are based on days in StarterGrid ({reviewRepriceVehicle.daysOnLot} days) and do not guarantee sales.
               </p>
+              <HelpLink docId="inventory-older-inventory">How price suggestions and channel updates work</HelpLink>
             </div>
 
             <div className="flex flex-col-reverse sm:flex-row sm:items-center justify-end gap-2 pt-2">

@@ -1,3 +1,4 @@
+import { documentationUrl } from './urls.ts';
 import { useMemo } from 'react';
 import ReactMarkdown, { defaultUrlTransform } from 'react-markdown';
 import remarkGfm from 'remark-gfm';
@@ -5,7 +6,7 @@ import type { Components } from 'react-markdown';
 
 type Props = {
   body: string;
-  onDocLink: (docId: string) => void;
+  onDocLink?: (docId: string) => void;
 };
 
 export function DocMarkdown({ body, onDocLink }: Props) {
@@ -15,9 +16,9 @@ export function DocMarkdown({ body, onDocLink }: Props) {
         if (href?.startsWith('doc:')) {
           const docId = href.slice(4);
           return (
-            <button type="button" onClick={() => onDocLink(docId)} className="doc-link">
+            <a href={documentationUrl(docId)} onClick={onDocLink ? event => { event.preventDefault(); onDocLink(docId); } : undefined} className="doc-link">
               {children}
-            </button>
+            </a>
           );
         }
         return (

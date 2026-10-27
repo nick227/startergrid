@@ -1,11 +1,24 @@
 ---
+visibility: public
+id: inventory-sold-removed
+feature: listing-removal
+type: task
+audience: user, staff
+tags: listing removal, channels
+synonyms: sold, removed, take down, availability, manual listing
+aliases: inventory/sold-removed
+related: troubleshooting-sold-listing-still-live
 title: Mark a vehicle sold or removed
 summary: Update availability, then check the removal result for each destination.
 keywords: sold, removed, take down, availability, manual listing
-updated: 2026-10-26
+updated: 2026-10-27
 ---
 
 Update a vehicle’s status when it is no longer available. Lowering its price to zero does not mark it sold.
+
+## Mark a vehicle sold
+
+Open the vehicle in **Vehicles** and choose **Mark sold**. Confirm that its status changes to **Sold**. This changes availability in StarterGrid; inspect the downstream listing result separately.
 
 ## Choose the right status
 

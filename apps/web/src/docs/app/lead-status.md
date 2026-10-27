@@ -1,4 +1,13 @@
 ---
+visibility: public
+id: app-lead-status
+feature: lead-management
+type: reference
+audience: user, staff
+tags: lead management, leads
+synonyms: lead, status, new, contacted, appointment, closed, lost, team
+aliases: app/lead-status
+related: connections-lead-notifications
 title: What lead statuses mean
 summary: Mark New, Contacted, Appointment, Closed / Won, or Lost so the rest of the team knows who still needs a call.
 keywords: lead, status, new, contacted, appointment, closed, lost, team

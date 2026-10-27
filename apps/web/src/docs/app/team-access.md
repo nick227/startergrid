@@ -1,4 +1,13 @@
 ---
+visibility: public
+id: app-team-access
+feature: team-access
+type: task
+audience: user, staff
+tags: team access
+synonyms: invite, invitation, login, sign in, password, expired, access, email, team
+aliases: app/team-access
+related:
 title: Invitations and sign-in help
 summary: Invite a teammate, use a setup link, replace a temporary password or recover from an expired invitation.
 keywords: invite, invitation, login, sign in, password, expired, access, email, team

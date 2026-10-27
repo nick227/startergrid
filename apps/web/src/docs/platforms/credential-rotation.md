@@ -1,4 +1,13 @@
 ---
+visibility: public
+id: platforms-credential-rotation
+feature: channel-accounts
+type: troubleshooting
+audience: user, staff
+tags: channel accounts, channels
+synonyms: sign-in, password, expired, credentials
+aliases: platforms/credential-rotation
+related:
 title: Sign-in expired or password changed
 summary: When a destination password or key changes, open Channels and sign in again. Do not re-import the lot.
 keywords: sign-in, password, expired, credentials

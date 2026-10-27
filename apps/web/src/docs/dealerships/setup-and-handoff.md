@@ -1,4 +1,13 @@
 ---
+visibility: public
+id: dealerships-setup-and-handoff
+feature: dealership-management
+type: task
+audience: staff
+tags: dealership management
+synonyms: onboarding, setup, handoff, launch, owner, internal support, waiting for stock
+aliases: dealerships/setup-and-handoff
+related: app-team-access, connections-lead-notifications
 title: Set up a dealership and complete handoff
 summary: Check owner access, vehicle publication and the shared inbox before completing setup.
 keywords: onboarding, setup, handoff, launch, owner, internal support, waiting for stock

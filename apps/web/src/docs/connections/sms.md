@@ -1,4 +1,13 @@
 ---
+visibility: public
+id: connections-sms
+feature: lead-notifications
+type: task
+audience: user, staff
+tags: lead notifications, leads
+synonyms: sms, text, phone, lead, alert
+aliases: connections/sms
+related: connections-lead-notifications
 title: Get new inquiries by text
 summary: Enter a mobile number to receive a short text. Support must enable texting before messages go out.
 keywords: sms, text, phone, lead, alert

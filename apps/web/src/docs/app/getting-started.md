@@ -1,8 +1,17 @@
 ---
+visibility: public
+id: app-getting-started
+feature: product-navigation
+type: task
+audience: user, staff
+tags: product navigation
+synonyms: home, getting started, navigation, help, channels, leads
+aliases: app/getting-started
+related: app-channels, inventory-inventory-readiness, app-lead-status
 title: Find your way around StarterGrid
 summary: Where to add vehicles, check listings, follow up on inquiries and get help.
 keywords: home, getting started, navigation, help, channels, leads
-updated: 2026-10-26
+updated: 2026-10-27
 ---
 
 Use the dealership name at the top of the page to confirm which business you are working on.
@@ -18,7 +27,7 @@ Use **Settings** for dealership details, team access and notification preference
 
 ## Get help without leaving your work
 
-Choose **Help** in the header. The panel suggests an article for the current screen and lets you search all help. Links beside a control open the relevant article in the same panel. Close it or press Escape to return to your work.
+Choose **Help** in the header. It opens relevant documentation in a separate tab, leaving your work in place. Search the documentation index for other questions, or follow related articles and tags. Close the documentation tab to return to your original screen.
 
 ## Know what has actually happened
 

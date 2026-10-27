@@ -1,4 +1,13 @@
 ---
+visibility: public
+id: law-advertising-disclaimers
+feature: listing-readiness
+type: reference
+audience: user, staff
+tags: listing readiness, channels
+synonyms: advertising, price, disclaimer, photos, compliance
+aliases: law/advertising-disclaimers
+related: inventory-sold-removed
 title: Advertising rules you still own
 summary: StarterGrid blocks missing VIN, photos, and price. You still own fee disclosures, mileage truth, and real photos.
 keywords: advertising, price, disclaimer, photos, compliance

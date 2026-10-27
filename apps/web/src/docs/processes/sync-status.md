@@ -1,4 +1,13 @@
 ---
+visibility: public
+id: processes-sync-status
+feature: listing-delivery
+type: reference
+audience: user, staff
+tags: listing delivery, channels
+synonyms: send status, idle, updating, failed
+aliases: processes/sync-status
+related:
 title: How to read send status
 summary: Distinguish a scheduled or running update from a failed run and from a confirmed live listing.
 keywords: send status, idle, updating, failed
