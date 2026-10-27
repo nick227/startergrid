@@ -77,7 +77,7 @@ export function channelOverviewItem(a: PlatformAccountDetail, plan: ChannelSetup
   const attention = !started ? null
     : a.oauthExpired ? `Your ${name} sign-in expired. Sign in again.`
     : a.state === 'FAILED' ? `${name} did not accept the connection details.`
-    : ON_HOLD.has(a.state) ? `The ${name} account is on hold. StarterGrid support is on it.`
+    : ON_HOLD.has(a.state) ? `The ${name} account is on hold. DealerGrid support is on it.`
     : plan.status === 'BLOCKED' ? plan.headline
     : distribution.problems > 0 ? `${plural(distribution.problems, 'vehicle is', 'vehicles are')} not confirmed on ${name}.`
     : openIncidents > 0 ? `${plural(openIncidents, 'problem needs', 'problems need')} a look on ${name}.`

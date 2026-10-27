@@ -162,7 +162,7 @@ export function buildSetupPlan(account: PlatformAccountDetail, options: { suppor
   }
   if (SUPPORT_STATES.has(account.state)) {
     steps.push(step({ id: 'support-fix', title: 'Support fixes the account',
-      instruction: `Your ${brand} account is on hold. StarterGrid support will sort it out with ${brand}.`,
+      instruction: `Your ${brand} account is on hold. DealerGrid support will sort it out with ${brand}.`,
       owner: 'INTERNAL_SUPPORT', state: 'BLOCKED',
       action: { kind: 'CONTACT_SUPPORT', label: 'Ask support' } }));
   }
@@ -206,7 +206,7 @@ export function buildSetupPlan(account: PlatformAccountDetail, options: { suppor
   if (technicalFields.length > 0 && account.connectionType !== 'OAUTH') {
     const done = technicalFields.every(f => f.filled) || ready;
     steps.push(step({ id: 'support-connect', title: 'StarterGrid connects the feed',
-      instruction: `When ${brand} emails you file-transfer details, forward that email to StarterGrid support. Support enters them for you.`,
+      instruction: `When ${brand} emails you file-transfer details, forward that email to DealerGrid support. Support enters them for you.`,
       owner: 'INTERNAL_SUPPORT', state: done ? 'DONE' : 'TODO',
       doneBasis: technicalFields.every(f => f.filled) ? 'OBSERVED' : stateBasis(account.state),
       action: { kind: 'CONTACT_SUPPORT', label: 'Send to support' } }));
@@ -225,7 +225,7 @@ export function buildSetupPlan(account: PlatformAccountDetail, options: { suppor
   } else if (account.connectionType === 'OAUTH') {
     steps.push(step({ id: 'check-connection', title: 'StarterGrid checks the connection',
       instruction: account.state === 'FAILED'
-        ? `The connection check failed. StarterGrid support will look into it.`
+        ? `The connection check failed. DealerGrid support will look into it.`
         : `StarterGrid confirms it can reach your ${brand} account.`,
       owner: 'INTERNAL_SUPPORT', state: ready ? 'DONE' : account.state === 'FAILED' ? 'BLOCKED' : 'TODO',
       doneBasis: stateBasis(account.state),
@@ -267,9 +267,9 @@ function finish(account: PlatformAccountDetail, steps: SetupStep[], postingNote:
   const headline =
     status === 'READY' ? `${name} is set up.`
     : status === 'NEEDS_YOU' ? `Next: ${current!.title.charAt(0).toLowerCase()}${current!.title.slice(1)}.`
-    : status === 'BLOCKED' ? `StarterGrid support is working on ${name}. Nothing for you to do right now.`
+    : status === 'BLOCKED' ? `DealerGrid support is working on ${name}. Nothing for you to do right now.`
     : current!.owner === 'PARTNER' ? `Waiting for ${name}. Nothing for you to do right now.`
-    : `StarterGrid support is on it. Nothing for you to do right now.`;
+    : `DealerGrid support is on it. Nothing for you to do right now.`;
   return {
     channel: account.platformSlug,
     name,
