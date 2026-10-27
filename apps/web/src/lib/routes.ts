@@ -5,11 +5,16 @@ import { parseReportRoute } from './reportRoutes.ts';
 
 export type { RowNavScope };
 
+export const CHANNEL_VIEWS = ['overview', 'setup', 'activity', 'settings', 'social', 'catalog', 'listings', 'leads'] as const;
+export type ChannelView = typeof CHANNEL_VIEWS[number];
+
 export type OperatorRoute = {
   dealerId: string | null;
   page: OperatorPageSegment | null;
   platformSlug: string | null;
   platformView: 'queue' | 'history' | null;
+  /** View within one channel's page (#/{dealer}/channels/{slug}/{view}); absent means overview. */
+  channelView?: ChannelView;
   assetRef: string | null;
   assetId: string | null;
   inventoryItemSlug: string | null;
@@ -171,14 +176,16 @@ export function parseOperatorRoute(hash = window.location.hash): OperatorRoute {
   const dealerId = match[1] ?? null;
   const rest = match[2] ?? '';
 
-  const platformMatch = rest.match(/^(?:platforms|channels)\/([^/]+)(?:\/(queue|history))?$/);
-  if (platformMatch) {
+  const platformMatch = rest.match(/^(?:platforms|channels)\/([^/]+)(?:\/([a-z]+))?$/);
+  const subView = platformMatch?.[2];
+  if (platformMatch && (!subView || subView === 'queue' || subView === 'history' || (CHANNEL_VIEWS as readonly string[]).includes(subView))) {
     return routeWithReports(
       {
         dealerId,
         page: 'platforms',
         platformSlug: platformMatch[1] ?? null,
-        platformView: (platformMatch[2] as 'queue' | 'history') ?? null,
+        platformView: subView === 'queue' || subView === 'history' ? subView : null,
+        channelView: subView && subView !== 'queue' && subView !== 'history' ? subView as ChannelView : undefined,
         assetRef,
         assetId,
         inventoryItemSlug: null,
@@ -269,6 +276,11 @@ export function inventoryItemHash(
 
 export function platformDetailHash(dealerId: string, platformSlug: string, scope?: RowNavScope): string {
   return appendRowNavScope(`#/${dealerId}/platforms/${platformSlug}`, scope);
+}
+
+/** One channel's page, optionally at a view such as setup or settings. */
+export function channelHash(dealerId: string, platformSlug: string, view?: ChannelView): string {
+  return `#/${dealerId}/channels/${platformSlug}${view && view !== 'overview' ? `/${view}` : ''}`;
 }
 
 export function platformQueueHash(dealerId: string, platformSlug: string, scope?: RowNavScope): string {

@@ -1,27 +1,26 @@
-import { useState, useEffect, useMemo } from 'react';
+import { useMemo } from 'react';
 import { fetchPublishStatus, fetchAccounts, fetchPlatformPerformance } from '@/lib/api/sdk.ts';
 import type { OperatorPageBaseProps } from '@/lib/operatorPage.ts';
 import { useAsyncQuery } from '@/hooks/useAsyncQuery.ts';
+import { useOperatorRoute } from '@/hooks/useOperatorRoute.ts';
 import { OperatorPage, ErrorState, PanelSkeleton } from '@/components/operator';
 import { PlatformLogo } from '@/components/platforms/PlatformLogo.tsx';
 import { oauthProviderDisplayName } from '@/lib/platformPresentation.ts';
-import { getSetupReadiness, severityToPill } from '@/lib/setupReadiness.ts';
 import { platformOutcomeMeta } from '@/lib/syncPresentation.ts';
 import { platformDisplayName } from '@/lib/marketplaceBrand.ts';
 import { DestinationPrimarySetup } from '@/components/platforms/DestinationPrimarySetup.tsx';
 import { ChannelSetupGuide } from '@/components/platforms/ChannelSetupGuide.tsx';
 import { AccountEditForm } from '@/components/platforms/AccountEditForm.tsx';
 import { PlatformQueueSummaryCard } from '@/components/platforms/PlatformQueueSummaryCard.tsx';
-import { PagePrimaryState } from '@/components/guidance/PagePrimaryState.tsx';
-import { destinationExperience, destinationWhy } from '@/lib/destinationPrimary.ts';
 import { useAuth } from '@/contexts/AuthContext.tsx';
 import { isInternalSupportRole } from '@/lib/operatorAccess.ts';
-import { buildTabs, type Tab } from '@/lib/platformDrawerTabs.ts';
+import { channelHash, type ChannelView } from '@/lib/routes.ts';
 import { ActivityTab, FeedTab, NotesTab } from '@/components/platforms/PlatformDetailTabs.tsx';
 import { CatalogSyncPanel } from '@/components/platforms/CatalogSyncPanel.tsx';
 import { LeadSyncPanel } from '@/components/platforms/LeadSyncPanel.tsx';
 import { MarketplaceListingPanel } from '@/components/platforms/MarketplaceListingPanel.tsx';
 import { SocialPageSelector, SocialPostsTab } from '@/components/social/index.ts';
+import { CAPABILITY_LABEL, STATUS_LABEL, fetchChannelOverview, waitingLabel, type ChannelDisplayStatus } from '@/lib/api/channelOverviewApi.ts';
 
 type ExternalLink = { label: string; url: string };
 type OperatorSetupGuide = {
@@ -93,9 +92,30 @@ function ownedMarketplaceStateCopy(platform: { state: string; detail?: string | 
   };
 }
 
+type FocusedView = 'social' | 'catalog' | 'listings' | 'leads';
+const FOCUSED: Record<FocusedView, { title: string; blurb: string; flag: 'socialPosting' | 'catalogSync' | 'marketplaceListing' | 'leadSync' }> = {
+  social: { title: 'Social posts', blurb: 'Choose the page to post to and see what was posted.', flag: 'socialPosting' },
+  catalog: { title: 'Catalog', blurb: 'The product catalog this channel reads your vehicles from.', flag: 'catalogSync' },
+  listings: { title: 'Listings', blurb: 'Listings StarterGrid manages on this channel.', flag: 'marketplaceListing' },
+  leads: { title: 'Leads', blurb: 'Inquiries this channel sends back to StarterGrid.', flag: 'leadSync' },
+};
+
+const STATUS_PILL: Record<ChannelDisplayStatus, string> = {
+  NEEDS_ATTENTION: 'bg-amber-50 text-amber-800 border-amber-200',
+  SETTING_UP: 'bg-navy-50 text-navy-800 border-navy-200',
+  CONNECTED: 'bg-status-success-bg text-status-success-text border-status-success-border',
+  NOT_SET_UP: 'bg-silver-50 text-ink-muted border-silver-200',
+};
+
+/**
+ * One page per channel. Overview leads with the setup wizard until the channel is connected,
+ * then with its status; Activity and Settings are always reachable, including mid-setup.
+ */
 export default function PlatformDetailPage({ dealerId, nav, activeTab, platformSlug }: Props) {
-  const [currentTab, setCurrentTab] = useState<Tab>('setup');
-  useEffect(() => { setCurrentTab('setup'); }, [platformSlug]);
+  const { route } = useOperatorRoute();
+  const requested: ChannelView = route.channelView ?? 'overview';
+  const { user } = useAuth();
+  const isInternal = isInternalSupportRole(user?.role ?? '');
 
   const { data: statusData, loading: statusLoading, error: statusError, reload: reloadStatus } = useAsyncQuery(
     () => fetchPublishStatus(dealerId),
@@ -109,26 +129,24 @@ export default function PlatformDetailPage({ dealerId, nav, activeTab, platformS
     () => fetchPlatformPerformance(dealerId),
     [dealerId]
   );
+  const { data: overview, reload: reloadOverview } = useAsyncQuery(
+    () => fetchChannelOverview(dealerId, platformSlug),
+    [dealerId, platformSlug]
+  );
 
   const platform = useMemo(
     () => statusData?.platforms?.find(p => p.platformSlug === platformSlug),
     [statusData, platformSlug]
   );
-  
   const account = useMemo(
     () => accountsData?.accounts?.find(a => a.platformSlug === platformSlug) ?? null,
     [accountsData, platformSlug]
   );
-  const richAccount = account as (typeof account & RichPlatformAccount) | null;
-
   const perf = useMemo(
     () => perfData?.platforms?.find(p => p.platformSlug === platformSlug) ?? null,
     [perfData, platformSlug]
   );
-
-  const tabs = useMemo(() => (platform ? buildTabs(platform) : []), [platform]);
-  const { user } = useAuth();
-  const isInternal = isInternalSupportRole(user?.role ?? '');
+  const item = overview?.channels[0] ?? null;
 
   const loading = statusLoading || accountsLoading;
   const error = statusError || accountsError;
@@ -137,42 +155,36 @@ export default function PlatformDetailPage({ dealerId, nav, activeTab, platformS
     reloadStatus();
     reloadAccounts();
     reloadPerf();
+    reloadOverview();
   };
+  const backToChannels = (
+    <div className="mb-4">
+      <button onClick={() => nav.goToPlatforms()} className="text-sm font-semibold text-ink-faint hover:text-ink-body transition-colors">
+        ← Back to Channels
+      </button>
+    </div>
+  );
 
   if (error && !platform) {
     return (
       <OperatorPage dealerId={dealerId} activeTab={activeTab} nav={nav} onRefresh={handleRefresh}>
-        <div className="mb-4">
-          <button onClick={() => nav.goToPlatforms()} className="text-sm text-ink-faint hover:text-ink-body">
-            ← Back to Channels
-          </button>
-        </div>
+        {backToChannels}
         <ErrorState message={error} onRetry={handleRefresh} />
       </OperatorPage>
     );
   }
-
   if (loading && !platform) {
     return (
       <OperatorPage dealerId={dealerId} activeTab={activeTab} nav={nav} onRefresh={handleRefresh} refreshing={true}>
-        <div className="mb-4">
-          <button onClick={() => nav.goToPlatforms()} className="text-sm text-ink-faint hover:text-ink-body">
-            ← Back to Channels
-          </button>
-        </div>
+        {backToChannels}
         <PanelSkeleton rows={6} />
       </OperatorPage>
     );
   }
-
   if (!platform) {
     return (
       <OperatorPage dealerId={dealerId} activeTab={activeTab} nav={nav} onRefresh={handleRefresh}>
-        <div className="mb-4">
-          <button onClick={() => nav.goToPlatforms()} className="text-sm text-ink-faint hover:text-ink-body">
-            ← Back to Channels
-          </button>
-        </div>
+        {backToChannels}
         <div className="p-8 text-center text-ink-faint border border-silver-200 border-dashed rounded-xl">
           This destination is not available for this dealership.
         </div>
@@ -180,13 +192,19 @@ export default function PlatformDetailPage({ dealerId, nav, activeTab, platformS
     );
   }
 
+  const richAccount = account as (typeof account & RichPlatformAccount) | null;
   const publishMeta = platformOutcomeMeta(platform);
-  const readiness = getSetupReadiness(platform, account || null);
   const ownedState = platform.integrationClass === 'OWNED' ? ownedMarketplaceStateCopy(platform) : null;
   const displayName = platformDisplayName(platform.platformSlug, platform.platformName);
-  const guided = platform.integrationClass !== 'OWNED';
   // Only a passed connection check counts as verified; an account marked ACTIVE by hand does not.
   const connectionVerified = account?.state === 'READY' || account?.highestConfirmedLevel === 'CONNECTION_TESTED';
+  const focusedViews = (Object.keys(FOCUSED) as FocusedView[]).filter(v => platform[FOCUSED[v].flag]);
+  // A capability view the channel does not have falls back to Overview.
+  const view: ChannelView = (requested in FOCUSED && !focusedViews.includes(requested as FocusedView)) ? 'overview' : requested;
+  const section = view === 'activity' || view === 'settings' ? view : 'overview';
+  const setupFirst = item ? item.displayStatus !== 'CONNECTED' : platform.integrationClass !== 'OWNED';
+  const href = (v?: ChannelView) => `${channelHash(dealerId, platform.platformSlug, v)}${window.location.hash.includes('support=true') ? '?support=true' : ''}`;
+  const waiting = item?.displayStatus === 'SETTING_UP' ? waitingLabel(item) : null;
 
   return (
     <OperatorPage
@@ -198,98 +216,203 @@ export default function PlatformDetailPage({ dealerId, nav, activeTab, platformS
       refreshing={loading}
       hideDealerId
     >
-      <div className="mb-6">
-        <button onClick={() => nav.goToPlatforms()} className="text-sm font-semibold text-ink-faint hover:text-ink-body transition-colors">
-          ← Back to Channels
-        </button>
-      </div>
+      {backToChannels}
 
-      {!guided && <div className="mb-6">
-        <PagePrimaryState
-          kind={destinationExperience(readiness)}
-          title={readiness.statusLabel === 'Connected' || readiness.statusLabel === 'Ready to send'
-            ? `${displayName} is ${readiness.statusLabel.toLowerCase()}`
-            : readiness.statusLabel}
-          why={destinationWhy(readiness, displayName)}
-          next={readiness.nextAction ?? undefined}
-          ownerKind={readiness.nextAction ? 'YOU' : undefined}
-        />
-      </div>}
-
-      <div className="bg-white border border-silver-200 rounded-xl shadow-sm mb-6 p-6 flex flex-col md:flex-row md:items-center justify-between gap-6">
-        <div className="flex items-center gap-4">
+      <header className="bg-white border border-silver-200 rounded-xl shadow-sm p-5 sm:p-6">
+        <div className="flex items-start gap-4">
           <PlatformLogo slug={platform.platformSlug} name={displayName} size="md" />
+          <div className="min-w-0 flex-1">
+            <h1 className="text-xl sm:text-2xl font-bold text-ink-heading">{item?.name ?? displayName}</h1>
+            {item && item.name !== displayName && <p className="text-xs text-ink-muted">{displayName}</p>}
+            {item && (
+              <>
+                <div className="mt-2 flex flex-wrap items-center gap-2">
+                  <span className={`rounded border px-2 py-0.5 text-xs font-bold ${STATUS_PILL[item.displayStatus]}`}>
+                    {STATUS_LABEL[item.displayStatus]}{waiting ? ` · waiting on ${waiting}` : ''}
+                  </span>
+                  <span className="text-xs text-ink-muted">{overview?.purposes.find(p => p.purpose === item.purpose)?.label}</span>
+                  {item.capabilities.filter(c => c !== 'PARTNER_FEED').map(c => (
+                    <span key={c} className="rounded bg-silver-50 px-1.5 py-0.5 text-[10px] font-semibold text-ink-muted">{CAPABILITY_LABEL[c]}</span>
+                  ))}
+                </div>
+                {item.displayStatus !== 'NOT_SET_UP' && <p className="mt-2 text-sm text-ink-body">{item.displayReason}</p>}
+              </>
+            )}
+          </div>
+        </div>
+      </header>
+
+      <nav aria-label="Channel sections" className="mt-6 flex border-b border-silver-200 bg-white rounded-t-xl px-2 overflow-x-auto no-scrollbar">
+        {(['overview', 'activity', 'settings'] as const).map(v => (
+          <a key={v} href={href(v)} aria-current={section === v ? 'page' : undefined}
+            className={`shrink-0 px-4 py-2.5 text-xs font-bold border-b-2 -mb-px transition-colors ${
+              section === v ? 'border-navy-600 text-navy-700' : 'border-transparent text-ink-muted hover:text-ink-body'
+            }`}>
+            {v === 'overview' ? 'Overview' : v === 'activity' ? 'Activity' : 'Settings'}
+          </a>
+        ))}
+      </nav>
+
+      {view in FOCUSED && (
+        <div className="mt-6 space-y-4">
+          <a href={href()} className="text-xs font-semibold text-navy-700 hover:underline">← Overview</a>
           <div>
-            <h1 className="text-2xl font-bold text-ink-heading">{displayName}</h1>
-            <div className="flex flex-wrap items-center gap-2 mt-2">
-              <span className={`px-2 py-0.5 rounded text-xs font-bold border ${severityToPill(readiness.severity)}`}>
-                {readiness.statusLabel}
-              </span>
-              <span className="text-xs text-ink-faint bg-silver-50 px-2 py-0.5 rounded-md border border-silver-100">
-                {publishMeta.label}
-              </span>
+            <h2 className="text-lg font-bold text-ink-heading">{FOCUSED[view as FocusedView].title}</h2>
+            <p className="text-sm text-ink-muted">{FOCUSED[view as FocusedView].blurb}</p>
+          </div>
+          {view === 'social' && (
+            <div className="space-y-6">
+              <SocialPageSelector
+                dealerId={dealerId}
+                platformSlug={platform.platformSlug}
+                platformName={platform.platformName}
+                onPageSelected={handleRefresh}
+              />
+              <div className="bg-white border border-silver-200 rounded-xl shadow-sm p-6">
+                <h3 className="text-sm font-bold text-ink-heading border-b border-silver-100 pb-2 mb-4">Post history</h3>
+                <SocialPostsTab dealerId={dealerId} platformSlug={platform.platformSlug} />
+              </div>
+            </div>
+          )}
+          {view === 'catalog' && (
+            <div className="bg-white border border-silver-200 rounded-xl shadow-sm p-6">
+              <CatalogSyncPanel dealerId={dealerId} platformSlug={platform.platformSlug} />
+            </div>
+          )}
+          {view === 'listings' && (
+            <div className="bg-white border border-silver-200 rounded-xl shadow-sm p-6">
+              <MarketplaceListingPanel platformSlug={platform.platformSlug} account={account} />
+            </div>
+          )}
+          {view === 'leads' && (
+            <div className="bg-white border border-silver-200 rounded-xl shadow-sm p-6">
+              <LeadSyncPanel dealerId={dealerId} platformSlug={platform.platformSlug} account={account} />
+            </div>
+          )}
+        </div>
+      )}
+
+      {(view === 'overview' || view === 'setup') && (
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mt-6">
+          <div className="lg:col-span-2 space-y-6">
+            {(setupFirst || view === 'setup') && platform.integrationClass !== 'OWNED' && (
+              <>
+                <ChannelSetupGuide
+                  dealerId={dealerId}
+                  channel={platform.platformSlug}
+                  account={account}
+                  connectionVerified={connectionVerified}
+                  listingOutcome={publishMeta.outcome}
+                  onChanged={handleRefresh}
+                />
+                {item?.displayStatus === 'SETTING_UP' && item.waitingOn !== 'DEALERSHIP' && (
+                  <p className="text-xs text-ink-muted">
+                    You can leave this page. Channels shows {displayName} as Setting up until it is ready.{' '}
+                    <button type="button" onClick={() => nav.goToPlatforms()} className="font-semibold text-navy-700 hover:underline">Back to Channels</button>
+                  </p>
+                )}
+              </>
+            )}
+
+            {item && !setupFirst && view !== 'setup' && (
+              <section aria-label="Status" className="bg-white border border-silver-200 rounded-xl shadow-sm p-5">
+                <dl className="grid grid-cols-1 gap-4 sm:grid-cols-3">
+                  <div>
+                    <dt className="text-[10px] font-bold uppercase tracking-wider text-ink-faint">Setup</dt>
+                    <dd className="mt-0.5 text-sm font-semibold text-ink-body">Done</dd>
+                  </div>
+                  <div>
+                    <dt className="text-[10px] font-bold uppercase tracking-wider text-ink-faint">Connection</dt>
+                    <dd className="mt-0.5 text-sm font-semibold text-ink-body">
+                      {item.connection.state === 'VERIFIED' ? 'Checked by StarterGrid' : item.connection.state === 'FAILED' ? 'Failed' : item.connection.state === 'NOT_APPLICABLE' ? 'Built in' : 'Not checked yet'}
+                    </dd>
+                  </div>
+                  <div>
+                    <dt className="text-[10px] font-bold uppercase tracking-wider text-ink-faint">Confirmed live</dt>
+                    <dd className="mt-0.5 text-sm font-semibold text-ink-body">
+                      {item.distribution.verifiedLive} vehicle{item.distribution.verifiedLive === 1 ? '' : 's'}
+                      {item.distribution.inProgress > 0 && <span className="block text-xs font-normal text-ink-muted">{item.distribution.inProgress} still sending</span>}
+                      {item.distribution.problems > 0 && <span className="block text-xs font-normal text-amber-800">{item.distribution.problems} not confirmed</span>}
+                    </dd>
+                  </div>
+                </dl>
+                {platform.integrationClass !== 'OWNED' && (
+                  <a href={href('setup')} className="mt-4 inline-block text-xs font-semibold text-navy-700 hover:underline">See setup steps</a>
+                )}
+              </section>
+            )}
+
+            {focusedViews.length > 0 && (
+              <section aria-label="What this channel does" className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+                {focusedViews.map(v => (
+                  <a key={v} href={href(v)} className="rounded-xl border border-silver-200 bg-white p-4 hover:border-navy-300">
+                    <span className="block text-sm font-bold text-ink-heading">{FOCUSED[v].title}</span>
+                    <span className="mt-1 block text-xs text-ink-muted">{FOCUSED[v].blurb}</span>
+                  </a>
+                ))}
+              </section>
+            )}
+
+            {platform.integrationClass === 'OWNED' && (
+              <div className="bg-white border border-silver-200 rounded-xl shadow-sm p-5">
+                <h2 className="text-[11px] font-bold uppercase tracking-widest text-ink-faint mb-3">Your StarterGrid storefront</h2>
+                <p className="text-sm text-ink-body leading-relaxed">
+                  This is your own storefront. You do not sign in to another company. Ready vehicles can appear here; that is not a verified-live confirmation until a send succeeds.
+                </p>
+                {platform.state === 'Active' ? (
+                  <p className="mt-3 text-xs font-semibold text-status-success-text">Storefront is on.</p>
+                ) : (
+                  ownedState && (
+                    <div className="mt-3 rounded-lg border border-silver-200 bg-silver-50 px-3 py-2">
+                      <p className={`text-xs font-semibold ${ownedState.tone}`}>{ownedState.label}</p>
+                      {ownedState.detail && <p className="mt-1 text-xs text-ink-muted">{ownedState.detail}</p>}
+                    </div>
+                  )
+                )}
+              </div>
+            )}
+
+
+          </div>
+          <div className="space-y-6">
+            <PlatformQueueSummaryCard dealerId={dealerId} platformSlug={platform.platformSlug} nav={nav} />
+          </div>
+        </div>
+      )}
+
+      {view === 'activity' && (
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mt-6">
+          <div className="lg:col-span-2 space-y-6">
+            <FeedTab perf={perf} platform={platform} />
+            <div className="bg-white border border-silver-200 rounded-xl shadow-sm p-6">
+              <h3 className="text-sm font-bold text-ink-heading border-b border-silver-100 pb-2 mb-4">Recent activity</h3>
+              <ActivityTab dealerId={dealerId} platformSlug={platform.platformSlug} nav={nav} />
+            </div>
+          </div>
+          <div className="space-y-6">
+            <PlatformQueueSummaryCard dealerId={dealerId} platformSlug={platform.platformSlug} nav={nav} />
+            <div className="bg-white border border-silver-200 rounded-xl shadow-sm p-5 space-y-2">
+              <button type="button" onClick={() => nav.goToPlatformQueue(platform.platformSlug)} className="block text-sm font-medium text-navy-600 hover:text-navy-800">Sending queue</button>
+              <button type="button" onClick={() => nav.goToPlatformHistory(platform.platformSlug)} className="block text-sm font-medium text-navy-600 hover:text-navy-800">Full history</button>
             </div>
           </div>
         </div>
+      )}
 
-        <div className="flex gap-2">
-          <button
-            type="button"
-            onClick={() => nav.goToPlatforms()}
-            className="px-4 py-2 text-sm font-bold bg-white border border-silver-200 text-ink-body rounded-lg hover:bg-silver-50 transition-colors"
-          >
-            All channels
-          </button>
-        </div>
-      </div>
-
-      <PlatformIntroCard
-        description={richAccount?.description}
-        externalLinks={richAccount?.externalLinks}
-      />
-
-      {/* Tab strip */}
-      <div className="flex border-b border-silver-200 overflow-x-auto gap-0 no-scrollbar mt-6 bg-white rounded-t-xl px-2">
-        {tabs.map(tab => (
-          <button
-            key={tab.key}
-            type="button"
-            onClick={() => setCurrentTab(tab.key)}
-            className={`shrink-0 px-4 py-2.5 text-xs font-bold border-b-2 -mb-px transition-colors ${
-              currentTab === tab.key
-                ? 'border-navy-600 text-navy-700 bg-white'
-                : 'border-transparent text-ink-muted hover:text-ink-body'
-            }`}
-          >
-            {tab.label}
-          </button>
-        ))}
-      </div>
-
-      {currentTab === 'setup' && (
+      {view === 'settings' && (
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mt-6">
-          {/* Left Column */}
           <div className="lg:col-span-2 space-y-6">
-
-            {guided && (
-              <ChannelSetupGuide
-                dealerId={dealerId}
-                channel={platform.platformSlug}
-                account={account}
-                connectionVerified={connectionVerified}
-                listingOutcome={publishMeta.outcome}
-                onChanged={handleRefresh}
-              />
-            )}
-
+            <PlatformIntroCard
+              description={richAccount?.description}
+              externalLinks={richAccount?.externalLinks}
+            />
             <DestinationPrimarySetup
               dealerId={dealerId}
               platform={platform}
               account={account}
               onRefresh={handleRefresh}
-              collapseConnection={guided}
             />
-
+            {account && <NotesTab account={account} dealerId={dealerId} onSaved={handleRefresh} />}
             <details className="bg-white border border-silver-200 rounded-xl shadow-sm">
               <summary className="px-5 py-4 cursor-pointer text-sm font-semibold text-ink-heading">
                 How this destination works
@@ -431,24 +554,6 @@ export default function PlatformDetailPage({ dealerId, nav, activeTab, platformS
               </div>
             </details>
 
-            {platform.integrationClass === 'OWNED' && (
-              <div className="bg-white border border-silver-200 rounded-xl shadow-sm p-5">
-                <h2 className="text-[11px] font-bold uppercase tracking-widest text-ink-faint mb-3">Your StarterGrid storefront</h2>
-                <p className="text-sm text-ink-body leading-relaxed">
-                  This is your own storefront. You do not sign in to another company. Ready vehicles can appear here; that is not a verified-live confirmation until a send succeeds.
-                </p>
-                {platform.state === 'Active' ? (
-                  <p className="mt-3 text-xs font-semibold text-status-success-text">Storefront is on.</p>
-                ) : (
-                  ownedState && (
-                    <div className="mt-3 rounded-lg border border-silver-200 bg-silver-50 px-3 py-2">
-                      <p className={`text-xs font-semibold ${ownedState.tone}`}>{ownedState.label}</p>
-                      {ownedState.detail && <p className="mt-1 text-xs text-ink-muted">{ownedState.detail}</p>}
-                    </div>
-                  )
-                )}
-              </div>
-            )}
 
             {isInternal && account && (
               <details className="bg-white border border-silver-200 rounded-xl shadow-sm">
@@ -462,13 +567,9 @@ export default function PlatformDetailPage({ dealerId, nav, activeTab, platformS
               </details>
             )}
 
+
           </div>
-
-          {/* Right Column */}
           <div className="space-y-6">
-
-            <PlatformQueueSummaryCard dealerId={dealerId} platformSlug={platform.platformSlug} nav={nav} />
-
             <div className="bg-white border border-silver-200 rounded-xl shadow-sm p-5">
               <h2 className="text-[11px] font-bold uppercase tracking-widest text-ink-faint mb-4">Help</h2>
               <ul className="space-y-3">
@@ -501,6 +602,7 @@ export default function PlatformDetailPage({ dealerId, nav, activeTab, platformS
               </ul>
             </div>
 
+
             <details className="bg-white border border-silver-200 rounded-xl shadow-sm">
               <summary className="px-5 py-4 cursor-pointer text-sm font-semibold text-ink-heading">
                 How this connection works
@@ -528,70 +630,8 @@ export default function PlatformDetailPage({ dealerId, nav, activeTab, platformS
               </div>
             </details>
             
+
           </div>
-        </div>
-      )}
-
-      {currentTab === 'feed' && (
-        <div className="mt-6">
-          <FeedTab perf={perf} platform={platform} />
-        </div>
-      )}
-
-      {currentTab === 'activity' && (
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mt-6">
-          <div className="lg:col-span-2 bg-white border border-silver-200 rounded-xl shadow-sm p-6">
-            <h3 className="text-sm font-bold text-ink-heading border-b border-silver-100 pb-2 mb-4">Activity Audit Trail</h3>
-            <ActivityTab dealerId={dealerId} platformSlug={platform.platformSlug} nav={nav} />
-          </div>
-          <div>
-            <PlatformQueueSummaryCard dealerId={dealerId} platformSlug={platform.platformSlug} nav={nav} />
-          </div>
-        </div>
-      )}
-
-      {currentTab === 'social' && (
-        <div className="space-y-6 mt-6">
-          <SocialPageSelector
-            dealerId={dealerId}
-            platformSlug={platform.platformSlug}
-            platformName={platform.platformName}
-            onPageSelected={handleRefresh}
-          />
-          <div className="bg-white border border-silver-200 rounded-xl shadow-sm p-6">
-            <h3 className="text-sm font-bold text-ink-heading border-b border-silver-100 pb-2 mb-4">Post history</h3>
-            <SocialPostsTab dealerId={dealerId} platformSlug={platform.platformSlug} />
-          </div>
-        </div>
-      )}
-
-      {currentTab === 'catalog' && (
-        <div className="mt-6 bg-white border border-silver-200 rounded-xl shadow-sm p-6">
-          <CatalogSyncPanel dealerId={dealerId} platformSlug={platform.platformSlug} />
-        </div>
-      )}
-
-      {currentTab === 'listing' && (
-        <div className="mt-6 bg-white border border-silver-200 rounded-xl shadow-sm p-6">
-          <MarketplaceListingPanel platformSlug={platform.platformSlug} account={account} />
-        </div>
-      )}
-
-      {currentTab === 'leads' && (
-        <div className="mt-6 bg-white border border-silver-200 rounded-xl shadow-sm p-6">
-          <LeadSyncPanel dealerId={dealerId} platformSlug={platform.platformSlug} account={account} />
-        </div>
-      )}
-
-      {currentTab === 'notes' && (
-        <div className="mt-6">
-          {account ? (
-            <NotesTab account={account} dealerId={dealerId} onSaved={handleRefresh} />
-          ) : (
-            <div className="bg-white border border-silver-200 rounded-xl p-6 text-xs text-ink-muted">
-              Loading account information…
-            </div>
-          )}
         </div>
       )}
     </OperatorPage>

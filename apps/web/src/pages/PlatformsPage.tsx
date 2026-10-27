@@ -1,89 +1,37 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import type { OperatorPageBaseProps } from '@/lib/operatorPage.ts';
-import { OperatorPage, ErrorState, PageHeader } from '@/components/operator';
-import { SimplifiedChannelsView } from '@/components/platforms/SimplifiedChannelsView.tsx';
-import { OAuthConnectBanner } from '@/components/platforms/OAuthConnectBanner.tsx';
-import { platformDisplayName } from '@/lib/marketplaceBrand.ts';
-import { PlatformConnectBanner } from '@/components/platforms/PlatformConnectBanner.tsx';
-import { useChannelWorkspace } from '@/hooks/useChannelWorkspace.ts';
+import { OperatorPage, PageHeader } from '@/components/operator';
+import { ChannelsOverview } from '@/components/platforms/ChannelsOverview.tsx';
+import { DealershipAutopilot } from '@/components/guidance/DealershipAutopilot.tsx';
+import { SyndicationSentryCard } from '@/components/platforms/SyndicationSentryCard.tsx';
+import { useAsyncQuery } from '@/hooks/useAsyncQuery.ts';
+import { fetchPublishStatus } from '@/lib/api/sdk.ts';
+import { channelHash } from '@/lib/routes.ts';
 
-type Props = OperatorPageBaseProps & {
-  initialPlatformSlug?: string | null;
-};
+type Props = OperatorPageBaseProps;
 
-export default function PlatformsPage({ dealerId, nav, activeTab, initialPlatformSlug }: Props) {
-  const workspace = useChannelWorkspace(dealerId);
-  const [selectedSlug, setSelectedSlug] = useState<string | null>(initialPlatformSlug ?? null);
-  const [connectedSlug, setConnectedSlug] = useState<string | null>(null);
-
-  useEffect(() => {
-    if (initialPlatformSlug) setSelectedSlug(initialPlatformSlug);
-  }, [initialPlatformSlug]);
-
-  if (workspace.error && !workspace.platforms.length) {
-    return (
-      <OperatorPage dealerId={dealerId} activeTab={activeTab} nav={nav} onRefresh={workspace.reload}>
-        <ErrorState message={workspace.error} onRetry={workspace.reload} />
-      </OperatorPage>
-    );
-  }
+/** Channels: what each kind of channel is doing, then each channel opens its own page. */
+export default function PlatformsPage({ dealerId, nav, activeTab }: Props) {
+  const { data: status, reload, loading, lastRefresh } = useAsyncQuery(() => fetchPublishStatus(dealerId), [dealerId]);
+  const [refreshKey, setRefreshKey] = useState(0);
 
   return (
     <OperatorPage
       dealerId={dealerId}
-      dealerName={workspace.dealerName}
+      dealerName={status?.dealerName}
       activeTab={activeTab}
       nav={nav}
-      onRefresh={workspace.reload}
-      refreshing={workspace.loading}
-      lastRefresh={workspace.lastRefresh ?? undefined}
+      onRefresh={() => { reload(); setRefreshKey(k => k + 1); }}
+      refreshing={loading}
+      lastRefresh={lastRefresh ?? undefined}
       hideDealerId
     >
       <PageHeader title="Channels" />
-
-      {connectedSlug && (
-        <PlatformConnectBanner
-          platformName={platformDisplayName(
-            connectedSlug,
-            workspace.platforms.find(p => p.platformSlug === connectedSlug)?.platformName ?? connectedSlug,
-          )}
-          platformSlug={connectedSlug}
-          stats={workspace.queueStatsBySlug.get(connectedSlug) ?? null}
-          readyVehicleCount={workspace.readyVehicleCount}
-          nav={nav}
-          onDismiss={() => setConnectedSlug(null)}
-        />
-      )}
-
-      <OAuthConnectBanner
-        platforms={workspace.platforms}
-        accountBySlug={workspace.accountBySlug}
-        dealerId={dealerId}
-        onDone={() => {
-          workspace.reloadAccounts();
-          workspace.reloadStatus();
-          workspace.reloadQueue();
-        }}
-      />
-
-      <SimplifiedChannelsView
-        platforms={workspace.platforms}
-        perfBySlug={workspace.perfBySlug}
-        accountBySlug={workspace.accountBySlug}
-        dealerId={dealerId}
-        nav={nav}
-        selectedSlug={selectedSlug}
-        onSelectSlug={setSelectedSlug}
-        onAccountSaved={() => {
-          workspace.reloadAccounts();
-          workspace.reloadSocial();
-          workspace.reloadStatus();
-          workspace.reloadQueue();
-        }}
-        loading={workspace.loading}
-        emptyMessage={workspace.emptyMessage}
-        storefrontHref={workspace.storefrontHref}
-      />
+      <div className="space-y-6">
+        <DealershipAutopilot dealerId={dealerId} hideWhenUnavailable />
+        <SyndicationSentryCard dealerId={dealerId} hideWhenClean />
+        <ChannelsOverview dealerId={dealerId} hrefFor={(channel, view) => channelHash(dealerId, channel, view)} refreshKey={refreshKey} />
+      </div>
     </OperatorPage>
   );
 }
