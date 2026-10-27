@@ -11,25 +11,17 @@ type Props = {
   sticky?: boolean;
 };
 
-const QUIET = 'whitespace-nowrap px-2 py-1.5 text-[13px] font-medium tracking-wide text-silver-300 transition-colors hover:text-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-navy-500';
-const PILL = 'whitespace-nowrap rounded-full px-3.5 py-1.5 text-[13px] font-semibold tracking-wide transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-navy-500';
+const QUIET = 'whitespace-nowrap text-sm font-medium text-white/70 transition-colors hover:text-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-orange-500';
+const PILL = 'whitespace-nowrap rounded-full bg-orange-500 px-4 py-1.5 text-sm font-semibold text-white transition-colors hover:bg-orange-600 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-orange-500';
 
 function PublicAuthLinks({ route }: { route: PublicAuthRoute }) {
   const loginActive = route === 'login';
   return (
-    <nav aria-label="Account" className="flex shrink-0 items-center gap-1 sm:gap-2">
-      <a
-        href="#/"
-        aria-current={loginActive ? 'page' : undefined}
-        className={loginActive ? `${PILL} bg-white text-navy-950` : QUIET}
-      >
+    <nav aria-label="Account" className="flex shrink-0 items-center gap-4 sm:gap-5">
+      <a href="#/" aria-current={loginActive ? 'page' : undefined} className={QUIET}>
         Log in
       </a>
-      <a
-        href="#/signup"
-        aria-current={loginActive ? undefined : 'page'}
-        className={loginActive ? `${PILL} border border-white/20 text-white hover:border-white/50` : `${PILL} bg-white text-navy-950`}
-      >
+      <a href="#/signup" aria-current={loginActive ? undefined : 'page'} className={PILL}>
         Create dealership
       </a>
     </nav>
@@ -37,15 +29,16 @@ function PublicAuthLinks({ route }: { route: PublicAuthRoute }) {
 }
 
 export function AppHeader({ publicRoute, context, end, nav, sticky = true }: Props) {
+  const blended = Boolean(publicRoute);
   return (
-    <header className={`border-b border-white/10 bg-navy-950 text-white shadow-chrome ${sticky ? 'sticky top-0 z-30' : ''}`}>
+    <header className={`bg-navy-950 text-white ${blended ? '' : 'border-b border-white/10 shadow-chrome'} ${sticky ? 'sticky top-0 z-30' : ''}`}>
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         <div className="flex h-16 items-center justify-between gap-4">
           <div className="flex min-w-0 items-center gap-4">
             <BrandLockup />
             {context && (
               <>
-                <span aria-hidden="true" className="hidden h-5 w-px shrink-0 bg-white/15 sm:block" />
+                <span aria-hidden="true" className="hidden h-4 w-px shrink-0 bg-white/20 sm:block" />
                 {context}
               </>
             )}

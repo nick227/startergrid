@@ -3,16 +3,15 @@ import { useState } from 'react';
 import { DealershipIntakeFlow } from '@/components/dealers/DealershipIntakeFlow.tsx';
 import { createDealershipSignup, uploadSignupDealerLogo } from '@/lib/api/sdk.ts';
 import { useAuth } from '@/contexts/AuthContext.tsx';
-import { AppHeader } from '@/components/operator/AppHeader.tsx';
+import { AuthFrame } from '@/components/operator/AuthFrame.tsx';
 
 export default function DealershipSignupPage() {
   const [submitting, setSubmitting] = useState(false);
   const { refresh } = useAuth();
 
   return (
-    <div className="min-h-screen bg-surface-page">
-      <AppHeader publicRoute="signup" />
-      <div className="relative">
+    <AuthFrame route="signup">
+      <div className="relative w-full">
         <DealershipIntakeFlow
           mode="signup"
           steps="rail"
@@ -24,14 +23,14 @@ export default function DealershipSignupPage() {
             window.location.assign(`#/${response.dealer.id}/platforms`);
           }}
           onCancel={() => { window.location.assign('#/'); }}
-          footer={<HelpButton topic="app/getting-started" />}
+          footer={<div className="text-center"><HelpButton topic="app/getting-started" inverted /></div>}
         />
         {submitting && (
-          <div className="absolute inset-0 z-10 flex items-center justify-center bg-white/60 backdrop-blur-sm">
-            <span className="animate-pulse text-sm font-semibold tracking-wide text-ink-muted">Setting up workspace</span>
+          <div className="absolute inset-0 z-10 flex items-center justify-center bg-navy-950/70">
+            <span className="animate-pulse text-sm font-semibold text-white/70">Setting up workspace</span>
           </div>
         )}
       </div>
-    </div>
+    </AuthFrame>
   );
 }
