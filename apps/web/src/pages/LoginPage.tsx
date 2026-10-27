@@ -44,7 +44,7 @@ export default function LoginPage() {
   return (
     <div className="min-h-screen bg-surface-page">
       <AppHeader publicRoute="login" />
-      <div className="lg:grid lg:min-h-[calc(100svh-3.5rem)] lg:grid-cols-2">
+      <div className="lg:grid lg:min-h-[calc(100svh-4rem)] lg:grid-cols-2">
         <aside className="hidden flex-col justify-between bg-navy-950 px-12 py-16 text-white lg:flex" aria-hidden="true">
           <div className="max-w-md">
             <p className="text-3xl font-bold tracking-tight">{title}</p>

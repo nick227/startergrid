@@ -1,4 +1,4 @@
-import { useMemo, useState, type FormEvent } from 'react';
+import { useMemo, useState, type FormEvent, type ReactNode } from 'react';
 import { BUSINESS_CATEGORY_IDS } from '@auto-dealer/category-schemas';
 import type { CreateDealershipPayload, CreateDealershipResponse } from '@/lib/types.ts';
 import { IntakeSteps } from './IntakeSteps.tsx';
@@ -13,6 +13,7 @@ type Props = {
   onUploadLogo?: (dealershipId: string, file: File) => Promise<{ logoUrl: string }>;
   onComplete: (response: CreateDealershipResponse) => void;
   onCancel?: () => void;
+  footer?: ReactNode;
 };
 
 type Step = 'business' | 'location' | 'channels' | 'review';
@@ -35,6 +36,10 @@ const FIELD_CLS =
 
 const LABEL_CLS = 'block space-y-1.5';
 const LABEL_TEXT_CLS = 'text-xs font-semibold text-ink-body';
+const RAIL_FIELD =
+  'w-full rounded-lg border border-silver-200 bg-white px-3.5 py-3 text-[15px] text-ink-heading ' +
+  'shadow-[0_1px_2px_rgb(7_19_33/4%)] placeholder:text-ink-faint focus:border-navy-500 focus:outline-none focus:ring-4 focus:ring-navy-500/10';
+const RAIL_LABEL = 'text-[11px] font-semibold uppercase tracking-[0.16em] text-ink-muted';
 
 const EMPTY_PAYLOAD: CreateDealershipPayload = {
   legalName: '',
@@ -117,7 +122,7 @@ function validateStep(step: Step, payload: CreateDealershipPayload, mode: Mode, 
   return null;
 }
 
-export function DealershipIntakeFlow({ mode, steps = 'chips', onSubmit, onUploadLogo, onComplete, onCancel }: Props) {
+export function DealershipIntakeFlow({ mode, steps = 'chips', onSubmit, onUploadLogo, onComplete, onCancel, footer }: Props) {
   const [payload, setPayload] = useState<CreateDealershipPayload>(EMPTY_PAYLOAD);
   const [confirmPassword, setConfirmPassword] = useState('');
   const [logoFile, setLogoFile] = useState<File | null>(null);
@@ -202,18 +207,21 @@ export function DealershipIntakeFlow({ mode, steps = 'chips', onSubmit, onUpload
 
   const rail = steps === 'rail';
   const stepItems = STEPS.map(id => ({ id, label: stepLabel(id) }));
+  const fieldClass = rail ? RAIL_FIELD : FIELD_CLS;
+  const labelText = rail ? RAIL_LABEL : LABEL_TEXT_CLS;
+  const fieldGrid = rail ? 'grid grid-cols-1 gap-x-5 gap-y-6 sm:grid-cols-2' : 'grid grid-cols-1 gap-4 md:grid-cols-2';
 
   return (
-    <form onSubmit={submit} className={rail ? 'lg:grid lg:grid-cols-[13rem_minmax(0,1fr)] lg:items-start lg:gap-8' : 'space-y-5'}>
+    <form onSubmit={submit} className={rail ? 'lg:grid lg:grid-cols-[minmax(18rem,24rem)_minmax(0,1fr)]' : 'space-y-5'}>
       <IntakeSteps
         presentation={steps}
         items={stepItems}
         stepIndex={stepIndex}
         onSelect={index => { setError(null); setStepIndex(index); }}
-        title={rail ? undefined : title}
-        subtitle={rail ? undefined : subtitle}
+        title={rail ? 'Create your dealership' : title}
+        subtitle={rail ? 'Tell us where the dealership operates and which channels you want to prepare first.' : subtitle}
       />
-      <div className="min-w-0 space-y-5">
+      <div className={rail ? 'mx-auto flex w-full max-w-2xl flex-col gap-8 px-5 py-10 sm:px-10 lg:px-16 lg:py-14' : 'min-w-0 space-y-5'}>
       {error && (
         <div role="alert" className="rounded-md border border-status-error-border bg-status-error-bg px-3 py-2 text-sm text-status-error-text">
           {error}
@@ -221,19 +229,19 @@ export function DealershipIntakeFlow({ mode, steps = 'chips', onSubmit, onUpload
       )}
 
       {step === 'business' && (
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div className={fieldGrid}>
           <label className={`${LABEL_CLS} md:col-span-2`}>
-            <span className={LABEL_TEXT_CLS}>Legal business name</span>
-            <input value={payload.legalName} onChange={e => update('legalName', e.target.value)} className={FIELD_CLS} autoFocus />
+            <span className={labelText}>Legal business name</span>
+            <input value={payload.legalName} onChange={e => update('legalName', e.target.value)} className={fieldClass} autoFocus />
           </label>
           <label className={`${LABEL_CLS} md:col-span-2`}>
-            <span className={LABEL_TEXT_CLS}>Logo image</span>
-            <div className="flex flex-col gap-2 rounded-md border border-silver-200 bg-surface-inset p-3">
+            <span className={labelText}>Logo image</span>
+            <div className={rail ? 'flex flex-col gap-3 rounded-lg border border-dashed border-silver-300 bg-white px-4 py-4' : 'flex flex-col gap-2 rounded-md border border-silver-200 bg-surface-inset p-3'}>
               <input
                 type="file"
                 accept="image/png, image/jpeg, image/webp"
                 onChange={e => setLogoFile(e.target.files?.[0] ?? null)}
-                className="text-sm text-ink-body"
+                className={rail ? 'text-sm text-ink-body file:mr-3 file:rounded-full file:border-0 file:bg-navy-950 file:px-3 file:py-1.5 file:text-xs file:font-semibold file:text-white' : 'text-sm text-ink-body'}
               />
               <span className="text-xs text-ink-faint">
                 {logoFile ? logoFile.name : 'PNG, JPG, or WebP. The logo uploads after the dealership is created.'}
@@ -241,73 +249,73 @@ export function DealershipIntakeFlow({ mode, steps = 'chips', onSubmit, onUpload
             </div>
           </label>
           <label className={LABEL_CLS}>
-            <span className={LABEL_TEXT_CLS}>DBA name</span>
-            <input value={payload.dbaName ?? ''} onChange={e => update('dbaName', e.target.value)} className={FIELD_CLS} />
+            <span className={labelText}>DBA name</span>
+            <input value={payload.dbaName ?? ''} onChange={e => update('dbaName', e.target.value)} className={fieldClass} />
           </label>
           <label className={LABEL_CLS}>
-            <span className={LABEL_TEXT_CLS}>Business category</span>
-            <select value={payload.businessCategory} onChange={e => update('businessCategory', e.target.value)} className={FIELD_CLS}>
+            <span className={labelText}>Business category</span>
+            <select value={payload.businessCategory} onChange={e => update('businessCategory', e.target.value)} className={fieldClass}>
               {BUSINESS_CATEGORY_IDS.map(id => <option key={id} value={id}>{id.replace(/_/g, ' ')}</option>)}
             </select>
           </label>
           <label className={LABEL_CLS}>
-            <span className={LABEL_TEXT_CLS}>Dealer license</span>
-            <input value={payload.dealerLicense ?? ''} onChange={e => update('dealerLicense', e.target.value)} className={FIELD_CLS} />
+            <span className={labelText}>Dealer license</span>
+            <input value={payload.dealerLicense ?? ''} onChange={e => update('dealerLicense', e.target.value)} className={fieldClass} />
           </label>
           <label className={LABEL_CLS}>
-            <span className={LABEL_TEXT_CLS}>Website</span>
-            <input type="url" value={payload.websiteUrl ?? ''} onChange={e => update('websiteUrl', e.target.value)} className={FIELD_CLS} placeholder="https://example.com" />
+            <span className={labelText}>Website</span>
+            <input type="url" value={payload.websiteUrl ?? ''} onChange={e => update('websiteUrl', e.target.value)} className={fieldClass} placeholder="https://example.com" />
           </label>
         </div>
       )}
 
       {step === 'location' && (
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div className={fieldGrid}>
           <label className={`${LABEL_CLS} md:col-span-2`}>
-            <span className={LABEL_TEXT_CLS}>Street address</span>
-            <input value={payload.rooftopAddress.street} onChange={e => updateAddress('street', e.target.value)} className={FIELD_CLS} autoFocus />
+            <span className={labelText}>Street address</span>
+            <input value={payload.rooftopAddress.street} onChange={e => updateAddress('street', e.target.value)} className={fieldClass} autoFocus />
           </label>
           <label className={LABEL_CLS}>
-            <span className={LABEL_TEXT_CLS}>City</span>
-            <input value={payload.rooftopAddress.city} onChange={e => updateAddress('city', e.target.value)} className={FIELD_CLS} />
+            <span className={labelText}>City</span>
+            <input value={payload.rooftopAddress.city} onChange={e => updateAddress('city', e.target.value)} className={fieldClass} />
           </label>
           <label className={LABEL_CLS}>
-            <span className={LABEL_TEXT_CLS}>State</span>
-            <input value={payload.rooftopAddress.state} onChange={e => updateAddress('state', e.target.value)} className={FIELD_CLS} />
+            <span className={labelText}>State</span>
+            <input value={payload.rooftopAddress.state} onChange={e => updateAddress('state', e.target.value)} className={fieldClass} />
           </label>
           <label className={LABEL_CLS}>
-            <span className={LABEL_TEXT_CLS}>Postal code</span>
-            <input value={payload.rooftopAddress.postalCode} onChange={e => updateAddress('postalCode', e.target.value)} className={FIELD_CLS} />
+            <span className={labelText}>Postal code</span>
+            <input value={payload.rooftopAddress.postalCode} onChange={e => updateAddress('postalCode', e.target.value)} className={fieldClass} />
           </label>
           <label className={LABEL_CLS}>
-            <span className={LABEL_TEXT_CLS}>Country</span>
-            <input value={payload.rooftopAddress.country ?? 'US'} onChange={e => updateAddress('country', e.target.value)} className={FIELD_CLS} />
+            <span className={labelText}>Country</span>
+            <input value={payload.rooftopAddress.country ?? 'US'} onChange={e => updateAddress('country', e.target.value)} className={fieldClass} />
           </label>
           <label className={LABEL_CLS}>
-            <span className={LABEL_TEXT_CLS}>Primary contact</span>
-            <input value={payload.primaryContact.name} onChange={e => updateContact('name', e.target.value)} className={FIELD_CLS} />
+            <span className={labelText}>Primary contact</span>
+            <input value={payload.primaryContact.name} onChange={e => updateContact('name', e.target.value)} className={fieldClass} />
           </label>
           <label className={LABEL_CLS}>
-            <span className={LABEL_TEXT_CLS}>Contact email</span>
-            <input type="email" value={payload.primaryContact.email} onChange={e => updateContact('email', e.target.value)} className={FIELD_CLS} />
+            <span className={labelText}>Contact email</span>
+            <input type="email" value={payload.primaryContact.email} onChange={e => updateContact('email', e.target.value)} className={fieldClass} />
           </label>
           <label className={LABEL_CLS}>
-            <span className={LABEL_TEXT_CLS}>Contact phone</span>
-            <input value={payload.primaryContact.phone ?? ''} onChange={e => updateContact('phone', e.target.value)} className={FIELD_CLS} />
+            <span className={labelText}>Contact phone</span>
+            <input value={payload.primaryContact.phone ?? ''} onChange={e => updateContact('phone', e.target.value)} className={fieldClass} />
           </label>
           <label className={LABEL_CLS}>
-            <span className={LABEL_TEXT_CLS}>Contact role</span>
-            <input value={payload.primaryContact.role ?? ''} onChange={e => updateContact('role', e.target.value)} className={FIELD_CLS} />
+            <span className={labelText}>Contact role</span>
+            <input value={payload.primaryContact.role ?? ''} onChange={e => updateContact('role', e.target.value)} className={fieldClass} />
           </label>
           {mode === 'signup' && (
             <>
               <label className={LABEL_CLS}>
-                <span className={LABEL_TEXT_CLS}>Password</span>
-                <input type="password" value={payload.password ?? ''} onChange={e => update('password', e.target.value)} className={FIELD_CLS} />
+                <span className={labelText}>Password</span>
+                <input type="password" value={payload.password ?? ''} onChange={e => update('password', e.target.value)} className={fieldClass} />
               </label>
               <label className={LABEL_CLS}>
-                <span className={LABEL_TEXT_CLS}>Confirm password</span>
-                <input type="password" value={confirmPassword} onChange={e => setConfirmPassword(e.target.value)} className={FIELD_CLS} />
+                <span className={labelText}>Confirm password</span>
+                <input type="password" value={confirmPassword} onChange={e => setConfirmPassword(e.target.value)} className={fieldClass} />
               </label>
             </>
           )}
@@ -317,32 +325,59 @@ export function DealershipIntakeFlow({ mode, steps = 'chips', onSubmit, onUpload
       {step === 'channels' && (
         <div className="space-y-4">
           <label className="block max-w-xs space-y-1.5">
-            <span className={LABEL_TEXT_CLS}>Inventory size</span>
+            <span className={labelText}>Inventory size</span>
             <input
               type="number"
               min={0}
               value={payload.inventorySize ?? ''}
               onChange={e => update('inventorySize', e.target.value ? Number(e.target.value) : null)}
-              className={FIELD_CLS}
+              className={fieldClass}
               autoFocus
             />
           </label>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
-            {CHANNEL_OPTIONS.map(channel => (
-              <label key={channel.value} className="flex items-center gap-2 rounded-md border border-silver-200 bg-surface-inset px-3 py-2 text-sm text-ink-body">
-                <input
-                  type="checkbox"
-                  checked={selectedChannels.has(channel.value)}
-                  onChange={() => toggleChannel(channel.value)}
-                />
-                {channel.label}
-              </label>
-            ))}
+          <div className={rail ? 'grid grid-cols-1 gap-2 sm:grid-cols-2' : 'grid grid-cols-1 gap-2 md:grid-cols-2'}>
+            {CHANNEL_OPTIONS.map(channel => {
+              const selected = selectedChannels.has(channel.value);
+              return (
+                <label
+                  key={channel.value}
+                  className={rail
+                    ? `flex cursor-pointer items-center justify-between gap-3 rounded-lg border px-4 py-3 text-sm transition-colors focus-within:ring-2 focus-within:ring-navy-500/30 ${selected ? 'border-navy-800 bg-navy-950 text-white' : 'border-silver-200 bg-white text-ink-body hover:border-navy-500/40'}`
+                    : 'flex items-center gap-2 rounded-md border border-silver-200 bg-surface-inset px-3 py-2 text-sm text-ink-body'}
+                >
+                  <input
+                    type="checkbox"
+                    className={rail ? 'sr-only' : undefined}
+                    checked={selected}
+                    onChange={() => toggleChannel(channel.value)}
+                  />
+                  <span>{channel.label}</span>
+                  {rail && <span aria-hidden="true" className={`h-1.5 w-1.5 shrink-0 rounded-full ${selected ? 'bg-navy-500' : 'bg-silver-300'}`} />}
+                </label>
+              );
+            })}
           </div>
         </div>
       )}
 
-      {step === 'review' && (
+      {step === 'review' && (rail ? (
+        <dl className="border-y border-silver-200">
+          {[
+            ['Dealer', payload.legalName || 'Missing'],
+            ['Category', payload.businessCategory],
+            ['Address', `${payload.rooftopAddress.city || 'Missing'}, ${payload.rooftopAddress.state || 'Missing'}`],
+            ['Contact', payload.primaryContact.name || 'Missing'],
+            ['Inventory', payload.inventorySize ?? 'Not provided'],
+            ['Channels', payload.desiredChannels?.length ? String(payload.desiredChannels.length) : 'None selected'],
+            ['Logo', logoFile ? logoFile.name : 'Not selected'],
+          ].map(([label, value]) => (
+            <div key={label} className="flex items-baseline justify-between gap-6 border-b border-silver-100 py-3.5 last:border-b-0">
+              <dt className="text-[11px] font-semibold uppercase tracking-[0.16em] text-ink-muted">{label}</dt>
+              <dd className="text-right text-sm font-medium text-ink-heading">{value}</dd>
+            </div>
+          ))}
+        </dl>
+      ) : (
         <div className="rounded-md border border-silver-200 bg-surface-inset p-4 text-sm">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-3">
             <div><span className="text-ink-faint">Dealer</span><div className="font-semibold text-ink-heading">{payload.legalName || 'Missing'}</div></div>
@@ -354,27 +389,34 @@ export function DealershipIntakeFlow({ mode, steps = 'chips', onSubmit, onUpload
             <div><span className="text-ink-faint">Logo</span><div className="font-semibold text-ink-heading">{logoFile ? logoFile.name : 'Not selected'}</div></div>
           </div>
         </div>
-      )}
+      ))}
 
-      <div className="flex items-center justify-between gap-3 border-t border-silver-200 pt-4">
+      <div className={rail ? 'flex items-center justify-between gap-4 pt-2' : 'flex items-center justify-between gap-3 border-t border-silver-200 pt-4'}>
         <div>
           {onCancel && (
-            <button type="button" onClick={onCancel} className="px-3 py-2 text-sm font-semibold text-ink-muted hover:text-ink-heading">
+            <button type="button" onClick={onCancel} className={rail ? 'px-1 py-2 text-sm font-semibold text-ink-muted hover:text-ink-heading' : 'px-3 py-2 text-sm font-semibold text-ink-muted hover:text-ink-heading'}>
               Cancel
             </button>
           )}
         </div>
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-3">
           {stepIndex > 0 && (
-            <button type="button" onClick={() => { setError(null); setStepIndex(i => Math.max(0, i - 1)); }} className="px-3 py-2 text-sm font-semibold text-ink-muted hover:text-ink-heading border border-silver-300 rounded-md">
+            <button
+              type="button"
+              onClick={() => { setError(null); setStepIndex(i => Math.max(0, i - 1)); }}
+              className={rail
+                ? 'rounded-lg border border-silver-300 px-4 py-2.5 text-sm font-semibold text-ink-heading hover:bg-silver-100'
+                : 'rounded-md border border-silver-300 px-3 py-2 text-sm font-semibold text-ink-muted hover:text-ink-heading'}
+            >
               Back
             </button>
           )}
-          <button type="submit" disabled={submitting} className="btn-primary-operator disabled:opacity-40">
-            {submitting ? 'Creating...' : isLastStep ? 'Create Dealership' : 'Continue'}
+          <button type="submit" disabled={submitting} className={rail ? 'btn-primary-operator px-5 py-2.5 disabled:opacity-40' : 'btn-primary-operator disabled:opacity-40'}>
+            {submitting ? 'Creating...' : isLastStep ? (rail ? 'Create dealership' : 'Create Dealership') : 'Continue'}
           </button>
         </div>
       </div>
+      {footer}
       </div>
     </form>
   );
