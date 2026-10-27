@@ -4,6 +4,10 @@ import { requireCapability, requireDealerAccess } from '../security.js';
 import { patchLeadWorkflowSchema, validateBody } from '../requestValidation.js';
 import { updateLeadWorkflow } from '../../services/leads/leadWorkflowService.js';
 import { statusFromUnknown } from '../../services/dealership/httpError.js';
+import {
+  getLeadCrmHandoffDetails,
+  retryOrRecordLeadDelivery,
+} from '../../services/leads/leadCrmHandoffService.js';
 
 type DealerParams = { dealershipId: string };
 
@@ -100,4 +104,52 @@ export function registerDealerLeadsRoutes(app: FastifyInstance, prisma: PrismaCl
       }
     },
   );
+
+  // GET /api/dealers/:dealershipId/leads/:leadId/delivery
+  // Returns CRM delivery attempts and ADF/XML 1.0 lead payload for this lead
+  app.get<{ Params: DealerParams & { leadId: string } }>(
+    '/api/dealers/:dealershipId/leads/:leadId/delivery',
+    async (request, reply) => {
+      const { dealershipId, leadId } = request.params;
+      if (!await requireDealerAccess(prisma, request, reply, dealershipId)) return;
+
+      try {
+        const details = await getLeadCrmHandoffDetails(prisma, dealershipId, leadId);
+        return reply.send(details);
+      } catch (err) {
+        return reply.status(statusFromUnknown(err)).send({
+          error: err instanceof Error ? err.message : 'Failed to fetch lead delivery details',
+        });
+      }
+    }
+  );
+
+  // POST /api/dealers/:dealershipId/leads/:leadId/delivery/retry
+  // Retries or records CRM ADF/XML lead delivery
+  app.post<{
+    Params: DealerParams & { leadId: string };
+    Body: { destinationEmail?: string; markDelivered?: boolean };
+  }>(
+    '/api/dealers/:dealershipId/leads/:leadId/delivery/retry',
+    async (request, reply) => {
+      const { dealershipId, leadId } = request.params;
+      const operator = await requireCapability(prisma, request, reply, dealershipId, 'manage_leads');
+      if (!operator) return;
+
+      try {
+        const details = await retryOrRecordLeadDelivery(
+          prisma,
+          dealershipId,
+          leadId,
+          request.body,
+        );
+        return reply.send(details);
+      } catch (err) {
+        return reply.status(statusFromUnknown(err)).send({
+          error: err instanceof Error ? err.message : 'Failed to dispatch lead CRM handoff',
+        });
+      }
+    }
+  );
 }
+

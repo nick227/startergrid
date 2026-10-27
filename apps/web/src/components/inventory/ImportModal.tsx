@@ -1,3 +1,4 @@
+import { HelpLink } from '@/components/docs/HelpButton.tsx';
 import { useState } from 'react';
 import { parseCSV } from '@/lib/parseCSV.ts';
 import type { ParsedCSV } from '@/lib/parseCSV.ts';
@@ -126,6 +127,7 @@ export function ImportModal({ dealerId, onClose, onCommitted }: Props) {
       primaryLoading={loading || committing}
       onPrimary={handlePrimary}
     >
+      <div className="mb-4"><HelpLink docId="inventory/csv-import">How to import and correct a spreadsheet</HelpLink></div>
       {step === 0 && (
         <ImportStepUpload rawText={rawText} onChange={handleTextChange} parsed={parsed} />
       )}

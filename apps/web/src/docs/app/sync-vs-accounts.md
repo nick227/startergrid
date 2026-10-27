@@ -9,7 +9,7 @@ If a listing did not change, decide which of two things is unfinished: the vehic
 
 ## Start with Vehicles
 
-Open Vehicles when the question is “can this unit be listed?” Missing price or photos, or a sold unit still marked available, stops a send.
+Open Vehicles when the question is “can this unit be listed?” Missing price, photos, or other required details can stop an update. Also check that availability is correct: a sold vehicle still marked available can continue to be advertised.
 
 ## Then open Channels
 
@@ -18,7 +18,7 @@ Open Channels when the question is “can we send to this site?” A destination
 ## Order of work
 
 1. Fix the vehicle details that Vehicles says are missing.
-2. Connect or check the destination on Channels.
+2. Check the destination on Channels. Finish setup and confirm its update method. For automatic updates, check that Autopilot is on and the destination is selected.
 3. Confirm the last update went through. Connected does not mean the site already shows the change.
 
 Fixing vehicles does not connect a destination. Connecting a destination does not fill in a missing VIN.

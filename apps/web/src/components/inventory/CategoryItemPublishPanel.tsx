@@ -110,7 +110,7 @@ export function CategoryItemPublishPanel({ dealerId, categoryItemId, listingStat
 
       {!isReady && !isActive && (
         <p className="text-[11px] text-amber-700 bg-amber-50 border border-amber-200 rounded px-2.5 py-1.5">
-          Mark as Ready before publishing — complete all required fields first.
+          Complete all required fields and photos before publishing.
         </p>
       )}
 

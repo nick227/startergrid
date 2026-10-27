@@ -1,24 +1,23 @@
 ---
 title: Mark a vehicle sold or removed
-summary: Mark sold or removed so StarterGrid can send a take-down. The site may still show it until they process the update.
-keywords: sold, removed, take down, availability
+summary: Update availability, then check the removal result for each destination.
+keywords: sold, removed, take down, availability, manual listing
 updated: 2026-10-26
 ---
 
-A funded deal or a unit that left the lot should not stay advertised.
+Update a vehicle’s status when it is no longer available. Lowering its price to zero does not mark it sold.
 
-## What to do
+## Choose the right status
 
-| Action | Use it when | Result |
-| --- | --- | --- |
-| Mark sold | The retail deal funded | The vehicle stays in history; a take-down is sent |
-| Mark removed | Wholesale, transfer, or a row you should not advertise | Same take-down path |
-| Delete | Not a normal step | Breaks history — do not use this for daily work |
+- **Sold:** the vehicle has been sold. Keep its record for your team’s history.
+- **Removed:** the vehicle is no longer available through this dealership, for example after a transfer.
 
-## What happens next
+If another inventory system shows the vehicle as sold, check that the change also appears in StarterGrid.
 
-Sold and removed updates go out ahead of routine price or photo edits. The destination still needs time to process the request. A site can show the ad for a while after StarterGrid has already sent the take-down.
+## Check the listings
 
-If your DMS already shows sold but Vehicles still shows available, listings can keep going out. Match status here the same day the deal funds.
+StarterGrid requests removal from the destinations it manages. A request is not confirmation that the destination has removed the listing. Check its latest result and follow any next step shown.
 
-See [A sold vehicle is still on a site](doc:troubleshooting/sold-listing-still-live).
+Listings created manually or through a separate provider may need to be removed there. Pausing Autopilot does not remove existing listings; removal work for managed listings can continue while paused.
+
+See [A sold vehicle is still listed](doc:troubleshooting/sold-listing-still-live).

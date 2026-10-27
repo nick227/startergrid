@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { previewBulkVins, commitBulkVins } from '@/lib/api/sdk.ts';
 import type { BulkVinPreviewRow } from '@/lib/api/sdk.ts';
+import type { CommitImportResponse } from '@/lib/types.ts';
 import { VinEntryPanel } from './VinEntryPanel.tsx';
 import { BulkVinReviewSidebar } from './BulkVinReviewSidebar.tsx';
 import { ImportModal } from './ImportModal.tsx';
@@ -13,15 +14,15 @@ type Props = {
   dealerId: string;
   compact?: boolean;
   onVehicleCreated?: (vehicleId: string, stockNumber: string) => void;
-  onImportCommitted?: () => void;
+  onImportCommitted?: (result?: CommitImportResponse) => void;
 };
 
 export function VehicleAddControls({ dealerId, compact, onVehicleCreated, onImportCommitted }: Props) {
   const [panel, setPanel] = useState<Panel>(compact ? null : 'vin');
   const [showCsv, setShowCsv] = useState(false);
 
-  const finish = () => {
-    onImportCommitted?.();
+  const finish = (result?: CommitImportResponse) => {
+    onImportCommitted?.(result);
     if (compact) setPanel(null);
   };
 
@@ -81,9 +82,9 @@ export function VehicleAddControls({ dealerId, compact, onVehicleCreated, onImpo
         <ImportModal
           dealerId={dealerId}
           onClose={() => setShowCsv(false)}
-          onCommitted={() => {
+          onCommitted={(result) => {
             setShowCsv(false);
-            finish();
+            finish(result);
           }}
         />
       )}

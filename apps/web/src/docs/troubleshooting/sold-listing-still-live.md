@@ -1,19 +1,23 @@
 ---
-title: A sold vehicle is still on a site
-summary: Marking sold sends a take-down. The site may still show the ad until they process it.
-keywords: sold, still live, take down, lag
+title: A sold vehicle is still listed
+summary: Check the vehicle status, the recorded removal result and whether the listing needs manual removal.
+keywords: sold, removed, still live, ghost, sentry, take down, removal
 updated: 2026-10-26
 ---
 
-Mark sold or removed on Vehicles. StarterGrid then sends a take-down. The consumer site updates only after that destination processes the request.
+First check that the correct vehicle is marked **Sold** or **Removed** in the correct dealership. A price of zero is not a substitute for changing its status.
 
-## What to do
+## Check the affected destination
 
-1. Confirm the vehicle is **sold** or **removed**, not only priced at $0.
-2. Confirm you are in the right dealership.
-3. On Channels, check that the destination is connected. If sign-in expired, the take-down never arrived.
-4. Allow time for that site’s refresh. Some classified sites update in minutes; some wait for a later batch.
+Open Channels and review the listing’s result and next action. A request to remove a listing is not the same as confirmation that it has disappeared. Connection problems or the destination’s processing schedule can delay removal.
 
-If it is still public after a full business day, the listing may have been posted by hand outside StarterGrid and will not take itself down.
+The sold-listing check compares StarterGrid’s inventory and listing records. A clean result means those records agree; it does not independently inspect every external website.
 
-See [Mark a vehicle sold or removed](doc:inventory/sold-removed).
+## If the listing is still public
+
+- Check whether StarterGrid manages the listing or someone posted it manually.
+- Use the supported removal action and review its result.
+- For a manual or partner-managed listing, remove it with that provider or ask the person responsible to do so.
+- If a removal fails or remains unconfirmed, give support the stock number and destination. Follow the next action rather than assuming another wait will fix it.
+
+Read [Mark a vehicle sold or removed](doc:inventory/sold-removed) and [Automatic updates and pausing](doc:processes/auto-sync).

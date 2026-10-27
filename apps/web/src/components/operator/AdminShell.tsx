@@ -1,4 +1,5 @@
 import { useAuth } from '@/contexts/AuthContext.tsx';
+import { HelpButton } from '@/components/docs/HelpButton.tsx';
 
 type Props = {
   nav?: React.ReactNode;
@@ -28,6 +29,7 @@ export function AdminShell({ nav, action, children }: Props) {
             </div>
             <div className="flex items-center gap-2 shrink-0">
               {action}
+              <HelpButton topic="dealerships/setup-and-handoff" inverted />
               {user && (
                 <>
                   <span className="text-ink-faint text-xs hidden lg:block truncate max-w-[12rem]">{user.email}</span>

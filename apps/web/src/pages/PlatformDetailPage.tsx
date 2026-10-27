@@ -1,5 +1,5 @@
-import { useMemo } from 'react';
-import { fetchPublishStatus, fetchAccounts } from '@/lib/api/sdk.ts';
+import { useState, useEffect, useMemo } from 'react';
+import { fetchPublishStatus, fetchAccounts, fetchPlatformPerformance } from '@/lib/api/sdk.ts';
 import type { OperatorPageBaseProps } from '@/lib/operatorPage.ts';
 import { useAsyncQuery } from '@/hooks/useAsyncQuery.ts';
 import { OperatorPage, ErrorState, PanelSkeleton } from '@/components/operator';
@@ -15,6 +15,12 @@ import { PagePrimaryState } from '@/components/guidance/PagePrimaryState.tsx';
 import { destinationExperience, destinationWhy } from '@/lib/destinationPrimary.ts';
 import { useAuth } from '@/contexts/AuthContext.tsx';
 import { isInternalSupportRole } from '@/lib/operatorAccess.ts';
+import { buildTabs, type Tab } from '@/lib/platformDrawerTabs.ts';
+import { ActivityTab, FeedTab, NotesTab } from '@/components/platforms/PlatformDetailTabs.tsx';
+import { CatalogSyncPanel } from '@/components/platforms/CatalogSyncPanel.tsx';
+import { LeadSyncPanel } from '@/components/platforms/LeadSyncPanel.tsx';
+import { MarketplaceListingPanel } from '@/components/platforms/MarketplaceListingPanel.tsx';
+import { SocialPageSelector, SocialPostsTab } from '@/components/social/index.ts';
 
 type ExternalLink = { label: string; url: string };
 type OperatorSetupGuide = {
@@ -87,12 +93,19 @@ function ownedMarketplaceStateCopy(platform: { state: string; detail?: string | 
 }
 
 export default function PlatformDetailPage({ dealerId, nav, activeTab, platformSlug }: Props) {
+  const [currentTab, setCurrentTab] = useState<Tab>('setup');
+  useEffect(() => { setCurrentTab('setup'); }, [platformSlug]);
+
   const { data: statusData, loading: statusLoading, error: statusError, reload: reloadStatus } = useAsyncQuery(
     () => fetchPublishStatus(dealerId),
     [dealerId]
   );
   const { data: accountsData, loading: accountsLoading, error: accountsError, reload: reloadAccounts } = useAsyncQuery(
     () => fetchAccounts(dealerId),
+    [dealerId]
+  );
+  const { data: perfData, reload: reloadPerf } = useAsyncQuery(
+    () => fetchPlatformPerformance(dealerId),
     [dealerId]
   );
 
@@ -107,12 +120,20 @@ export default function PlatformDetailPage({ dealerId, nav, activeTab, platformS
   );
   const richAccount = account as (typeof account & RichPlatformAccount) | null;
 
+  const perf = useMemo(
+    () => perfData?.platforms?.find(p => p.platformSlug === platformSlug) ?? null,
+    [perfData, platformSlug]
+  );
+
+  const tabs = useMemo(() => (platform ? buildTabs(platform) : []), [platform]);
+
   const loading = statusLoading || accountsLoading;
   const error = statusError || accountsError;
 
   const handleRefresh = () => {
     reloadStatus();
     reloadAccounts();
+    reloadPerf();
   };
 
   if (error && !platform) {
@@ -223,257 +244,340 @@ export default function PlatformDetailPage({ dealerId, nav, activeTab, platformS
         externalLinks={richAccount?.externalLinks}
       />
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mt-6">
-        {/* Left Column */}
-        <div className="lg:col-span-2 space-y-6">
+      {/* Tab strip */}
+      <div className="flex border-b border-silver-200 overflow-x-auto gap-0 no-scrollbar mt-6 bg-white rounded-t-xl px-2">
+        {tabs.map(tab => (
+          <button
+            key={tab.key}
+            type="button"
+            onClick={() => setCurrentTab(tab.key)}
+            className={`shrink-0 px-4 py-2.5 text-xs font-bold border-b-2 -mb-px transition-colors ${
+              currentTab === tab.key
+                ? 'border-navy-600 text-navy-700 bg-white'
+                : 'border-transparent text-ink-muted hover:text-ink-body'
+            }`}
+          >
+            {tab.label}
+          </button>
+        ))}
+      </div>
 
-          <DestinationPrimarySetup
-            dealerId={dealerId}
-            platform={platform}
-            account={account}
-            onRefresh={handleRefresh}
-          />
+      {currentTab === 'setup' && (
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mt-6">
+          {/* Left Column */}
+          <div className="lg:col-span-2 space-y-6">
 
-          <details className="bg-white border border-silver-200 rounded-xl shadow-sm">
-            <summary className="px-5 py-4 cursor-pointer text-sm font-semibold text-ink-heading">
-              How this destination works
-              <span className="block text-xs font-normal text-ink-muted mt-0.5">What you send here, and what they need from a vehicle.</span>
-            </summary>
-            <div className="px-5 pb-5 space-y-6">
-          <p className="text-sm text-ink-body leading-relaxed">
-            After you connect, ready vehicles can be sent here. Sent is not the same as already showing on their site.
-          </p>
-          <div>
-            <h2 className="text-[11px] font-bold uppercase tracking-widest text-ink-faint mb-4">What you can send</h2>
-            <div className="flex flex-wrap gap-2">
-              {platform.catalogSync && <span className="px-2 py-1 bg-teal-50 text-teal-800 border border-teal-200 rounded text-xs font-semibold">Inventory</span>}
-              {platform.socialPosting && <span className="px-2 py-1 bg-indigo-50 text-indigo-800 border border-indigo-200 rounded text-xs font-semibold">Social posts</span>}
-              {platform.marketplaceListing && <span className="px-2 py-1 bg-sky-50 text-sky-800 border border-sky-200 rounded text-xs font-semibold">Listings</span>}
-              {platform.partnerFeed && <span className="px-2 py-1 bg-purple-50 text-purple-800 border border-purple-200 rounded text-xs font-semibold">Partner listing</span>}
-              {platform.leadSync && <span className="px-2 py-1 bg-emerald-50 text-emerald-800 border border-emerald-200 rounded text-xs font-semibold">Inquiries</span>}
-              {!platform.catalogSync && !platform.socialPosting && !platform.marketplaceListing && !platform.partnerFeed && !platform.leadSync && (
-                <span className="text-sm text-ink-muted">No extra capabilities listed.</span>
-              )}
-            </div>
-          </div>
+            <DestinationPrimarySetup
+              dealerId={dealerId}
+              platform={platform}
+              account={account}
+              onRefresh={handleRefresh}
+            />
 
-          {isInternal && platform.integrationClass !== 'OWNED' && (
-            <div className="space-y-4">
-              <h2 className="text-[11px] font-bold uppercase tracking-widest text-ink-faint mb-2">Connection checks</h2>
-
-              <div className="grid grid-cols-2 md:grid-cols-3 gap-4 mb-4 pb-4 border-b border-silver-100">
-                <div>
-                  <div className="text-[10px] text-ink-muted uppercase font-bold tracking-wide">Sync State</div>
-                  <div className="font-semibold text-ink-body mt-0.5">{platform.state}</div>
-                </div>
-                <div>
-                  <div className="text-[10px] text-ink-muted uppercase font-bold tracking-wide">Account State</div>
-                  <div className="font-semibold text-ink-body mt-0.5">{account?.state || 'Unknown'}</div>
-                </div>
-                <div>
-                  <div className="text-[10px] text-ink-muted uppercase font-bold tracking-wide">Membership</div>
-                  <div className="font-semibold text-ink-body mt-0.5">{account?.membershipStatus || 'Unknown'}</div>
-                </div>
-              </div>
-
-              <div className="space-y-3">
-                <div className="flex items-center justify-between">
-                  <span className="text-sm font-semibold text-ink-body">Config Present</span>
-                  {account?.connectionConfig && Object.keys(account.connectionConfig).length > 0 ? (
-                    <span className="text-[10px] font-bold text-status-success-text bg-status-success-bg px-2 py-0.5 rounded border border-status-success-border">YES</span>
-                  ) : (
-                    <span className="text-[10px] font-bold text-ink-muted bg-silver-100 px-2 py-0.5 rounded border border-silver-200">NO</span>
-                  )}
-                </div>
-                <div className="flex items-center justify-between">
-                  <span className="text-sm font-semibold text-ink-body">Secret Present</span>
-                  {account?.state !== 'ACCOUNT_NEEDED' && account?.state !== 'CREDENTIALS_NEEDED' && account?.state !== 'NOT_STARTED' ? (
-                    <span className="text-[10px] font-bold text-status-success-text bg-status-success-bg px-2 py-0.5 rounded border border-status-success-border">YES</span>
-                  ) : (
-                    <span className="text-[10px] font-bold text-ink-muted bg-silver-100 px-2 py-0.5 rounded border border-silver-200">NO</span>
-                  )}
-                </div>
-                <div className="flex items-center justify-between">
-                  <span className="text-sm font-semibold text-ink-body">Connection Tested</span>
-                  {account?.state && account.state !== 'ACCOUNT_NEEDED' && account.state !== 'CREDENTIALS_NEEDED' && account.state !== 'FAILED' ? (
-                    <span className="text-[10px] font-bold text-status-success-text bg-status-success-bg px-2 py-0.5 rounded border border-status-success-border">YES</span>
-                  ) : (
-                    <span className="text-[10px] font-bold text-ink-muted bg-silver-100 px-2 py-0.5 rounded border border-silver-200">NO</span>
-                  )}
-                </div>
-                <div className="flex items-center justify-between">
-                  <span className="text-sm font-semibold text-ink-body">Feed Accepted</span>
-                  {platform.state === 'Active' ? (
-                    <span className="text-[10px] font-bold text-status-success-text bg-status-success-bg px-2 py-0.5 rounded border border-status-success-border">YES</span>
-                  ) : (
-                    <span className="text-[10px] font-bold text-amber-700 bg-amber-100 px-2 py-0.5 rounded border border-amber-200">PENDING</span>
-                  )}
-                </div>
-                <div className="flex items-center justify-between">
-                  <span className="text-sm font-semibold text-ink-body">Listings Confirmed</span>
-                  {platform.state === 'Active' ? (
-                    <span className="text-[10px] font-bold text-status-success-text bg-status-success-bg px-2 py-0.5 rounded border border-status-success-border">YES</span>
-                  ) : (
-                    <span className="text-[10px] font-bold text-amber-700 bg-amber-100 px-2 py-0.5 rounded border border-amber-200">PENDING</span>
-                  )}
-                </div>
-                <div className="flex items-center justify-between">
-                  <span className="text-sm font-semibold text-ink-body">Status Sync Confirmed</span>
-                  {platform.state === 'Active' ? (
-                    <span className="text-[10px] font-bold text-status-success-text bg-status-success-bg px-2 py-0.5 rounded border border-status-success-border">YES</span>
-                  ) : (
-                    <span className="text-[10px] font-bold text-amber-700 bg-amber-100 px-2 py-0.5 rounded border border-amber-200">PENDING</span>
-                  )}
-                </div>
-              </div>
-
-              {isInternal && account?.liveValidationNote && (
-                <div className="mt-4 p-3 bg-amber-50 border border-amber-200 rounded-lg">
-                  <p className="text-xs font-bold text-amber-800 mb-1">Partner confirmation note</p>
-                  <p className="text-xs text-amber-900/80">{account.liveValidationNote}</p>
-                </div>
-              )}
-              {platform.detail && (
-                <div className="mt-2 text-sm text-ink-muted">
-                  {platform.detail}
-                </div>
-              )}
-            </div>
-          )}
-
-          {(account?.requiredDealershipFields?.length || account?.requiredVehicleFields?.length) ? (
-            <div>
-              <h2 className="text-[11px] font-bold uppercase tracking-widest text-ink-faint mb-4">Fields they need</h2>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                {account?.requiredDealershipFields && account.requiredDealershipFields.length > 0 && (
-                  <div>
-                    <h3 className="text-[10px] font-bold uppercase tracking-wider text-ink-muted mb-2">Dealership</h3>
-                    <div className="flex flex-wrap gap-1.5">
-                      {account.requiredDealershipFields.map(f => (
-                        <span key={f} className="px-2 py-0.5 bg-silver-50 border border-silver-200 rounded-md text-[11px] text-ink-body">
-                          {f}
-                        </span>
-                      ))}
-                    </div>
-                  </div>
-                )}
-                {account?.requiredVehicleFields && account.requiredVehicleFields.length > 0 && (
-                  <div>
-                    <h3 className="text-[10px] font-bold uppercase tracking-wider text-ink-muted mb-2">Vehicle</h3>
-                    <div className="flex flex-wrap gap-1.5">
-                      {account.requiredVehicleFields.map(f => (
-                        <span key={f} className="px-2 py-0.5 bg-silver-50 border border-silver-200 rounded-md text-[11px] text-ink-body">
-                          {f}
-                        </span>
-                      ))}
-                    </div>
-                  </div>
-                )}
-              </div>
-            </div>
-          ) : null}
-            </div>
-          </details>
-
-          {platform.integrationClass === 'OWNED' && (
-            <div className="bg-white border border-silver-200 rounded-xl shadow-sm p-5">
-              <h2 className="text-[11px] font-bold uppercase tracking-widest text-ink-faint mb-3">Your StarterGrid storefront</h2>
-              <p className="text-sm text-ink-body leading-relaxed">
-                This is your own storefront. You do not sign in to another company. Ready vehicles can appear here; that is not a verified-live confirmation until a send succeeds.
-              </p>
-              {platform.state === 'Active' ? (
-                <p className="mt-3 text-xs font-semibold text-status-success-text">Storefront is on.</p>
-              ) : (
-                ownedState && (
-                  <div className="mt-3 rounded-lg border border-silver-200 bg-silver-50 px-3 py-2">
-                    <p className={`text-xs font-semibold ${ownedState.tone}`}>{ownedState.label}</p>
-                    {ownedState.detail && <p className="mt-1 text-xs text-ink-muted">{ownedState.detail}</p>}
-                  </div>
-                )
-              )}
-            </div>
-          )}
-
-          {isInternal && account && (
             <details className="bg-white border border-silver-200 rounded-xl shadow-sm">
               <summary className="px-5 py-4 cursor-pointer text-sm font-semibold text-ink-heading">
-                Account record
-                <span className="block text-xs font-normal text-ink-muted mt-0.5">Internal state, owner, and notes.</span>
+                How this destination works
+                <span className="block text-xs font-normal text-ink-muted mt-0.5">What you send here, and what they need from a vehicle.</span>
               </summary>
-              <div className="px-5 pb-5">
-                <AccountEditForm account={account} dealerId={dealerId} onSaved={handleRefresh} />
+              <div className="px-5 pb-5 space-y-6">
+            <p className="text-sm text-ink-body leading-relaxed">
+              After you connect, ready vehicles can be sent here. Sent is not the same as already showing on their site.
+            </p>
+            <div>
+              <h2 className="text-[11px] font-bold uppercase tracking-widest text-ink-faint mb-4">What you can send</h2>
+              <div className="flex flex-wrap gap-2">
+                {platform.catalogSync && <span className="px-2 py-1 bg-teal-50 text-teal-800 border border-teal-200 rounded text-xs font-semibold">Inventory</span>}
+                {platform.socialPosting && <span className="px-2 py-1 bg-indigo-50 text-indigo-800 border border-indigo-200 rounded text-xs font-semibold">Social posts</span>}
+                {platform.marketplaceListing && <span className="px-2 py-1 bg-sky-50 text-sky-800 border border-sky-200 rounded text-xs font-semibold">Listings</span>}
+                {platform.partnerFeed && <span className="px-2 py-1 bg-purple-50 text-purple-800 border border-purple-200 rounded text-xs font-semibold">Partner listing</span>}
+                {platform.leadSync && <span className="px-2 py-1 bg-emerald-50 text-emerald-800 border border-emerald-200 rounded text-xs font-semibold">Inquiries</span>}
+                {!platform.catalogSync && !platform.socialPosting && !platform.marketplaceListing && !platform.partnerFeed && !platform.leadSync && (
+                  <span className="text-sm text-ink-muted">No extra capabilities listed.</span>
+                )}
+              </div>
+            </div>
+
+            {isInternal && platform.integrationClass !== 'OWNED' && (
+              <div className="space-y-4">
+                <h2 className="text-[11px] font-bold uppercase tracking-widest text-ink-faint mb-2">Connection checks</h2>
+
+                <div className="grid grid-cols-2 md:grid-cols-3 gap-4 mb-4 pb-4 border-b border-silver-100">
+                  <div>
+                    <div className="text-[10px] text-ink-muted uppercase font-bold tracking-wide">Sync State</div>
+                    <div className="font-semibold text-ink-body mt-0.5">{platform.state}</div>
+                  </div>
+                  <div>
+                    <div className="text-[10px] text-ink-muted uppercase font-bold tracking-wide">Account State</div>
+                    <div className="font-semibold text-ink-body mt-0.5">{account?.state || 'Unknown'}</div>
+                  </div>
+                  <div>
+                    <div className="text-[10px] text-ink-muted uppercase font-bold tracking-wide">Membership</div>
+                    <div className="font-semibold text-ink-body mt-0.5">{account?.membershipStatus || 'Unknown'}</div>
+                  </div>
+                </div>
+
+                <div className="space-y-3">
+                  <div className="flex items-center justify-between">
+                    <span className="text-sm font-semibold text-ink-body">Config Present</span>
+                    {account?.connectionConfig && Object.keys(account.connectionConfig).length > 0 ? (
+                      <span className="text-[10px] font-bold text-status-success-text bg-status-success-bg px-2 py-0.5 rounded border border-status-success-border">YES</span>
+                    ) : (
+                      <span className="text-[10px] font-bold text-ink-muted bg-silver-100 px-2 py-0.5 rounded border border-silver-200">NO</span>
+                    )}
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <span className="text-sm font-semibold text-ink-body">Secret Present</span>
+                    {account?.state !== 'ACCOUNT_NEEDED' && account?.state !== 'CREDENTIALS_NEEDED' && account?.state !== 'NOT_STARTED' ? (
+                      <span className="text-[10px] font-bold text-status-success-text bg-status-success-bg px-2 py-0.5 rounded border border-status-success-border">YES</span>
+                    ) : (
+                      <span className="text-[10px] font-bold text-ink-muted bg-silver-100 px-2 py-0.5 rounded border border-silver-200">NO</span>
+                    )}
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <span className="text-sm font-semibold text-ink-body">Connection Tested</span>
+                    {account?.state && account.state !== 'ACCOUNT_NEEDED' && account.state !== 'CREDENTIALS_NEEDED' && account.state !== 'FAILED' ? (
+                      <span className="text-[10px] font-bold text-status-success-text bg-status-success-bg px-2 py-0.5 rounded border border-status-success-border">YES</span>
+                    ) : (
+                      <span className="text-[10px] font-bold text-ink-muted bg-silver-100 px-2 py-0.5 rounded border border-silver-200">NO</span>
+                    )}
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <span className="text-sm font-semibold text-ink-body">Feed Accepted</span>
+                    {platform.state === 'Active' ? (
+                      <span className="text-[10px] font-bold text-status-success-text bg-status-success-bg px-2 py-0.5 rounded border border-status-success-border">YES</span>
+                    ) : (
+                      <span className="text-[10px] font-bold text-amber-700 bg-amber-100 px-2 py-0.5 rounded border border-amber-200">PENDING</span>
+                    )}
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <span className="text-sm font-semibold text-ink-body">Listings Confirmed</span>
+                    {platform.state === 'Active' ? (
+                      <span className="text-[10px] font-bold text-status-success-text bg-status-success-bg px-2 py-0.5 rounded border border-status-success-border">YES</span>
+                    ) : (
+                      <span className="text-[10px] font-bold text-amber-700 bg-amber-100 px-2 py-0.5 rounded border border-amber-200">PENDING</span>
+                    )}
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <span className="text-sm font-semibold text-ink-body">Status Sync Confirmed</span>
+                    {platform.state === 'Active' ? (
+                      <span className="text-[10px] font-bold text-status-success-text bg-status-success-bg px-2 py-0.5 rounded border border-status-success-border">YES</span>
+                    ) : (
+                      <span className="text-[10px] font-bold text-amber-700 bg-amber-100 px-2 py-0.5 rounded border border-amber-200">PENDING</span>
+                    )}
+                  </div>
+                </div>
+
+                {isInternal && account?.liveValidationNote && (
+                  <div className="mt-4 p-3 bg-amber-50 border border-amber-200 rounded-lg">
+                    <p className="text-xs font-bold text-amber-800 mb-1">Partner confirmation note</p>
+                    <p className="text-xs text-amber-900/80">{account.liveValidationNote}</p>
+                  </div>
+                )}
+                {platform.detail && (
+                  <div className="mt-2 text-sm text-ink-muted">
+                    {platform.detail}
+                  </div>
+                )}
+              </div>
+            )}
+
+            {(account?.requiredDealershipFields?.length || account?.requiredVehicleFields?.length) ? (
+              <div>
+                <h2 className="text-[11px] font-bold uppercase tracking-widest text-ink-faint mb-4">Fields they need</h2>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  {account?.requiredDealershipFields && account.requiredDealershipFields.length > 0 && (
+                    <div>
+                      <h3 className="text-[10px] font-bold uppercase tracking-wider text-ink-muted mb-2">Dealership</h3>
+                      <div className="flex flex-wrap gap-1.5">
+                        {account.requiredDealershipFields.map(f => (
+                          <span key={f} className="px-2 py-0.5 bg-silver-50 border border-silver-200 rounded-md text-[11px] text-ink-body">
+                            {f}
+                          </span>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                  {account?.requiredVehicleFields && account.requiredVehicleFields.length > 0 && (
+                    <div>
+                      <h3 className="text-[10px] font-bold uppercase tracking-wider text-ink-muted mb-2">Vehicle</h3>
+                      <div className="flex flex-wrap gap-1.5">
+                        {account.requiredVehicleFields.map(f => (
+                          <span key={f} className="px-2 py-0.5 bg-silver-50 border border-silver-200 rounded-md text-[11px] text-ink-body">
+                            {f}
+                          </span>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                </div>
+              </div>
+            ) : null}
               </div>
             </details>
-          )}
 
-        </div>
+            {platform.integrationClass === 'OWNED' && (
+              <div className="bg-white border border-silver-200 rounded-xl shadow-sm p-5">
+                <h2 className="text-[11px] font-bold uppercase tracking-widest text-ink-faint mb-3">Your StarterGrid storefront</h2>
+                <p className="text-sm text-ink-body leading-relaxed">
+                  This is your own storefront. You do not sign in to another company. Ready vehicles can appear here; that is not a verified-live confirmation until a send succeeds.
+                </p>
+                {platform.state === 'Active' ? (
+                  <p className="mt-3 text-xs font-semibold text-status-success-text">Storefront is on.</p>
+                ) : (
+                  ownedState && (
+                    <div className="mt-3 rounded-lg border border-silver-200 bg-silver-50 px-3 py-2">
+                      <p className={`text-xs font-semibold ${ownedState.tone}`}>{ownedState.label}</p>
+                      {ownedState.detail && <p className="mt-1 text-xs text-ink-muted">{ownedState.detail}</p>}
+                    </div>
+                  )
+                )}
+              </div>
+            )}
 
-        {/* Right Column */}
-        <div className="space-y-6">
+            {isInternal && account && (
+              <details className="bg-white border border-silver-200 rounded-xl shadow-sm">
+                <summary className="px-5 py-4 cursor-pointer text-sm font-semibold text-ink-heading">
+                  Account record
+                  <span className="block text-xs font-normal text-ink-muted mt-0.5">Internal state, owner, and notes.</span>
+                </summary>
+                <div className="px-5 pb-5">
+                  <AccountEditForm account={account} dealerId={dealerId} onSaved={handleRefresh} />
+                </div>
+              </details>
+            )}
 
-          <PlatformQueueSummaryCard dealerId={dealerId} platformSlug={platform.platformSlug} nav={nav} />
-
-          <div className="bg-white border border-silver-200 rounded-xl shadow-sm p-5">
-            <h2 className="text-[11px] font-bold uppercase tracking-widest text-ink-faint mb-4">Help</h2>
-            <ul className="space-y-3">
-              {account?.integrationUrls?.partnerPortalUrl && (
-                <li>
-                  <a href={account.integrationUrls.partnerPortalUrl} target="_blank" rel="noreferrer" className="text-sm text-navy-600 hover:text-navy-800 font-medium flex items-center gap-1.5">
-                    <span className="text-lg leading-none">↗</span> Their dealer website
-                  </a>
-                </li>
-              )}
-              {account?.integrationUrls?.supportUrl && (
-                <li>
-                  <a href={account.integrationUrls.supportUrl} target="_blank" rel="noreferrer" className="text-sm text-navy-600 hover:text-navy-800 font-medium flex items-center gap-1.5">
-                    <span className="text-lg leading-none">↗</span> Their support
-                  </a>
-                </li>
-              )}
-              {!account?.integrationUrls && account?.connectionFields?.find(f => f.helpUrl) && (
-                <li>
-                  <a href={account.connectionFields.find(f => f.helpUrl)?.helpUrl} target="_blank" rel="noreferrer" className="text-sm text-navy-600 hover:text-navy-800 font-medium flex items-center gap-1.5">
-                    <span className="text-lg leading-none">↗</span> Setup guide
-                  </a>
-                </li>
-              )}
-              <li>
-                <button type="button" onClick={() => nav.goToHelp()} className="text-sm text-navy-600 hover:text-navy-800 font-medium flex items-center gap-1.5">
-                  Help in StarterGrid
-                </button>
-              </li>
-            </ul>
           </div>
 
-          <details className="bg-white border border-silver-200 rounded-xl shadow-sm">
-            <summary className="px-5 py-4 cursor-pointer text-sm font-semibold text-ink-heading">
-              How this connection works
-              <span className="block text-xs font-normal text-ink-muted mt-0.5">Sign-in method and technical notes.</span>
-            </summary>
-            <div className="px-5 pb-5 space-y-4">
-              {platform.connectionType === 'OAUTH' && account?.oauthProvider ? (
-                <p className="text-sm text-ink-body">Sign in with {oauthProviderDisplayName(account.oauthProvider)}. StarterGrid never sees your password.</p>
-              ) : platform.connectionType === 'PARTNER_FEED' ? (
-                <p className="text-sm text-ink-body">They receive listings from us after you add the details they need.</p>
-              ) : (
-                <p className="text-sm text-ink-body">We send listings directly. You usually do not sign in to another website.</p>
-              )}
-              {account?.integrationUrls?.developerDocsUrl && (
-                <a href={account.integrationUrls.developerDocsUrl} target="_blank" rel="noreferrer" className="block text-xs text-navy-600">Developer docs</a>
-              )}
-              {account?.integrationUrls?.feedSpecUrl && (
-                <a href={account.integrationUrls.feedSpecUrl} target="_blank" rel="noreferrer" className="block text-xs text-navy-600">Listing file spec</a>
-              )}
-              {(account?.profileConfidence || account?.requirementsConfidence) && (
-                <p className="text-xs text-ink-muted">
-                  Setup notes: {account?.profileConfidence ?? 'unknown'} data · {account?.requirementsConfidence ?? 'unknown'} requirements.
-                </p>
-              )}
+          {/* Right Column */}
+          <div className="space-y-6">
+
+            <PlatformQueueSummaryCard dealerId={dealerId} platformSlug={platform.platformSlug} nav={nav} />
+
+            <div className="bg-white border border-silver-200 rounded-xl shadow-sm p-5">
+              <h2 className="text-[11px] font-bold uppercase tracking-widest text-ink-faint mb-4">Help</h2>
+              <ul className="space-y-3">
+                {account?.integrationUrls?.partnerPortalUrl && (
+                  <li>
+                    <a href={account.integrationUrls.partnerPortalUrl} target="_blank" rel="noreferrer" className="text-sm text-navy-600 hover:text-navy-800 font-medium flex items-center gap-1.5">
+                      <span className="text-lg leading-none">↗</span> Their dealer website
+                    </a>
+                  </li>
+                )}
+                {account?.integrationUrls?.supportUrl && (
+                  <li>
+                    <a href={account.integrationUrls.supportUrl} target="_blank" rel="noreferrer" className="text-sm text-navy-600 hover:text-navy-800 font-medium flex items-center gap-1.5">
+                      <span className="text-lg leading-none">↗</span> Their support
+                    </a>
+                  </li>
+                )}
+                {!account?.integrationUrls && account?.connectionFields?.find(f => f.helpUrl) && (
+                  <li>
+                    <a href={account.connectionFields.find(f => f.helpUrl)?.helpUrl} target="_blank" rel="noreferrer" className="text-sm text-navy-600 hover:text-navy-800 font-medium flex items-center gap-1.5">
+                      <span className="text-lg leading-none">↗</span> Setup guide
+                    </a>
+                  </li>
+                )}
+                <li>
+                  <button type="button" onClick={() => nav.goToHelp()} className="text-sm text-navy-600 hover:text-navy-800 font-medium flex items-center gap-1.5">
+                    Help in StarterGrid
+                  </button>
+                </li>
+              </ul>
             </div>
-          </details>
-          
+
+            <details className="bg-white border border-silver-200 rounded-xl shadow-sm">
+              <summary className="px-5 py-4 cursor-pointer text-sm font-semibold text-ink-heading">
+                How this connection works
+                <span className="block text-xs font-normal text-ink-muted mt-0.5">Sign-in method and technical notes.</span>
+              </summary>
+              <div className="px-5 pb-5 space-y-4">
+                {platform.connectionType === 'OAUTH' && account?.oauthProvider ? (
+                  <p className="text-sm text-ink-body">Sign in with {oauthProviderDisplayName(account.oauthProvider)}. StarterGrid never sees your password.</p>
+                ) : platform.connectionType === 'PARTNER_FEED' ? (
+                  <p className="text-sm text-ink-body">They receive listings from us after you add the details they need.</p>
+                ) : (
+                  <p className="text-sm text-ink-body">We send listings directly. You usually do not sign in to another website.</p>
+                )}
+                {account?.integrationUrls?.developerDocsUrl && (
+                  <a href={account.integrationUrls.developerDocsUrl} target="_blank" rel="noreferrer" className="block text-xs text-navy-600">Developer docs</a>
+                )}
+                {account?.integrationUrls?.feedSpecUrl && (
+                  <a href={account.integrationUrls.feedSpecUrl} target="_blank" rel="noreferrer" className="block text-xs text-navy-600">Listing file spec</a>
+                )}
+                {(account?.profileConfidence || account?.requirementsConfidence) && (
+                  <p className="text-xs text-ink-muted">
+                    Setup notes: {account?.profileConfidence ?? 'unknown'} data · {account?.requirementsConfidence ?? 'unknown'} requirements.
+                  </p>
+                )}
+              </div>
+            </details>
+            
+          </div>
         </div>
-      </div>
+      )}
+
+      {currentTab === 'feed' && (
+        <div className="mt-6">
+          <FeedTab perf={perf} platform={platform} />
+        </div>
+      )}
+
+      {currentTab === 'activity' && (
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mt-6">
+          <div className="lg:col-span-2 bg-white border border-silver-200 rounded-xl shadow-sm p-6">
+            <h3 className="text-sm font-bold text-ink-heading border-b border-silver-100 pb-2 mb-4">Activity Audit Trail</h3>
+            <ActivityTab dealerId={dealerId} platformSlug={platform.platformSlug} nav={nav} />
+          </div>
+          <div>
+            <PlatformQueueSummaryCard dealerId={dealerId} platformSlug={platform.platformSlug} nav={nav} />
+          </div>
+        </div>
+      )}
+
+      {currentTab === 'social' && (
+        <div className="space-y-6 mt-6">
+          <SocialPageSelector
+            dealerId={dealerId}
+            platformSlug={platform.platformSlug}
+            platformName={platform.platformName}
+            onPageSelected={handleRefresh}
+          />
+          <div className="bg-white border border-silver-200 rounded-xl shadow-sm p-6">
+            <h3 className="text-sm font-bold text-ink-heading border-b border-silver-100 pb-2 mb-4">Post history</h3>
+            <SocialPostsTab dealerId={dealerId} platformSlug={platform.platformSlug} />
+          </div>
+        </div>
+      )}
+
+      {currentTab === 'catalog' && (
+        <div className="mt-6 bg-white border border-silver-200 rounded-xl shadow-sm p-6">
+          <CatalogSyncPanel dealerId={dealerId} platformSlug={platform.platformSlug} />
+        </div>
+      )}
+
+      {currentTab === 'listing' && (
+        <div className="mt-6 bg-white border border-silver-200 rounded-xl shadow-sm p-6">
+          <MarketplaceListingPanel platformSlug={platform.platformSlug} account={account} />
+        </div>
+      )}
+
+      {currentTab === 'leads' && (
+        <div className="mt-6 bg-white border border-silver-200 rounded-xl shadow-sm p-6">
+          <LeadSyncPanel dealerId={dealerId} platformSlug={platform.platformSlug} account={account} />
+        </div>
+      )}
+
+      {currentTab === 'notes' && (
+        <div className="mt-6">
+          {account ? (
+            <NotesTab account={account} dealerId={dealerId} onSaved={handleRefresh} />
+          ) : (
+            <div className="bg-white border border-silver-200 rounded-xl p-6 text-xs text-ink-muted">
+              Loading account information…
+            </div>
+          )}
+        </div>
+      )}
     </OperatorPage>
   );
 }

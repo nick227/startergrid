@@ -1,3 +1,4 @@
+import { useId } from 'react';
 import type { DocCatalogEntry } from '@/lib/docs/types.ts';
 import { useDocReader } from '@/components/docs';
 
@@ -8,6 +9,7 @@ type Props = {
 
 export function KnowledgeCatalog({ groups, emptyMessage = 'No articles match your search.' }: Props) {
   const { openDoc } = useDocReader();
+  const catalogId = useId();
 
   if (groups.size === 0) {
     return (
@@ -18,9 +20,9 @@ export function KnowledgeCatalog({ groups, emptyMessage = 'No articles match you
   return (
     <div className="space-y-10">
       {[...groups.entries()].map(([category, entries]) => (
-        <section key={category} aria-labelledby={`kb-cat-${category}`}>
+        <section key={category} aria-labelledby={`${catalogId}-cat-${category}`}>
           <h2
-            id={`kb-cat-${category}`}
+            id={`${catalogId}-cat-${category}`}
             className="text-xs font-sans font-bold uppercase tracking-[0.2em] text-ink-muted mb-3 pb-2 border-b border-silver-200"
           >
             {category}

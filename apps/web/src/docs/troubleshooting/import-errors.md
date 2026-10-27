@@ -1,23 +1,24 @@
 ---
 title: Fix import errors
-summary: Skipped rows did not change inventory. Correct the spreadsheet and import those stock numbers again.
-keywords: import error, skipped, CSV, stock number
+summary: Correct a row or its column matches, check it again and review which rows actually saved.
+keywords: import errors, CSV, skipped, blocked, invalid, duplicate
 updated: 2026-10-26
 ---
 
-After an import, StarterGrid tells you how many rows were created, updated, or skipped. Skipped rows did not save.
+The preview explains problems before any inventory changes are saved. Choose **Edit row** to fix a value, then **Check corrected rows**. If the wrong field was matched, go back to the column-matching step.
 
-## Common fixes
-
-| Problem | What to do |
+| Problem | What to check |
 | --- | --- |
-| Missing stock number | Add the column or value |
-| VIN length is wrong | Use 17 characters; no I, O, or Q |
-| Price is not a number | Remove $ and commas if the file expects digits |
-| The same stock number twice in the file | Keep one row per stock number |
+| Missing stock number | Match the stock-number column and enter a value. |
+| Invalid VIN | Check the original VIN for missing characters or a typing error. Do not guess the missing characters. |
+| Missing price or mileage | Check both the value and the column match. |
+| Duplicate stock number | Keep one row for each vehicle in the file. |
+| Required field still missing | Check whether its column was ignored or matched to another field. |
 
-## What happens next
+## If only some rows save
 
-A file can update most of the lot and skip a few rows. The saved rows can be sent. Fix the skipped stock numbers and import those again. Import errors do not change whether a destination is connected.
+Review the import result. Skipped or failed rows did not save successfully; other rows may already have been created or updated. Correct the affected rows and preview them again before importing. Avoid repeatedly submitting the whole file without checking what already changed.
 
-See [Import a spreadsheet](doc:inventory/csv-import).
+If an unexpected error continues, give support the stock number, the action you tried and the error shown. Do not include passwords or connection secrets.
+
+Read [Import and correct a spreadsheet](doc:inventory/csv-import).

@@ -1,26 +1,17 @@
 ---
 title: When a destination can receive vehicles
-summary: The destination must be connected, and each vehicle must pass that destination’s rules.
-keywords: destination, connected, ready to send, photos, account
+summary: Check the connection, supported update method, and vehicle requirements separately.
+keywords: destination, connected, ready to send, photos, account, automatic
 updated: 2026-10-26
 ---
 
-A vehicle can be ready to send overall and still fail one destination’s rules.
+A destination is a marketplace or advertising site where you want vehicles to appear. A connected account alone does not confirm automatic updates are available.
 
-## Two checks
+## Before sending
 
-**The destination.** Channels must show it as connected (or ready to send). Expired sign-in, missing details, or a partner still accepting the account stops every vehicle for that site.
+1. Open **Channels** and finish the destination’s setup. Follow any sign-in or partner approval step shown.
+2. Check its update method. Automatic, manual, and partner-managed destinations have different next steps. For Autopilot, the destination must support automatic updates and be selected.
+3. Open **Vehicles** and resolve the missing details shown for that destination. Requirements can differ by site.
+4. After sending, check the result. Submitted updates may still need processing; only a confirmed live result establishes that the listing was checked.
 
-**The vehicle.** Price, photos, and required fields must match what that destination asks for. One site may want eight photos; another may accept four.
-
-## What the destination state means
-
-| State | Meaning |
-| --- | --- |
-| Connected | We can send. Not the same as listings already live. |
-| Ready to send | Details are in; the next send can include it. |
-| Needs a few details / Sign-in needed | You still have a step. |
-| Waiting on partner | They have the details and still need to accept. |
-| Last update did not go through | Try sending again from Vehicles. |
-
-See [What destination connection means](doc:platforms/account-states) and [When a vehicle can be listed](doc:inventory/inventory-readiness).
+See [Connect a destination](doc:app/channels) and [When a vehicle can be listed](doc:inventory/inventory-readiness).

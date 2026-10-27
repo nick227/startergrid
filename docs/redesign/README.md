@@ -2,9 +2,13 @@
 
 Proposed product and implementation plans · October 25, 2026
 
+Current implementation and acceptance checkpoint: [October 26 wrap-up](wrap-up-2026-10-26.md). The documents below remain the original design proposals; the checkpoint distinguishes completed local work from separate rollout requirements.
+
 The product should let a dealership keep vehicles current and handle inquiries while the system distributes eligible inventory. Internal staff should be able to create, activate and support a dealership from one record, with a named owner and a clear next step throughout.
 
 This proposal follows the [current functionality review](../product-functionality-review-2026-10-25.md). It describes future behavior, not functionality already shipped or verified with external partners.
+
+Latest copy and help changes: [Content and help pass](content-and-help-pass-2026-10-26.md).
 
 ## Read in this order
 

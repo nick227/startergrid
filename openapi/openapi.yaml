@@ -1710,6 +1710,93 @@ paths:
         '404':
           $ref: '#/components/responses/NotFound'
 
+  /api/dealers/{dealershipId}/inventory/velocity:
+    get:
+      tags: [Inventory]
+      security:
+        - OperatorAuth: []
+      x-route-classification: operator
+      operationId: getInventoryVelocity
+      summary: Milestone-based inventory velocity and aged vehicle alerts
+      parameters:
+        - $ref: '#/components/parameters/dealershipId'
+      responses:
+        '200':
+          description: Inventory velocity report
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                  - summary
+                  - vehicles
+                properties:
+                  summary:
+                    type: object
+                  vehicles:
+                    type: array
+                    items:
+                      type: object
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /api/dealers/{dealershipId}/inventory/velocity/reprice:
+    post:
+      tags: [Inventory]
+      security:
+        - OperatorAuth: []
+      x-route-classification: operator
+      operationId: applyInventoryVelocityReprice
+      summary: Apply margin-safe milestone repricing to an aged vehicle
+      parameters:
+        - $ref: '#/components/parameters/dealershipId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - vehicleId
+                - newPriceCents
+              properties:
+                vehicleId:
+                  type: string
+                newPriceCents:
+                  type: integer
+                reason:
+                  type: string
+      responses:
+        '200':
+          description: Repricing applied
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  vehicleId:
+                    type: string
+                  stockNumber:
+                    type: string
+                  oldPriceCents:
+                    type: integer
+                  newPriceCents:
+                    type: integer
+                  priceDeltaCents:
+                    type: integer
+        '400':
+          description: Invalid request payload
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '422':
+          description: Price safety hold or validation error
+
   /api/dealers/{dealershipId}/inventory/import/preview:
     post:
       tags: [Inventory]
@@ -3968,6 +4055,79 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/DealerLeadWorkflow'
+
+  /api/dealers/{dealershipId}/leads/{leadId}/delivery:
+    get:
+      tags: [Leads]
+      security:
+        - OperatorAuth: []
+      x-route-classification: operator
+      operationId: getLeadDeliveryDetails
+      summary: Get CRM handoff status and ADF/XML 1.0 lead payload for CRM export
+      parameters:
+        - name: dealershipId
+          in: path
+          required: true
+          schema: { type: string }
+        - name: leadId
+          in: path
+          required: true
+          schema: { type: string }
+      responses:
+        '200':
+          description: Delivery status, delivery attempts, and ADF/XML payload
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LeadDeliveryDetails'
+        '404':
+          description: Lead or dealership not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /api/dealers/{dealershipId}/leads/{leadId}/delivery/retry:
+    post:
+      tags: [Leads]
+      security:
+        - OperatorAuth: []
+      x-route-classification: operator
+      operationId: retryLeadDelivery
+      summary: Retry or record CRM ADF/XML lead delivery attempt
+      parameters:
+        - name: dealershipId
+          in: path
+          required: true
+          schema: { type: string }
+        - name: leadId
+          in: path
+          required: true
+          schema: { type: string }
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                destinationEmail:
+                  type: string
+                markDelivered:
+                  type: boolean
+      responses:
+        '200':
+          description: Updated delivery details
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LeadDeliveryDetails'
+        '404':
+          description: Lead not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
 
   /api/admin/buyer-outreach-stats:
     get:
@@ -6267,6 +6427,82 @@ components:
         statusUpdatedAt: { type: string, format: date-time, nullable: true }
         statusUpdatedBy: { type: string, nullable: true }
         updatedAt: { type: string, format: date-time }
+
+    LeadDeliveryDetails:
+      type: object
+      required:
+        - leadId
+        - deliveryStatus
+        - adfXmlPayload
+        - attempts
+      properties:
+        leadId:
+          type: string
+        deliveryStatus:
+          type: string
+          enum: [DELIVERED, FAILED, PENDING, READY_TO_EXPORT]
+        adfXmlPayload:
+          type: string
+        crmEndpoint:
+          type: string
+          nullable: true
+        attempts:
+          type: array
+          items:
+            $ref: '#/components/schemas/LeadDeliveryAttemptItem'
+        vehicle:
+          type: object
+          nullable: true
+          properties:
+            stockNumber: { type: string }
+            year: { type: integer, nullable: true }
+            make: { type: string, nullable: true }
+            model: { type: string, nullable: true }
+        customer:
+          type: object
+          properties:
+            name: { type: string, nullable: true }
+            email: { type: string, nullable: true }
+            phone: { type: string, nullable: true }
+
+    LeadDeliveryAttemptItem:
+      type: object
+      required:
+        - id
+        - destinationType
+        - destinationLabel
+        - destinationAddress
+        - status
+        - payloadFormat
+      properties:
+        id:
+          type: string
+        destinationType:
+          type: string
+        destinationLabel:
+          type: string
+        destinationAddress:
+          type: string
+        status:
+          type: string
+        payloadFormat:
+          type: string
+        attemptCount:
+          type: integer
+        lastAttemptAt:
+          type: string
+          format: date-time
+          nullable: true
+        deliveredAt:
+          type: string
+          format: date-time
+          nullable: true
+        errorMessage:
+          type: string
+          nullable: true
+        createdAt:
+          type: string
+          format: date-time
 
     ChangePasswordRequest:
       type: object

@@ -6,9 +6,9 @@ Internal reference for writing operator docs. Not shown in the reader.
 
 ## Voice
 
-- Write for dealership and syndication staff. Assume retail automotive experience.
+- Write for dealership and syndication staff. Include new team members who may not know our product or industry terminology.
 - State facts. No marketing, filler, humor, or reassurance language.
-- Use industry terms (DMS, rooftop, syndication, feed, stock number). Do not invent product jargon.
+- Prefer dealership, automatic updates, and destination to rooftop, syndication, and channel where the meaning stays accurate. Explain necessary abbreviations on first use. Match visible control labels exactly.
 - Prefer short sections with a title, one or two sentences of prose, then a table or list when structure helps.
 
 ## Frontmatter (catalog)
@@ -38,3 +38,11 @@ updated: YYYY-MM-DD
 - Superlatives, promises, and calls to action that state the obvious.
 - Explaining basics the reader already knows (what a VIN is, what Facebook Marketplace is).
 - Tables-only pages. Break up dense grids with paragraph text.
+
+## What belongs where
+
+- Keep the immediate next step, validation error, and consequence of an action beside the control. Help must not be required to use a basic form.
+- Put multi-step instructions, troubleshooting, status definitions, and exceptions in linked help articles.
+- Keep implementation details and provider reference material in Advanced articles.
+- Provide Help in each main header and a relevant article link beside complex workflows. Opening help should preserve the page and unsaved input.
+- Distinguish saved settings, connected accounts, submitted updates, and confirmed live listings. Never promise publication, email delivery, or removal without corresponding evidence.

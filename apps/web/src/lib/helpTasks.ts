@@ -1,32 +1,39 @@
 export type HelpTask = {
   question: string;
   answer: string;
+  docId: string;
 };
 
-/** Common dealership questions. Catalog articles stay available below. */
+/** Short answers lead to the same articles used by contextual help. */
 export const HELP_TASKS: HelpTask[] = [
   {
     question: 'How do I add vehicles?',
-    answer: 'Open Vehicles and use Add vehicle, import a spreadsheet, or paste VINs. A vehicle can be listed once it has a price and photos.',
+    answer: 'Open Vehicles and choose Add vehicle or Import spreadsheet. Review any missing details before choosing where to list the vehicle.',
+    docId: 'inventory/csv-import',
   },
   {
-    question: 'Why is a vehicle not showing on a site?',
-    answer: 'Usually a missing price or photos, or the destination is not connected yet. Vehicles shows what is missing. Channels shows whether that destination can receive updates.',
+    question: 'Why is my vehicle not showing on a website?',
+    answer: 'Check the vehicle’s missing details, then its destination on Channels. Saved, connected and sent do not mean a listing has been confirmed live.',
+    docId: 'app/sync-vs-accounts',
   },
   {
-    question: 'How do I connect a destination like CarGurus?',
-    answer: 'Open Channels and choose the destination. Sign in or add the details they ask for. Connected means we can send listings — it does not mean they are live yet.',
+    question: 'How do I connect a marketplace or advertising site?',
+    answer: 'Open Channels and choose the site. Follow its setup steps. Some sites need a partner’s approval or manual work before they can receive listings.',
+    docId: 'app/channels',
   },
   {
     question: 'Where do buyer inquiries go?',
-    answer: 'They land in Leads. Mark the next step so your team sees it. Email alerts go to the primary contact unless you add another method in Settings.',
+    answer: 'Inquiries received by StarterGrid appear in Leads. Your team shares their status and notes. Email and other alerts have separate delivery settings.',
+    docId: 'app/lead-status',
   },
   {
-    question: 'How do I invite someone on my team?',
-    answer: 'Settings → Team. Create an invitation and check its delivery status. If email delivery is unavailable or fails, copy and share the setup link.',
+    question: 'How do I invite someone or fix a sign-in problem?',
+    answer: 'Owners manage their team in Settings. Internal staff use People & access in the dealership record. Check whether the invitation was emailed or needs to be shared as a link.',
+    docId: 'app/team-access',
   },
   {
-    question: 'What does Autopilot do?',
-    answer: 'When it is on, ready vehicles can be sent to the destinations you selected. Pausing stops new sends. It does not prove a listing is live.',
+    question: 'What does Autopilot do, and what happens if I pause it?',
+    answer: 'Autopilot updates supported destinations you select. Pausing stops new publication work; removal of listings it manages can continue. Check the destination’s result before assuming a change is live.',
+    docId: 'processes/auto-sync',
   },
 ];

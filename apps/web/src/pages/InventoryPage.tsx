@@ -9,7 +9,7 @@ import {
   addVehicleMedia,
   uploadVehicleMedia,
 } from '@/lib/api/sdk.ts';
-import type { BulkEditPayload, VehiclePerformanceItem, PlatformPerformanceItem, LifecycleScope } from '@/lib/types.ts';
+import type { BulkEditPayload, VehiclePerformanceItem, PlatformPerformanceItem, LifecycleScope, CommitImportResponse } from '@/lib/types.ts';
 import { isBenchmarksUpdating } from '@/lib/performanceFreshness.ts';
 import type { OperatorPageBaseProps } from '@/lib/operatorPage.ts';
 import { useAsyncQuery } from '@/hooks/useAsyncQuery.ts';
@@ -44,6 +44,12 @@ import { useCategorySchema } from '@/contexts/CategoryContext.tsx';
 import { useOperatorRoute } from '@/hooks/useOperatorRoute.ts';
 import { OwnershipLine } from '@/components/guidance/OwnershipLine.tsx';
 import { PagePrimaryState } from '@/components/guidance/PagePrimaryState.tsx';
+import {
+  fetchInventoryVelocity,
+  applyVelocityReprice,
+  type InventoryVelocityResponse,
+  type VelocityVehicleItem,
+} from '@/lib/api/velocityApi.ts';
 
 type Props = OperatorPageBaseProps;
 
@@ -66,6 +72,34 @@ export default function InventoryPage({ dealerId, nav, activeTab }: Props) {
   const [search, setSearch] = useState(route.assetRef ?? '');
   const [createPostTarget, setCreatePostTarget] = useState<{ vehicleId: string; vehicleTitle: string } | null>(null);
   const [relistingId, setRelistingId] = useState<string | null>(null);
+  const [importOutcome, setImportOutcome] = useState<CommitImportResponse | null>(null);
+  const [velocity, setVelocity] = useState<InventoryVelocityResponse | null>(null);
+  const [reviewRepriceVehicle, setReviewRepriceVehicle] = useState<VelocityVehicleItem | null>(null);
+  const [applyingRepriceId, setApplyingRepriceId] = useState<string | null>(null);
+
+  const loadVelocity = useCallback(async () => {
+    try {
+      const res = await fetchInventoryVelocity(dealerId);
+      setVelocity(res);
+    } catch {
+      // Non-blocking background analytics
+    }
+  }, [dealerId]);
+
+  useEffect(() => {
+    void loadVelocity();
+  }, [loadVelocity]);
+
+  const repriceMap = useMemo(() => {
+    const map = new Map<string, VelocityVehicleItem>();
+    if (!velocity?.vehicles) return map;
+    for (const v of velocity.vehicles) {
+      if (v.suggestedPriceCents !== null) {
+        map.set(v.id, v);
+      }
+    }
+    return map;
+  }, [velocity]);
 
   // Persistence for grid view/columns
   const [viewMode, setViewMode] = useState<'table' | 'card'>(() => (localStorage.getItem('inventoryViewMode') as 'table'|'card') || 'table');
@@ -205,8 +239,8 @@ export default function InventoryPage({ dealerId, nav, activeTab }: Props) {
   );
 
   const attentionVehicles = useMemo(
-    () => activeVehicles.filter(v => v.readiness === 'BLOCKED' || (v.issues && v.issues.length > 0) || v.mediaCount === 0 || v.priceCents <= 0),
-    [activeVehicles],
+    () => activeVehicles.filter(v => v.readiness === 'BLOCKED' || (v.issues && v.issues.length > 0) || v.mediaCount === 0 || v.priceCents <= 0 || repriceMap.has(v.id)),
+    [activeVehicles, repriceMap],
   );
 
   const soldVehicles = useMemo(
@@ -215,9 +249,12 @@ export default function InventoryPage({ dealerId, nav, activeTab }: Props) {
   );
 
   const scopedActive = useMemo(() => {
-    if (ageFilter !== 'week') return activeVehicles;
-    const cutoff = Date.now() - 7 * 24 * 60 * 60 * 1000;
-    return activeVehicles.filter(v => new Date(v.updatedAt).getTime() >= cutoff);
+    let list = activeVehicles;
+    if (ageFilter === 'week') {
+      const cutoff = Date.now() - 7 * 24 * 60 * 60 * 1000;
+      list = list.filter(v => new Date(v.updatedAt).getTime() >= cutoff);
+    }
+    return list;
   }, [activeVehicles, ageFilter]);
 
   // Filter mapping from chip -> old cleanup filter logic (temp)
@@ -399,6 +436,33 @@ export default function InventoryPage({ dealerId, nav, activeTab }: Props) {
                   ownerKind="YOU"
                 />
               )}
+              {importOutcome && (
+                <div
+                  role="status"
+                  aria-live="polite"
+                  className="rounded-xl border border-emerald-300 bg-emerald-50/90 p-4 flex items-start justify-between gap-3 shadow-sm"
+                >
+                  <div className="flex items-start gap-3">
+                    <span className="text-xl" aria-hidden="true">✅</span>
+                    <div className="space-y-0.5">
+                      <h3 className="text-sm font-bold text-ink-heading">Import Complete</h3>
+                      <p className="text-xs text-ink-body leading-relaxed">
+                        <strong>{importOutcome.created}</strong> vehicle{importOutcome.created === 1 ? '' : 's'} added to lot
+                        {importOutcome.updated > 0 && `, ${importOutcome.updated} updated`}
+                        {importOutcome.skipped > 0 && `, ${importOutcome.skipped} skipped`}
+                        . Vehicles with price and photos are eligible to syndicate across your connected channels.
+                      </p>
+                    </div>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => setImportOutcome(null)}
+                    className="text-xs font-semibold text-emerald-800 hover:text-emerald-950 underline shrink-0"
+                  >
+                    Dismiss
+                  </button>
+                </div>
+              )}
               <VehicleAddControls
                 dealerId={dealerId}
                 compact={!isEmpty}
@@ -406,7 +470,10 @@ export default function InventoryPage({ dealerId, nav, activeTab }: Props) {
                   handleIntakeRefresh();
                   setDetailId(newId);
                 }}
-                onImportCommitted={handleIntakeRefresh}
+                onImportCommitted={(res) => {
+                  handleIntakeRefresh();
+                  if (res) setImportOutcome(res);
+                }}
               />
             </>
           ) : categorySchema.id === 'SONGS' ? (
@@ -507,7 +574,7 @@ export default function InventoryPage({ dealerId, nav, activeTab }: Props) {
                               )}
                               {isBlocked && (
                                 <span className="px-2 py-0.5 rounded text-[10px] font-semibold bg-red-50 text-red-700 border border-red-200">
-                                  ⛔ Readiness Blocked
+                                  ⛔ Cannot list
                                 </span>
                               )}
                               {v.issues && v.issues.slice(0, 2).map((iss, i) => (
@@ -620,11 +687,34 @@ export default function InventoryPage({ dealerId, nav, activeTab }: Props) {
                                 )}
                               </div>
                             )}
+                            {repriceMap.has(v.id) && (
+                              <div className="mt-3 p-2.5 bg-indigo-50 border border-indigo-200 rounded-lg space-y-1.5">
+                                <div className="flex items-center justify-between">
+                                  <span className="text-[11px] font-bold text-indigo-900">
+                                    Aging inventory repricing suggestion
+                                  </span>
+                                  <span className="text-[10px] text-indigo-700 font-semibold">
+                                    {repriceMap.get(v.id)!.daysOnLot} days on lot
+                                  </span>
+                                </div>
+                                <p className="text-xs text-indigo-900">
+                                  Suggested adjustment: ${(repriceMap.get(v.id)!.suggestedPriceCents! / 100).toLocaleString()}
+                                  {repriceMap.get(v.id)!.suggestedMarkdownCents ? ` (-$${(repriceMap.get(v.id)!.suggestedMarkdownCents! / 100).toLocaleString()})` : ''}.
+                                </p>
+                                <button
+                                  type="button"
+                                  onClick={() => setReviewRepriceVehicle(repriceMap.get(v.id)!)}
+                                  className="px-2.5 py-1 text-xs font-semibold rounded bg-indigo-600 text-white hover:bg-indigo-700 transition-colors shadow-sm"
+                                >
+                                  Review price change
+                                </button>
+                              </div>
+                            )}
                           </div>
 
                           <div className="mt-3">
                             <OwnershipLine
-                              action={missingPrice ? 'Add a listing price' : missingPhotos ? 'Add photos' : 'Fix listing blockers'}
+                              action={missingPrice ? 'Add a listing price' : missingPhotos ? 'Add photos' : repriceMap.has(v.id) ? 'Review suggested price change' : 'Fix listing blockers'}
                               ownerKind="YOU"
                             />
                           </div>
@@ -643,7 +733,7 @@ export default function InventoryPage({ dealerId, nav, activeTab }: Props) {
                               }}
                               className="px-3 py-1.5 text-xs font-semibold bg-navy-900 text-white hover:bg-navy-800 rounded-lg transition-colors flex items-center gap-1"
                             >
-                              <span>{missingPhotos ? 'Fix missing photos' : missingPrice ? 'Add a price' : 'Open vehicle'}</span>
+                              <span>{missingPhotos ? 'Fix missing photos' : missingPrice ? 'Add a price' : repriceMap.has(v.id) ? 'Review price' : 'Open vehicle'}</span>
                               <span>→</span>
                             </button>
                           </div>
@@ -738,18 +828,35 @@ export default function InventoryPage({ dealerId, nav, activeTab }: Props) {
                         onSearchChange={setSearch}
                         selectedCount={selected.size}
                         extra={
-                          <button
-                            type="button"
-                            aria-pressed={ageFilter === 'week'}
-                            onClick={() => setAgeFilter(ageFilter === 'week' ? 'all' : 'week')}
-                            className={`px-3 py-1.5 text-xs font-semibold rounded-md border ${
-                              ageFilter === 'week'
-                                ? 'bg-navy-900 text-white border-navy-900'
-                                : 'bg-white text-ink-body border-silver-200 hover:bg-surface-raised'
-                            }`}
-                          >
-                            Changed this week
-                          </button>
+                          <div className="flex items-center gap-2">
+                            <button
+                              type="button"
+                              onClick={() => {
+                                setSortKey('performance.daysOnline');
+                                setSortDirection(prev => (sortKey === 'performance.daysOnline' && prev === 'desc' ? 'asc' : 'desc'));
+                              }}
+                              className={`px-3 py-1.5 text-xs font-semibold rounded-md border transition-colors ${
+                                sortKey === 'performance.daysOnline'
+                                  ? 'bg-navy-900 text-white border-navy-900'
+                                  : 'bg-white text-ink-body border-silver-200 hover:bg-surface-raised'
+                              }`}
+                              title="Sort vehicles by days on lot"
+                            >
+                              {sortKey === 'performance.daysOnline' && sortDirection === 'desc' ? 'Oldest on lot ↓' : 'Oldest on lot'}
+                            </button>
+                            <button
+                              type="button"
+                              aria-pressed={ageFilter === 'week'}
+                              onClick={() => setAgeFilter(ageFilter === 'week' ? 'all' : 'week')}
+                              className={`px-3 py-1.5 text-xs font-semibold rounded-md border ${
+                                ageFilter === 'week'
+                                  ? 'bg-navy-900 text-white border-navy-900'
+                                  : 'bg-white text-ink-body border-silver-200 hover:bg-surface-raised'
+                              }`}
+                            >
+                              Changed this week
+                            </button>
+                          </div>
                         }
                       />
                       <InventoryDataGrid
@@ -822,6 +929,82 @@ export default function InventoryPage({ dealerId, nav, activeTab }: Props) {
           vehicleTitle={createPostTarget.vehicleTitle}
           onClose={() => setCreatePostTarget(null)}
         />
+      )}
+
+      {reviewRepriceVehicle && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
+          <div className="w-full max-w-md rounded-xl bg-white p-6 shadow-xl space-y-4">
+            <div className="flex items-start justify-between">
+              <div>
+                <h3 className="text-base font-bold text-ink-heading">Review Price Change</h3>
+                <p className="text-xs text-ink-muted mt-0.5">
+                  {reviewRepriceVehicle.year} {reviewRepriceVehicle.make} {reviewRepriceVehicle.model} · Stock #{reviewRepriceVehicle.stockNumber}
+                </p>
+              </div>
+              <button
+                type="button"
+                onClick={() => setReviewRepriceVehicle(null)}
+                className="text-ink-muted hover:text-ink-heading text-lg leading-none"
+              >
+                ✕
+              </button>
+            </div>
+
+            <div className="space-y-2 rounded-lg bg-silver-50 p-3 text-xs border border-silver-200">
+              <div className="flex justify-between">
+                <span className="text-ink-muted">Current lot price:</span>
+                <span className="font-semibold text-ink-heading">${(reviewRepriceVehicle.priceCents / 100).toLocaleString()}</span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-ink-muted">Suggested price:</span>
+                <span className="font-bold text-indigo-600">${(reviewRepriceVehicle.suggestedPriceCents! / 100).toLocaleString()}</span>
+              </div>
+              {reviewRepriceVehicle.suggestedMarkdownCents && (
+                <div className="flex justify-between border-t border-silver-200 pt-1.5 text-emerald-700 font-medium">
+                  <span>Suggested adjustment:</span>
+                  <span>-${(reviewRepriceVehicle.suggestedMarkdownCents / 100).toLocaleString()} ({reviewRepriceVehicle.suggestedMarkdownPercent}%)</span>
+                </div>
+              )}
+            </div>
+
+            <div className="rounded-md border border-amber-200 bg-amber-50 p-3 text-[11px] text-amber-900 leading-snug">
+              Suggested adjustments are based on days on lot ({reviewRepriceVehicle.daysOnLot} days) and do not guarantee sales or profitability. You should review and verify market conditions before applying.
+            </div>
+
+            <div className="flex justify-end gap-2 pt-2">
+              <button
+                type="button"
+                onClick={() => setReviewRepriceVehicle(null)}
+                className="px-3.5 py-1.5 text-xs font-semibold rounded-lg border border-silver-300 hover:bg-silver-100 transition-colors"
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                disabled={applyingRepriceId === reviewRepriceVehicle.id}
+                onClick={async () => {
+                  if (!reviewRepriceVehicle.suggestedPriceCents) return;
+                  try {
+                    setApplyingRepriceId(reviewRepriceVehicle.id);
+                    await applyVelocityReprice(
+                      dealerId,
+                      reviewRepriceVehicle.id,
+                      reviewRepriceVehicle.suggestedPriceCents,
+                      `Contextual repricing: ${reviewRepriceVehicle.daysOnLot} days on lot`,
+                    );
+                    setReviewRepriceVehicle(null);
+                    await Promise.all([load(), loadVelocity()]);
+                  } finally {
+                    setApplyingRepriceId(null);
+                  }
+                }}
+                className="px-4 py-1.5 text-xs font-bold rounded-lg bg-navy-900 text-white hover:bg-navy-800 disabled:opacity-50 transition-colors shadow-sm"
+              >
+                {applyingRepriceId === reviewRepriceVehicle.id ? 'Applying…' : 'Confirm & Apply Price Change'}
+              </button>
+            </div>
+          </div>
+        </div>
       )}
     </OperatorPage>
   );

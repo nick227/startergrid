@@ -1218,6 +1218,8 @@ export type BuyerOutreachRecord = {
   vehicle:          { year: number; make: string; model: string; stockNumber: string } | null;
 };
 
+export type { DealershipProfile };
+
 export async function fetchDealershipProfile(dealershipId: string): Promise<DealershipProfile> {
   const res = await fetch(`/api/dealers/${dealershipId}/profile`, { credentials: 'include' });
   if (!res.ok) {

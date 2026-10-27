@@ -8,6 +8,7 @@ import { InfoButton } from '@/components/docs/index.ts';
 import { PagePrimaryState } from '@/components/guidance/PagePrimaryState.tsx';
 import { Banner, SearchField, Select } from '@/components/ui';
 import { AUTO_MARKETPLACE_NAME, AUTO_MARKETPLACE_SLUG } from '@/lib/marketplaceBrand.ts';
+import { LeadCrmHandoffModal } from '@/components/leads/LeadCrmHandoffModal.tsx';
 
 type Props = OperatorPageBaseProps;
 
@@ -270,6 +271,7 @@ function LeadRow({
   onStatusChange,
   onAssigneeChange,
   onOpenVehicle,
+  onOpenCrmHandoff,
 }: {
   lead: DealerLead;
   status: LeadStatus;
@@ -278,6 +280,7 @@ function LeadRow({
   onStatusChange: (status: LeadStatus) => void;
   onAssigneeChange: (assigneeId: string | null) => void;
   onOpenVehicle: () => void;
+  onOpenCrmHandoff: (leadId: string) => void;
 }) {
   const title = vehicleTitle(lead);
   const canOpenVehicle = Boolean(lead.vehicleId || lead.vehicle?.stockNumber);
@@ -365,10 +368,18 @@ function LeadRow({
         />
       </div>
 
-      {/* 6. Date */}
-      <div className="text-xs text-ink-muted lg:text-right">
+      {/* 6. Date & CRM ADF Handoff */}
+      <div className="text-xs text-ink-muted lg:text-right flex flex-col items-start lg:items-end gap-1">
         <p className="font-semibold text-ink-body">{relativeTime(lead.createdAt)}</p>
         <p className="font-mono text-[11px] text-ink-faint">{new Date(lead.createdAt).toLocaleDateString()}</p>
+        <button
+          type="button"
+          onClick={() => onOpenCrmHandoff(lead.id)}
+          className="mt-0.5 px-2 py-0.5 text-[11px] font-semibold rounded bg-silver-100 hover:bg-navy-50 text-navy-800 border border-silver-300 hover:border-navy-300 transition-all flex items-center gap-1 shadow-2xs"
+          title="Open CRM Handoff and view/copy ADF/XML 1.0 lead format"
+        >
+          <span>📋 CRM / ADF</span>
+        </button>
       </div>
     </div>
   );
@@ -378,6 +389,7 @@ type PageView = 'leads' | 'communications';
 
 export default function LeadsPage({ dealerId, nav, activeTab }: Props) {
   const [view, setView] = useState<PageView>('leads');
+  const [selectedLeadForCrm, setSelectedLeadForCrm] = useState<string | null>(null);
 
   const { data, loading, error, reload } = useAsyncQuery(
     () => fetchDealerLeads(dealerId),
@@ -622,7 +634,7 @@ export default function LeadsPage({ dealerId, nav, activeTab }: Props) {
                     <span>Buyer Contact</span>
                     <span>Source</span>
                     <span>Assignee</span>
-                    <span className="flex items-center gap-1">Status <InfoButton docId="app/lead-status" /></span>
+                    <span className="flex items-center gap-1">Status · team sees this <InfoButton docId="app/lead-status" /></span>
                     <span className="text-right">Received</span>
                   </div>
                   {visibleLeads.map(lead => (
@@ -635,6 +647,7 @@ export default function LeadsPage({ dealerId, nav, activeTab }: Props) {
                       onStatusChange={nextStatus => handleStatusChange(lead, nextStatus)}
                       onAssigneeChange={nextAssignee => handleAssigneeChange(lead, nextAssignee)}
                       onOpenVehicle={() => openVehicle(lead)}
+                      onOpenCrmHandoff={id => setSelectedLeadForCrm(id)}
                     />
                   ))}
                 </div>
@@ -645,6 +658,15 @@ export default function LeadsPage({ dealerId, nav, activeTab }: Props) {
         </>
         )}
       </div>
+
+      {selectedLeadForCrm && (
+        <LeadCrmHandoffModal
+          dealershipId={dealerId}
+          leadId={selectedLeadForCrm}
+          isOpen={Boolean(selectedLeadForCrm)}
+          onClose={() => setSelectedLeadForCrm(null)}
+        />
+      )}
     </OperatorPage>
   );
 }

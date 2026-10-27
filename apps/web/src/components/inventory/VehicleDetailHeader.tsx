@@ -2,6 +2,7 @@ import { useState } from 'react';
 import type { VehicleDetailDto } from '@/lib/api/sdk.ts';
 import { markVehicleSold, relistVehicle, setVehicleListingStatus } from '@/lib/api/sdk.ts';
 import { VEHICLE_READINESS_REGISTRY } from '@/lib/statusRegistry.ts';
+import { WindowStickerModal } from './WindowStickerModal.tsx';
 
 function formatPrice(cents: number) {
   return cents > 0 ? `$${(cents / 100).toLocaleString(undefined, { maximumFractionDigits: 0 })}` : '—';
@@ -22,6 +23,7 @@ type Props = {
 export function VehicleDetailHeader({ vehicle, onClose, onReload }: Props) {
   const [busy, setBusy] = useState<string | null>(null);
   const [actionError, setActionError] = useState<string | null>(null);
+  const [showStickerModal, setShowStickerModal] = useState(false);
 
   const title = [vehicle.year, vehicle.make, vehicle.model].filter(Boolean).join(' ');
   const isSold = !!vehicle.soldAt;
@@ -74,9 +76,11 @@ export function VehicleDetailHeader({ vehicle, onClose, onReload }: Props) {
           <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold border ${stateChip.cls}`}>
             {stateChip.label}
           </span>
-          <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold border ${VEHICLE_READINESS_REGISTRY[readiness].pill}`}>
-            {READINESS_LABEL[readiness]}
-          </span>
+          {!isDraft && !isSold && !isRemoved && (
+            <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold border ${VEHICLE_READINESS_REGISTRY[readiness].pill}`}>
+              {READINESS_LABEL[readiness]}
+            </span>
+          )}
           <button
             type="button"
             onClick={onClose}
@@ -92,8 +96,8 @@ export function VehicleDetailHeader({ vehicle, onClose, onReload }: Props) {
       <div className="flex flex-wrap items-center gap-2 mt-3">
         {isActive && (
           <>
-            {/* Draft / Ready segmented toggle — distribution gate, not an action */}
-            <div className="inline-flex rounded-lg border border-silver-200 overflow-hidden shadow-sm" role="group" aria-label="Listing status">
+            {/* Distribution toggle — distinguishes lot-only draft from approved for channel syndication */}
+            <div className="inline-flex rounded-lg border border-silver-200 overflow-hidden shadow-sm" role="group" aria-label="Listing distribution status">
               <button
                 type="button"
                 disabled={busy !== null || isDraft}
@@ -102,26 +106,35 @@ export function VehicleDetailHeader({ vehicle, onClose, onReload }: Props) {
                   isDraft ? 'bg-silver-200 text-ink-heading' : 'bg-white text-ink-muted hover:bg-silver-50'
                 }`}
               >
-                Draft
+                Lot only (Draft)
               </button>
               <button
                 type="button"
                 disabled={busy !== null || !isDraft}
                 onClick={() => run('status', () => setVehicleListingStatus(vehicle.dealershipId, vehicle.id, 'READY'))}
                 className={`px-3 py-1.5 text-xs font-bold transition-colors border-l border-silver-200 disabled:cursor-default ${
-                  !isDraft ? 'bg-green-600 text-white' : 'bg-white text-ink-muted hover:bg-green-50'
+                  !isDraft ? 'bg-emerald-600 text-white' : 'bg-white text-ink-muted hover:bg-emerald-50'
                 }`}
               >
-                Ready
+                Approved for channels
               </button>
             </div>
             <span className="text-[11px] text-ink-muted">
               {isDraft
-                ? 'Draft stays on this lot only. Ready means it can be sent to selected destinations.'
-                : 'Ready vehicles can be sent to selected destinations. Sent is not the same as verified live.'}
+                ? 'Draft stays on this lot only. Approved means it can be sent to connected channels.'
+                : 'Approved vehicles can be sent to connected channels. Sent is not the same as verified live.'}
             </span>
 
             <span className="grow" />
+
+            <button
+              type="button"
+              onClick={() => setShowStickerModal(true)}
+              className="px-3 py-1.5 text-xs font-semibold rounded-lg bg-silver-100 hover:bg-silver-200 text-ink-heading border border-silver-300 transition-all flex items-center gap-1.5 shadow-sm"
+              title="Print window sticker or FTC Buyers Guide"
+            >
+              <span>🖨️ Print documents</span>
+            </button>
 
             <button
               type="button"
@@ -147,6 +160,13 @@ export function VehicleDetailHeader({ vehicle, onClose, onReload }: Props) {
           <span className="text-[11px] font-medium text-red-600 ml-2">{actionError}</span>
         )}
       </div>
+
+      <WindowStickerModal
+        vehicle={vehicle}
+        dealerId={vehicle.dealershipId}
+        isOpen={showStickerModal}
+        onClose={() => setShowStickerModal(false)}
+      />
     </div>
   );
 }

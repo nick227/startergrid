@@ -23,14 +23,14 @@ function formatPrice(cents: number | null): string {
 }
 
 function lifecycleBadge(status: string) {
-  if (status === 'SOLD')    return <span className="px-2 py-0.5 text-[11px] font-semibold rounded-full bg-blue-100 text-blue-700">SOLD</span>;
-  if (status === 'REMOVED') return <span className="px-2 py-0.5 text-[11px] font-semibold rounded-full bg-silver-100 text-ink-muted">REMOVED</span>;
-  return <span className="px-2 py-0.5 text-[11px] font-semibold rounded-full bg-green-100 text-green-700">AVAILABLE</span>;
+  if (status === 'SOLD')    return <span className="px-2 py-0.5 text-[11px] font-semibold rounded-full bg-blue-100 text-blue-700">Sold</span>;
+  if (status === 'REMOVED') return <span className="px-2 py-0.5 text-[11px] font-semibold rounded-full bg-silver-100 text-ink-muted">Removed</span>;
+  return <span className="px-2 py-0.5 text-[11px] font-semibold rounded-full bg-green-100 text-green-700">Available</span>;
 }
 
 function listingBadge(status: string) {
-  if (status === 'READY') return <span className="px-2 py-0.5 text-[11px] font-semibold rounded-full bg-navy-100 text-navy-700">Ready to send</span>;
-  return <span className="px-2 py-0.5 text-[11px] font-semibold rounded-full bg-amber-100 text-amber-700">Not ready yet</span>;
+  if (status === 'READY') return <span className="px-2 py-0.5 text-[11px] font-semibold rounded-full bg-navy-100 text-navy-700">Approved for channels</span>;
+  return <span className="px-2 py-0.5 text-[11px] font-semibold rounded-full bg-silver-100 text-ink-muted">Lot only (Draft)</span>;
 }
 
 type SaveState = 'idle' | 'saving' | 'saved' | 'error';

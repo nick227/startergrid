@@ -1,3 +1,4 @@
+import { HelpButton } from '@/components/docs/HelpButton.tsx';
 import { useState, type FormEvent } from 'react';
 import { OperatorAuthError } from '@/lib/api/auth.ts';
 import { useAuth } from '@/contexts/AuthContext.tsx';
@@ -101,6 +102,7 @@ export default function LoginPage() {
             </p>
           )}
         </form>
+        <div className="mt-4 text-center"><HelpButton topic="app/team-access" inverted /></div>
       </div>
     </div>
   );

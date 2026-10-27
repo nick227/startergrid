@@ -55,6 +55,8 @@ These are automated correctness checks. They are not usability validation: no ti
 
 ## Wrap-up check, 2026-10-26 21:05 (shared tree, uncommitted frontend pass in progress)
 
+Historical findings; the TypeScript, CSV selector and invitation-copy blockers below are resolved in the [validated redesign wrap-up](../redesign/wrap-up-2026-10-26.md). Scratch helpers are locally excluded. Parallel feature work continues separately.
+
 Not committed by Claude — the owning agent was still editing (help docs, inventory, platform drawer). Before committing that pass:
 - `apps/web` TypeScript fails: `PlatformDetailDrawer.tsx` imports `DestinationPrimarySetup`, `PagePrimaryState`, `destinationExperience` without using them.
 - `npm run verify:redesign` fails at `scripts/redesign/csv-import.mjs:87` — no button named exactly `Import 0 vehicles` (label comes from `ImportModal.tsx:104`). Update the script or the label together. The real-API journey (`npm run e2e:journey -w auto-dealer-operator-ui`) passed on the same tree.

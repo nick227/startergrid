@@ -49,10 +49,10 @@ export function DealershipAutopilot({ dealerId, onUpdated, hideWhenUnavailable }
   const view: AutopilotView = {
     preference: mode, label: !summary ? error ? 'unavailable' : 'loading' : mode === 'ON' && summary.coverage === 'UNAVAILABLE' ? 'on — needs setup' : mode.toLowerCase(),
     tone: mode === 'ON' ? 'on' : mode === 'PAUSED' ? 'paused' : 'off',
-    summary: summary ? `${summary.counts.VERIFIED_LIVE ?? 0} vehicle destinations verified live · ${summary.openIncidents} open issues.` : 'Reading the saved distribution policy.',
+    summary: summary ? `${summary.counts.VERIFIED_LIVE ?? 0} destinations confirmed they received our send · ${summary.openIncidents} open issues.` : 'Reading the saved distribution policy.',
     guidance: mode === 'OFF'
-      ? 'Before you turn it on: Autopilot only updates destinations qualified for automatic, checked listings and ticked below. Every other destination stays a manual step.'
-      : 'Only selected qualified channels receive updates. Pausing does not freeze fields on existing marketplace listings. Sold-vehicle withdrawals continue.',
+      ? 'When you turn it on, Autopilot sends ready vehicles only to destinations you check below that we can update automatically. Everything else stays a manual step.'
+      : 'Only the destinations you selected get automatic updates. Pause stops new sends. Sold vehicles are still withdrawn. Pause does not take existing listings down.',
     canPause: !!summary && mode === 'ON' && canManage, canResume: !!summary && mode === 'PAUSED' && canManage,
   };
   if (hideWhenUnavailable && !summary) return null;
@@ -73,7 +73,7 @@ export function DealershipAutopilot({ dealerId, onUpdated, hideWhenUnavailable }
         <ul className="space-y-1.5 text-ink-muted">
           <li className="flex items-start gap-2">
             <span className="text-emerald-600 font-bold">✓</span>
-            <span><strong>Sends ready vehicles:</strong> Vehicles with complete details go to the qualified destinations you select. A send counts as live only after it is checked.</span>
+            <span><strong>Sends ready vehicles:</strong> Vehicles with complete details go to the destinations you select. Sent is not a confirmation they already show it.</span>
           </li>
           <li className="flex items-start gap-2">
             <span className="text-emerald-600 font-bold">✓</span>

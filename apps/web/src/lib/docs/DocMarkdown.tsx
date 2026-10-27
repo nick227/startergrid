@@ -1,5 +1,5 @@
 import { useMemo } from 'react';
-import ReactMarkdown from 'react-markdown';
+import ReactMarkdown, { defaultUrlTransform } from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import type { Components } from 'react-markdown';
 
@@ -37,7 +37,8 @@ export function DocMarkdown({ body, onDocLink }: Props) {
 
   return (
     <article className="doc-reader-prose">
-      <ReactMarkdown remarkPlugins={[remarkGfm]} components={components}>
+      <ReactMarkdown remarkPlugins={[remarkGfm]} components={components}
+        urlTransform={url => url.startsWith('doc:') ? url : defaultUrlTransform(url)}>
         {body}
       </ReactMarkdown>
     </article>

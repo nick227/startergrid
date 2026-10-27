@@ -11,7 +11,7 @@ type Props = {
   hideWhenClean?: boolean;
 };
 
-export function SyndicationSentryCard({ dealerId, onReconciled, hideWhenClean }: Props) {
+export function SyndicationSentryCard({ dealerId, onReconciled, hideWhenClean = true }: Props) {
   const [audit, setAudit] = useState<SyndicationSentryAuditResult | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
   const [reconciling, setReconciling] = useState<boolean>(false);
@@ -60,16 +60,12 @@ export function SyndicationSentryCard({ dealerId, onReconciled, hideWhenClean }:
 
   const isClean = audit?.status === 'CLEAN' || (audit?.activeGhostListingsCount ?? 0) === 0;
 
-  if (hideWhenClean && (loading || isClean || error)) {
+  if (hideWhenClean && isClean && !successMessage) {
     return null;
   }
 
   if (loading && !audit) {
-    return (
-      <div className="rounded-xl border border-silver-200 bg-white p-4 text-xs text-ink-muted animate-pulse">
-        Checking whether sold vehicles are still listed…
-      </div>
-    );
+    return null;
   }
 
   return (

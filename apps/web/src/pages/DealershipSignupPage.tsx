@@ -1,3 +1,4 @@
+import { HelpButton } from '@/components/docs/HelpButton.tsx';
 import { useState } from 'react';
 import { DealershipIntakeFlow } from '@/components/dealers/DealershipIntakeFlow.tsx';
 import { createDealershipSignup, uploadSignupDealerLogo } from '@/lib/api/sdk.ts';
@@ -18,6 +19,7 @@ export default function DealershipSignupPage() {
           <p className="text-ink-faint mt-2 text-sm max-w-md mx-auto leading-relaxed">
             Create your dealership. Next you will add vehicles and a place shoppers can find them.
           </p>
+          <HelpButton topic="app/getting-started" inverted />
         </div>
 
         <div className="bg-surface-card rounded-xl shadow-elevation-3 border border-silver-200 p-6">

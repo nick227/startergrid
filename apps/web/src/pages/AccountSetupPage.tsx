@@ -1,3 +1,4 @@
+import { HelpButton } from '@/components/docs/HelpButton.tsx';
 import { useEffect, useState, type FormEvent } from 'react';
 import { useAuth } from '@/contexts/AuthContext.tsx';
 import { roleLabel } from '@/lib/dealershipLabels.ts';
@@ -88,6 +89,7 @@ export default function AccountSetupPage({ token }: { token?: string }) {
     <main className="min-h-screen bg-surface-page flex items-center justify-center p-6">
       <div className="w-full max-w-md rounded-xl border border-silver-200 bg-surface-card p-8 shadow-elevation-1 space-y-5">
         <h1 className="text-xl font-bold text-ink-heading">{title}</h1>
+        <HelpButton topic="app/team-access" />
 
         {linkProblem ? (
           <>

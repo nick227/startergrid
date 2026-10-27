@@ -1,3 +1,4 @@
+import { HelpButton } from '@/components/docs/HelpButton.tsx';
 import { useMemo, useState, useEffect } from 'react';
 import { fetchDealers } from '@/lib/api/sdk.ts';
 import type { DealerSummary } from '@/lib/types.ts';
@@ -63,6 +64,7 @@ export default function DealerPicker({ onSelect, forbiddenDealerId }: Props) {
           <p className="text-ink-faint mt-2 text-sm max-w-sm mx-auto leading-relaxed">
             {operatorCopy.scope.pickerTitle} — {operatorCopy.app.tagline}
           </p>
+          <HelpButton topic="app/team-access" inverted />
           {user && (
             <div className="mt-4 flex items-center justify-center gap-3 text-xs">
               <span className="text-silver-300">{user.email}</span>

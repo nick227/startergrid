@@ -6,6 +6,7 @@ import { useCategorySchema } from '@/contexts/CategoryContext.tsx';
 import { DealerLogo } from './DealerLogo.tsx';
 import { OperatorAvatar } from './OperatorAvatar.tsx';
 import { isDealerFacingRole, isInternalSupportRole } from '@/lib/operatorAccess.ts';
+import { HelpButton } from '@/components/docs/HelpButton.tsx';
 
 type Props = {
   dealerId: string;
@@ -30,6 +31,12 @@ const TAB_LABELS: Record<OperatorTab, string> = {
   leads: 'Leads',
   settings: 'Settings',
   help: 'Help',
+};
+
+const HELP_TOPICS: Record<OperatorTab, string> = {
+  home: 'app/getting-started', inventory: 'inventory/inventory-readiness',
+  platforms: 'app/channels', leads: 'app/lead-status', settings: 'app/team-access',
+  reports: 'app/reports', help: 'app/getting-started',
 };
 
 export function PageShell({
@@ -58,25 +65,31 @@ export function PageShell({
     <div className={`min-h-screen bg-surface-page ${footerPad ? 'pb-20' : ''}`}>
       <div className="sticky top-0 z-30">
       {isSupportMode && (
-        <aside aria-label="Support mode" className="bg-amber-950/90 border-b border-amber-500/30 text-amber-200 px-4 sm:px-6 py-3 flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between text-xs font-medium backdrop-blur-md">
-          <div className="min-w-0">
-            <p className="text-white text-sm font-bold truncate">Working as {displayDealerName}</p>
-            <p className="text-amber-100/80 mt-0.5">
-              You left the dealership record · signed in as {user?.email ?? 'unknown'}
-            </p>
+        <aside aria-label="Support mode" className="bg-amber-950/95 border-b border-amber-500/40 text-amber-200 px-4 sm:px-6 py-3 flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between text-xs font-medium backdrop-blur-md">
+          <div className="min-w-0 flex items-center gap-3">
+            <span className="text-base shrink-0" aria-hidden="true">🛠️</span>
+            <div className="min-w-0">
+              <p className="text-white text-sm font-bold truncate">
+                Support mode: Viewing <span className="underline decoration-amber-400">{displayDealerName}</span>
+              </p>
+              <p className="text-amber-100/80 text-[11px] mt-0.5">
+                Signed in as <span className="font-semibold text-white">{user?.email ?? 'unknown'}</span> ({user?.role ? user.role.replace(/_/g, ' ').toLowerCase() : 'support'})
+              </p>
+            </div>
           </div>
           <div className="flex items-center gap-3 shrink-0">
             <button
               type="button"
               onClick={() => { window.location.hash = `#/admin/dealers/${dealerId}`; }}
-              className="text-amber-200 hover:text-white underline font-semibold transition-colors"
+              className="bg-amber-600 hover:bg-amber-500 text-white font-semibold px-3 py-1.5 rounded-lg text-xs transition-colors shadow-sm flex items-center gap-1.5"
             >
-              Back to this dealership
+              <span>←</span>
+              <span>Return to dealership record</span>
             </button>
             <button
               type="button"
               onClick={() => { window.location.hash = '#/admin/dealers'; }}
-              className="bg-amber-600 hover:bg-amber-500 text-white font-semibold px-2.5 py-1 rounded text-xs transition-colors shadow-sm"
+              className="text-amber-200 hover:text-white underline font-semibold transition-colors px-1"
             >
               All dealerships
             </button>
@@ -119,6 +132,7 @@ export function PageShell({
               </button>
             ) : <div />}
             <div className="flex items-center gap-2">
+              <HelpButton topic={HELP_TOPICS[activeTab]} inverted />
               <button
                 type="button"
                 onClick={nav.goToReports}

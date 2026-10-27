@@ -1,7 +1,12 @@
+import { z } from 'zod';
 import { withInventoryTransaction } from '../../services/autopilot/inventoryTransaction.js';
 import { guardInventoryMutation, InventorySafetyHold } from '../../services/autopilot/inventoryGuard.js';
 import type { FastifyInstance } from 'fastify';
 import type { PrismaClient } from '@prisma/client';
+import {
+  getInventoryVelocity,
+  applyInventoryVelocityReprice,
+} from '../../services/inventory/inventoryVelocityService.js';
 import {
   applyVehicleUpdate,
   validatePriceUpdate,
@@ -71,6 +76,60 @@ export function registerInventoryRoutes(app: FastifyInstance, prisma: PrismaClie
 
       const result = await listInventoryVehicles(prisma, dealershipId, scope);
       return reply.send(result);
+    }
+  );
+
+  // ── Inventory velocity & aged inventory repricing ─────────────────────────
+
+  const velocityRepriceSchema = z.object({
+    vehicleId: z.string().min(1),
+    newPriceCents: z.number().int().positive(),
+    reason: z.string().max(255).optional(),
+  }).strict();
+
+  app.get<{ Params: DealerParams }>(
+    '/api/dealers/:dealershipId/inventory/velocity',
+    async (request, reply) => {
+      const { dealershipId } = request.params;
+      if (!await requireDealerAccess(prisma, request, reply, dealershipId)) return;
+      if (!await findDealer(prisma, dealershipId))
+        return reply.status(404).send({ error: 'Dealer not found' });
+
+      try {
+        const velocity = await getInventoryVelocity(prisma, dealershipId);
+        return reply.send(velocity);
+      } catch (error) {
+        return reply.status(500).send({ error: error instanceof Error ? error.message : 'Velocity calculation failed.' });
+      }
+    }
+  );
+
+  app.post<{ Params: DealerParams }>(
+    '/api/dealers/:dealershipId/inventory/velocity/reprice',
+    async (request, reply) => {
+      const { dealershipId } = request.params;
+      const operator = await requireOperator(prisma, request, reply);
+      if (!operator) return;
+      if (!await requireDealerAccess(prisma, request, reply, dealershipId)) return;
+      if (!await findDealer(prisma, dealershipId))
+        return reply.status(404).send({ error: 'Dealer not found' });
+
+      const parsed = velocityRepriceSchema.safeParse(request.body);
+      if (!parsed.success) {
+        return reply.status(400).send({ error: parsed.error.flatten() });
+      }
+
+      try {
+        const result = await applyInventoryVelocityReprice(
+          prisma,
+          dealershipId,
+          parsed.data,
+          operator,
+        );
+        return reply.send(result);
+      } catch (error) {
+        return reply.status(422).send({ error: error instanceof Error ? error.message : 'Velocity repricing failed.' });
+      }
     }
   );
 

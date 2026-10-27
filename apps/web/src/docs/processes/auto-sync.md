@@ -1,27 +1,26 @@
 ---
-title: Sending updates automatically
-summary: Saving inventory can send ready vehicles to the destinations you turned on. There is no separate publish step on Channels.
-keywords: autopilot, send, save, sold, import
+title: Automatic updates and pausing
+summary: What Autopilot updates, which destinations it supports and what continues when you pause.
+keywords: autopilot, automatic, pause, off, sold, updates, distribution, safeguards
 updated: 2026-10-26
 ---
 
-When you import, edit, or mark a vehicle sold, StarterGrid can send the change to connected destinations. You do not publish from a separate Sync screen.
+Autopilot checks inventory changes and updates supported destinations you have selected. It does not make every connected account an automatic destination.
 
-## What starts a send
+## Before turning it on
 
-| What you did | What StarterGrid does |
-| --- | --- |
-| Imported a spreadsheet | Rechecks the lot and can send ready vehicles |
-| Bulk-edited vehicles | Same |
-| Changed one vehicle | Sends that vehicle when it is ready |
-| Marked sold or removed | Sends a take-down first |
+Review the selected destinations and any setup problems. Only destinations shown as available for automatic updates can be included. Other destinations may require a manual update or help from their provider.
 
-Quick edits a few seconds apart are grouped into one send.
+Vehicles must also pass the relevant listing checks. Missing details and unusual changes can stop an update until someone reviews the problem. Follow the owner and next action shown on the issue.
 
-## What happens inside a send
+## What pausing does
 
-StarterGrid checks each vehicle, maps the details each destination needs, then sends. Vehicles that cannot be listed are held. Destinations that are not connected receive nothing.
+Pausing stops new publication work managed by Autopilot. Removal of sold or removed listings it manages continues. Listings placed manually may need a separate removal action.
 
-A finished send means StarterGrid finished its work. It does not prove the site already shows the change.
+Auto Marketplace reads current inventory details. Pausing does not freeze prices or other fields on listings that are already public. Use the appropriate listing or vehicle action if you need a vehicle removed.
 
-See [When a vehicle can be listed](doc:inventory/inventory-readiness).
+## Check the result
+
+A preview estimates what would happen using current data; it does not publish anything. A submitted update is not proof that a destination is already showing it. Look for a confirmed live or removed result.
+
+Read [Connect a destination](doc:app/channels) or [A sold vehicle is still listed](doc:troubleshooting/sold-listing-still-live).

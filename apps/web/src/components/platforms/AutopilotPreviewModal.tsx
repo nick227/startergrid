@@ -1,3 +1,4 @@
+import { HelpLink } from '@/components/docs/HelpButton.tsx';
 import { useState, useEffect } from 'react';
 import { fetchAutopilotPreview, type AutopilotSimulationResult } from '@/lib/api/dealershipRecordApi.ts';
 import { Button } from '@/components/ui/Button.tsx';
@@ -37,10 +38,10 @@ export function AutopilotPreviewModal({ dealerId, isOpen, onClose, onConfirm }: 
               <span className="inline-flex items-center justify-center w-7 h-7 rounded-lg bg-orange-100 text-orange-600 text-sm font-bold">
                 ⚡
               </span>
-              <h2 className="text-lg font-bold text-ink-heading">Autopilot Activation Preview</h2>
+              <h2 className="text-lg font-bold text-ink-heading">Preview automatic updates</h2>
             </div>
             <p className="text-xs text-ink-muted mt-1">
-              Read-only simulation evaluated by StarterGrid policy engine for {simulation?.dealerName ?? 'this rooftop'}.
+              See the updates currently planned for {simulation?.dealerName ?? 'this dealership'}. This preview does not send changes.
             </p>
           </div>
           <button
@@ -57,44 +58,45 @@ export function AutopilotPreviewModal({ dealerId, isOpen, onClose, onConfirm }: 
         <div className="p-6 overflow-y-auto space-y-5 flex-1">
           {loading ? (
             <div className="space-y-4 py-4">
-              <p className="text-xs text-ink-muted animate-pulse">Running read-only policy simulation across inventory and connected channels...</p>
+              <p className="text-xs text-ink-muted animate-pulse">Checking vehicles and selected destinations…</p>
               <Skeleton rows={5} />
             </div>
           ) : error ? (
             <div className="p-4 rounded-xl bg-red-50 border border-red-200 text-red-700 text-xs">
-              <p className="font-semibold">Unable to run simulation:</p>
+              <p className="font-semibold">Unable to load the preview:</p>
               <p className="mt-1">{error}</p>
             </div>
           ) : simulation ? (
             <>
+              <HelpLink docId="processes/auto-sync">How automatic updates and pauses work</HelpLink>
               {/* Summary Cards */}
               <div className="grid grid-cols-3 gap-3">
                 <div className="p-4 rounded-xl bg-green-50/70 border border-green-200/80">
-                  <span className="text-[11px] font-bold uppercase tracking-wider text-green-700 block">Will Publish</span>
+                  <span className="text-[11px] font-bold uppercase tracking-wider text-green-700 block">Planned sends</span>
                   <span className="text-2xl font-black text-green-800 mt-1 block">
                     {simulation.summary.scheduledOperations.upsert}
                   </span>
-                  <span className="text-[11px] text-green-600 mt-0.5 block">qualified vehicles</span>
+                  <span className="text-[11px] text-green-600 mt-0.5 block">listing updates</span>
                 </div>
                 <div className="p-4 rounded-xl bg-amber-50/70 border border-amber-200/80">
-                  <span className="text-[11px] font-bold uppercase tracking-wider text-amber-700 block">Held Safely</span>
+                  <span className="text-[11px] font-bold uppercase tracking-wider text-amber-700 block">Needs attention</span>
                   <span className="text-2xl font-black text-amber-800 mt-1 block">
                     {simulation.summary.needsAttentionCount + simulation.summary.heldCount}
                   </span>
-                  <span className="text-[11px] text-amber-600 mt-0.5 block">missing price or photos</span>
+                  <span className="text-[11px] text-amber-600 mt-0.5 block">review the reasons below</span>
                 </div>
                 <div className="p-4 rounded-xl bg-navy-50/70 border border-navy-200/80">
-                  <span className="text-[11px] font-bold uppercase tracking-wider text-navy-700 block">Will Delist</span>
+                  <span className="text-[11px] font-bold uppercase tracking-wider text-navy-700 block">Planned removals</span>
                   <span className="text-2xl font-black text-navy-800 mt-1 block">
                     {simulation.summary.scheduledOperations.withdraw}
                   </span>
-                  <span className="text-[11px] text-navy-600 mt-0.5 block">sold or removed units</span>
+                  <span className="text-[11px] text-navy-600 mt-0.5 block">listing removals</span>
                 </div>
               </div>
 
               {/* Per-Channel Breakdown */}
               <div className="space-y-3">
-                <h3 className="text-xs font-bold uppercase tracking-wide text-ink-muted">Channel Delivery Breakdown</h3>
+                <h3 className="text-xs font-bold uppercase tracking-wide text-ink-muted">Updates by destination</h3>
                 <div className="space-y-2">
                   {simulation.channels.map(ch => (
                     <div
@@ -110,11 +112,11 @@ export function AutopilotPreviewModal({ dealerId, isOpen, onClose, onConfirm }: 
                             {ch.connected ? 'Connected' : 'Setup Needed'}
                           </span>
                           <span className="text-[10px] text-ink-faint font-mono">
-                            {ch.qualification === 'VERIFIED_AUTOMATIC' ? 'Verified Auto-Delivery' : 'Partner Syndication'}
+                            {ch.qualification === 'VERIFIED_AUTOMATIC' ? 'Automatic updates available' : 'Automatic updates unavailable'}
                           </span>
                         </div>
                         <div className="text-xs font-semibold text-ink-body">
-                          {ch.scheduledUpserts} to publish · {ch.blockedCount} blocked
+                          {ch.scheduledUpserts} planned sends · {ch.blockedCount} blocked
                         </div>
                       </div>
 
@@ -150,16 +152,16 @@ export function AutopilotPreviewModal({ dealerId, isOpen, onClose, onConfirm }: 
                 <div className="p-3.5 rounded-xl bg-silver-50 border border-silver-200 text-ink-muted text-xs flex items-start gap-2.5">
                   <span className="text-sm">🛡️</span>
                   <p className="leading-relaxed">
-                    <strong className="text-ink-body font-semibold">Automatic Safeguards Active:</strong> Incomplete vehicles or suspicious price variations exceeding 30% are automatically held back from syndication until manually reviewed. Sold or removed vehicles are immediately withdrawn across all destinations.
+                    <strong className="text-ink-body font-semibold">Changes may need review:</strong> Missing vehicle details, large price changes, or large batches of removals can hold updates for review. Removal requests apply to managed listings. Listings added manually may need to be removed at the destination.
                   </p>
                 </div>
                 <div className="px-3.5 py-2 rounded-lg bg-blue-50/70 border border-blue-200/80 text-[11px] text-blue-900 flex items-center justify-between">
                   <span className="flex items-center gap-1.5 font-medium">
                     <span className="w-2 h-2 rounded-full bg-blue-500 animate-pulse" />
-                    Live simulation evaluated at {new Date(simulation.evaluatedAt).toLocaleTimeString()}
+                    Preview checked at {new Date(simulation.evaluatedAt).toLocaleTimeString()}
                   </span>
                   <span className="text-blue-700">
-                    Confirmation re-evaluates live inventory on execution
+                    Planned updates may change before they are sent
                   </span>
                 </div>
               </div>
@@ -181,7 +183,7 @@ export function AutopilotPreviewModal({ dealerId, isOpen, onClose, onConfirm }: 
               onClose();
             }}
           >
-            Confirm & Activate Autopilot
+            Turn on Autopilot
           </Button>
         </div>
       </div>

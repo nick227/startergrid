@@ -2,6 +2,8 @@
 
 Source review on `main` at `a9be0a5`. This is a recovery audit, not a new runtime or production verification.
 
+**Superseded for current status by the [validated wrap-up checkpoint](wrap-up-2026-10-26.md).** The findings below describe the recovery starting point. The onboarding, CSV, unused-modal and reproducible-acceptance gaps have since been addressed.
+
 ## Where the previous session stopped
 
 The original plans in this directory were followed by V5 implementation and integration repairs. Read `docs/v5/dealership-management-consolidation.md`, the **Repair status** section of `docs/v5/collective-review-2026-10-25.md`, and `docs/v5/distribution-operations.md` before treating the original plans or review findings as outstanding work.
