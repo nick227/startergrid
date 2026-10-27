@@ -4303,6 +4303,40 @@ paths:
         '403':
           $ref: '#/components/responses/Forbidden'
 
+  /api/dealers/{dealershipId}/channels/overview:
+    get:
+      tags: [Accounts]
+      security:
+        - OperatorAuth: []
+      x-route-classification: operator
+      operationId: getChannelOverview
+      summary: Channels grouped by primary purpose, with one evidence-based status per channel
+      description: >-
+        Each channel has exactly one primary purpose and is counted once in its purpose totals. displayStatus is
+        NOT_SET_UP, SETTING_UP, NEEDS_ATTENTION or CONNECTED; setup, connection and distribution are reported
+        separately. CONNECTED means setup is complete, never that listings are live; distribution counts come
+        only from recorded destination evidence. Pass channel to return one channel (purpose totals still cover all).
+      parameters:
+        - name: dealershipId
+          in: path
+          required: true
+          schema: { type: string }
+        - name: channel
+          in: query
+          required: false
+          schema: { type: string }
+      responses:
+        '200':
+          description: Channel overview
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ChannelOverview'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+
   /api/dealers/{dealershipId}/channels/setup:
     get:
       tags: [Accounts]
@@ -6795,6 +6829,68 @@ components:
           type: object
           additionalProperties: { type: integer }
         note: { type: string }
+
+    ChannelOverview:
+      type: object
+      required: [viewerCanAct, purposes, channels]
+      properties:
+        viewerCanAct: { type: boolean }
+        purposes:
+          type: array
+          items:
+            type: object
+            required: [purpose, label, description, total, counts]
+            properties:
+              purpose: { type: string, enum: [MARKETPLACE, SOCIAL_ADVERTISING, INVENTORY_FEED, LEAD_DELIVERY] }
+              label: { type: string }
+              description: { type: string }
+              total: { type: integer }
+              counts:
+                type: object
+                required: [NOT_SET_UP, SETTING_UP, NEEDS_ATTENTION, CONNECTED]
+                properties:
+                  NOT_SET_UP: { type: integer }
+                  SETTING_UP: { type: integer }
+                  NEEDS_ATTENTION: { type: integer }
+                  CONNECTED: { type: integer }
+        channels:
+          type: array
+          items:
+            type: object
+            required: [channel, name, purpose, capabilities, integrationClass, enabled, displayStatus, displayReason, waitingOn, setup, connection, distribution, openIncidents]
+            properties:
+              channel: { type: string }
+              name: { type: string }
+              purpose: { type: string, enum: [MARKETPLACE, SOCIAL_ADVERTISING, INVENTORY_FEED, LEAD_DELIVERY] }
+              capabilities:
+                type: array
+                items: { type: string, enum: [LISTINGS, SOCIAL_POSTS, CATALOG, PARTNER_FEED, LEADS] }
+              integrationClass: { type: string }
+              enabled: { type: boolean }
+              displayStatus: { type: string, enum: [NOT_SET_UP, SETTING_UP, NEEDS_ATTENTION, CONNECTED] }
+              displayReason: { type: string }
+              waitingOn: { type: string, nullable: true, enum: [DEALERSHIP, INTERNAL_SUPPORT, PARTNER, null] }
+              setup:
+                type: object
+                required: [status, done, total, currentStepTitle]
+                properties:
+                  status: { type: string, enum: [READY, NEEDS_YOU, WAITING, BLOCKED] }
+                  done: { type: integer }
+                  total: { type: integer }
+                  currentStepTitle: { type: string, nullable: true }
+              connection:
+                type: object
+                required: [state]
+                properties:
+                  state: { type: string, enum: [VERIFIED, NOT_CHECKED, FAILED, NOT_APPLICABLE] }
+              distribution:
+                type: object
+                required: [verifiedLive, inProgress, problems]
+                properties:
+                  verifiedLive: { type: integer, description: Autopilot targets verified live with destination evidence. }
+                  inProgress: { type: integer }
+                  problems: { type: integer }
+              openIncidents: { type: integer }
 
     ChannelSetupPlan:
       type: object

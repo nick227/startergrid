@@ -3,6 +3,7 @@ import type { PrismaClient } from '@prisma/client';
 import { requireDealerAccess } from '../security.js';
 import { hasCapability } from '../../services/dealership/permissions.js';
 import { getChannelSetupPlans } from '../../services/channels/channelSetupService.js';
+import { getChannelOverview } from '../../services/channels/channelOverviewService.js';
 
 type DealerParams = { dealershipId: string };
 
@@ -19,6 +20,21 @@ async function viewerCanAct(prisma: PrismaClient, request: FastifyRequest, deale
 }
 
 export function registerChannelSetupRoutes(app: FastifyInstance, prisma: PrismaClient): void {
+  // GET /api/dealers/:dealershipId/channels/overview[?channel=slug]
+  // Purpose summary (each channel counted once) and one evidence-based status per channel.
+  app.get<{ Params: DealerParams; Querystring: { channel?: string } }>(
+    '/api/dealers/:dealershipId/channels/overview',
+    async (request, reply) => {
+      const { dealershipId } = request.params;
+      if (!await requireDealerAccess(prisma, request, reply, dealershipId)) return;
+      const [overview, canAct] = await Promise.all([
+        getChannelOverview(prisma, dealershipId, request.query.channel || undefined),
+        viewerCanAct(prisma, request, dealershipId),
+      ]);
+      return reply.send({ viewerCanAct: canAct, ...overview });
+    },
+  );
+
   // GET /api/dealers/:dealershipId/channels/setup
   // Setup plans for every channel the dealership turned on.
   app.get<{ Params: DealerParams }>(
