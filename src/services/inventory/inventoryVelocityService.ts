@@ -74,7 +74,7 @@ export function calculateSuggestedPrice(
       suggestedMarkdownCents: null,
       suggestedMarkdownPercent: null,
       recommendationAction: 'MONITOR',
-      recommendationReason: 'Fresh intake (0-14 days). Maintain front-end margin during initial traffic discovery.',
+      recommendationReason: 'Added in the last 14 days. No price change suggested.',
     };
   }
 
@@ -85,7 +85,7 @@ export function calculateSuggestedPrice(
         suggestedMarkdownCents: null,
         suggestedMarkdownPercent: null,
         recommendationAction: 'ADD_PHOTOS',
-        recommendationReason: `Review merchandising: vehicle only has ${photoCount} photo${photoCount === 1 ? '' : 's'}. Upload 8+ photos to maximize engagement before considering price cuts.`,
+        recommendationReason: `Review merchandising: vehicle only has ${photoCount} photo${photoCount === 1 ? '' : 's'}. Add more photos before considering a price change.`,
       };
     }
     return {
@@ -93,7 +93,7 @@ export function calculateSuggestedPrice(
       suggestedMarkdownCents: null,
       suggestedMarkdownPercent: null,
       recommendationAction: 'MONITOR_ENGAGEMENT',
-      recommendationReason: '15-day mark: Monitor online views and syndicated distribution. Check portal leads.',
+      recommendationReason: 'In StarterGrid for 15+ days. Check views and leads before changing the price.',
     };
   }
 
@@ -156,9 +156,12 @@ export function calculateSuggestedPrice(
     suggestedMarkdownCents: actualMarkdownCents,
     suggestedMarkdownPercent: actualPercent,
     recommendationAction: milestone === 'CRITICAL' ? 'CRITICAL_PRICE_ADJUSTMENT' : 'SUGGEST_PRICE_ADJUSTMENT',
+    // Days are counted from when the vehicle was added to StarterGrid. The reason states the
+    // rule that produced the suggestion; StarterGrid does not observe search ranking, portal
+    // badges or financing cost, so it makes no claim about them.
     recommendationReason: milestone === 'CRITICAL'
-      ? `Over 45 days on lot. Repricing by $${(actualMarkdownCents / 100).toLocaleString()} (${actualPercent}%) resets search positioning and mitigates floor plan interest.`
-      : `30-day velocity alert. A targeted $${(actualMarkdownCents / 100).toLocaleString()} (${actualPercent}%) adjustment triggers search portal "Price Drop" badges while protecting gross.`,
+      ? `In StarterGrid for over 45 days. Suggested markdown: $${(actualMarkdownCents / 100).toLocaleString()} (${actualPercent}%), within the 20% per-change and 30% lifetime limits.`
+      : `In StarterGrid for 30+ days. Suggested markdown: $${(actualMarkdownCents / 100).toLocaleString()} (${actualPercent}%), within the 20% per-change and 30% lifetime limits.`,
   };
 }
 

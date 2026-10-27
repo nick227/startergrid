@@ -11,14 +11,14 @@ describe('Inventory Velocity Service', () => {
     const res = calculateSuggestedPrice(2500000, 2500000, 'FRESH', 5, 12);
     assert.equal(res.recommendationAction, 'MONITOR');
     assert.equal(res.suggestedPriceCents, null);
-    assert.match(res.recommendationReason, /Fresh intake/i);
+    assert.match(res.recommendationReason, /last 14 days/i);
   });
 
   it('calculateSuggestedPrice recommends ADD_PHOTOS for 15-29 day vehicles with low photos', () => {
     const res = calculateSuggestedPrice(2500000, 2500000, 'REVIEW', 18, 3);
     assert.equal(res.recommendationAction, 'ADD_PHOTOS');
     assert.equal(res.suggestedPriceCents, null);
-    assert.match(res.recommendationReason, /Upload 8\+ photos/i);
+    assert.match(res.recommendationReason, /more photos/i);
   });
 
   it('calculateSuggestedPrice recommends MONITOR_ENGAGEMENT for 15-29 day vehicles with ample photos', () => {
@@ -32,6 +32,19 @@ describe('Inventory Velocity Service', () => {
     assert.equal(res.recommendationAction, 'RECENTLY_ADJUSTED');
     assert.equal(res.suggestedPriceCents, null);
     assert.match(res.recommendationReason, /Price adjusted 3 days ago/i);
+  });
+
+  it('never claims external effects StarterGrid cannot observe', () => {
+    const cases = [
+      calculateSuggestedPrice(2500000, 2500000, 'FRESH', 5, 12),
+      calculateSuggestedPrice(2500000, 2500000, 'REVIEW', 20, 2),
+      calculateSuggestedPrice(2500000, 2500000, 'REVIEW', 20, 12),
+      calculateSuggestedPrice(2500000, 2500000, 'AGING', 32, 10),
+      calculateSuggestedPrice(3000000, 3000000, 'CRITICAL', 50, 10),
+    ];
+    for (const res of cases) {
+      assert.doesNotMatch(res.recommendationReason, /search (positioning|ranking)|badge|floor ?plan|guarantee|sell faster|maximi[sz]e/i, res.recommendationReason);
+    }
   });
 
   it('calculateSuggestedPrice calculates ~1.5% adjustment ending in $95 for AGING milestone', () => {
