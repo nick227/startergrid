@@ -3,9 +3,9 @@ import { after, before, describe, it } from 'node:test';
 import { PrismaClient } from '@prisma/client';
 import { readOnboardingEvidence } from '../services/dealership/onboardingEvidence.js';
 import { completeHandoff, refreshOnboarding } from '../services/dealership/onboardingService.js';
+import { isolatedDatabaseUrl } from './helpers/isolatedDatabase.js';
 
-const url = process.env['V5_TEST_DATABASE_URL'];
-if (url && !new URL(url).pathname.startsWith('/startergrid_v5_test_')) throw new Error('Use an isolated startergrid_v5_test_* database.');
+const url = isolatedDatabaseUrl();
 describe('onboarding evidence (isolated MySQL)', { skip: !url, concurrency: false }, () => {
   let db: PrismaClient;
   before(() => { db = new PrismaClient({ datasources: { db: { url } } }); });

@@ -17,7 +17,10 @@ if (!['127.0.0.1', 'localhost', '[::1]'].includes(url.hostname) || !url.pathname
 }
 const db = new PrismaClient();
 const app = buildApp(db);
-let vite, browser, admin;
+let vite, browser, admin, ownerContext;
+let passed = false;
+// Saved only on failure, next to the journey suite's traces so CI uploads both.
+const tracePath = fileURLToPath(new URL('../../apps/web/test-results/csv-import-trace.zip', import.meta.url));
 const cacheDir = await mkdtemp(path.join(tmpdir(), 'startergrid-csv-vite-'));
 const failures = [];
 try {
@@ -60,7 +63,8 @@ try {
   await json(await admin.post(`/api/admin/dealerships/${dealerId}/handoff`), 409);
 
   browser = await chromium.launch({ headless: true });
-  const ownerContext = await browser.newContext();
+  ownerContext = await browser.newContext();
+  await ownerContext.tracing.start({ screenshots: true, snapshots: true });
   ownerContext.setDefaultTimeout(15_000);
   const page = await ownerContext.newPage();
   page.on('pageerror', error => failures.push(error.message));
@@ -107,7 +111,12 @@ try {
   await expect(page.getByRole('cell', { name: '$29,500', exact: true })).toBeVisible();
   assert.deepEqual(failures, [], 'Browser runtime errors');
   console.log('PASS: corrected inventory persists after browser refresh.');
+  passed = true;
 } finally {
+  if (ownerContext) {
+    await ownerContext.tracing.stop(passed ? {} : { path: tracePath }).catch(() => {});
+    if (!passed) console.log(`Saved failure trace: ${tracePath}`);
+  }
   await browser?.close();
   await admin?.dispose();
   await vite?.close();

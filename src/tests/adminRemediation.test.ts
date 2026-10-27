@@ -3,10 +3,13 @@ import { describe, it, before, after } from 'node:test';
 import { PrismaClient } from '@prisma/client';
 import Fastify, { FastifyInstance } from 'fastify';
 import { registerAdminRoutes } from '../server/routes/admin.js';
+import { isolatedDatabaseUrl } from './helpers/isolatedDatabase.js';
 
-const prisma = new PrismaClient();
+// Writes real rows, so it needs the disposable test schema (see helpers/isolatedDatabase.ts).
+const url = isolatedDatabaseUrl();
+const prisma = url ? new PrismaClient({ datasources: { db: { url } } }) : (null as unknown as PrismaClient);
 
-describe('Admin Remediation API Concurrency & Idempotency', () => {
+describe('Admin Remediation API Concurrency & Idempotency', { skip: !url }, () => {
   let app: FastifyInstance;
   let superAdminId: string;
   let dealerId: string;
