@@ -131,7 +131,7 @@ export function VehicleDetailHeader({ vehicle, onClose, onReload }: Props) {
               type="button"
               onClick={() => setShowStickerModal(true)}
               className="px-3 py-1.5 text-xs font-semibold rounded-lg bg-silver-100 hover:bg-silver-200 text-ink-heading border border-silver-300 transition-all flex items-center gap-1.5 shadow-sm"
-              title="Print window sticker or FTC Buyers Guide"
+              title="Print window sticker or Buyers Guide"
             >
               <span>🖨️ Print documents</span>
             </button>

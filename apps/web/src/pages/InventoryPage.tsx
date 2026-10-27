@@ -254,8 +254,15 @@ export default function InventoryPage({ dealerId, nav, activeTab }: Props) {
       const cutoff = Date.now() - 7 * 24 * 60 * 60 * 1000;
       list = list.filter(v => new Date(v.updatedAt).getTime() >= cutoff);
     }
+    if (filter === 'Aging') {
+      list = list.filter(v => {
+        const perf = perfMap.get(v.stockNumber);
+        const days = perf?.daysOnline ?? 0;
+        return days >= 30 || repriceMap.has(v.id);
+      });
+    }
     return list;
-  }, [activeVehicles, ageFilter]);
+  }, [activeVehicles, ageFilter, filter, perfMap, repriceMap]);
 
   // Filter mapping from chip -> old cleanup filter logic (temp)
   const legacyFilterMap: Record<string, CleanupFilter> = {
@@ -352,12 +359,14 @@ export default function InventoryPage({ dealerId, nav, activeTab }: Props) {
     </>
   ) : undefined;
 
+  const agingCount = (velocity?.summary?.agingCount ?? 0) + (velocity?.summary?.criticalCount ?? 0);
   const summaryCounts = {
     active: summary?.total ?? 0,
     ready: summary?.ready ?? 0,
     needsPhotos: vehicles.filter(v => v.issues.some(i => i.path === 'media')).length,
     queued: 0,
     blocked: summary?.blocked ?? 0,
+    aging: agingCount > 0 ? agingCount : repriceMap.size,
   };
 
   const isActiveScope = isActiveLifecycleScope(lifecycleScope);
@@ -891,6 +900,8 @@ export default function InventoryPage({ dealerId, nav, activeTab }: Props) {
                             setSortDirection('asc');
                           }
                         }}
+                        repriceMap={repriceMap}
+                        onReviewReprice={(vehicle) => setReviewRepriceVehicle(vehicle)}
                       />
                     </div>
                   </SectionCard>

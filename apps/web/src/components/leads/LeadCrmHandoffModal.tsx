@@ -114,7 +114,13 @@ export function LeadCrmHandoffModal({ dealershipId, leadId, isOpen, onClose }: P
 
   const lastAttempt = data?.attempts && data.attempts.length > 0 ? data.attempts[0] : null;
   const destination = lastAttempt?.destinationAddress || data?.crmEndpoint || 'your CRM address';
-  const statusLabel = isSent ? 'Sent to CRM address' : isFailed ? 'Send failed' : isSending ? 'Sending…' : 'Not sent';
+  const statusLabel = isSent
+    ? 'Transmission accepted by mail server'
+    : isFailed
+    ? 'Transmission failed'
+    : isSending
+    ? 'Sending to mail server…'
+    : 'Not sent to CRM';
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-3 sm:p-5 overflow-y-auto">
@@ -124,7 +130,7 @@ export function LeadCrmHandoffModal({ dealershipId, leadId, isOpen, onClose }: P
           <div>
             <h2 className="text-base font-bold text-ink-heading">Send to CRM</h2>
             <p className="text-xs text-ink-muted mt-0.5">
-              Email this lead to your CRM in ADF/XML, or copy it to enter by hand.
+              Send this lead to your dealership CRM, or copy details to enter manually.
             </p>
           </div>
           <button
@@ -157,7 +163,7 @@ export function LeadCrmHandoffModal({ dealershipId, leadId, isOpen, onClose }: P
             <>
               {/* Primary Status Card */}
               <div
-                className={`p-4 rounded-xl border flex flex-col gap-2 ${
+                className={`p-4 rounded-xl border flex flex-col gap-2.5 ${
                   isSent
                     ? 'bg-emerald-50/70 border-emerald-200 text-emerald-950'
                     : isFailed
@@ -178,13 +184,29 @@ export function LeadCrmHandoffModal({ dealershipId, leadId, isOpen, onClose }: P
 
                 <p className="text-xs leading-relaxed">
                   {isSent
-                    ? `The mail server accepted this lead for ${destination}. StarterGrid can't see whether your CRM imported it, so check that it appears there.`
+                    ? `The mail server accepted this lead for ${destination}. StarterGrid confirmed transmission handoff, but cannot verify whether your external CRM imported it into your database.`
                     : isFailed
                     ? `Could not send to ${destination}${lastAttempt?.errorMessage ? `: ${lastAttempt.errorMessage}` : '.'}`
                     : isSending
                     ? `Sending to ${destination}…`
                     : 'This lead has not been sent to your CRM.'}
                 </p>
+
+                <div className="pt-2 border-t border-black/10 text-xs font-medium">
+                  {isSent ? (
+                    <p className="text-emerald-900">
+                      <strong>Next step:</strong> Check your CRM inbox or activity log to confirm that your CRM imported this lead.
+                    </p>
+                  ) : isFailed ? (
+                    <p className="text-red-900">
+                      <strong>Next step:</strong> Verify your CRM lead email in Channels &gt; ADF/XML Lead Routing, or copy the lead summary below.
+                    </p>
+                  ) : (
+                    <p className="text-blue-900">
+                      <strong>Next step:</strong> Click &quot;Send to CRM&quot; to email this lead to your CRM, or copy the lead summary below.
+                    </p>
+                  )}
+                </div>
               </div>
 
               {!data.canSend && data.sendBlocker !== 'SEND_IN_PROGRESS' && data.sendBlockerMessage && (

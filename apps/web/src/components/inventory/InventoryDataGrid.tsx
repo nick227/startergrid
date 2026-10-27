@@ -5,6 +5,7 @@ import { INVENTORY_FIELD_REGISTRY } from './fieldRegistry.ts';
 import { InventoryRowCard } from './InventoryRowCard.tsx';
 import type { BusinessCategoryId } from '@auto-dealer/category-schemas';
 import { vehicleReadinessText } from '@/lib/listingStatus.ts';
+import type { VelocityVehicleItem } from '@/lib/api/velocityApi.ts';
 
 type Props = {
   dealerId?: string;
@@ -20,9 +21,16 @@ type Props = {
   onSort: (key: string) => void;
   /** Overrides the default zero-rows message — callers should distinguish "never added anything" from "filtered to zero". */
   emptyMessage?: ReactNode;
+  repriceMap?: Map<string, VelocityVehicleItem>;
+  onReviewReprice?: (vehicle: VelocityVehicleItem) => void;
 };
 
-function renderCell(item: InventoryGridRowDto, colKey: string) {
+function renderCell(
+  item: InventoryGridRowDto,
+  colKey: string,
+  repriceMap?: Map<string, VelocityVehicleItem>,
+  onReviewReprice?: (vehicle: VelocityVehicleItem) => void,
+) {
   const fieldDef = INVENTORY_FIELD_REGISTRY[colKey];
   if (!fieldDef) return null;
 
@@ -43,7 +51,29 @@ function renderCell(item: InventoryGridRowDto, colKey: string) {
       return null;
     }
     case 'currency': {
-      if (colKey === 'price') return item.pricing.priceCents > 0 ? `$${(item.pricing.priceCents / 100).toLocaleString()}` : '—';
+      if (colKey === 'price') {
+        const priceStr = item.pricing.priceCents > 0 ? `$${(item.pricing.priceCents / 100).toLocaleString()}` : '—';
+        const reprice = repriceMap?.get(item.id);
+        if (reprice && reprice.suggestedPriceCents !== null) {
+          return (
+            <div className="flex items-center gap-1.5">
+              <span>{priceStr}</span>
+              <button
+                type="button"
+                onClick={e => {
+                  e.stopPropagation();
+                  onReviewReprice?.(reprice);
+                }}
+                className="px-1.5 py-0.5 rounded text-[10px] font-semibold bg-indigo-50 text-indigo-700 border border-indigo-200 hover:bg-indigo-100 transition-colors shadow-2xs"
+                title={`Suggested: $${(reprice.suggestedPriceCents / 100).toLocaleString()} (${reprice.daysOnLot} days on lot)`}
+              >
+                Review price
+              </button>
+            </div>
+          );
+        }
+        return priceStr;
+      }
       return null;
     }
     case 'status': {
@@ -59,7 +89,12 @@ function renderCell(item: InventoryGridRowDto, colKey: string) {
       return <span className="truncate text-[11px] font-medium text-ink-muted">{item.publishing.statusText}</span>;
     }
     case 'days': {
-      return `${item.performance.daysOnline}d`;
+      const isAging = item.performance.daysOnline >= 30;
+      return (
+        <span className={isAging ? 'font-semibold text-amber-900' : ''}>
+          {item.performance.daysOnline}d
+        </span>
+      );
     }
     case 'text':
     default: {
@@ -74,7 +109,7 @@ function renderCell(item: InventoryGridRowDto, colKey: string) {
 }
 
 export function InventoryDataGrid({
-  dealerId, items, viewMode, selectedIds, onToggleSelection, onToggleAll, onRowClick, activeColumns, sortKey, sortDir, onSort, emptyMessage
+  dealerId, items, viewMode, selectedIds, onToggleSelection, onToggleAll, onRowClick, activeColumns, sortKey, sortDir, onSort, emptyMessage, repriceMap, onReviewReprice
 }: Props) {
   const allSelected = items.length > 0 && items.every(i => selectedIds.has(i.id));
 
@@ -182,7 +217,7 @@ export function InventoryDataGrid({
                 </td>
                 {activeColumns.map(colKey => (
                   <td key={colKey} className="px-3 py-2 text-ink-body truncate max-w-[200px]">
-                    {renderCell(item, colKey)}
+                    {renderCell(item, colKey, repriceMap, onReviewReprice)}
                   </td>
                 ))}
               </tr>

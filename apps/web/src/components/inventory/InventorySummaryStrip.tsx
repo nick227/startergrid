@@ -7,6 +7,7 @@ type Props = {
     needsPhotos: number;
     queued: number;
     blocked: number;
+    aging?: number;
   };
   activeFilter: string;
   onFilterChange: (filter: string) => void;
@@ -18,6 +19,9 @@ export function InventorySummaryStrip({ counts, activeFilter, onFilterChange }: 
     { id: 'Ready', label: `Ready to send ${counts.ready}`, color: 'bg-green-100 text-green-700 border-green-200' },
     { id: 'Needs photos', label: `Needs photos ${counts.needsPhotos}`, color: 'bg-amber-100 text-amber-700 border-amber-200' },
     { id: 'Blocked', label: `Cannot list ${counts.blocked}`, color: 'bg-red-100 text-red-700 border-red-200' },
+    ...(counts.aging !== undefined && counts.aging > 0
+      ? [{ id: 'Aging', label: `Aging ${counts.aging}`, color: 'bg-indigo-50 text-indigo-700 border-indigo-200' }]
+      : []),
   ];
 
   return (

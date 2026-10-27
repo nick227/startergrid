@@ -51,6 +51,10 @@ export function WindowStickerModal({ vehicle, dealerId, isOpen, onClose }: Props
       {/* Print isolation stylesheet */}
       <style>{`
         @media print {
+          @page {
+            size: letter portrait;
+            margin: 0.5in;
+          }
           body * {
             visibility: hidden !important;
           }
@@ -64,9 +68,11 @@ export function WindowStickerModal({ vehicle, dealerId, isOpen, onClose }: Props
             width: 100% !important;
             max-width: 100% !important;
             margin: 0 !important;
-            padding: 20px !important;
+            padding: 0 !important;
             box-shadow: none !important;
             border: none !important;
+            -webkit-print-color-adjust: exact !important;
+            print-color-adjust: exact !important;
           }
           .no-print {
             display: none !important;
@@ -76,12 +82,12 @@ export function WindowStickerModal({ vehicle, dealerId, isOpen, onClose }: Props
 
       <div className="bg-white rounded-2xl shadow-2xl max-w-4xl w-full flex flex-col max-h-[95vh] overflow-hidden border border-silver-200">
         {/* Modal Top Bar (Screen only) */}
-        <div className="no-print flex items-center justify-between px-6 py-4 border-b border-silver-200 bg-silver-50">
+        <div className="no-print flex flex-col sm:flex-row sm:items-center justify-between px-4 sm:px-6 py-3 sm:py-4 border-b border-silver-200 bg-silver-50 gap-3">
           <div className="flex items-center gap-3">
             <span className="text-xl">🖨️</span>
             <div>
               <h3 className="text-sm font-bold text-ink-heading">
-                Print Vehicle Documents
+                Print Documents
               </h3>
               <p className="text-xs text-ink-muted">
                 {vehicleTitle} · Stock #{vehicle.stockNumber}
@@ -89,7 +95,7 @@ export function WindowStickerModal({ vehicle, dealerId, isOpen, onClose }: Props
             </div>
           </div>
 
-          <div className="flex items-center gap-2">
+          <div className="flex flex-wrap items-center gap-2">
             {/* Tab switch */}
             <div className="inline-flex rounded-lg border border-silver-300 p-0.5 bg-silver-100 text-xs font-semibold">
               <button
@@ -112,16 +118,16 @@ export function WindowStickerModal({ vehicle, dealerId, isOpen, onClose }: Props
                     : 'text-ink-muted hover:text-ink-heading'
                 }`}
               >
-                FTC Buyers Guide
+                Buyers Guide
               </button>
             </div>
 
             <button
               type="button"
               onClick={handlePrint}
-              className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg text-xs font-bold bg-navy-800 hover:bg-navy-700 text-white shadow-sm transition-colors ml-2"
+              className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg text-xs font-bold bg-navy-800 hover:bg-navy-700 text-white shadow-sm transition-colors"
             >
-              <span>Print Page</span>
+              <span>🖨️ Print Document</span>
             </button>
 
             <button
@@ -157,7 +163,7 @@ export function WindowStickerModal({ vehicle, dealerId, isOpen, onClose }: Props
                   </div>
                   <div className="text-right sm:self-center">
                     <span className="inline-block px-3 py-1 rounded bg-navy-900 text-white text-xs font-black uppercase tracking-wider">
-                      Official Window Sticker
+                      Vehicle Window Sticker
                     </span>
                   </div>
                 </div>
@@ -291,9 +297,13 @@ export function WindowStickerModal({ vehicle, dealerId, isOpen, onClose }: Props
                 </div>
               </div>
             ) : (
-              /* ─── TAB 2: FTC BUYERS GUIDE (16 CFR Part 455) ─────────────── */
+              /* ─── TAB 2: BUYERS GUIDE ─────────────────────────────────── */
               <div className="space-y-6 text-black font-sans leading-tight">
-                {/* Official FTC Header */}
+                <div className="no-print rounded-lg border border-amber-300 bg-amber-50 p-2.5 text-[11px] text-amber-900 leading-snug">
+                  <strong>Lot display notice:</strong> Verify warranty disclosures against your state regulations and official disclosure form before vehicle placement.
+                </div>
+
+                {/* Buyers Guide Header */}
                 <div className="border-b-4 border-black pb-3 text-center">
                   <h1 className="text-4xl font-black tracking-wider uppercase text-black">
                     BUYERS GUIDE

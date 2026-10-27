@@ -286,7 +286,7 @@ function LeadRow({
   const canOpenVehicle = Boolean(lead.vehicleId || lead.vehicle?.stockNumber);
 
   return (
-    <div className="grid gap-3 border-b border-silver-100 px-4 py-3.5 last:border-0 hover:bg-silver-50/70 transition-colors lg:grid-cols-[minmax(18rem,1.4fr)_minmax(12rem,1fr)_7rem_8.5rem_8.5rem_7rem] lg:items-center">
+    <div className="grid gap-3 border-b border-silver-100 px-4 py-3.5 last:border-0 hover:bg-silver-50/70 transition-colors lg:grid-cols-[minmax(16rem,1.3fr)_minmax(11rem,1fr)_6.5rem_8rem_8rem_6rem_7.5rem] lg:items-center">
       {/* 1. Vehicle & inquiry */}
       <div className="flex min-w-0 gap-3">
         <LeadThumbnail lead={lead} title={title} />
@@ -368,17 +368,21 @@ function LeadRow({
         />
       </div>
 
-      {/* 6. Date & CRM ADF Handoff */}
-      <div className="text-xs text-ink-muted lg:text-right flex flex-col items-start lg:items-end gap-1">
+      {/* 6. Received Date */}
+      <div className="text-xs text-ink-muted lg:text-right">
         <p className="font-semibold text-ink-body">{relativeTime(lead.createdAt)}</p>
         <p className="font-mono text-[11px] text-ink-faint">{new Date(lead.createdAt).toLocaleDateString()}</p>
+      </div>
+
+      {/* 7. Contextual CRM Handoff Action */}
+      <div className="flex items-center lg:justify-end">
         <button
           type="button"
           onClick={() => onOpenCrmHandoff(lead.id)}
-          className="mt-0.5 px-2 py-0.5 text-[11px] font-semibold rounded bg-silver-100 hover:bg-navy-50 text-navy-800 border border-silver-300 hover:border-navy-300 transition-all flex items-center gap-1 shadow-2xs"
-          title="Open CRM Handoff and view/copy ADF/XML 1.0 lead format"
+          className="inline-flex items-center justify-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold bg-white hover:bg-silver-100 text-ink-heading border border-silver-300 hover:border-silver-400 transition-colors shadow-2xs w-full lg:w-auto"
+          title="Send to CRM or view delivery status"
         >
-          <span>📋 CRM / ADF</span>
+          <span>Send to CRM</span>
         </button>
       </div>
     </div>
@@ -629,13 +633,14 @@ export default function LeadsPage({ dealerId, nav, activeTab }: Props) {
                 </div>
               ) : (
                 <div>
-                  <div className="hidden border-b border-silver-200 bg-silver-50 px-4 py-2 text-[10px] font-bold uppercase tracking-wide text-ink-faint lg:grid lg:grid-cols-[minmax(18rem,1.4fr)_minmax(12rem,1fr)_7rem_8.5rem_8.5rem_7rem] lg:gap-3">
+                  <div className="hidden border-b border-silver-200 bg-silver-50 px-4 py-2 text-[10px] font-bold uppercase tracking-wide text-ink-faint lg:grid lg:grid-cols-[minmax(16rem,1.3fr)_minmax(11rem,1fr)_6.5rem_8rem_8rem_6rem_7.5rem] lg:gap-3">
                     <span>Vehicle & Inquiry</span>
                     <span>Buyer Contact</span>
                     <span>Source</span>
                     <span>Assignee</span>
                     <span className="flex items-center gap-1">Status · team sees this <InfoButton docId="app/lead-status" /></span>
                     <span className="text-right">Received</span>
+                    <span className="text-right">CRM</span>
                   </div>
                   {visibleLeads.map(lead => (
                     <LeadRow

@@ -99,8 +99,8 @@ export function DealerHomeDashboard({ dealerId, nav }: Props) {
     if (sentryAudit?.status === 'GHOST_LISTINGS_DETECTED' && ghostCount > 0) {
       list.push({
         id: 'sold-still-listed',
-        action: `${ghostCount} sold vehicle${ghostCount === 1 ? '' : 's'} may still be listed`,
-        detail: 'Take them down so shoppers do not call about a vehicle that left the lot.',
+        action: `${ghostCount} sold vehicle${ghostCount === 1 ? '' : 's'} may still be advertised`,
+        detail: 'Sold vehicles may still appear on connected advertising channels. Request removal so shoppers do not call about a vehicle that left the lot.',
         ownerKind: 'YOU',
         button: 'Open channels',
         onAction: nav.goToPlatforms,
