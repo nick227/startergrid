@@ -267,5 +267,6 @@ describe('hash builders', () => {
 
   it('adminDealerHash builds correct href', () => {
     expect(adminDealerHash('dealer-xyz')).toBe('#/admin/dealers/dealer-xyz');
+    expect(adminDealerHash('dealer-xyz', 'destinations')).toBe('#/admin/dealers/dealer-xyz/destinations');
   });
 });

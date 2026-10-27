@@ -15,7 +15,7 @@ describe('onboarding evidence guidance', () => {
   });
   it('does not confuse an Autopilot decision with publication', () => {
     const record = { ...base, onboardingSteps: base.onboardingSteps.map(s => s.key === 'CHANNELS' ? { ...s, status: 'IN_PROGRESS' } : s) };
-    expect(recordNextAction(record).label).toBe('Verify a live listing');
+    expect(recordNextAction(record).label).toBe('Send a vehicle to Auto Marketplace');
     expect(handoffReadiness(record).ready).toBe(false);
   });
   it('allows handoff only when the server has cleared the evidence checks', () => {

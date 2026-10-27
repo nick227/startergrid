@@ -16,13 +16,16 @@ import { DealershipActivity } from './DealershipActivity.tsx';
 import { lifecycleLabel, relativeTime, stepTitle, type LifecycleTone } from '@/lib/dealershipLabels.ts';
 import { handoffReadiness, recordNextAction, type NextAction } from '@/lib/dealershipNextStep.ts';
 import { PagePrimaryState } from '@/components/guidance/PagePrimaryState.tsx';
+import { DealershipDestinationsPanel } from './DealershipDestinationsPanel.tsx';
+import { adminDealerHash } from '@/lib/routes.ts';
 
-export type RecordTab = 'overview' | 'people' | 'activity';
+export type RecordTab = 'overview' | 'destinations' | 'people' | 'activity';
 
-/** Maps older deep links (#/admin/dealers/:id/setup, /channels, /vehicles…) onto the three tabs. */
+/** Maps older deep links (#/admin/dealers/:id/setup, /channels, /vehicles…) onto the record tabs. */
 export function recordTabFromRoute(page: string | null | undefined): RecordTab {
   if (page === 'people') return 'people';
   if (page === 'activity') return 'activity';
+  if (page === 'destinations' || page === 'platforms' || page === 'channels') return 'destinations';
   return 'overview';
 }
 
@@ -44,12 +47,12 @@ const TONE_CLASS: Record<LifecycleTone, string> = {
 };
 
 const PRIMARY_LABEL: Partial<Record<NextAction['kind'], string>> = {
-  retryChannelSetup: 'Retry channel setup',
+  retryChannelSetup: 'Finish default destinations',
   inviteOwner: 'Invite the owner',
-  shareOwnerLink: 'Share the link again',
-  addVehicles: 'Open dealer view: Vehicles',
-  setAutopilot: 'Review publication',
-  reviewLeads: 'Open Leads',
+  shareOwnerLink: 'Share owner setup link',
+  addVehicles: 'Add vehicles in their workspace',
+  setAutopilot: 'Open destinations',
+  reviewLeads: 'Open their Leads inbox',
   completeHandoff: 'Complete handoff',
 };
 
@@ -103,6 +106,11 @@ export function DealershipRecordView({ dealerId, initialTab = 'overview', viewer
   const dealerPeopleCount = record.people.filter(p => !p.isInternal).length + record.invitations.length;
   const setupIncomplete = record.onboardingSteps.some(step => step.status !== 'COMPLETE');
 
+  const goTab = (id: RecordTab) => {
+    setTab(id);
+    window.location.hash = adminDealerHash(dealerId, id === 'overview' ? undefined : id);
+  };
+
   const runPrimary = () => {
     switch (next.kind) {
       case 'retryChannelSetup':
@@ -132,7 +140,7 @@ export function DealershipRecordView({ dealerId, initialTab = 'overview', viewer
         onOpenDealerView(dealerId, 'inventory');
         return;
       case 'setAutopilot':
-        onOpenDealerView(dealerId);
+        goTab('destinations');
         return;
       case 'reviewLeads':
         onOpenDealerView(dealerId, 'leads');
@@ -177,7 +185,7 @@ export function DealershipRecordView({ dealerId, initialTab = 'overview', viewer
     <button
       key={id}
       type="button"
-      onClick={() => setTab(id)}
+      onClick={() => goTab(id)}
       aria-current={tab === id ? 'page' : undefined}
       className={`px-4 py-2.5 text-sm font-semibold border-b-2 whitespace-nowrap transition-colors ${
         tab === id ? 'border-orange-600 text-ink-heading' : 'border-transparent text-ink-muted hover:text-ink-heading'
@@ -215,10 +223,15 @@ export function DealershipRecordView({ dealerId, initialTab = 'overview', viewer
               </p>
             </div>
           </div>
-          <button type="button" onClick={() => onOpenDealerView(dealerId)}
-            className="px-3 py-1.5 text-sm font-semibold rounded-md border border-silver-300 text-ink-heading hover:bg-silver-50 shrink-0 self-start">
-            Open dealer view ↗
-          </button>
+          <div className="shrink-0 self-start max-w-xs text-right">
+            <button type="button" onClick={() => onOpenDealerView(dealerId)}
+              className="px-3 py-1.5 text-sm font-semibold rounded-md border border-silver-300 text-ink-heading hover:bg-silver-50">
+              Work as this dealership
+            </button>
+            <p className="text-[11px] text-ink-muted mt-1 text-left">
+              Same screens they see. You can still enter file-transfer details they cannot.
+            </p>
+          </div>
         </div>
 
         <PagePrimaryState
@@ -227,29 +240,32 @@ export function DealershipRecordView({ dealerId, initialTab = 'overview', viewer
           why={
             next.detail
             ?? (next.kind === 'none'
-              ? 'Open dealer view if you are helping a customer with vehicles, channels, or inquiries.'
+              ? 'No setup work left. Open Destinations if you are helping with a send, or work as this dealership for vehicles and inquiries.'
               : next.owner === 'DEALER'
-                ? 'The dealership does this next. You can still open dealer view to help.'
+                ? 'The dealership does this next. You can still work as this dealership to help.'
                 : 'This is the next real task for our team.')
           }
           ownerKind={next.owner === 'OUR_TEAM' && next.kind !== 'none' ? 'OUR_TEAM' : undefined}
           actionLabel={
             next.kind === 'none'
-              ? 'Open dealer view'
+              ? 'Open destinations'
               : next.actionable && PRIMARY_LABEL[next.kind]
                 ? (primaryBusy ? 'Working…' : PRIMARY_LABEL[next.kind])
-                : 'Open dealer view'
+                : undefined
           }
           onAction={
-            next.kind === 'none' || !next.actionable || !PRIMARY_LABEL[next.kind]
-              ? () => onOpenDealerView(dealerId)
-              : runPrimary
+            next.kind === 'none'
+              ? () => goTab('destinations')
+              : next.actionable && PRIMARY_LABEL[next.kind]
+                ? runPrimary
+                : undefined
           }
         />
       </section>
 
       <nav className="border-b border-silver-200 flex gap-1 overflow-x-auto" aria-label="Dealership sections">
         {tabButton('overview', 'Overview')}
+        {tabButton('destinations', 'Destinations', record.channels.length)}
         {tabButton('people', 'People', dealerPeopleCount)}
         {tabButton('activity', 'Activity')}
       </nav>
@@ -307,10 +323,11 @@ export function DealershipRecordView({ dealerId, initialTab = 'overview', viewer
                 {record.waitingForStock && ' · waiting for stock'}
               </p>
             </div>
-            <div className="surface-card-operator p-5 rounded-xl border border-silver-200 bg-white">
+            <button type="button" onClick={() => goTab('destinations')}
+              className="surface-card-operator p-5 rounded-xl border border-silver-200 bg-white text-left hover:border-silver-300">
               <h3 className="text-xs font-semibold uppercase tracking-wide text-ink-muted">Destinations</h3>
               <p className="mt-2 text-lg font-semibold text-ink-heading">{activeChannels} of {record.channels.length} connected</p>
-              <p className="text-sm text-ink-muted">Connected does not mean listings are live.</p>
+              <p className="text-sm text-ink-muted">Connected does not mean they already show listings.</p>
               {record.channels.length > 0 && (
                 <ul className="mt-2 space-y-1 text-sm text-ink-body">
                   {record.channels.slice(0, 4).map(channel => (
@@ -318,7 +335,7 @@ export function DealershipRecordView({ dealerId, initialTab = 'overview', viewer
                   ))}
                 </ul>
               )}
-            </div>
+            </button>
           </section>
 
           <details className="surface-card-operator rounded-xl border border-silver-200 bg-white">
@@ -332,6 +349,8 @@ export function DealershipRecordView({ dealerId, initialTab = 'overview', viewer
           </details>
         </div>
       )}
+
+      {tab === 'destinations' && <DealershipDestinationsPanel dealerId={dealerId} />}
 
       {tab === 'people' && (
         <PeoplePanel

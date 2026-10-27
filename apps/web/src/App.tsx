@@ -55,7 +55,7 @@ function OperatorApp() {
   const { user, authReady } = useAuth();
   const { route, nav, activeTab, selectDealer } = useOperatorRoute();
   const { dealerId, page, platformSlug, platformView, reportSlug, reportRange, adminDealerId, adminDealerPage, adminPlatformSlug } = route;
-  const categorySchema = useDealerCategorySchema(dealerId ?? null);
+  const categorySchema = useDealerCategorySchema(dealerId ?? adminDealerId ?? null);
 
   const helpStandalone = (page === 'help' || page === 'knowledge') && !dealerId;
   const signupStandalone = page === 'signup' && !dealerId;
@@ -77,7 +77,14 @@ function OperatorApp() {
   if (!authReady) return <AuthLoadingScreen />;
   if (inviteToken) return <AccountSetupPage key={inviteToken} token={inviteToken} />;
   if (user?.mustChangePassword) return <AccountSetupPage />;
-  if (internalStaff && (!dealerId || page === 'admin')) return <InternalWorkspace dealerId={adminDealerId} dealerPage={adminDealerPage} />;
+  if (helpStandalone) return <KnowledgeBasePage onBack={() => { window.location.hash = '#/'; }} />;
+  if (internalStaff && (!dealerId || page === 'admin')) {
+    return (
+      <CategoryProvider schema={categorySchema}>
+        <InternalWorkspace dealerId={adminDealerId} dealerPage={adminDealerPage} />
+      </CategoryProvider>
+    );
+  }
   if (signupStandalone) return <DealershipSignupPage />;
   if (!user) return <LoginPage />;
 
@@ -95,8 +102,6 @@ function OperatorApp() {
             adminPlatformSlug={adminPlatformSlug}
           />
         </Suspense>
-      ) : helpStandalone ? (
-        <KnowledgeBasePage onBack={() => { window.location.hash = '#/help'; }} />
       ) : !dealerId || !nav ? (
         <DealerPicker onSelect={selectDealer} />
       ) : !canAccessDealer(user, dealerId) ? (
@@ -138,7 +143,6 @@ function OperatorApp() {
           activeTab={activeTab}
         />
       )}
-      <DocReaderSheet />
     </CategoryProvider>
   );
 }
@@ -147,6 +151,7 @@ export default function App() {
   return (
     <DocReaderProvider>
       <OperatorApp />
+      <DocReaderSheet />
     </DocReaderProvider>
   );
 }

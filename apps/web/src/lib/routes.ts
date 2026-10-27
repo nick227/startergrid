@@ -220,8 +220,8 @@ export function parseOperatorRoute(hash = window.location.hash): OperatorRoute {
   );
 }
 
-export function adminDealerHash(dealerId: string): string {
-  return `#/admin/dealers/${dealerId}`;
+export function adminDealerHash(dealerId: string, page?: string): string {
+  return page ? `#/admin/dealers/${dealerId}/${page}` : `#/admin/dealers/${dealerId}`;
 }
 
 /** The one way staff open a dealership as the dealer sees it. */

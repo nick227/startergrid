@@ -4,6 +4,7 @@ import { handoffReadiness, needsOurAction, recordNextAction, summaryNextAction }
 import { welcomeMessage } from './welcomeMessage.ts';
 import { canManagePeople, personActions } from '@/components/people/peoplePermissions.ts';
 import { filterDealerships } from '@/components/dealers/DealershipDirectory.tsx';
+import { recordTabFromRoute } from '@/components/dealers/DealershipRecordView.tsx';
 import { inviteProblem } from '@/pages/AccountSetupPage.tsx';
 import type { DealershipPerson, DealershipRecordSummary } from './api/dealershipRecordApi.ts';
 
@@ -136,6 +137,16 @@ describe('invitation copy', () => {
   });
 });
 
+describe('recordTabFromRoute', () => {
+  it('maps destination deep links onto the Destinations tab', () => {
+    expect(recordTabFromRoute('destinations')).toBe('destinations');
+    expect(recordTabFromRoute('platforms')).toBe('destinations');
+    expect(recordTabFromRoute('channels')).toBe('destinations');
+    expect(recordTabFromRoute('people')).toBe('people');
+    expect(recordTabFromRoute(null)).toBe('overview');
+  });
+});
+
 describe('channel setup that needs attention', () => {
   it('outranks every other next action and stays our team\'s to fix', () => {
     const next = recordNextAction({
@@ -149,7 +160,7 @@ describe('channel setup that needs attention', () => {
 
   it('reads as a retry in the directory and counts as needing action', () => {
     const summary = { lifecycleStatus: 'SETTING_UP', blockedStepCount: 1, nextStep: { key: 'CHANNELS', ownerKind: 'OUR_TEAM', status: 'BLOCKED' } };
-    expect(summaryNextAction(summary)).toEqual({ label: 'Retry channel setup', owner: 'OUR_TEAM' });
+    expect(summaryNextAction(summary)).toEqual({ label: 'Finish default destinations', owner: 'OUR_TEAM' });
     expect(needsOurAction(summary)).toBe(true);
     expect(activitySentence({ action: 'CHANNEL_SETUP_INCOMPLETE' })).toBe('Default channel setup did not finish');
   });

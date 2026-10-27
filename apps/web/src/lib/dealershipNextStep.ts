@@ -40,7 +40,7 @@ export function recordNextAction(record: {
   if (record.channelSetup?.status === 'NEEDS_ATTENTION') {
     const n = record.channelSetup.missing.length;
     return {
-      kind: 'retryChannelSetup', label: 'Retry channel setup', owner: 'OUR_TEAM', actionable: true,
+      kind: 'retryChannelSetup', label: 'Finish default destinations', owner: 'OUR_TEAM', actionable: true,
       detail: `Default setup did not finish for ${n} destination${n === 1 ? '' : 's'}. Retrying is safe and never creates duplicates.`,
     };
   }
@@ -57,7 +57,7 @@ export function recordNextAction(record: {
     if (liveInvite) {
       return {
         kind: 'shareOwnerLink', label: 'Owner to accept the invitation', owner: 'DEALER', actionable: true,
-        detail: `Waiting on ${liveInvite.email}. Share the link again if they lost it.`,
+        detail: `Waiting on ${liveInvite.email}. Share the setup link so they can complete access and sign in.`,
       };
     }
     if (ownerInvites.length > 0) {
@@ -68,11 +68,11 @@ export function recordNextAction(record: {
   if (open('VEHICLES')) {
     return {
       kind: 'addVehicles', label: 'Add vehicles', owner: 'DEALER', actionable: true,
-      detail: 'Add or import stock in dealer view, or mark the dealership as waiting for stock.',
+      detail: 'Add or import stock in their workspace. You will leave this record.',
     };
   }
   if (open('CHANNELS')) {
-    return { kind: 'setAutopilot', label: 'Verify a live listing', owner: 'OUR_TEAM', actionable: true, detail: open('CHANNELS')?.blockingReason ?? undefined };
+    return { kind: 'setAutopilot', label: 'Send a vehicle to Auto Marketplace', owner: 'OUR_TEAM', actionable: true, detail: open('CHANNELS')?.blockingReason ?? undefined };
   }
   if (open('HANDOFF')) {
     if (!ownerSignedIn) return { kind: 'waitForOwner', label: 'Owner to sign in before handoff', owner: 'DEALER', actionable: false };
@@ -91,7 +91,7 @@ export function handoffReadiness(record: { onboardingSteps: Step[]; people: Pers
   const missing: string[] = [];
   if (!done('ACCESS') || !ownerSignedIn) missing.push('The owner has signed in');
   if (!done('VEHICLES')) missing.push('Stock is available for launch');
-  if (!done('CHANNELS')) missing.push('An eligible listing is verified live on Auto Marketplace');
+  if (!done('CHANNELS')) missing.push('A ready vehicle has been sent to Auto Marketplace');
   const handoff = record.onboardingSteps.find(s => s.key === 'HANDOFF');
   if (!handoff || ['BLOCKED', 'NEEDS_RECHECK', 'NOT_STARTED'].includes(handoff.status)) {
     missing.push(handoff?.blockingReason ?? 'A marketplace inquiry has reached the shared Leads inbox');
@@ -110,12 +110,12 @@ type Summary = {
 export function summaryNextAction(summary: Summary): { label: string; owner: 'OUR_TEAM' | 'DEALER' | null } {
   const step = summary.nextStep;
   if (!step) return { label: summary.lifecycleStatus === 'PAUSED' ? 'Paused' : 'No action needed', owner: null };
-  if (step.key === 'CHANNELS' && step.status === 'BLOCKED') return { label: 'Retry channel setup', owner: 'OUR_TEAM' };
+  if (step.key === 'CHANNELS' && step.status === 'BLOCKED') return { label: 'Finish default destinations', owner: 'OUR_TEAM' };
   const dealerMoves = step.ownerKind === 'DEALER' || step.ownerKind === 'YOU';
   switch (step.key) {
     case 'ACCESS': return dealerMoves ? { label: 'Owner to accept invitation', owner: 'DEALER' } : { label: 'Invite the owner', owner: 'OUR_TEAM' };
     case 'VEHICLES': return { label: 'Add vehicles', owner: 'DEALER' };
-    case 'CHANNELS': return { label: 'Verify a live listing', owner: 'OUR_TEAM' };
+    case 'CHANNELS': return { label: 'Send a vehicle to Auto Marketplace', owner: 'OUR_TEAM' };
     case 'HANDOFF': if (step.status === 'BLOCKED' || step.status === 'NEEDS_RECHECK') return { label: 'Verify the shared Leads inbox', owner: 'OUR_TEAM' };
       return dealerMoves ? { label: 'Owner to sign in', owner: 'DEALER' } : { label: 'Complete the handoff', owner: 'OUR_TEAM' };
     default: return { label: 'Continue setup', owner: 'OUR_TEAM' };

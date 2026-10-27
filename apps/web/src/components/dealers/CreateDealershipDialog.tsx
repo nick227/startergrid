@@ -62,7 +62,7 @@ export function CreateDealershipDialog({ onClose, onOpenDealership, onCreated }:
             {created.channelSetup.status === 'NEEDS_ATTENTION' && (
               <p role="alert" className="rounded-md border border-status-warning-border bg-status-warning-bg px-3 py-2 text-sm text-status-warning-text">
                 The dealership and invitation were saved, but default channel setup did not finish.
-                Open the dealership and choose Retry channel setup; it is safe to repeat.
+                Open the dealership and choose Finish default destinations; it is safe to repeat.
               </p>
             )}
             {created.invite && (
