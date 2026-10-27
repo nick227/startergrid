@@ -103,3 +103,28 @@ Not committed by Claude — the owning agent was still editing (help docs, inven
 **Velocity (`90a08fe`):** suggestion reasons no longer claim search-ranking, "Price Drop" badge or floor-plan effects. `daysOnLot` counts from `Vehicle.createdAt` (when the vehicle was added to StarterGrid). For imported stock that is not the arrival date, so UI labels saying "days on lot" overstate precision. The "Aging" filter uses `performance.daysOnline`, but its count uses velocity milestones, so the count and the filtered list can disagree.
 
 **Test isolation (`0f09ce8`):** database suites run only with `V5_TEST_DATABASE_URL=…/startergrid_v5_test_*`. They skip otherwise, and CI fails instead of skipping (`REQUIRE_DATABASE_TESTS`). `mediaUpload.test.ts` was `assert.ok(true)` placeholders; they are todos now and are not real coverage.
+
+## Needs Attention list: backend ready for UI, 2026-10-27 (Claude → Antigravity)
+
+`GET /api/dealers/:dealershipId/attention` (`c56f81c`). Typed client: `apps/web/src/lib/api/attentionApi.ts` (`fetchAttention`). Schema: `AttentionResponse` in `openapi.yaml`. Read access is the same as other dealer pages.
+
+Each item has `summary`, `nextAction`, `owner` (DEALERSHIP | INTERNAL_SUPPORT | PARTNER | SYSTEM, plus `ownerId` when an incident names a person), `severity` (BLOCKING | WARNING | WAITING), `count`, up to 50 `records` (id, label, detail, vehicleId, channel), and `action { kind, enabled, disabledReason, channel }`. Items arrive sorted: blocking first, then dealership-owned. `key` is stable per problem and owner.
+
+Suggested action routing (UI decision):
+
+| action.kind | Go to |
+|---|---|
+| FIX_VEHICLES | Vehicles, filtered to `records[].vehicleId` (Needs a fix) |
+| ADD_PHOTOS | Vehicles, filtered to those vehicles |
+| REVIEW_REMOVALS | Sold-vehicle take-down card (Home/Channels) |
+| END_EXTERNAL_LISTING | The take-down card; `action.channel` names the site when there is one |
+| COMPLETE_CHANNEL_SETUP | Channels → `action.channel` setup, or Channels when null |
+| RETRY_CRM_DELIVERY | Leads, filtered to `records[].id`; the CRM modal sends |
+| CONTACT_SUPPORT | Support contact; show "StarterGrid support is handling this" for dealer roles |
+| NONE | No button; show who it is waiting on (`owner`) |
+
+Rules the UI must keep:
+- When `action.enabled` is false, show `disabledReason` and don't render a working button. CRM retry is disabled when no CRM email is set or email sending is off.
+- When `unavailableAreas` is not empty, the list is incomplete. Never show "nothing needs attention" in that case.
+- WAITING items are someone else's work; show them collapsed or secondary, not as dealer tasks.
+- The summaries are plain backend text and safe to show; replace them freely with UI copy.
