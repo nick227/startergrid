@@ -27,6 +27,23 @@ jobs:
 
   test:
     runs-on: ubuntu-latest
+    # adminRemediation and mediaUpload tests open a default PrismaClient and write rows,
+    # so the backend suite needs a migrated database.
+    services:
+      mysql:
+        image: mysql:8.0
+        env:
+          MYSQL_ROOT_PASSWORD: ci-root-password
+          MYSQL_DATABASE: startergrid_ci
+        ports:
+          - 3306:3306
+        options: >-
+          --health-cmd="mysqladmin ping -h 127.0.0.1 -pci-root-password"
+          --health-interval=5s
+          --health-timeout=5s
+          --health-retries=20
+    env:
+      DATABASE_URL: mysql://root:ci-root-password@127.0.0.1:3306/startergrid_ci
     steps:
       - uses: actions/checkout@v4
 
@@ -38,6 +55,8 @@ jobs:
       - run: npm ci
 
       - run: npx prisma generate
+
+      - run: npx prisma migrate deploy
 
       # The generated API clients are not committed; the SPAs import them.
       - run: npm run client:generate && npm run client:generate:marketplace

@@ -76,3 +76,4 @@ Not committed by Claude — the owning agent was still editing (help docs, inven
 - `InventoryPage.tsx` counts aging-price suggestions in "Needs a fix", so vehicles that can be listed appear as needing a fix.
 - `PlatformDetailPage.tsx:180` and `ConnectionSetupPanel.tsx:104` call `useAuth()` after early returns. It's context-only, so it causes a dev hook-order warning, not a crash. Move it above the returns.
 - Web lint has 35 errors, all present before `2934710`. So CI does not gate lint yet.
+- `src/tests/adminRemediation.test.ts` and `mediaUpload.test.ts` use a default `PrismaClient`, so `npm test` writes test rows to whatever `.env` `DATABASE_URL` points at (usually the dev database). CI gives them a migrated MySQL service. Locally, consider pointing them at a disposable schema.
