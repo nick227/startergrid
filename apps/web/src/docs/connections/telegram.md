@@ -2,12 +2,14 @@
 title: Get new inquiries in Telegram
 summary: Create a Telegram bot, add your chat ID, and paste both into StarterGrid.
 keywords: telegram, bot, chat id, lead, alert
-updated: 2026-10-26
+updated: 2026-10-27
 ---
 
 Telegram can send each new inquiry to you, a group, or a channel. You own the bot.
 
 ## What to do
+
+In StarterGrid, open **Settings → How you hear about new inquiries → Optional delivery methods**.
 
 1. In Telegram, message **@BotFather**, send `/newbot`, and save the bot token.
 2. Find your chat ID with **@userinfobot** (your user ID, or the group/channel ID).

@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { Select } from '../ui/Select.tsx';
+import { InfoButton } from '../docs/InfoButton.tsx';
 
 export type FieldDef = {
   key: string;
@@ -14,9 +15,10 @@ type Props = {
   fieldDefs: FieldDef[];
   onApply: (values: Record<string, string>) => Promise<void>;
   onClear: () => void;
+  helpDocId?: string;
 };
 
-export function BulkActionBar({ count, fieldDefs, onApply, onClear }: Props) {
+export function BulkActionBar({ count, fieldDefs, onApply, onClear, helpDocId }: Props) {
   const [values, setValues] = useState<Record<string, string>>({});
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -45,6 +47,7 @@ export function BulkActionBar({ count, fieldDefs, onApply, onClear }: Props) {
       <div className="max-w-7xl mx-auto px-6 py-3">
         <div className="flex items-center gap-3 flex-wrap">
           <span className="text-xs font-semibold text-ink-body shrink-0">{count} selected — bulk edit:</span>
+          {helpDocId && <InfoButton docId={helpDocId} />}
           {fieldDefs.map(f =>
             f.type === 'select' ? (
               <Select

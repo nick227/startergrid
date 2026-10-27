@@ -2,7 +2,7 @@
 title: When a vehicle can be listed
 summary: A vehicle is ready to send after it has the required details. Ready to send is not the same as already sent.
 keywords: readiness, ready to send, cannot list, photos, price, VIN, storefront
-updated: 2026-10-26
+updated: 2026-10-27
 ---
 
 A saved vehicle is not automatically listed. It can sit on Vehicles until it has a price, photos, and a connected destination.
@@ -25,6 +25,6 @@ Turning a vehicle ready, or checking a destination on that vehicle, does not put
 
 ## After you fix a vehicle
 
-Save the row. Ready vehicles can go out on the next send. Sold, removed, or zero-price vehicles stay hidden even if they were sent before.
+Save the row. Ready vehicles can go out on the next send. Sold, removed, or zero-price vehicles may be excluded from new publication. Check the removal result for existing listings; an inventory change does not prove an external site has removed them.
 
 See [Needs details vs cannot list](doc:inventory/warnings-vs-blocked) and [Sending updates automatically](doc:processes/auto-sync).

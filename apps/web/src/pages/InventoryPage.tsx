@@ -926,6 +926,7 @@ export default function InventoryPage({ dealerId, nav, activeTab }: Props) {
 
       {isActiveScope && selectedInView.length > 0 && !detailId && (
         <BulkActionBar
+          helpDocId="inventory/bulk-edit"
           count={selectedInView.length}
           fieldDefs={bulkEditFieldDefs(categorySchema)}
           onApply={handleBulkApply}

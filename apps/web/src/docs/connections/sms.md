@@ -2,12 +2,14 @@
 title: Get new inquiries by text
 summary: Enter a mobile number to receive a short text. Support must enable texting before messages go out.
 keywords: sms, text, phone, lead, alert
-updated: 2026-10-26
+updated: 2026-10-27
 ---
 
 A text is a short alert when a new inquiry arrives, for example: “New lead from Alex Johnson for Stock #DM-2024-042. Log in to respond.”
 
 ## What to do
+
+In StarterGrid, open **Settings → How you hear about new inquiries → Optional delivery methods**.
 
 1. Enter one mobile number using country code, no spaces: `+15551234567`.
 2. Save. Ask support to confirm texting is enabled for your dealership.

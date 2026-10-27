@@ -1,8 +1,8 @@
 ---
 title: How to read send status
-summary: Idle means StarterGrid is not working. Updating means a send is in progress. Needs a fix means the last run stopped.
+summary: Distinguish a scheduled or running update from a failed run and from a confirmed live listing.
 keywords: send status, idle, updating, failed
-updated: 2026-10-26
+updated: 2026-10-27
 advanced: true
 ---
 
@@ -10,12 +10,12 @@ Send status is a snapshot for the selected dealership. It is not a full event lo
 
 ## Run phases
 
-| Phase | What you see | Meaning |
+| Phase | State | Meaning |
 | --- | --- | --- |
-| Idle | Working | No send is queued. Destinations may still be processing an earlier update. |
+| Idle | No active send | No send is queued. Destinations may still be processing an earlier update. |
 | Scheduled | Updating | A save just finished; the send is about to start. |
 | Running | Updating | Checking vehicles or sending now. |
-| Failed | Needs a fix | The run stopped. Fix the vehicle or destination, then save again. |
+| Failed | Needs fix | The run stopped. Fix the vehicle or destination, then save again. |
 
 Updating ends when StarterGrid finishes — not when Cars.com already shows the new price.
 

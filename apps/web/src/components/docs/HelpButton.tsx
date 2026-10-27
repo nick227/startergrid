@@ -4,7 +4,7 @@ import { useDocReader } from './DocReaderContext.tsx';
 export function HelpButton({ topic = 'app/getting-started', inverted = false }: { topic?: string; inverted?: boolean }) {
   const { openHelp } = useDocReader();
   return (
-    <button type="button" onClick={() => openHelp(topic)} aria-haspopup="dialog"
+    <button type="button" onClick={() => openHelp(topic)} aria-haspopup="dialog" data-help-topic={topic}
       className={`rounded-md px-3 py-1.5 text-sm font-semibold focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 ${
         inverted ? 'text-silver-100 hover:bg-navy-800 hover:text-white' : 'text-navy-800 hover:bg-silver-100'
       }`}>

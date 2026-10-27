@@ -2,12 +2,14 @@
 title: Get new inquiries in Discord
 summary: Create a Discord webhook and paste it into StarterGrid so new leads post in your channel.
 keywords: discord, webhook, lead, alert
-updated: 2026-10-26
+updated: 2026-10-27
 ---
 
 Discord posts each new inquiry as a card in the channel you choose.
 
 ## What to do
+
+In StarterGrid, open **Settings → How you hear about new inquiries → Optional delivery methods**.
 
 1. In Discord, open the server and choose the channel.
 2. Edit Channel → Integrations → Webhooks → New Webhook.

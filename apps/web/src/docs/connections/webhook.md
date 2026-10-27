@@ -2,13 +2,15 @@
 title: Send inquiries to another system
 summary: Post each new lead as JSON to an HTTPS address you control. Signing is optional.
 keywords: webhook, https, payload, json, hmac, zapier
-updated: 2026-10-26
+updated: 2026-10-27
 advanced: true
 ---
 
 A webhook sends the full inquiry to an HTTPS URL as a JSON POST. Use it for Zapier, Make, Slack, or your CRM.
 
 ## What to do
+
+In StarterGrid, open **Settings → How you hear about new inquiries → Optional delivery methods**.
 
 1. Create a catch-hook URL in Zapier, Make, or your server.
 2. Paste it into How you hear about new inquiries → Webhook and save.

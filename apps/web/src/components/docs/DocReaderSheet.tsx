@@ -17,6 +17,7 @@ export function DocReaderSheet() {
   useEffect(() => {
     if (!isOpen) return;
     const trigger = document.activeElement as HTMLElement | null;
+    const triggerTopic = trigger?.dataset.helpTopic;
     const previousOverflow = document.body.style.overflow;
     const onKey = (e: KeyboardEvent) => {
       if (e.key === 'Escape') { e.preventDefault(); e.stopImmediatePropagation(); closeDoc(); }
@@ -28,6 +29,12 @@ export function DocReaderSheet() {
       window.removeEventListener('keydown', onKey, true);
       document.body.style.overflow = previousOverflow;
       if (trigger?.isConnected) trigger.focus();
+      else if (triggerTopic) {
+        // A lazy route can replace its loading header while help is open.
+        const replacement = [...document.querySelectorAll<HTMLElement>('[data-help-topic]')]
+          .find(element => element.dataset.helpTopic === triggerTopic);
+        replacement?.focus();
+      }
     };
   }, [isOpen, closeDoc]);
 

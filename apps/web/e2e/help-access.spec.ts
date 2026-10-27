@@ -1,5 +1,7 @@
 import { test, expect } from '@playwright/test';
 
+test.beforeEach(({ page }) => { page.on('pageerror', error => console.error('Browser error:', error.message)); });
+
 test('sign-in help preserves input, supports article links, and restores keyboard focus', async ({ page }) => {
   await page.route(url => url.pathname.startsWith('/api/'), route => route.fulfill({ status: 401, json: { error: 'Sign in' } }));
   await page.goto('./#/');
@@ -77,4 +79,50 @@ test('mobile signup help recovers from an empty search without leaving signup', 
   await dialog.getByRole('button', { name: 'Close help' }).click();
   await expect(dialog).toHaveCount(0);
   await expect(page).toHaveURL(/#\/signup$/);
+});
+
+for (const [route, title] of [
+  ['home', 'Find your way around StarterGrid'],
+  ['inventory', 'When a vehicle can be listed'],
+  ['platforms', 'Connect a marketplace or advertising site'],
+  ['leads', 'What lead statuses mean'],
+  ['reports', 'Find and read reports'],
+]) {
+  test(`help remains accessible on ${route} when page data fails`, async ({ page }) => {
+    await page.route(url => url.pathname.startsWith('/api/'), route => {
+      const path = new URL(route.request().url()).pathname;
+      if (path === '/api/auth/me') return route.fulfill({ json: { id: 'owner', email: 'owner@test.local', role: 'DEALER_OWNER', dealerAccessIds: ['d1'], mustChangePassword: false } });
+      if (path === '/api/dealers') return route.fulfill({ json: { dealers: [{ id: 'd1', legalName: 'Test Motors', businessCategory: 'AUTOMOTIVE' }] } });
+      return route.fulfill({ status: 503, json: { error: 'Not configured' } });
+    });
+    await page.goto(`./#/d1/${route}`);
+    const trigger = page.getByRole('button', { name: 'Help', exact: true });
+    await trigger.click();
+    const dialog = page.getByRole('dialog');
+    await dialog.getByRole('region', { name: 'Help for this page' }).getByRole('button', { name: title, exact: true }).click();
+    await expect(dialog.getByRole('heading', { name: title, exact: true })).toBeVisible();
+    await page.keyboard.press('Escape');
+    await expect(trigger).toBeFocused();
+    await expect(page).toHaveURL(new RegExp(`#/d1/${route}$`));
+  });
+}
+
+test('spreadsheet help opens above the import and preserves pasted rows', async ({ page }) => {
+  await page.route(url => url.pathname.startsWith('/api/'), route => {
+    const path = new URL(route.request().url()).pathname;
+    if (path === '/api/auth/me') return route.fulfill({ json: { id: 'owner', email: 'owner@test.local', role: 'DEALER_OWNER', dealerAccessIds: ['d1'], mustChangePassword: false } });
+    if (path === '/api/dealers') return route.fulfill({ json: { dealers: [{ id: 'd1', legalName: 'Test Motors', businessCategory: 'AUTOMOTIVE' }] } });
+    return route.fulfill({ status: 503, json: { error: 'Not configured' } });
+  });
+  await page.goto('./#/d1/inventory');
+  await page.getByRole('button', { name: 'Import spreadsheet', exact: true }).click();
+  const input = page.getByRole('textbox', { name: 'Spreadsheet data' });
+  const csv = 'stockNumber,vin\nSTK1,1HGCM82633A004352';
+  await input.fill(csv);
+  const trigger = page.getByRole('button', { name: 'How to import and correct a spreadsheet' });
+  await trigger.click();
+  await expect(page.getByRole('dialog').getByRole('heading', { name: 'Import and correct a spreadsheet', exact: true })).toBeVisible();
+  await page.keyboard.press('Escape');
+  await expect(input).toHaveValue(csv);
+  await expect(trigger).toBeFocused();
 });
