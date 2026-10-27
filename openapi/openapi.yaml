@@ -4176,6 +4176,133 @@ paths:
         '403':
           $ref: '#/components/responses/Forbidden'
 
+  /api/dealers/{dealershipId}/inventory/bulk-edits/preview:
+    post:
+      tags: [Inventory]
+      security:
+        - OperatorAuth: []
+      x-route-classification: operator
+      operationId: previewBulkEdit
+      summary: Preview a bulk vehicle edit without writing
+      description: >-
+        Returns each vehicle's field changes (from, to) and whether it would change, already matches, or is rejected (not found, sold or removed). Writes nothing. Autopilot price safeguards are evaluated on apply.
+      parameters:
+        - name: dealershipId
+          in: path
+          required: true
+          schema: { type: string }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/BulkEditRequest'
+      responses:
+        '200':
+          description: Per-vehicle results
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BulkEditPreview'
+        '400':
+          description: Invalid request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+
+  /api/dealers/{dealershipId}/inventory/bulk-edits:
+    post:
+      tags: [Inventory]
+      security:
+        - OperatorAuth: []
+      x-route-classification: operator
+      operationId: applyBulkEdit
+      summary: Apply a bulk vehicle edit and report each vehicle
+      description: >-
+        Commits each vehicle in its own guarded transaction so one failure never blocks the rest. Each row is APPLIED, NO_CHANGE, REJECTED, CONFLICT (changed since the preview's expectedUpdatedAt), HELD (an Autopilot safeguard opened an incident) or FAILED. batchId is set when anything was applied and can be undone.
+      parameters:
+        - name: dealershipId
+          in: path
+          required: true
+          schema: { type: string }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/BulkEditRequest'
+      responses:
+        '200':
+          description: Per-vehicle results
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BulkEditResult'
+        '400':
+          description: Invalid request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+
+  /api/dealers/{dealershipId}/inventory/bulk-edits/{batchId}/undo:
+    post:
+      tags: [Inventory]
+      security:
+        - OperatorAuth: []
+      x-route-classification: operator
+      operationId: undoBulkEdit
+      summary: Undo a bulk vehicle edit where it is safe
+      description: >-
+        Restores the values a batch replaced. Vehicles sold, removed or edited again since the batch are SKIPPED so newer work is never overwritten. Restored values reach channels on their next update; StarterGrid cannot recall what a channel already displayed. 409 when already undone.
+      parameters:
+        - name: dealershipId
+          in: path
+          required: true
+          schema: { type: string }
+        - name: batchId
+          in: path
+          required: true
+          schema: { type: string }
+      responses:
+        '200':
+          description: Per-vehicle results
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BulkUndoResult'
+        '400':
+          description: Invalid request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: Batch not found for this dealership
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '409':
+          description: Batch already undone
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+
   /api/admin/buyer-outreach-stats:
     get:
       tags: [Admin]
@@ -6474,6 +6601,124 @@ components:
         statusUpdatedAt: { type: string, format: date-time, nullable: true }
         statusUpdatedBy: { type: string, nullable: true }
         updatedAt: { type: string, format: date-time }
+
+    BulkCorrectionFields:
+      type: object
+      minProperties: 1
+      additionalProperties: false
+      properties:
+        priceCents: { type: integer, minimum: 1, maximum: 100000000 }
+        mileage: { type: integer, minimum: 0, maximum: 2000000 }
+        condition: { type: string, enum: [NEW, USED, CPO] }
+        exteriorColor: { type: string, maxLength: 80 }
+        trim: { type: string, nullable: true, maxLength: 120 }
+        interiorColor: { type: string, nullable: true, maxLength: 80 }
+        bodyStyle: { type: string, nullable: true, maxLength: 80 }
+        drivetrain: { type: string, nullable: true, maxLength: 80 }
+        fuelType: { type: string, nullable: true, maxLength: 80 }
+        transmission: { type: string, nullable: true, maxLength: 80 }
+
+    BulkEditRequest:
+      type: object
+      required: [edits]
+      additionalProperties: false
+      properties:
+        edits:
+          type: array
+          minItems: 1
+          maxItems: 500
+          description: One entry per vehicle; the same fields for a common edit, different fields for row corrections.
+          items:
+            type: object
+            required: [vehicleId, fields]
+            additionalProperties: false
+            properties:
+              vehicleId: { type: string }
+              fields:
+                $ref: '#/components/schemas/BulkCorrectionFields'
+              expectedUpdatedAt:
+                type: string
+                format: date-time
+                description: updatedAt from the preview; a vehicle changed since is reported as CONFLICT.
+
+    BulkFieldChange:
+      type: object
+      required: [field, from, to]
+      properties:
+        field: { type: string }
+        from:
+          description: String or number; null when the field is empty.
+          oneOf: [{ type: string, nullable: true }, { type: number, nullable: true }]
+        to:
+          description: String or number; null when the field is empty.
+          oneOf: [{ type: string, nullable: true }, { type: number, nullable: true }]
+
+    BulkEditRow:
+      type: object
+      required: [vehicleId, stockNumber, label, status, changes, reason, incidentId, updatedAt]
+      properties:
+        vehicleId: { type: string }
+        stockNumber: { type: string, nullable: true }
+        label: { type: string, nullable: true }
+        status: { type: string, enum: [WILL_CHANGE, NO_CHANGE, REJECTED, APPLIED, CONFLICT, HELD, FAILED] }
+        changes:
+          type: array
+          items:
+            $ref: '#/components/schemas/BulkFieldChange'
+        reason: { type: string, nullable: true }
+        incidentId: { type: string, nullable: true }
+        updatedAt: { type: string, format: date-time, nullable: true }
+
+    BulkEditPreview:
+      type: object
+      required: [rows, counts]
+      properties:
+        rows:
+          type: array
+          items:
+            $ref: '#/components/schemas/BulkEditRow'
+        counts:
+          type: object
+          additionalProperties: { type: integer }
+
+    BulkEditResult:
+      type: object
+      required: [batchId, rows, counts, undoAvailable]
+      properties:
+        batchId: { type: string, nullable: true }
+        rows:
+          type: array
+          items:
+            $ref: '#/components/schemas/BulkEditRow'
+        counts:
+          type: object
+          additionalProperties: { type: integer }
+        undoAvailable: { type: boolean }
+
+    BulkUndoResult:
+      type: object
+      required: [batchId, rows, counts, note]
+      properties:
+        batchId: { type: string }
+        rows:
+          type: array
+          items:
+            type: object
+            required: [vehicleId, stockNumber, status, changes, reason, incidentId]
+            properties:
+              vehicleId: { type: string }
+              stockNumber: { type: string, nullable: true }
+              status: { type: string, enum: [RESTORED, SKIPPED, HELD, FAILED] }
+              changes:
+                type: array
+                items:
+                  $ref: '#/components/schemas/BulkFieldChange'
+              reason: { type: string, nullable: true }
+              incidentId: { type: string, nullable: true }
+        counts:
+          type: object
+          additionalProperties: { type: integer }
+        note: { type: string }
 
     AttentionResponse:
       type: object

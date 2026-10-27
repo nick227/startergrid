@@ -100,7 +100,12 @@ export async function applyVehicleUpdate(
     previousValue['priceCents'] = dbVehicle.priceCents;
     newValue['priceCents'] = opts.priceCents;
     await guardInventoryMutation(prisma, dealershipId, dbVehicle.id, { priceCents: opts.priceCents });
-    await prisma.vehicle.update({ where: { id: dbVehicle.id }, data: { priceCents: opts.priceCents } });
+    await prisma.vehicle.update({ where: { id: dbVehicle.id }, data: {
+      priceCents: opts.priceCents,
+      // Velocity uses these to avoid re-suggesting a markdown right after a price change.
+      priceLastChangedAt: new Date(),
+      ...(dbVehicle.originalPriceCents === null ? { originalPriceCents: dbVehicle.priceCents } : {}),
+    } });
   } else if (kind === 'PHOTO_CHANGE' && opts.photoUrls) {
     previousValue['mediaCount'] = dbVehicle.media.length;
     newValue['photoUrls'] = opts.photoUrls;

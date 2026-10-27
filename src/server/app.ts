@@ -26,6 +26,7 @@ import { registerLeadSyncRoutes }             from './routes/leadSync.js';
 import { registerAdminRoutes }                from './routes/admin.js';
 import { registerDealerLeadsRoutes }          from './routes/dealerLeads.js';
 import { registerAttentionRoutes } from './routes/attention.js';
+import { registerBulkEditRoutes } from './routes/bulkEdit.js';
 import { registerDealershipRecordRoutes }     from './routes/dealershipRecord.js';
 import { registerDealershipPeopleRoutes }     from './routes/dealershipPeople.js';
 import { registerInviteAuthRoutes }           from './routes/inviteAuth.js';
@@ -131,6 +132,7 @@ export function buildApp(prisma: PrismaClient): FastifyInstance {
   registerAdminRoutes(app, prisma);
   registerDealerLeadsRoutes(app, prisma);
   registerAttentionRoutes(app, prisma);
+  registerBulkEditRoutes(app, prisma);
   registerDealerNotificationsRoutes(app, prisma);
   registerBuyerOutreachRoutes(app, prisma);
 
