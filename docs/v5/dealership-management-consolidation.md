@@ -52,3 +52,12 @@ It asserts the evidence-backed handoff semantics that were uncommitted in the sh
 The journey also checks, against the real API, that a dealer owner cannot open internal records, complete handoff, edit onboarding, retry channel setup, create dealerships, invite or issue logins for internal support, reset an internal account, or read/invite into another dealership — while still inviting their own staff.
 
 These are automated correctness checks. They are not usability validation: no timed tasks, no first-time users, no observation of comprehension.
+
+## Wrap-up check, 2026-10-26 21:05 (shared tree, uncommitted frontend pass in progress)
+
+Not committed by Claude — the owning agent was still editing (help docs, inventory, platform drawer). Before committing that pass:
+- `apps/web` TypeScript fails: `PlatformDetailDrawer.tsx` imports `DestinationPrimarySetup`, `PagePrimaryState`, `destinationExperience` without using them.
+- `npm run verify:redesign` fails at `scripts/redesign/csv-import.mjs:87` — no button named exactly `Import 0 vehicles` (label comes from `ImportModal.tsx:104`). Update the script or the label together. The real-API journey (`npm run e2e:journey -w auto-dealer-operator-ui`) passed on the same tree.
+- Claude's only edit in that pass: `SimplifiedChannelsView.tsx` `sortedConnected` no longer wraps a never-hitting `useMemo` (React Compiler lint error). Lint errors elsewhere in the touched files pre-date the pass.
+- `scratch/*.mjs` are local dev-database helpers with a hard-coded password; keep them out of git.
+- Copy check: `lib/helpTasks.ts` says "StarterGrid does not email the link automatically"; invitations are emailed when SMTP is configured (`delivery: EMAIL_SENT`).
