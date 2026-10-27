@@ -13,6 +13,7 @@ import { MarketplacePublishPanel } from './MarketplacePublishPanel.tsx';
 import { VehicleDangerZone } from './VehicleDangerZone.tsx';
 import { AssetLifecycleHistory } from './AssetLifecycleHistory.tsx';
 import { GuidanceNote } from '@/components/guidance/GuidanceNote.tsx';
+import type { VelocityVehicleItem } from '@/lib/api/velocityApi.ts';
 
 import type { OperatorNavHandlers } from '@/lib/operatorNav.ts';
 
@@ -23,6 +24,8 @@ type Props = {
   perf?: VehiclePerformanceItem | null;
   platformPerfBySlug?: Map<string, PlatformPerformanceItem>;
   benchmarksUpdating?: boolean;
+  repriceItem?: VelocityVehicleItem | null;
+  onReviewReprice?: (vehicle: VelocityVehicleItem) => void;
   onClose: () => void;
   onMediaAssigned?: () => void;
 };
@@ -95,6 +98,8 @@ export function InventoryDetailPanel({
   vehicleId,
   nav,
   perf,
+  repriceItem,
+  onReviewReprice,
   onClose,
   onMediaAssigned,
 }: Props) {
@@ -244,6 +249,58 @@ export function InventoryDetailPanel({
 
                 {activeWizardTab === 'details' && (
                   <section className="space-y-6">
+                    {/* Unobtrusive Pricing & Days in StarterGrid context */}
+                    <div className="rounded-xl border border-silver-200 bg-white p-4 shadow-2xs">
+                      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                        <div className="space-y-1">
+                          <span className="text-[10px] font-bold text-ink-muted uppercase tracking-wider block">
+                            Pricing & Listing Age
+                          </span>
+                          <div className="flex flex-wrap items-center gap-2 text-sm">
+                            <span className="text-lg font-black text-navy-950 font-mono">
+                              {vehicle.priceCents > 0 ? `$${(vehicle.priceCents / 100).toLocaleString()}` : 'No price set'}
+                            </span>
+                            <span className="text-silver-300">·</span>
+                            <span className="text-xs text-ink-muted font-medium">
+                              {repriceItem ? `${repriceItem.daysOnLot} days in StarterGrid` : perf ? `${perf.daysOnline} days online` : 'Active in StarterGrid'}
+                            </span>
+                            {repriceItem?.milestone && (
+                              <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold border ${
+                                repriceItem.milestoneTone === 'rose'
+                                  ? 'bg-rose-50 text-rose-700 border-rose-200'
+                                  : repriceItem.milestoneTone === 'amber'
+                                  ? 'bg-amber-50 text-amber-700 border-amber-200'
+                                  : 'bg-blue-50 text-blue-700 border-blue-200'
+                              }`}>
+                                {repriceItem.milestoneLabel}
+                              </span>
+                            )}
+                          </div>
+                        </div>
+
+                        {repriceItem?.suggestedPriceCents && onReviewReprice && (
+                          <div className="flex items-center gap-2.5 sm:self-center bg-indigo-50/70 border border-indigo-200 p-2.5 rounded-lg">
+                            <div className="text-right">
+                              <span className="text-[10px] text-indigo-700 font-bold block uppercase tracking-tight">
+                                Suggested Adjustment
+                              </span>
+                              <span className="text-xs font-black text-indigo-950">
+                                ${(repriceItem.suggestedPriceCents / 100).toLocaleString()}
+                                {repriceItem.suggestedMarkdownCents ? ` (-$${(repriceItem.suggestedMarkdownCents / 100).toLocaleString()})` : ''}
+                              </span>
+                            </div>
+                            <button
+                              type="button"
+                              onClick={() => onReviewReprice(repriceItem)}
+                              className="px-3 py-1.5 text-xs font-bold bg-indigo-600 hover:bg-indigo-700 text-white rounded-md shadow-2xs transition-colors shrink-0"
+                            >
+                              Review suggested price
+                            </button>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+
                     <div>
                       <SectionHeader title="Vehicle Details" />
                       <div className="mt-4">

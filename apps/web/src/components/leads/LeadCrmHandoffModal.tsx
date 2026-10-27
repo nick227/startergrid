@@ -23,9 +23,10 @@ type Props = {
   leadId: string;
   isOpen: boolean;
   onClose: () => void;
+  onSent?: () => void;
 };
 
-export function LeadCrmHandoffModal({ dealershipId, leadId, isOpen, onClose }: Props) {
+export function LeadCrmHandoffModal({ dealershipId, leadId, isOpen, onClose, onSent }: Props) {
   const [data, setData] = useState<LeadDeliveryDetailsDto | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -65,14 +66,18 @@ export function LeadCrmHandoffModal({ dealershipId, leadId, isOpen, onClose }: P
 
   const handleCopySummary = () => {
     if (!data) return;
-    const text = [
-      `Inquiry: ${vehicleLabel}`,
-      `Buyer: ${data.customer.name || 'Anonymous'}`,
-      `Email: ${data.customer.email || 'N/A'}`,
-      `Phone: ${data.customer.phone || 'N/A'}`,
-      `Lead ID: ${leadId}`,
-    ].join('\n');
-    navigator.clipboard.writeText(text);
+    const lines: string[] = [];
+    lines.push(`Customer: ${data.customer.name || 'Not provided'}`);
+    if (data.customer.phone) lines.push(`Phone: ${data.customer.phone}`);
+    if (data.customer.email) lines.push(`Email: ${data.customer.email}`);
+    if (data.vehicle) {
+      const v = data.vehicle;
+      const vTitle = [v.year, v.make, v.model].filter(Boolean).join(' ');
+      lines.push(`Vehicle: ${vTitle ? `${vTitle} (Stock #${v.stockNumber})` : `Stock #${v.stockNumber}`}`);
+    }
+    lines.push(`StarterGrid Lead ID: ${leadId}`);
+
+    navigator.clipboard.writeText(lines.join('\n'));
     setCopiedSummary(true);
     setTimeout(() => setCopiedSummary(false), 2500);
   };
@@ -95,7 +100,9 @@ export function LeadCrmHandoffModal({ dealershipId, leadId, isOpen, onClose }: P
     setDispatching(true);
     setError(null);
     try {
-      setData(await sendLeadToCrm(dealershipId, leadId));
+      const res = await sendLeadToCrm(dealershipId, leadId);
+      setData(res);
+      onSent?.();
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Could not send to your CRM');
     } finally {
@@ -107,8 +114,8 @@ export function LeadCrmHandoffModal({ dealershipId, leadId, isOpen, onClose }: P
     ? `${data.vehicle.year || ''} ${data.vehicle.make || ''} ${data.vehicle.model || ''} (#${data.vehicle.stockNumber})`.trim()
     : 'General Vehicle Inquiry';
 
-  const isNotConfigured = Boolean(data && !data.canSend && data.sendBlocker !== 'SEND_IN_PROGRESS');
-  const isSending = Boolean(dispatching || (data?.canSend && data?.deliveryStatus === 'SENDING'));
+  const isNotConfigured = Boolean(data && !data.canSend && data.sendBlocker !== 'SEND_IN_PROGRESS' && data.deliveryStatus !== 'SENT_TO_CRM_ADDRESS');
+  const isSending = Boolean(dispatching || data?.deliveryStatus === 'SENDING');
   const isSent = Boolean(!dispatching && data?.deliveryStatus === 'SENT_TO_CRM_ADDRESS');
   const isFailed = Boolean(!dispatching && data?.deliveryStatus === 'FAILED');
   const isReady = Boolean(!dispatching && data?.canSend && data?.deliveryStatus === 'NOT_SENT');
@@ -181,11 +188,20 @@ export function LeadCrmHandoffModal({ dealershipId, leadId, isOpen, onClose }: P
                     : 'bg-blue-50/70 border-blue-200 text-blue-950'
                 }`}
               >
-                <div className="flex items-center justify-between">
-                  <span className="text-xs font-bold uppercase tracking-wide">{statusLabel}</span>
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-1 border-b border-black/10 pb-2">
+                  <div className="flex items-center gap-2">
+                    <span className="text-[11px] font-bold text-ink-muted uppercase tracking-wider">Status:</span>
+                    <span
+                      className={`w-2.5 h-2.5 rounded-full shrink-0 ${
+                        isSent ? 'bg-emerald-600' : isFailed ? 'bg-red-600' : isSending ? 'bg-blue-600 animate-ping' : isNotConfigured ? 'bg-amber-600' : 'bg-blue-600'
+                      }`}
+                      aria-hidden="true"
+                    />
+                    <span className="text-xs font-bold uppercase tracking-wide text-ink-heading">{statusLabel}</span>
+                  </div>
                   {isSent && lastAttempt?.deliveredAt && (
-                    <span className="text-[11px] opacity-75">
-                      {new Date(lastAttempt.deliveredAt).toLocaleString([], { dateStyle: 'medium', timeStyle: 'short' })}
+                    <span className="text-[11px] text-ink-muted">
+                      Delivered: {new Date(lastAttempt.deliveredAt).toLocaleString([], { dateStyle: 'medium', timeStyle: 'short' })}
                     </span>
                   )}
                 </div>
@@ -246,52 +262,65 @@ export function LeadCrmHandoffModal({ dealershipId, leadId, isOpen, onClose }: P
               </div>
 
               {/* Contextual Action Row: reflects actual available operations */}
-              <div className="flex flex-wrap items-center gap-2 pt-1">
+              <div className="flex flex-col gap-2 pt-1">
                 {data.canSend ? (
-                  <>
+                  <div className="flex flex-wrap items-center gap-2">
                     <button
                       type="button"
                       disabled={dispatching}
                       onClick={handleSend}
-                      className="px-4 py-2 text-xs font-bold rounded-lg bg-navy-800 hover:bg-navy-900 text-white transition-all shadow-sm disabled:opacity-50 flex items-center gap-1.5"
+                      className="px-4 py-2 text-xs font-bold rounded-lg bg-navy-800 hover:bg-navy-900 active:bg-black text-white transition-all shadow-sm disabled:opacity-50 flex items-center gap-1.5 cursor-pointer"
                     >
-                      <span>
-                        {dispatching ? 'Sending…' : isSent ? 'Send again' : isFailed ? 'Retry send' : 'Send to CRM'}
-                      </span>
+                      {dispatching ? (
+                        <>
+                          <span className="inline-block w-3 h-3 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                          <span>Sending…</span>
+                        </>
+                      ) : (
+                        <span>
+                          {isSent ? 'Send again' : isFailed ? 'Retry send' : 'Send to CRM'}
+                        </span>
+                      )}
                     </button>
                     <button
                       type="button"
                       onClick={handleCopySummary}
-                      className="px-3.5 py-2 text-xs font-semibold rounded-lg border border-silver-300 bg-white hover:bg-silver-100 text-ink-heading transition-all shadow-sm"
+                      className="px-3.5 py-2 text-xs font-semibold rounded-lg border border-silver-300 bg-white hover:bg-silver-100 text-ink-heading transition-all shadow-2xs flex items-center gap-1.5 cursor-pointer"
                     >
-                      {copiedSummary ? '✓ Copied Summary' : 'Copy Lead Summary'}
+                      <span>📋</span>
+                      <span>{copiedSummary ? '✓ Copied Summary' : 'Copy Lead Summary'}</span>
                     </button>
-                  </>
+                  </div>
                 ) : (
-                  <>
-                    {/* When sending is unavailable, prominent manual export options are offered */}
-                    <button
-                      type="button"
-                      onClick={handleCopyXml}
-                      className="px-4 py-2 text-xs font-bold rounded-lg bg-navy-800 hover:bg-navy-900 text-white transition-all shadow-sm flex items-center gap-1.5"
-                    >
-                      <span>{copied ? '✓ Copied XML!' : 'Copy raw XML'}</span>
-                    </button>
-                    <button
-                      type="button"
-                      onClick={handleDownload}
-                      className="px-3.5 py-2 text-xs font-semibold rounded-lg border border-silver-300 bg-white hover:bg-silver-100 text-ink-heading transition-all shadow-sm"
-                    >
-                      Download .xml
-                    </button>
-                    <button
-                      type="button"
-                      onClick={handleCopySummary}
-                      className="px-3.5 py-2 text-xs font-semibold rounded-lg border border-silver-300 bg-white hover:bg-silver-100 text-ink-heading transition-all shadow-sm"
-                    >
-                      {copiedSummary ? '✓ Copied Summary' : 'Copy Lead Summary'}
-                    </button>
-                  </>
+                  <div className="space-y-2">
+                    <div className="flex flex-wrap items-center gap-2">
+                      {/* When sending is unavailable, prominent manual export options are offered */}
+                      <button
+                        type="button"
+                        onClick={handleCopyXml}
+                        className="px-4 py-2 text-xs font-bold rounded-lg bg-navy-800 hover:bg-navy-900 text-white transition-all shadow-sm flex items-center gap-1.5 cursor-pointer"
+                      >
+                        <span>{copied ? '✓ Copied XML!' : 'Copy raw XML'}</span>
+                      </button>
+                      <button
+                        type="button"
+                        onClick={handleDownload}
+                        className="px-3.5 py-2 text-xs font-semibold rounded-lg border border-silver-300 bg-white hover:bg-silver-100 text-ink-heading transition-all shadow-2xs cursor-pointer"
+                      >
+                        Download .xml
+                      </button>
+                      <button
+                        type="button"
+                        onClick={handleCopySummary}
+                        className="px-3.5 py-2 text-xs font-semibold rounded-lg border border-silver-300 bg-white hover:bg-silver-100 text-ink-heading transition-all shadow-2xs cursor-pointer"
+                      >
+                        {copiedSummary ? '✓ Copied Summary' : 'Copy Lead Summary'}
+                      </button>
+                    </div>
+                    <p className="text-[11px] text-ink-muted">
+                      💡 To enable 1-click automatic forwarding, set your CRM email under Channels → ADF/XML Lead Routing.
+                    </p>
+                  </div>
                 )}
               </div>
 

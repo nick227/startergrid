@@ -38,6 +38,7 @@ import {
 } from '@/components/inventory';
 import { CategoryItemsBrowse } from '@/components/inventory/CategoryItemsBrowse.tsx';
 import { CategoryItemDetailPanel } from '@/components/inventory/CategoryItemDetailPanel.tsx';
+import { WindowStickerModal } from '@/components/inventory/WindowStickerModal.tsx';
 import type { CleanupFilter } from '@/components/inventory/inventoryConfig.tsx';
 import { CreatePostModal } from '@/components/social/index.ts';
 import { useCategorySchema } from '@/contexts/CategoryContext.tsx';
@@ -76,6 +77,7 @@ export default function InventoryPage({ dealerId, nav, activeTab }: Props) {
   const [velocity, setVelocity] = useState<InventoryVelocityResponse | null>(null);
   const [reviewRepriceVehicle, setReviewRepriceVehicle] = useState<VelocityVehicleItem | null>(null);
   const [applyingRepriceId, setApplyingRepriceId] = useState<string | null>(null);
+  const [showBatchPrintModal, setShowBatchPrintModal] = useState(false);
 
   const loadVelocity = useCallback(async () => {
     try {
@@ -319,6 +321,22 @@ export default function InventoryPage({ dealerId, nav, activeTab }: Props) {
 
   const allVisibleSelected = mappedVisible.length > 0 && mappedVisible.every(v => selected.has(v.id));
   const selectedInView = useMemo(() => visible.filter(v => selected.has(v.id)), [visible, selected]);
+  const selectedVehiclesForPrint = useMemo(() => {
+    return selectedInView.map(v => ({
+      id: v.id,
+      vin: v.vin,
+      stockNumber: v.stockNumber,
+      year: v.year,
+      make: v.make,
+      model: v.model,
+      trim: v.trim,
+      mileage: v.mileage,
+      priceCents: v.priceCents,
+      condition: v.condition,
+      exteriorColor: v.exteriorColor,
+      options: (v as any).options ?? [],
+    }));
+  }, [selectedInView]);
 
   const toggleAll = () =>
     setSelected(s => {
@@ -419,6 +437,8 @@ export default function InventoryPage({ dealerId, nav, activeTab }: Props) {
             perf={detailVehicle ? perfMap.get(detailVehicle.stockNumber) : undefined}
             platformPerfBySlug={platformPerfBySlug}
             benchmarksUpdating={benchmarksUpdating}
+            repriceItem={detailId ? repriceMap.get(detailId) : undefined}
+            onReviewReprice={setReviewRepriceVehicle}
             onClose={handleCloseDetail}
             onMediaAssigned={load}
           />
@@ -703,7 +723,7 @@ export default function InventoryPage({ dealerId, nav, activeTab }: Props) {
                                     Aging inventory repricing suggestion
                                   </span>
                                   <span className="text-[10px] text-indigo-700 font-semibold">
-                                    {repriceMap.get(v.id)!.daysOnLot} days on lot
+                                    {repriceMap.get(v.id)!.daysOnLot} days in StarterGrid
                                   </span>
                                 </div>
                                 <p className="text-xs text-indigo-900">
@@ -836,6 +856,7 @@ export default function InventoryPage({ dealerId, nav, activeTab }: Props) {
                         search={search}
                         onSearchChange={setSearch}
                         selectedCount={selected.size}
+                        onPrintSelected={() => setShowBatchPrintModal(true)}
                         extra={
                           <div className="flex items-center gap-2">
                             <button
@@ -849,9 +870,9 @@ export default function InventoryPage({ dealerId, nav, activeTab }: Props) {
                                   ? 'bg-navy-900 text-white border-navy-900'
                                   : 'bg-white text-ink-body border-silver-200 hover:bg-surface-raised'
                               }`}
-                              title="Sort vehicles by days on lot"
+                              title="Sort vehicles by days in StarterGrid"
                             >
-                              {sortKey === 'performance.daysOnline' && sortDirection === 'desc' ? 'Oldest on lot ↓' : 'Oldest on lot'}
+                              {sortKey === 'performance.daysOnline' && sortDirection === 'desc' ? 'Oldest in StarterGrid ↓' : 'Oldest in StarterGrid'}
                             </button>
                             <button
                               type="button"
@@ -962,34 +983,53 @@ export default function InventoryPage({ dealerId, nav, activeTab }: Props) {
               </button>
             </div>
 
-            <div className="space-y-2 rounded-lg bg-silver-50 p-3 text-xs border border-silver-200">
-              <div className="flex justify-between">
-                <span className="text-ink-muted">Current lot price:</span>
-                <span className="font-semibold text-ink-heading">${(reviewRepriceVehicle.priceCents / 100).toLocaleString()}</span>
+            {/* Foolproof Price Comparison Card */}
+            <div className="rounded-xl bg-silver-50 p-4 border border-silver-200 space-y-3">
+              <div className="flex items-center justify-between text-xs">
+                <span className="font-semibold text-ink-muted uppercase tracking-wider text-[10px]">Price Comparison</span>
+                <span className="font-semibold text-ink-body">{reviewRepriceVehicle.daysOnLot} days in StarterGrid</span>
               </div>
-              <div className="flex justify-between">
-                <span className="text-ink-muted">Suggested price:</span>
-                <span className="font-bold text-indigo-600">${(reviewRepriceVehicle.suggestedPriceCents! / 100).toLocaleString()}</span>
+
+              <div className="flex items-center justify-between gap-3 bg-white p-3 rounded-lg border border-silver-200">
+                <div>
+                  <span className="text-[10px] text-ink-muted uppercase font-bold block">Current Price</span>
+                  <span className="text-base font-bold text-ink-heading font-mono line-through opacity-70">
+                    ${(reviewRepriceVehicle.priceCents / 100).toLocaleString()}
+                  </span>
+                </div>
+                <div className="text-xl text-indigo-500 font-bold">➔</div>
+                <div className="text-right">
+                  <span className="text-[10px] text-indigo-700 uppercase font-bold block">New Suggested Price</span>
+                  <span className="text-lg font-black text-indigo-600 font-mono">
+                    ${(reviewRepriceVehicle.suggestedPriceCents! / 100).toLocaleString()}
+                  </span>
+                </div>
               </div>
+
               {reviewRepriceVehicle.suggestedMarkdownCents && (
-                <div className="flex justify-between border-t border-silver-200 pt-1.5 text-emerald-700 font-medium">
-                  <span>Suggested adjustment:</span>
-                  <span>-${(reviewRepriceVehicle.suggestedMarkdownCents / 100).toLocaleString()} ({reviewRepriceVehicle.suggestedMarkdownPercent}%)</span>
+                <div className="flex items-center justify-between text-xs text-emerald-800 bg-emerald-50 px-3 py-1.5 rounded-md border border-emerald-200 font-semibold">
+                  <span>Price adjustment:</span>
+                  <span>-${(reviewRepriceVehicle.suggestedMarkdownCents / 100).toLocaleString()} ({reviewRepriceVehicle.suggestedMarkdownPercent}% drop)</span>
                 </div>
               )}
             </div>
 
-            <div className="rounded-md border border-amber-200 bg-amber-50 p-3 text-[11px] text-amber-900 leading-snug">
-              Suggested adjustments are based on days on lot ({reviewRepriceVehicle.daysOnLot} days) and do not guarantee sales or profitability. You should review and verify market conditions before applying.
+            <div className="rounded-lg border border-amber-200 bg-amber-50 p-3 leading-snug space-y-1.5">
+              <p className="text-xs font-semibold text-amber-950">
+                This updates the price in StarterGrid. Connected channels will receive updates according to their synchronization settings.
+              </p>
+              <p className="text-[11px] text-amber-800">
+                For channels without automated synchronization, additional manual action may be required. Suggested adjustments are based on days in StarterGrid ({reviewRepriceVehicle.daysOnLot} days) and do not guarantee sales.
+              </p>
             </div>
 
-            <div className="flex justify-end gap-2 pt-2">
+            <div className="flex flex-col-reverse sm:flex-row sm:items-center justify-end gap-2 pt-2">
               <button
                 type="button"
                 onClick={() => setReviewRepriceVehicle(null)}
-                className="px-3.5 py-1.5 text-xs font-semibold rounded-lg border border-silver-300 hover:bg-silver-100 transition-colors"
+                className="w-full sm:w-auto px-3.5 py-2 text-xs font-semibold rounded-lg border border-silver-300 bg-white hover:bg-silver-100 text-ink-heading transition-colors"
               >
-                Cancel
+                Keep Current Price (${(reviewRepriceVehicle.priceCents / 100).toLocaleString()})
               </button>
               <button
                 type="button"
@@ -1002,7 +1042,7 @@ export default function InventoryPage({ dealerId, nav, activeTab }: Props) {
                       dealerId,
                       reviewRepriceVehicle.id,
                       reviewRepriceVehicle.suggestedPriceCents,
-                      `Contextual repricing: ${reviewRepriceVehicle.daysOnLot} days on lot`,
+                      `Contextual repricing: ${reviewRepriceVehicle.daysOnLot} days in StarterGrid`,
                     );
                     setReviewRepriceVehicle(null);
                     await Promise.all([load(), loadVelocity()]);
@@ -1010,13 +1050,24 @@ export default function InventoryPage({ dealerId, nav, activeTab }: Props) {
                     setApplyingRepriceId(null);
                   }
                 }}
-                className="px-4 py-1.5 text-xs font-bold rounded-lg bg-navy-900 text-white hover:bg-navy-800 disabled:opacity-50 transition-colors shadow-sm"
+                className="px-4 py-2 text-xs font-bold rounded-lg bg-indigo-600 hover:bg-indigo-700 active:bg-indigo-800 text-white disabled:opacity-50 transition-colors shadow-sm"
               >
-                {applyingRepriceId === reviewRepriceVehicle.id ? 'Applying…' : 'Confirm & Apply Price Change'}
+                {applyingRepriceId === reviewRepriceVehicle.id
+                  ? 'Updating price…'
+                  : `Apply $${(reviewRepriceVehicle.suggestedPriceCents! / 100).toLocaleString()} Price`}
               </button>
             </div>
           </div>
         </div>
+      )}
+
+      {showBatchPrintModal && selectedVehiclesForPrint.length > 0 && (
+        <WindowStickerModal
+          vehicles={selectedVehiclesForPrint}
+          dealerId={dealerId}
+          isOpen={showBatchPrintModal}
+          onClose={() => setShowBatchPrintModal(false)}
+        />
       )}
     </OperatorPage>
   );

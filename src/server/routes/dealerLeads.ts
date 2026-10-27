@@ -24,59 +24,105 @@ export function registerDealerLeadsRoutes(app: FastifyInstance, prisma: PrismaCl
       const limit = Math.min(200, Math.max(1, parseInt(request.query.limit ?? '50', 10) || 50));
       const platformSlug = request.query.platformSlug || undefined;
 
-      const rows = await prisma.lead.findMany({
-        where: {
-          dealershipId,
-          ...(platformSlug ? { platformSlug } : {}),
-        },
-        select: {
-          id:              true,
-          vehicleId:       true,
-          source:          true,
-          platformSlug:    true,
-          contactName:     true,
-          contactEmail:    true,
-          contactPhone:    true,
-          message:         true,
-          vehicleInterest: true,
-          workflowStatus:  true,
-          assigneeOperatorId: true,
-          notes:           true,
-          version:         true,
-          createdAt:       true,
-          vehicle: {
-            select: {
-              year:        true,
-              make:        true,
-              model:       true,
-              stockNumber: true,
-              soldAt:      true,
-              media: {
-                select: { url: true },
-                where: { kind: 'IMAGE' },
-                orderBy: { sortOrder: 'asc' },
-                take: 1,
+      const [adfAccount, rows] = await Promise.all([
+        prisma.platformAccount.findFirst({
+          where: { dealershipId, platformSlug: 'adf-xml-lead-routing' },
+          select: { accountId: true },
+        }),
+        prisma.lead.findMany({
+          where: {
+            dealershipId,
+            ...(platformSlug ? { platformSlug } : {}),
+          },
+          select: {
+            id:              true,
+            vehicleId:       true,
+            source:          true,
+            platformSlug:    true,
+            contactName:     true,
+            contactEmail:    true,
+            contactPhone:    true,
+            message:         true,
+            vehicleInterest: true,
+            workflowStatus:  true,
+            assigneeOperatorId: true,
+            notes:           true,
+            version:         true,
+            createdAt:       true,
+            deliveryAttempts: {
+              where: {
+                destinationType: 'ADF_XML_EMAIL',
+                attemptCount: { gt: 0 },
+              },
+              orderBy: { createdAt: 'desc' },
+              take: 1,
+              select: {
+                status: true,
+                attemptCount: true,
+                lastAttemptAt: true,
+                createdAt: true,
+              },
+            },
+            vehicle: {
+              select: {
+                year:        true,
+                make:        true,
+                model:       true,
+                stockNumber: true,
+                soldAt:      true,
+                media: {
+                  select: { url: true },
+                  where: { kind: 'IMAGE' },
+                  orderBy: { sortOrder: 'asc' },
+                  take: 1,
+                },
               },
             },
           },
-        },
-        orderBy: { createdAt: 'desc' },
-        take: limit,
-      });
+          orderBy: { createdAt: 'desc' },
+          take: limit,
+        }),
+      ]);
 
-      const leads = rows.map(({ vehicle, ...lead }) => ({
-        ...lead,
-        vehicle: vehicle
-          ? {
-              year: vehicle.year,
-              make: vehicle.make,
-              model: vehicle.model,
-              stockNumber: vehicle.stockNumber,
-              soldAt: vehicle.soldAt,
-              thumbnailUrl: vehicle.media[0]?.url ?? null,
-            }
-          : null,
-      }));
+      const crmEndpoint = adfAccount?.accountId?.trim() || null;
+      const crmConfigured = Boolean(crmEndpoint && /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(crmEndpoint));
+      const now = new Date();
+
+      const leads = rows.map(({ vehicle, deliveryAttempts, ...lead }) => {
+        const latest = deliveryAttempts?.[0];
+        let crmStatus: 'NOT_CONFIGURED' | 'NOT_SENT' | 'SENDING' | 'SENT_TO_CRM_ADDRESS' | 'FAILED';
+        if (!crmConfigured) {
+          crmStatus = 'NOT_CONFIGURED';
+        } else if (!latest) {
+          crmStatus = 'NOT_SENT';
+        } else if (latest.status === 'SENT') {
+          crmStatus = 'SENT_TO_CRM_ADDRESS';
+        } else if (latest.status === 'PENDING') {
+          const inFlight = now.getTime() - (latest.lastAttemptAt ?? latest.createdAt).getTime() < 2 * 60 * 1000;
+          crmStatus = inFlight ? 'SENDING' : 'FAILED';
+        } else {
+          crmStatus = 'FAILED';
+        }
+
+        return {
+          ...lead,
+          crmDeliverySummary: {
+            status: crmStatus,
+            crmConfigured,
+            lastAttemptAt: (latest?.lastAttemptAt ?? latest?.createdAt)?.toISOString() ?? null,
+          },
+          vehicle: vehicle
+            ? {
+                year: vehicle.year,
+                make: vehicle.make,
+                model: vehicle.model,
+                stockNumber: vehicle.stockNumber,
+                soldAt: vehicle.soldAt,
+                thumbnailUrl: vehicle.media[0]?.url ?? null,
+              }
+            : null,
+        };
+      });
 
       return reply.send({ leads, total: leads.length });
     }

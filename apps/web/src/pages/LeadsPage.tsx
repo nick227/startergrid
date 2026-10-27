@@ -379,14 +379,68 @@ function LeadRow({
 
       {/* 7. Contextual CRM Handoff Action */}
       <div className="flex items-center justify-end pt-2 border-t border-silver-100 lg:border-0 lg:pt-0">
-        <button
-          type="button"
-          onClick={() => onOpenCrmHandoff(lead.id)}
-          className="inline-flex items-center justify-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold bg-white hover:bg-silver-100 text-ink-heading border border-silver-300 hover:border-silver-400 transition-colors shadow-2xs w-full sm:w-auto"
-          title="Send to CRM or view delivery status"
-        >
-          <span>Send to CRM</span>
-        </button>
+        {(() => {
+          const crmStatus = lead.crmDeliverySummary?.status ?? 'NOT_SENT';
+          if (crmStatus === 'SENT_TO_CRM_ADDRESS') {
+            return (
+              <button
+                type="button"
+                onClick={() => onOpenCrmHandoff(lead.id)}
+                className="inline-flex items-center justify-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs font-semibold bg-emerald-50 hover:bg-emerald-100 text-emerald-800 border border-emerald-200 transition-colors shadow-2xs w-full sm:w-auto"
+                title={lead.crmDeliverySummary?.lastAttemptAt ? `Accepted by mail server at ${new Date(lead.crmDeliverySummary.lastAttemptAt).toLocaleTimeString()} · View details` : 'Accepted by mail server · View details'}
+              >
+                <span className="w-1.5 h-1.5 rounded-full bg-emerald-600 shrink-0" aria-hidden="true" />
+                <span>Sent to CRM</span>
+              </button>
+            );
+          }
+          if (crmStatus === 'SENDING') {
+            return (
+              <span
+                className="inline-flex items-center justify-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs font-semibold bg-blue-50 text-blue-700 border border-blue-200 shadow-2xs w-full sm:w-auto cursor-default"
+                title="Transmission in flight to mail server"
+              >
+                <span className="w-1.5 h-1.5 rounded-full bg-blue-600 animate-pulse shrink-0" aria-hidden="true" />
+                <span>Sending…</span>
+              </span>
+            );
+          }
+          if (crmStatus === 'FAILED') {
+            return (
+              <button
+                type="button"
+                onClick={() => onOpenCrmHandoff(lead.id)}
+                className="inline-flex items-center justify-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs font-semibold bg-rose-50 hover:bg-rose-100 text-rose-800 border border-rose-200 transition-colors shadow-2xs w-full sm:w-auto"
+                title="Delivery failed · Click to retry"
+              >
+                <span className="w-1.5 h-1.5 rounded-full bg-rose-600 shrink-0" aria-hidden="true" />
+                <span>Failed · Retry</span>
+              </button>
+            );
+          }
+          if (crmStatus === 'NOT_CONFIGURED') {
+            return (
+              <button
+                type="button"
+                onClick={() => onOpenCrmHandoff(lead.id)}
+                className="inline-flex items-center justify-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs font-semibold bg-white hover:bg-silver-100 text-ink-muted hover:text-ink-heading border border-silver-300 transition-colors shadow-2xs w-full sm:w-auto"
+                title="CRM email not configured · Export or copy ADF/XML"
+              >
+                <span>Export XML</span>
+              </button>
+            );
+          }
+          return (
+            <button
+              type="button"
+              onClick={() => onOpenCrmHandoff(lead.id)}
+              className="inline-flex items-center justify-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold bg-white hover:bg-silver-100 text-ink-heading border border-silver-300 hover:border-silver-400 transition-colors shadow-2xs w-full sm:w-auto"
+              title="Send to CRM"
+            >
+              <span>Send to CRM</span>
+            </button>
+          );
+        })()}
       </div>
     </div>
   );
@@ -673,6 +727,7 @@ export default function LeadsPage({ dealerId, nav, activeTab }: Props) {
           leadId={selectedLeadForCrm}
           isOpen={Boolean(selectedLeadForCrm)}
           onClose={() => setSelectedLeadForCrm(null)}
+          onSent={() => reload()}
         />
       )}
     </OperatorPage>

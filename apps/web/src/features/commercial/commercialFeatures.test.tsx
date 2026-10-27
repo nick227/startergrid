@@ -5,15 +5,34 @@ import { afterEach, describe, expect, it, vi } from 'vitest';
 import { SyndicationSentryCard } from '@/components/platforms/SyndicationSentryCard.tsx';
 import { InventorySummaryStrip } from '@/components/inventory/InventorySummaryStrip.tsx';
 import { WindowStickerModal } from '@/components/inventory/WindowStickerModal.tsx';
+import { InventoryGridToolbar } from '@/components/inventory/InventoryGridToolbar.tsx';
+import { InventoryDetailPanel } from '@/components/inventory/InventoryDetailPanel.tsx';
 import { LeadCrmHandoffModal } from '@/components/leads/LeadCrmHandoffModal.tsx';
+import LeadsPage from '@/pages/LeadsPage.tsx';
+import { AuthProvider } from '@/contexts/AuthContext.tsx';
+import { CategoryProvider } from '@/contexts/CategoryContext.tsx';
+import { DocReaderProvider } from '@/components/docs/DocReaderContext.tsx';
+import { automotiveSchema } from '@auto-dealer/category-schemas';
 import type { VehicleDetailDto } from '@/lib/api/sdk.ts';
+
+vi.mock('@/components/inventory/VehiclePhotoWorkspace.tsx', () => ({
+  VehiclePhotoWorkspace: () => <div data-testid="vehicle-photo-workspace">Photos Mock</div>,
+}));
 
 let root: Root | undefined;
 function render(node: ReactNode) {
   const container = document.createElement('div');
   document.body.appendChild(container);
   root = createRoot(container);
-  act(() => root!.render(node));
+  act(() =>
+    root!.render(
+      <AuthProvider>
+        <CategoryProvider schema={automotiveSchema}>
+          <DocReaderProvider>{node}</DocReaderProvider>
+        </CategoryProvider>
+      </AuthProvider>
+    )
+  );
 }
 function cleanup() {
   if (root) act(() => root!.unmount());
@@ -518,5 +537,347 @@ describe('Commercial Feature 4: Lead CRM Handoff Modal', () => {
     expect(failedBadges.length).toBeGreaterThan(0);
     expect(screen.getAllByText(/Mail server connection timeout/).length).toBeGreaterThan(0);
     expect(screen.getByText('Retry send')).toBeTruthy();
+  });
+});
+
+describe('Usability Improvement 1: Inline CRM Delivery Status', () => {
+  it('renders evidence-grounded delivery state badges directly on lead rows without N+1 requests', async () => {
+    vi.stubGlobal('fetch', vi.fn(async (url: string) => {
+      if (url.includes('/people')) {
+        return { ok: true, json: async () => ({ people: [] }) };
+      }
+      if (url.includes('/leads')) {
+        return {
+          ok: true,
+          json: async () => ({
+            leads: [
+              {
+                id: 'lead-sent',
+                source: 'FACEBOOK',
+                platformSlug: 'facebook-marketplace',
+                contactName: 'Alice Walker',
+                contactEmail: 'alice@example.com',
+                contactPhone: '555-1111',
+                message: 'Is this available?',
+                createdAt: new Date().toISOString(),
+                vehicle: { year: 2022, make: 'Toyota', model: 'Camry', stockNumber: 'T2022', soldAt: null },
+                crmDeliverySummary: {
+                  status: 'SENT_TO_CRM_ADDRESS',
+                  crmConfigured: true,
+                  lastAttemptAt: new Date().toISOString(),
+                },
+              },
+              {
+                id: 'lead-failed',
+                source: 'CARGURUS',
+                platformSlug: 'cargurus',
+                contactName: 'Bob Miller',
+                contactEmail: 'bob@example.com',
+                contactPhone: null,
+                message: 'Test drive?',
+                createdAt: new Date().toISOString(),
+                vehicle: { year: 2021, make: 'Honda', model: 'CR-V', stockNumber: 'H2021', soldAt: null },
+                crmDeliverySummary: {
+                  status: 'FAILED',
+                  crmConfigured: true,
+                  lastAttemptAt: new Date().toISOString(),
+                },
+              },
+              {
+                id: 'lead-sending',
+                source: 'STOREFRONT',
+                platformSlug: 'storefront',
+                contactName: 'Charlie Brown',
+                contactEmail: 'charlie@example.com',
+                contactPhone: null,
+                message: 'Price negotiable?',
+                createdAt: new Date().toISOString(),
+                vehicle: null,
+                crmDeliverySummary: {
+                  status: 'SENDING',
+                  crmConfigured: true,
+                  lastAttemptAt: new Date().toISOString(),
+                },
+              },
+              {
+                id: 'lead-not-configured',
+                source: 'AUTOTRADER',
+                platformSlug: 'autotrader',
+                contactName: 'David Lee',
+                contactEmail: 'david@example.com',
+                contactPhone: null,
+                message: 'Inquiry',
+                createdAt: new Date().toISOString(),
+                vehicle: null,
+                crmDeliverySummary: {
+                  status: 'NOT_CONFIGURED',
+                  crmConfigured: false,
+                  lastAttemptAt: null,
+                },
+              },
+              {
+                id: 'lead-not-sent',
+                source: 'CARS_COM',
+                platformSlug: 'cars-com',
+                contactName: 'Emma Green',
+                contactEmail: 'emma@example.com',
+                contactPhone: null,
+                message: 'Still available?',
+                createdAt: new Date().toISOString(),
+                vehicle: null,
+                crmDeliverySummary: {
+                  status: 'NOT_SENT',
+                  crmConfigured: true,
+                  lastAttemptAt: null,
+                },
+              },
+            ],
+            total: 5,
+          }),
+        };
+      }
+      return { ok: true, json: async () => ({}) };
+    }));
+
+    render(
+      <LeadsPage
+        dealerId="dealer-1"
+        nav={{
+          goToInventory: vi.fn(),
+          goToInventoryItem: vi.fn(),
+          goToPlatforms: vi.fn(),
+          goToPlatform: vi.fn(),
+          goToLeads: vi.fn(),
+          goToHome: vi.fn(),
+        } as any}
+      />
+    );
+
+    // Verify all 5 discrete inline states appear on the table
+    expect(await screen.findByText('Sent to CRM')).toBeTruthy();
+    expect(screen.getByText('Failed · Retry')).toBeTruthy();
+    expect(screen.getByText('Sending…')).toBeTruthy();
+    expect(screen.getByText('Export XML')).toBeTruthy();
+    expect(screen.getByText('Send to CRM')).toBeTruthy();
+  });
+});
+
+describe('Usability Improvement 2: Batch Vehicle Document Printing & FTC Warranty Verification', () => {
+  it('shows batch print button only when vehicles are selected in InventoryGridToolbar', () => {
+    const onPrint = vi.fn();
+
+    // 0 selected: No print button
+    render(
+      <InventoryGridToolbar
+        viewMode="table"
+        onChangeViewMode={vi.fn()}
+        activeColumns={[]}
+        onChangeColumns={vi.fn()}
+        search=""
+        onSearchChange={vi.fn()}
+        selectedCount={0}
+        onPrintSelected={onPrint}
+      />
+    );
+    expect(screen.queryByText(/Print documents/)).toBeNull();
+
+    cleanup();
+
+    // 3 selected: Contextual print action appears
+    render(
+      <InventoryGridToolbar
+        viewMode="table"
+        onChangeViewMode={vi.fn()}
+        activeColumns={[]}
+        onChangeColumns={vi.fn()}
+        search=""
+        onSearchChange={vi.fn()}
+        selectedCount={3}
+        onPrintSelected={onPrint}
+      />
+    );
+    const printBtn = screen.getByText('🖨️ Print documents (3)');
+    expect(printBtn).toBeTruthy();
+
+    fireEvent.click(printBtn);
+    expect(onPrint).toHaveBeenCalledTimes(1);
+  });
+
+  it('enforces FTC warranty verification before allowing batch Buyers Guide printing', async () => {
+    vi.stubGlobal('fetch', vi.fn(async () => ({
+      ok: true,
+      json: async () => ({
+        legalName: 'Apex Motor Group',
+        rooftopAddress: { street: '123 Test St', city: 'Dallas', state: 'TX', postalCode: '75001' },
+      }),
+    })));
+
+    const testVehicles = [
+      {
+        id: 'v1',
+        vin: 'VIN1111',
+        stockNumber: 'STK-1',
+        year: 2022,
+        make: 'Honda',
+        model: 'Civic',
+        mileage: 15000,
+        priceCents: 2199000,
+        condition: 'USED',
+        options: ['AS IS'], // Known AS-IS
+      },
+      {
+        id: 'v2',
+        vin: 'VIN2222',
+        stockNumber: 'STK-2',
+        year: 2023,
+        make: 'Toyota',
+        model: 'Corolla',
+        mileage: 12000,
+        priceCents: 2299000,
+        condition: 'USED',
+        options: [], // Missing warranty disclosure!
+      },
+    ];
+
+    render(
+      <WindowStickerModal
+        vehicles={testVehicles}
+        dealerId="dealer-1"
+        isOpen={true}
+        onClose={vi.fn()}
+      />
+    );
+
+    // Window stickers are ready immediately
+    expect(await screen.findByText('Print Documents (2 Vehicles)')).toBeTruthy();
+    const printBtn = screen.getByRole('button', { name: /Print 2 Documents/ }) as HTMLButtonElement;
+    expect(printBtn.disabled).toBe(false);
+
+    // Switch to Buyers Guide
+    act(() => {
+      fireEvent.click(screen.getByText('Buyers Guide'));
+    });
+
+    // FTC Warning banner appears because v2 has no warranty disclosure
+    expect(await screen.findByText(/Warranty Disclosure Required/)).toBeTruthy();
+    expect(screen.getByText(/FTC Buyers Guide regulations require verified warranty terms/)).toBeTruthy();
+
+    // Print button is blocked while disclosure is missing
+    expect(printBtn.disabled).toBe(true);
+
+    // Click "Set pending to AS-IS"
+    act(() => {
+      fireEvent.click(screen.getByText('Set pending to AS-IS'));
+    });
+
+    // Now all disclosures are complete, print button is enabled!
+    expect(screen.queryByText(/Warranty Disclosure Required/)).toBeNull();
+    expect(printBtn.disabled).toBe(false);
+  });
+});
+
+describe('Usability Improvement 3: Vehicle Detail Aging and Contextual Repricing', () => {
+  it('displays Days in StarterGrid and contextual Review suggested price in details tab', async () => {
+    vi.stubGlobal('fetch', vi.fn(async (url: string) => {
+      if (url.includes('/detail') || url.includes('/inventory/vehicles/')) {
+        return {
+          ok: true,
+          status: 200,
+          headers: new Headers({ 'content-type': 'application/json' }),
+          json: async () => ({
+            id: 'veh-aging',
+            dealershipId: 'dealer-1',
+            category: 'AUTOMOTIVE',
+            vin: 'VIN-AGING-999',
+            stockNumber: 'AG-999',
+            year: 2021,
+            make: 'Ford',
+            model: 'F-150',
+            trim: 'XLT',
+            mileage: 42000,
+            priceCents: 3499000,
+            originalPriceCents: 3699000,
+            condition: 'USED',
+            exteriorColor: 'Oxford White',
+            interiorColor: 'Black',
+            options: ['4WD', 'Tow Package'],
+            listingStatus: 'READY',
+            soldAt: null,
+            removedAt: null,
+            reactivatedAt: null,
+            createdAt: new Date(Date.now() - 48 * 86400000).toISOString(),
+            updatedAt: new Date().toISOString(),
+            media: [],
+            readiness: {
+              status: 'READY',
+              blockers: [],
+              missingFields: [],
+              invalidFields: [],
+              warnings: [],
+              missingRequiredMediaSlots: [],
+              missingRecommendedMediaSlots: [],
+            },
+            distribution: { liveCount: 2, queuedCount: 0, totalEligiblePlatforms: 3, failedCount: 0 },
+          }),
+        };
+      }
+      return { ok: true, status: 200, headers: new Headers({ 'content-type': 'application/json' }), json: async () => ({}) };
+    }));
+
+    const mockReviewReprice = vi.fn();
+    const mockRepriceItem = {
+      id: 'veh-aging',
+      stockNumber: 'AG-999',
+      vin: 'VIN-AGING-999',
+      year: 2021,
+      make: 'Ford',
+      model: 'F-150',
+      trim: 'XLT',
+      mileage: 42000,
+      priceCents: 3499000,
+      originalPriceCents: 3699000,
+      createdAt: new Date().toISOString(),
+      priceLastChangedAt: null,
+      daysOnLot: 48,
+      daysSincePriceChange: 48,
+      milestone: 'AGING' as const,
+      milestoneLabel: 'Aging 45d+',
+      milestoneTone: 'amber' as const,
+      photoCount: 12,
+      suggestedPriceCents: 3349000,
+      suggestedMarkdownCents: 150000,
+      suggestedMarkdownPercent: 4.3,
+      recommendationAction: 'SUGGEST_PRICE_ADJUSTMENT' as const,
+      recommendationReason: '48 days in StarterGrid without price adjustment',
+      recommendedAt: new Date().toISOString(),
+    };
+
+    render(
+      <InventoryDetailPanel
+        dealerId="dealer-1"
+        vehicleId="veh-aging"
+        repriceItem={mockRepriceItem}
+        onReviewReprice={mockReviewReprice}
+        onClose={vi.fn()}
+      />
+    );
+
+    // Switch to "Vehicle details" tab
+    expect(await screen.findByText('Vehicle details')).toBeTruthy();
+    act(() => {
+      fireEvent.click(screen.getByText('Vehicle details'));
+    });
+
+    // Verify "Days in StarterGrid" is rendered truthfully
+    expect(await screen.findByText('48 days in StarterGrid')).toBeTruthy();
+    expect(document.body.innerHTML).not.toContain('48 days on lot');
+
+    // Verify suggested adjustment and Review suggested price button
+    expect(screen.getByText(/\$33,490/)).toBeTruthy();
+    const reviewBtn = screen.getByText('Review suggested price');
+    expect(reviewBtn).toBeTruthy();
+
+    fireEvent.click(reviewBtn);
+    expect(mockReviewReprice).toHaveBeenCalledWith(mockRepriceItem);
   });
 });

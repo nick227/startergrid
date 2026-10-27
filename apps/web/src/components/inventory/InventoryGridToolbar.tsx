@@ -9,11 +9,12 @@ type Props = {
   search: string;
   onSearchChange: (s: string) => void;
   selectedCount: number;
+  onPrintSelected?: () => void;
   extra?: ReactNode;
 };
 
 export function InventoryGridToolbar({
-  viewMode, onChangeViewMode, activeColumns, onChangeColumns, search, onSearchChange, selectedCount, extra
+  viewMode, onChangeViewMode, activeColumns, onChangeColumns, search, onSearchChange, selectedCount, onPrintSelected, extra
 }: Props) {
   const [pickerOpen, setPickerOpen] = useState(false);
   const pickerRef = useRef<HTMLDivElement>(null);
@@ -51,7 +52,21 @@ export function InventoryGridToolbar({
       <div className="ml-auto flex items-center gap-2">
         {extra}
         {selectedCount > 0 && (
-          <span className="text-xs font-semibold text-orange-600 mr-2">{selectedCount} selected</span>
+          <div className="flex items-center gap-2 mr-1">
+            <span className="text-xs font-semibold text-navy-800 bg-navy-50 border border-navy-200 px-2.5 py-1 rounded-md">
+              {selectedCount} selected
+            </span>
+            {onPrintSelected && (
+              <button
+                type="button"
+                onClick={onPrintSelected}
+                className="inline-flex items-center gap-1.5 px-3 py-1 text-xs font-bold bg-navy-900 hover:bg-navy-800 text-white rounded-md shadow-sm transition-colors"
+                title="Print window stickers or Buyers Guides for selected vehicles"
+              >
+                <span>🖨️ Print documents ({selectedCount})</span>
+              </button>
+            )}
+          </div>
         )}
 
         {/* View Toggle */}

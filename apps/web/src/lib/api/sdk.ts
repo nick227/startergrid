@@ -1152,6 +1152,12 @@ export type DealerLeadVehicle = {
   thumbnailUrl?: string | null;
 };
 
+export type DealerLeadCrmSummary = {
+  status: 'NOT_CONFIGURED' | 'NOT_SENT' | 'SENDING' | 'SENT_TO_CRM_ADDRESS' | 'FAILED';
+  crmConfigured: boolean;
+  lastAttemptAt?: string | null;
+};
+
 export type DealerLead = {
   id: string;
   vehicleId: string | null;
@@ -1168,6 +1174,7 @@ export type DealerLead = {
   version?: number;
   createdAt: string;
   vehicle: DealerLeadVehicle | null;
+  crmDeliverySummary?: DealerLeadCrmSummary;
 };
 
 export async function fetchDealerLeads(
