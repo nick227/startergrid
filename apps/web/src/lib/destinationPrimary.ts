@@ -21,3 +21,39 @@ export function destinationWhy(readiness: SetupReadiness, name: string): string 
   }
   return `Ready vehicles can be sent to ${name}. Connected does not mean a listing is live yet.`;
 }
+
+export function channelCardCopy(input: {
+  connected: boolean;
+  hasErrors: boolean;
+  sentCount: number;
+  firstParty: boolean;
+}): { status: string; description: string } {
+  if (input.hasErrors) {
+    return {
+      status: 'Needs a fix',
+      description: 'Until this is fixed, vehicles will not update here.',
+    };
+  }
+  if (!input.connected) {
+    return {
+      status: 'Not connected',
+      description: input.firstParty
+        ? 'Your StarterGrid storefront. Connect it to send ready vehicles here.'
+        : 'Connect this only if you advertise here.',
+    };
+  }
+  if (input.sentCount > 0) {
+    return {
+      status: `${input.sentCount} sent`,
+      description: input.firstParty
+        ? 'Your StarterGrid storefront. Sent is not a confirmation they already show it.'
+        : 'We can send vehicles here. Sent is not a confirmation they already show it.',
+    };
+  }
+  return {
+    status: 'Connected',
+    description: input.firstParty
+      ? 'Your StarterGrid storefront. Ready vehicles can be sent here.'
+      : 'We can send vehicles here. Connected does not mean listings are already on the site.',
+  };
+}

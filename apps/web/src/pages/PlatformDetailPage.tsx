@@ -236,14 +236,17 @@ export default function PlatformDetailPage({ dealerId, nav, activeTab, platformS
 
           <details className="bg-white border border-silver-200 rounded-xl shadow-sm">
             <summary className="px-5 py-4 cursor-pointer text-sm font-semibold text-ink-heading">
-              Technical details
-              <span className="block text-xs font-normal text-ink-muted mt-0.5">What this destination can do, and connection checks.</span>
+              How this destination works
+              <span className="block text-xs font-normal text-ink-muted mt-0.5">What you send here, and what they need from a vehicle.</span>
             </summary>
             <div className="px-5 pb-5 space-y-6">
+          <p className="text-sm text-ink-body leading-relaxed">
+            After you connect, ready vehicles can be sent here. Sent is not the same as already showing on their site.
+          </p>
           <div>
-            <h2 className="text-[11px] font-bold uppercase tracking-widest text-ink-faint mb-4">What it can do</h2>
+            <h2 className="text-[11px] font-bold uppercase tracking-widest text-ink-faint mb-4">What you can send</h2>
             <div className="flex flex-wrap gap-2">
-              {platform.catalogSync && <span className="px-2 py-1 bg-teal-50 text-teal-800 border border-teal-200 rounded text-xs font-semibold">Inventory file</span>}
+              {platform.catalogSync && <span className="px-2 py-1 bg-teal-50 text-teal-800 border border-teal-200 rounded text-xs font-semibold">Inventory</span>}
               {platform.socialPosting && <span className="px-2 py-1 bg-indigo-50 text-indigo-800 border border-indigo-200 rounded text-xs font-semibold">Social posts</span>}
               {platform.marketplaceListing && <span className="px-2 py-1 bg-sky-50 text-sky-800 border border-sky-200 rounded text-xs font-semibold">Listings</span>}
               {platform.partnerFeed && <span className="px-2 py-1 bg-purple-50 text-purple-800 border border-purple-200 rounded text-xs font-semibold">Partner listing</span>}
@@ -254,7 +257,7 @@ export default function PlatformDetailPage({ dealerId, nav, activeTab, platformS
             </div>
           </div>
 
-          {platform.integrationClass !== 'OWNED' && (
+          {isInternal && platform.integrationClass !== 'OWNED' && (
             <div className="space-y-4">
               <h2 className="text-[11px] font-bold uppercase tracking-widest text-ink-faint mb-2">Connection checks</h2>
 

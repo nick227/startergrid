@@ -14,6 +14,7 @@ import { AUTO_MARKETPLACE_SLUG, platformDisplayName } from '@/lib/marketplaceBra
 import { getSetupReadiness } from '@/lib/setupReadiness.ts';
 import { PlatformDetailDrawer } from './PlatformDetailDrawer.tsx';
 import { ChannelDestinationCard } from './ChannelDestinationCard.tsx';
+import { SyndicationSentryCard } from './SyndicationSentryCard.tsx';
 
 type Props = {
   platforms: PlatformPublishResult[];
@@ -84,17 +85,13 @@ export function SimplifiedChannelsView({
     total: rows.length,
   });
 
-  const focus = experience === 'attention'
-    ? attention
-    : experience === 'empty'
-      ? rows.filter(r => r.platform.platformSlug === AUTO_MARKETPLACE_SLUG).slice(0, 1).concat(setup).slice(0, 1)
-      : experience === 'setup'
-        ? setup
-        : connected;
+  const sortedConnected = [...connected].sort((a, b) => {
+    if (a.platform.platformSlug === AUTO_MARKETPLACE_SLUG) return -1;
+    if (b.platform.platformSlug === AUTO_MARKETPLACE_SLUG) return 1;
+    return 0;
+  });
 
-  const visible = showRest ? rows : focus;
-  const hiddenCount = Math.max(0, rows.length - focus.length);
-  const starter = (experience === 'attention' ? attention[0] : focus[0]) ?? rows[0];
+  const starter = (experience === 'attention' ? attention[0] : sortedConnected[0]) ?? rows[0];
   const starterName = starter ? nameOf(starter) : 'a destination';
   const selectedPlatform = platforms.find(p => p.platformSlug === selectedSlug) ?? null;
 
@@ -111,18 +108,7 @@ export function SimplifiedChannelsView({
           onAction={() => starter && onSelectSlug(starter.platform.platformSlug)}
         />
       )}
-      {experience === 'setup' && (
-        <PagePrimaryState
-          kind="setup"
-          title="Finish connecting destinations"
-          why={`${connected.length} connected. ${setup.length} still need a connection from you.`}
-          next={`Continue with ${starterName}.`}
-          ownerKind="YOU"
-          actionLabel={`Continue with ${starterName}`}
-          onAction={() => starter && onSelectSlug(starter.platform.platformSlug)}
-        />
-      )}
-      {experience === 'attention' && (
+      {attention.length > 0 && (
         <PagePrimaryState
           kind="attention"
           title={attention.length === 1 ? `${nameOf(attention[0]!)} needs a fix` : `${attention.length} destinations need a fix`}
@@ -133,45 +119,121 @@ export function SimplifiedChannelsView({
           onAction={() => starter && onSelectSlug(starter.platform.platformSlug)}
         />
       )}
+      {experience === 'setup' && (
+        <PagePrimaryState
+          kind="setup"
+          title={
+            connected.length === 1
+              ? `${nameOf(connected[0]!)} is connected`
+              : `${connected.length} destinations are connected`
+          }
+          why="Connected means we can send vehicles there. Add another destination only if you advertise on it. Connected does not mean listings are already on the site."
+        />
+      )}
       {experience === 'running' && (
         <PagePrimaryState
           kind="running"
-          title={`Shoppers can find you on ${connected.length} destination${connected.length === 1 ? '' : 's'}`}
-          why="Ready vehicles can be sent to connected destinations. Connected does not mean a listing is live yet."
-          secondaryLabel={hiddenCount > 0 ? 'Add another destination' : undefined}
-          onSecondary={hiddenCount > 0 ? () => setShowRest(true) : undefined}
+          title={
+            connected.length === 1
+              ? `${nameOf(connected[0]!)} is connected`
+              : `${connected.length} destinations are connected`
+          }
+          why="Ready vehicles can be sent to these destinations. Connected does not mean a listing is already on the site."
         />
       )}
 
-      {experience === 'running' && (
+      {connected.length > 0 && (
         <DealershipAutopilot dealerId={dealerId} connectedChannelCount={connected.length} hideWhenUnavailable />
       )}
 
+      <SyndicationSentryCard dealerId={dealerId} hideWhenClean />
+
       {loading && <p className="text-sm text-ink-muted">Loading destinations…</p>}
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        {visible.map(({ platform, account }) => (
-          <ChannelDestinationCard
-            key={platform.platformSlug}
-            platform={platform}
-            account={account}
-            dealerId={dealerId}
-            storefrontHref={storefrontHref}
-            onOpen={() => onSelectSlug(platform.platformSlug)}
-          />
-        ))}
-        {!loading && visible.length === 0 && (
-          <div className="col-span-2 p-12 text-center bg-white rounded-xl border border-silver-200">
-            <p className="text-sm font-semibold text-ink-heading">No destinations yet</p>
-            <p className="text-xs text-ink-muted mt-1">{emptyMessage}</p>
+      {sortedConnected.length > 0 && (
+        <section className="space-y-3">
+          <div className="flex items-center justify-between">
+            <h2 className="text-sm font-bold text-ink-heading">In use ({sortedConnected.length})</h2>
+            <span className="text-xs text-ink-muted">We can send vehicles here</span>
           </div>
-        )}
-      </div>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            {sortedConnected.map(({ platform, account }) => (
+              <ChannelDestinationCard
+                key={platform.platformSlug}
+                platform={platform}
+                account={account}
+                perf={perfBySlug.get(platform.platformSlug) ?? null}
+                dealerId={dealerId}
+                storefrontHref={storefrontHref}
+                onOpen={() => onSelectSlug(platform.platformSlug)}
+              />
+            ))}
+          </div>
+        </section>
+      )}
 
-      {!showRest && hiddenCount > 0 && experience !== 'running' && (
-        <button type="button" onClick={() => setShowRest(true)} className="text-sm font-semibold text-navy-700 hover:underline">
-          See {hiddenCount} other destination{hiddenCount === 1 ? '' : 's'}
-        </button>
+      {/* Attention Channels */}
+      {attention.length > 0 && (
+        <section className="space-y-3">
+          <h2 className="text-sm font-bold text-status-warning-text">Needs a fix ({attention.length})</h2>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            {attention.map(({ platform, account }) => (
+              <ChannelDestinationCard
+                key={platform.platformSlug}
+                platform={platform}
+                account={account}
+                perf={perfBySlug.get(platform.platformSlug) ?? null}
+                dealerId={dealerId}
+                storefrontHref={storefrontHref}
+                onOpen={() => onSelectSlug(platform.platformSlug)}
+              />
+            ))}
+          </div>
+        </section>
+      )}
+
+      {setup.length > 0 && (
+        <section className="space-y-3 pt-2">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-1 border-t border-silver-200 pt-4">
+            <div>
+              <h2 className="text-sm font-bold text-ink-heading">Available to connect ({setup.length})</h2>
+              <p className="text-xs text-ink-muted">
+                Only set these up if you advertise there. They are not required.
+              </p>
+            </div>
+            {!showRest && (
+              <button
+                type="button"
+                onClick={() => setShowRest(true)}
+                className="text-xs font-semibold text-navy-700 hover:underline shrink-0"
+              >
+                Show {setup.length} more destinations
+              </button>
+            )}
+          </div>
+          {(showRest || connected.length === 0) && (
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              {setup.map(({ platform, account }) => (
+                <ChannelDestinationCard
+                  key={platform.platformSlug}
+                  platform={platform}
+                  account={account}
+                  perf={perfBySlug.get(platform.platformSlug) ?? null}
+                  dealerId={dealerId}
+                  storefrontHref={storefrontHref}
+                  onOpen={() => onSelectSlug(platform.platformSlug)}
+                />
+              ))}
+            </div>
+          )}
+        </section>
+      )}
+
+      {!loading && rows.length === 0 && (
+        <div className="p-12 text-center bg-white rounded-xl border border-silver-200">
+          <p className="text-sm font-semibold text-ink-heading">No destinations yet</p>
+          <p className="text-xs text-ink-muted mt-1">{emptyMessage}</p>
+        </div>
       )}
 
       {selectedPlatform && (

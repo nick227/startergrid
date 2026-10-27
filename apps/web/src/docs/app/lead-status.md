@@ -1,11 +1,11 @@
 ---
 title: What lead statuses mean
-summary: Set New, Contacted, Appointment, Closed, or Lost so your team knows who still needs a call.
-keywords: lead, status, new, contacted, appointment, closed, lost
+summary: Mark New, Contacted, Appointment, Closed, or Lost so the rest of the team knows who still needs a call.
+keywords: lead, status, new, contacted, appointment, closed, lost, team
 updated: 2026-10-26
 ---
 
-On Leads you can mark each inquiry **New**, **Contacted**, **Appointment**, **Closed**, or **Lost**. Buyers never see this label. It does not change listings.
+On Leads, mark each inquiry **New**, **Contacted**, **Appointment**, **Closed**, or **Lost**. Your team sees the same status. Buyers never see it. It does not change listings.
 
 ## When to use each one
 
@@ -19,6 +19,6 @@ On Leads you can mark each inquiry **New**, **Contacted**, **Appointment**, **Cl
 
 ## What happens next
 
-A new inquiry always starts as **New**. Change it yourself when you take the next step.
+A new inquiry starts as **New**. Change it when you take the next step. The rest of the team sees that change in this inbox.
 
-Statuses stay on this device. They do not appear on a phone or a coworker’s computer, and clearing browser data resets them to New. If the whole team needs the same statuses, use your CRM and connect it with the [webhook](doc:connections/webhook).
+Email alerts still go to the primary contact unless you add another method in Settings.

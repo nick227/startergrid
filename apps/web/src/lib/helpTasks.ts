@@ -19,11 +19,11 @@ export const HELP_TASKS: HelpTask[] = [
   },
   {
     question: 'Where do buyer inquiries go?',
-    answer: 'They land in Leads. Statuses are shared with your team. Email alerts go to the primary contact unless you add another method in Settings.',
+    answer: 'They land in Leads. Mark the next step so your team sees it. Email alerts go to the primary contact unless you add another method in Settings.',
   },
   {
     question: 'How do I invite someone on my team?',
-    answer: 'Settings → Team. Share the invite link with them. StarterGrid does not email the link automatically.',
+    answer: 'Settings → Team. Create an invitation and check its delivery status. If email delivery is unavailable or fails, copy and share the setup link.',
   },
   {
     question: 'What does Autopilot do?',

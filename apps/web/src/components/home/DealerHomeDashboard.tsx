@@ -13,6 +13,7 @@ import { PagePrimaryState } from '@/components/guidance/PagePrimaryState.tsx';
 import { GettingStartedChecklist } from './GettingStartedChecklist.tsx';
 import { Skeleton } from '@/components/ui/Skeleton.tsx';
 import { dealerSetupIncomplete, platformLooksConnected } from '@/lib/pagePrimaryState.ts';
+import { fetchSyndicationSentryAudit, type SyndicationSentryAuditResult } from '@/lib/api/sentryApi.ts';
 
 type Props = { dealerId: string; nav: OperatorNavHandlers };
 
@@ -29,6 +30,7 @@ export function DealerHomeDashboard({ dealerId, nav }: Props) {
   const [profile, setProfile] = useState<DealershipProfile | null>(null);
   const [status, setStatus] = useState<PublishStatusResponse | null>(null);
   const [leads, setLeads] = useState<DealerLead[]>([]);
+  const [sentryAudit, setSentryAudit] = useState<SyndicationSentryAuditResult | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -37,11 +39,13 @@ export function DealerHomeDashboard({ dealerId, nav }: Props) {
       fetchDealershipProfile(dealerId).catch(() => null),
       fetchPublishStatus(dealerId).catch(() => null),
       fetchDealerLeads(dealerId, { limit: 5 }).catch(() => ({ leads: [] })),
-    ]).then(([nextProfile, nextStatus, leadRes]) => {
+      fetchSyndicationSentryAudit(dealerId).catch(() => null),
+    ]).then(([nextProfile, nextStatus, leadRes, nextSentry]) => {
       if (!live) return;
       setProfile(nextProfile);
       setStatus(nextStatus);
       setLeads(leadRes?.leads ?? []);
+      setSentryAudit(nextSentry);
       setLoading(false);
     }).catch(() => { if (live) setLoading(false); });
     return () => { live = false; };
@@ -91,8 +95,19 @@ export function DealerHomeDashboard({ dealerId, nav }: Props) {
         });
       }
     });
+    const ghostCount = sentryAudit?.activeGhostListingsCount ?? 0;
+    if (sentryAudit?.status === 'GHOST_LISTINGS_DETECTED' && ghostCount > 0) {
+      list.push({
+        id: 'sold-still-listed',
+        action: `${ghostCount} sold vehicle${ghostCount === 1 ? '' : 's'} may still be listed`,
+        detail: 'Take them down so shoppers do not call about a vehicle that left the lot.',
+        ownerKind: 'YOU',
+        button: 'Open channels',
+        onAction: nav.goToPlatforms,
+      });
+    }
     return list;
-  }, [profile, status, nav, blocked]);
+  }, [profile, status, nav, blocked, sentryAudit]);
 
   if (loading) {
     return <div className="surface-card-operator p-6 rounded-xl"><Skeleton rows={6} /></div>;
@@ -125,7 +140,7 @@ export function DealerHomeDashboard({ dealerId, nav }: Props) {
           top
             ? top.detail
             : inquiryCount > 0
-              ? 'A shopper asked about a vehicle. Statuses are shared with your team.'
+              ? 'A shopper asked about a vehicle. Mark the next step so your team sees it.'
               : 'Nothing needs you right now. New buyer inquiries appear below.'
         }
         ownerKind={top ? top.ownerKind : inquiryCount > 0 ? 'YOU' : undefined}
@@ -158,7 +173,7 @@ export function DealerHomeDashboard({ dealerId, nav }: Props) {
           </button>
         </div>
         {newLeads.length === 0 ? (
-          <GuidanceNote>No new inquiries. Statuses are shared with your team.</GuidanceNote>
+          <GuidanceNote>No new inquiries. When one arrives, mark the next step so your team sees it.</GuidanceNote>
         ) : (
           newLeads.slice(0, 4).map(lead => (
             <button
