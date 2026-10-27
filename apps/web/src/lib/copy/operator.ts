@@ -16,7 +16,7 @@ export const operatorCopy = {
     manualOpen: 'Open',
   },
   auth: {
-    signInTitle: 'Sign in',
+    signInTitle: 'Sign in to DealerGrid',
     signInSubtitle: 'Your dealership workspace.',
     emailLabel: 'Email',
     passwordLabel: 'Password',

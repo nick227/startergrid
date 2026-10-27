@@ -1,3 +1,5 @@
+import { AuthHeading } from '@/components/operator/AuthFrame.tsx';
+
 type Item = { id: string; label: string };
 
 type Props = {
@@ -35,10 +37,9 @@ function StepChips({ items, stepIndex, onSelect }: Omit<Props, 'presentation' | 
 function RailSteps({ items, stepIndex, onSelect, title, subtitle }: Omit<Props, 'presentation'>) {
   const current = items[stepIndex];
   return (
-    <div className="mb-8 w-full text-center">
-      <h1 className="font-brand text-2xl font-medium tracking-tight text-white">{title}</h1>
-      {subtitle && <p className="mx-auto mt-3 max-w-md text-sm leading-relaxed text-white/55">{subtitle}</p>}
-      <p className="mt-5 text-sm text-white/70">{current.label}</p>
+    <div className="mb-8 w-full">
+      <AuthHeading title={title ?? ''} slug={subtitle ?? ''} />
+      <p className="mt-5 text-center text-sm text-white/70">{current.label}</p>
       <ol aria-label="Registration steps" className="mt-3 flex items-center justify-center gap-2">
         {items.map((item, index) => {
           const reached = index <= stepIndex;

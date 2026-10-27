@@ -201,10 +201,8 @@ export function DealershipIntakeFlow({ mode, steps = 'chips', onSubmit, onUpload
   const rail = steps === 'rail';
   const stepItems = STEPS.map(id => ({ id, label: stepLabel(id) }));
   const fieldClass = rail ? authFieldClass : 'field-input';
-  const rowClass = rail
-    ? 'grid grid-cols-1 items-center gap-1.5 sm:grid-cols-[11rem_minmax(0,1fr)] sm:gap-x-4'
-    : LABEL_CLS;
-  const labelText = rail ? `${authLabelClass} sm:text-right` : LABEL_TEXT_CLS;
+  const rowClass = rail ? 'grid gap-1.5' : LABEL_CLS;
+  const labelText = rail ? authLabelClass : LABEL_TEXT_CLS;
   const fieldGrid = rail ? 'grid grid-cols-1 gap-4' : 'grid grid-cols-1 gap-4 md:grid-cols-2';
 
   return (
@@ -215,7 +213,7 @@ export function DealershipIntakeFlow({ mode, steps = 'chips', onSubmit, onUpload
         stepIndex={stepIndex}
         onSelect={index => { setError(null); setStepIndex(index); }}
         title={rail ? 'Create your dealership' : title}
-        subtitle={rail ? 'DealerGrid is the workspace a dealership uses for inventory, channels, and leads.' : subtitle}
+        subtitle={rail ? 'A DealerGrid workspace for inventory, channels, and leads.' : subtitle}
       />
       <div className={rail ? 'flex w-full flex-col gap-5' : 'min-w-0 space-y-5'}>
       {error && (
@@ -331,8 +329,8 @@ export function DealershipIntakeFlow({ mode, steps = 'chips', onSubmit, onUpload
               autoFocus
             />
           </label>
-          <div className={rail ? 'grid grid-cols-1 items-start gap-1.5 sm:grid-cols-[11rem_minmax(0,1fr)] sm:gap-x-4' : undefined}>
-            {rail && <span className={`${labelText} sm:pt-2`}>Channels</span>}
+          <div className={rail ? 'grid gap-1.5' : undefined}>
+            {rail && <span className={labelText}>Channels</span>}
             <div className={rail ? 'grid grid-cols-1 gap-2' : 'grid grid-cols-1 gap-2 md:grid-cols-2'}>
             {CHANNEL_OPTIONS.map(channel => {
               const selected = selectedChannels.has(channel.value);

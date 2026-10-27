@@ -12,14 +12,22 @@ export const authFieldClass =
 
 export const authLabelClass = 'text-sm font-medium text-white/70';
 
-export const authRowClass =
-  'grid grid-cols-1 items-center gap-1.5 sm:grid-cols-[11rem_minmax(0,1fr)] sm:gap-x-4';
+export const authRowClass = 'grid gap-1.5 text-left';
+
+export function AuthHeading({ title, slug }: { title: string; slug: string }) {
+  return (
+    <div className="text-center">
+      <h1 className="font-brand text-[1.65rem] font-medium leading-tight tracking-tight">{title}</h1>
+      {slug && <p className="mt-2 text-sm leading-relaxed text-white/55">{slug}</p>}
+    </div>
+  );
+}
 
 export function AuthFrame({ route, children }: Props) {
   return (
     <div className="flex min-h-screen flex-col bg-navy-950 text-white">
       <AppHeader publicRoute={route} />
-      <main className="mx-auto flex w-full max-w-lg flex-1 flex-col px-5">
+      <main className="mx-auto flex w-full max-w-sm flex-1 flex-col px-5">
         <div className="my-auto flex w-full flex-col py-10">
           {children}
         </div>

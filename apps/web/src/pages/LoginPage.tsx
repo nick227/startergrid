@@ -4,7 +4,7 @@ import { OperatorAuthError } from '@/lib/api/auth.ts';
 import { useAuth } from '@/contexts/AuthContext.tsx';
 import { isDevBypassConfigured } from '@/lib/devAuth.ts';
 import { operatorCopy } from '@/lib/copy/operator.ts';
-import { AuthFrame, authFieldClass, authLabelClass, authRowClass } from '@/components/operator/AuthFrame.tsx';
+import { AuthFrame, AuthHeading, authFieldClass, authLabelClass, authRowClass } from '@/components/operator/AuthFrame.tsx';
 
 export default function LoginPage() {
   const { login } = useAuth();
@@ -32,10 +32,7 @@ export default function LoginPage() {
 
   return (
     <AuthFrame route="login">
-      <div className="w-full text-center">
-        <h1 className="font-brand text-2xl font-medium tracking-tight">{operatorCopy.auth.signInTitle}</h1>
-        <p className="mx-auto mt-2 max-w-xs text-sm leading-relaxed text-white/50">{operatorCopy.auth.signInSubtitle}</p>
-      </div>
+      <AuthHeading title={operatorCopy.auth.signInTitle} slug={operatorCopy.auth.signInSubtitle} />
 
       <form onSubmit={handleSubmit} noValidate className="mt-8 flex w-full flex-col gap-4">
         {error && (
@@ -44,8 +41,8 @@ export default function LoginPage() {
           </p>
         )}
 
-        <label className={`${authRowClass} text-left`}>
-          <span className={`${authLabelClass} sm:text-right`}>{operatorCopy.auth.emailLabel}</span>
+        <label className={authRowClass}>
+          <span className={authLabelClass}>{operatorCopy.auth.emailLabel}</span>
           <input
             type="email"
             autoComplete="email"
@@ -58,8 +55,8 @@ export default function LoginPage() {
           />
         </label>
 
-        <label className={`${authRowClass} text-left`}>
-          <span className={`${authLabelClass} sm:text-right`}>{operatorCopy.auth.passwordLabel}</span>
+        <label className={authRowClass}>
+          <span className={authLabelClass}>{operatorCopy.auth.passwordLabel}</span>
           <input
             type="password"
             autoComplete="current-password"
