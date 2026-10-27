@@ -50,7 +50,9 @@ export function DealershipAutopilot({ dealerId, onUpdated, hideWhenUnavailable }
     preference: mode, label: !summary ? error ? 'unavailable' : 'loading' : mode === 'ON' && summary.coverage === 'UNAVAILABLE' ? 'on — needs setup' : mode.toLowerCase(),
     tone: mode === 'ON' ? 'on' : mode === 'PAUSED' ? 'paused' : 'off',
     summary: summary ? `${summary.counts.VERIFIED_LIVE ?? 0} vehicle destinations verified live · ${summary.openIncidents} open issues.` : 'Reading the saved distribution policy.',
-    guidance: 'Only selected qualified channels receive updates. Pausing does not freeze fields on existing marketplace listings. Sold-vehicle withdrawals continue.',
+    guidance: mode === 'OFF'
+      ? 'Before you turn it on: Autopilot only updates destinations qualified for automatic, checked listings and ticked below. Every other destination stays a manual step.'
+      : 'Only selected qualified channels receive updates. Pausing does not freeze fields on existing marketplace listings. Sold-vehicle withdrawals continue.',
     canPause: !!summary && mode === 'ON' && canManage, canResume: !!summary && mode === 'PAUSED' && canManage,
   };
   if (hideWhenUnavailable && !summary) return null;
@@ -65,6 +67,25 @@ export function DealershipAutopilot({ dealerId, onUpdated, hideWhenUnavailable }
       extraAction={summary && canManage ? <button disabled={saving} className="btn-secondary-operator text-xs"
         onClick={() => setMode(mode === 'OFF' ? 'ON' : 'OFF')}>{mode === 'OFF' ? 'Turn on Autopilot' : 'Turn off'}</button> : undefined} />
     {error && <p role="alert" className="text-red-700">{error}</p>}
+    {summary && mode === 'OFF' && (
+      <div className="surface-card-operator p-4 rounded-xl border border-silver-200 bg-white space-y-2 text-xs">
+        <h3 className="font-semibold text-ink-heading">What Autopilot will do when enabled</h3>
+        <ul className="space-y-1.5 text-ink-muted">
+          <li className="flex items-start gap-2">
+            <span className="text-emerald-600 font-bold">✓</span>
+            <span><strong>Sends ready vehicles:</strong> Vehicles with complete details go to the qualified destinations you select. A send counts as live only after it is checked.</span>
+          </li>
+          <li className="flex items-start gap-2">
+            <span className="text-emerald-600 font-bold">✓</span>
+            <span><strong>Withdraws sold vehicles:</strong> Marking a vehicle sold withdraws the listings Autopilot created. Listings you placed by hand still need you to remove them.</span>
+          </li>
+          <li className="flex items-start gap-2">
+            <span className="text-emerald-600 font-bold">✓</span>
+            <span><strong>Holds anything unusual:</strong> Missing details, very large price changes and large batches of removals wait for review. You can pause at any time.</span>
+          </li>
+        </ul>
+      </div>
+    )}
     {summary && <details className="surface-card-operator p-4">
       <summary>Automatic destinations ({summary.policy.includedChannels.length} selected)</summary>
       {summary.capabilities.map(c => <label key={c.channel} className="block py-2 text-sm">

@@ -15,6 +15,7 @@ export interface GhostListingItem {
   inactiveSince: string;
   exposureDays: number;
   ftcComplianceRisk: 'HIGH' | 'CRITICAL';
+  nextAction: string;
 }
 
 export interface SyndicationSentryAuditResult {
@@ -31,10 +32,11 @@ export interface SyndicationSentryAuditResult {
 
 export interface SyndicationSentryReconcileResult {
   dealershipId: string;
-  status: 'RECONCILED' | 'CLEAN';
+  status: 'RECONCILED' | 'CLEAN' | 'NEEDS_ACTION';
   reconciledCount: number;
   marketplaceListingsEnded: number;
   distributionTargetsWithdrawn: number;
+  remaining: GhostListingItem[];
   message: string;
   reconciledAt: string;
 }

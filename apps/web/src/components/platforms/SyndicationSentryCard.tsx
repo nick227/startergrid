@@ -15,7 +15,7 @@ export function SyndicationSentryCard({ dealerId, onReconciled, hideWhenClean }:
   const [audit, setAudit] = useState<SyndicationSentryAuditResult | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
   const [reconciling, setReconciling] = useState<boolean>(false);
-  const [successMessage, setSuccessMessage] = useState<string | null>(null);
+  const [successMessage, setSuccessMessage] = useState<{ text: string; done: boolean } | null>(null);
   const [error, setError] = useState<string | null>(null);
 
   const loadAudit = useCallback(async () => {
@@ -47,7 +47,7 @@ export function SyndicationSentryCard({ dealerId, onReconciled, hideWhenClean }:
       setReconciling(true);
       setError(null);
       const result = await reconcileSyndicationGhostListings(dealerId);
-      setSuccessMessage(result.message);
+      setSuccessMessage({ text: result.message, done: result.status !== 'NEEDS_ACTION' });
       await loadAudit();
       onReconciled?.();
       window.dispatchEvent(new Event('distribution-updated'));
@@ -110,7 +110,7 @@ export function SyndicationSentryCard({ dealerId, onReconciled, hideWhenClean }:
             </div>
             <p className="text-xs text-ink-muted mt-0.5">
               {isClean
-                ? 'Sold and removed vehicles were not found still listed on the destinations we can check.'
+                ? 'No StarterGrid record shows a sold or removed vehicle as still listed.'
                 : 'A shopper may still see a vehicle that left the lot. Take it down so they do not call about it.'}
             </p>
           </div>
@@ -146,8 +146,12 @@ export function SyndicationSentryCard({ dealerId, onReconciled, hideWhenClean }:
       </div>
 
       {successMessage && (
-        <div className="mt-3 p-2.5 rounded-lg bg-emerald-100/80 border border-emerald-300/80 text-emerald-900 text-xs flex items-center justify-between">
-          <span>✓ {successMessage}</span>
+        <div role={successMessage.done ? undefined : 'alert'} className={`mt-3 p-2.5 rounded-lg border text-xs flex items-center justify-between ${
+          successMessage.done
+            ? 'bg-emerald-100/80 border-emerald-300/80 text-emerald-900'
+            : 'bg-amber-100/80 border-amber-300/80 text-amber-900'
+        }`}>
+          <span>{successMessage.done ? '✓ ' : ''}{successMessage.text}</span>
           <button
             onClick={() => setSuccessMessage(null)}
             className="text-emerald-700 font-bold hover:text-emerald-900 ml-2"
@@ -177,7 +181,8 @@ export function SyndicationSentryCard({ dealerId, onReconciled, hideWhenClean }:
                   <th className="pb-1.5 font-semibold">Stock #</th>
                   <th className="pb-1.5 font-semibold">Channel</th>
                   <th className="pb-1.5 font-semibold">Lot Status</th>
-                  <th className="pb-1.5 font-semibold">Ghost Exposure</th>
+                  <th className="pb-1.5 font-semibold">Still listed</th>
+                  <th className="pb-1.5 font-semibold">Next step</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-rose-500/10">
@@ -206,6 +211,7 @@ export function SyndicationSentryCard({ dealerId, onReconciled, hideWhenClean }:
                         {ghost.exposureDays} day{ghost.exposureDays === 1 ? '' : 's'} active
                       </span>
                     </td>
+                    <td className="py-2 text-ink-muted">{ghost.nextAction}</td>
                   </tr>
                 ))}
               </tbody>

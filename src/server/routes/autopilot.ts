@@ -6,6 +6,7 @@ import { createReconnectUrl } from './platformConnect.js';
 import { autopilotEnabled, currentOutcomes, readPolicy, summary, updatePolicy, vehicleSnapshot } from '../../services/autopilot/service.js';
 import { simulateAutopilotDistribution } from '../../services/autopilot/simulationService.js';
 import { DEFAULT_SAFEGUARDS, snapshotHash } from '../../services/autopilot/policy.js';
+import { auditDealershipSyndication, reconcileGhostListings } from '../../services/distribution/syndicationSentryService.js';
 
 const guardsSchema = z.object({
   maxPriceChangeFraction: z.number().positive().max(10), minPriceCents: z.number().int().positive(),
@@ -54,6 +55,28 @@ export function registerAutopilotRoutes(app: FastifyInstance, db: PrismaClient):
       return reply.send(simulation);
     } catch (error) {
       return reply.status(500).send({ error: error instanceof Error ? error.message : 'Simulation failed' });
+    }
+  });
+
+  // Syndication Sentry: Ghost listing audit and feed reconciliation
+  app.get<{ Params: Scope }>('/api/dealers/:dealershipId/distribution/sentry', async (req, reply) => {
+    if (!await requireDealerAccess(db, req, reply, req.params.dealershipId)) return;
+    try {
+      const result = await auditDealershipSyndication(db, req.params.dealershipId);
+      return reply.send(result);
+    } catch (error) {
+      return reply.status(500).send({ error: error instanceof Error ? error.message : 'Syndication sentry audit failed.' });
+    }
+  });
+
+  app.post<{ Params: Scope }>('/api/dealers/:dealershipId/distribution/sentry/reconcile', async (req, reply) => {
+    const actor = await requireCapability(db, req, reply, req.params.dealershipId, 'change_autopilot');
+    if (!actor) return;
+    try {
+      const result = await reconcileGhostListings(db, req.params.dealershipId, actor);
+      return reply.send(result);
+    } catch (error) {
+      return reply.status(500).send({ error: error instanceof Error ? error.message : 'Ghost listing reconciliation failed.' });
     }
   });
   const pageSchema = z.object({ vehicleId: z.string().optional(), channel: z.string().optional(), status: z.string().optional(),

@@ -15,6 +15,8 @@ const REGISTERED_ROUTES = new Set([
   "PUT    /api/dealers/{dealershipId}/autopilot",
   "POST   /api/dealers/{dealershipId}/autopilot/preview",
   "GET    /api/dealers/{dealershipId}/distribution",
+  "GET    /api/dealers/{dealershipId}/distribution/sentry",
+  "POST   /api/dealers/{dealershipId}/distribution/sentry/reconcile",
   "GET    /api/dealers/{dealershipId}/distribution/incidents",
   "POST   /api/dealers/{dealershipId}/distribution/incidents/{incidentId}/retry",
   "POST   /api/dealers/{dealershipId}/distribution/incidents/{incidentId}/approve",

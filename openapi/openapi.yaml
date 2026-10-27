@@ -191,6 +191,129 @@ paths:
           description: Policy version conflict, unresolved evidence or safety hold
         '503':
           description: Verified distribution is not enabled
+  /api/dealers/{dealershipId}/distribution/sentry:
+    get:
+      tags:
+        - Publish
+      operationId: getSyndicationSentryAudit
+      summary: Find sold or removed vehicles still listed
+      description: Reads StarterGrid's own listing and distribution records for sold or removed inventory that is still active. It does not query external sites; each item carries the next action that actually removes it.
+      x-route-classification: operator
+      security:
+        - OperatorAuth: []
+      parameters:
+        - name: dealershipId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Syndication sentry audit report
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                  - dealershipId
+                  - status
+                  - auditedCount
+                  - activeGhostListingsCount
+                  - verifiedLiveCount
+                  - channelsAudited
+                  - lastAuditedAt
+                  - ghostListings
+                  - summary
+                properties:
+                  dealershipId:
+                    type: string
+                  status:
+                    type: string
+                    enum: [CLEAN, GHOST_LISTINGS_DETECTED]
+                  auditedCount:
+                    type: integer
+                  activeGhostListingsCount:
+                    type: integer
+                  verifiedLiveCount:
+                    type: integer
+                  channelsAudited:
+                    type: array
+                    items:
+                      type: string
+                  lastAuditedAt:
+                    type: string
+                    format: date-time
+                  ghostListings:
+                    type: array
+                    items:
+                      type: object
+                  summary:
+                    type: string
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '500':
+          description: Internal server error
+  /api/dealers/{dealershipId}/distribution/sentry/reconcile:
+    post:
+      tags:
+        - Publish
+      operationId: reconcileGhostListings
+      summary: Take down sold vehicles that StarterGrid can verify
+      description: Ends Auto Marketplace listings after confirming the vehicle is no longer public, and runs the Autopilot engine's verified withdrawal for distribution targets. External listings are never marked removed without evidence; whatever remains is returned with its next action (NEEDS_ACTION).
+      x-route-classification: operator
+      security:
+        - OperatorAuth: []
+      parameters:
+        - name: dealershipId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Successful ghost listing reconciliation
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                  - dealershipId
+                  - status
+                  - reconciledCount
+                  - marketplaceListingsEnded
+                  - distributionTargetsWithdrawn
+                  - remaining
+                  - message
+                  - reconciledAt
+                properties:
+                  dealershipId:
+                    type: string
+                  status:
+                    type: string
+                    enum: [RECONCILED, CLEAN, NEEDS_ACTION]
+                  remaining:
+                    type: array
+                    items:
+                      type: object
+                  reconciledCount:
+                    type: integer
+                  marketplaceListingsEnded:
+                    type: integer
+                  distributionTargetsWithdrawn:
+                    type: integer
+                  message:
+                    type: string
+                  reconciledAt:
+                    type: string
+                    format: date-time
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '500':
+          description: Internal server error
   /api/dealers/{dealershipId}/distribution/incidents:
     get:
       tags:
