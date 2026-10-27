@@ -17,9 +17,31 @@ export function destinationWhy(readiness: SetupReadiness, name: string): string 
     return `Sign in with ${name}. StarterGrid never sees your password. After you connect, ready vehicles can be sent here.`;
   }
   if (readiness.nextAction) {
-    return `Finish this and ready vehicles can be sent to ${name}. Connected does not mean a listing is live yet.`;
+    return `Finish this and ready vehicles can be sent to ${name}. Connected does not mean they already show a listing.`;
   }
-  return `Ready vehicles can be sent to ${name}. Connected does not mean a listing is live yet.`;
+  return `Ready vehicles can be sent to ${name}. Connected does not mean they already show a listing.`;
+}
+
+export type ChannelListGroup = 'attention' | 'inUse' | 'idle' | 'available';
+
+export function channelListGroup(input: {
+  connected: boolean;
+  hasErrors: boolean;
+  sentCount: number;
+  firstParty: boolean;
+}): ChannelListGroup {
+  if (input.hasErrors) return 'attention';
+  if (input.firstParty && input.connected) return 'inUse';
+  if (!input.connected) return 'available';
+  if (input.sentCount > 0) return 'inUse';
+  return 'idle';
+}
+
+export function visibleIdleChannels<T>(idle: T[], inUseCount: number, expanded: boolean): T[] {
+  if (expanded) return idle;
+  if (inUseCount > 0) return [];
+  if (idle.length <= 2) return idle;
+  return idle.slice(0, 1);
 }
 
 export function channelCardCopy(input: {

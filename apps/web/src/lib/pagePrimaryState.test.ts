@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { channelExperience, dealerSetupIncomplete, reportsExperience } from './pagePrimaryState.ts';
+import { channelExperience, dealerSetupIncomplete, platformLooksConnected, reportsExperience } from './pagePrimaryState.ts';
 import { reportsPrimary } from './reportsPrimary.ts';
 import { listingStatusText } from './listingStatus.ts';
 
@@ -22,6 +22,15 @@ describe('channelExperience', () => {
 
   it('is running when connected destinations have no fixes', () => {
     expect(channelExperience({ connected: 3, attention: 0, setup: 0, total: 3 })).toBe('running');
+  });
+});
+
+describe('platformLooksConnected', () => {
+  it('requires an active destination, not a default scheduled feed', () => {
+    expect(platformLooksConnected({ state: 'Scheduled', accountState: 'ACCOUNT_NEEDED', platformSlug: 'cargurus-dealer' })).toBe(false);
+    expect(platformLooksConnected({ state: 'Ready', accountState: 'ACCOUNT_NEEDED' })).toBe(false);
+    expect(platformLooksConnected({ state: 'Active', accountState: 'ACTIVE' })).toBe(true);
+    expect(platformLooksConnected({ state: 'Ready', platformSlug: 'consumer-marketplace' })).toBe(true);
   });
 });
 

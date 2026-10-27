@@ -1,3 +1,5 @@
+import { AUTO_MARKETPLACE_SLUG } from './marketplaceBrand.ts';
+
 export type PageExperience = 'empty' | 'setup' | 'running' | 'attention';
 
 export type ChannelCounts = {
@@ -16,13 +18,13 @@ export function channelExperience(counts: ChannelCounts): PageExperience {
   return 'running';
 }
 
-export function platformLooksConnected(platform: { accountState?: string | null; state?: string | null }): boolean {
-  return (
-    platform.accountState === 'ACTIVE' ||
-    platform.state === 'Active' ||
-    platform.state === 'Ready' ||
-    platform.state === 'Scheduled'
-  );
+export function platformLooksConnected(platform: {
+  accountState?: string | null;
+  state?: string | null;
+  platformSlug?: string;
+}): boolean {
+  if (platform.accountState === 'ACTIVE' || platform.state === 'Active') return true;
+  return platform.platformSlug === AUTO_MARKETPLACE_SLUG && (platform.state === 'Ready' || platform.state === 'Scheduled');
 }
 
 export function dealerSetupIncomplete(input: {

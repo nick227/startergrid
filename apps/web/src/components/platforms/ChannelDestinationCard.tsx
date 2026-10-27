@@ -4,6 +4,7 @@ import { platformDisplayName, AUTO_MARKETPLACE_SLUG } from '@/lib/marketplaceBra
 import type { PlatformPublishResult, PlatformAccountDetail, PlatformPerformanceItem } from '@/lib/types.ts';
 import { getSetupReadiness } from '@/lib/setupReadiness.ts';
 import { channelCardCopy } from '@/lib/destinationPrimary.ts';
+import { platformLooksConnected } from '@/lib/pagePrimaryState.ts';
 
 type Props = {
   platform: PlatformPublishResult;
@@ -17,12 +18,8 @@ type Props = {
 export function ChannelDestinationCard({ platform, account, perf, storefrontHref, onOpen }: Props) {
   const readiness = getSetupReadiness(platform, account);
   const hasErrors = readiness.severity === 'critical' || platform.accountState === 'ERROR';
-  const isConnected =
-    platform.accountState === 'ACTIVE' ||
-    platform.state === 'Active' ||
-    platform.state === 'Ready' ||
-    platform.state === 'Scheduled';
   const isFirstParty = platform.platformSlug === AUTO_MARKETPLACE_SLUG;
+  const isConnected = platformLooksConnected(platform);
   const name = platformDisplayName(platform.platformSlug, platform.platformName);
   const sentCount = perf?.vehiclesListed ?? 0;
   const copy = channelCardCopy({

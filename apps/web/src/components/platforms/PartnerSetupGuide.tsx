@@ -1,7 +1,6 @@
 import { useAuth } from '@/contexts/AuthContext.tsx';
 import { isInternalSupportRole } from '@/lib/operatorAccess.ts';
 import {
-  isTechnicalText,
   presentSetupSteps,
   presentValidationNote,
   rewriteSetupStep,
@@ -34,7 +33,7 @@ export function PartnerSetupGuide({ guide }: { guide: PartnerSetupGuideData }) {
       <h2 className="text-[11px] font-bold uppercase tracking-widest text-ink-faint">How to connect</h2>
       {guide.shortBlurb && (
         <p className="text-sm text-ink-body leading-relaxed">
-          {isTechnicalText(guide.shortBlurb) ? rewriteSetupStep(guide.shortBlurb) : guide.shortBlurb}
+          {rewriteSetupStep(guide.shortBlurb)}
         </p>
       )}
       <p className="text-sm text-ink-muted">{connectionKindLabel(guide.connectionLabel)}</p>

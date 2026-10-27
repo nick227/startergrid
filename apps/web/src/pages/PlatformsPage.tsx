@@ -1,6 +1,6 @@
 import { useMemo, useState, useEffect } from 'react';
 import { fetchPublishStatus, fetchAccounts, fetchPlatformPerformance, fetchSelectedSocialPages, fetchPublishQueue } from '@/lib/api/sdk.ts';
-import type { PlatformAccountDetail, PlatformPerformanceItem, SelectedSocialPage } from '@/lib/types.ts';
+import type { PlatformAccountDetail, PlatformPerformanceItem } from '@/lib/types.ts';
 import type { OperatorPageBaseProps } from '@/lib/operatorPage.ts';
 import { useAsyncQuery } from '@/hooks/useAsyncQuery.ts';
 import { OperatorPage, ErrorState, PageHeader } from '@/components/operator';
@@ -47,12 +47,6 @@ export default function PlatformsPage({ dealerId, nav, activeTab, initialPlatfor
     for (const p of perfQuery.data?.platforms ?? []) m.set(p.platformSlug, p);
     return m;
   }, [perfQuery.data]);
-
-  const socialPageBySlug = useMemo(() => {
-    const m = new Map<string, SelectedSocialPage>();
-    for (const s of socialPagesQuery.data?.selections ?? []) m.set(s.platformSlug, s);
-    return m;
-  }, [socialPagesQuery.data]);
 
   const queueStatsBySlug = useMemo(
     () => platformStatsBySlug(queueQuery.data?.byPlatform),
@@ -138,8 +132,6 @@ export default function PlatformsPage({ dealerId, nav, activeTab, initialPlatfor
         platforms={platforms}
         perfBySlug={perfBySlug}
         accountBySlug={accountBySlug}
-        socialPageBySlug={socialPageBySlug}
-        queueStatsBySlug={queueStatsBySlug}
         dealerId={dealerId}
         nav={nav}
         selectedSlug={selectedSlug}
@@ -148,10 +140,6 @@ export default function PlatformsPage({ dealerId, nav, activeTab, initialPlatfor
           accountsQuery.reload();
           socialPagesQuery.reload();
           reload();
-          queueQuery.reload();
-        }}
-        onPlatformConnected={slug => {
-          setConnectedSlug(slug);
           queueQuery.reload();
         }}
         loading={loading && !data}
