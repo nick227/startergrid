@@ -4,7 +4,7 @@ import type { RowNavScope } from './rowNavScope.ts';
 
 export type OperatorNavHandlers = {
   goToHome: () => void;
-  goToPlatforms: () => void;
+  goToPlatforms: (scope?: RowNavScope) => void;
   /** @deprecated Queue is retired. Direct users to Platforms or Home to see operational issues. */
   goToQueue: (scope?: RowNavScope) => void;
   /** @deprecated History is retired. Direct users to Platforms to see operational audit trails. */
@@ -22,7 +22,7 @@ export type OperatorNavHandlers = {
     },
     scope?: RowNavScope
   ) => void;
-  goToLeads: () => void;
+  goToLeads: (scope?: RowNavScope) => void;
   goToSettings: () => void;
   goToHelp: () => void;
   goToPlatformDetail: (platformSlug: string, scope?: RowNavScope) => void;
@@ -37,7 +37,7 @@ export type OperatorNavHandlers = {
   /** @deprecated use goToHelp */
   goToKnowledge?: () => void;
   goToVehicles?: (scope?: RowNavScope) => void;
-  goToChannels?: () => void;
+  goToChannels?: (scope?: RowNavScope) => void;
   changeDealer: () => void;
 };
 

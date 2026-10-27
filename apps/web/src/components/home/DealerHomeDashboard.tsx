@@ -84,7 +84,7 @@ export function DealerHomeDashboard({ dealerId, nav }: Props) {
         detail: 'Usually a missing price or photos.',
         ownerKind: 'YOU',
         button: 'Review vehicles',
-        onAction: () => nav.goToInventory(),
+        onAction: () => nav.goToInventory({ filter: 'Blocked' }),
       });
     }
     (status?.platforms ?? []).forEach(platform => {
@@ -145,12 +145,23 @@ export function DealerHomeDashboard({ dealerId, nav }: Props) {
           : '',
         onAction: () => {
           if (!topAttention.action.enabled) return;
-          if (topAttention.action.kind === 'FIX_VEHICLES' || topAttention.action.kind === 'ADD_PHOTOS') nav.goToInventory();
-          else if (topAttention.action.kind === 'REVIEW_REMOVALS' || topAttention.action.kind === 'END_EXTERNAL_LISTING' || topAttention.action.kind === 'COMPLETE_CHANNEL_SETUP') {
+          const vehicleIds = (topAttention.records || [])
+            .map(r => r.vehicleId || (r.type === 'VEHICLE' ? r.id : null))
+            .filter((id): id is string => Boolean(id));
+
+          if (topAttention.action.kind === 'FIX_VEHICLES') {
+            nav.goToInventory({ filter: 'Blocked', ids: vehicleIds.length > 0 ? vehicleIds : undefined });
+          } else if (topAttention.action.kind === 'ADD_PHOTOS') {
+            nav.goToInventory({ filter: 'Needs photos', ids: vehicleIds.length > 0 ? vehicleIds : undefined });
+          } else if (topAttention.action.kind === 'REVIEW_REMOVALS' || topAttention.action.kind === 'END_EXTERNAL_LISTING' || topAttention.action.kind === 'COMPLETE_CHANNEL_SETUP') {
             if (topAttention.action.channel) nav.goToPlatformDetail(topAttention.action.channel);
             else nav.goToPlatforms();
-          } else if (topAttention.action.kind === 'RETRY_CRM_DELIVERY') nav.goToLeads();
-          else if (topAttention.action.kind === 'CONTACT_SUPPORT') window.location.href = 'mailto:support@startergrid.com';
+          } else if (topAttention.action.kind === 'RETRY_CRM_DELIVERY') {
+            const leadRecord = topAttention.records?.find(r => r.type === 'LEAD') || topAttention.records?.[0];
+            nav.goToLeads({ leadId: leadRecord?.id });
+          } else if (topAttention.action.kind === 'CONTACT_SUPPORT') {
+            window.location.href = 'mailto:support@startergrid.com';
+          }
         },
       }
     : tasks[0];
@@ -177,7 +188,7 @@ export function DealerHomeDashboard({ dealerId, nav }: Props) {
         }
         ownerKind={top ? top.ownerKind : inquiryCount > 0 ? 'YOU' : undefined}
         actionLabel={top && top.button ? top.button : inquiryCount > 0 ? 'Open leads' : undefined}
-        onAction={top && top.button ? top.onAction : inquiryCount > 0 ? nav.goToLeads : undefined}
+        onAction={top && top.button ? top.onAction : inquiryCount > 0 ? () => nav.goToLeads() : undefined}
       />
 
       <DealerAttentionSection dealerId={dealerId} attention={attention} nav={nav} />
@@ -185,7 +196,7 @@ export function DealerHomeDashboard({ dealerId, nav }: Props) {
       <section className="surface-card-operator p-5 rounded-xl border border-silver-200 bg-white space-y-3">
         <div className="flex items-center justify-between gap-3">
           <h3 className="text-sm font-semibold text-ink-heading">New inquiries</h3>
-          <button type="button" onClick={nav.goToLeads} className="text-xs font-medium text-ink-heading underline">
+          <button type="button" onClick={() => nav.goToLeads()} className="text-xs font-medium text-ink-heading underline">
             Open leads
           </button>
         </div>
@@ -196,7 +207,7 @@ export function DealerHomeDashboard({ dealerId, nav }: Props) {
             <button
               key={lead.id}
               type="button"
-              onClick={nav.goToLeads}
+              onClick={() => nav.goToLeads()}
               className="w-full text-left py-2 border-t border-silver-100 first:border-0 first:pt-0"
             >
               <p className="text-sm font-medium text-ink-heading">{lead.contactName || 'Buyer'}</p>

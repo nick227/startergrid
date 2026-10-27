@@ -209,7 +209,7 @@ export function GettingStartedChecklist({ dealerId, nav, profile: profileProp, s
           </span>
           <button
             type="button"
-            onClick={nav.goToPlatforms}
+            onClick={() => nav.goToPlatforms()}
             className="text-navy-700 hover:text-navy-900 font-semibold underline shrink-0"
           >
             Review channels →

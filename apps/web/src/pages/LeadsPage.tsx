@@ -9,6 +9,7 @@ import { PagePrimaryState } from '@/components/guidance/PagePrimaryState.tsx';
 import { Banner, SearchField, Select } from '@/components/ui';
 import { AUTO_MARKETPLACE_NAME, AUTO_MARKETPLACE_SLUG } from '@/lib/marketplaceBrand.ts';
 import { LeadCrmHandoffModal } from '@/components/leads/LeadCrmHandoffModal.tsx';
+import { useOperatorRoute } from '@/hooks/useOperatorRoute.ts';
 
 type Props = OperatorPageBaseProps;
 
@@ -449,8 +450,9 @@ function LeadRow({
 type PageView = 'leads' | 'communications';
 
 export default function LeadsPage({ dealerId, nav, activeTab }: Props) {
+  const { route } = useOperatorRoute();
   const [view, setView] = useState<PageView>('leads');
-  const [selectedLeadForCrm, setSelectedLeadForCrm] = useState<string | null>(null);
+  const [selectedLeadForCrm, setSelectedLeadForCrm] = useState<string | null>(() => route.scope?.leadId ?? null);
 
   const { data, loading, error, reload } = useAsyncQuery(
     () => fetchDealerLeads(dealerId),
@@ -473,7 +475,7 @@ export default function LeadsPage({ dealerId, nav, activeTab }: Props) {
     [peopleData],
   );
 
-  const [search, setSearch] = useState('');
+  const [search, setSearch] = useState(() => route.scope?.search ?? route.assetRef ?? '');
   const [statusFilter, setStatusFilter] = useState<StatusFilter>('all');
   const [sourceFilter, setSourceFilter] = useState('all');
   const [sort, setSort] = useState<SortKey>('newest');
@@ -481,6 +483,17 @@ export default function LeadsPage({ dealerId, nav, activeTab }: Props) {
   const [assignees, setAssignees] = useState<Record<string, string | null>>({});
 
   const leads = data?.leads ?? [];
+
+  useEffect(() => {
+    if (route.scope?.leadId) {
+      setSelectedLeadForCrm(route.scope.leadId);
+    }
+    if (route.scope?.search !== undefined) {
+      setSearch(route.scope.search);
+    } else if (route.assetRef) {
+      setSearch(route.assetRef);
+    }
+  }, [route.scope, route.assetRef]);
 
   useEffect(() => {
     setStatuses({});
@@ -520,6 +533,7 @@ export default function LeadsPage({ dealerId, nav, activeTab }: Props) {
   const visibleLeads = useMemo(() => {
     const q = search.trim().toLowerCase();
     const filtered = leads.filter(lead => {
+      if (route.scope?.leadId && lead.id === route.scope.leadId) return true;
       if (statusFilter !== 'all' && statusFor(lead) !== statusFilter) return false;
       if (sourceFilter !== 'all' && lead.platformSlug !== sourceFilter) return false;
       if (q && !leadSearchText(lead).includes(q)) return false;
@@ -634,6 +648,25 @@ export default function LeadsPage({ dealerId, nav, activeTab }: Props) {
               <Banner variant="error" action={<button type="button" onClick={reload} className="text-xs underline">Retry</button>}>
                 {error}
               </Banner>
+            )}
+
+            {route.scope?.leadId && (
+              <div className="flex items-center justify-between gap-3 px-4 py-2.5 rounded-xl border border-indigo-200 bg-indigo-50/80 text-xs text-indigo-950 font-medium shadow-2xs">
+                <div className="flex items-center gap-2">
+                  <span className="text-sm">🎯</span>
+                  <div>
+                    <span className="font-bold">Focused on inquiry needing attention</span>
+                    <span className="text-indigo-800 ml-1.5">— CRM handoff details opened for this inquiry.</span>
+                  </div>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => nav.goToLeads()}
+                  className="text-xs text-indigo-700 hover:text-indigo-950 font-semibold underline underline-offset-2 shrink-0"
+                >
+                  Show all inquiries
+                </button>
+              </div>
             )}
 
             <div className="surface-card-operator overflow-hidden p-0">

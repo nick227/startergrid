@@ -255,10 +255,10 @@ export function LeadCrmHandoffModal({ dealershipId, leadId, isOpen, onClose, onS
                     Buyer Contact
                   </span>
                   <span className="text-sm font-bold text-ink-heading block mt-0.5">
-                    {data.customer.name || 'Anonymous Buyer'}
+                    {data.customer?.name || 'Anonymous Buyer'}
                   </span>
                   <span className="text-ink-muted block mt-0.5">
-                    {[data.customer.email, data.customer.phone].filter(Boolean).join(' · ') || 'No contact supplied'}
+                    {[data.customer?.email, data.customer?.phone].filter(Boolean).join(' · ') || 'No contact supplied'}
                   </span>
                 </div>
               </div>
@@ -371,7 +371,7 @@ export function LeadCrmHandoffModal({ dealershipId, leadId, isOpen, onClose, onS
                   </div>
 
                   {/* Delivery Attempts */}
-                  {data.attempts.length > 0 && (
+                  {Boolean(data.attempts && data.attempts.length > 0) && (
                     <div className="space-y-1.5 pt-2 border-t border-silver-100">
                       <span className="text-[11px] font-bold text-ink-muted uppercase tracking-wider block">
                         Send history

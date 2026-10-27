@@ -66,13 +66,14 @@ export default function InventoryPage({ dealerId, nav, activeTab }: Props) {
     () => fetchInventory(dealerId, { lifecycleScope }),
     [dealerId, lifecycleScope],
   );
-  const [selected, setSelected] = useState<Set<string>>(new Set());
-  const [filter, setFilter] = useState<string>('All');
+  const [selected, setSelected] = useState<Set<string>>(() => new Set(route.scope?.ids ?? []));
+  const [filter, setFilter] = useState<string>(() => route.scope?.filter ?? 'All');
+  const [focusIds, setFocusIds] = useState<string[] | null>(() => (route.scope?.ids && route.scope.ids.length > 0 ? route.scope.ids : null));
   const [ageFilter, setAgeFilter] = useState<'all' | 'week'>('all');
   const [movementFilter] = useState<MovementFilter>('ALL');
   const [sortKey, setSortKey] = useState<string>('specs.make');
   const [sortDirection, setSortDirection] = useState<'asc'|'desc'>('asc');
-  const [search, setSearch] = useState(route.assetRef ?? '');
+  const [search, setSearch] = useState(() => route.scope?.search ?? route.assetRef ?? '');
   const [createPostTarget, setCreatePostTarget] = useState<{ vehicleId: string; vehicleTitle: string } | null>(null);
   const [relistingId, setRelistingId] = useState<string | null>(null);
   const [importOutcome, setImportOutcome] = useState<CommitImportResponse | null>(null);
@@ -192,8 +193,19 @@ export default function InventoryPage({ dealerId, nav, activeTab }: Props) {
 
 
   useEffect(() => {
-    if (route.assetRef) setSearch(route.assetRef);
-  }, [route.assetRef]);
+    if (route.scope?.filter) {
+      setFilter(route.scope.filter);
+    }
+    if (route.scope?.ids && route.scope.ids.length > 0) {
+      setSelected(new Set(route.scope.ids));
+      setFocusIds(route.scope.ids);
+    }
+    if (route.scope?.search !== undefined) {
+      setSearch(route.scope.search);
+    } else if (route.assetRef) {
+      setSearch(route.assetRef);
+    }
+  }, [route.scope, route.assetRef]);
 
   const perf = useAsyncQuery(() => fetchVehiclePerformanceList(dealerId), [dealerId]);
   const platformPerf = useAsyncQuery(() => fetchPlatformPerformance(dealerId), [dealerId]);
@@ -255,6 +267,12 @@ export default function InventoryPage({ dealerId, nav, activeTab }: Props) {
 
   const scopedActive = useMemo(() => {
     let list = activeVehicles;
+    if (focusIds && focusIds.length > 0) {
+      const idFiltered = list.filter(v => focusIds.includes(v.id));
+      if (idFiltered.length > 0) {
+        list = idFiltered;
+      }
+    }
     if (ageFilter === 'week') {
       const cutoff = Date.now() - 7 * 24 * 60 * 60 * 1000;
       list = list.filter(v => new Date(v.updatedAt).getTime() >= cutoff);
@@ -267,7 +285,7 @@ export default function InventoryPage({ dealerId, nav, activeTab }: Props) {
       });
     }
     return list;
-  }, [activeVehicles, ageFilter, filter, perfMap, repriceMap]);
+  }, [activeVehicles, focusIds, ageFilter, filter, perfMap, repriceMap]);
 
   // Filter mapping from chip -> old cleanup filter logic (temp)
   const legacyFilterMap: Record<string, CleanupFilter> = {
@@ -539,7 +557,7 @@ export default function InventoryPage({ dealerId, nav, activeTab }: Props) {
           {(!isPhysicalInventory || !isEmpty) && (
           <InventoryWorkspace
             dealerId={dealerId}
-            initialTab={isPhysicalInventory && summaryCounts.blocked > 0 ? 'attention' : 'browse'}
+            initialTab={focusIds || route.scope?.filter ? 'browse' : (isPhysicalInventory && summaryCounts.blocked > 0 ? 'attention' : 'browse')}
             tabCounts={{
               browse: isPhysicalInventory ? activeVehicles.length : 0,
               attention: isPhysicalInventory ? attentionVehicles.length : 0,
@@ -846,6 +864,24 @@ export default function InventoryPage({ dealerId, nav, activeTab }: Props) {
             browseContent={
               isPhysicalInventory ? (
                 <>
+                  {focusIds && focusIds.length > 0 && (
+                    <div className="mb-4 flex items-center justify-between gap-3 px-4 py-2.5 rounded-xl border border-indigo-200 bg-indigo-50/80 text-xs text-indigo-950 font-medium shadow-2xs">
+                      <div className="flex items-center gap-2">
+                        <span className="text-sm">🎯</span>
+                        <div>
+                          <span className="font-bold">Focused on {focusIds.length} attention {focusIds.length === 1 ? 'vehicle' : 'vehicles'}</span>
+                          <span className="text-indigo-800 ml-1.5">— Pre-selected and ready for correction.</span>
+                        </div>
+                      </div>
+                      <button
+                        type="button"
+                        onClick={() => setFocusIds(null)}
+                        className="text-xs text-indigo-700 hover:text-indigo-950 font-semibold underline underline-offset-2 shrink-0"
+                      >
+                        Show all {filter} vehicles
+                      </button>
+                    </div>
+                  )}
                   {!isEmpty && (
                     <InventorySummaryStrip counts={summaryCounts} activeFilter={filter} onFilterChange={setFilter} />
                   )}

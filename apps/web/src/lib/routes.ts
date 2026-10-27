@@ -21,6 +21,8 @@ export type OperatorRoute = {
   reportFamily: 'inventory' | 'platform' | null;
   reportSlug: string | null;
   reportRange: import('./reportsCatalog.ts').ReportRangePreset;
+  /** Parsed row navigation scope containing filters, search, record IDs, or lead IDs. */
+  scope?: RowNavScope;
   /** Set when page==='admin' and the URL is #/admin/dealers/{id}. Null for all other routes. */
   adminDealerId: string | null;
   /** Dealer sub-page within admin (platforms/queue/history/reports/inventory/help). Null otherwise. */
@@ -70,6 +72,7 @@ function emptyRoute(): OperatorRoute {
     reportFamily: null,
     reportSlug: null,
     reportRange: 'now',
+    scope: {},
     adminDealerId: null,
     adminDealerPage: null,
     adminPlatformSlug: null,
@@ -77,17 +80,20 @@ function emptyRoute(): OperatorRoute {
 }
 
 function routeWithReports(
-  base: Omit<OperatorRoute, 'reportFamily' | 'reportSlug' | 'reportRange' | 'adminPlatformSlug'> & { adminPlatformSlug?: string | null },
+  base: Omit<OperatorRoute, 'reportFamily' | 'reportSlug' | 'reportRange' | 'adminPlatformSlug'> & { adminPlatformSlug?: string | null; scope?: RowNavScope },
   hash: string,
 ): OperatorRoute {
   const adminPlatformSlug = base.adminPlatformSlug ?? null;
+  const { query } = splitOperatorHash(hash);
+  const scope = base.scope ?? parseRowNavScope(query);
   if (base.page !== 'reports') {
-    return { ...base, adminPlatformSlug, reportFamily: null, reportSlug: null, reportRange: 'now' };
+    return { ...base, adminPlatformSlug, scope, reportFamily: null, reportSlug: null, reportRange: 'now' };
   }
   const report = parseReportRoute(hash);
   return {
     ...base,
     adminPlatformSlug,
+    scope,
     reportFamily: report.family,
     reportSlug: report.slug,
     reportRange: report.range,
@@ -294,15 +300,15 @@ export function platformHistoryHash(dealerId: string, platformSlug: string, scop
 export function buildOperatorNav(dealerId: string): OperatorNavHandlers {
   return {
     goToHome: () => { window.location.hash = `#/${dealerId}`; },
-    goToPlatforms: () => { window.location.hash = operatorHash(dealerId, 'platforms'); },
+    goToPlatforms: scope => { window.location.hash = operatorHash(dealerId, 'platforms', scope); },
     goToQueue: scope => { window.location.hash = operatorHash(dealerId, 'inventory', scope); },
     goToHistory: scope => { window.location.hash = operatorHash(dealerId, 'platforms', scope); },
     goToReports: () => { window.location.hash = operatorHash(dealerId, 'reports'); },
     goToInventory: scope => { window.location.hash = operatorHash(dealerId, 'inventory', scope); },
     goToVehicles: scope => { window.location.hash = operatorHash(dealerId, 'inventory', scope); },
-    goToChannels: () => { window.location.hash = operatorHash(dealerId, 'platforms'); },
+    goToChannels: scope => { window.location.hash = operatorHash(dealerId, 'platforms', scope); },
     goToInventoryItem: (item, scope) => { window.location.hash = inventoryItemHash(dealerId, item, scope); },
-    goToLeads: () => { window.location.hash = operatorHash(dealerId, 'leads'); },
+    goToLeads: scope => { window.location.hash = operatorHash(dealerId, 'leads', scope); },
     goToSettings: () => { window.location.hash = operatorHash(dealerId, 'settings'); },
     goToHelp: () => openDocumentation(),
     goToPlatformDetail: (slug, scope) => { window.location.hash = platformDetailHash(dealerId, slug, scope); },

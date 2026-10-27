@@ -548,7 +548,7 @@ export function BulkEditModal({ dealerId, isOpen, onClose, vehicles, onSuccess }
 
               {/* Undo action banner */}
               {result.undoAvailable && result.batchId && !undoResult && (
-                <div className="p-4 rounded-xl border border-amber-300 bg-amber-50/80 space-y-2">
+                <div className="p-4 rounded-xl border border-amber-300 bg-amber-50/80 space-y-2.5">
                   <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
                     <div>
                       <h4 className="text-xs font-bold text-amber-950">Safe Batch Undo Available</h4>
@@ -565,25 +565,71 @@ export function BulkEditModal({ dealerId, isOpen, onClose, vehicles, onSuccess }
                       {undoing ? 'Restoring…' : 'Undo this bulk update'}
                     </button>
                   </div>
-                  <p className="text-[10px] text-amber-800">
-                    Restored values reach channels on their next update. StarterGrid cannot recall what a channel already showed.
-                  </p>
+                  <div className="pt-2 border-t border-amber-200/80 text-[10px] text-amber-900 space-y-0.5">
+                    <p>
+                      <strong>Scope of undo:</strong> Reverts values in StarterGrid inventory database immediately.
+                    </p>
+                    <p className="text-amber-800">
+                      Restored values reach channels on their next update. StarterGrid cannot recall what a channel already showed.
+                    </p>
+                  </div>
                 </div>
               )}
 
               {undoResult && (
-                <div className="p-4 rounded-xl border border-indigo-200 bg-indigo-50/80 space-y-2 text-xs">
-                  <h4 className="font-bold text-indigo-950">Batch Restored</h4>
-                  <p className="text-indigo-900">{undoResult.note}</p>
-                  <div className="flex items-center gap-2">
-                    <span className="px-2.5 py-0.5 rounded text-[11px] font-bold bg-emerald-100 text-emerald-800">
-                      {undoResult.counts.RESTORED ?? 0} restored
-                    </span>
-                    {(undoResult.counts.SKIPPED ?? 0) > 0 && (
-                      <span className="px-2.5 py-0.5 rounded text-[11px] font-bold bg-amber-100 text-amber-800">
-                        {undoResult.counts.SKIPPED} skipped (modified since batch)
-                      </span>
-                    )}
+                <div className="rounded-xl border border-silver-300 bg-white shadow-xs overflow-hidden text-xs">
+                  <div className="p-4 bg-indigo-50/80 border-b border-indigo-100 space-y-2">
+                    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                      <div>
+                        <h4 className="font-bold text-indigo-950 text-sm">Batch Restored</h4>
+                        <p className="text-indigo-900 text-xs mt-0.5">
+                          {undoResult.note || 'Restored values reach channels on their next update. StarterGrid cannot recall what a channel already showed.'}
+                        </p>
+                      </div>
+                      <div className="flex items-center gap-2 shrink-0">
+                        <span className="px-2.5 py-0.5 rounded text-[11px] font-bold bg-emerald-100 text-emerald-800 border border-emerald-200">
+                          {undoResult.counts.RESTORED ?? 0} restored
+                        </span>
+                        {(undoResult.counts.SKIPPED ?? 0) > 0 && (
+                          <span className="px-2.5 py-0.5 rounded text-[11px] font-bold bg-amber-100 text-amber-800 border border-amber-200">
+                            {undoResult.counts.SKIPPED} skipped (modified since batch)
+                          </span>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Dual breakdown: Internal Database vs External Channels */}
+                  <div className="p-4 grid grid-cols-1 md:grid-cols-2 gap-3.5 bg-silver-50/50">
+                    <div className="p-3.5 rounded-lg border border-emerald-200 bg-white space-y-1.5 shadow-2xs">
+                      <div className="flex items-center justify-between gap-2">
+                        <div className="flex items-center gap-1.5 font-bold text-emerald-950 text-xs">
+                          <span className="w-2 h-2 rounded-full bg-emerald-600 shrink-0" aria-hidden="true" />
+                          <span>StarterGrid Lot Inventory</span>
+                        </div>
+                        <span className="text-[10px] uppercase tracking-wider px-1.5 py-0.5 bg-emerald-50 text-emerald-800 border border-emerald-200 rounded font-bold">
+                          Restored in Database
+                        </span>
+                      </div>
+                      <p className="text-[11px] text-ink-muted leading-relaxed">
+                        Internal records have been reverted to their previous values. Vehicle details, window stickers, and lot management reflect the restored values immediately.
+                      </p>
+                    </div>
+
+                    <div className="p-3.5 rounded-lg border border-amber-200 bg-white space-y-1.5 shadow-2xs">
+                      <div className="flex items-center justify-between gap-2">
+                        <div className="flex items-center gap-1.5 font-bold text-amber-950 text-xs">
+                          <span className="w-2 h-2 rounded-full bg-amber-500 shrink-0" aria-hidden="true" />
+                          <span>Connected Marketplaces</span>
+                        </div>
+                        <span className="text-[10px] uppercase tracking-wider px-1.5 py-0.5 bg-amber-50 text-amber-800 border border-amber-200 rounded font-bold">
+                          Sync Pending
+                        </span>
+                      </div>
+                      <p className="text-[11px] text-ink-muted leading-relaxed">
+                        External channels do not revert instantaneously. Restored values are queued and will update during each marketplace's next scheduled feed cycle.
+                      </p>
+                    </div>
                   </div>
                 </div>
               )}

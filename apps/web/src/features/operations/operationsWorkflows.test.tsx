@@ -7,6 +7,12 @@ import { BulkEditModal } from '@/components/inventory/BulkEditModal.tsx';
 import type { AttentionResponse } from '@/lib/api/attentionApi.ts';
 import type { PrintableVehicle } from '@/components/inventory/WindowStickerModal.tsx';
 import * as bulkEditApi from '@/lib/api/bulkEditApi.ts';
+import { parseOperatorRoute } from '@/lib/routes.ts';
+import LeadsPage from '@/pages/LeadsPage.tsx';
+import { AuthProvider } from '@/contexts/AuthContext.tsx';
+import { CategoryProvider } from '@/contexts/CategoryContext.tsx';
+import { DocReaderProvider } from '@/components/docs/DocReaderContext.tsx';
+import { automotiveSchema } from '@auto-dealer/category-schemas';
 
 let root: Root | undefined;
 function render(node: ReactNode) {
@@ -14,7 +20,13 @@ function render(node: ReactNode) {
   document.body.appendChild(container);
   root = createRoot(container);
   act(() => {
-    root!.render(node);
+    root!.render(
+      <AuthProvider>
+        <CategoryProvider schema={automotiveSchema}>
+          <DocReaderProvider>{node}</DocReaderProvider>
+        </CategoryProvider>
+      </AuthProvider>
+    );
   });
 }
 function cleanup() {
@@ -134,14 +146,58 @@ describe('Attention List Interface: DealerAttentionSection', () => {
     expect(screen.getByText('Lead delivery to CRM failed for John Doe')).toBeTruthy();
   });
 
-  it('routes action buttons according to action.kind', () => {
+  it('routes action buttons according to action.kind and lands on affected records with filters and IDs', () => {
     render(<DealerAttentionSection dealerId="dealer-123" attention={baseAttention} nav={mockNav} />);
+
+    // Compact target preview is displayed on Home
+    expect(screen.getByText(/2022 Honda Civic, 2021 Toyota RAV4/)).toBeTruthy();
 
     const fixBtn = screen.getByRole('button', { name: 'Review vehicles' });
     act(() => {
       fireEvent.click(fixBtn);
     });
-    expect(mockNav.goToInventory).toHaveBeenCalled();
+    expect(mockNav.goToInventory).toHaveBeenCalledWith({
+      filter: 'Blocked',
+      ids: ['v1', 'v2'],
+    });
+  });
+
+  it('routes lead attention actions directly to the targeted lead ID', () => {
+    const leadAttention: AttentionResponse = {
+      ...baseAttention,
+      items: [
+        {
+          key: 'crm-delivery-failed',
+          area: 'LEADS',
+          kind: 'CRM_DELIVERY_FAILED',
+          severity: 'WARNING',
+          owner: 'DEALERSHIP',
+          ownerId: null,
+          count: 1,
+          summary: 'Lead delivery to CRM failed for John Doe',
+          nextAction: 'Retry delivery or export ADF/XML',
+          action: {
+            kind: 'RETRY_CRM_DELIVERY',
+            enabled: true,
+            disabledReason: null,
+            channel: null,
+          },
+          records: [
+            { type: 'LEAD', id: 'l1', label: 'John Doe', detail: 'SMTP timeout', channel: null, vehicleId: null },
+          ],
+        },
+      ],
+    };
+
+    render(<DealerAttentionSection dealerId="dealer-123" attention={leadAttention} nav={mockNav} />);
+
+    const retryBtn = screen.getByRole('button', { name: 'Review leads & retry' });
+    act(() => {
+      fireEvent.click(retryBtn);
+    });
+    expect(mockNav.goToLeads).toHaveBeenCalledWith({
+      leadId: 'l1',
+    });
   });
 
   it('respects action.enabled: false and displays the disabledReason without clickable action', () => {
@@ -405,6 +461,154 @@ describe('Bulk Vehicle Correction Interface: BulkEditModal', () => {
     await waitFor(() => {
       expect(screen.getByText(/Batch Restored/)).toBeTruthy();
       expect(screen.getByText(/Restored values reach channels on their next update/)).toBeTruthy();
+      expect(screen.getByText(/StarterGrid Lot Inventory/)).toBeTruthy();
+      expect(screen.getByText(/Restored in Database/)).toBeTruthy();
+      expect(screen.getByText(/Connected Marketplaces/)).toBeTruthy();
+      expect(screen.getByText(/Sync Pending/)).toBeTruthy();
     });
+  });
+});
+
+describe('Three Remaining UX Considerations', () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+  });
+
+  it('preserves filters and record IDs in rowNavScope and routes', () => {
+    const hash = '#/dealer-123/inventory?filter=Blocked&ids=v1,v2&search=Civic';
+    const parsed = parseOperatorRoute(hash);
+    expect(parsed.page).toBe('inventory');
+    expect(parsed.scope?.filter).toBe('Blocked');
+    expect(parsed.scope?.ids).toEqual(['v1', 'v2']);
+    expect(parsed.scope?.search).toBe('Civic');
+
+    const leadHash = '#/dealer-123/leads?leadId=lead-456';
+    const parsedLead = parseOperatorRoute(leadHash);
+    expect(parsedLead.page).toBe('leads');
+    expect(parsedLead.scope?.leadId).toBe('lead-456');
+  });
+
+  it('lands directly on targeted lead and displays contextual focus banner', async () => {
+    window.location.hash = '#/dealer-123/leads?leadId=lead-456';
+
+    vi.stubGlobal('fetch', vi.fn(async (url: string) => {
+      if (url.includes('/crm-detail')) {
+        return {
+          ok: true,
+          json: async () => ({
+            leadId: 'lead-456',
+            canSend: true,
+            status: 'FAILED',
+            lastAttemptAt: '2026-10-27T10:05:00Z',
+            errorMessage: 'SMTP timeout connecting to crm.example.com',
+            customer: { name: 'Alice Buyer', email: 'alice@example.com' },
+            vehicle: { stockNumber: 'STK-456', year: 2023, make: 'Toyota', model: 'Tacoma' },
+            attempts: [],
+          }),
+        };
+      }
+      if (url.includes('/api/dealers/dealer-123/leads')) {
+        return {
+          ok: true,
+          json: async () => ({
+            leads: [
+              {
+                id: 'lead-456',
+                contactName: 'Alice Buyer',
+                contactEmail: 'alice@example.com',
+                platformSlug: 'autotrader',
+                createdAt: '2026-10-27T10:00:00Z',
+                crmDeliverySummary: {
+                  status: 'FAILED',
+                  lastAttemptAt: '2026-10-27T10:05:00Z',
+                  errorMessage: 'SMTP timeout connecting to crm.example.com',
+                },
+                vehicle: {
+                  stockNumber: 'STK-456',
+                  year: 2023,
+                  make: 'Toyota',
+                  model: 'Tacoma',
+                },
+              },
+            ],
+            total: 1,
+          }),
+        };
+      }
+      return { ok: true, json: async () => ({}) };
+    }));
+
+    render(<LeadsPage dealerId="dealer-123" nav={mockNav} />);
+
+    await waitFor(() => {
+      expect(screen.getByText(/Focused on inquiry needing attention/)).toBeTruthy();
+      expect(screen.getByText(/CRM handoff details opened for this inquiry/)).toBeTruthy();
+      expect(screen.getByText('Alice Buyer')).toBeTruthy();
+      // LeadCrmHandoffModal is automatically opened
+      expect(screen.getAllByText(/Send to CRM/i).length).toBeGreaterThan(0);
+    });
+  });
+
+  it('keeps Home Needs Attention compact and uncluttered without overloading the dashboard', () => {
+    const compactAttention: AttentionResponse = {
+      dealershipId: 'dealer-123',
+      generatedAt: '2026-10-27T10:00:00Z',
+      counts: { total: 2, blocking: 1, dealershipActions: 1, waiting: 1 },
+      items: [
+        {
+          key: 'veh-attention',
+          area: 'VEHICLES',
+          kind: 'VEHICLE_INFORMATION_MISSING',
+          severity: 'BLOCKING',
+          owner: 'DEALERSHIP',
+          ownerId: null,
+          count: 2,
+          summary: '2 vehicles cannot be published due to missing prices',
+          nextAction: 'Set prices in Vehicles workspace to resume syndication',
+          action: {
+            kind: 'FIX_VEHICLES',
+            enabled: true,
+            disabledReason: null,
+            channel: null,
+          },
+          records: [
+            { type: 'VEHICLE', id: 'veh-1', label: '2022 Honda Accord', detail: 'Missing price', channel: null, vehicleId: 'veh-1' },
+            { type: 'VEHICLE', id: 'veh-2', label: '2021 Toyota Camry', detail: 'Missing price', channel: null, vehicleId: 'veh-2' },
+          ],
+        },
+        {
+          key: 'partner-waiting',
+          area: 'CHANNELS',
+          kind: 'CHANNEL_SETUP_INCOMPLETE',
+          severity: 'WAITING',
+          owner: 'PARTNER',
+          ownerId: null,
+          count: 1,
+          summary: 'CarGurus partner account approval in progress',
+          nextAction: 'CarGurus review takes approximately 1-2 business days',
+          action: { kind: 'NONE', enabled: false, disabledReason: null, channel: 'cargurus' },
+          records: [],
+        },
+      ],
+      unavailableAreas: [],
+    };
+
+    render(<DealerAttentionSection dealerId="dealer-123" attention={compactAttention} nav={mockNav} />);
+
+    // 1. Shows compact target preview without taking over Home
+    expect(screen.getByText(/Target:/)).toBeTruthy();
+    expect(screen.getByText(/2022 Honda Accord, 2021 Toyota Camry/)).toBeTruthy();
+
+    // 2. Action button links directly to Vehicles workspace
+    const reviewBtn = screen.getByRole('button', { name: 'Review vehicles' });
+    fireEvent.click(reviewBtn);
+    expect(mockNav.goToInventory).toHaveBeenCalledWith({
+      filter: 'Blocked',
+      ids: ['veh-1', 'veh-2'],
+    });
+
+    // 3. Waiting items remain collapsed under secondary toggle
+    expect(screen.getByText(/Waiting on external actions/)).toBeTruthy();
+    expect(screen.queryByText(/CarGurus partner account approval in progress/)).toBeNull();
   });
 });

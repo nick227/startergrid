@@ -3,6 +3,10 @@
 export type RowNavScope = {
   assetRef?: string;
   assetId?: string;
+  filter?: string;
+  ids?: string[];
+  search?: string;
+  leadId?: string;
 };
 
 function slugPart(value: string): string {
@@ -33,9 +37,18 @@ export function parseRowNavScope(queryString: string): RowNavScope {
   const params = new URLSearchParams(queryString.startsWith('?') ? queryString.slice(1) : queryString);
   const assetRef = params.get('ref') ?? params.get('assetRef') ?? undefined;
   const assetId = params.get('assetId') ?? undefined;
+  const filter = params.get('filter') ?? undefined;
+  const search = params.get('search') ?? params.get('q') ?? undefined;
+  const leadId = params.get('leadId') ?? undefined;
+  const rawIds = params.get('ids');
+  const ids = rawIds ? rawIds.split(',').filter(Boolean) : undefined;
   return {
     ...(assetRef ? { assetRef } : {}),
     ...(assetId ? { assetId } : {}),
+    ...(filter ? { filter } : {}),
+    ...(search ? { search } : {}),
+    ...(leadId ? { leadId } : {}),
+    ...(ids ? { ids } : {}),
   };
 }
 
@@ -47,11 +60,17 @@ export function splitOperatorHash(hash: string): { path: string; query: string }
 }
 
 export function appendRowNavScope(baseHash: string, scope?: RowNavScope): string {
-  if (!scope?.assetRef && !scope?.assetId) return baseHash;
+  if (!scope) return baseHash;
+  const hasValues = scope.assetRef || scope.assetId || scope.filter || scope.search || scope.leadId || (scope.ids && scope.ids.length > 0);
+  if (!hasValues) return baseHash;
   const { path, query } = splitOperatorHash(baseHash);
   const params = new URLSearchParams(query);
   if (scope.assetRef) params.set('ref', scope.assetRef);
   if (scope.assetId) params.set('assetId', scope.assetId);
+  if (scope.filter) params.set('filter', scope.filter);
+  if (scope.search) params.set('search', scope.search);
+  if (scope.leadId) params.set('leadId', scope.leadId);
+  if (scope.ids && scope.ids.length > 0) params.set('ids', scope.ids.join(','));
   const qs = params.toString();
   return qs ? `#${path}?${qs}` : `#${path}`;
 }

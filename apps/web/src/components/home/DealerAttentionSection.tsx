@@ -34,22 +34,27 @@ export function DealerAttentionSection({ dealerId: _dealerId, attention, nav }: 
   const handleAction = (item: AttentionItem) => {
     if (!item.action.enabled) return;
     const kind = item.action.kind;
+    const vehicleIds = (item.records || [])
+      .map(r => r.vehicleId || (r.type === 'VEHICLE' ? r.id : null))
+      .filter((id): id is string => Boolean(id));
 
     switch (kind) {
       case 'FIX_VEHICLES':
+        nav.goToInventory({
+          filter: 'Blocked',
+          ids: vehicleIds.length > 0 ? vehicleIds : undefined,
+        });
+        break;
       case 'ADD_PHOTOS':
-        nav.goToInventory();
+        nav.goToInventory({
+          filter: 'Needs photos',
+          ids: vehicleIds.length > 0 ? vehicleIds : undefined,
+        });
         break;
       case 'REVIEW_REMOVALS':
         nav.goToPlatforms();
         break;
       case 'END_EXTERNAL_LISTING':
-        if (item.action.channel) {
-          nav.goToPlatformDetail(item.action.channel);
-        } else {
-          nav.goToPlatforms();
-        }
-        break;
       case 'COMPLETE_CHANNEL_SETUP':
         if (item.action.channel) {
           nav.goToPlatformDetail(item.action.channel);
@@ -57,9 +62,11 @@ export function DealerAttentionSection({ dealerId: _dealerId, attention, nav }: 
           nav.goToPlatforms();
         }
         break;
-      case 'RETRY_CRM_DELIVERY':
-        nav.goToLeads();
+      case 'RETRY_CRM_DELIVERY': {
+        const leadRecord = item.records?.find(r => r.type === 'LEAD') || item.records?.[0];
+        nav.goToLeads({ leadId: leadRecord?.id });
         break;
+      }
       case 'CONTACT_SUPPORT':
         window.location.href = `mailto:support@startergrid.com?subject=Support%20Request%20for%20${encodeURIComponent(item.summary)}`;
         break;
@@ -184,6 +191,17 @@ export function DealerAttentionSection({ dealerId: _dealerId, attention, nav }: 
                         {item.nextAction}
                       </p>
 
+                      {/* Compact target records preview */}
+                      {item.records && item.records.length > 0 && (
+                        <div className="mt-1 flex items-center gap-1.5 text-xs text-ink-muted">
+                          <span className="font-semibold text-ink-body">Target:</span>
+                          <span className="truncate">
+                            {item.records.slice(0, 3).map(r => r.label).join(', ')}
+                            {item.records.length > 3 ? ` +${item.records.length - 3} more` : ''}
+                          </span>
+                        </div>
+                      )}
+
                       {/* Disabled Action Reason */}
                       {!item.action.enabled && item.action.disabledReason && (
                         <p className="text-[11px] font-semibold text-amber-900 bg-amber-50 p-2 rounded-lg border border-amber-200 mt-2">
@@ -223,9 +241,20 @@ export function DealerAttentionSection({ dealerId: _dealerId, attention, nav }: 
                   {/* Expandable Affected Records */}
                   {isExpanded && item.records && item.records.length > 0 && (
                     <div className="mt-3.5 pt-3 border-t border-silver-200/80 space-y-1.5">
-                      <p className="text-[10px] font-bold uppercase tracking-wider text-ink-muted">
-                        Affected Records (showing up to {item.records.length}):
-                      </p>
+                      <div className="flex items-center justify-between gap-2 pb-1">
+                        <p className="text-[10px] font-bold uppercase tracking-wider text-ink-muted">
+                          Affected Records (showing up to {item.records.length}):
+                        </p>
+                        {item.action.enabled && (
+                          <button
+                            type="button"
+                            onClick={() => handleAction(item)}
+                            className="text-[11px] font-bold text-indigo-700 hover:text-indigo-900 underline"
+                          >
+                            Open in {item.area === 'VEHICLES' ? 'Vehicles' : item.area === 'LEADS' ? 'Leads' : 'Channels'} →
+                          </button>
+                        )}
+                      </div>
                       <div className="grid gap-1.5 sm:grid-cols-2 max-h-48 overflow-y-auto">
                         {item.records.map((rec, i) => (
                           <div
