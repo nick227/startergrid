@@ -63,3 +63,16 @@ Not committed by Claude — the owning agent was still editing (help docs, inven
 - Claude's only edit in that pass: `SimplifiedChannelsView.tsx` `sortedConnected` no longer wraps a never-hitting `useMemo` (React Compiler lint error). Lint errors elsewhere in the touched files pre-date the pass.
 - `scratch/*.mjs` are local dev-database helpers with a hard-coded password; keep them out of git.
 - Copy check: `lib/helpTasks.ts` says "StarterGrid does not email the link automatically"; invitations are emailed when SMTP is configured (`delivery: EMAIL_SENT`).
+
+## CRM delivery, integration check and CI, 2026-10-27 (Claude)
+
+**CRM send is real now.** `POST /leads/:leadId/delivery/retry` (`manage_leads`) emails the ADF/XML through the existing `emailTransport` to the address on the dealership's ADF/XML Lead Routing destination (`PlatformAccount.accountId`). There's no fallback to `primaryContactEmail`, no placeholder address, and the request can't choose the address or pass `markDelivered`. Each attempt is persisted as `PENDING` first. It becomes `SENT` (with `deliveredAt`) only after the transport accepts it, otherwise `FAILED` with the error, and failed sends can be retried. A send is refused (409, no attempt recorded) when there's no CRM email or `realEmailDeliveryEnabled()` is false (production + `SMTP_ENABLED=true`, the same gate invitations use). Statuses: `NOT_SENT | SENDING | SENT_TO_CRM_ADDRESS | FAILED`. There's no "imported" status: StarterGrid can't see CRM import. Planner rows from `planAndPersistMarketplaceLeadDeliveries` (`attemptCount 0`, never dispatched) are not shown as sends. `smtpSend` now throws when the server rejects the recipient.
+
+**Window sticker (`2934710`).** Removed the invented "Installed Features" list, the spec defaults (FWD/Automatic/Sedan/Gasoline), the `(555) 000-0000` phone, and the QR block. The QR pointed at `/storefront/{dealer}/vehicles/{stock}`, which no SPA routes (it falls through to the splash page), generated its image through `api.qrserver.com`, and promised a 360° VDP, CARFAX and offers. To bring it back, link the public marketplace listing (`/marketplace/#/automotive/listing/{id}`) and generate the QR locally.
+
+**Open, for the owning agent. Not changed by Claude:**
+- `SyndicationSentryCard.tsx` (uncommitted at 01:58) replaces the server's take-down `message` with "Submitted removal to connected channels. External sites may take 24–48 hours to update." The engine does not submit external removals; the server message lists what is left and who must act (`c12e474`). Please keep `result.message` / `remaining[].nextAction`. "Sold vehicles are not advertised" also overclaims: the audit reads StarterGrid records only.
+- `UsersTab.tsx` (`75ff0b0`) filters staff client-side from a server page of all accounts, so pages can be short or empty and "N staff" counts only the current page. Filter by role on the server.
+- `InventoryPage.tsx` counts aging-price suggestions in "Needs a fix", so vehicles that can be listed appear as needing a fix.
+- `PlatformDetailPage.tsx:180` and `ConnectionSetupPanel.tsx:104` call `useAuth()` after early returns. It's context-only, so it causes a dev hook-order warning, not a crash. Move it above the returns.
+- Web lint has 35 errors, all present before `2934710`. So CI does not gate lint yet.

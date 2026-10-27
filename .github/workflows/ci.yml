@@ -24,3 +24,82 @@ jobs:
       # Builds the API server plus all three SPAs (operator, marketplace, splash).
       # This is the same command Railway runs — a break here is a break in prod.
       - run: npm run build:all
+
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: 'npm'
+
+      - run: npm ci
+
+      - run: npx prisma generate
+
+      # The generated API clients are not committed; the SPAs import them.
+      - run: npm run client:generate && npm run client:generate:marketplace
+
+      - run: npm run openapi:validate && npm run openapi:validate:marketplace
+
+      - run: npm run typecheck -w auto-dealer-operator-ui
+
+      # Backend node:test suite, then the operator and marketplace Vitest suites.
+      - run: npm test
+
+      - run: npm run marketplace:boundary:check && npm run operator:boundary:check
+
+  # Real API + real browser against disposable MySQL databases created from migrations.
+  # Both suites create, use and drop their own schema on this service container.
+  acceptance:
+    runs-on: ubuntu-latest
+    services:
+      mysql:
+        image: mysql:8.0
+        env:
+          MYSQL_ROOT_PASSWORD: ci-root-password
+          MYSQL_DATABASE: startergrid_ci
+        ports:
+          - 3306:3306
+        options: >-
+          --health-cmd="mysqladmin ping -h 127.0.0.1 -pci-root-password"
+          --health-interval=5s
+          --health-timeout=5s
+          --health-retries=20
+    env:
+      # verify:redesign creates startergrid_v5_test_* schemas from this server connection.
+      DATABASE_URL: mysql://root:ci-root-password@127.0.0.1:3306/startergrid_ci
+      # The journey suite creates and drops startergrid_e2e_journey on the same server.
+      E2E_DATABASE_URL: mysql://root:ci-root-password@127.0.0.1:3306/startergrid_ci
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: 'npm'
+
+      - run: npm ci
+
+      - run: npx prisma generate
+
+      - run: npm run client:generate
+
+      - run: npx playwright install --with-deps chromium
+        working-directory: apps/web
+
+      # Dealership creation → owner first login → publication → inquiry → verified handoff.
+      - run: npm run e2e:journey -w auto-dealer-operator-ui
+
+      # Onboarding evidence on isolated MySQL, then CSV drop, inline correction and import.
+      - run: npm run verify:redesign
+
+      - uses: actions/upload-artifact@v4
+        if: failure()
+        with:
+          name: playwright-traces
+          path: apps/web/test-results/
+          if-no-files-found: ignore
+          retention-days: 7
