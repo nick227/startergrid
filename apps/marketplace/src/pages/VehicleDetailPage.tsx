@@ -131,6 +131,7 @@ function ListingDetailPage({ listingId }: Props) {
 function MarkAsSoldButton({ listingId, onSold }: { listingId: string; onSold: () => void }) {
   const [loading, setLoading] = useState(false);
   const [done, setDone] = useState(false);
+  const [denied, setDenied] = useState(false);
 
   const handleSold = async () => {
     if (done || loading) return;
@@ -140,6 +141,8 @@ function MarkAsSoldButton({ listingId, onSold }: { listingId: string; onSold: ()
       if (res.ok) {
         setDone(true);
         onSold();
+      } else if (res.status === 401 || res.status === 403) {
+        setDenied(true);
       }
     } finally {
       setLoading(false);
@@ -158,6 +161,7 @@ function MarkAsSoldButton({ listingId, onSold }: { listingId: string; onSold: ()
         {done ? 'Marked as sold' : loading ? 'Processing…' : 'Mark as Sold'}
       </button>
       {done && <p className="mt-1.5 text-amber-700">Operator-web has been notified. Vehicle removed from marketplace.</p>}
+      {denied && <p className="mt-1.5 text-amber-700">Only signed-in staff of this dealership can record a sale.</p>}
     </div>
   );
 }
