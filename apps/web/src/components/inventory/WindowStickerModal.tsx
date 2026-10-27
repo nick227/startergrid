@@ -28,12 +28,12 @@ export function WindowStickerModal({ vehicle, dealerId, isOpen, onClose }: Props
 
   if (!isOpen) return null;
 
-  const dealerName = profile?.dbaName || profile?.legalName || 'Dealership Lot';
+  const dealerName = profile?.dbaName || profile?.legalName || '';
   const rooftop = profile?.rooftopAddress;
   const dealerAddress = rooftop
     ? [rooftop.street, rooftop.city, [rooftop.state, rooftop.postalCode].filter(Boolean).join(' ')].filter(Boolean).join(', ')
-    : 'Lot Location';
-  const dealerPhone = profile?.primaryContact?.phone || '(555) 000-0000';
+    : '';
+  const dealerPhone = profile?.primaryContact?.phone || '';
   const dealerWebsite = profile?.websiteUrl || window.location.host;
 
   const vehicleTitle = `${vehicle.year} ${vehicle.make} ${vehicle.model} ${vehicle.trim || ''}`.trim();
@@ -41,11 +41,6 @@ export function WindowStickerModal({ vehicle, dealerId, isOpen, onClose }: Props
     vehicle.priceCents > 0
       ? `$${(vehicle.priceCents / 100).toLocaleString(undefined, { maximumFractionDigits: 0 })}`
       : 'Contact Dealer';
-
-  const vdpUrl = `${window.location.origin}/storefront/${dealerId}/vehicles/${vehicle.stockNumber}`;
-  const qrCodeUrl = `https://api.qrserver.com/v1/create-qr-code/?size=160x160&margin=2&data=${encodeURIComponent(
-    vdpUrl,
-  )}`;
 
   const handlePrint = () => {
     window.print();
@@ -157,7 +152,7 @@ export function WindowStickerModal({ vehicle, dealerId, isOpen, onClose }: Props
                     </h1>
                     <p className="text-xs font-medium text-ink-muted">{dealerAddress}</p>
                     <p className="text-xs font-medium text-ink-muted">
-                      Tel: {dealerPhone} · {dealerWebsite}
+                      {[dealerPhone && `Tel: ${dealerPhone}`, dealerWebsite].filter(Boolean).join(' · ')}
                     </p>
                   </div>
                   <div className="text-right sm:self-center">
@@ -171,7 +166,7 @@ export function WindowStickerModal({ vehicle, dealerId, isOpen, onClose }: Props
                 <div className="bg-navy-50/70 border-2 border-navy-900/20 rounded-xl p-5 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                   <div>
                     <span className="text-[11px] font-bold text-navy-700 tracking-wider uppercase block">
-                      {vehicle.condition || 'Pre-Owned'} Vehicle Specification
+                      {vehicle.condition ? `${vehicle.condition} ` : ''}Vehicle Specification
                     </span>
                     <h2 className="text-2xl font-black text-navy-950 mt-0.5">{vehicleTitle}</h2>
                     <div className="flex items-center gap-3 mt-1.5 text-xs text-ink-muted font-medium">
@@ -229,28 +224,28 @@ export function WindowStickerModal({ vehicle, dealerId, isOpen, onClose }: Props
                     <div className="p-2.5 bg-silver-50 rounded-lg border border-silver-200">
                       <span className="text-[10px] text-ink-muted font-medium block">Transmission</span>
                       <strong className="text-ink-heading text-sm capitalize">
-                        {vehicle.transmission || 'Automatic'}
+                        {vehicle.transmission || '—'}
                       </strong>
                     </div>
 
                     <div className="p-2.5 bg-silver-50 rounded-lg border border-silver-200">
                       <span className="text-[10px] text-ink-muted font-medium block">Drivetrain</span>
                       <strong className="text-ink-heading text-sm uppercase">
-                        {vehicle.drivetrain || 'FWD'}
+                        {vehicle.drivetrain || '—'}
                       </strong>
                     </div>
 
                     <div className="p-2.5 bg-silver-50 rounded-lg border border-silver-200">
                       <span className="text-[10px] text-ink-muted font-medium block">Fuel Type</span>
                       <strong className="text-ink-heading text-sm capitalize">
-                        {vehicle.fuelType || 'Gasoline'}
+                        {vehicle.fuelType || '—'}
                       </strong>
                     </div>
 
                     <div className="p-2.5 bg-silver-50 rounded-lg border border-silver-200">
                       <span className="text-[10px] text-ink-muted font-medium block">Body Style</span>
                       <strong className="text-ink-heading text-sm capitalize">
-                        {vehicle.bodyStyle || 'Sedan'}
+                        {vehicle.bodyStyle || '—'}
                       </strong>
                     </div>
 
@@ -278,59 +273,14 @@ export function WindowStickerModal({ vehicle, dealerId, isOpen, onClose }: Props
                       ))}
                     </div>
                   ) : (
-                    <div className="grid grid-cols-2 sm:grid-cols-3 gap-x-4 gap-y-1.5 text-xs text-ink-muted">
-                      <div className="flex items-center gap-1.5">
-                        <span className="text-emerald-600 font-bold">✓</span>
-                        <span>Power Windows & Door Locks</span>
-                      </div>
-                      <div className="flex items-center gap-1.5">
-                        <span className="text-emerald-600 font-bold">✓</span>
-                        <span>Touchscreen Display & Bluetooth</span>
-                      </div>
-                      <div className="flex items-center gap-1.5">
-                        <span className="text-emerald-600 font-bold">✓</span>
-                        <span>Backup Camera & Safety Sensors</span>
-                      </div>
-                      <div className="flex items-center gap-1.5">
-                        <span className="text-emerald-600 font-bold">✓</span>
-                        <span>Keyless Entry & Push-Button Start</span>
-                      </div>
-                      <div className="flex items-center gap-1.5">
-                        <span className="text-emerald-600 font-bold">✓</span>
-                        <span>Alloy Wheels & All-Season Tires</span>
-                      </div>
-                      <div className="flex items-center gap-1.5">
-                        <span className="text-emerald-600 font-bold">✓</span>
-                        <span>Anti-Lock Braking System (ABS)</span>
-                      </div>
-                    </div>
+                    // Never print equipment the dealer has not recorded for this vehicle.
+                    <p className="text-xs text-ink-muted">No options recorded for this vehicle.</p>
                   )}
                 </div>
 
-                {/* Bottom Row: QR Code Lot Walk Lead Capture & Disclaimers */}
-                <div className="border-t-2 border-navy-900 pt-4 flex flex-col sm:flex-row items-center justify-between gap-6">
-                  <div className="flex items-center gap-4">
-                    <div className="p-1.5 bg-white border-2 border-navy-900 rounded-lg shrink-0">
-                      <img
-                        src={qrCodeUrl}
-                        alt="Scan QR code for online vehicle details"
-                        className="w-24 h-24 object-contain"
-                      />
-                    </div>
-                    <div>
-                      <strong className="text-xs font-bold text-navy-950 block">
-                        Scan for 360° Online VDP & Trade Appraisal
-                      </strong>
-                      <p className="text-[11px] text-ink-muted mt-0.5 leading-snug max-w-xs">
-                        Point your smartphone camera to view full high-res photo gallery, CARFAX vehicle history, and submit an offer directly to our team.
-                      </p>
-                      <span className="text-[10px] font-mono text-navy-700 block mt-1">
-                        {vdpUrl.replace(/^https?:\/\//, '')}
-                      </span>
-                    </div>
-                  </div>
-
-                  <div className="text-right text-[10px] text-ink-muted leading-tight max-w-xs sm:border-l sm:border-silver-200 sm:pl-4">
+                {/* Bottom Row: Disclaimers */}
+                <div className="border-t-2 border-navy-900 pt-4 flex flex-col sm:flex-row items-center justify-end gap-6">
+                  <div className="text-right text-[10px] text-ink-muted leading-tight max-w-xs">
                     <p>
                       Accuracy of descriptions, pricing, and options is deemed reliable but not guaranteed. Actual mileage may vary. Verify all equipment with sales representative prior to purchase.
                     </p>
