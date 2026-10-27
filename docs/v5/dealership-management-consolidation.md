@@ -77,3 +77,29 @@ Not committed by Claude — the owning agent was still editing (help docs, inven
 - `PlatformDetailPage.tsx:180` and `ConnectionSetupPanel.tsx:104` call `useAuth()` after early returns. It's context-only, so it causes a dev hook-order warning, not a crash. Move it above the returns.
 - Web lint has 35 errors, all present before `2934710`. So CI does not gate lint yet.
 - `src/tests/adminRemediation.test.ts` and `mediaUpload.test.ts` use a default `PrismaClient`, so `npm test` writes test rows to whatever `.env` `DATABASE_URL` points at (usually the dev database). CI gives them a migrated MySQL service. Locally, consider pointing them at a disposable schema.
+
+## Final integration pass, 2026-10-27 04:00 (Claude, backend/contracts/CI)
+
+**Sold-vehicle take-down contract (`0726bf0`).** Backend defect fixed: the audit used to drop withdrawals at NEEDS_SETUP, FAILED, PROCESSING or SUBMITTED, so they counted as "taken down and confirmed" and could make a run `RECONCILED`. No external marketplace is qualified for automatic removal today, so every external withdrawal stops at `NEEDS_SETUP / CHANNEL_UNQUALIFIED`. StarterGrid sends nothing to those sites. Every listing now has `removalStatus`, the reconcile response has `removalCounts` and `notPublishedCount`, and `RECONCILED` requires VERIFIED_REMOVED evidence for every published listing.
+
+| removalStatus | Means | Truthful display |
+|---|---|---|
+| NOT_REQUESTED | no take-down started | "Not requested" |
+| QUEUED_LOCALLY | recorded in StarterGrid, nothing sent | "Queued in StarterGrid, not sent yet" |
+| SUBMISSION_ATTEMPTED | sent, no destination response | "Sent, no response yet" |
+| PROVIDER_ACCEPTED | destination acknowledged it (reference) | "Accepted by {site}, removal not confirmed" |
+| VERIFIED_REMOVED | readback confirmed it is gone | "Removed (verified)" |
+| FAILED | failed or not confirmable | "Removal failed. {nextAction}" |
+| UNSUPPORTED | StarterGrid cannot remove it there | "End it on {site} yourself. {nextAction}" |
+
+**For Antigravity (`SyndicationSentryCard.tsx`, `f480591`). Not edited by Claude:**
+- Each row shows a hard-coded "Removal pending" badge. Show `ghost.removalStatus` instead. UNSUPPORTED (every external site today) is not pending: nothing happens until a person acts.
+- The NEEDS_ACTION banner says "Local operation recorded … manual action on the destination portal" for every outcome. Build it from `result.removalCounts` (or show `result.message`, which the backend writes from those counts). An UNSUPPORTED listing has no local operation, and a queued or submitted removal needs no manual action.
+- "All advertised vehicles match your active lot inventory" (CLEAN, or RECONCILED with zero removals) overclaims. The audit reads StarterGrid records only. Use "No StarterGrid record shows a sold vehicle as still listed", and on RECONCILED mention `notPublishedCount` when it is above 0.
+- `commercialFeatures.test.tsx` fixtures use backend messages the server never sends ("Took down 2 listings and confirmed removal.", "Removal requested on CarGurus…"), and they lack `removalStatus` / `removalCounts`. Use the real response shape.
+
+**For Antigravity (`LeadCrmHandoffModal.tsx:111`):** `isSending` requires `data.canSend`, but the server always returns `canSend: false` with `sendBlocker: 'SEND_IN_PROGRESS'` while a send is in flight. The modal then falls through to "Ready to send". Use `data.deliveryStatus === 'SENDING'` on its own.
+
+**Velocity (`90a08fe`):** suggestion reasons no longer claim search-ranking, "Price Drop" badge or floor-plan effects. `daysOnLot` counts from `Vehicle.createdAt` (when the vehicle was added to StarterGrid). For imported stock that is not the arrival date, so UI labels saying "days on lot" overstate precision. The "Aging" filter uses `performance.daysOnline`, but its count uses velocity milestones, so the count and the filtered list can disagree.
+
+**Test isolation (`0f09ce8`):** database suites run only with `V5_TEST_DATABASE_URL=…/startergrid_v5_test_*`. They skip otherwise, and CI fails instead of skipping (`REQUIRE_DATABASE_TESTS`). `mediaUpload.test.ts` was `assert.ok(true)` placeholders; they are todos now and are not real coverage.
