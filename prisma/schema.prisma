@@ -505,6 +505,8 @@ model DealershipProfile {
   platformCatalogSyncs         PlatformCatalogSync[]
   leadDeliveryAttempts         LeadDeliveryAttempt[]
   buyerOutreach                BuyerOutreach[]
+  channelMonthlyCosts          ChannelMonthlyCost[]
+  vehicleSaleRecords           VehicleSaleRecord[]
 
   @@index([lifecycleStatus])
   @@index([primaryContactEmail])
@@ -559,6 +561,7 @@ model Vehicle {
   socialPosts           SocialPost[]
   marketplaceListings   MarketplaceListing[]
   channelSelections     VehicleChannelSelection[]
+  saleRecord            VehicleSaleRecord?
 
   @@index([dealershipId])
   @@unique([dealershipId, stockNumber])
@@ -1546,5 +1549,52 @@ model PlatformCatalogSync {
   dealership DealershipProfile @relation(fields: [dealershipId], references: [id], onDelete: Cascade)
 
   @@unique([dealershipId, platformSlug])
+  @@index([dealershipId])
+}
+
+// ─── Sale details & channel cost ─────────────────────────────────────────────
+// A vehicle being marked sold is an inventory event (Vehicle.soldAt + VehicleLifecycleEvent).
+// It establishes nothing about the transaction. Sale details are separate facts that exist
+// only when someone records them; unknown values stay null. Channel attribution is derived
+// at read time by documented rules (src/services/attribution/saleAttribution.ts), except the
+// dealer-confirmed channel, which is itself a recorded fact stored here.
+
+model VehicleSaleRecord {
+  id                   String           @id @default(cuid())
+  dealershipId         String
+  vehicleId            String           @unique
+  transactionDate      DateTime?        // actual sale date, only when provided — never the status-change time
+  salePriceCents       Int?             // actual sale price, only when provided — never the asking price
+  confirmedChannelSlug String?          @db.VarChar(80) // channel the dealer states produced the sale
+  sourceConfidence     SourceConfidence @default(MANUAL_IMPORTED)
+  recordedBy           String?          @db.VarChar(30)
+  createdAt            DateTime         @default(now())
+  updatedAt            DateTime         @updatedAt
+
+  dealership DealershipProfile @relation(fields: [dealershipId], references: [id], onDelete: Cascade)
+  vehicle    Vehicle           @relation(fields: [vehicleId], references: [id], onDelete: Cascade)
+
+  @@index([dealershipId])
+}
+
+// Monthly fees and ad spend per channel. No row = cost unknown. A null amount = not reported;
+// 0 = reported as zero.
+model ChannelMonthlyCost {
+  id               String           @id @default(cuid())
+  dealershipId     String
+  platformSlug     String           @db.VarChar(80)
+  month            String           @db.VarChar(7)   // "2026-10"
+  flatFeeCents     Int?             // subscription / listing fee
+  adSpendCents     Int?             // advertising spend
+  currency         String           @default("USD") @db.VarChar(3)
+  sourceConfidence SourceConfidence @default(MANUAL_IMPORTED)
+  notes            String?          @db.Text
+  recordedBy       String?          @db.VarChar(30)
+  createdAt        DateTime         @default(now())
+  updatedAt        DateTime         @updatedAt
+
+  dealership   DealershipProfile @relation(fields: [dealershipId], references: [id], onDelete: Cascade)
+
+  @@unique([dealershipId, platformSlug, month])
   @@index([dealershipId])
 }

@@ -153,6 +153,8 @@ export async function persistVehicleUpdate(
       where: { id: vehicleId },
       data: { soldAt: null, removedAt: null, reactivatedAt: at },
     });
+    // A relisted vehicle has no sale: details recorded for the sale that fell through go with it.
+    await prisma.vehicleSaleRecord.deleteMany({ where: { vehicleId } });
   }
 
   return row.id;

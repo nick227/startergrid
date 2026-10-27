@@ -20,7 +20,7 @@ import {
 import { listInventoryVehicles, type LifecycleScope } from '../../services/inventory/inventoryListService.js';
 import { buildInventoryReadiness } from '../../services/inventory/inventoryReadinessService.js';
 import { buildDistributionSummary } from '../../services/inventory/inventoryDistributionService.js';
-import { requireDealerAccess, requireOperator } from '../security.js';
+import { requireCapability, requireDealerAccess, requireOperator } from '../security.js';
 import {
   bulkEditSchema,
   emptyBodySchema,
@@ -48,6 +48,7 @@ import type { BusinessCategoryId } from '@auto-dealer/category-schemas';
 import { resolveIdentifierDecoder } from '../../services/inventory/identifiers/index.js';
 import { createCategoryItemShell } from '../../services/inventory/categoryItemShellService.js';
 import { categoryItemToInventoryRecord } from '../../services/inventory/inventoryRecordAdapter.js';
+import { getSaleDetails, recordSaleDetails, SaleDetailsError, validateSaleDetails, type SaleDetailsInput } from '../../services/attribution/saleRecordService.js';
 
 type VehicleParams = { dealershipId: string; stockNumber: string };
 type DealerParams = { dealershipId: string };
@@ -878,6 +879,8 @@ export function registerInventoryRoutes(app: FastifyInstance, prisma: PrismaClie
     vehicleId: string,
     kind: 'SOLD' | 'REMOVED' | 'RELISTED',
     reply: import('fastify').FastifyReply,
+    saleDetails?: SaleDetailsInput,
+    recordedBy?: string | null,
   ) {
     const vehicle = await prisma.vehicle.findFirst({
       where: { id: vehicleId, dealershipId },
@@ -886,6 +889,10 @@ export function registerInventoryRoutes(app: FastifyInstance, prisma: PrismaClie
     if (!vehicle) return reply.status(404).send({ error: 'Vehicle not found' });
     try {
       const result = await applyVehicleUpdate(prisma, dealershipId, vehicle.stockNumber, kind);
+      // Sale details are separate facts, recorded only when the request supplies them.
+      if (kind === 'SOLD' && saleDetails && Object.keys(saleDetails).length > 0) {
+        await recordSaleDetails(prisma, dealershipId, vehicle.id, saleDetails, recordedBy ?? null);
+      }
       return reply.send(result);
     } catch (e) {
       return reply.status(422).send({ error: (e as Error).message });
@@ -897,7 +904,38 @@ export function registerInventoryRoutes(app: FastifyInstance, prisma: PrismaClie
     async (request, reply) => {
       const { dealershipId, vehicleId } = request.params;
       if (!await requireDealerAccess(prisma, request, reply, dealershipId)) return;
-      return applyLifecycleByVehicleId(prisma, dealershipId, vehicleId, 'SOLD', reply);
+      let saleDetails: SaleDetailsInput | undefined;
+      if (request.body !== undefined && request.body !== null) {
+        try { saleDetails = validateSaleDetails(request.body); }
+        catch (e) { return reply.status(400).send({ error: (e as Error).message }); }
+      }
+      return applyLifecycleByVehicleId(prisma, dealershipId, vehicleId, 'SOLD', reply, saleDetails, request.operator?.id ?? null);
+    }
+  );
+
+  // Sale details for a vehicle already marked sold: actual transaction date, actual sale price and
+  // the channel the dealership confirms produced the sale. Omitted fields are unchanged; null clears.
+  app.get<{ Params: VehicleActionParams }>(
+    '/api/dealers/:dealershipId/inventory/vehicles/:vehicleId/sale',
+    async (request, reply) => {
+      const { dealershipId, vehicleId } = request.params;
+      if (!await requireDealerAccess(prisma, request, reply, dealershipId)) return;
+      return reply.send({ sale: await getSaleDetails(prisma, dealershipId, vehicleId) });
+    }
+  );
+
+  app.put<{ Params: VehicleActionParams }>(
+    '/api/dealers/:dealershipId/inventory/vehicles/:vehicleId/sale',
+    async (request, reply) => {
+      const { dealershipId, vehicleId } = request.params;
+      if (!await requireCapability(prisma, request, reply, dealershipId, 'edit_inventory')) return;
+      try {
+        const input = validateSaleDetails(request.body);
+        return reply.send({ sale: await recordSaleDetails(prisma, dealershipId, vehicleId, input, request.operator?.id ?? null) });
+      } catch (e) {
+        if (e instanceof SaleDetailsError) return reply.status(e.status).send({ error: e.message });
+        throw e;
+      }
     }
   );
 

@@ -4,6 +4,18 @@ Date: 2026-10-27. Owner: the agent implementing ROI and sales attribution (it ho
 
 The ROI and attribution work should not ship, and no further intelligence dashboards should be built, until the acceptance criteria below hold. That work will be reviewed against this list once it is committed.
 
+## Status — implemented (2026-10-27)
+
+Claude took ownership of the unfinished work and completed it against this contract. Where each criterion lives:
+
+1. One lifecycle: every sold transition calls `applyVehicleUpdate` (`inventoryUpdateService.ts`), which records the `VehicleLifecycleEvent`, `VehicleUpdate` and channel propagation: the Inventory routes, feed/DMS ingest and snapshot reconciliation. The only path that bypassed it, `POST /api/marketplace/vehicles/:listingId/sold`, was retired (below). Relisting deletes the sale record.
+2–3. Sale facts live in `VehicleSaleRecord` (`transactionDate`, `salePriceCents`, nullable, written only from explicit input via `saleRecordService.ts`). `Vehicle.soldAt` remains the inventory outcome only. The speculative `Vehicle` columns (`costCents`, `soldPriceCents`, `acquiredAt`, `salesAttributedChannel`, `buyerPostalCode`, `buyerRegion`) were removed before shipping.
+4. `saleAttribution.ts` documents and implements the only two rules: `DEALER_CONFIRMED` and `LEAD_MARKED_SOLD` (exactly one channel's lead on the vehicle marked SOLD, received before the sale). No latest-lead, multi-touch or "organic storefront" defaults. Conflicts stay unattributed.
+5. Channel results (`channelRoiService.ts`, `GET /performance/channel-results`) report inquiries only for channels that send them (`REPORTED`), mark incomplete counts `PARTIAL`, and show public submissions as recorded inquiries with a separate "followed up by your team" count. Nothing is labelled a verified buyer.
+6. The marketplace sold route was retired rather than classified. The repo's contracts keep `/api/marketplace` consumer-only: every classified marketplace route must appear in `openapi-marketplace.yaml`, and that spec must never use `OperatorAuth`, so a staff-only mutation cannot live there. Staff mark vehicles sold from Inventory (`POST /api/dealers/:dealershipId/inventory/vehicles/:vehicleId/sold`, already classified, documented and dealership-scoped). The `?demo=1` marketplace button that called it was removed. `authBoundary.test.ts` asserts the route returns 404 for every caller and fails if any `/api/marketplace` mutation is not a classified consumer route.
+
+Provenance reuses `SourceConfidence` (the parallel `evidenceModel.ts` tiers were removed). Demand insights by color, region and price tier were removed as out of scope. Tests: `saleAttribution.test.ts`, `channelCostService.test.ts`, `salesIntegrityDatabase.test.ts` (isolated MySQL), `ChannelResultsCard.test.tsx`.
+
 ## Acceptance criteria
 
 1. Every sale follows one consistent inventory lifecycle.

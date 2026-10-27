@@ -8,9 +8,12 @@ import {
   getPerformanceSummary,
 } from '../../services/performance/performanceQueryService.js';
 import { runPerformanceComputeForDealer } from '../../services/performance/computePerformanceService.js';
+import { computeChannelResults } from '../../services/performance/channelRoiService.js';
+import { getCurrentYearMonth, isValidMonth } from '../../services/channel/channelCostService.js';
 
 type DealerParams  = { dealershipId: string };
 type VehicleParams = { dealershipId: string; stockNumber: string };
+type MonthQuery      = { month?: string };
 
 async function requireDealer(prisma: PrismaClient, dealershipId: string): Promise<boolean> {
   const row = await prisma.dealershipProfile.findUnique({
@@ -20,6 +23,22 @@ async function requireDealer(prisma: PrismaClient, dealershipId: string): Promis
 }
 
 export function registerPerformanceRoutes(app: FastifyInstance, prisma: PrismaClient): void {
+
+  // GET /api/dealers/:dealershipId/performance/channel-results?month=YYYY-MM
+  // Recorded inquiries, attributed sales and dealer-reported cost per channel for one month.
+  // Figures whose inputs are missing are null, never zero.
+  app.get<{ Params: DealerParams; Querystring: MonthQuery }>(
+    '/api/dealers/:dealershipId/performance/channel-results',
+    async (request, reply) => {
+      const { dealershipId } = request.params;
+      if (!await requireDealerAccess(prisma, request, reply, dealershipId)) return;
+      if (!await requireDealer(prisma, dealershipId))
+        return reply.status(404).send({ error: 'Dealer not found' });
+      const month = request.query.month ?? getCurrentYearMonth();
+      if (!isValidMonth(month)) return reply.status(400).send({ error: 'month must be YYYY-MM' });
+      return reply.send({ results: await computeChannelResults(prisma, dealershipId, month) });
+    }
+  );
 
   // GET /api/dealers/:dealershipId/performance/vehicles
   // Returns cached movement signal and comparable benchmark for every active vehicle.

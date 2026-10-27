@@ -13,6 +13,7 @@
 import assert from 'node:assert/strict';
 import { createRequire } from 'node:module';
 import { describe, it } from 'node:test';
+import { readdirSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import type { BoundaryViolation } from '../../scripts/lib/boundaryPatterns.js';
@@ -150,6 +151,44 @@ describe('marketplace public-write routes — no auth gate (with or without op_s
       assert.notEqual(res.statusCode, 401,
         `${method} ${path} must not be auth-gated even with op_session cookie`);
     });
+  }
+});
+
+// ── 3b. no inventory mutation in the public marketplace namespace ──────────
+//
+// The listing id is public, so no /api/marketplace route may change inventory. Staff mark
+// vehicles sold through the dealership-scoped Inventory route instead.
+
+describe('marketplace namespace — cannot mark a vehicle sold', () => {
+  const callers: Array<Record<string, string>> = [{}, { Cookie: 'mp_session=consumer-token' }, { 'x-operator-id': 'any-operator' }];
+  for (const headers of callers) {
+    it(`POST /api/marketplace/vehicles/:listingId/sold is not a route (${Object.keys(headers)[0] ?? 'anonymous'})`, async () => {
+      const res = await inj(buildApp(marketplacePrisma()), 'POST', '/api/marketplace/vehicles/test-listing-001/sold', { headers });
+      assert.equal(res.statusCode, 404);
+    });
+  }
+});
+
+// Every /api/marketplace mutation registered in a route file must be a classified consumer route
+// (public-write or marketplace-session), so an unreviewed mutation cannot appear in the namespace.
+describe('marketplace mutation routes — all classified', () => {
+  const routesDir = join(fileURLToPath(new URL('.', import.meta.url)), '..', '..', '..', 'src', 'server', 'routes');
+  const registered = readdirSync(routesDir)
+    .filter(f => f.endsWith('.ts'))
+    .flatMap(f => [...readFileSync(join(routesDir, f), 'utf8')
+      .matchAll(/app\.(post|put|patch|delete)\s*(?:<[^>]*>)?\(\s*'(\/api\/marketplace\/[^']+)'/g)]
+      .map(m => `${m[1]!.toUpperCase()} ${m[2]}`));
+  const classified = new Set<string>([
+    ...marketplaceRouteClassifications.publicWrite,
+    ...marketplaceRouteClassifications.marketplaceAuth,
+  ]);
+
+  it('finds the marketplace mutation routes (guard against an empty scan)', () => {
+    assert.ok(registered.includes('POST /api/marketplace/vehicles/:listingId/leads'), registered.join(', '));
+  });
+
+  for (const route of registered) {
+    it(`${route} is classified`, () => assert.ok(classified.has(route), `${route} is missing from marketplaceRouteClassifications`));
   }
 });
 

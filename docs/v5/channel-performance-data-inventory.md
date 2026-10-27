@@ -69,7 +69,7 @@ These answer "is the vehicle actually advertised there", which is the denominato
 | `soldAt` via ingest row `availability: 'sold'` (`salesStatusReconcileService`) | Dealer-entered (feed/DMS/CSV) | Trustworthy as "sold", carries no channel |
 | Vehicle missing from a full feed snapshot | Derived | Ambiguous: sold, wholesaled or removed. Should not count as a sale |
 | Manual mark-sold (`POST /api/dealers/:id/inventory/vehicles/:vehicleId/sold`) | Dealer-entered | Authenticated |
-| `POST /api/marketplace/vehicles/:listingId/sold` | — | **Unauthenticated demo endpoint**, see "Open issues" |
+| `POST /api/marketplace/vehicles/:listingId/sold` | — | Retired; see "Open issues" |
 | Lead `workflowStatus = SOLD` | Dealer-entered | The only real channel→sale link |
 | Sold price, unit cost, buyer location | Unavailable today | Columns are being added in uncommitted work (below), with no ingest path yet |
 
@@ -96,7 +96,7 @@ Prerequisites: give `Lead` a real `externalId`, set `vehicleId` on synced leads 
 
 ## Open issues found during the inventory
 
-- Fixed: `POST /api/marketplace/vehicles/:listingId/sold` (`src/server/routes/marketplace.ts`) had no authentication, so anyone holding a public listing id could mark a vehicle sold. It now requires an operator session with access to the vehicle's dealership (`src/tests/marketplaceSoldAuthorization.test.ts`). It still writes `soldAt` directly rather than through the inventory lifecycle, so it records no `VehicleLifecycleEvent`; sales analytics should not treat it as a recorded sale event.
+- Fixed, then retired: `POST /api/marketplace/vehicles/:listingId/sold` accepted anonymous requests and wrote `soldAt` outside the inventory lifecycle. It was first gated to dealership operators (`40383d8`) and then removed; staff mark vehicles sold from Inventory. See `sales-data-integrity-handoff.md`.
 - Audit of the other marketplace mutations: listing/category-listing routes check dealership access and item ownership; favorites are scoped to the `mp_session` user; leads, reports and events are public by design, rate-limited and append-only. Public events and leads can still be inflated by a determined client, so engagement counts from them are first-party observations, not verified buyers.
 - Uncommitted work in the shared tree (another agent, 2026-10-27) adds `ChannelMonthlyCost`, `Vehicle.costCents/soldPriceCents/salesAttributedChannel/buyerPostalCode/buyerRegion`, `salesAttributionService`, `channelRoiService` and `demandInsightService`. This is ahead of the agreed sequence (inquiries → vehicles → confirmed sales before ROI). Points to reconcile before it ships:
   - `attributeSaleForVehicle` defaults sold price to the list price and `soldAt` to now when unknown; those values are estimates and must not be stored or shown as dealer-reported.

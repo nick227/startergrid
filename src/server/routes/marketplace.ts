@@ -25,9 +25,8 @@ import {
   getDealerMarketplaceStats,
 } from '../../services/channel/channelEventService.js';
 import { parsePublicMarketplaceEventType } from '../../services/channel/channelMetrics.js';
-import { checkPublicWriteAbuseLimit, requireDealerAccess, requireOperator } from '../security.js';
+import { checkPublicWriteAbuseLimit } from '../security.js';
 import { marketplaceLeadCaptureSchema, marketplaceChannelEventSchema, listingReportSchema, validateBody } from '../requestValidation.js';
-import { MarketplaceListingStore } from '../../services/marketplace/MarketplaceListingStore.js';
 
 // Marketplace GET routes are public read-only.
 // Lead capture is public-write with abuse limiting.
@@ -280,56 +279,6 @@ export function registerMarketplaceRoutes(app: FastifyInstance, prisma: PrismaCl
       const stats = await getDealerMarketplaceStats(prisma, request.params.dealerId);
       if (!stats) return reply.status(404).send({ error: 'Dealer not found' });
       return reply.send(stats);
-    }
-  );
-
-  // POST /api/marketplace/vehicles/:listingId/sold
-  // Demo endpoint — simulates a sale event from the marketplace back to operator-web.
-  // In production this would be triggered by a platform webhook (eBay sold notification, etc.).
-  // The listing id is public, so it never authorizes the mutation: the caller must be an
-  // operator with access to the vehicle's dealership. Anonymous callers are rejected before
-  // any lookup, so the route reveals nothing about the listing.
-  app.post<{ Params: ListingParams }>(
-    '/api/marketplace/vehicles/:listingId/sold',
-    async (request, reply) => {
-      const { listingId } = request.params;
-      if (!await requireOperator(prisma, request, reply)) return;
-
-      const vehicle = await prisma.vehicle.findFirst({
-        where: { id: listingId, soldAt: null, removedAt: null },
-        select: { id: true, dealershipId: true, year: true, make: true, model: true, stockNumber: true },
-      });
-      if (!vehicle) return reply.status(404).send({ error: 'Vehicle not found or already sold' });
-      if (!await requireDealerAccess(prisma, request, reply, vehicle.dealershipId)) return;
-
-      const soldAt = new Date();
-
-      await prisma.vehicle.update({
-        where: { id: listingId },
-        data: { soldAt },
-      });
-
-      await MarketplaceListingStore.markEndedByItem(prisma, { vehicleId: listingId }, 'consumer-marketplace');
-
-      // Notify operator so the leads page and dashboard can surface the event.
-      await prisma.dealerNotification.create({
-        data: {
-          dealershipId: vehicle.dealershipId,
-          type: 'VEHICLE_SOLD_MARKETPLACE',
-          payload: {
-            vehicleId: listingId,
-            stockNumber: vehicle.stockNumber,
-            year: vehicle.year,
-            make: vehicle.make,
-            model: vehicle.model,
-            platformSlug: 'consumer-marketplace',
-            soldAt: soldAt.toISOString(),
-          } as unknown as import('@prisma/client').Prisma.InputJsonValue,
-          deliveryStatus: 'PENDING',
-        },
-      });
-
-      return reply.status(200).send({ ok: true, soldAt: soldAt.toISOString() });
     }
   );
 

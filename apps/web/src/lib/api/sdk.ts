@@ -15,6 +15,11 @@ import type {
   LifecycleFlowReport,
   MerchandisingActivityReport,
   ChannelVelocityReport,
+  ChannelResults,
+  ChannelCost,
+  ChannelCostInput,
+  SaleDetails,
+  SaleDetailsInput,
 } from '@auto-dealer/api-client';
 import type {
   AutoSyncStatus,
@@ -1500,4 +1505,33 @@ export async function unpublishCategoryItemFromMarketplace(
     `/api/dealers/${dealershipId}/platforms/${platformSlug}/category-listings/${categoryItemId}`,
     { method: 'DELETE' },
   );
+}
+
+// ── Channel results: inquiries, attributed sales, reported cost ─────────────
+
+export type {
+  ChannelResults,
+  ChannelResultRow,
+  SaleOutcomeRow,
+  SaleDetails,
+  SaleDetailsInput,
+  ChannelCost,
+  ChannelCostInput,
+} from '@auto-dealer/api-client';
+
+export async function fetchChannelResults(dealershipId: string, month: string): Promise<ChannelResults> {
+  const res = await fromSdk(PerformanceService.getChannelResults({ dealershipId, month }));
+  return res.results;
+}
+
+/** Records one channel's cost for a month; null amounts are "not reported". Returns null when cleared. */
+export async function saveChannelCost(dealershipId: string, input: ChannelCostInput): Promise<ChannelCost | null> {
+  const res = await fromSdk(AccountsService.setChannelCost({ dealershipId, requestBody: input }));
+  return res.cost ?? null;
+}
+
+/** Records or corrects sale details for a sold vehicle. Omitted fields are unchanged; null clears. */
+export async function saveSaleDetails(dealershipId: string, vehicleId: string, input: SaleDetailsInput): Promise<SaleDetails> {
+  const res = await fromSdk(InventoryService.recordVehicleSaleDetails({ dealershipId, vehicleId, requestBody: input }));
+  return res.sale;
 }

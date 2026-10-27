@@ -2382,9 +2382,18 @@ paths:
       x-route-classification: operator
       operationId: markVehicleSoldById
       summary: Mark a vehicle sold by vehicleId
+      description: |
+        Runs the inventory lifecycle transition. Sale details are optional and recorded only
+        when supplied; nothing is derived from the asking price or the status-change time.
       parameters:
         - $ref: '#/components/parameters/dealershipId'
         - $ref: '#/components/parameters/vehicleId'
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SaleDetailsInput'
       responses:
         '200':
           description: Update propagation result
@@ -2392,8 +2401,80 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/VehicleUpdateResult'
+        '400':
+          $ref: '#/components/responses/BadRequest'
         '404':
           $ref: '#/components/responses/NotFound'
+
+  /api/dealers/{dealershipId}/inventory/vehicles/{vehicleId}/sale:
+    get:
+      tags: [Inventory]
+      security:
+        - OperatorAuth: []
+      x-route-classification: operator
+      operationId: getVehicleSaleDetails
+      summary: Recorded sale details for a vehicle
+      parameters:
+        - $ref: '#/components/parameters/dealershipId'
+        - $ref: '#/components/parameters/vehicleId'
+      responses:
+        '200':
+          description: Sale details, or null when none are recorded
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [sale]
+                properties:
+                  sale:
+                    type: object
+                    nullable: true
+                    allOf:
+                      - $ref: '#/components/schemas/SaleDetails'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+    put:
+      tags: [Inventory]
+      security:
+        - OperatorAuth: []
+      x-route-classification: operator
+      operationId: recordVehicleSaleDetails
+      summary: Record or correct sale details for a sold vehicle
+      description: |
+        Requires the edit_inventory permission and a vehicle already marked sold. Omitted fields
+        are unchanged; null clears a field back to unknown.
+      parameters:
+        - $ref: '#/components/parameters/dealershipId'
+        - $ref: '#/components/parameters/vehicleId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SaleDetailsInput'
+      responses:
+        '200':
+          description: Recorded sale details
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [sale]
+                properties:
+                  sale:
+                    $ref: '#/components/schemas/SaleDetails'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '409':
+          description: Vehicle is not marked sold
 
   /api/dealers/{dealershipId}/inventory/vehicles/{vehicleId}/removed:
     post:
@@ -3246,6 +3327,48 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/PerformanceComputeResponse'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /api/dealers/{dealershipId}/performance/channel-results:
+    get:
+      tags: [Performance]
+      security:
+        - OperatorAuth: []
+      x-route-classification: operator
+      operationId: getChannelResults
+      summary: Recorded inquiries, attributed sales and reported cost per channel for one month
+      description: |
+        Each figure is reported only when its inputs exist; unknown values are null, never zero.
+        Inquiries are counted only for channels that send them to StarterGrid. A sale is attributed
+        to a channel only by a documented rule (dealer-confirmed channel, or a single channel's lead
+        marked SOLD); otherwise it is unattributed. Cost is dealer-reported.
+      parameters:
+        - $ref: '#/components/parameters/dealershipId'
+        - name: month
+          in: query
+          required: false
+          description: YYYY-MM (UTC). Defaults to the current month.
+          schema:
+            type: string
+            pattern: '^\d{4}-(0[1-9]|1[0-2])$'
+      responses:
+        '200':
+          description: Channel results
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [results]
+                properties:
+                  results:
+                    $ref: '#/components/schemas/ChannelResults'
+        '400':
+          $ref: '#/components/responses/BadRequest'
         '401':
           $ref: '#/components/responses/Unauthorized'
         '403':
@@ -4413,6 +4536,83 @@ paths:
         '403':
           $ref: '#/components/responses/Forbidden'
 
+  /api/dealers/{dealershipId}/channels/costs:
+    get:
+      tags: [Accounts]
+      security:
+        - OperatorAuth: []
+      x-route-classification: operator
+      operationId: getChannelCosts
+      summary: Dealer-reported channel costs for one month
+      parameters:
+        - $ref: '#/components/parameters/dealershipId'
+        - name: month
+          in: query
+          required: false
+          description: YYYY-MM (UTC). Defaults to the current month.
+          schema:
+            type: string
+            pattern: '^\d{4}-(0[1-9]|1[0-2])$'
+      responses:
+        '200':
+          description: Channel costs (channels without a row have unknown cost)
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [month, costs]
+                properties:
+                  month: { type: string }
+                  costs:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/ChannelCost'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+
+    put:
+      tags: [Accounts]
+      security:
+        - OperatorAuth: []
+      x-route-classification: operator
+      operationId: setChannelCost
+      summary: Record one channel's cost for a month
+      description: |
+        Requires the connect_channels permission. Null amounts mean "not reported"; 0 means
+        reported as zero. Clearing both amounts deletes the record, returning the cost to unknown.
+      parameters:
+        - $ref: '#/components/parameters/dealershipId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ChannelCostInput'
+      responses:
+        '200':
+          description: Recorded cost, or null when cleared
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [cost]
+                properties:
+                  cost:
+                    type: object
+                    nullable: true
+                    allOf:
+                      - $ref: '#/components/schemas/ChannelCost'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+
   /api/admin/buyer-outreach-stats:
     get:
       tags: [Admin]
@@ -4736,6 +4936,152 @@ components:
             $ref: '#/components/schemas/ErrorResponse'
 
   schemas:
+    SourceConfidence:
+      type: string
+      enum: [OBSERVED_FIRST_PARTY, PLATFORM_REPORTED, MANUAL_IMPORTED, UNAVAILABLE]
+      description: |
+        Where a fact came from. OBSERVED_FIRST_PARTY = recorded by StarterGrid-hosted pages;
+        PLATFORM_REPORTED = supplied by the channel's API; MANUAL_IMPORTED = entered by the dealership.
+
+    SaleDetailsInput:
+      type: object
+      properties:
+        transactionDate:
+          type: string
+          nullable: true
+          description: Actual sale date, YYYY-MM-DD. Not in the future.
+        salePriceCents:
+          type: integer
+          nullable: true
+          minimum: 1
+          description: Actual sale price. Never derived from the asking price.
+        confirmedChannelSlug:
+          type: string
+          nullable: true
+          description: Channel the dealership confirms produced the sale.
+
+    SaleDetails:
+      type: object
+      required: [vehicleId, transactionDate, salePriceCents, confirmedChannelSlug, sourceConfidence, updatedAt]
+      properties:
+        vehicleId: { type: string }
+        transactionDate: { type: string, nullable: true }
+        salePriceCents: { type: integer, nullable: true }
+        confirmedChannelSlug: { type: string, nullable: true }
+        sourceConfidence: { $ref: '#/components/schemas/SourceConfidence' }
+        updatedAt: { type: string, format: date-time }
+
+    ChannelCostInput:
+      type: object
+      required: [platformSlug, month]
+      properties:
+        platformSlug: { type: string }
+        month: { type: string, description: YYYY-MM }
+        flatFeeCents: { type: integer, nullable: true, minimum: 0 }
+        adSpendCents: { type: integer, nullable: true, minimum: 0 }
+        notes: { type: string, nullable: true, maxLength: 1000 }
+
+    ChannelCost:
+      type: object
+      required: [platformSlug, month, flatFeeCents, adSpendCents, reportedCostCents, currency, sourceConfidence, notes, updatedAt]
+      properties:
+        platformSlug: { type: string }
+        month: { type: string }
+        flatFeeCents: { type: integer, nullable: true }
+        adSpendCents: { type: integer, nullable: true }
+        reportedCostCents: { type: integer, nullable: true, description: Sum of reported components; null when neither was reported }
+        currency: { type: string }
+        sourceConfidence: { $ref: '#/components/schemas/SourceConfidence' }
+        notes: { type: string, nullable: true }
+        updatedAt: { type: string, format: date-time }
+
+    ChannelResultRow:
+      type: object
+      required: [platformSlug, platformName, inquiryReporting, inquirySource, inquiries, progressedInquiries, attributedSales, attributedByMethod, attributedSalesWithPrice, attributedSaleRevenueCents, cost, costPerInquiryCents, costPerAttributedSaleCents]
+      properties:
+        platformSlug: { type: string }
+        platformName: { type: string }
+        inquiryReporting:
+          type: string
+          enum: [REPORTED, PARTIAL, NOT_REPORTED]
+          description: REPORTED = the channel sends inquiries to StarterGrid; PARTIAL = some inquiries recorded but the channel does not send them (incomplete); NOT_REPORTED = unknown.
+        inquirySource:
+          type: string
+          nullable: true
+          enum: [OBSERVED_FIRST_PARTY, PLATFORM_REPORTED, MANUAL_IMPORTED, UNAVAILABLE, null]
+        inquiries: { type: integer, nullable: true, description: Recorded inquiries; null when the channel does not report them }
+        progressedInquiries: { type: integer, nullable: true, description: 'Inquiries the dealership moved to contacted, appointment or sold' }
+        attributedSales: { type: integer }
+        attributedByMethod:
+          type: object
+          required: [DEALER_CONFIRMED, LEAD_MARKED_SOLD]
+          properties:
+            DEALER_CONFIRMED: { type: integer }
+            LEAD_MARKED_SOLD: { type: integer }
+        attributedSalesWithPrice: { type: integer }
+        attributedSaleRevenueCents: { type: integer, nullable: true, description: Only when every attributed sale has a recorded price }
+        cost:
+          type: object
+          nullable: true
+          required: [flatFeeCents, adSpendCents, reportedCostCents, sourceConfidence]
+          properties:
+            flatFeeCents: { type: integer, nullable: true }
+            adSpendCents: { type: integer, nullable: true }
+            reportedCostCents: { type: integer, nullable: true }
+            sourceConfidence: { $ref: '#/components/schemas/SourceConfidence' }
+        costPerInquiryCents: { type: integer, nullable: true }
+        costPerAttributedSaleCents: { type: integer, nullable: true }
+
+    SaleOutcomeRow:
+      type: object
+      required: [vehicleId, stockNumber, title, markedSoldAt, transactionDate, salePriceCents, attributedChannelSlug, attributionMethod, unattributedReason, evidenceLeadIds]
+      properties:
+        vehicleId: { type: string }
+        stockNumber: { type: string }
+        title: { type: string }
+        markedSoldAt: { type: string, format: date-time, description: 'When the vehicle was marked sold (inventory outcome), not the transaction date' }
+        transactionDate: { type: string, nullable: true }
+        salePriceCents: { type: integer, nullable: true }
+        attributedChannelSlug: { type: string, nullable: true }
+        attributionMethod: { type: string, nullable: true, enum: [DEALER_CONFIRMED, LEAD_MARKED_SOLD, null] }
+        unattributedReason: { type: string, nullable: true, enum: [NO_EVIDENCE, CONFLICTING_SOLD_LEADS, null] }
+        evidenceLeadIds:
+          type: array
+          items: { type: string }
+
+    ChannelResults:
+      type: object
+      required: [month, sales, inquiries, cost, channels, saleOutcomes]
+      properties:
+        month: { type: string }
+        sales:
+          type: object
+          required: [markedSold, attributed, unattributed, withSalePrice, withTransactionDate]
+          properties:
+            markedSold: { type: integer }
+            attributed: { type: integer }
+            unattributed: { type: integer }
+            withSalePrice: { type: integer }
+            withTransactionDate: { type: integer }
+        inquiries:
+          type: object
+          required: [recorded, progressed]
+          properties:
+            recorded: { type: integer }
+            progressed: { type: integer }
+        cost:
+          type: object
+          required: [channelsWithReportedCost, totalReportedCostCents]
+          properties:
+            channelsWithReportedCost: { type: integer }
+            totalReportedCostCents: { type: integer, nullable: true }
+        channels:
+          type: array
+          items: { $ref: '#/components/schemas/ChannelResultRow' }
+        saleOutcomes:
+          type: array
+          items: { $ref: '#/components/schemas/SaleOutcomeRow' }
+
     V5AutopilotSafeguards:
       type: object
       required:

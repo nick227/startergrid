@@ -2,6 +2,7 @@ import { useState } from 'react';
 import type { OperatorPageBaseProps } from '@/lib/operatorPage.ts';
 import { OperatorPage, PageHeader } from '@/components/operator';
 import { ChannelsOverview } from '@/components/platforms/ChannelsOverview.tsx';
+import { ChannelResultsCard } from '@/components/platforms/ChannelResultsCard.tsx';
 import { DealershipAutopilot } from '@/components/guidance/DealershipAutopilot.tsx';
 import { SyndicationSentryCard } from '@/components/platforms/SyndicationSentryCard.tsx';
 import { useAsyncQuery } from '@/hooks/useAsyncQuery.ts';
@@ -31,6 +32,7 @@ export default function PlatformsPage({ dealerId, nav, activeTab }: Props) {
         <DealershipAutopilot dealerId={dealerId} hideWhenUnavailable />
         <SyndicationSentryCard dealerId={dealerId} hideWhenClean />
         <ChannelsOverview dealerId={dealerId} hrefFor={(channel, view) => channelHash(dealerId, channel, view)} refreshKey={refreshKey} />
+        <ChannelResultsCard dealerId={dealerId} refreshKey={refreshKey} />
       </div>
     </OperatorPage>
   );
