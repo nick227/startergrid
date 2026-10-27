@@ -1,13 +1,13 @@
 const CATEGORY_LABELS: Record<string, string> = {
-  app: 'Application',
+  app: 'Using StarterGrid',
   connections: 'Connections',
   dealerships: 'Dealerships',
   industry: 'Industry',
-  inventory: 'Inventory',
-  law: 'Compliance',
-  platforms: 'Platforms',
-  processes: 'Processes',
-  troubleshooting: 'Troubleshooting',
+  inventory: 'Vehicles',
+  law: 'Rules and compliance',
+  platforms: 'Destinations',
+  processes: 'How-to',
+  troubleshooting: 'Fixing problems',
 };
 
 export function docCategoryKey(docId: string): string {

@@ -1,29 +1,20 @@
 ---
-title: Bulk Edit
-summary: Applying one field change to many stock numbers and the auto-sync run that follows.
-keywords: bulk edit, price, mileage, multi-select, reconcile
-updated: 2026-06-05
+title: Change many vehicles at once
+summary: Select vehicles, change one field, and save. Ready vehicles can be sent again after the save.
+keywords: bulk edit, price, mileage, multi-select
+updated: 2026-10-26
 ---
 
-Bulk edit updates a single field across selected rows in one save — typical for lot-wide price adjustments, mileage corrections, or condition flags after recon.
+Use bulk edit when the same field should change on many units — a lot-wide price drop, mileage correction, or condition update after recon.
 
-## After save
+## What to do
 
-A full [Auto-Sync](doc:processes/auto-sync) reconcile is scheduled (debounced). All ready units on the lot are re-validated and prepared, not only the selected rows.
+1. Select the vehicles on Vehicles.
+2. Change one field (price, mileage, condition, or color).
+3. Save once.
 
-## Field scope
+Photos and VIN are not bulk-edited. Open each vehicle or re-import those.
 
-| Field | Notes |
-| --- | --- |
-| Price | Internet or asking per dealer convention |
-| Mileage | Odometer at time of edit |
-| Condition | New, used, CPO per your taxonomy |
-| Colors / body | Manual override when decode is wrong |
+## What happens next
 
-Photos and VIN are not bulk-edited here; change per row or re-import.
-
-## Example
-
-Select 14 units for a $500 reduction before a holiday weekend. One save, one debounced reconcile, one dispatch window — not fourteen separate runs if edits complete within the debounce window.
-
-Blocked units in the selection remain blocked until their specific issues are cleared; bulk price does not bypass validation.
+StarterGrid rechecks the lot and can send ready vehicles again. Vehicles that still cannot be listed stay held until their own problem is fixed. A price change does not skip a missing photo.

@@ -131,9 +131,9 @@ export type VehicleReadinessKey = 'READY' | 'WARNING' | 'BLOCKED';
 export type VehicleReadinessMeta = StatusVisual & { rowBg: string; summaryKey: string };
 
 export const VEHICLE_READINESS_REGISTRY: Record<VehicleReadinessKey, VehicleReadinessMeta> = {
-  READY:   { label: 'Ready',   tone: 'success', summaryKey: 'ready',   rowBg: '',                    pill: P.success, dot: D.success },
-  WARNING: { label: 'Needs review', tone: 'warning', summaryKey: 'warning', rowBg: 'bg-status-warning-bg/30', pill: P.warning, dot: D.warning },
-  BLOCKED: { label: 'Blocked', tone: 'danger',  summaryKey: 'blocked', rowBg: 'bg-status-error-bg/40',   pill: P.danger,  dot: D.danger },
+  READY:   { label: 'Ready to send', tone: 'success', summaryKey: 'ready',   rowBg: '',                    pill: P.success, dot: D.success },
+  WARNING: { label: 'Needs details', tone: 'warning', summaryKey: 'warning', rowBg: 'bg-status-warning-bg/30', pill: P.warning, dot: D.warning },
+  BLOCKED: { label: 'Cannot list', tone: 'danger',  summaryKey: 'blocked', rowBg: 'bg-status-error-bg/40',   pill: P.danger,  dot: D.danger },
 };
 
 // ── Readiness color (platform) ─────────────────────────────────────────────────

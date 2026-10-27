@@ -1,39 +1,31 @@
 ---
-title: Account States
-summary: Platform account states that permit or block outbound syndication.
-keywords: account, active, credentials, partner, blocked, suspended
-updated: 2026-06-05
+title: What destination connection means
+summary: A destination must be connected before vehicles can be sent there. Vehicle quality does not override a closed connection.
+keywords: connected, sign-in, partner, blocked, destination
+updated: 2026-10-26
+advanced: true
 ---
 
-A platform account is the dealer’s relationship with a specific marketplace or feed endpoint. Syndication does not start until the account record allows outbound traffic.
+The destination account is this rooftop’s relationship with that company. Sends do not start until the account allows them.
 
-Vehicle readiness does not override a closed account.
+## Dealership-facing states
 
-## States
-
-| State | Effect on syndication |
+| What you see | Meaning |
 | --- | --- |
-| Active | Outbound feeds or API calls permitted |
-| Account needed | No dealer ID or listing account linked for this rooftop |
-| Credentials needed | Account exists; password, token, or API key invalid |
-| Partner required | OEM or marketplace contract not recorded |
-| Pending review | Held until internal or platform review completes |
-| Blocked | Policy or billing stop; no sends |
-| Suspended | Platform-side suspension; no sends |
+| Connected | We can send. Not verified live. |
+| Not connected / Sign-in needed | You still need to sign in or add details. |
+| Waiting on partner | They have the details and still need to accept. |
+| Could not connect | Check connection, or ask support. |
 
-Example: **Credentials needed** often follows a password rotation on the dealer’s classifieds login. Inventory can be perfect; nothing posts until Accounts is updated.
+Internal records may still store Active, Account needed, Credentials needed, Partner required, Pending review, Blocked, or Suspended. Those are the same ideas with operator names.
 
-## Account class
-
-Class describes who operates the marketplace relationship, not whether the account is active.
+## Who operates the relationship
 
 | Class | Typical setup |
 | --- | --- |
-| Owned | Dealer staff logs into the marketplace directly |
-| Feedable | Inventory sent via approved third-party feed (dealer still owns listings) |
-| Assisted | Agency or BDC posts on dealer behalf |
-| Partner dependent | Listing requires a certified partner contract before activation |
+| Owned | Your StarterGrid storefront — no outside sign-in |
+| They receive listings | File or partner connection after they accept |
+| Assisted | An agency posts for the rooftop |
+| Partner dependent | A contract must be on file before sends |
 
-## Clearing blockers
-
-Resolve account rows on the Accounts page. Changing stock data or photos does not change account state. After Active is restored, the next [Auto-Sync](doc:processes/auto-sync) run includes that platform.
+Fix the destination on Channels. Changing photos does not change connection state. After it is connected, the next send can include it.

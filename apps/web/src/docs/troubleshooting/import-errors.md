@@ -1,31 +1,23 @@
 ---
-title: Import Errors
-summary: Skipped rows, error counts, and how to recover from a failed CSV commit.
-keywords: import error, skipped, CSV, parse, rejected row
-updated: 2026-06-05
+title: Fix import errors
+summary: Skipped rows did not change inventory. Correct the spreadsheet and import those stock numbers again.
+keywords: import error, skipped, CSV, stock number
+updated: 2026-10-26
 ---
 
-CSV commit reports created, updated, skipped, and error counts. Skipped and error rows did not change inventory.
+After an import, StarterGrid tells you how many rows were created, updated, or skipped. Skipped rows did not save.
 
-## Frequent row failures
+## Common fixes
 
-| Error | Typical fix |
+| Problem | What to do |
 | --- | --- |
-| Missing stock number | Add column or value |
-| Invalid VIN length | Correct character count; no I, O, Q |
-| Non-numeric price | Remove currency symbols if template expects digits only |
-| Duplicate stock in file | Deduplicate source export |
+| Missing stock number | Add the column or value |
+| VIN length is wrong | Use 17 characters; no I, O, or Q |
+| Price is not a number | Remove $ and commas if the file expects digits |
+| The same stock number twice in the file | Keep one row per stock number |
 
-## Partial success
+## What happens next
 
-A file can update 140 units and skip 6. The 140 are in inventory and trigger [Auto-Sync](doc:processes/auto-sync). Fix the 6 in the source file and re-import only those stock numbers — stable stock keys upsert safely.
+A file can update most of the lot and skip a few rows. The saved rows can be sent. Fix the skipped stock numbers and import those again. Import errors do not change whether a destination is connected.
 
-## Not an account fix
-
-Import errors do not change [Account states](doc:platforms/account-states). Zero rows imported means no inventory change and no sync movement.
-
-## Example
-
-Export includes header row twice mid-file after a bad merge — parser skips malformed lines; summary shows **4 errors**; correct the spreadsheet section and re-commit.
-
-See [CSV import](doc:inventory/csv-import) and [Stock number rules](doc:inventory/stock-number-rules).
+See [Import a spreadsheet](doc:inventory/csv-import).

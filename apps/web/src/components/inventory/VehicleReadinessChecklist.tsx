@@ -6,9 +6,9 @@ type Props = {
 };
 
 const statusConfig = {
-  READY:   { bg: 'bg-green-100 text-green-700 border-green-200',  label: 'Ready' },
-  WARNING: { bg: 'bg-amber-100 text-amber-700 border-amber-200',  label: 'Needs review' },
-  BLOCKED: { bg: 'bg-red-100 text-red-700 border-red-200',        label: 'Needs a fix' },
+  READY:   { bg: 'bg-green-100 text-green-700 border-green-200',  label: 'Ready to send' },
+  WARNING: { bg: 'bg-amber-100 text-amber-700 border-amber-200',  label: 'Needs details' },
+  BLOCKED: { bg: 'bg-red-100 text-red-700 border-red-200',        label: 'Cannot list' },
 };
 
 function slotLabel(slot: string): string {

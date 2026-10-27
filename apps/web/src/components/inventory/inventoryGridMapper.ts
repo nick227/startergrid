@@ -1,5 +1,6 @@
 import type { VehicleListItem, VehiclePerformanceItem } from '../../lib/types.ts';
 import type { InventoryGridRowDto } from '../../types/inventoryDto.ts';
+import { publicationStatusText } from '../../lib/listingStatus.ts';
 
 export function mapLegacyVehicleToGridRow(
   vehicle: VehicleListItem,
@@ -48,7 +49,7 @@ export function mapLegacyVehicleToGridRow(
       notLiveCount: 1,
       totalPlatforms: 1,
       nextAction: null,
-      statusText: 'Not live',
+      statusText: publicationStatusText(0),
     },
     performance: {
       daysOnline: perf?.daysOnline ?? 0,

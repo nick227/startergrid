@@ -2,7 +2,7 @@ import type { DocFrontmatter } from './types.ts';
 
 const FRONTMATTER_RE = /^---\r?\n([\s\S]*?)\r?\n---\r?\n?([\s\S]*)$/;
 
-const FRONTMATTER_KEYS = new Set(['title', 'summary', 'keywords', 'updated']);
+const FRONTMATTER_KEYS = new Set(['title', 'summary', 'keywords', 'updated', 'advanced']);
 
 export function parseFrontmatter(raw: string): { frontmatter: DocFrontmatter; body: string } {
   const match = raw.match(FRONTMATTER_RE);
@@ -19,6 +19,7 @@ export function parseFrontmatter(raw: string): { frontmatter: DocFrontmatter; bo
     if (key === 'summary') frontmatter.summary = value;
     if (key === 'keywords') frontmatter.keywords = value;
     if (key === 'updated') frontmatter.updated = value;
+    if (key === 'advanced') frontmatter.advanced = value === 'true';
   }
 
   return { frontmatter, body: match[2]!.trim() };

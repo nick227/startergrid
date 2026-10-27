@@ -1,13 +1,13 @@
 import { useState, useEffect } from 'react';
 import type { PlatformPublishResult, PlatformAccountDetail, PlatformPerformanceItem, SyncEvent } from '@/lib/types.ts';
-import { friendlyPlatformDetail, platformOutcomeMeta } from '@/lib/syncPresentation.ts';
-
 import { timeAgo } from '@/lib/timeAgo.ts';
 import { getSetupReadiness, severityToPill } from '@/lib/setupReadiness.ts';
 import type { OperatorNavHandlers } from '@/lib/operatorNav.ts';
 import { buildTabs, type Tab } from '@/lib/platformDrawerTabs.ts';
-import { AccountEditForm } from './AccountEditForm.tsx';
 import { PlatformLogo } from './PlatformLogo.tsx';
+import { DestinationPrimarySetup } from './DestinationPrimarySetup.tsx';
+import { PagePrimaryState } from '@/components/guidance/PagePrimaryState.tsx';
+import { destinationExperience, destinationWhy } from '@/lib/destinationPrimary.ts';
 import { CatalogSyncPanel } from './CatalogSyncPanel.tsx';
 import { LeadSyncPanel } from './LeadSyncPanel.tsx';
 import { MarketplaceListingPanel } from './MarketplaceListingPanel.tsx';
@@ -54,7 +54,7 @@ function ActivityTab({ dealerId, platformSlug, nav }: { dealerId: string; platfo
   if (!events.length) {
     return (
       <div className="text-center py-6">
-        <p className="text-xs text-ink-faint">No activity yet for this platform.</p>
+        <p className="text-xs text-ink-faint">No activity yet for this destination.</p>
         <button
           type="button"
           onClick={() => nav.goToPlatformHistory(platformSlug)}
@@ -98,8 +98,8 @@ function FeedTab({ perf, platform }: { perf: PlatformPerformanceItem | null; pla
       <div className="text-center py-6">
         <p className="text-xs text-ink-faint">
           {platform.state === 'Active'
-            ? 'No feed data yet — performance data is computed on a daily schedule.'
-            : 'Connect this platform to start seeing feed health data.'}
+            ? 'No results yet — these numbers update on a daily schedule.'
+            : 'Connect this destination to start seeing how listings are doing.'}
         </p>
       </div>
     );
@@ -196,8 +196,6 @@ export function PlatformDetailDrawer({
   // Reset to Setup whenever the operator opens a different platform.
   useEffect(() => { setActiveTab('setup'); }, [platform.platformSlug]);
   const tabs = buildTabs(platform);
-  const publish = platformOutcomeMeta(platform);
-  const detail = friendlyPlatformDetail(platform);
   const readiness = getSetupReadiness(platform, account || null);
   const displayName = platformDisplayName(platform.platformSlug, platform.platformName);
 
@@ -205,18 +203,14 @@ export function PlatformDetailDrawer({
     <RowDetailDrawer open={open} title={displayName} onClose={onClose}>
       <div className="space-y-4">
 
-        {/* Header summary */}
         <div className="flex items-start justify-between gap-4">
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-3 min-w-0">
             <PlatformLogo slug={platform.platformSlug} name={displayName} size="sm" />
             <div className="min-w-0">
-              <div className="flex flex-wrap items-center gap-1.5">
-                <span className={`px-1.5 py-0.5 rounded text-[10px] font-bold border ${severityToPill(readiness.severity)}`}>
-                  {readiness.statusLabel}
-                </span>
-                <span className="text-[10px] text-ink-faint">{publish.label}</span>
-              </div>
-              {detail && <p className="text-[11px] text-ink-faint mt-0.5 truncate">{detail}</p>}
+              <p className="text-sm font-semibold text-ink-heading truncate">{displayName}</p>
+              <span className={`inline-flex mt-1 px-1.5 py-0.5 rounded text-[10px] font-bold border ${severityToPill(readiness.severity)}`}>
+                {readiness.statusLabel}
+              </span>
             </div>
           </div>
           <button
@@ -248,21 +242,22 @@ export function PlatformDetailDrawer({
 
         {/* Tab content */}
         {activeTab === 'setup' && (
-          <div className="space-y-3">
-            {/* liveValidationNote — shown when external validation is blocked */}
-            {account?.liveValidationNote && (
-              <div className="rounded-md border border-amber-200 bg-amber-50 px-3 py-2.5">
-                <p className="text-[10px] font-bold uppercase tracking-wide text-amber-700 mb-0.5">
-                  Live validation blocked
-                </p>
-                <p className="text-xs text-amber-800">{account.liveValidationNote}</p>
-              </div>
-            )}
+          <div className="space-y-4">
+            <PagePrimaryState
+              kind={destinationExperience(readiness)}
+              title={readiness.statusLabel === 'Connected' || readiness.statusLabel === 'Ready to send'
+                ? `${displayName} is ${readiness.statusLabel.toLowerCase()}`
+                : readiness.statusLabel}
+              why={destinationWhy(readiness, displayName)}
+              next={readiness.nextAction ?? undefined}
+              ownerKind={readiness.nextAction ? 'YOU' : undefined}
+            />
             {account ? (
-              <AccountEditForm
-                account={account}
+              <DestinationPrimarySetup
                 dealerId={dealerId}
-                onSaved={onSaved}
+                platform={platform}
+                account={account}
+                onRefresh={onSaved}
               />
             ) : (
               <p className="text-xs text-ink-muted">{operatorCopy.drawer.accountLoading}</p>

@@ -29,8 +29,8 @@ function lifecycleBadge(status: string) {
 }
 
 function listingBadge(status: string) {
-  if (status === 'READY') return <span className="px-2 py-0.5 text-[11px] font-semibold rounded-full bg-navy-100 text-navy-700">READY</span>;
-  return <span className="px-2 py-0.5 text-[11px] font-semibold rounded-full bg-amber-100 text-amber-700">DRAFT</span>;
+  if (status === 'READY') return <span className="px-2 py-0.5 text-[11px] font-semibold rounded-full bg-navy-100 text-navy-700">Ready to send</span>;
+  return <span className="px-2 py-0.5 text-[11px] font-semibold rounded-full bg-amber-100 text-amber-700">Not ready yet</span>;
 }
 
 type SaveState = 'idle' | 'saving' | 'saved' | 'error';
@@ -308,7 +308,7 @@ export function CategoryItemDetailPanel({ dealerId, itemId, onClose }: Props) {
         {/* Publishing */}
         {item.lifecycleStatus === 'AVAILABLE' && (
           <section className="border border-silver-200 rounded-xl p-4">
-            <h3 className="text-xs font-semibold text-ink-body mb-3">Publishing</h3>
+            <h3 className="text-xs font-semibold text-ink-body mb-3">Listing</h3>
             <CategoryItemPublishPanel
               dealerId={dealerId}
               categoryItemId={item.id}

@@ -3,6 +3,7 @@ export type DocFrontmatter = {
   summary?: string;
   keywords?: string;
   updated?: string;
+  advanced?: boolean;
 };
 
 export type ParsedDoc = {
@@ -19,4 +20,5 @@ export type DocCatalogEntry = {
   category: string;
   keywords: string[];
   updated?: string;
+  advanced: boolean;
 };

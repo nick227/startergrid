@@ -144,8 +144,8 @@ export const NotificationChannelsPanel = forwardRef<NotificationChannelsPanelHan
       >
         <div className="flex items-center gap-2">
           <div>
-            <p className="text-sm font-semibold text-ink-heading">Notification channels</p>
-            <p className="text-xs text-ink-muted">Configure where lead alerts are delivered</p>
+            <p className="text-sm font-semibold text-ink-heading">Optional delivery methods</p>
+            <p className="text-xs text-ink-muted">Webhook, Discord, Telegram, SMS, and auto-reply</p>
           </div>
           <span onClick={e => e.stopPropagation()}>
             <InfoButton docId="connections/lead-notifications" />

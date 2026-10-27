@@ -1,26 +1,23 @@
 ---
-title: OEM Program Feeds
-summary: Manufacturer inventory programs and how they differ from generic classified syndication.
-keywords: OEM, manufacturer, program, co-op, franchise
-updated: 2026-06-05
+title: Manufacturer inventory programs
+summary: Franchise programs add brand photo, price, and disclaimer rules on top of ordinary classified sites.
+keywords: OEM, manufacturer, program, franchise, CPO
+updated: 2026-10-26
+advanced: true
 ---
 
-Franchise dealers often syndicate to OEM-mandated or OEM-operated inventory programs in addition to third-party classifieds. Those feeds carry brand rules, photo standards, and pricing display requirements tied to the franchise agreement.
+Franchise rooftops often send inventory to a manufacturer program as well as classified sites. Those programs add brand rules.
 
-## Compared to classifieds
+## How they differ
 
-| Aspect | OEM program | Generic classified |
+| | Manufacturer program | Classified site |
 | --- | --- | --- |
-| Account setup | Partner or OEM portal | Dealer-owned login |
-| Field set | Brand-specific trim and program codes | Broader taxonomy |
-| Enforcement | Program compliance audits | Platform policy |
+| Setup | Usually a partner or OEM portal | Sign in or add the details they ask for |
+| Fields | Brand trim and program codes | Broader list |
+| Review | Program audits | Site policy |
 
-## Partner dependent accounts
+A destination that says waiting on partner usually needs a contract on file before sends start.
 
-Account class **Partner dependent** usually means a certified vendor or the OEM must be on contract before **Active** is possible. See [Account states](doc:platforms/account-states).
+StarterGrid does not certify co-op language. Marketing still owns CPO, APR, and photo-composition rules.
 
-## Co-op and disclaimers
-
-OEM programs often require specific disclaimer language for CPO, APR mentions, and photo composition. Internal validation does not certify co-op compliance — dealer marketing staff remains responsible.
-
-See [Advertising disclaimers](doc:law/advertising-disclaimers) and [Photo standards](doc:industry/photo-standards).
+See [Advertising rules you still own](doc:law/advertising-disclaimers).

@@ -26,6 +26,7 @@ export function buildCatalogEntry(docId: string): DocCatalogEntry | null {
     category: docCategoryLabel(docId),
     keywords: parseKeywords(doc.frontmatter.keywords),
     updated: doc.frontmatter.updated,
+    advanced: doc.frontmatter.advanced === true,
   };
 }
 

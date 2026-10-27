@@ -1,26 +1,20 @@
 ---
-title: Stock Number Rules
-summary: Why stock numbers must stay stable across imports and edits.
-keywords: stock number, key, import, duplicate, mapping
-updated: 2026-06-05
+title: Keep stock numbers stable
+summary: Use one stock number for the life of a unit so imports update the right vehicle.
+keywords: stock number, import, duplicate, VIN
+updated: 2026-10-26
 ---
 
-Stock number is the rooftop’s primary key for a vehicle row in this system. Imports, bulk edit, and dispatch all reference it.
+Stock number is how StarterGrid finds a vehicle when you import or edit. Keep it the same while that unit is on the lot.
 
-## Stability
+## What to do
 
-| Practice | Reason |
-| --- | --- |
-| Keep the same stock # for the life of the unit on the lot | Upsert on import updates the correct row |
-| Do not reuse a # on a different VIN in the same year | History and dispatch trace attach to stock # |
-| Match DMS stock when possible | Reduces mismatch between systems |
+- Use the same stock number the whole time the vehicle is here.
+- Do not reuse a number on a different VIN while the old unit is still active.
+- Match your DMS stock number when you can.
 
-## Reuse after wholesale
+## After a unit leaves
 
-If a DMS reissues a stock number on a new acquisition, treat it as a new row here after the prior unit is marked sold or removed. Importing a new VIN under an active sold stock # overwrites the old record.
+Mark the old unit sold or removed first. If your DMS later reuses that stock number on a new trade, the next import updates one row — the new VIN will replace the old one if the prior unit was not closed out.
 
-## Example
-
-**U24156** is wholesaled and marked removed. Next month the DMS assigns **U24156** to a new trade. Import creates or updates one row — confirm the prior unit was closed out first or the file will replace the old VIN on that key.
-
-See [CSV import](doc:inventory/csv-import).
+See [Import a spreadsheet](doc:inventory/csv-import).

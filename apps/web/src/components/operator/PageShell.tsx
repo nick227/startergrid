@@ -7,7 +7,7 @@ import { useCategorySchema } from '@/contexts/CategoryContext.tsx';
 import { useAdminView } from '@/contexts/AdminViewContext.tsx';
 import { DealerLogo } from './DealerLogo.tsx';
 import { OperatorAvatar } from './OperatorAvatar.tsx';
-import { isDealerFacingRole } from '@/lib/operatorAccess.ts';
+import { isDealerFacingRole, isInternalSupportRole } from '@/lib/operatorAccess.ts';
 
 type Props = {
   dealerId: string;
@@ -117,30 +117,27 @@ export function PageShell({
   }
 
   // Internal staff always see which dealership they are acting in, whichever tab they navigate to.
-  const isInternalStaff = user?.role === 'SUPER_ADMIN' || user?.role === 'INTERNAL_SUPPORT' || user?.role === 'OPERATOR';
+  const isInternalStaff = isInternalSupportRole(user?.role ?? '');
   const isSupportMode = isInternalStaff || (typeof window !== 'undefined' && window.location.hash.includes('support=true'));
 
   return (
     <div className={`min-h-screen bg-surface-page ${footerPad ? 'pb-20' : ''}`}>
       <div className="sticky top-0 z-30">
       {isSupportMode && (
-        <aside aria-label="Dealer view" className="bg-amber-950/90 border-b border-amber-500/30 text-amber-200 px-4 sm:px-6 py-2.5 flex items-center justify-between text-xs font-medium backdrop-blur-md">
-          <div className="flex items-center gap-2.5">
-            <span className="relative inline-flex rounded-full h-2 w-2 bg-amber-500" />
-            <span className="text-amber-100 font-bold tracking-wide uppercase text-[11px]">Staff view</span>
-            <span className="text-silver-400">·</span>
-            <span className="text-white font-semibold">{displayDealerName}</span>
-            {user?.email && (
-              <span className="hidden md:inline text-amber-200/50">Working as {user.email}</span>
-            )}
+        <aside aria-label="Support mode" className="bg-amber-950/90 border-b border-amber-500/30 text-amber-200 px-4 sm:px-6 py-3 flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between text-xs font-medium backdrop-blur-md">
+          <div className="min-w-0">
+            <p className="text-white text-sm font-bold truncate">Helping {displayDealerName}</p>
+            <p className="text-amber-100/80 mt-0.5">
+              Signed in as {user?.email ?? 'unknown'}
+            </p>
           </div>
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-3 shrink-0">
             <button
               type="button"
               onClick={() => { window.location.hash = `#/admin/dealers/${dealerId}`; }}
-              className="text-amber-300 hover:text-white underline font-semibold flex items-center gap-1 transition-colors"
+              className="text-amber-200 hover:text-white underline font-semibold transition-colors"
             >
-              Back to dealership record
+              Return to dealership record
             </button>
             <button
               type="button"

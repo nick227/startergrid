@@ -1,26 +1,18 @@
 ---
-title: Approval Holds
-summary: Platforms held for operator or dealer confirmation before listings go live.
-keywords: approval, needs you, hold, pending, confirmation
-updated: 2026-06-05
+title: A destination is waiting on approval
+summary: Some first-time or large updates wait for you or the destination to approve before listings go out.
+keywords: approval, hold, pending, first send
+updated: 2026-10-26
 ---
 
-Some platform configurations require explicit approval before the first send or before a major feed change. Until released, the platform shows **Needs you** on Sync even when inventory is ready and the account is otherwise active.
+A destination can be connected and still wait for approval before the first send or a large refresh.
 
-## Typical cases
+## What to do
 
-| Situation | Hold reason |
-| --- | --- |
-| First-time feed to a marketplace | Fraud or duplicate-dealer checks |
-| Large lot refresh after long pause | Platform policy on bulk re-list |
-| Price or photo policy flag | Manual review queue |
+1. Open that destination on Channels.
+2. Read the next action. If it says someone must approve, finish that step there or with your contact at that company.
+3. Leave other destinations alone — a hold on one site does not stop the others.
 
-## What still syncs
+## What happens next
 
-Other platforms without a hold continue on [Auto-Sync](doc:processes/auto-sync). A hold on Platform A does not block Platform B.
-
-## Clearing a hold
-
-Resolve the item on Accounts or follow the platform’s review process outside this console. When the hold clears in this system, the next dispatch includes that destination.
-
-Example: Store launches on a new classified channel; account is Active but first feed is held for duplicate listing review. Inventory shows 80 ready units; Sync shows **Needs you** for that channel only until approval completes.
+When the hold clears, ready vehicles can go out on the next send. Inventory can look ready the whole time; the destination was the thing waiting.

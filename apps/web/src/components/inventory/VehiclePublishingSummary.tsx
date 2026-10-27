@@ -6,10 +6,10 @@ type Props = {
 
 export function VehiclePublishingSummary({ distribution }: Props) {
   const metrics = [
-    { label: 'Live',    value: distribution.liveCount,    color: distribution.liveCount > 0 ? 'text-green-600' : 'text-ink-faint' },
-    { label: 'Queued',  value: distribution.queuedCount,  color: distribution.queuedCount > 0 ? 'text-blue-600' : 'text-ink-faint' },
-    { label: 'Failed',  value: distribution.failedCount,  color: distribution.failedCount > 0 ? 'text-red-600' : 'text-ink-faint' },
-    { label: 'Blocked', value: distribution.blockedCount, color: distribution.blockedCount > 0 ? 'text-amber-600' : 'text-ink-faint' },
+    { label: 'Sent', value: distribution.liveCount, color: distribution.liveCount > 0 ? 'text-green-600' : 'text-ink-faint' },
+    { label: 'Waiting', value: distribution.queuedCount, color: distribution.queuedCount > 0 ? 'text-blue-600' : 'text-ink-faint' },
+    { label: 'Failed', value: distribution.failedCount, color: distribution.failedCount > 0 ? 'text-red-600' : 'text-ink-faint' },
+    { label: 'Cannot list', value: distribution.blockedCount, color: distribution.blockedCount > 0 ? 'text-amber-600' : 'text-ink-faint' },
   ];
 
   return (
@@ -25,13 +25,13 @@ export function VehiclePublishingSummary({ distribution }: Props) {
 
       {distribution.totalEligiblePlatforms > 0 && (
         <p className="text-[11px] text-ink-muted">
-          {distribution.totalEligiblePlatforms} connected platform{distribution.totalEligiblePlatforms !== 1 ? 's' : ''}
+          {distribution.totalEligiblePlatforms} connected destination{distribution.totalEligiblePlatforms !== 1 ? 's' : ''}
         </p>
       )}
 
       {distribution.lastSyncAt && (
         <p className="text-[11px] text-ink-muted">
-          Last sync: {new Date(distribution.lastSyncAt).toLocaleString(undefined, {
+          Last update: {new Date(distribution.lastSyncAt).toLocaleString(undefined, {
             month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit',
           })}
         </p>
@@ -44,7 +44,7 @@ export function VehiclePublishingSummary({ distribution }: Props) {
       )}
 
       {!distribution.liveCount && !distribution.queuedCount && !distribution.failedCount && (
-        <p className="text-xs text-ink-muted">Not queued for any platform yet.</p>
+        <p className="text-xs text-ink-muted">Not sent to a destination yet. Sent is not the same as verified live.</p>
       )}
     </div>
   );

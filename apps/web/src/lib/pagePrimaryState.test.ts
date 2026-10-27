@@ -1,6 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import { channelExperience, dealerSetupIncomplete, reportsExperience } from './pagePrimaryState.ts';
 import { reportsPrimary } from './reportsPrimary.ts';
+import { listingStatusText } from './listingStatus.ts';
 
 describe('channelExperience', () => {
   it('treats no destinations as empty', () => {
@@ -60,5 +61,14 @@ describe('reportsPrimary', () => {
   it('names the blocked-vehicle count before failed sends or stale stock', () => {
     expect(reportsPrimary({ vehicleTotal: 8, blocked: 3, failedSends: 2, stale: 5 }).title)
       .toBe('3 vehicles cannot be listed');
+  });
+});
+
+describe('listingStatusText', () => {
+  it('does not say live when a send has not been verified', () => {
+    expect(listingStatusText({ readiness: 'BLOCKED' })).toBe('Cannot list');
+    expect(listingStatusText({ readiness: 'READY', liveCount: 0 })).toBe('Ready to send');
+    expect(listingStatusText({ readiness: 'READY', liveCount: 2 })).toBe('Sent');
+    expect(listingStatusText({ readiness: 'WARNING' })).toBe('Needs details');
   });
 });

@@ -3,6 +3,7 @@ import { OperatorPage } from '@/components/operator';
 import type { OperatorPageBaseProps } from '@/lib/operatorPage.ts';
 import { DealershipProfilePanel } from '@/components/dealers/DealershipProfilePanel.tsx';
 import { PeoplePanel } from '@/components/people/PeoplePanel.tsx';
+import { PagePrimaryState } from '@/components/guidance/PagePrimaryState.tsx';
 import { useAuth } from '@/contexts/AuthContext.tsx';
 import { useAsyncQuery } from '@/hooks/useAsyncQuery.ts';
 import { fetchDealershipProfile } from '@/lib/api/sdk.ts';
@@ -17,6 +18,7 @@ export default function SettingsPage({ dealerId, nav, activeTab }: Props) {
   const { user } = useAuth();
   const { data: profile } = useAsyncQuery(() => fetchDealershipProfile(dealerId), [dealerId]);
   const dealershipName = profile?.dbaName || profile?.legalName || 'this dealership';
+  const criticalWarning = profile?.publishingWarnings.find(w => w.severity === 'critical');
 
   const tab = (id: SettingsSection, label: string) => (
     <button
@@ -36,13 +38,23 @@ export default function SettingsPage({ dealerId, nav, activeTab }: Props) {
       <div className="max-w-4xl space-y-6">
         <div className="border-b border-silver-200">
           <nav className="flex gap-4">
-            {tab('profile', 'Dealership & notifications')}
+            {tab('profile', 'Dealership')}
             {tab('team', 'Team')}
           </nav>
         </div>
 
         {section === 'profile' && (
-          <div className="max-w-3xl">
+          <div className="max-w-3xl space-y-5">
+            <PagePrimaryState
+              kind={criticalWarning ? 'attention' : 'running'}
+              title={criticalWarning ? `Add ${criticalWarning.label}` : 'Dealership details'}
+              why={
+                criticalWarning
+                  ? criticalWarning.message
+                  : 'Name, address, and contact that buyers and destinations use. Inquiries go to the primary email unless you add another method below.'
+              }
+              ownerKind={criticalWarning ? 'YOU' : undefined}
+            />
             <DealershipProfilePanel dealerId={dealerId} mode="operator" />
           </div>
         )}

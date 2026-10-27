@@ -1,37 +1,16 @@
 ---
-title: Dealer Context
-summary: Rooftop scoping for inventory, accounts, and sync — why dealer selection matters.
-keywords: dealer, rooftop, group, legal entity, scope
-updated: 2026-06-05
+title: Make sure you are in the right dealership
+summary: Vehicles, destinations, and inquiries belong to one rooftop at a time.
+keywords: dealership, rooftop, group, switch
+updated: 2026-10-26
 ---
 
-All inventory, accounts, validation, and sync results are scoped to one dealer record — one licensed selling entity or rooftop at a time.
+Everything you see — vehicles, destinations, and leads — belongs to one dealership record.
 
-Selecting a dealer reloads every page with that rooftop’s data.
+## What to do
 
-## What is isolated
+Before you import or connect a destination, read the dealership name in the header. If you work more than one rooftop, switch dealerships first.
 
-| Area | Per dealer |
-| --- | --- |
-| Vehicle rows | Yes |
-| Platform accounts | Yes |
-| Validation and readiness | Yes |
-| Sync counts and outcomes | Yes |
+A group with three stores has three separate destination connections. CarGurus can be connected at Store 1 and not at Store 2.
 
-A group with three rooftops has three separate account sets. Platform A may be Active for Store 1 and **Account needed** for Store 2.
-
-## Rooftop and group
-
-**Rooftop** — one physical location with its own stock and usually its own marketplace accounts.
-
-**Group** — the operator that owns multiple rooftops. Legal name and DBA may differ per license.
-
-**Legal entity** — the name on the dealer license. Syndication agreements often bind to this entity, not the group marketing name.
-
-## Typical mistake
-
-Inventory imported under Dealer ID **east-main** will not appear on platforms configured under **west-main**. Confirm the rooftop before import or account work.
-
-## Sequence
-
-Select dealer → load or correct inventory → verify Accounts → use Sync to confirm readiness and run state. No cross-rooftop batch view exists in this console.
+Vehicles imported under one rooftop will not appear on destinations connected under another.

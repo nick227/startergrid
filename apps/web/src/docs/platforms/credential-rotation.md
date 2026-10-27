@@ -1,27 +1,17 @@
 ---
-title: Credential Rotation
-summary: When marketplace passwords or API tokens change and syndication stops.
-keywords: credentials, password, token, expired, login
-updated: 2026-06-05
+title: Sign-in expired or password changed
+summary: When a destination password or key changes, open Channels and sign in again. Do not re-import the lot.
+keywords: sign-in, password, expired, credentials
+updated: 2026-10-26
+advanced: true
 ---
 
-Classified and API-based platforms authenticate the dealer or feed partner on each session or request. When credentials rotate without updating Accounts, the account state moves to **Credentials needed** and outbound traffic stops.
+If someone changes the password at CarGurus, Facebook, or another destination, StarterGrid’s saved sign-in stops working. Vehicles can all be ready to send and still go nowhere.
 
-## Common triggers
+## What to do
 
-| Event | Result |
-| --- | --- |
-| Dealer changes marketplace password | Token in this system is stale |
-| Platform forces password reset | Same |
-| API key rollover by partner | Feed auth fails |
-| Staff turnover | Old login removed on platform side |
+1. Open that destination on Channels.
+2. Sign in again, or ask support to enter the new file-transfer details.
+3. Use Check connection.
 
-## Symptoms
-
-Sync shows platforms **Blocked** with account detail pointing to credentials. Inventory readiness may be 100% ready. No new errors on individual vehicles.
-
-## Resolution
-
-Update the account record on Accounts with the current login or API credentials. State returns to **Active** after save. [Auto-Sync](doc:processes/auto-sync) includes that platform on the next run.
-
-Do not re-import inventory to fix credential failures.
+Do not re-import inventory to fix a sign-in problem. After the destination is connected, the next send includes it again.

@@ -1,30 +1,24 @@
 ---
-title: Sync vs Accounts
-summary: Which screen to use when vehicles look fine but platforms do not update.
-keywords: sync, accounts, blocked, workflow, operator
-updated: 2026-06-05
+title: Vehicles look fine but a site did not update
+summary: Fix missing vehicle details first, then the destination connection, then check whether the last send went through.
+keywords: channels, vehicles, blocked, connection, send
+updated: 2026-10-26
 ---
 
-Sync reports whether inventory and platforms are in a state that allows outbound traffic. Accounts is where platform relationships are configured and repaired.
+If a listing did not change, decide which of two things is unfinished: the vehicle, or the destination.
 
-## Use Sync when
+## Start with Vehicles
 
-The question is whether stock is moving, what is blocked, or when the last dispatch completed. Start here after import or bulk edit.
+Open Vehicles when the question is “can this unit be listed?” Missing price or photos, or a sold unit still marked available, stops a send.
 
-| Symptom | Likely layer |
-| --- | --- |
-| Cars blocked count > 0 | Inventory — fix validation |
-| Platforms blocked count > 0 | Accounts or listing rules |
-| Updating badge stuck | Run phase — see [Sync status](doc:processes/sync-status) |
+## Then open Channels
 
-## Use Accounts when
-
-The question is credentials, partner paperwork, account ID linkage, or account standing. Vehicle data can be perfect; a **Credentials needed** row still stops all sends for that marketplace.
+Open Channels when the question is “can we send to this site?” A destination that is not connected, needs sign-in, or is waiting on the partner will not receive updates — even if every vehicle looks complete.
 
 ## Order of work
 
-1. Inventory — clear blocked vehicles.
-2. Accounts — clear non-active platform rows.
-3. Sync — confirm counts and run phase return to idle.
+1. Fix the vehicle details that Vehicles says are missing.
+2. Connect or check the destination on Channels.
+3. Confirm the last update went through. Connected does not mean the site already shows the change.
 
-Fixing inventory alone does not change account state. Fixing accounts alone does not clear a missing VIN.
+Fixing vehicles does not connect a destination. Connecting a destination does not fill in a missing VIN.

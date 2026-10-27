@@ -34,7 +34,7 @@ export function VehicleMetricStrip({ vehicle, perf }: Props) {
     { label: 'Sent', value: `${liveCount}${totalEligiblePlatforms > 0 ? `/${totalEligiblePlatforms}` : ''}` },
     ...(queuedCount > 0 ? [{ label: 'Waiting', value: String(queuedCount) }] : []),
     { label: 'Days on lot', value: `${daysInInventory}d` },
-    ...(daysOnline != null ? [{ label: 'Online', value: `${daysOnline}d` }] : []),
+    ...(daysOnline != null ? [{ label: 'Days listed', value: `${daysOnline}d` }] : []),
     ...(signal ? [{ label: 'Signal', value: signal, color: signalColor[signal] ?? 'text-ink-muted' }] : []),
   ];
 

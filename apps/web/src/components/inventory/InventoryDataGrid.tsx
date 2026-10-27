@@ -4,6 +4,7 @@ import { InventoryGridRowDto } from '../../types/inventoryDto.ts';
 import { INVENTORY_FIELD_REGISTRY } from './fieldRegistry.ts';
 import { InventoryRowCard } from './InventoryRowCard.tsx';
 import type { BusinessCategoryId } from '@auto-dealer/category-schemas';
+import { vehicleReadinessText } from '@/lib/listingStatus.ts';
 
 type Props = {
   dealerId?: string;
@@ -52,7 +53,7 @@ function renderCell(item: InventoryGridRowDto, colKey: string) {
         BLOCKED: 'bg-red-100 text-red-700',
       };
       const cls = statusMap[item.readiness.status] ?? 'bg-silver-100 text-ink-body';
-      return <span className={`px-2 py-0.5 rounded text-[10px] font-semibold border border-current opacity-80 ${cls}`}>{item.readiness.status}</span>;
+      return <span className={`px-2 py-0.5 rounded text-[10px] font-semibold border border-current opacity-80 ${cls}`}>{vehicleReadinessText(item.readiness.status)}</span>;
     }
     case 'publishing': {
       return <span className="truncate text-[11px] font-medium text-ink-muted">{item.publishing.statusText}</span>;

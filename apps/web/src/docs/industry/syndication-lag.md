@@ -1,30 +1,23 @@
 ---
-title: Syndication Lag
-summary: Time between dispatch from this system and visible listing changes on marketplaces.
-keywords: lag, delay, feed schedule, propagation, ingest
-updated: 2026-06-05
+title: Why a site updates later than StarterGrid
+summary: A finished send means we delivered the update. Each destination still refreshes on its own clock.
+keywords: lag, delay, feed, ingest, sent
+updated: 2026-10-26
+advanced: true
 ---
 
-Dispatch from this server is not the same moment a consumer sees the update. Each platform ingests on its own schedule.
+Sent is not the same moment a buyer sees the change.
 
-## Feed-based platforms
+## Typical timing
 
-Bulk files are picked up every 15–60 minutes on many classified networks. OEM and aggregator programs may run overnight batches.
-
-| Stage | Typical duration |
+| Stage | How long |
 | --- | --- |
-| Dispatch from this system | Seconds to minutes |
-| Platform ingest | 15 min – several hours |
-| Search index refresh | Additional delay on some sites |
+| StarterGrid sends | Seconds to minutes |
+| They pick up the file or request | 15 minutes to several hours |
+| Their search index refreshes | Extra delay on some sites |
 
-## API-based platforms
+Direct destinations can appear in minutes when they are not rate-limited. File-based destinations often wait for a 15–60 minute pickup. Some manufacturer programs run overnight.
 
-Per-vehicle posts can appear in minutes when rate limits allow. Heavy lot updates may queue on the platform side.
+Updating in StarterGrid ends when our work finishes. Connected or Sent does not mean every field is already public.
 
-## What Sync shows
-
-**Updating** ends when server work completes. **Live** means the last dispatch was accepted — not that every field is already public.
-
-Example: Price dropped at 9:00 AM; dispatch at 9:01 AM; classified site still shows old price at 9:20 AM during normal ingest lag.
-
-See [Sold listing still live](doc:troubleshooting/sold-listing-still-live).
+See [A sold vehicle is still on a site](doc:troubleshooting/sold-listing-still-live).

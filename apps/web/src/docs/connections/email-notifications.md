@@ -1,43 +1,25 @@
 ---
-title: Email Lead Alerts
-summary: How email notifications work and what contact address they go to.
-keywords: email, notification, lead, alert, smtp, primary contact
-updated: 2026-06-13
+title: Get new inquiries by email
+summary: Email goes to the primary contact on the dealership profile. Turn it off in Settings if you do not want it.
+keywords: email, notification, lead, primary contact
+updated: 2026-10-26
 ---
 
-Email alerts send to the primary contact email on your dealer profile. No email-specific setup is required on your end — enable or disable the toggle in the Notification channels panel.
+Email alerts go to the **email** on your dealership’s primary contact. You do not set up a separate mailbox.
 
-## Which address receives alerts
+## What to do
 
-Alerts go to the **email** field inside your dealership's primary contact record. This is the same address used for account-level correspondence.
+1. Confirm the primary contact email in Settings.
+2. Leave email enabled if you want alerts, or turn it off and save if you do not.
 
-To change it, update your primary contact email through your account profile. The change takes effect on the next lead.
+## What the message includes
 
-## What the message contains
+The subject names the stock number. The body has the destination, vehicle, buyer name, email, phone, and message. Blank buyer fields are omitted.
 
-| Field | Example |
-| --- | --- |
-| Subject | *New lead — Stock #DM-2024-042 (consumer-marketplace)* |
-| Platform | consumer-marketplace |
-| Vehicle | Stock #DM-2024-042 |
-| Name | Alex Johnson |
-| Email | alex@example.com |
-| Phone | +15551234567 |
-| Message | "Is this still available?" |
-| Lead ID | clxxx... |
+## If mail is not arriving
 
-Fields the buyer left blank are omitted from the message body.
+- Check the primary contact email.
+- Check junk. First messages from a new sender often land there.
+- Ask support if nothing has ever arrived and junk is not the cause.
 
-## Enabling and disabling
-
-The email channel is enabled by default. To silence it without removing your contact email, uncheck **Enabled** in the Email section of the Notification channels panel and save.
-
-## If emails are not arriving
-
-- Check the primary contact email is correct on your profile.
-- Check your spam folder — first alerts from a new sender address often land there.
-- Mark the sender address as safe to prevent future filtering.
-
-If no emails have ever arrived and spam filtering is not the cause, contact support to confirm the outbound mail service is active for your account.
-
-See [Lead notification channels](doc:connections/lead-notifications) for a full channel comparison.
+See [Choose how you hear about new inquiries](doc:connections/lead-notifications).

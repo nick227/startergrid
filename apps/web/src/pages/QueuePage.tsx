@@ -10,11 +10,11 @@ export default function QueuePage({ nav }: Props) {
       <div className="p-4 border-b border-orange-200 bg-orange-50">
         <InlineCallout title="Legacy View" tone="warning">
           <p className="text-sm mt-1 mb-3">
-            This page is deprecated. Operational issues and queue health are now managed centrally on the Home and Platforms dashboards.
+            This page is retired. What needs sending is now on Home and Channels.
           </p>
           <div className="flex gap-3">
             <Button size="sm" variant="primary" onClick={() => nav.goToHome()}>Go to Home Dashboard</Button>
-            <Button size="sm" variant="secondary" onClick={() => nav.goToPlatforms()}>Go to Platforms</Button>
+            <Button size="sm" variant="secondary" onClick={() => nav.goToPlatforms()}>Go to Channels</Button>
           </div>
         </InlineCallout>
       </div>

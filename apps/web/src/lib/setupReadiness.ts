@@ -34,19 +34,19 @@ export function getSetupReadiness(
 
     if (platform.state === 'Failed') {
       return {
-        statusLabel: 'Sync failed',
+        statusLabel: 'Last update did not go through',
         severity: 'critical',
-        nextAction: 'Retry sync',
+        nextAction: 'Retry update',
         missingRequiredFields: [],
         missingRequiredSecrets: [],
         setupProgress: null,
-        validationSummary: platform.detail || 'The last marketplace update did not complete.',
+        validationSummary: platform.detail || 'The last update did not complete.',
         partnerAcceptanceNote: null,
       };
     }
 
     return {
-      statusLabel: platform.state === 'Active' ? 'Active' : 'Ready',
+      statusLabel: platform.state === 'Active' ? 'Connected' : 'Ready to send',
       severity: 'success',
       nextAction: null,
       missingRequiredFields: [],
@@ -65,9 +65,9 @@ export function getSetupReadiness(
   
   if (!account) {
     return {
-      statusLabel: 'Not started',
+      statusLabel: 'Not connected',
       severity: 'neutral',
-      nextAction: isOauth ? 'Connect' : 'Enter requirements',
+      nextAction: isOauth ? 'Connect' : 'Add the details they need',
       missingRequiredFields: defaultMissingNonSecrets,
       missingRequiredSecrets: defaultMissingSecrets,
       setupProgress: null,
@@ -95,7 +95,7 @@ export function getSetupReadiness(
   }
 
   const totalFields = fields.length;
-  const setupProgress = totalFields > 0 ? `${providedCount} of ${totalFields} requirements complete` : null;
+  const setupProgress = totalFields > 0 ? `${providedCount} of ${totalFields} details filled in` : null;
 
   // Account State based Evaluation
   // account.state can be: 'ACCOUNT_NEEDED', 'CREDENTIALS_NEEDED', 'READY', 'FAILED', 'ACTIVE', 'NOT_STARTED'
@@ -110,50 +110,50 @@ export function getSetupReadiness(
   if (isOauth) {
     if (account.oauthConnected && !account.oauthExpired) {
       if (pubState === 'Active') {
-        statusLabel = 'Active';
+        statusLabel = 'Connected';
         severity = 'success';
       } else {
-        statusLabel = 'Ready';
+        statusLabel = 'Ready to send';
         severity = 'success';
       }
     } else if (account.oauthExpired) {
-      statusLabel = 'Credentials required';
+      statusLabel = 'Sign-in expired';
       severity = 'critical';
-      nextAction = 'Reconnect';
+      nextAction = 'Sign in again';
     } else {
-      statusLabel = 'Not started';
+      statusLabel = 'Not connected';
       severity = 'neutral';
       nextAction = 'Connect';
     }
   } else {
     // Partner or Direct integration
     if (acctState === 'NOT_STARTED' || (!missingNonSecrets.length && !missingSecrets.length && providedCount === 0 && acctState !== 'READY' && acctState !== 'FAILED')) {
-      statusLabel = 'Not started';
+      statusLabel = 'Not connected';
       severity = 'neutral';
-      nextAction = 'Enter requirements';
+      nextAction = 'Add the details they need';
     } else if (missingNonSecrets.length > 0 || missingSecrets.length > 0 || acctState === 'ACCOUNT_NEEDED' || acctState === 'CREDENTIALS_NEEDED') {
-      statusLabel = missingSecrets.length > 0 ? 'Credentials required' : 'Needs info';
+      statusLabel = missingSecrets.length > 0 ? 'Sign-in needed' : 'Needs a few details';
       severity = 'warning';
-      nextAction = 'Enter requirements';
+      nextAction = 'Add the details they need';
     } else if (acctState === 'FAILED') {
-      statusLabel = 'Validation failed';
+      statusLabel = 'Could not connect';
       severity = 'critical';
-      nextAction = 'Validate connection';
+      nextAction = 'Check this connection';
     } else if (acctState === 'READY' && pubState !== 'Active') {
       if (account.highestConfirmedLevel === 'CONNECTION_TESTED') {
-        statusLabel = isPartnerFeed ? 'Waiting on partner' : 'Connection tested';
+        statusLabel = isPartnerFeed ? 'Waiting on partner' : 'Connection checked';
         severity = isPartnerFeed ? 'info' : 'success';
         partnerAcceptanceNote = isPartnerFeed ? 'Waiting on partner acceptance' : null;
       } else {
-        statusLabel = 'Ready to validate';
+        statusLabel = 'Ready to check';
         severity = 'info';
-        nextAction = 'Validate connection';
+        nextAction = 'Check this connection';
       }
     } else if (pubState === 'Active') {
-      statusLabel = 'Active';
+      statusLabel = 'Connected';
       severity = 'success';
     } else {
-      statusLabel = 'Ready';
+      statusLabel = 'Ready to send';
       severity = 'success';
     }
   }

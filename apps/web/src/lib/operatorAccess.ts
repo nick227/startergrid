@@ -4,6 +4,10 @@ export function isDealerFacingRole(role: string): boolean {
   return role === 'DEALER_OPERATOR' || role === 'DEALER_OWNER' || role === 'DEALER_STAFF';
 }
 
+export function isInternalSupportRole(role: string): boolean {
+  return role === 'SUPER_ADMIN' || role === 'INTERNAL_SUPPORT' || role === 'OPERATOR';
+}
+
 export function operatorHasGlobalAccess(user: OperatorUser): boolean {
   if (user.role === 'SUPER_ADMIN') return true;
   if (user.devBypass && user.dealerAccessIds.length === 0) return true;

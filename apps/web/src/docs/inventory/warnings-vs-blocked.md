@@ -1,26 +1,22 @@
 ---
-title: Warnings vs Blocked
-summary: Difference between advisory validation issues and fail-level exclusions from dispatch.
-keywords: warning, blocked, severity, validation, partial sync
-updated: 2026-06-05
+title: Needs details vs cannot list
+summary: Cannot list means the vehicle is held back. Needs details means it can still go to some destinations.
+keywords: warning, blocked, needs details, cannot list, photos, price
+updated: 2026-10-26
 ---
 
-Validation assigns each issue a severity. **Blocked** means the vehicle is withheld from all dispatch. **Warning** means the row may still send to some platforms while failing stricter profiles.
+Vehicles uses two problem states. They are not the same as already sent.
 
-## Blocked
+## Cannot list
 
-At least one fail-level rule: invalid VIN, zero price, below minimum photos, sold unit still marked available. The stock number does not appear in outbound packets until fixed.
+At least one required item is missing or invalid — no price, too few photos, a bad VIN, or a sold unit still marked available. StarterGrid will not send that vehicle until you fix it.
 
-## Warning
+## Needs details
 
-Advisory rules: high mileage vs asking price, missing optional trim, borderline photo count for lenient platforms. Strict marketplaces may reject the listing even when this system shows warning, not blocked.
+Something should be improved — photo quality, optional trim, or a stricter site’s extra fields. The vehicle can still be sent to destinations that do not require those extras.
 
-## Example
+## What to do
 
-Stock **N88201** — valid VIN, price set, five photos. Internal minimum is four → **Ready** with a warning on photo quality for one OEM program that requires eight → may fail on that program only.
+Open the vehicle. The next action tells you what is missing. After you save, ready vehicles can be sent again. Ready to send is not the same as already live on the site.
 
-## On Sync
-
-Blocked units appear under **Inventory readiness**. Warnings increment the ready tile footnote (“with warnings”) but do not add to cars blocked.
-
-See [Inventory readiness](doc:inventory/inventory-readiness).
+See [When a vehicle can be listed](doc:inventory/inventory-readiness).

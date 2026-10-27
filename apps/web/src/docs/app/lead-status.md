@@ -1,34 +1,24 @@
 ---
-title: Lead Status
-summary: What the status labels mean, how they are saved, and what to expect when switching devices.
-keywords: lead, status, new, contacted, appointment, closed, lost, local, device
-updated: 2026-06-13
+title: What lead statuses mean
+summary: Set New, Contacted, Appointment, Closed, or Lost so your team knows who still needs a call.
+keywords: lead, status, new, contacted, appointment, closed, lost
+updated: 2026-10-26
 ---
 
-Each lead has a status you can set from the Leads page: **New**, **Contacted**, **Appointment**, **Closed**, or **Lost**.
+On Leads you can mark each inquiry **New**, **Contacted**, **Appointment**, **Closed**, or **Lost**. Buyers never see this label. It does not change listings.
 
-## What each status means
+## When to use each one
 
 | Status | Use it when |
 | --- | --- |
-| New | Inquiry has not been acted on yet |
-| Contacted | You have reached out to the buyer |
-| Appointment | A visit or call has been scheduled |
-| Closed | Deal done |
-| Lost | Buyer went elsewhere or went dark |
+| New | Nobody has followed up yet |
+| Contacted | You reached the buyer |
+| Appointment | A visit or call is booked |
+| Closed | The deal is done |
+| Lost | The buyer went elsewhere or stopped answering |
 
-These are internal tracking labels. They are not visible to the buyer and do not affect syndication or marketplace listings.
+## What happens next
 
-## Important — statuses are saved on this device
+A new inquiry always starts as **New**. Change it yourself when you take the next step.
 
-Lead statuses are stored in your browser, not on the server. This means:
-
-- Statuses you set on your laptop will not appear on your phone or a colleague's computer.
-- Clearing your browser data will reset all statuses to **New**.
-- Private / incognito windows do not share statuses with your normal browser session.
-
-If you need statuses to be visible across devices or to your team, use an external CRM and connect it via the [webhook channel](doc:connections/webhook).
-
-## Incoming leads always start as New
-
-A lead arrives as **New** regardless of anything in your CRM or prior contact with the buyer. Status is only changed when you manually update it here.
+Statuses stay on this device. They do not appear on a phone or a coworker’s computer, and clearing browser data resets them to New. If the whole team needs the same statuses, use your CRM and connect it with the [webhook](doc:connections/webhook).

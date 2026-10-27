@@ -8,9 +8,9 @@ function formatPrice(cents: number) {
 }
 
 const READINESS_LABEL: Record<'READY' | 'WARNING' | 'BLOCKED', string> = {
-  READY: 'Ready',
+  READY: VEHICLE_READINESS_REGISTRY.READY.label,
   WARNING: VEHICLE_READINESS_REGISTRY.WARNING.label,
-  BLOCKED: 'Needs a fix',
+  BLOCKED: VEHICLE_READINESS_REGISTRY.BLOCKED.label,
 };
 
 type Props = {
@@ -52,7 +52,7 @@ export function VehicleDetailHeader({ vehicle, onClose, onReload }: Props) {
         ? { label: 'Draft', cls: 'bg-silver-100 text-ink-body border-silver-300' }
         : sentCount > 0
           ? { label: `Sent to ${sentCount}`, cls: 'bg-green-100 text-green-700 border-green-200' }
-          : { label: 'Ready', cls: 'bg-blue-50 text-blue-700 border-blue-200' };
+          : { label: 'Not sent yet', cls: 'bg-blue-50 text-blue-700 border-blue-200' };
 
   return (
     <div className="sticky top-0 z-10 bg-white border-b border-silver-200 px-6 pt-5 pb-4 shrink-0 shadow-sm">

@@ -20,7 +20,7 @@ export default function PlatformQueuePage({
           </p>
           <div className="flex gap-3">
             <Button size="sm" variant="primary" onClick={() => nav.goToPlatformDetail(platformSlug)}>Manage Platform</Button>
-            <Button size="sm" variant="secondary" onClick={() => nav.goToPlatforms()}>Back to all Platforms</Button>
+            <Button size="sm" variant="secondary" onClick={() => nav.goToPlatforms()}>Back to Channels</Button>
           </div>
         </InlineCallout>
       </div>

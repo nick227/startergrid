@@ -2,7 +2,7 @@
 
 export const operatorCopy = {
   app: {
-    title: 'Operator Console',
+    title: 'StarterGrid',
     tagline: 'Open a dealership to continue setup or help a customer.',
   },
   scope: {
@@ -48,7 +48,7 @@ export const operatorCopy = {
     },
   },
   platforms: {
-    title: 'Platforms',
+    title: 'Channels',
     searchPlaceholder: 'Search channels',
     loading: 'Loading channels…',
     emptyFilter: 'No channels match your filters.',

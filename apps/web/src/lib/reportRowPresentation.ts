@@ -30,7 +30,7 @@ export function reportAssetSecondaryMeta(item: VehiclePerformanceItem): string {
 export function reportAssetDesktopFields(item: VehiclePerformanceItem): OpsRowField[] {
   const p = movementBenchmarkParts(item);
   return [
-    { label: 'Days online', value: String(p.daysOnline) },
+    { label: 'Days on lot', value: String(p.daysOnline) },
     { label: 'Similar avg', value: p.similarAvg != null ? `${p.similarAvg} days` : '—' },
     { label: 'Comparable sample', value: String(p.sampleSize) },
     { label: 'Benchmark', value: p.benchmarkLabel },

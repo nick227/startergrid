@@ -26,15 +26,15 @@ export const INVENTORY_FIELD_REGISTRY: Record<string, InventoryFieldDefinition> 
   saleStatus: { key: 'saleStatus', label: 'Status', group: 'Readiness', sortable: true, tableDefault: true, cardDefault: true, optional: false, sortKey: 'readiness.status', compactRenderer: 'status' },
   nextAction: { key: 'nextAction', label: 'Next Action', group: 'Readiness', sortable: false, tableDefault: false, cardDefault: false, optional: true, compactRenderer: 'text' },
 
-  // Publishing
-  platformsStatus: { key: 'platformsStatus', label: 'Publishing', group: 'Publishing', sortable: true, tableDefault: true, cardDefault: true, optional: false, sortKey: 'publishing.severity', compactRenderer: 'publishing' },
-  liveCount: { key: 'liveCount', label: 'Live (n/x)', group: 'Publishing', sortable: true, tableDefault: false, cardDefault: false, optional: true, sortKey: 'publishing.liveCount', compactRenderer: 'number' },
-  queuedCount: { key: 'queuedCount', label: 'Queued (n/x)', group: 'Publishing', sortable: true, tableDefault: false, cardDefault: false, optional: true, sortKey: 'publishing.queuedCount', compactRenderer: 'number' },
-  blockedCount: { key: 'blockedCount', label: 'Blocked (n/x)', group: 'Publishing', sortable: true, tableDefault: false, cardDefault: false, optional: true, sortKey: 'publishing.blockedCount', compactRenderer: 'number' },
-  failedCount: { key: 'failedCount', label: 'Failed (n/x)', group: 'Publishing', sortable: true, tableDefault: false, cardDefault: false, optional: true, sortKey: 'publishing.failedCount', compactRenderer: 'number' },
+  // Listing
+  platformsStatus: { key: 'platformsStatus', label: 'Listing', group: 'Listing', sortable: true, tableDefault: true, cardDefault: true, optional: false, sortKey: 'publishing.severity', compactRenderer: 'publishing' },
+  liveCount: { key: 'liveCount', label: 'Sent (n/x)', group: 'Listing', sortable: true, tableDefault: false, cardDefault: false, optional: true, sortKey: 'publishing.liveCount', compactRenderer: 'number' },
+  queuedCount: { key: 'queuedCount', label: 'Waiting (n/x)', group: 'Listing', sortable: true, tableDefault: false, cardDefault: false, optional: true, sortKey: 'publishing.queuedCount', compactRenderer: 'number' },
+  blockedCount: { key: 'blockedCount', label: 'Cannot list (n/x)', group: 'Listing', sortable: true, tableDefault: false, cardDefault: false, optional: true, sortKey: 'publishing.blockedCount', compactRenderer: 'number' },
+  failedCount: { key: 'failedCount', label: 'Failed (n/x)', group: 'Listing', sortable: true, tableDefault: false, cardDefault: false, optional: true, sortKey: 'publishing.failedCount', compactRenderer: 'number' },
 
   // Performance
-  daysOnline: { key: 'daysOnline', label: 'Days Online', group: 'Performance', sortable: true, tableDefault: true, cardDefault: true, optional: true, sortKey: 'performance.daysOnline', compactRenderer: 'days' },
+  daysOnline: { key: 'daysOnline', label: 'Days on lot', group: 'Performance', sortable: true, tableDefault: true, cardDefault: true, optional: true, sortKey: 'performance.daysOnline', compactRenderer: 'days' },
   messages: { key: 'messages', label: 'Messages', group: 'Performance', sortable: true, tableDefault: true, cardDefault: true, optional: true, sortKey: 'performance.messages', compactRenderer: 'number' },
   views: { key: 'views', label: 'Views', group: 'Performance', sortable: true, tableDefault: false, cardDefault: false, optional: true, sortKey: 'performance.views', compactRenderer: 'number' },
   saves: { key: 'saves', label: 'Saves', group: 'Performance', sortable: true, tableDefault: false, cardDefault: false, optional: true, sortKey: 'performance.saves', compactRenderer: 'number' },
@@ -48,13 +48,13 @@ export const INVENTORY_FIELD_REGISTRY: Record<string, InventoryFieldDefinition> 
   // Admin
   dateAdded: { key: 'dateAdded', label: 'Date Added', group: 'Admin', sortable: true, tableDefault: false, cardDefault: false, optional: true, sortKey: 'status.addedAt', compactRenderer: 'date' },
   lastUpdated: { key: 'lastUpdated', label: 'Last Updated', group: 'Admin', sortable: true, tableDefault: false, cardDefault: false, optional: true, sortKey: 'status.lastUpdatedAt', compactRenderer: 'date' },
-  lastSync: { key: 'lastSync', label: 'Last Sync', group: 'Admin', sortable: true, tableDefault: false, cardDefault: false, optional: true, sortKey: 'status.lastSyncAt', compactRenderer: 'date' },
+  lastSync: { key: 'lastSync', label: 'Last update', group: 'Admin', sortable: true, tableDefault: false, cardDefault: false, optional: true, sortKey: 'status.lastSyncAt', compactRenderer: 'date' },
 };
 
 export const INVENTORY_COLUMN_PRESETS: Record<string, string[]> = {
   Default: ['thumb', 'make', 'model', 'trim', 'color', 'year', 'mileage', 'price', 'saleStatus', 'platformsStatus', 'daysOnline', 'messages'],
   Media: ['thumb', 'make', 'model', 'trim', 'year', 'photos', 'missingShots'],
-  Publishing: ['thumb', 'make', 'model', 'saleStatus', 'platformsStatus', 'liveCount', 'queuedCount', 'blockedCount', 'failedCount'],
+  Listing: ['thumb', 'make', 'model', 'saleStatus', 'platformsStatus', 'liveCount', 'queuedCount', 'blockedCount', 'failedCount'],
   Performance: ['thumb', 'make', 'model', 'daysOnline', 'messages', 'views', 'saves'],
   Sales: ['thumb', 'make', 'model', 'year', 'price', 'saleStatus', 'soldPlatform', 'soldDate', 'soldPrice', 'daysToSale'],
   Problems: ['thumb', 'make', 'model', 'saleStatus', 'nextAction', 'missingShots', 'blockedCount', 'failedCount'],

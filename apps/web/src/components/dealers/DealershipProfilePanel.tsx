@@ -58,7 +58,7 @@ function WarningList({ warnings }: { warnings: ProfileReadinessWarning[] }) {
   if (!warnings.length) {
     return (
       <p className="text-sm text-emerald-700 bg-emerald-50 border border-emerald-200 rounded-md px-3 py-2">
-        Profile looks ready for marketplace publishing and platform setup.
+        Profile looks ready for listings and destination setup.
       </p>
     );
   }
@@ -265,7 +265,7 @@ export function DealershipProfilePanel({ dealerId, mode = 'operator', onDealersC
         <div>
           <h2 className="text-lg font-semibold text-ink-heading">Dealership profile</h2>
           <p className="text-sm text-ink-muted mt-1">
-            Public storefront details buyers see on the marketplace and platforms use for publishing.
+            What buyers see, and what destinations use when they list your vehicles.
           </p>
         </div>
         <div className="flex flex-wrap items-center gap-2">
@@ -282,11 +282,13 @@ export function DealershipProfilePanel({ dealerId, mode = 'operator', onDealersC
         </div>
       </div>
 
-      <SectionCard title="Publishing readiness">
-        <WarningList warnings={profile.publishingWarnings} />
-      </SectionCard>
+      {profile.publishingWarnings.length > 0 && (
+        <SectionCard title="What still needs filling in">
+          <WarningList warnings={profile.publishingWarnings} />
+        </SectionCard>
+      )}
 
-      <SectionCard title="Public marketplace profile" subtitle={`Category: ${categoryLabel}`}>
+      <SectionCard title="How your dealership appears" subtitle={`Category: ${categoryLabel}`}>
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <label className="block space-y-1">
             <span className="text-xs font-semibold text-ink-muted">Legal name</span>
@@ -320,7 +322,7 @@ export function DealershipProfilePanel({ dealerId, mode = 'operator', onDealersC
         </div>
       </SectionCard>
 
-      <SectionCard title="Location / rooftop address">
+      <SectionCard title="Lot address">
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <label className="block space-y-1 sm:col-span-2">
             <span className="text-xs font-semibold text-ink-muted">Street</span>
@@ -361,7 +363,7 @@ export function DealershipProfilePanel({ dealerId, mode = 'operator', onDealersC
             )}
           </button>
           <div className="text-sm text-ink-muted space-y-1">
-            <p>Shown in the operator header and used for branded experiences.</p>
+            <p>Shown at the top of StarterGrid and on your listings.</p>
             <p className="text-xs text-ink-faint">PNG, JPEG, or WebP · click logo to upload</p>
           </div>
           <input
@@ -377,23 +379,25 @@ export function DealershipProfilePanel({ dealerId, mode = 'operator', onDealersC
         </div>
       </SectionCard>
 
-      <div className="space-y-2">
-        <div>
-          <h2 className="text-lg font-semibold text-ink-heading">Lead notification channels</h2>
-          <p className="text-sm text-ink-muted mt-1">
-            Stored separately from the profile fields above — either Save button below persists both.
-          </p>
+      <details className="rounded-xl border border-silver-200 bg-white">
+        <summary className="px-4 py-3 cursor-pointer">
+          <span className="text-sm font-semibold text-ink-heading">How you hear about new inquiries</span>
+          <span className="block text-xs font-normal text-ink-muted mt-0.5">
+            Email to the primary contact is on by default. Webhook, Discord, Telegram, SMS, and auto-reply are optional.
+          </span>
+          <span className="block mt-1"><ChannelSummary profile={profile} /></span>
+        </summary>
+        <div className="px-4 pb-4">
+          <NotificationChannelsPanel
+            dealerId={dealerId}
+            defaultOpen={false}
+            ref={channelsRef}
+            onBeforeSave={async () => {
+              if (isProfileDirty()) await saveProfileFields(form);
+            }}
+          />
         </div>
-        <ChannelSummary profile={profile} />
-        <NotificationChannelsPanel
-          dealerId={dealerId}
-          defaultOpen={!hasOptionalChannelConfigured(profile)}
-          ref={channelsRef}
-          onBeforeSave={async () => {
-            if (isProfileDirty()) await saveProfileFields(form);
-          }}
-        />
-      </div>
+      </details>
 
       {mode === 'admin' && (
         <SectionCard title="Internal reference">

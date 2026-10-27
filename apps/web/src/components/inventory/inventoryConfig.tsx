@@ -170,9 +170,9 @@ export function buildVehicleColumns(
 
 export const SUMMARY_STRIP_ITEMS: Array<{ key: string; label: string; colorClass: string }> = [
   { key: 'total',   label: 'Total',   colorClass: 'text-ink-body' },
-  { key: 'ready',   label: 'Ready',   colorClass: 'text-status-success-text' },
-  { key: 'warning', label: 'Needs review', colorClass: 'text-status-warning-text' },
-  { key: 'blocked', label: 'Blocked', colorClass: 'text-status-error-text'   },
+  { key: 'ready',   label: 'Ready to send',   colorClass: 'text-status-success-text' },
+  { key: 'warning', label: 'Needs details', colorClass: 'text-status-warning-text' },
+  { key: 'blocked', label: 'Cannot list', colorClass: 'text-status-error-text'   },
 ];
 
 // ── Bulk edit field definitions ───────────────────────────────────────────────

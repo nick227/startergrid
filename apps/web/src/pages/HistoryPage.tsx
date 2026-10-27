@@ -10,12 +10,11 @@ export default function HistoryPage({ nav }: Props) {
       <div className="p-4 border-b border-orange-200 bg-orange-50">
         <InlineCallout title="Legacy View" tone="warning">
           <p className="text-sm mt-1 mb-3">
-            This page is deprecated. Publish and sync history now lives under the "Audit Log" tab on Home,
-            or per-platform under Platforms.
+            This page is retired. Activity now lives on Home, or on each destination in Channels.
           </p>
           <div className="flex gap-3">
             <Button size="sm" variant="primary" onClick={() => nav.goToHome()}>Go to Home Dashboard</Button>
-            <Button size="sm" variant="secondary" onClick={() => nav.goToPlatforms()}>Go to Platforms</Button>
+            <Button size="sm" variant="secondary" onClick={() => nav.goToPlatforms()}>Go to Channels</Button>
           </div>
         </InlineCallout>
       </div>

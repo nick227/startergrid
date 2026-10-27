@@ -49,20 +49,20 @@ export function getValidationBadge(account: PlatformAccountDetail | null | undef
     case 'HEALTHY':
       return {
         state,
-        label: 'Tested & Ready',
+        label: 'Checked',
         pillClass: 'bg-status-success-bg text-status-success-text border-status-success-border',
       };
     case 'FAILED':
       return {
         state,
-        label: 'Validation Failed',
+        label: 'Could not connect',
         pillClass: 'bg-status-error-bg text-status-error-text border-status-error-border',
       };
     case 'NOT_TESTED':
     default:
       return {
         state,
-        label: 'Not Tested',
+        label: 'Not checked yet',
         pillClass: 'bg-silver-100 text-ink-muted border-silver-200',
       };
   }
@@ -79,25 +79,25 @@ export function getValidationFeedback(account: PlatformAccountDetail | null | un
     case 'HEALTHY':
       return {
         state,
-        title: 'Connection Healthy',
-        message: 'Credentials have been verified successfully.',
+        title: 'Connection looks good',
+        message: 'The details you entered were accepted.',
         lastValidatedLabel,
       };
     case 'FAILED':
       return {
         state,
-        title: 'Validation Failed',
+        title: 'Could not connect',
         message: account?.lastValidationNote || 'The connection could not be established.',
-        actionableHint: account?.nextAction || 'Please check your credentials and try again.',
+        actionableHint: account?.nextAction || 'Check the details you entered and try again.',
         lastValidatedLabel,
       };
     case 'NOT_TESTED':
     default:
       return {
         state,
-        title: 'Validation Needed',
-        message: 'Enter your credentials and validate to confirm the connection works.',
-        actionableHint: 'Click Validate Connection after entering fields.',
+        title: 'Check this connection',
+        message: 'Add the details they need, then check the connection so we know it works.',
+        actionableHint: 'Use Check connection after you fill in the fields.',
         lastValidatedLabel,
       };
   }

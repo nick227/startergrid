@@ -18,7 +18,7 @@ export type TabCapabilityFlags = {
 export function buildTabs(flags: TabCapabilityFlags): TabEntry[] {
   const tabs: TabEntry[] = [
     { key: 'setup',    label: 'Setup'    },
-    { key: 'feed',     label: 'Feed'     },
+    { key: 'feed',     label: 'Results'  },
     { key: 'activity', label: 'Activity' },
     { key: 'notes',    label: 'Notes'    },
   ];

@@ -1,32 +1,24 @@
 ---
-title: Sold & Removed
-summary: Status changes for funded deals and units that left the lot; dispatch priority and marketplace lag.
-keywords: sold, removed, delete, availability, dispatch
-updated: 2026-06-05
+title: Mark a vehicle sold or removed
+summary: Mark sold or removed so StarterGrid can send a take-down. The site may still show it until they process the update.
+keywords: sold, removed, take down, availability
+updated: 2026-10-26
 ---
 
-Retail units that have funded, wholesale units that have left the lot, and demo transfers should not remain advertised. Status must reflect reality before or as deals close.
+A funded deal or a unit that left the lot should not stay advertised.
 
-## Status vs delete
+## What to do
 
-| Action | Result |
-| --- | --- |
-| Mark sold | Unit stays in history; removal sent to platforms |
-| Mark removed | Same dispatch path; use for wholesale, transfer, or error intake |
-| Delete stock number | Breaks cross-reference to import batches and prior dispatches — not supported as normal practice |
+| Action | Use it when | Result |
+| --- | --- | --- |
+| Mark sold | The retail deal funded | The vehicle stays in history; a take-down is sent |
+| Mark removed | Wholesale, transfer, or a row you should not advertise | Same take-down path |
+| Delete | Not a normal step | Breaks history — do not use this for daily work |
 
-## Dispatch priority
+## What happens next
 
-Sold and removed changes use a faster dispatch path than routine price or photo edits. The server still depends on platform processing time after send.
+Sold and removed updates go out ahead of routine price or photo edits. The destination still needs time to process the request. A site can show the ad for a while after StarterGrid has already sent the take-down.
 
-## Lag on marketplaces
+If your DMS already shows sold but Vehicles still shows available, listings can keep going out. Match status here the same day the deal funds.
 
-Sync may show a platform **Live** while the listing still appears for a short period. Classified sites often purge within minutes; some OEM or aggregator feeds run on longer intervals.
-
-Example: Unit marked sold at 4:00 PM; dispatch completes by 4:02 PM; consumer site may show the ad until the marketplace’s next ingest cycle.
-
-## DMS alignment
-
-If the DMS shows **S** but inventory here still shows available, syndication continues. Match status here to the DMS (or your chosen source) the same day the deal funds.
-
-Advertising law and platform policy: [Advertising disclaimers](doc:law/advertising-disclaimers).
+See [A sold vehicle is still on a site](doc:troubleshooting/sold-listing-still-live).

@@ -80,9 +80,9 @@ function selectThumbnailUrl(media: VehicleMediaItem[]): string | null {
 }
 
 const readinessBadge: Record<ReadinessStatus, { label: string; cls: string }> = {
-  READY:   { label: 'Ready',   cls: 'bg-green-100 text-green-700 border-green-200' },
-  WARNING: { label: 'Warning', cls: 'bg-amber-100 text-amber-700 border-amber-200' },
-  BLOCKED: { label: 'Blocked', cls: 'bg-red-100 text-red-700 border-red-200' },
+  READY:   { label: 'Ready to send', cls: 'bg-green-100 text-green-700 border-green-200' },
+  WARNING: { label: 'Needs details', cls: 'bg-amber-100 text-amber-700 border-amber-200' },
+  BLOCKED: { label: 'Cannot list', cls: 'bg-red-100 text-red-700 border-red-200' },
 };
 
 function formatPrice(cents: number) {

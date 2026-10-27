@@ -8,9 +8,13 @@ import { oauthProviderDisplayName } from '@/lib/platformPresentation.ts';
 import { getSetupReadiness, severityToPill } from '@/lib/setupReadiness.ts';
 import { platformOutcomeMeta } from '@/lib/syncPresentation.ts';
 import { platformDisplayName } from '@/lib/marketplaceBrand.ts';
-import { ConnectionSetupPanel } from '@/components/platforms/ConnectionSetupPanel.tsx';
-import { PlatformAvailabilityPanel } from '@/components/platforms/PlatformAvailabilityPanel.tsx';
+import { DestinationPrimarySetup } from '@/components/platforms/DestinationPrimarySetup.tsx';
+import { AccountEditForm } from '@/components/platforms/AccountEditForm.tsx';
 import { PlatformQueueSummaryCard } from '@/components/platforms/PlatformQueueSummaryCard.tsx';
+import { PagePrimaryState } from '@/components/guidance/PagePrimaryState.tsx';
+import { destinationExperience, destinationWhy } from '@/lib/destinationPrimary.ts';
+import { useAuth } from '@/contexts/AuthContext.tsx';
+import { isInternalSupportRole } from '@/lib/operatorAccess.ts';
 
 type ExternalLink = { label: string; url: string };
 type OperatorSetupGuide = {
@@ -56,46 +60,6 @@ function PlatformIntroCard({ description, externalLinks }: {
   );
 }
 
-function OperatorSetupGuideCard({ guide }: { guide: OperatorSetupGuide }) {
-  return (
-    <div className="bg-white border border-silver-200 rounded-xl shadow-sm p-5 space-y-4">
-      <h2 className="text-[11px] font-bold uppercase tracking-widest text-ink-faint">How to Connect</h2>
-      {guide.shortBlurb && (
-        <p className="text-sm text-ink-body leading-relaxed">{guide.shortBlurb}</p>
-      )}
-      <div className="flex items-center gap-2">
-        <span className="text-[10px] font-bold uppercase tracking-wider text-ink-muted">Connection type</span>
-        <span className="px-2 py-0.5 bg-silver-50 border border-silver-200 rounded text-xs font-semibold text-ink-body">{guide.connectionLabel}</span>
-      </div>
-      {guide.steps.length > 0 && (
-        <ol className="space-y-2">
-          {guide.steps.map((step, i) => (
-            <li key={i} className="flex gap-3 text-sm text-ink-body">
-              <span className="flex-shrink-0 w-5 h-5 rounded-full bg-navy-800 text-white text-[10px] font-bold flex items-center justify-center mt-0.5">{i + 1}</span>
-              <span className="leading-snug">{step}</span>
-            </li>
-          ))}
-        </ol>
-      )}
-      {guide.dealerPortalUrl && (
-        <a
-          href={guide.dealerPortalUrl}
-          target="_blank"
-          rel="noreferrer"
-          className="inline-flex items-center gap-1.5 text-sm font-semibold text-navy-600 hover:text-navy-800"
-        >
-          <span className="text-base leading-none">↗</span> Open partner portal
-        </a>
-      )}
-      {guide.validationNote && (
-        <div className="p-3 bg-amber-50 border border-amber-200 rounded-lg">
-          <p className="text-xs text-amber-900/80 leading-snug">{guide.validationNote}</p>
-        </div>
-      )}
-    </div>
-  );
-}
-
 type Props = OperatorPageBaseProps & {
   platformSlug: string;
 };
@@ -103,21 +67,21 @@ type Props = OperatorPageBaseProps & {
 function ownedMarketplaceStateCopy(platform: { state: string; detail?: string | null }) {
   if (platform.state === 'Blocked') {
     return {
-      label: 'Marketplace publishing needs inventory fixes',
-      detail: platform.detail || 'One or more ready listings are missing required marketplace data.',
+      label: 'Some vehicles cannot be listed here yet',
+      detail: platform.detail || 'Usually a missing price or photos.',
       tone: 'text-status-error-text',
     };
   }
   if (platform.state === 'Failed') {
     return {
-      label: 'Marketplace update failed',
-      detail: platform.detail || 'The last marketplace update did not complete.',
+      label: 'Last update did not go through',
+      detail: platform.detail || 'Try sending again from Vehicles.',
       tone: 'text-status-error-text',
     };
   }
   return {
-    label: `Marketplace publishing is ${platform.state.toLowerCase()}`,
-    detail: platform.detail || null,
+    label: platform.state === 'Active' ? 'Your storefront is ready' : 'Your storefront is set up',
+    detail: platform.detail || 'A listing here is not verified live until a send succeeds.',
     tone: 'text-ink-muted',
   };
 }
@@ -156,7 +120,7 @@ export default function PlatformDetailPage({ dealerId, nav, activeTab, platformS
       <OperatorPage dealerId={dealerId} activeTab={activeTab} nav={nav} onRefresh={handleRefresh}>
         <div className="mb-4">
           <button onClick={() => nav.goToPlatforms()} className="text-sm text-ink-faint hover:text-ink-body">
-            ← Back to platforms
+            ← Back to Channels
           </button>
         </div>
         <ErrorState message={error} onRetry={handleRefresh} />
@@ -169,7 +133,7 @@ export default function PlatformDetailPage({ dealerId, nav, activeTab, platformS
       <OperatorPage dealerId={dealerId} activeTab={activeTab} nav={nav} onRefresh={handleRefresh} refreshing={true}>
         <div className="mb-4">
           <button onClick={() => nav.goToPlatforms()} className="text-sm text-ink-faint hover:text-ink-body">
-            ← Back to platforms
+            ← Back to Channels
           </button>
         </div>
         <PanelSkeleton rows={6} />
@@ -182,16 +146,18 @@ export default function PlatformDetailPage({ dealerId, nav, activeTab, platformS
       <OperatorPage dealerId={dealerId} activeTab={activeTab} nav={nav} onRefresh={handleRefresh}>
         <div className="mb-4">
           <button onClick={() => nav.goToPlatforms()} className="text-sm text-ink-faint hover:text-ink-body">
-            ← Back to platforms
+            ← Back to Channels
           </button>
         </div>
         <div className="p-8 text-center text-ink-faint border border-silver-200 border-dashed rounded-xl">
-          Platform not found or unsupported for this dealer's category.
+          This destination is not available for this dealership.
         </div>
       </OperatorPage>
     );
   }
 
+  const { user } = useAuth();
+  const isInternal = isInternalSupportRole(user?.role ?? '');
   const publishMeta = platformOutcomeMeta(platform);
   const readiness = getSetupReadiness(platform, account || null);
   const ownedState = platform.integrationClass === 'OWNED' ? ownedMarketplaceStateCopy(platform) : null;
@@ -209,8 +175,20 @@ export default function PlatformDetailPage({ dealerId, nav, activeTab, platformS
     >
       <div className="mb-6">
         <button onClick={() => nav.goToPlatforms()} className="text-sm font-semibold text-ink-faint hover:text-ink-body transition-colors">
-          ← Back to platforms
+          ← Back to Channels
         </button>
+      </div>
+
+      <div className="mb-6">
+        <PagePrimaryState
+          kind={destinationExperience(readiness)}
+          title={readiness.statusLabel === 'Connected' || readiness.statusLabel === 'Ready to send'
+            ? `${displayName} is ${readiness.statusLabel.toLowerCase()}`
+            : readiness.statusLabel}
+          why={destinationWhy(readiness, displayName)}
+          next={readiness.nextAction ?? undefined}
+          ownerKind={readiness.nextAction ? 'YOU' : undefined}
+        />
       </div>
 
       <div className="bg-white border border-silver-200 rounded-xl shadow-sm mb-6 p-6 flex flex-col md:flex-row md:items-center justify-between gap-6">
@@ -249,32 +227,36 @@ export default function PlatformDetailPage({ dealerId, nav, activeTab, platformS
         {/* Left Column */}
         <div className="lg:col-span-2 space-y-6">
 
-          <PlatformAvailabilityPanel
+          <DestinationPrimarySetup
             dealerId={dealerId}
             platform={platform}
             account={account}
             onRefresh={handleRefresh}
           />
-          
-          {/* Capabilities Card */}
-          <div className="bg-white border border-silver-200 rounded-xl shadow-sm p-5">
-            <h2 className="text-[11px] font-bold uppercase tracking-widest text-ink-faint mb-4">Capabilities</h2>
+
+          <details className="bg-white border border-silver-200 rounded-xl shadow-sm">
+            <summary className="px-5 py-4 cursor-pointer text-sm font-semibold text-ink-heading">
+              Technical details
+              <span className="block text-xs font-normal text-ink-muted mt-0.5">What this destination can do, and connection checks.</span>
+            </summary>
+            <div className="px-5 pb-5 space-y-6">
+          <div>
+            <h2 className="text-[11px] font-bold uppercase tracking-widest text-ink-faint mb-4">What it can do</h2>
             <div className="flex flex-wrap gap-2">
-              {platform.catalogSync && <span className="px-2 py-1 bg-teal-50 text-teal-800 border border-teal-200 rounded text-xs font-semibold">Catalog Sync</span>}
-              {platform.socialPosting && <span className="px-2 py-1 bg-indigo-50 text-indigo-800 border border-indigo-200 rounded text-xs font-semibold">Social Posting</span>}
-              {platform.marketplaceListing && <span className="px-2 py-1 bg-sky-50 text-sky-800 border border-sky-200 rounded text-xs font-semibold">Marketplace Listing</span>}
-              {platform.partnerFeed && <span className="px-2 py-1 bg-purple-50 text-purple-800 border border-purple-200 rounded text-xs font-semibold">Partner Feed</span>}
-              {platform.leadSync && <span className="px-2 py-1 bg-emerald-50 text-emerald-800 border border-emerald-200 rounded text-xs font-semibold">Lead Sync</span>}
+              {platform.catalogSync && <span className="px-2 py-1 bg-teal-50 text-teal-800 border border-teal-200 rounded text-xs font-semibold">Inventory file</span>}
+              {platform.socialPosting && <span className="px-2 py-1 bg-indigo-50 text-indigo-800 border border-indigo-200 rounded text-xs font-semibold">Social posts</span>}
+              {platform.marketplaceListing && <span className="px-2 py-1 bg-sky-50 text-sky-800 border border-sky-200 rounded text-xs font-semibold">Listings</span>}
+              {platform.partnerFeed && <span className="px-2 py-1 bg-purple-50 text-purple-800 border border-purple-200 rounded text-xs font-semibold">Partner listing</span>}
+              {platform.leadSync && <span className="px-2 py-1 bg-emerald-50 text-emerald-800 border border-emerald-200 rounded text-xs font-semibold">Inquiries</span>}
               {!platform.catalogSync && !platform.socialPosting && !platform.marketplaceListing && !platform.partnerFeed && !platform.leadSync && (
-                <span className="text-sm text-ink-muted">No specific capabilities advertised.</span>
+                <span className="text-sm text-ink-muted">No extra capabilities listed.</span>
               )}
             </div>
           </div>
 
-          {/* Validation Readiness — not applicable for first-party (OWNED) channels */}
           {platform.integrationClass !== 'OWNED' && (
-            <div className="bg-white border border-silver-200 rounded-xl shadow-sm p-5 space-y-4">
-              <h2 className="text-[11px] font-bold uppercase tracking-widest text-ink-faint mb-2">Validation Readiness</h2>
+            <div className="space-y-4">
+              <h2 className="text-[11px] font-bold uppercase tracking-widest text-ink-faint mb-2">Connection checks</h2>
 
               <div className="grid grid-cols-2 md:grid-cols-3 gap-4 mb-4 pb-4 border-b border-silver-100">
                 <div>
@@ -342,9 +324,9 @@ export default function PlatformDetailPage({ dealerId, nav, activeTab, platformS
                 </div>
               </div>
 
-              {account?.liveValidationNote && (
+              {isInternal && account?.liveValidationNote && (
                 <div className="mt-4 p-3 bg-amber-50 border border-amber-200 rounded-lg">
-                  <p className="text-xs font-bold text-amber-800 mb-1">Live Validation Blocked</p>
+                  <p className="text-xs font-bold text-amber-800 mb-1">Partner confirmation note</p>
                   <p className="text-xs text-amber-900/80">{account.liveValidationNote}</p>
                 </div>
               )}
@@ -356,52 +338,16 @@ export default function PlatformDetailPage({ dealerId, nav, activeTab, platformS
             </div>
           )}
 
-          {/* First-party channel notice — replaces credential/validation UI for OWNED platforms */}
-          {platform.integrationClass === 'OWNED' && (
-            <div className="bg-white border border-silver-200 rounded-xl shadow-sm p-5">
-              <h2 className="text-[11px] font-bold uppercase tracking-widest text-ink-faint mb-3">First-party channel</h2>
-              <p className="text-sm text-ink-body leading-relaxed">
-                This is a first-party channel operated directly by the platform — no external account, credentials, or partner approval required. Inventory published here goes live as soon as it meets readiness criteria.
-              </p>
-              {platform.state === 'Active' ? (
-                <p className="mt-3 text-xs font-semibold text-status-success-text">Channel is active and publishing.</p>
-              ) : (
-                ownedState && (
-                  <div className="mt-3 rounded-lg border border-silver-200 bg-silver-50 px-3 py-2">
-                    <p className={`text-xs font-semibold ${ownedState.tone}`}>{ownedState.label}</p>
-                    {ownedState.detail && <p className="mt-1 text-xs text-ink-muted">{ownedState.detail}</p>}
-                  </div>
-                )
-              )}
-            </div>
-          )}
-
-          {/* Data-Driven Setup Engine — not applicable for OWNED platforms */}
-          {platform.integrationClass !== 'OWNED' && (
-            <ConnectionSetupPanel
-              dealerId={dealerId!}
-              platform={platform}
-              account={account || undefined}
-              onRefresh={reloadAccounts}
-            />
-          )}
-
-          {/* Operator Setup Guide */}
-          {richAccount?.operatorSetup && (
-            <OperatorSetupGuideCard guide={richAccount.operatorSetup as OperatorSetupGuide} />
-          )}
-
-          {/* Required Fields Card */}
           {(account?.requiredDealershipFields?.length || account?.requiredVehicleFields?.length) ? (
-            <div className="bg-white border border-silver-200 rounded-xl shadow-sm p-5">
-              <h2 className="text-[11px] font-bold uppercase tracking-widest text-ink-faint mb-4">Required Data Fields</h2>
+            <div>
+              <h2 className="text-[11px] font-bold uppercase tracking-widest text-ink-faint mb-4">Fields they need</h2>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 {account?.requiredDealershipFields && account.requiredDealershipFields.length > 0 && (
                   <div>
                     <h3 className="text-[10px] font-bold uppercase tracking-wider text-ink-muted mb-2">Dealership</h3>
                     <div className="flex flex-wrap gap-1.5">
                       {account.requiredDealershipFields.map(f => (
-                        <span key={f} className="px-2 py-0.5 bg-silver-50 border border-silver-200 rounded-md text-[11px] text-ink-body font-mono">
+                        <span key={f} className="px-2 py-0.5 bg-silver-50 border border-silver-200 rounded-md text-[11px] text-ink-body">
                           {f}
                         </span>
                       ))}
@@ -413,7 +359,7 @@ export default function PlatformDetailPage({ dealerId, nav, activeTab, platformS
                     <h3 className="text-[10px] font-bold uppercase tracking-wider text-ink-muted mb-2">Vehicle</h3>
                     <div className="flex flex-wrap gap-1.5">
                       {account.requiredVehicleFields.map(f => (
-                        <span key={f} className="px-2 py-0.5 bg-silver-50 border border-silver-200 rounded-md text-[11px] text-ink-body font-mono">
+                        <span key={f} className="px-2 py-0.5 bg-silver-50 border border-silver-200 rounded-md text-[11px] text-ink-body">
                           {f}
                         </span>
                       ))}
@@ -423,6 +369,39 @@ export default function PlatformDetailPage({ dealerId, nav, activeTab, platformS
               </div>
             </div>
           ) : null}
+            </div>
+          </details>
+
+          {platform.integrationClass === 'OWNED' && (
+            <div className="bg-white border border-silver-200 rounded-xl shadow-sm p-5">
+              <h2 className="text-[11px] font-bold uppercase tracking-widest text-ink-faint mb-3">Your StarterGrid storefront</h2>
+              <p className="text-sm text-ink-body leading-relaxed">
+                This is your own storefront. You do not sign in to another company. Ready vehicles can appear here; that is not a verified-live confirmation until a send succeeds.
+              </p>
+              {platform.state === 'Active' ? (
+                <p className="mt-3 text-xs font-semibold text-status-success-text">Storefront is on.</p>
+              ) : (
+                ownedState && (
+                  <div className="mt-3 rounded-lg border border-silver-200 bg-silver-50 px-3 py-2">
+                    <p className={`text-xs font-semibold ${ownedState.tone}`}>{ownedState.label}</p>
+                    {ownedState.detail && <p className="mt-1 text-xs text-ink-muted">{ownedState.detail}</p>}
+                  </div>
+                )
+              )}
+            </div>
+          )}
+
+          {isInternal && account && (
+            <details className="bg-white border border-silver-200 rounded-xl shadow-sm">
+              <summary className="px-5 py-4 cursor-pointer text-sm font-semibold text-ink-heading">
+                Account record
+                <span className="block text-xs font-normal text-ink-muted mt-0.5">Internal state, owner, and notes.</span>
+              </summary>
+              <div className="px-5 pb-5">
+                <AccountEditForm account={account} dealerId={dealerId} onSaved={handleRefresh} />
+              </div>
+            </details>
+          )}
 
         </div>
 
@@ -430,118 +409,65 @@ export default function PlatformDetailPage({ dealerId, nav, activeTab, platformS
         <div className="space-y-6">
 
           <PlatformQueueSummaryCard dealerId={dealerId} platformSlug={platform.platformSlug} nav={nav} />
-          
-          {/* Connection Method Card */}
-          <div className="bg-white border border-silver-200 rounded-xl shadow-sm p-5">
-            <h2 className="text-[11px] font-bold uppercase tracking-widest text-ink-faint mb-4">Connection Method</h2>
-            <div className="mb-4 flex flex-col gap-1">
-              <span className="text-xs text-ink-muted uppercase font-bold tracking-wide">Integration Class</span>
-              <span className="text-sm font-semibold text-ink-body">{account?.integrationClass || platform.integrationClass}</span>
-            </div>
-            {platform.connectionType === 'OAUTH' && account?.oauthProvider ? (
-              <div className="space-y-3">
-                <div className="flex items-center gap-2">
-                  <div className="w-8 h-8 rounded bg-sky-50 flex items-center justify-center text-sky-600 font-bold">O</div>
-                  <div>
-                    <div className="text-sm font-bold text-ink-body">OAuth 2.0</div>
-                    <div className="text-xs text-ink-muted">via {oauthProviderDisplayName(account.oauthProvider)}</div>
-                  </div>
-                </div>
-              </div>
-            ) : platform.connectionType === 'PARTNER_FEED' ? (
-              <div className="space-y-3">
-                <div className="flex items-center gap-2">
-                  <div className="w-8 h-8 rounded bg-purple-50 flex items-center justify-center text-purple-600 font-bold">F</div>
-                  <div>
-                    <div className="text-sm font-bold text-ink-body">Partner Feed</div>
-                    <div className="text-xs text-ink-muted">Assisted transmission</div>
-                  </div>
-                </div>
-              </div>
-            ) : (
-              <div className="space-y-3">
-                <div className="flex items-center gap-2">
-                  <div className="w-8 h-8 rounded bg-silver-100 flex items-center justify-center text-ink-muted font-bold">N</div>
-                  <div>
-                    <div className="text-sm font-bold text-ink-body">None / API</div>
-                    <div className="text-xs text-ink-muted">First-party or direct integration</div>
-                  </div>
-                </div>
-              </div>
-            )}
-          </div>
 
-          {/* Documentation Links */}
           <div className="bg-white border border-silver-200 rounded-xl shadow-sm p-5">
-            <h2 className="text-[11px] font-bold uppercase tracking-widest text-ink-faint mb-4">Resources</h2>
+            <h2 className="text-[11px] font-bold uppercase tracking-widest text-ink-faint mb-4">Help</h2>
             <ul className="space-y-3">
               {account?.integrationUrls?.partnerPortalUrl && (
                 <li>
                   <a href={account.integrationUrls.partnerPortalUrl} target="_blank" rel="noreferrer" className="text-sm text-navy-600 hover:text-navy-800 font-medium flex items-center gap-1.5">
-                    <span className="text-lg leading-none">↗</span> Partner Portal
-                  </a>
-                </li>
-              )}
-              {account?.integrationUrls?.developerDocsUrl && (
-                <li>
-                  <a href={account.integrationUrls.developerDocsUrl} target="_blank" rel="noreferrer" className="text-sm text-navy-600 hover:text-navy-800 font-medium flex items-center gap-1.5">
-                    <span className="text-lg leading-none">↗</span> Developer API Docs
-                  </a>
-                </li>
-              )}
-              {account?.integrationUrls?.feedSpecUrl && (
-                <li>
-                  <a href={account.integrationUrls.feedSpecUrl} target="_blank" rel="noreferrer" className="text-sm text-navy-600 hover:text-navy-800 font-medium flex items-center gap-1.5">
-                    <span className="text-lg leading-none">↗</span> Feed Specification
+                    <span className="text-lg leading-none">↗</span> Their dealer website
                   </a>
                 </li>
               )}
               {account?.integrationUrls?.supportUrl && (
                 <li>
                   <a href={account.integrationUrls.supportUrl} target="_blank" rel="noreferrer" className="text-sm text-navy-600 hover:text-navy-800 font-medium flex items-center gap-1.5">
-                    <span className="text-lg leading-none">↗</span> Platform Support
+                    <span className="text-lg leading-none">↗</span> Their support
                   </a>
                 </li>
               )}
               {!account?.integrationUrls && account?.connectionFields?.find(f => f.helpUrl) && (
                 <li>
                   <a href={account.connectionFields.find(f => f.helpUrl)?.helpUrl} target="_blank" rel="noreferrer" className="text-sm text-navy-600 hover:text-navy-800 font-medium flex items-center gap-1.5">
-                    <span className="text-lg leading-none">↗</span> Platform setup guide
+                    <span className="text-lg leading-none">↗</span> Setup guide
                   </a>
-                </li>
-              )}
-              {!account?.integrationUrls && !account?.connectionFields?.find(f => f.helpUrl) && (
-                <li>
-                  <span className="text-sm text-ink-muted">No external docs available</span>
                 </li>
               )}
               <li>
                 <button type="button" onClick={() => nav.goToHelp()} className="text-sm text-navy-600 hover:text-navy-800 font-medium flex items-center gap-1.5">
-                  <span className="text-lg leading-none">📚</span> Internal knowledge base
+                  Help in StarterGrid
                 </button>
               </li>
             </ul>
           </div>
 
-          {/* Profile Confidence Card */}
-          <div className="bg-white border border-silver-200 rounded-xl shadow-sm p-5">
-            <h2 className="text-[11px] font-bold uppercase tracking-widest text-ink-faint mb-4">Profile Confidence</h2>
-            <div className="space-y-4">
-              <div>
-                <div className="text-[10px] text-ink-muted uppercase font-bold tracking-wide">Data Confidence</div>
-                <div className="font-semibold text-ink-body mt-0.5">{account?.profileConfidence || 'UNKNOWN'}</div>
-              </div>
-              <div>
-                <div className="text-[10px] text-ink-muted uppercase font-bold tracking-wide">Requirements Confidence</div>
-                <div className="font-semibold text-ink-body mt-0.5">{account?.requirementsConfidence || 'UNKNOWN'}</div>
-              </div>
-              {account?.requirementsConfidence === 'UNKNOWN' && (
-                <div className="text-xs text-amber-600 mt-2 bg-amber-50 p-2 rounded border border-amber-200">
-                  Requirements are still being confirmed for this platform.
-                </div>
+          <details className="bg-white border border-silver-200 rounded-xl shadow-sm">
+            <summary className="px-5 py-4 cursor-pointer text-sm font-semibold text-ink-heading">
+              How this connection works
+              <span className="block text-xs font-normal text-ink-muted mt-0.5">Sign-in method and technical notes.</span>
+            </summary>
+            <div className="px-5 pb-5 space-y-4">
+              {platform.connectionType === 'OAUTH' && account?.oauthProvider ? (
+                <p className="text-sm text-ink-body">Sign in with {oauthProviderDisplayName(account.oauthProvider)}. StarterGrid never sees your password.</p>
+              ) : platform.connectionType === 'PARTNER_FEED' ? (
+                <p className="text-sm text-ink-body">They receive listings from us after you add the details they need.</p>
+              ) : (
+                <p className="text-sm text-ink-body">We send listings directly. You usually do not sign in to another website.</p>
+              )}
+              {account?.integrationUrls?.developerDocsUrl && (
+                <a href={account.integrationUrls.developerDocsUrl} target="_blank" rel="noreferrer" className="block text-xs text-navy-600">Developer docs</a>
+              )}
+              {account?.integrationUrls?.feedSpecUrl && (
+                <a href={account.integrationUrls.feedSpecUrl} target="_blank" rel="noreferrer" className="block text-xs text-navy-600">Listing file spec</a>
+              )}
+              {(account?.profileConfidence || account?.requirementsConfidence) && (
+                <p className="text-xs text-ink-muted">
+                  Setup notes: {account?.profileConfidence ?? 'unknown'} data · {account?.requirementsConfidence ?? 'unknown'} requirements.
+                </p>
               )}
             </div>
-          </div>
+          </details>
           
         </div>
       </div>

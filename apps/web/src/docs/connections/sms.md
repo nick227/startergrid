@@ -1,42 +1,19 @@
 ---
-title: SMS Lead Alerts
-summary: How SMS notifications work and what is required to activate them.
-keywords: sms, text, twilio, phone, notification, lead, alert, E.164
-updated: 2026-06-13
+title: Get new inquiries by text
+summary: Enter a mobile number to receive a short text. Support must enable texting before messages go out.
+keywords: sms, text, phone, lead, alert
+updated: 2026-10-26
 ---
 
-SMS delivers a short text message to any mobile number when a lead arrives. Sending is handled by Twilio and requires server-level configuration by an administrator before the channel is active.
+A text is a short alert when a new inquiry arrives, for example: “New lead from Alex Johnson for Stock #DM-2024-042. Log in to respond.”
 
-## What the message says
+## What to do
 
-```
-New lead from Alex Johnson for Stock #DM-2024-042. Log in to respond.
-```
+1. Enter one mobile number using country code, no spaces: `+15551234567`.
+2. Save. Ask support to confirm texting is enabled for your dealership.
 
-The message uses the buyer's name if provided, otherwise falls back to email or phone.
+Until support enables it, the number is saved but texts are not sent. One number is used per dealership. To reach several people, use a shared number that forwards to the team.
 
-## Phone number format
+To stop texts, clear the number and save.
 
-Enter the number in **E.164 format**: country code, area code, and number with no spaces or dashes, prefixed with `+`.
-
-| Correct | Incorrect |
-| --- | --- |
-| +15551234567 | 555-123-4567 |
-| +447911123456 | 07911 123456 |
-| +33612345678 | 06 12 34 56 78 |
-
-## Activation requirement
-
-SMS requires Twilio credentials to be configured at the server level by an administrator. Until that is done, numbers entered here are saved but SMS messages are not sent.
-
-If you have entered a phone number and are not receiving texts, contact your administrator to confirm Twilio is active.
-
-## Multiple recipients
-
-The SMS channel sends to one number per dealership. To notify multiple people, use a group SMS forwarding service (e.g. a shared number that fans out to a team) and enter that number here.
-
-## Removing SMS alerts
-
-Clear the phone number field and save.
-
-See [Lead notification channels](doc:connections/lead-notifications) for a full channel comparison.
+See [Choose how you hear about new inquiries](doc:connections/lead-notifications).

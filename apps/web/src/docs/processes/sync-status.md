@@ -1,33 +1,32 @@
 ---
-title: Sync Status
-summary: Run phases, summary tiles, and what the last activity line represents.
-keywords: sync status, phases, idle, running, failed, tiles
-updated: 2026-06-05
+title: How to read send status
+summary: Idle means StarterGrid is not working. Updating means a send is in progress. Needs a fix means the last run stopped.
+keywords: send status, idle, updating, failed
+updated: 2026-10-26
+advanced: true
 ---
 
-Sync status is a snapshot of inventory validation and platform eligibility for the selected dealer. It is not a full event log.
+Send status is a snapshot for the selected dealership. It is not a full event log.
 
 ## Run phases
 
-| Phase | Badge | Description |
+| Phase | What you see | Meaning |
 | --- | --- | --- |
-| Idle | Auto-Sync | No server work queued. Marketplaces may still be processing an earlier dispatch. |
-| Scheduled | Updating | Save completed; run waiting on debounce window. |
-| Running | Updating | Validate, prepare, or dispatch in progress. |
-| Failed | Needs fix | Run exited with an error. Check blockers, correct data, save again. |
+| Idle | Working | No send is queued. Destinations may still be processing an earlier update. |
+| Scheduled | Updating | A save just finished; the send is about to start. |
+| Running | Updating | Checking vehicles or sending now. |
+| Failed | Needs a fix | The run stopped. Fix the vehicle or destination, then save again. |
 
-A price change at 2:14 PM may show **Updating** until debounce and dispatch complete; **Auto-Sync** returns when the server finishes, not when the listing visible on Cars.com updates.
+Updating ends when StarterGrid finishes — not when Cars.com already shows the new price.
 
-## Summary tiles
+## Counts
 
-**Cars ready** — count of vehicles that pass validation and can be included in dispatch. See [Inventory readiness](doc:inventory/inventory-readiness).
+**Ready to send** — vehicles that pass checks and can be included.
 
-**Cars blocked** — units with at least one fail-severity issue. They remain in inventory but are withheld from outbound traffic.
+**Cannot list** — vehicles with a required problem. They stay in inventory but are not sent.
 
-**Platforms ready** — platforms with an active account and no approval hold, where at least one ready vehicle can be sent.
+**Destinations ready** — connected destinations that can receive at least one ready vehicle.
 
-**Platforms blocked** — account, credential, partner, or approval gaps. See [Account states](doc:platforms/account-states). Vehicle corrections alone do not clear these.
+**Destinations blocked** — connection, sign-in, partner, or approval gaps. Vehicle edits alone do not clear these.
 
-## Last activity line
-
-Reports the most recent outbound milestone (submission sent or artifact generated). It does not list every field edit. A morning photo swap on one unit may not appear if no dispatch completed after the change.
+The last-activity line is the most recent send milestone, not every field edit.

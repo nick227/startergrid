@@ -1,46 +1,27 @@
 ---
-title: Auto-Sync
-summary: How inventory saves trigger validation, prepare, and dispatch without a manual publish step.
-keywords: auto-sync, debounce, reconcile, dispatch, validate, prepare
-updated: 2026-06-05
+title: Sending updates automatically
+summary: Saving inventory can send ready vehicles to the destinations you turned on. There is no separate publish step on Channels.
+keywords: autopilot, send, save, sold, import
+updated: 2026-10-26
 ---
 
-Auto-Sync is the automatic path from saved inventory changes to outbound syndication. Inventory is written when you import, edit, or bulk-update; the server then validates, prepares listing data, and dispatches to platforms that pass account and vehicle checks.
+When you import, edit, or mark a vehicle sold, StarterGrid can send the change to connected destinations. You do not publish from a separate Sync screen.
 
-There is no separate “publish” step on the Sync screen.
+## What starts a send
 
-## What starts a run
-
-| Event | Run type |
+| What you did | What StarterGrid does |
 | --- | --- |
-| CSV import committed | Full reconcile (all ready stock) |
-| Bulk edit saved | Full reconcile |
-| Single-field save (price, photos, odometer) | Dispatch for affected stock only |
-| Sold or removed status set | Priority dispatch for that stock |
-| First Sync load with inventory, no prior outbound data | Bootstrap reconcile |
+| Imported a spreadsheet | Rechecks the lot and can send ready vehicles |
+| Bulk-edited vehicles | Same |
+| Changed one vehicle | Sends that vehicle when it is ready |
+| Marked sold or removed | Sends a take-down first |
 
-Full reconcile re-validates the lot and rebuilds outbound packets. Field-level saves skip a full lot pass when only one vehicle changed.
+Quick edits a few seconds apart are grouped into one send.
 
-## Debounce
+## What happens inside a send
 
-Edits within about two seconds are grouped into one run. Example: correcting asking price on twelve units in quick succession produces one reconcile, not twelve.
+StarterGrid checks each vehicle, maps the details each destination needs, then sends. Vehicles that cannot be listed are held. Destinations that are not connected receive nothing.
 
-## Steps inside a run
+A finished send means StarterGrid finished its work. It does not prove the site already shows the change.
 
-**Validate.** Each vehicle is checked against required fields, photos, price rules, and platform-specific constraints. Failures mark the unit blocked or warning; blocked units are withheld from dispatch.
-
-**Prepare.** Passing vehicles are mapped to each eligible platform’s field set (trim, drivetrain, photo order, price display).
-
-**Dispatch.** Prepared data is handed to platform runners (feed generation or API submission). Runner timing and retries are outside this screen.
-
-## Badge on Sync
-
-| Badge | Condition |
-| --- | --- |
-| Auto-Sync | Idle — no run queued or active |
-| Updating | Scheduled or running — detail in [Sync status](doc:processes/sync-status) |
-| Needs fix | Last run stopped on inventory or account blockers |
-
-## When sync does not move
-
-Blocked vehicles stay in inventory but are excluded from dispatch until fixed. Platforms in a non-active account state receive nothing for that dealer until Accounts is corrected. Fixing either side and saving inventory again schedules the next run.
+See [When a vehicle can be listed](doc:inventory/inventory-readiness).

@@ -36,9 +36,9 @@ export function PlatformAvailabilityPanel({ dealerId, platform, account, onRefre
   if (!siteEnabled) {
     return (
       <div className="bg-amber-50 border border-amber-200 rounded-xl p-5 space-y-2">
-        <h2 className="text-[11px] font-bold uppercase tracking-widest text-amber-900/70">Availability</h2>
+        <h2 className="text-[11px] font-bold uppercase tracking-widest text-amber-900/70">Not available</h2>
         <p className="text-sm text-amber-900/90">
-          This platform is disabled site-wide by admin. Dealers cannot publish to it until admin re-enables it.
+          StarterGrid has this destination turned off for everyone right now. You cannot send vehicles here until it is turned back on.
         </p>
       </div>
     );
@@ -46,9 +46,9 @@ export function PlatformAvailabilityPanel({ dealerId, platform, account, onRefre
 
   return (
     <div className="bg-white border border-silver-200 rounded-xl shadow-sm p-5 space-y-4">
-      <h2 className="text-[11px] font-bold uppercase tracking-widest text-ink-faint">Availability</h2>
+      <h2 className="text-[11px] font-bold uppercase tracking-widest text-ink-faint">Use this destination</h2>
       <p className="text-sm text-ink-muted leading-snug">
-        Enable controls whether this dealership posts to the channel. Connection setup (below) is separate—both are required before queue posts go out.
+        Turn it on for this dealership, then finish connecting below. Both are needed before vehicles are sent here.
       </p>
 
       <label className="flex items-start gap-3 cursor-pointer">
@@ -60,9 +60,9 @@ export function PlatformAvailabilityPanel({ dealerId, platform, account, onRefre
           onChange={e => patch({ dealerEnabled: e.target.checked })}
         />
         <span>
-          <span className="block text-sm font-semibold text-ink-heading">Enable for this dealership</span>
+          <span className="block text-sm font-semibold text-ink-heading">Send vehicles here</span>
           <span className="block text-xs text-ink-muted mt-0.5">
-            When off, no outbound posts are queued for this channel. Connection settings are preserved.
+            When off, nothing is sent. Your sign-in and details are kept.
           </span>
         </span>
       </label>
@@ -77,11 +77,11 @@ export function PlatformAvailabilityPanel({ dealerId, platform, account, onRefre
             onChange={e => patch({ autoSyncReadyInventory: e.target.checked })}
           />
           <span>
-            <span className="block text-sm font-semibold text-ink-heading">Auto-sync ready inventory</span>
+            <span className="block text-sm font-semibold text-ink-heading">Send ready vehicles automatically</span>
             <span className="block text-xs text-ink-muted mt-0.5">
               {platform.platformSlug === AUTO_MARKETPLACE_SLUG
-                ? 'When on, READY inventory changes are posted to the marketplace automatically.'
-                : 'When on, inventory changes enqueue posts without manual prepare.'}
+                ? 'When on, ready vehicles are sent here when they change. That send is not a verified-live confirmation.'
+                : 'When on, ready vehicle changes are sent without a separate prepare step.'}
             </span>
           </span>
         </label>

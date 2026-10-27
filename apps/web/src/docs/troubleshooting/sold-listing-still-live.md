@@ -1,27 +1,19 @@
 ---
-title: Sold Listing Still Live
-summary: Why a funded unit can still appear on a marketplace after sold status was saved.
-keywords: sold, still live, lag, removal, advertised
-updated: 2026-06-05
+title: A sold vehicle is still on a site
+summary: Marking sold sends a take-down. The site may still show the ad until they process it.
+keywords: sold, still live, take down, lag
+updated: 2026-10-26
 ---
 
-Marking sold here triggers a priority removal dispatch. The consumer site updates only after the marketplace processes that request.
+Mark sold or removed on Vehicles. StarterGrid then sends a take-down. The consumer site updates only after that destination processes the request.
 
-## Checklist
+## What to do
 
-| Step | Action |
-| --- | --- |
-| 1 | Confirm unit is **sold** or **removed** in Inventory, not merely priced at $0 |
-| 2 | Confirm correct [dealer context](doc:dealerships/dealer-context) |
-| 3 | Check Sync — platform still **Live** is normal during lag |
-| 4 | Allow one ingest cycle for feed-based sites (see [Syndication lag](doc:industry/syndication-lag)) |
+1. Confirm the vehicle is **sold** or **removed**, not only priced at $0.
+2. Confirm you are in the right dealership.
+3. On Channels, check that the destination is connected. If sign-in expired, the take-down never arrived.
+4. Allow time for that site’s refresh. Some classified sites update in minutes; some wait for a later batch.
 
-## If still live after 24 hours
+If it is still public after a full business day, the listing may have been posted by hand outside StarterGrid and will not take itself down.
 
-Account may be **Credentials needed** — removal never reached the platform. Or the listing was created outside this feed (manual post) and will not auto-delete.
-
-## Example
-
-Deal funds Friday 5 PM; status updated Friday 5:15 PM; dispatch completes 5:17 PM; Saturday morning ad still visible on a site that ingests overnight batches.
-
-See [Sold & removed](doc:inventory/sold-removed).
+See [Mark a vehicle sold or removed](doc:inventory/sold-removed).

@@ -78,7 +78,7 @@ describe('setupReadiness', () => {
     const platform = createMockPlatform({ connectionType: 'OAUTH' });
     const account = createMockAccount({ oauthConnected: false, oauthExpired: false });
     const readiness = getSetupReadiness(platform, account);
-    expect(readiness.statusLabel).toBe('Not started');
+    expect(readiness.statusLabel).toBe('Not connected');
     expect(readiness.severity).toBe('neutral');
     expect(readiness.nextAction).toBe('Connect');
   });
@@ -91,11 +91,11 @@ describe('setupReadiness', () => {
       state: 'ACCOUNT_NEEDED',
     });
     const readiness = getSetupReadiness(platform, account);
-    expect(readiness.statusLabel).toBe('Needs info');
+    expect(readiness.statusLabel).toBe('Needs a few details');
     expect(readiness.severity).toBe('warning');
-    expect(readiness.nextAction).toBe('Enter requirements');
+    expect(readiness.nextAction).toBe('Add the details they need');
     expect(readiness.missingRequiredFields).toContain('Partner ID');
-    expect(readiness.setupProgress).toBe('0 of 1 requirements complete');
+    expect(readiness.setupProgress).toBe('0 of 1 details filled in');
   });
 
   it('covers missing required secret', () => {
@@ -106,7 +106,7 @@ describe('setupReadiness', () => {
       state: 'CREDENTIALS_NEEDED',
     });
     const readiness = getSetupReadiness(platform, account);
-    expect(readiness.statusLabel).toBe('Credentials required');
+    expect(readiness.statusLabel).toBe('Sign-in needed');
     expect(readiness.severity).toBe('warning');
     expect(readiness.missingRequiredSecrets).toContain('API Key');
   });
@@ -120,9 +120,9 @@ describe('setupReadiness', () => {
       lastValidationNote: 'Invalid API Key',
     });
     const readiness = getSetupReadiness(platform, account);
-    expect(readiness.statusLabel).toBe('Validation failed');
+    expect(readiness.statusLabel).toBe('Could not connect');
     expect(readiness.severity).toBe('critical');
-    expect(readiness.nextAction).toBe('Validate connection');
+    expect(readiness.nextAction).toBe('Check this connection');
     expect(readiness.validationSummary).toBe('Invalid API Key');
   });
 
@@ -149,8 +149,18 @@ describe('setupReadiness', () => {
       highestConfirmedLevel: 'CONNECTION_TESTED',
     });
     const readiness = getSetupReadiness(platform, account);
-    expect(readiness.statusLabel).toBe('Active');
+    expect(readiness.statusLabel).toBe('Connected');
     expect(readiness.severity).toBe('success');
+  });
+
+  it('labels an owned storefront ready to send instead of READY', () => {
+    const platform = createMockPlatform({
+      integrationClass: 'OWNED',
+      connectionType: 'NONE',
+      state: 'Ready' as any,
+    });
+    const readiness = getSetupReadiness(platform, null);
+    expect(readiness.statusLabel).toBe('Ready to send');
   });
 
   it('shows owned marketplace inventory blockers instead of ready', () => {

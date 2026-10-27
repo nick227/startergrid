@@ -1,39 +1,27 @@
 ---
-title: CSV Import
-summary: Column expectations, commit behavior, and overwrite rules for spreadsheet import.
-keywords: CSV, import, stock number, DMS export, upsert
-updated: 2026-06-05
+title: Import a spreadsheet
+summary: Upload a CSV to add or update vehicles by stock number. Valid rows save; problem rows are skipped.
+keywords: CSV, import, stock number, spreadsheet, VIN
+updated: 2026-10-26
 ---
 
-CSV import loads or refreshes vehicle rows from a spreadsheet export. It is the primary path for initial lot setup and for replacing a full DMS extract during testing.
+Use Vehicles → import when you are loading the lot or refreshing a full export.
 
-## Expected columns
+## What the file needs
 
-| Column | Role |
+| Column | Why it matters |
 | --- | --- |
-| stock number | Rooftop key; must stay stable across imports |
-| VIN | 17-character when present; ties decode and history |
-| year, make, model | Identity when decode is not run |
-| price | Asking or internet price per your template |
+| stock number | Finds the existing vehicle or creates a new one |
+| VIN | 17 characters when present |
+| year, make, model | Identity if VIN decode is not used |
+| price | Asking price |
 
-Additional headers map to mileage, exterior/interior color, condition, trim, and status when the import template defines them.
+Mileage, colors, condition, trim, and status map when those headers are in the file.
 
-## Commit behavior
+## What happens after you commit
 
-Rows are parsed row by row. Valid rows upsert by stock number — new stock is created, existing stock is updated field by field per the file. Invalid rows are skipped and counted in the summary.
+Valid rows create or update by stock number. Skipped rows do not change inventory. Ready vehicles can be sent after the import. The price in this file becomes the price StarterGrid sends — it does not merge with your website automatically.
 
-A committed import triggers a full [Auto-Sync](doc:processes/auto-sync) reconcile.
+Fix skipped rows in the spreadsheet and import those stock numbers again. Re-importing the full file is safe when stock numbers stay stable.
 
-## Overwrite rule
-
-After commit, inventory in this system is what syndication uses. A DMS price of $24,995 and a CSV price of $23,995 becomes $23,995 here on the next import of that stock number. Website or DMS values are not merged automatically.
-
-## Example row
-
-`U24156,1FTFW1E85MFA12345,2021,Ford,F-150,45995,45000,Oxford White,Black,Used`
-
-Stock **U24156** updates or creates one row; validation runs on commit; ready units enter the next dispatch window.
-
-## Errors
-
-Re-import only corrected stock after fixing the source file. Repeated full-file imports are safe when stock numbers are stable.
+See [Keep stock numbers stable](doc:inventory/stock-number-rules) and [Fix import errors](doc:troubleshooting/import-errors).

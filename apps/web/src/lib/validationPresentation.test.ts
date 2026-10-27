@@ -67,19 +67,19 @@ describe('validationPresentation', () => {
   describe('getValidationBadge', () => {
     it('returns healthy badge', () => {
       const badge = getValidationBadge({ ...baseAccount, state: 'READY', highestConfirmedLevel: 'CONNECTION_TESTED' });
-      expect(badge.label).toBe('Tested & Ready');
+      expect(badge.label).toBe('Checked');
       expect(badge.pillClass).toContain('bg-status-success-bg');
     });
 
     it('returns failed badge', () => {
       const badge = getValidationBadge({ ...baseAccount, state: 'FAILED' });
-      expect(badge.label).toBe('Validation Failed');
+      expect(badge.label).toBe('Could not connect');
       expect(badge.pillClass).toContain('bg-status-error-bg');
     });
 
     it('returns not tested badge', () => {
       const badge = getValidationBadge({ ...baseAccount });
-      expect(badge.label).toBe('Not Tested');
+      expect(badge.label).toBe('Not checked yet');
       expect(badge.pillClass).toContain('bg-silver-100');
     });
   });
@@ -92,7 +92,7 @@ describe('validationPresentation', () => {
         highestConfirmedLevel: 'CONNECTION_TESTED',
         lastValidatedAt: '2026-06-10T11:00:00Z',
       });
-      expect(feedback.title).toBe('Connection Healthy');
+      expect(feedback.title).toBe('Connection looks good');
       expect(feedback.lastValidatedLabel).toBe('Tested 1h ago');
     });
 
@@ -104,7 +104,7 @@ describe('validationPresentation', () => {
         nextAction: 'Check credentials',
         lastValidatedAt: '2026-06-10T11:55:00Z',
       });
-      expect(feedback.title).toBe('Validation Failed');
+      expect(feedback.title).toBe('Could not connect');
       expect(feedback.message).toBe('Invalid SFTP password');
       expect(feedback.actionableHint).toBe('Check credentials');
       expect(feedback.lastValidatedLabel).toBe('Tested 5m ago');

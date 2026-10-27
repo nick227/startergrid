@@ -1,18 +1,27 @@
 ---
-title: Webhook Lead Alerts
-summary: How to connect any HTTPS endpoint to receive lead payloads, including signature verification.
-keywords: webhook, https, payload, json, hmac, signature, zapier, make, automation
-updated: 2026-06-13
+title: Send inquiries to another system
+summary: Post each new lead as JSON to an HTTPS address you control. Signing is optional.
+keywords: webhook, https, payload, json, hmac, zapier
+updated: 2026-10-26
+advanced: true
 ---
 
-A webhook delivers the full lead payload as a JSON POST to any HTTPS URL you control. This is the most flexible channel — it works out of the box with Zapier, Make, n8n, Slack, and any custom backend.
+A webhook sends the full inquiry to an HTTPS URL as a JSON POST. Use it for Zapier, Make, Slack, or your CRM.
+
+## What to do
+
+1. Create a catch-hook URL in Zapier, Make, or your server.
+2. Paste it into How you hear about new inquiries → Webhook and save.
+3. Send a test inquiry and map the fields.
+
+The URL must be HTTPS and return a 2xx within 10 seconds.
 
 ## What gets posted
 
 ```
 POST https://your-endpoint.example.com/leads
 Content-Type: application/json
-X-Dealer-Signature: sha256=abc123...  (only if a secret is set)
+X-Dealer-Signature: sha256=…  (only if you set a secret)
 ```
 
 ```json
@@ -31,38 +40,10 @@ X-Dealer-Signature: sha256=abc123...  (only if a secret is set)
 }
 ```
 
-Contact fields the buyer left blank are omitted.
+Blank contact fields are omitted.
 
-## Requirements
+## Signing secret
 
-The URL must be HTTPS and must return a 2xx response. Non-2xx responses are logged as a delivery failure. The request times out after 10 seconds.
+If you enter a secret, each request includes `X-Dealer-Signature: sha256=<hmac>`. Verify with `HMAC-SHA256(secret, raw_body)`. Rotate the secret by saving a new value.
 
-## Setting up with Zapier
-
-1. In Zapier, create a new Zap → trigger: **Webhooks by Zapier** → **Catch Hook**.
-2. Copy the webhook URL Zapier provides.
-3. Paste it into **Leads** → **Notification channels** → **Webhook → URL** → Save.
-4. Submit a test lead through the marketplace to trigger the first payload.
-5. Zapier captures it — use it to map fields to your action (CRM entry, Slack message, spreadsheet row, etc.).
-
-## Setting up with Make (Integromat)
-
-1. Create a scenario → trigger: **Webhooks** → **Custom webhook** → **Add** → copy the URL.
-2. Paste into the Webhook URL field in the portal and save.
-3. Send a test lead — Make receives it and lets you map the JSON structure.
-
-## Signing secret (optional)
-
-A signing secret lets your endpoint verify that the request came from this system and was not tampered with.
-
-1. Enter any secret string in the **Signing secret** field alongside the URL.
-2. Each request will include an `X-Dealer-Signature: sha256=<hmac>` header.
-3. On your server, compute `HMAC-SHA256(secret, raw_body)` and compare to the header value. If they match, the request is authentic.
-
-Do not share the secret. Rotate it by entering a new value and saving — old deliveries are not re-sent.
-
-## Testing quickly
-
-Use [webhook.site](https://webhook.site) to get a free temporary URL. Paste it in, fire a test lead, and inspect the full payload in the browser — no server needed.
-
-See [Lead notification channels](doc:connections/lead-notifications) for a full channel comparison.
+See [Choose how you hear about new inquiries](doc:connections/lead-notifications).

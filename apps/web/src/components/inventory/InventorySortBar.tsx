@@ -6,7 +6,7 @@ function sortOptions() {
   return [
     { key: 'stockNumber' as InventorySortKey, label: labels.refColumn },
     { key: 'vehicle' as InventorySortKey, label: labels.titleColumn },
-    { key: 'daysOnline' as InventorySortKey, label: 'Days online' },
+    { key: 'daysOnline' as InventorySortKey, label: 'Days on lot' },
     { key: 'movementSignal' as InventorySortKey, label: 'Movement signal' },
     { key: 'price' as InventorySortKey, label: 'Price' },
     { key: 'readiness' as InventorySortKey, label: 'Readiness' },

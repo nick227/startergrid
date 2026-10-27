@@ -1,56 +1,23 @@
 ---
-title: Telegram Lead Alerts
-summary: How to create a Telegram bot, find your chat ID, and connect it to lead notifications.
-keywords: telegram, bot, botfather, chat id, notification, lead, alert
-updated: 2026-06-13
+title: Get new inquiries in Telegram
+summary: Create a Telegram bot, add your chat ID, and paste both into StarterGrid.
+keywords: telegram, bot, chat id, lead, alert
+updated: 2026-10-26
 ---
 
-Telegram delivers lead alerts as a text message to any personal chat, group, or channel. You own the bot — it lives in your Telegram account, not ours.
+Telegram can send each new inquiry to you, a group, or a channel. You own the bot.
 
-## Step 1 — Create a bot
+## What to do
 
-1. Open Telegram and search for **@BotFather**.
-2. Send `/newbot`.
-3. Choose a display name (e.g. *Prairie Ridge Leads*).
-4. Choose a username ending in `bot` (e.g. *PrairieRidgeLeadsBot*).
-5. BotFather replies with your **bot token** — a string like `7123456789:AAH-...`
+1. In Telegram, message **@BotFather**, send `/newbot`, and save the bot token.
+2. Find your chat ID with **@userinfobot** (your user ID, or the group/channel ID).
+3. Send any message to your new bot so it can reply.
+4. In StarterGrid, paste the bot token and chat ID, then save.
 
-Keep this token private. Anyone who has it can send messages as your bot.
+## If nothing arrives
 
-## Step 2 — Find your chat ID
+- Start the bot with any message first.
+- Confirm the chat ID and that the bot is in the group or channel.
+- If the token was revoked, ask BotFather for a new one.
 
-**Personal chat:**
-1. Search Telegram for **@userinfobot**.
-2. Send it any message.
-3. It replies with your numeric user ID — that is your chat ID.
-
-**Group:**
-1. Add your new bot to the group.
-2. Send any message in the group.
-3. Message **@userinfobot** from inside the group — it reports the group ID (starts with `-`).
-
-**Channel:**
-1. Add the bot as an administrator of the channel.
-2. The channel ID starts with `-100` followed by digits. You can find it by forwarding a channel post to **@userinfobot**.
-
-## Step 3 — Start the bot
-
-Send `/start` or any message directly to your bot before it can message you back. This is required the first time.
-
-## Step 4 — Paste into the portal
-
-1. Go to **Leads** → expand **Notification channels**.
-2. Enter the **Bot token** and **Chat ID**.
-3. Click **Save channels**.
-
-## Troubleshooting
-
-| Symptom | Likely cause |
-| --- | --- |
-| No message arrives | Bot was never started — send it any message first |
-| *Chat not found* error | Chat ID is wrong or bot is not a member of the group/channel |
-| Token rejected | Token was revoked via BotFather — generate a new one with `/token` |
-
-To revoke a compromised token: message **@BotFather** → `/mybots` → select the bot → **API Token** → **Revoke current token**.
-
-See [Lead notification channels](doc:connections/lead-notifications) for a full channel comparison.
+See [Choose how you hear about new inquiries](doc:connections/lead-notifications).
