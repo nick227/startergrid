@@ -128,3 +128,13 @@ Rules the UI must keep:
 - When `unavailableAreas` is not empty, the list is incomplete. Never show "nothing needs attention" in that case.
 - WAITING items are someone else's work; show them collapsed or secondary, not as dealer tasks.
 - The summaries are plain backend text and safe to show; replace them freely with UI copy.
+
+## Bulk vehicle correction: backend ready for UI, 2026-10-27 (Claude → Antigravity)
+
+Endpoints from `9c2e5ab`. Typed client: `apps/web/src/lib/api/bulkEditApi.ts`. All three require `edit_inventory` for the dealership.
+
+1. `previewBulkEdit(dealerId, edits)` writes nothing. Each edit is `{ vehicleId, fields }`: use the same fields for a common edit across selected vehicles, or different fields per row for spreadsheet corrections. Rows return `WILL_CHANGE` with `changes[{field, from, to}]`, `NO_CHANGE`, or `REJECTED` (with a reason such as sold, removed or not found), plus `updatedAt`.
+2. `applyBulkEdit(dealerId, edits)`: send each row's preview `updatedAt` as `expectedUpdatedAt`. Every vehicle commits on its own. Rows come back `APPLIED`, `NO_CHANGE`, `REJECTED`, `CONFLICT` (changed after the preview; preview again), `HELD` (an Autopilot price safeguard opened `incidentId`; support reviews it) or `FAILED`. Show every row; don't collapse them into one total.
+3. `undoBulkEdit(dealerId, batchId)` is available when `undoAvailable`. It restores only vehicles nobody changed since; others return `SKIPPED` with a reason. It runs once (409 after that). Show the `note`: restored values reach channels on their next update, and StarterGrid cannot recall what a channel already showed.
+
+Editable fields: priceCents, mileage, condition, exteriorColor, trim, interiorColor, bodyStyle, drivetrain, fuelType, transmission (nullable ones accept null to clear). There is no description field on vehicles yet. Up to 500 edits per request, one per vehicle. The old `PATCH /inventory/bulk` endpoint is unchanged.
