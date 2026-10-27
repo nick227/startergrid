@@ -20,6 +20,7 @@ type Props = {
 };
 
 const USER_PAGE_SIZE = 20;
+const STAFF_ROLES = new Set(['SUPER_ADMIN', 'INTERNAL_SUPPORT', 'OPERATOR']);
 
 export function UsersTab({ dealersData, onUsersChanged }: Props) {
   const allDealers = useMemo(() => dealersData?.dealers ?? [], [dealersData]);
@@ -27,6 +28,7 @@ export function UsersTab({ dealersData, onUsersChanged }: Props) {
   const [userSearch, setUserSearch] = useState('');
   const [userRoleFilter, setUserRoleFilter] = useState('');
   const [userPage, setUserPage] = useState(1);
+  const [includeDealers, setIncludeDealers] = useState(false);
 
   const [usersLoading, setUsersLoading] = useState(false);
   const [usersError, setUsersError] = useState<string | null>(null);
@@ -433,12 +435,30 @@ export function UsersTab({ dealersData, onUsersChanged }: Props) {
             onChange={event => handleUserSearch(userSearch, event.target.value, 1)}
             className={SELECT_CLS}
           >
-            <option value="">All accounts</option>
+            <option value="">{includeDealers ? 'All accounts' : 'All staff'}</option>
             <option value="SUPER_ADMIN">{accountRoleLabel('SUPER_ADMIN')}</option>
             <option value="INTERNAL_SUPPORT">{accountRoleLabel('INTERNAL_SUPPORT')}</option>
-            <option value="DEALER_OWNER">{accountRoleLabel('DEALER_OWNER')}</option>
-            <option value="DEALER_STAFF">{accountRoleLabel('DEALER_STAFF')}</option>
+            {includeDealers && (
+              <>
+                <option value="DEALER_OWNER">{accountRoleLabel('DEALER_OWNER')}</option>
+                <option value="DEALER_STAFF">{accountRoleLabel('DEALER_STAFF')}</option>
+              </>
+            )}
           </select>
+          <label className="inline-flex items-center gap-1.5 text-xs text-ink-muted">
+            <input
+              type="checkbox"
+              checked={includeDealers}
+              onChange={event => {
+                const next = event.target.checked;
+                setIncludeDealers(next);
+                if (!next && (userRoleFilter === 'DEALER_OWNER' || userRoleFilter === 'DEALER_STAFF')) {
+                  handleUserSearch(userSearch, '', 1);
+                }
+              }}
+            />
+            Include dealership logins
+          </label>
           {(userSearch || userRoleFilter) && (
             <button type="button" onClick={() => handleUserSearch('', '', 1)} className={CLEAR_CLS}>
               Clear
@@ -470,8 +490,8 @@ export function UsersTab({ dealersData, onUsersChanged }: Props) {
         {usersResult && (
           <>
             <p className="text-xs text-ink-faint">
-              {usersResult.pagination.total} user{usersResult.pagination.total !== 1 ? 's' : ''}
-              {(userSearch || userRoleFilter) ? ' matching filters' : ''}
+              {(includeDealers ? usersResult.users : usersResult.users.filter(user => STAFF_ROLES.has(user.role))).length} staff
+              {includeDealers ? ` · ${usersResult.pagination.total} total accounts` : ''}
             </p>
             <div className="surface-card-operator overflow-x-auto">
               <table className="w-full text-left border-collapse min-w-[860px]">
@@ -480,14 +500,14 @@ export function UsersTab({ dealersData, onUsersChanged }: Props) {
                     <th className="px-4 py-3 font-semibold">Email</th>
                     <th className="px-4 py-3 font-semibold">Role</th>
                     <th className="px-4 py-3 font-semibold">Status</th>
-                    <th className="px-4 py-3 font-semibold">Dealership Access</th>
+                    <th className="px-4 py-3 font-semibold">Dealerships they can help</th>
                     <th className="px-4 py-3 font-semibold">Created</th>
                     <th className="px-4 py-3 font-semibold">Last Login</th>
                     <th className="px-4 py-3 font-semibold">Actions</th>
                   </tr>
                 </thead>
                 <tbody>
-                  {usersResult.users.map(user => {
+                  {(includeDealers ? usersResult.users : usersResult.users.filter(user => STAFF_ROLES.has(user.role))).map(user => {
                     const busy = rowBusy[user.id];
                     const roleCfg = {
                       label: accountRoleLabel(user.role),

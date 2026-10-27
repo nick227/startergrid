@@ -115,13 +115,13 @@ export default function AdminApp({
       {primary === 'settings' && settingsJob === 'index' && <AdminSettingsIndex />}
 
       {primary === 'settings' && settingsJob === 'platforms' && !adminPlatformSlug && (
-        <SettingsJobFrame>
+        <SettingsJobFrame job="platforms">
           <AdminOverviewPage activeTab="platforms" {...overviewProps} />
         </SettingsJobFrame>
       )}
 
       {primary === 'settings' && settingsJob === 'platforms' && adminPlatformSlug && (
-        <SettingsJobFrame>
+        <SettingsJobFrame job="platforms">
           <Suspense fallback={LAZY_FALLBACK}>
             <AdminPlatformDetailPage
               slug={adminPlatformSlug}
@@ -136,7 +136,7 @@ export default function AdminApp({
       )}
 
       {primary === 'settings' && settingsJob !== 'index' && settingsJob !== 'platforms' && (
-        <SettingsJobFrame>
+        <SettingsJobFrame job={settingsJob}>
           <AdminOverviewPage activeTab={settingsJob} {...overviewProps} />
         </SettingsJobFrame>
       )}

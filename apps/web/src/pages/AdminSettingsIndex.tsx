@@ -1,27 +1,7 @@
-const JOBS = [
-  {
-    title: 'Destinations we support',
-    why: 'Turn destinations on or off for the whole site, and check shared credentials.',
-    href: '#/admin/platforms',
-  },
-  {
-    title: 'Is StarterGrid up',
-    why: 'API, database, and send-queue health.',
-    href: '#/admin/system',
-  },
-  {
-    title: 'Who can sign in',
-    why: 'Internal staff accounts and which dealerships they can help.',
-    href: '#/admin/users',
-  },
-  {
-    title: 'Recent changes',
-    why: 'What staff changed recently across the site.',
-    href: '#/admin/audit',
-  },
-];
+import { SETTINGS_JOB_COPY, SETTINGS_JOB_INDEX, type SettingsJobId } from '@/lib/adminConsole.ts';
 
-export function SettingsJobFrame({ children }: { children: React.ReactNode }) {
+export function SettingsJobFrame({ job, children }: { job: SettingsJobId; children: React.ReactNode }) {
+  const copy = SETTINGS_JOB_COPY[job];
   return (
     <div className="space-y-4">
       <button
@@ -31,6 +11,10 @@ export function SettingsJobFrame({ children }: { children: React.ReactNode }) {
       >
         ← Settings
       </button>
+      <div>
+        <h1 className="text-xl font-bold text-ink-heading">{copy.title}</h1>
+        <p className="text-sm text-ink-muted">{copy.why}</p>
+      </div>
       {children}
     </div>
   );
@@ -44,7 +28,7 @@ export function AdminSettingsIndex() {
         <p className="text-sm text-ink-muted">Site-wide tools. Day-to-day work stays on Dealerships.</p>
       </div>
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        {JOBS.map(job => (
+        {SETTINGS_JOB_INDEX.map(job => (
           <button
             key={job.href}
             type="button"

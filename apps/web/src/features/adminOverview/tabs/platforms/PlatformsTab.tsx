@@ -23,6 +23,8 @@ import {
   DEALER_STOREFRONT_FEED_SLUG,
   platformDisplayName,
 } from '@/lib/marketplaceBrand.ts';
+import { destinationSupport } from '@/lib/destinationSupport.ts';
+import { AdminDestinationsList, type DestinationSupportRow } from '@/components/admin/AdminDestinationsList.tsx';
 
 type PlatformOverviewItemWithCategories = AdminDashboardResponse['platformOverview'][number] & {
   supportedCategories?: string[];
@@ -217,9 +219,10 @@ function buildCredentialMap(
 export function PlatformsTab({ platformOverview }: Props) {
   const [platSearch, setPlatSearch] = useState('');
   const [platCap, setPlatCap] = useState('');
-  const [platCategory, setPlatCategory] = useState('');
+  const [platCategory, setPlatCategory] = useState('AUTOMOTIVE');
   const [platConnectionModel, setPlatConnectionModel] = useState('');
   const [platValidation, setPlatValidation] = useState('');
+  const [tableView, setTableView] = useState(false);
   const [platSort, setPlatSort] = useState<PlatSortField>('platformName');
   const [platDir, setPlatDir] = useState<SortDir>('asc');
   const [credentialMap, setCredentialMap] = useState<Map<string, PlatformCredentialContractSummary>>(new Map());
@@ -281,6 +284,28 @@ export function PlatformsTab({ platformOverview }: Props) {
   }, [credentialMap, platformOverview, platSearch, platCap, platCategory, platConnectionModel, platValidation, platSort, platDir]);
 
   const platActiveFilters = [platSearch, platCategory, platCap, platConnectionModel, platValidation].filter(Boolean).length;
+
+  const listRows: DestinationSupportRow[] = useMemo(
+    () => filteredPlatforms.map(platform => {
+      const contract = credentialMap.get(platform.platformSlug);
+      const siteEnabled = contract?.siteEnabled !== false && platform.siteEnabled !== false;
+      const support = destinationSupport({
+        siteEnabled,
+        validation: contract?.lastStatus ?? 'CONTRACT_MISSING',
+        recentFailures: platform.recentFailures ?? 0,
+        blockedDealers: platform.blockedDealers,
+      });
+      return {
+        slug: platform.platformSlug,
+        name: platformDisplayName(platform.platformSlug, platform.platformName),
+        tone: support.tone,
+        status: support.status,
+        dealersUsing: platform.dealersUsing,
+        offered: siteEnabled,
+      };
+    }),
+    [credentialMap, filteredPlatforms],
+  );
 
   function togglePlat(field: PlatSortField) {
     if (platSort === field) setPlatDir(dir => (dir === 'asc' ? 'desc' : 'asc'));
@@ -413,15 +438,47 @@ export function PlatformsTab({ platformOverview }: Props) {
     return 'bg-status-error-text';
   }
 
+  if (!tableView) {
+    return (
+      <div className="space-y-3">
+        {validationError && (
+          <div className="rounded-md border border-status-error-border bg-status-error-bg px-3 py-2 text-xs text-status-error-text">
+            {validationError}
+          </div>
+        )}
+        {siteToggleError && (
+          <div className="rounded-md border border-status-error-border bg-status-error-bg px-3 py-2 text-xs text-status-error-text">
+            {siteToggleError}
+          </div>
+        )}
+        <AdminDestinationsList
+          rows={listRows}
+          search={platSearch}
+          onSearch={setPlatSearch}
+          showingAllCategories={platCategory === ''}
+          onToggleCategories={() => setPlatCategory(platCategory === '' ? 'AUTOMOTIVE' : '')}
+          onCheckCredentials={() => void runValidation()}
+          checking={validating}
+          savingSlug={siteSavingSlug}
+          onToggleOffered={(slug, next) => void toggleSiteEnabled(slug, next)}
+          onShowTable={() => setTableView(true)}
+        />
+      </div>
+    );
+  }
+
   return (
     <div className="space-y-4">
       <div className="space-y-2">
         <div className="flex flex-wrap items-center gap-2">
+          <button type="button" onClick={() => setTableView(false)} className="text-sm font-medium text-navy-700 hover:underline">
+            ← Destinations list
+          </button>
           <input
             type="text"
             value={platSearch}
             onChange={e => setPlatSearch(e.target.value)}
-            placeholder="Search platforms…"
+            placeholder="Search destinations…"
             className={`${INPUT_CLS} w-44`}
           />
           <select value={platCap} onChange={e => setPlatCap(e.target.value)} className={SELECT_CLS}>
