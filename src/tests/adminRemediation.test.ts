@@ -249,3 +249,24 @@ describe('Admin Remediation API Concurrency & Idempotency', { skip: !url }, () =
     await prisma.vehicle.deleteMany({ where: { id: { in: [v1.id, v2.id] } } });
   });
 });
+
+describe('issue retry write conflicts', () => {
+  it('repeats the queue reset after a MySQL deadlock instead of failing with a 500', async () => {
+    const { executeIssueRetry } = await import('../server/routes/admin.js');
+    let updates = 0;
+    const db = {
+      publishQueueItem: {
+        count: async () => 1,
+        updateMany: async () => {
+          updates++;
+          if (updates === 1) throw Object.assign(new Error('Deadlock found when trying to get lock'), { code: 'P2034' });
+          return { count: 1 };
+        },
+      },
+      adminAuditLog: { create: async () => ({}) },
+    } as unknown as PrismaClient;
+    const result = await executeIssueRetry(db, { id: 'a', email: 'a@test' }, { incidentId: 'i', dealerId: 'd', reasonCode: 'r' });
+    assert.equal(result.status, 'succeeded');
+    assert.equal(updates, 2);
+  });
+});

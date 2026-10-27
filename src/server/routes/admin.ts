@@ -111,6 +111,25 @@ async function replaceUserDealerAccess(prisma: PrismaClient, userId: string, dea
   ]);
 }
 
+// Concurrent retries of the same queue rows can deadlock in MySQL; the aborted statement is
+// safe to repeat because it only moves FAILED rows to READY.
+function isWriteConflict(err: unknown): boolean {
+  const code = (err as { code?: string } | null)?.code;
+  const message = err instanceof Error ? err.message : '';
+  return code === 'P2034' || /deadlock|write conflict|1213/i.test(message);
+}
+
+async function retryOnWriteConflict<T>(work: () => Promise<T>, attempts = 3): Promise<T> {
+  for (let attempt = 1; ; attempt++) {
+    try {
+      return await work();
+    } catch (err) {
+      if (attempt >= attempts || !isWriteConflict(err)) throw err;
+      await new Promise(resolve => setTimeout(resolve, 20 * attempt));
+    }
+  }
+}
+
 export async function executeIssueRetry(
   prisma: PrismaClient,
   actor: { id: string; email: string },
@@ -143,14 +162,14 @@ export async function executeIssueRetry(
   }
 
   // Execute Retry logic (e.g., reset FAILED items to READY)
-  await prisma.publishQueueItem.updateMany({
+  await retryOnWriteConflict(() => prisma.publishQueueItem.updateMany({
     where: { 
       dealershipId: incidentRequest.dealerId, 
       platformSlug: incidentRequest.platformSlug || undefined,
       status: 'FAILED'
     },
     data: { status: 'READY', attemptCount: 0 }
-  });
+  }));
 
   await prisma.adminAuditLog.create({
     data: {
