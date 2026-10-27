@@ -10,11 +10,12 @@ type Props = {
   onSearchChange: (s: string) => void;
   selectedCount: number;
   onPrintSelected?: () => void;
+  onEditSelected?: () => void;
   extra?: ReactNode;
 };
 
 export function InventoryGridToolbar({
-  viewMode, onChangeViewMode, activeColumns, onChangeColumns, search, onSearchChange, selectedCount, onPrintSelected, extra
+  viewMode, onChangeViewMode, activeColumns, onChangeColumns, search, onSearchChange, selectedCount, onPrintSelected, onEditSelected, extra
 }: Props) {
   const [pickerOpen, setPickerOpen] = useState(false);
   const pickerRef = useRef<HTMLDivElement>(null);
@@ -56,6 +57,16 @@ export function InventoryGridToolbar({
             <span className="text-xs font-semibold text-navy-800 bg-navy-50 border border-navy-200 px-2.5 py-1 rounded-md">
               {selectedCount} selected
             </span>
+            {onEditSelected && (
+              <button
+                type="button"
+                onClick={onEditSelected}
+                className="inline-flex items-center gap-1.5 px-3 py-1 text-xs font-bold bg-indigo-600 hover:bg-indigo-700 text-white rounded-md shadow-sm transition-colors"
+                title="Bulk edit selected vehicles with preview and safe undo"
+              >
+                <span>✏️ Bulk edit ({selectedCount})</span>
+              </button>
+            )}
             {onPrintSelected && (
               <button
                 type="button"

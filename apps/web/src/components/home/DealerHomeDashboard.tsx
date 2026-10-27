@@ -7,13 +7,14 @@ import {
   type DealerLead,
 } from '@/lib/api/sdk.ts';
 import type { DealershipProfile, PublishStatusResponse } from '@/lib/types.ts';
-import { OwnershipLine } from '@/components/guidance/OwnershipLine.tsx';
 import { GuidanceNote } from '@/components/guidance/GuidanceNote.tsx';
 import { PagePrimaryState } from '@/components/guidance/PagePrimaryState.tsx';
 import { GettingStartedChecklist } from './GettingStartedChecklist.tsx';
 import { Skeleton } from '@/components/ui/Skeleton.tsx';
 import { dealerSetupIncomplete, platformLooksConnected } from '@/lib/pagePrimaryState.ts';
 import { fetchSyndicationSentryAudit, type SyndicationSentryAuditResult } from '@/lib/api/sentryApi.ts';
+import { fetchAttention, type AttentionResponse } from '@/lib/api/attentionApi.ts';
+import { DealerAttentionSection } from './DealerAttentionSection.tsx';
 
 type Props = { dealerId: string; nav: OperatorNavHandlers };
 
@@ -31,6 +32,7 @@ export function DealerHomeDashboard({ dealerId, nav }: Props) {
   const [status, setStatus] = useState<PublishStatusResponse | null>(null);
   const [leads, setLeads] = useState<DealerLead[]>([]);
   const [sentryAudit, setSentryAudit] = useState<SyndicationSentryAuditResult | null>(null);
+  const [attention, setAttention] = useState<AttentionResponse | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -40,12 +42,14 @@ export function DealerHomeDashboard({ dealerId, nav }: Props) {
       fetchPublishStatus(dealerId).catch(() => null),
       fetchDealerLeads(dealerId, { limit: 5 }).catch(() => ({ leads: [] })),
       fetchSyndicationSentryAudit(dealerId).catch(() => null),
-    ]).then(([nextProfile, nextStatus, leadRes, nextSentry]) => {
+      fetchAttention(dealerId).catch(() => null),
+    ]).then(([nextProfile, nextStatus, leadRes, nextSentry, nextAttention]) => {
       if (!live) return;
       setProfile(nextProfile);
       setStatus(nextStatus);
       setLeads(leadRes?.leads ?? []);
       setSentryAudit(nextSentry);
+      setAttention(nextAttention);
       setLoading(false);
     }).catch(() => { if (live) setLoading(false); });
     return () => { live = false; };
@@ -121,8 +125,36 @@ export function DealerHomeDashboard({ dealerId, nav }: Props) {
     );
   }
 
-  const top = tasks[0];
-  const more = tasks.slice(1);
+  const blockingAttention = attention?.items?.find(i => i.owner === 'DEALERSHIP' && i.severity === 'BLOCKING');
+  const actionAttention = attention?.items?.find(i => i.owner === 'DEALERSHIP' && i.severity !== 'WAITING');
+  const topAttention = blockingAttention || actionAttention;
+
+  const top = topAttention
+    ? {
+        id: topAttention.key,
+        action: topAttention.summary,
+        detail: topAttention.nextAction,
+        ownerKind: 'YOU' as const,
+        button: topAttention.action.enabled
+          ? (topAttention.action.kind === 'FIX_VEHICLES' || topAttention.action.kind === 'ADD_PHOTOS' ? 'Review vehicles'
+            : topAttention.action.kind === 'REVIEW_REMOVALS' ? 'Open take-down card'
+            : topAttention.action.kind === 'END_EXTERNAL_LISTING' ? 'Open channels'
+            : topAttention.action.kind === 'COMPLETE_CHANNEL_SETUP' ? 'Set up channel'
+            : topAttention.action.kind === 'RETRY_CRM_DELIVERY' ? 'Open leads'
+            : 'Review')
+          : '',
+        onAction: () => {
+          if (!topAttention.action.enabled) return;
+          if (topAttention.action.kind === 'FIX_VEHICLES' || topAttention.action.kind === 'ADD_PHOTOS') nav.goToInventory();
+          else if (topAttention.action.kind === 'REVIEW_REMOVALS' || topAttention.action.kind === 'END_EXTERNAL_LISTING' || topAttention.action.kind === 'COMPLETE_CHANNEL_SETUP') {
+            if (topAttention.action.channel) nav.goToPlatformDetail(topAttention.action.channel);
+            else nav.goToPlatforms();
+          } else if (topAttention.action.kind === 'RETRY_CRM_DELIVERY') nav.goToLeads();
+          else if (topAttention.action.kind === 'CONTACT_SUPPORT') window.location.href = 'mailto:support@startergrid.com';
+        },
+      }
+    : tasks[0];
+
   const inquiryCount = newLeads.length;
 
   return (
@@ -144,26 +176,11 @@ export function DealerHomeDashboard({ dealerId, nav }: Props) {
               : 'Nothing needs you right now. New buyer inquiries appear below.'
         }
         ownerKind={top ? top.ownerKind : inquiryCount > 0 ? 'YOU' : undefined}
-        actionLabel={top ? top.button : inquiryCount > 0 ? 'Open leads' : undefined}
-        onAction={top ? top.onAction : inquiryCount > 0 ? nav.goToLeads : undefined}
+        actionLabel={top && top.button ? top.button : inquiryCount > 0 ? 'Open leads' : undefined}
+        onAction={top && top.button ? top.onAction : inquiryCount > 0 ? nav.goToLeads : undefined}
       />
 
-      {more.length > 0 && (
-        <section className="surface-card-operator p-5 rounded-xl border border-silver-200 bg-white space-y-3">
-          <h3 className="text-sm font-semibold text-ink-heading">Also needs attention</h3>
-          {more.map(task => (
-            <div key={task.id} className="py-3 border-t border-silver-100 first:border-0 first:pt-0 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-              <div className="space-y-1">
-                <OwnershipLine action={task.action} ownerKind={task.ownerKind} due="today" />
-                <GuidanceNote>{task.detail}</GuidanceNote>
-              </div>
-              <button type="button" onClick={task.onAction} className="btn-primary-operator text-xs shrink-0">
-                {task.button}
-              </button>
-            </div>
-          ))}
-        </section>
-      )}
+      <DealerAttentionSection dealerId={dealerId} attention={attention} nav={nav} />
 
       <section className="surface-card-operator p-5 rounded-xl border border-silver-200 bg-white space-y-3">
         <div className="flex items-center justify-between gap-3">

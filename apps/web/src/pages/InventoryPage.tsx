@@ -38,6 +38,7 @@ import {
 } from '@/components/inventory';
 import { CategoryItemsBrowse } from '@/components/inventory/CategoryItemsBrowse.tsx';
 import { CategoryItemDetailPanel } from '@/components/inventory/CategoryItemDetailPanel.tsx';
+import { BulkEditModal } from '@/components/inventory/BulkEditModal.tsx';
 import { WindowStickerModal } from '@/components/inventory/WindowStickerModal.tsx';
 import type { CleanupFilter } from '@/components/inventory/inventoryConfig.tsx';
 import { CreatePostModal } from '@/components/social/index.ts';
@@ -78,6 +79,7 @@ export default function InventoryPage({ dealerId, nav, activeTab }: Props) {
   const [reviewRepriceVehicle, setReviewRepriceVehicle] = useState<VelocityVehicleItem | null>(null);
   const [applyingRepriceId, setApplyingRepriceId] = useState<string | null>(null);
   const [showBatchPrintModal, setShowBatchPrintModal] = useState(false);
+  const [showBulkEditModal, setShowBulkEditModal] = useState(false);
 
   const loadVelocity = useCallback(async () => {
     try {
@@ -857,6 +859,7 @@ export default function InventoryPage({ dealerId, nav, activeTab }: Props) {
                         onSearchChange={setSearch}
                         selectedCount={selected.size}
                         onPrintSelected={() => setShowBatchPrintModal(true)}
+                        onEditSelected={() => setShowBulkEditModal(true)}
                         extra={
                           <div className="flex items-center gap-2">
                             <button
@@ -1014,12 +1017,12 @@ export default function InventoryPage({ dealerId, nav, activeTab }: Props) {
               )}
             </div>
 
-            <div className="rounded-lg border border-amber-200 bg-amber-50 p-3 leading-snug space-y-1.5">
-              <p className="text-xs font-semibold text-amber-950">
+            <div className="rounded-xl border border-silver-200 bg-silver-50 p-3.5 space-y-2">
+              <p className="text-sm font-semibold text-ink-heading leading-snug">
                 This updates the price in StarterGrid. Connected channels will receive updates according to their synchronization settings.
               </p>
-              <p className="text-[11px] text-amber-800">
-                For channels without automated synchronization, additional manual action may be required. Suggested adjustments are based on days in StarterGrid ({reviewRepriceVehicle.daysOnLot} days) and do not guarantee sales.
+              <p className="text-xs text-ink-muted leading-relaxed">
+                Channels without automated synchronization require manual updates. Suggested adjustments are based on days in StarterGrid ({reviewRepriceVehicle.daysOnLot} days) and do not guarantee sales.
               </p>
             </div>
 
@@ -1067,6 +1070,19 @@ export default function InventoryPage({ dealerId, nav, activeTab }: Props) {
           dealerId={dealerId}
           isOpen={showBatchPrintModal}
           onClose={() => setShowBatchPrintModal(false)}
+        />
+      )}
+
+      {showBulkEditModal && selectedVehiclesForPrint.length > 0 && (
+        <BulkEditModal
+          dealerId={dealerId}
+          isOpen={showBulkEditModal}
+          vehicles={selectedVehiclesForPrint}
+          onClose={() => setShowBulkEditModal(false)}
+          onSuccess={() => {
+            load();
+            loadVelocity();
+          }}
         />
       )}
     </OperatorPage>
