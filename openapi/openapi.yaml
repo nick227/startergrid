@@ -1212,6 +1212,39 @@ paths:
         '404':
           $ref: '#/components/responses/NotFound'
 
+  /api/dealers/{dealershipId}/publish/queue/{itemId}/dismiss:
+    post:
+      tags: [Publish]
+      security:
+        - OperatorAuth: []
+      x-route-classification: operator
+      operationId: dismissFailedPublishQueueItem
+      summary: Clear a failed queue item
+      parameters:
+        - $ref: '#/components/parameters/dealershipId'
+        - name: itemId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Failed item cleared
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [ok, itemId]
+                properties:
+                  ok:
+                    type: boolean
+                  itemId:
+                    type: string
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
   /api/dealers/{dealershipId}/publish/queue/{itemId}/reject:
     post:
       tags: [Publish]
