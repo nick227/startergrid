@@ -6,9 +6,14 @@ type Props = {
   children: ReactNode;
 };
 
-export const authFieldClass =
-  'h-10 w-full rounded-md border border-white/15 bg-white/[0.06] px-3 text-sm text-white [color-scheme:dark] ' +
+const authControl =
+  'h-10 w-full rounded-md border border-white/15 bg-white/[0.06] px-3 text-sm text-white ' +
   'placeholder:text-white/35 focus:border-orange-400 focus:outline-none focus:ring-2 focus:ring-orange-400/25';
+
+export const authFieldClass = `${authControl} [color-scheme:dark]`;
+
+/** Closed value stays light on the dark field. The menu is dark text on white. */
+export const authSelectClass = `${authControl} auth-select`;
 
 export const authLabelClass = 'text-sm font-medium text-white/70';
 

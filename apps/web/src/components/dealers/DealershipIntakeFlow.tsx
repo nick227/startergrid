@@ -2,7 +2,7 @@ import { useMemo, useState, type FormEvent, type ReactNode } from 'react';
 import { BUSINESS_CATEGORY_IDS } from '@auto-dealer/category-schemas';
 import type { CreateDealershipPayload, CreateDealershipResponse } from '@/lib/types.ts';
 import { IntakeSteps } from './IntakeSteps.tsx';
-import { authFieldClass, authLabelClass } from '@/components/operator/AuthFrame.tsx';
+import { authFieldClass, authLabelClass, authSelectClass } from '@/components/operator/AuthFrame.tsx';
 
 type Mode = 'signup' | 'admin';
 type StepPresentation = 'chips' | 'rail';
@@ -213,7 +213,6 @@ export function DealershipIntakeFlow({ mode, steps = 'chips', onSubmit, onUpload
         stepIndex={stepIndex}
         onSelect={index => { setError(null); setStepIndex(index); }}
         title={rail ? 'Create your dealership' : title}
-        subtitle={rail ? 'A DealerGrid workspace for inventory, channels, and leads.' : subtitle}
       />
       <div className={rail ? 'flex w-full flex-col gap-5' : 'min-w-0 space-y-5'}>
       {error && (
@@ -237,24 +236,13 @@ export function DealershipIntakeFlow({ mode, steps = 'chips', onSubmit, onUpload
                 onChange={e => setLogoFile(e.target.files?.[0] ?? null)}
                 className={rail ? 'text-sm text-white/70 file:mr-3 file:rounded-md file:border-0 file:bg-orange-500 file:px-3 file:py-1.5 file:text-xs file:font-semibold file:text-navy-950' : 'text-sm text-ink-body'}
               />
-              <span className={rail ? 'text-xs text-white/40' : 'text-xs text-ink-faint'}>
-                {logoFile ? logoFile.name : 'PNG, JPG, or WebP. The logo uploads after the dealership is created.'}
-              </span>
             </div>
           </label>
           <label className={rowClass}>
-            <span className={labelText}>DBA name</span>
-            <input value={payload.dbaName ?? ''} onChange={e => update('dbaName', e.target.value)} className={fieldClass} />
-          </label>
-          <label className={rowClass}>
             <span className={labelText}>Business category</span>
-            <select value={payload.businessCategory} onChange={e => update('businessCategory', e.target.value)} className={fieldClass}>
-              {BUSINESS_CATEGORY_IDS.map(id => <option key={id} value={id}>{id.replace(/_/g, ' ')}</option>)}
+            <select value={payload.businessCategory} onChange={e => update('businessCategory', e.target.value)} className={rail ? authSelectClass : fieldClass}>
+              {BUSINESS_CATEGORY_IDS.map(id => <option key={id} value={id} className="bg-white text-navy-950">{id.replace(/_/g, ' ')}</option>)}
             </select>
-          </label>
-          <label className={rowClass}>
-            <span className={labelText}>Dealer license</span>
-            <input value={payload.dealerLicense ?? ''} onChange={e => update('dealerLicense', e.target.value)} className={fieldClass} />
           </label>
           <label className={rowClass}>
             <span className={labelText}>Website</span>

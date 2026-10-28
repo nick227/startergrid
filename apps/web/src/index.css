@@ -17,6 +17,22 @@
     @apply field-input-base;
   }
 
+  .auth-select {
+    appearance: none;
+    color: #fff;
+    color-scheme: light;
+    padding-right: 2.25rem;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20' fill='none' stroke='%23ffffff' stroke-width='1.6'%3E%3Cpath d='M5 7.5 10 12.5 15 7.5'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 0.7rem center;
+    background-size: 1rem;
+  }
+
+  .auth-select option {
+    background-color: #fff;
+    color: #071321;
+  }
+
   .doc-reader-body {
     font-family: Georgia, 'Times New Roman', serif;
   }
