@@ -12,11 +12,12 @@ const statusConfig = {
 };
 
 function slotLabel(slot: string): string {
-  return slot.replace(/_/g, ' ').toLowerCase();
+  return slot.replace(/[_-]/g, ' ').toLowerCase();
 }
 
 export function VehicleReadinessChecklist({ readiness }: Props) {
   const config = statusConfig[readiness.status];
+  const recommendedOnly = readiness.missingRecommendedMediaSlots.filter(slot => !readiness.missingRequiredMediaSlots.includes(slot));
   const totalIssues = readiness.blockers.length + readiness.missingRequiredMediaSlots.length + readiness.warnings.length;
   const allClear = totalIssues === 0;
 
@@ -26,7 +27,8 @@ export function VehicleReadinessChecklist({ readiness }: Props) {
         <span className={`px-2.5 py-0.5 rounded-full text-[11px] font-bold border ${config.bg}`}>
           {config.label}
         </span>
-        {allClear && <span className="text-xs text-green-600 font-medium">Photos and details are complete</span>}
+        {allClear && recommendedOnly.length === 0 && <span className="text-xs text-green-600 font-medium">Photos and details are complete</span>}
+        {allClear && recommendedOnly.length > 0 && <span className="text-xs text-ink-body font-medium">Required photos and details are in place</span>}
         {!allClear && <span className="text-[11px] text-ink-muted">{totalIssues} issue{totalIssues !== 1 ? 's' : ''}</span>}
         <InfoButton docId="inventory/warnings-vs-blocked" />
       </div>
@@ -54,14 +56,14 @@ export function VehicleReadinessChecklist({ readiness }: Props) {
           </li>
         ))}
         {/* Recommended media hints */}
-        {readiness.missingRecommendedMediaSlots.slice(0, 3).map(s => (
+        {recommendedOnly.slice(0, 3).map(s => (
           <li key={`rec${s}`} className="flex items-start gap-2 text-xs whitespace-nowrap">
             <span className="shrink-0 mt-0.5 w-4 h-4 rounded-full bg-silver-100 text-ink-faint flex items-center justify-center text-[10px]">·</span>
             <span className="text-ink-muted">Consider adding: <span className="font-medium">{slotLabel(s)}</span></span>
           </li>
         ))}
-        {readiness.missingRecommendedMediaSlots.length > 3 && (
-          <li className="text-[11px] text-ink-faint pl-6">+{readiness.missingRecommendedMediaSlots.length - 3} more recommended shots</li>
+        {recommendedOnly.length > 3 && (
+          <li className="text-[11px] text-ink-faint pl-6">+{recommendedOnly.length - 3} more recommended shots</li>
         )}
         {/* All clear */}
         {allClear && (

@@ -10,6 +10,7 @@ import {
   throughputDesktopFields,
   throughputSecondaryMeta,
 } from '@/lib/reportPhase2Presentation.ts';
+import { platformDisplayName } from '@/lib/platformPresentation.ts';
 
 type Props = {
   rows: PublishThroughputChannelRow[];
@@ -51,7 +52,7 @@ export function ReportThroughputList({ rows, nav, loading, emptyState }: Props) 
           return (
             <OpsRowCard
               key={item.channelSlug}
-              title={item.channelSlug}
+              title={platformDisplayName(item.channelSlug)}
               statusLabel={status.label}
               statusClassName={status.pill}
               secondaryMeta={throughputSecondaryMeta(item)}
@@ -68,7 +69,7 @@ export function ReportThroughputList({ rows, nav, loading, emptyState }: Props) 
       </div>
 
       {detailItem && (
-        <RowDetailDrawer open title={detailItem.channelSlug} onClose={() => setDetailSlug(null)}>
+        <RowDetailDrawer open title={platformDisplayName(detailItem.channelSlug)} onClose={() => setDetailSlug(null)}>
           <ThroughputDrawer item={detailItem} />
         </RowDetailDrawer>
       )}

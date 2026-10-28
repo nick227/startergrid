@@ -9,13 +9,16 @@ type Props = {
   search: string;
   onSearchChange: (s: string) => void;
   selectedCount: number;
+  allSelected?: boolean;
+  onToggleAll?: () => void;
+  onClearSelection?: () => void;
   onPrintSelected?: () => void;
   onEditSelected?: () => void;
   extra?: ReactNode;
 };
 
 export function InventoryGridToolbar({
-  viewMode, onChangeViewMode, activeColumns, onChangeColumns, search, onSearchChange, selectedCount, onPrintSelected, onEditSelected, extra
+  viewMode, onChangeViewMode, activeColumns, onChangeColumns, search, onSearchChange, selectedCount, allSelected, onToggleAll, onClearSelection, onPrintSelected, onEditSelected, extra
 }: Props) {
   const [pickerOpen, setPickerOpen] = useState(false);
   const pickerRef = useRef<HTMLDivElement>(null);
@@ -50,13 +53,23 @@ export function InventoryGridToolbar({
         className="flex-1 min-w-[200px] max-w-sm px-3 py-1.5 text-sm border border-silver-200 rounded-md focus:outline-none focus:border-navy-500"
       />
 
-      <div className="ml-auto flex items-center gap-2">
+      <div className="flex w-full max-w-full flex-wrap items-center gap-2 sm:ml-auto sm:w-auto">
         {extra}
         {selectedCount > 0 && (
           <div className="flex items-center gap-2 mr-1">
             <span className="text-xs font-semibold text-navy-800 bg-navy-50 border border-navy-200 px-2.5 py-1 rounded-md">
               {selectedCount} selected
             </span>
+            {onClearSelection && (
+              <button
+                type="button"
+                onClick={onClearSelection}
+                className="px-2 py-0.5 text-xs text-ink-muted hover:text-ink-body hover:underline"
+                title="Clear selected vehicles"
+              >
+                Clear
+              </button>
+            )}
             {onEditSelected && (
               <button
                 type="button"
@@ -78,6 +91,20 @@ export function InventoryGridToolbar({
               </button>
             )}
           </div>
+        )}
+
+        {/* Card View Select All */}
+        {viewMode === 'card' && onToggleAll && (
+          <label className="inline-flex items-center gap-1.5 px-2.5 py-1 text-xs font-medium text-ink-body cursor-pointer select-none border border-silver-200 rounded-md bg-white hover:bg-surface-raised transition-colors">
+            <input
+              type="checkbox"
+              checked={allSelected}
+              onChange={onToggleAll}
+              aria-label="Select all vehicles in card view"
+              className="w-3.5 h-3.5 accent-orange-600 rounded border-silver-300"
+            />
+            <span>Select all</span>
+          </label>
         )}
 
         {/* View Toggle */}
@@ -106,7 +133,7 @@ export function InventoryGridToolbar({
               Columns
             </button>
             {pickerOpen && (
-              <div className="absolute right-0 top-full mt-1 w-64 bg-white border border-silver-200 rounded-lg shadow-elevation-2 z-50 p-2">
+              <div className="absolute left-0 sm:left-auto sm:right-0 top-full mt-1 w-64 max-w-[calc(100vw-2rem)] bg-white border border-silver-200 rounded-lg shadow-elevation-2 z-50 p-2">
                 <div className="text-xs font-bold text-ink-muted mb-2 uppercase px-2">Presets</div>
                 <div className="flex flex-wrap gap-1 px-2 pb-3 border-b border-silver-100 mb-2">
                   {Object.entries(INVENTORY_COLUMN_PRESETS).map(([presetName, cols]) => (

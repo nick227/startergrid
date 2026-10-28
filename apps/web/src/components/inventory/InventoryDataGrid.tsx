@@ -174,6 +174,7 @@ export function InventoryDataGrid({
                 type="checkbox"
                 checked={allSelected}
                 onChange={onToggleAll}
+                aria-label="Select all vehicles in this list"
                 className="w-4 h-4 accent-orange-600 rounded border-silver-300"
               />
             </th>
@@ -212,6 +213,7 @@ export function InventoryDataGrid({
                     type="checkbox"
                     checked={selected}
                     onChange={() => onToggleSelection(item.id)}
+                    aria-label={`Select ${[item.specs.year, item.specs.make, item.specs.model].filter(Boolean).join(' ')}`}
                     className="w-4 h-4 accent-orange-600 rounded border-silver-300"
                   />
                 </td>

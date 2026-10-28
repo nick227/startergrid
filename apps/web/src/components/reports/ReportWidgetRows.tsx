@@ -36,7 +36,7 @@ export function MiniCoverageRow({ item, valueLabel, onClick }: { item: PlatformC
       onClick={onClick}
       className="w-full flex items-center justify-between py-2 text-sm text-left hover:bg-surface-inset/50 px-2 -mx-2 rounded transition-colors group"
     >
-      <span className="text-ink-heading font-medium truncate pr-4 group-hover:text-navy-700">{reportPlatformTitle(item as any)}</span>
+      <span className="text-ink-heading font-medium truncate pr-4 group-hover:text-navy-700">{reportPlatformTitle(item)}</span>
       <span className="text-ink-muted shrink-0 tabular-nums font-semibold">{valueLabel}</span>
     </button>
   );

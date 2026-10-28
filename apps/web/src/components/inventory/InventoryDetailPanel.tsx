@@ -60,9 +60,7 @@ const sectionStatusMeta: Record<SectionStatus, { label: string; badge: string; d
 };
 
 function photoStatus(vehicle: VehicleDetailDto): SectionStatus {
-  const requiredMissing = vehicle.readiness.missingRequiredMediaSlots.length;
-  if (requiredMissing > 0) return 'needs_attention';
-  return vehicle.readiness.missingRecommendedMediaSlots.length > 0 ? 'incomplete' : 'complete';
+  return vehicle.readiness.missingRequiredMediaSlots.length > 0 ? 'needs_attention' : 'complete';
 }
 
 function detailsStatus(vehicle: VehicleDetailDto): SectionStatus {
@@ -73,8 +71,8 @@ function detailsStatus(vehicle: VehicleDetailDto): SectionStatus {
 
 function channelDistributionStatus(vehicle: VehicleDetailDto): SectionStatus {
   if (vehicle.distribution.failedCount > 0) return 'needs_attention';
-  if (vehicle.distribution.liveCount > 0) return 'complete';
-  return vehicle.distribution.nextAction ? 'incomplete' : 'complete';
+  if (vehicle.distribution.nextAction) return 'incomplete';
+  return 'complete';
 }
 
 function combineSectionStatus(...statuses: (SectionStatus | null | undefined)[]): SectionStatus | null {

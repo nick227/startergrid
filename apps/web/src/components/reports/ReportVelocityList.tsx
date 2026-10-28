@@ -9,6 +9,7 @@ import {
   velocityDesktopFields,
   velocitySecondaryMeta,
 } from '@/lib/reportPhase3Presentation.ts';
+import { platformDisplayName } from '@/lib/platformPresentation.ts';
 
 type Props = {
   rows: ChannelVelocityRow[];
@@ -49,7 +50,7 @@ export function ReportVelocityList({ rows, nav, loading, emptyState }: Props) {
         {rows.map(item => (
           <OpsRowCard
             key={item.channelSlug}
-            title={item.channelSlug}
+            title={platformDisplayName(item.channelSlug)}
             statusLabel={
               item.medianDaysToOutcome != null
                 ? `${Math.round(item.medianDaysToOutcome)}d median`
@@ -69,7 +70,7 @@ export function ReportVelocityList({ rows, nav, loading, emptyState }: Props) {
       </div>
 
       {detailItem && (
-        <RowDetailDrawer open title={detailItem.channelSlug} onClose={() => setDetailSlug(null)}>
+        <RowDetailDrawer open title={platformDisplayName(detailItem.channelSlug)} onClose={() => setDetailSlug(null)}>
           <VelocityDrawer item={detailItem} />
         </RowDetailDrawer>
       )}

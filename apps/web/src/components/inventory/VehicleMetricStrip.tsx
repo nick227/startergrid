@@ -1,4 +1,5 @@
 import type { VehicleDetailDto } from '@/lib/api/sdk.ts';
+import { movementSignalVisual } from '@/lib/statusRegistry.ts';
 import type { VehiclePerformanceItem } from '@/lib/types.ts';
 import { getMediaGuide } from '@auto-dealer/category-schemas';
 import type { BusinessCategoryId } from '@auto-dealer/category-schemas';
@@ -35,7 +36,7 @@ export function VehicleMetricStrip({ vehicle, perf }: Props) {
     ...(queuedCount > 0 ? [{ label: 'Waiting', value: String(queuedCount) }] : []),
     { label: 'Days in DealerGrid', value: `${daysInInventory}d` },
     ...(daysOnline != null ? [{ label: 'Days listed', value: `${daysOnline}d` }] : []),
-    ...(signal ? [{ label: 'Signal', value: signal, color: signalColor[signal] ?? 'text-ink-muted' }] : []),
+    ...(signal ? [{ label: 'Signal', value: movementSignalVisual(signal).label, color: signalColor[signal] ?? 'text-ink-muted' }] : []),
   ];
 
   return (

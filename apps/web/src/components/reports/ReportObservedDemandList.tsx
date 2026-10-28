@@ -11,6 +11,7 @@ import {
   observedDemandSecondaryMeta,
   observedDemandStatus,
 } from '@/lib/reportPhase2Presentation.ts';
+import { platformDisplayName } from '@/lib/platformPresentation.ts';
 
 type Props = {
   rows: ObservedDemandAssetRow[];
@@ -36,7 +37,7 @@ function DemandDrawer({ item }: { item: ObservedDemandAssetRow }) {
         <ul className="pt-2 border-t border-silver-100 space-y-1">
           {item.byChannel.map(ch => (
             <li key={ch.channelSlug} className="flex justify-between gap-2">
-              <span>{ch.channelSlug}</span>
+              <span>{platformDisplayName(ch.channelSlug)}</span>
               <span className="tabular-nums text-ink-muted">
                 {ch.observedLeads} leads · {ch.observedChannelEvents} events
               </span>

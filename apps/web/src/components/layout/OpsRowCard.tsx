@@ -104,7 +104,7 @@ export function OpsRowCard({
               {desktopFields.map(field => (
                 <div key={field.label} className="min-w-0">
                   <dt className="text-[10px] font-bold uppercase tracking-wide text-ink-faint">{field.label}</dt>
-                  <dd className="text-xs text-ink-body truncate tabular-nums">{field.value}</dd>
+                  <dd className="text-xs text-ink-body truncate tabular-nums" title={field.value}>{field.value}</dd>
                 </div>
               ))}
             </dl>

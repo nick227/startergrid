@@ -35,11 +35,12 @@ export function movementBenchmarkParts(perf: VehiclePerformanceItem): MovementBe
 
 export function formatMovementBenchmarkLine(perf: VehiclePerformanceItem): string {
   const p = movementBenchmarkParts(perf);
+  const dayStr = `${p.daysOnline} ${p.daysOnline === 1 ? 'day' : 'days'}`;
   if (p.hasBenchmark && p.similarAvg != null) {
-    return `${p.daysOnline} days · Similar avg ${p.similarAvg} · ${p.signalLabel}`;
+    return `${dayStr} · Similar avg ${p.similarAvg} · ${p.signalLabel}`;
   }
   if (p.daysOnline > 0) {
-    return `${p.daysOnline} days · Not enough comparable data`;
+    return `${dayStr} · Not enough comparable data`;
   }
   return 'Not enough comparable data';
 }

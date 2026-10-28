@@ -9,6 +9,7 @@ import {
   syncActivityDesktopFields,
   syncActivitySecondaryMeta,
 } from '@/lib/reportPhase2Presentation.ts';
+import { platformDisplayName } from '@/lib/platformPresentation.ts';
 
 type Props = {
   rows: SyncActivityChannelRow[];
@@ -48,7 +49,7 @@ export function ReportSyncActivityList({ rows, nav, loading, emptyState }: Props
         {rows.map(item => (
           <OpsRowCard
             key={item.channelSlug}
-            title={item.channelSlug}
+            title={platformDisplayName(item.channelSlug)}
             statusLabel={`${item.totalEvents} events`}
             statusClassName="bg-status-info-bg text-status-info-text border border-status-info-border"
             secondaryMeta={syncActivitySecondaryMeta(item)}
@@ -64,7 +65,7 @@ export function ReportSyncActivityList({ rows, nav, loading, emptyState }: Props
       </div>
 
       {detailItem && (
-        <RowDetailDrawer open title={detailItem.channelSlug} onClose={() => setDetailSlug(null)}>
+        <RowDetailDrawer open title={platformDisplayName(detailItem.channelSlug)} onClose={() => setDetailSlug(null)}>
           <SyncActivityDrawer item={detailItem} />
         </RowDetailDrawer>
       )}

@@ -33,6 +33,7 @@ import {
 } from '@/lib/reportPresentation.ts';
 import { formatMovementBenchmarkLine } from '@/lib/movementBenchmark.ts';
 import { reportsPrimary } from '@/lib/reportsPrimary.ts';
+import { platformDisplayName } from '@/lib/platformPresentation.ts';
 
 import { ReadinessAssetList } from '@/components/reports/ReadinessAssetList.tsx';
 import { ReportExposureList } from '@/components/reports/ReportExposureList.tsx';
@@ -48,7 +49,7 @@ const hubReportCopy: Record<HubReportSlug, { category: string; title: string; su
   readiness: {
     category: 'Listings',
     title: 'Vehicles blocked from listing',
-    summary: 'Vehicles that cannot be sent because required data, photos, or checks are failing.',
+    summary: 'A destination will not take these vehicles until a required photo or detail is added. They can still be ready for other destinations.',
     actionHint: 'A destination you use is missing something these vehicles need.',
   },
   throughput: {
@@ -279,7 +280,7 @@ export default function ReportsHubPage({ dealerId, nav, activeTab }: Props) {
                 <div className="py-4 text-center text-xs text-ink-muted">No failed sends.</div>
               ) : (
                 topFailures.filter(r => r.failedInPeriod > 0).map(r => (
-                  <MiniGenericRow key={r.channelSlug} label={r.channelSlug} value={`${r.failedInPeriod} fails`} onClick={() => nav.goToPlatformQueue(r.channelSlug)} />
+                  <MiniGenericRow key={r.channelSlug} label={platformDisplayName(r.channelSlug)} value={`${r.failedInPeriod} failed ${r.failedInPeriod === 1 ? 'send' : 'sends'}`} onClick={() => nav.goToPlatformQueue(r.channelSlug)} />
                 ))
               )}
             </ReportWidget>
@@ -296,7 +297,17 @@ export default function ReportsHubPage({ dealerId, nav, activeTab }: Props) {
               {topInterest.length === 0 ? (
                 <div className="py-4 text-center text-xs text-ink-muted">No active leads or events recorded.</div>
               ) : (
-                topInterest.map(r => <MiniGenericRow key={r.assetId} label={r.assetRef} value={`${r.observedDemandCount} events`} onClick={() => nav.goToInventory({ assetRef: r.assetRef, assetId: r.assetId })} />)
+                topInterest.map(r => {
+                  const label = r.assetRef ? (r.assetRef.startsWith('#') ? r.assetRef : `Stock #${r.assetRef}`) : r.assetId;
+                  return (
+                    <MiniGenericRow
+                      key={r.assetId}
+                      label={label}
+                      value={`${r.observedDemandCount} ${r.observedDemandCount === 1 ? 'event' : 'events'}`}
+                      onClick={() => nav.goToInventory({ assetRef: r.assetRef, assetId: r.assetId })}
+                    />
+                  );
+                })
               )}
             </ReportWidget>
 

@@ -279,9 +279,24 @@ export function DealershipProfilePanel({ dealerId, mode = 'operator', section = 
         </div>
       </div>
 
-      {showIdentity && profile.publishingWarnings.length > 0 && (
-        <SectionCard title="What still needs filling in">
-          <WarningList warnings={profile.publishingWarnings} />
+      {showIdentity && (
+        <SectionCard title="Configuration status">
+          {profile.publishingWarnings.length > 0 ? (
+            <WarningList warnings={profile.publishingWarnings} />
+          ) : (
+            <div className="flex items-start gap-3 p-3.5 bg-emerald-50 border border-emerald-200 rounded-lg">
+              <span className="text-emerald-700 text-lg leading-none shrink-0 mt-0.5">✓</span>
+              <div className="text-xs text-emerald-950 space-y-1">
+                <p className="font-bold text-sm text-emerald-900">
+                  Profile complete · Ready for vehicle listings and channel syndication
+                </p>
+                <p className="text-emerald-800">
+                  Legal business identity, rooftop address, and primary contact are configured.
+                  Connected channels can use this verified lot profile for syndication.
+                </p>
+              </div>
+            </div>
+          )}
         </SectionCard>
       )}
 
@@ -346,6 +361,7 @@ export function DealershipProfilePanel({ dealerId, mode = 'operator', section = 
             type="button"
             onClick={() => fileInputRef.current?.click()}
             className="relative w-20 h-20 rounded-xl bg-gradient-to-br from-navy-800 to-navy-700 overflow-hidden shrink-0"
+            aria-label="Upload logo"
             title="Upload logo"
           >
             {profile.logoUrl ? (
@@ -413,7 +429,7 @@ export function DealershipProfilePanel({ dealerId, mode = 'operator', section = 
 
       <div className="flex flex-col gap-3 pt-1">
         <div className="flex items-center gap-3">
-          <Button variant="primary" loading={saveState === 'saving'} onClick={() => void handleSave()}>
+          <Button variant="primary" className="min-h-11" loading={saveState === 'saving'} onClick={() => void handleSave()}>
             Save profile
           </Button>
         </div>

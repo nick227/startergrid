@@ -248,7 +248,6 @@ export default function InventoryPage({ dealerId, nav, activeTab }: Props) {
 
   const vehicleRows = data?.vehicles;
   const vehicles = useMemo(() => vehicleRows ?? [], [vehicleRows]);
-  const summary = data?.summary;
 
   const activeVehicles = useMemo(
     () => vehicles.filter(v => v.lifecycleState !== 'SOLD' && v.lifecycleState !== 'REMOVED'),
@@ -400,11 +399,11 @@ export default function InventoryPage({ dealerId, nav, activeTab }: Props) {
 
   const agingCount = (velocity?.summary?.agingCount ?? 0) + (velocity?.summary?.criticalCount ?? 0);
   const summaryCounts = {
-    active: summary?.total ?? 0,
-    ready: summary?.ready ?? 0,
-    needsPhotos: vehicles.filter(v => v.issues.some(i => i.path === 'media')).length,
+    active: activeVehicles.length,
+    ready: activeVehicles.filter(v => v.readiness === 'READY').length,
+    needsPhotos: activeVehicles.filter(v => v.mediaCount === 0 || v.issues.some(i => i.path === 'media')).length,
     queued: 0,
-    blocked: summary?.blocked ?? 0,
+    blocked: activeVehicles.filter(v => v.readiness === 'BLOCKED').length,
     aging: agingCount > 0 ? agingCount : repriceMap.size,
   };
 
@@ -895,10 +894,13 @@ export default function InventoryPage({ dealerId, nav, activeTab }: Props) {
                         search={search}
                         onSearchChange={setSearch}
                         selectedCount={selected.size}
+                        allSelected={allVisibleSelected}
+                        onToggleAll={toggleAll}
+                        onClearSelection={() => setSelected(new Set())}
                         onPrintSelected={() => setShowBatchPrintModal(true)}
                         onEditSelected={() => setShowBulkEditModal(true)}
                         extra={
-                          <div className="flex items-center gap-2">
+                          <div className="flex flex-wrap items-center gap-2">
                             <button
                               type="button"
                               onClick={() => {

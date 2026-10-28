@@ -42,9 +42,9 @@ export const operatorCopy = {
      */
     rowActions: {
       details: 'Details',
-      queue: 'Open',
-      history: 'Open channels',
-      inventory: 'Open vehicles',
+      queue: 'Queue',
+      history: 'History',
+      inventory: 'Vehicles',
     },
   },
   platforms: {

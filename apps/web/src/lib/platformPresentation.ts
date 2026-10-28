@@ -38,6 +38,21 @@ export function platformBenefitLine(slug: string): string | null {
   return PLATFORM_BENEFIT_LINES[slug] ?? null;
 }
 
+const PLATFORM_DISPLAY_NAMES: Record<string, string> = {
+  'cars-com': 'Cars.com',
+  'consumer-marketplace': 'Auto Marketplace',
+  'cargurus-dealer': 'CarGurus',
+  'autotrader-cox': 'Autotrader',
+  'dealer-storefront': 'Dealer Storefront',
+  'adf-xml-lead-routing': 'CRM lead delivery',
+  'google-vehicle-ads': 'Google Vehicle Ads',
+};
+
+/** A slug is not a channel name. Known destinations keep their brand; others are readable words. */
+export function platformDisplayName(slug: string): string {
+  return PLATFORM_DISPLAY_NAMES[slug] ?? slug.split('-').filter(Boolean).map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ');
+}
+
 // ── Effort badge ─────────────────────────────────────────────────────────────
 
 export type EffortBadge = { label: string; pill: string };

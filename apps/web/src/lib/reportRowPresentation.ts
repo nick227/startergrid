@@ -7,6 +7,7 @@ import {
   movementBenchmarkParts,
 } from './movementBenchmark.ts';
 import { movementSignalVisual } from './statusRegistry.ts';
+import { platformDisplayName } from './platformPresentation.ts';
 import { inventoryLabels } from './copy/index.ts';
 
 export function reportSituationLine(summary: {
@@ -29,11 +30,14 @@ export function reportAssetSecondaryMeta(item: VehiclePerformanceItem): string {
 
 export function reportAssetDesktopFields(item: VehiclePerformanceItem): OpsRowField[] {
   const p = movementBenchmarkParts(item);
+  const benchmarkDisplay = p.hasBenchmark
+    ? p.benchmarkLabel
+    : 'Low sample (< 3)';
   return [
-    { label: 'Days on lot', value: String(p.daysOnline) },
+    { label: 'Days on lot', value: `${p.daysOnline} ${p.daysOnline === 1 ? 'day' : 'days'}` },
     { label: 'Similar avg', value: p.similarAvg != null ? `${p.similarAvg} days` : '—' },
     { label: 'Comparable sample', value: String(p.sampleSize) },
-    { label: 'Benchmark', value: p.benchmarkLabel },
+    { label: 'Benchmark', value: benchmarkDisplay },
   ];
 }
 
@@ -48,8 +52,8 @@ export function reportAssetSurface(signal: MovementSignal): string {
   return '';
 }
 
-export function reportPlatformTitle(item: PlatformPerformanceItem): string {
-  return item.platformSlug;
+export function reportPlatformTitle(item: { platformSlug: string }): string {
+  return platformDisplayName(item.platformSlug);
 }
 
 export function reportPlatformSecondaryMeta(item: PlatformPerformanceItem): string {
