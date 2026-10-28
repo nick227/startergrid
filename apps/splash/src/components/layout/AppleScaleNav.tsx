@@ -1,10 +1,11 @@
 import React, { useState, useEffect } from 'react';
 
 interface AppleScaleNavProps {
-  onRequestAccess: () => void;
+  onOpenPricing: () => void;
+  onContactUs: () => void;
 }
 
-export const AppleScaleNav: React.FC<AppleScaleNavProps> = ({ onRequestAccess }) => {
+export const AppleScaleNav: React.FC<AppleScaleNavProps> = ({ onOpenPricing, onContactUs }) => {
   const [scrolled, setScrolled] = useState(false);
 
   useEffect(() => {
@@ -27,10 +28,10 @@ export const AppleScaleNav: React.FC<AppleScaleNavProps> = ({ onRequestAccess })
         display: 'flex',
         alignItems: 'center',
         padding: '0 32px',
-        background: scrolled ? 'rgba(8, 12, 20, 0.85)' : 'rgba(8, 12, 20, 0.5)',
+        background: scrolled ? 'rgba(8, 12, 20, 0.9)' : 'rgba(8, 12, 20, 0.6)',
         backdropFilter: 'blur(20px)',
         WebkitBackdropFilter: 'blur(20px)',
-        borderBottom: `1px solid ${scrolled ? 'rgba(255, 255, 255, 0.08)' : 'transparent'}`,
+        borderBottom: `1px solid ${scrolled ? 'rgba(255, 255, 255, 0.08)' : 'rgba(255, 255, 255, 0.03)'}`,
         transition: 'background 0.3s ease, border-color 0.3s ease',
       }}
     >
@@ -77,67 +78,9 @@ export const AppleScaleNav: React.FC<AppleScaleNavProps> = ({ onRequestAccess })
           </span>
         </a>
 
-        {/* Center Nav Links */}
-        <nav
-          style={{
-            display: 'flex',
-            alignItems: 'center',
-            gap: '32px',
-          }}
-          className="desktop-nav"
-        >
-          <a
-            href="#hero-distribution"
-            style={{ color: '#94a3b8', textDecoration: 'none', fontSize: '0.875rem', fontWeight: 500, transition: 'color 0.15s ease' }}
-            onMouseEnter={(e) => (e.currentTarget.style.color = '#ffffff')}
-            onMouseLeave={(e) => (e.currentTarget.style.color = '#94a3b8')}
-          >
-            Distribution
-          </a>
-          <a
-            href="#marketplace-feature"
-            style={{ color: '#94a3b8', textDecoration: 'none', fontSize: '0.875rem', fontWeight: 500, transition: 'color 0.15s ease' }}
-            onMouseEnter={(e) => (e.currentTarget.style.color = '#ffffff')}
-            onMouseLeave={(e) => (e.currentTarget.style.color = '#94a3b8')}
-          >
-            Marketplace
-          </a>
-          <a
-            href="#advertising-feature"
-            style={{ color: '#94a3b8', textDecoration: 'none', fontSize: '0.875rem', fontWeight: 500, transition: 'color 0.15s ease' }}
-            onMouseEnter={(e) => (e.currentTarget.style.color = '#ffffff')}
-            onMouseLeave={(e) => (e.currentTarget.style.color = '#94a3b8')}
-          >
-            Advertising
-          </a>
-          <a
-            href="#automation-feature"
-            style={{ color: '#94a3b8', textDecoration: 'none', fontSize: '0.875rem', fontWeight: 500, transition: 'color 0.15s ease' }}
-            onMouseEnter={(e) => (e.currentTarget.style.color = '#ffffff')}
-            onMouseLeave={(e) => (e.currentTarget.style.color = '#94a3b8')}
-          >
-            Automation
-          </a>
-          <a
-            href="#inventory-feature"
-            style={{ color: '#94a3b8', textDecoration: 'none', fontSize: '0.875rem', fontWeight: 500, transition: 'color 0.15s ease' }}
-            onMouseEnter={(e) => (e.currentTarget.style.color = '#ffffff')}
-            onMouseLeave={(e) => (e.currentTarget.style.color = '#94a3b8')}
-          >
-            Inventory Hub
-          </a>
-          <a
-            href="#capabilities-editorial"
-            style={{ color: '#94a3b8', textDecoration: 'none', fontSize: '0.875rem', fontWeight: 500, transition: 'color 0.15s ease' }}
-            onMouseEnter={(e) => (e.currentTarget.style.color = '#ffffff')}
-            onMouseLeave={(e) => (e.currentTarget.style.color = '#94a3b8')}
-          >
-            Capabilities
-          </a>
-        </nav>
-
-        {/* Right Actions */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: '14px' }}>
+        {/* Right Actions: Clean, Restrained, Confident */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: '18px' }}>
+          {/* Marketplace */}
           <a
             href="/marketplace/"
             style={{
@@ -154,28 +97,68 @@ export const AppleScaleNav: React.FC<AppleScaleNavProps> = ({ onRequestAccess })
               textDecoration: 'none',
               transition: 'all 0.15s ease',
             }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.background = 'rgba(16, 185, 129, 0.15)';
+              e.currentTarget.style.borderColor = 'rgba(16, 185, 129, 0.4)';
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.background = 'rgba(16, 185, 129, 0.08)';
+              e.currentTarget.style.borderColor = 'rgba(16, 185, 129, 0.25)';
+            }}
           >
             <span style={{ width: '6px', height: '6px', borderRadius: '50%', background: '#10b981' }} />
             <span>Marketplace ↗</span>
           </a>
 
+          {/* Pricing (Opens Pricing & Mock Stripe Modal) */}
+          <button
+            type="button"
+            onClick={onOpenPricing}
+            style={{
+              background: 'transparent',
+              border: 'none',
+              color: '#e2e8f0',
+              fontSize: '0.8125rem',
+              fontWeight: 600,
+              padding: '7px 12px',
+              borderRadius: '6px',
+              cursor: 'pointer',
+              transition: 'color 0.15s ease, background 0.15s ease',
+            }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.color = '#38bdf8';
+              e.currentTarget.style.background = 'rgba(255, 255, 255, 0.05)';
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.color = '#e2e8f0';
+              e.currentTarget.style.background = 'transparent';
+            }}
+          >
+            Pricing
+          </button>
+
+          {/* Sign In */}
           <a
             href="/app/"
             style={{
-              color: '#ffffff',
+              color: '#94a3b8',
               textDecoration: 'none',
               fontSize: '0.8125rem',
               fontWeight: 600,
-              padding: '7px 14px',
+              padding: '7px 12px',
               borderRadius: '6px',
-              transition: 'opacity 0.15s ease',
+              transition: 'color 0.15s ease',
             }}
+            onMouseEnter={(e) => (e.currentTarget.style.color = '#ffffff')}
+            onMouseLeave={(e) => (e.currentTarget.style.color = '#94a3b8')}
           >
             Sign In
           </a>
 
+          {/* Contact Us (Changed from Request Access) */}
           <button
-            onClick={onRequestAccess}
+            type="button"
+            onClick={onContactUs}
             style={{
               background: '#2563eb',
               color: '#ffffff',
@@ -188,10 +171,16 @@ export const AppleScaleNav: React.FC<AppleScaleNavProps> = ({ onRequestAccess })
               boxShadow: '0 2px 10px rgba(37, 99, 235, 0.3)',
               transition: 'background 0.15s ease, transform 0.15s ease',
             }}
-            onMouseEnter={(e) => (e.currentTarget.style.background = '#1d4ed8')}
-            onMouseLeave={(e) => (e.currentTarget.style.background = '#2563eb')}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.background = '#1d4ed8';
+              e.currentTarget.style.transform = 'translateY(-1px)';
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.background = '#2563eb';
+              e.currentTarget.style.transform = 'translateY(0)';
+            }}
           >
-            Request Access
+            Contact Us
           </button>
         </div>
       </div>

@@ -1,49 +1,11 @@
 import React from 'react';
 
 interface FlagshipHeroSectionProps {
-  onRequestAccess: () => void;
+  onContactUs: () => void;
+  onOpenPricing: () => void;
 }
 
-const DISTRIBUTION_CARDS = [
-  {
-    channel: 'DealerGrid Marketplace',
-    category: 'Owned Marketplace',
-    activeUnits: '148 vehicles live',
-    avgTurn: '12 days avg turn',
-    status: 'Active (Instant)',
-    badgeColor: '#10b981',
-    notes: 'Zero conquest ads • Direct CRM leads',
-  },
-  {
-    channel: 'Google Vehicle Ads',
-    category: 'Search Intent',
-    activeUnits: '142 vehicles compliant',
-    avgTurn: '14 days avg turn',
-    status: 'Active (Daily sync)',
-    badgeColor: '#38bdf8',
-    notes: 'Merchant Center feed • EPA specs decoded',
-  },
-  {
-    channel: 'Meta Automotive (FB/IG)',
-    category: 'Social Discovery',
-    activeUnits: '148 vehicles in catalog',
-    avgTurn: '18 days avg turn',
-    status: 'Active (Catalog API)',
-    badgeColor: '#60a5fa',
-    notes: 'Dynamic retargeting • In-app lead handoff',
-  },
-  {
-    channel: 'CarGurus Feed',
-    category: 'Third-Party Marketplace',
-    activeUnits: '140 vehicles active',
-    avgTurn: '21 days avg turn',
-    status: 'Active (Scheduled)',
-    badgeColor: '#fbbf24',
-    notes: 'Batch feed • Deal rating compliant',
-  },
-];
-
-export const FlagshipHeroSection: React.FC<FlagshipHeroSectionProps> = ({ onRequestAccess }) => {
+export const FlagshipHeroSection: React.FC<FlagshipHeroSectionProps> = ({ onContactUs, onOpenPricing }) => {
   return (
     <section
       id="hero-distribution"
@@ -57,7 +19,7 @@ export const FlagshipHeroSection: React.FC<FlagshipHeroSectionProps> = ({ onRequ
     >
       <div style={{ maxWidth: '1360px', margin: '0 auto' }}>
         {/* Top Text Block: Enormous Typography & Apple-Scale Restraint */}
-        <div style={{ maxWidth: '1060px', marginBottom: '64px' }}>
+        <div style={{ maxWidth: '1060px', marginBottom: '56px' }}>
           <div
             style={{
               fontSize: '0.8125rem',
@@ -99,7 +61,7 @@ export const FlagshipHeroSection: React.FC<FlagshipHeroSectionProps> = ({ onRequ
           {/* Action Row */}
           <div style={{ display: 'flex', alignItems: 'center', gap: '16px', flexWrap: 'wrap' }}>
             <button
-              onClick={onRequestAccess}
+              onClick={onContactUs}
               style={{
                 padding: '16px 36px',
                 borderRadius: '8px',
@@ -121,7 +83,32 @@ export const FlagshipHeroSection: React.FC<FlagshipHeroSectionProps> = ({ onRequ
                 e.currentTarget.style.transform = 'translateY(0)';
               }}
             >
-              Explore DealerGrid
+              Contact Us
+            </button>
+
+            <button
+              onClick={onOpenPricing}
+              style={{
+                padding: '16px 28px',
+                borderRadius: '8px',
+                background: 'rgba(59, 130, 246, 0.12)',
+                border: '1px solid rgba(59, 130, 246, 0.3)',
+                color: '#60a5fa',
+                fontSize: '1.0625rem',
+                fontWeight: 600,
+                cursor: 'pointer',
+                transition: 'all 0.15s ease',
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.background = 'rgba(59, 130, 246, 0.2)';
+                e.currentTarget.style.borderColor = 'rgba(59, 130, 246, 0.5)';
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.background = 'rgba(59, 130, 246, 0.12)';
+                e.currentTarget.style.borderColor = 'rgba(59, 130, 246, 0.3)';
+              }}
+            >
+              View Proposed Pricing
             </button>
 
             <a
@@ -176,21 +163,22 @@ export const FlagshipHeroSection: React.FC<FlagshipHeroSectionProps> = ({ onRequ
           </div>
         </div>
 
-        {/* Dominant Product Visual: Authentic Channels & Distribution Interface */}
+        {/* Stylized AI-Generated Distribution Network Graphic */}
         <div
           style={{
-            background: '#0d131f',
+            position: 'relative',
+            background: '#090d16',
             border: '1px solid rgba(255, 255, 255, 0.12)',
-            borderRadius: '16px',
+            borderRadius: '20px',
             overflow: 'hidden',
-            boxShadow: '0 30px 80px rgba(0, 0, 0, 0.65)',
+            boxShadow: '0 30px 90px rgba(0, 0, 0, 0.75), 0 0 60px rgba(37, 99, 235, 0.15)',
           }}
         >
-          {/* Window Chrome Header */}
+          {/* Subtle Top Control Bar */}
           <div
             style={{
-              background: '#090d16',
               padding: '16px 24px',
+              background: 'rgba(8, 12, 20, 0.95)',
               borderBottom: '1px solid rgba(255, 255, 255, 0.08)',
               display: 'flex',
               alignItems: 'center',
@@ -199,105 +187,71 @@ export const FlagshipHeroSection: React.FC<FlagshipHeroSectionProps> = ({ onRequ
               gap: '12px',
             }}
           >
-            <div style={{ display: 'flex', alignItems: 'center', gap: '18px' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '14px' }}>
               <div style={{ display: 'flex', gap: '6px' }}>
                 <span style={{ width: '10px', height: '10px', borderRadius: '50%', background: '#ef4444' }} />
                 <span style={{ width: '10px', height: '10px', borderRadius: '50%', background: '#f59e0b' }} />
                 <span style={{ width: '10px', height: '10px', borderRadius: '50%', background: '#10b981' }} />
               </div>
-              <strong style={{ color: '#ffffff', fontSize: '0.9375rem', letterSpacing: '-0.01em' }}>
-                Austin Auto Group
-              </strong>
-              <span style={{ color: '#64748b' }}>/</span>
-              <span style={{ color: '#94a3b8', fontSize: '0.875rem' }}>
-                Multi-Channel Distribution Hub
+              <span style={{ color: '#ffffff', fontSize: '0.875rem', fontWeight: 700 }}>
+                DealerGrid Core Distribution Architecture
               </span>
             </div>
 
             <div style={{ display: 'flex', alignItems: 'center', gap: '16px', fontSize: '0.75rem' }}>
               <span style={{ color: '#34d399', display: 'flex', alignItems: 'center', gap: '6px' }}>
                 <span style={{ width: '6px', height: '6px', borderRadius: '50%', background: '#10b981' }} />
-                Autopilot: 70+ Profiles Configured
+                70+ Live Syndication Channels
               </span>
               <span style={{ color: '#64748b' }}>•</span>
-              <span style={{ color: '#94a3b8' }}>
-                DMS Connection: CDK Global (Verified)
+              <span style={{ color: '#60a5fa' }}>
+                Bi-Directional DMS Sync Active
               </span>
             </div>
           </div>
 
-          {/* Interface Content: Real Channels Data Grid */}
-          <div style={{ padding: '32px' }}>
-            <div
+          {/* AI Generated Graphic */}
+          <div style={{ position: 'relative', width: '100%', lineHeight: 0 }}>
+            <img
+              src="/hero-distribution-network.jpg"
+              alt="DealerGrid Intelligent Automotive Distribution Network Architecture"
               style={{
-                display: 'grid',
-                gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))',
-                gap: '16px',
-                marginBottom: '24px',
+                width: '100%',
+                height: 'auto',
+                display: 'block',
+                maxHeight: '720px',
+                objectFit: 'cover',
+                filter: 'brightness(1.02) contrast(1.04)',
               }}
-            >
-              {DISTRIBUTION_CARDS.map((card, idx) => (
-                <div
-                  key={idx}
-                  style={{
-                    background: 'rgba(255, 255, 255, 0.02)',
-                    border: '1px solid rgba(255, 255, 255, 0.06)',
-                    borderRadius: '10px',
-                    padding: '20px',
-                    display: 'flex',
-                    flexDirection: 'column',
-                    justifyContent: 'space-between',
-                  }}
-                >
-                  <div>
-                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: '8px' }}>
-                      <span style={{ fontSize: '0.6875rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em', color: '#64748b' }}>
-                        {card.category}
-                      </span>
-                      <span style={{ fontSize: '0.6875rem', color: card.badgeColor, fontWeight: 600 }}>
-                        ● {card.status}
-                      </span>
-                    </div>
-                    <h3 style={{ fontSize: '1.0625rem', fontWeight: 700, color: '#ffffff', marginBottom: '4px' }}>
-                      {card.channel}
-                    </h3>
-                    <div style={{ fontSize: '0.75rem', color: '#94a3b8', marginBottom: '14px' }}>
-                      {card.notes}
-                    </div>
-                  </div>
+              loading="eager"
+            />
+          </div>
 
-                  <div style={{ borderTop: '1px solid rgba(255, 255, 255, 0.05)', paddingTop: '12px', display: 'flex', justifyContent: 'space-between', fontSize: '0.75rem' }}>
-                    <strong style={{ color: '#ffffff' }}>{card.activeUnits}</strong>
-                    <span style={{ color: '#38bdf8' }}>{card.avgTurn}</span>
-                  </div>
-                </div>
-              ))}
-            </div>
-
-            {/* Footnote: Transparent Sample Data Provenance */}
-            <div
-              style={{
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'space-between',
-                fontSize: '0.75rem',
-                color: '#64748b',
-                borderTop: '1px solid rgba(255, 255, 255, 0.06)',
-                paddingTop: '16px',
-                flexWrap: 'wrap',
-                gap: '8px',
-              }}
-            >
-              <span>
-                Sample dealership distribution layout • Demonstrating 148-unit lot across search, social, and marketplaces.
-              </span>
-              <span style={{ color: '#38bdf8' }}>
-                70+ destinations supported nationwide
-              </span>
-            </div>
+          {/* Bottom Footnote Bar */}
+          <div
+            style={{
+              padding: '16px 24px',
+              background: 'rgba(8, 12, 20, 0.95)',
+              borderTop: '1px solid rgba(255, 255, 255, 0.08)',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'space-between',
+              fontSize: '0.75rem',
+              color: '#64748b',
+              flexWrap: 'wrap',
+              gap: '10px',
+            }}
+          >
+            <span>
+              Real-time vehicle inventory orchestration, automated sold withdrawal, and multi-channel dealer syndication.
+            </span>
+            <span style={{ color: '#38bdf8', fontWeight: 600 }}>
+              Zero Listing Fees • Zero Commission Cuts
+            </span>
           </div>
         </div>
       </div>
     </section>
   );
 };
+

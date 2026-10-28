@@ -10,9 +10,11 @@ import { InventoryHubSection } from '../components/sections/InventoryHubSection.
 import { SupportingCapabilitiesSection } from '../components/sections/SupportingCapabilitiesSection.tsx';
 import { ConversionSection } from '../components/sections/ConversionSection.tsx';
 import { LeadIntakeModal } from '../components/ui/LeadIntakeModal.tsx';
+import { PricingModal } from '../components/ui/PricingModal.tsx';
 
 export default function FlagshipSplashPage() {
   const [intakeOpen, setIntakeOpen] = useState<boolean>(false);
+  const [pricingOpen, setPricingOpen] = useState<boolean>(false);
 
   useEffect(() => {
     document.title = 'DealerGrid — Automotive Sales & Distribution Platform';
@@ -28,8 +30,17 @@ export default function FlagshipSplashPage() {
     }
   }, []);
 
-  const openIntake = () => setIntakeOpen(true);
-  const closeIntake = () => setIntakeOpen(false);
+  const openPricing = () => setPricingOpen(true);
+  const closePricing = () => setPricingOpen(false);
+
+  const handleContactUs = () => {
+    const el = document.getElementById('getting-started');
+    if (el) {
+      el.scrollIntoView({ behavior: 'smooth' });
+    } else {
+      setIntakeOpen(true);
+    }
+  };
 
   return (
     <div
@@ -40,12 +51,12 @@ export default function FlagshipSplashPage() {
         fontFamily: "'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif",
       }}
     >
-      {/* Navigation */}
-      <AppleScaleNav onRequestAccess={openIntake} />
+      {/* Navigation (Clean Header: Brand, Marketplace, Pricing, Sign In, Contact Us) */}
+      <AppleScaleNav onOpenPricing={openPricing} onContactUs={handleContactUs} />
 
       <main id="main-content">
-        {/* 01 — HERO (Flagship Distribution) */}
-        <FlagshipHeroSection onRequestAccess={openIntake} />
+        {/* 01 — HERO (Flagship Distribution with AI Generated Graphic) */}
+        <FlagshipHeroSection onContactUs={handleContactUs} onOpenPricing={openPricing} />
 
         {/* 02 — DISCOVER (Compact Overview of All 10 Benefits) */}
         <DiscoverSection />
@@ -74,8 +85,11 @@ export default function FlagshipSplashPage() {
       {/* Footer */}
       <AppleScaleFooter />
 
+      {/* Pricing & Mock Stripe Checkout Modal */}
+      <PricingModal isOpen={pricingOpen} onClose={closePricing} />
+
       {/* Dealership Evaluation Modal */}
-      <LeadIntakeModal isOpen={intakeOpen} onClose={closeIntake} />
+      <LeadIntakeModal isOpen={intakeOpen} onClose={() => setIntakeOpen(false)} />
     </div>
   );
 }
