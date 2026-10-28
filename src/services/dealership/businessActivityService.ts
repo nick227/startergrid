@@ -1,4 +1,6 @@
 import type { PrismaClient } from '@prisma/client';
+import { platformProfiles } from '../../data/platformProfiles.js';
+import { brandName } from '../channels/channelSetupService.js';
 
 export type BusinessEvent = { id: string; category: string; title: string; detail: string; occurredAt: string; href: string; count: number };
 export function groupBusinessEvents(events: BusinessEvent[]): BusinessEvent[] {
@@ -37,7 +39,7 @@ export async function businessActivity(db: PrismaClient, dealershipId: string, c
   const watermark = boundaries.length ? Math.max(...boundaries) : null;
   const events: BusinessEvent[] = [];
   const add = (id: string, category: string, title: string, detail: string, date: Date, href: string) => events.push({ id, category, title, detail, occurredAt: date.toISOString(), href, count: 1 });
-  for (const r of leads) add(`lead:${r.id}`, 'leads', 'New buyer inquiry', `${r.contactName || 'Buyer'} · ${r.platformSlug}`, r.createdAt, leadLink(r.id));
+  for (const r of leads) add(`lead:${r.id}`, 'leads', 'New buyer inquiry', `${r.contactName || 'Buyer'} · ${channelName(r.platformSlug)}`, r.createdAt, leadLink(r.id));
   const additions = new Map<string, typeof vehicles>();
   for (const r of vehicles.filter(v => watermark === null || v.createdAt.getTime() >= watermark)) { const key = r.createdAt.toISOString().slice(0, 16); additions.set(key, [...(additions.get(key) ?? []), r]); }
   for (const rows of additions.values()) {
@@ -47,12 +49,18 @@ export async function businessActivity(db: PrismaClient, dealershipId: string, c
   for (const r of lifecycle) add(`lifecycle:${r.id}`, 'vehicles', `Vehicle ${r.toState.toLowerCase()}`, r.vehicle.stockNumber, r.createdAt, vehicleLink(r.vehicleId));
   for (const r of updates) add(`update:${r.id}`, 'vehicles', 'Vehicle price changed', r.vehicle.stockNumber, r.createdAt, vehicleLink(r.vehicleId));
   const labels: Record<string, string> = { SUBMISSION_SENT: 'Listing submission sent', DISPATCH_FAILED: 'Listing submission failed', ACCOUNT_UPDATED: 'Channel connection changed', PARTNER_FOLLOWUP: 'Channel follow-up recorded', POLICY_CHANGED: 'Publishing settings changed' };
-  for (const r of sync) add(r.syncRunId ? `batch:${r.syncRunId}:${r.platformSlug}:${r.kind}` : `sync:${r.id}`, 'channels', labels[r.kind] ?? 'Channel activity', r.platformSlug ?? 'Publishing', r.createdAt, r.platformSlug ? `${root}/channels/${encodeURIComponent(r.platformSlug)}/activity` : r.vehicleId ? vehicleLink(r.vehicleId) : `${root}/platforms`);
+  for (const r of sync) add(r.syncRunId ? `batch:${r.syncRunId}:${r.platformSlug}:${r.kind}` : `sync:${r.id}`, 'channels', labels[r.kind] ?? 'Channel activity', channelName(r.platformSlug), r.createdAt, r.platformSlug ? `${root}/channels/${encodeURIComponent(r.platformSlug)}/activity` : r.vehicleId ? vehicleLink(r.vehicleId) : `${root}/platforms`);
   for (const r of imports) add(`import:${r.id}`, 'imports', `Inventory import ${r.status.toLowerCase().replaceAll('_', ' ')}`, `${r.createdCount} added · ${r.updatedCount} updated · ${r.errorCount} errors`, r.createdAt, `${root}/inventory?importRunId=${encodeURIComponent(r.id)}`);
   for (const r of deliveries) add(`delivery:${r.id}`, 'crm', `CRM delivery ${r.status.toLowerCase().replaceAll('_', ' ')}`, r.destinationLabel, r.updatedAt, leadLink(r.leadId));
   const nextOffsets = [...batches.map((rows, i) => offsets[i]! + rows.filter(r => watermark === null || r.createdAt.getTime() >= watermark).length), offsets[6]! + deliveries.filter(r => watermark === null || r.updatedAt.getTime() >= watermark).length];
   return { events: groupBusinessEvents(events.filter(e => watermark === null || Date.parse(e.occurredAt) >= watermark)), nextCursor: watermark === null ? null : Buffer.from(JSON.stringify({ anchor, offsets: nextOffsets })).toString('base64url') };
 
+}
+
+function channelName(slug: string | null): string {
+  if (!slug) return 'Publishing';
+  const profile = platformProfiles.find(p => p.slug === slug);
+  return profile ? brandName(profile.name) : slug;
 }
 
 export async function salesRegister(db: PrismaClient, dealershipId: string) {

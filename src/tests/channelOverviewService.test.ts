@@ -83,6 +83,13 @@ describe('channel display status', () => {
     assert.doesNotMatch(queued.displayReason, /live\./, 'in-progress sends are not live');
   });
 
+  it('keeps a channel DealerGrid has not turned on out of Needs attention', () => {
+    const waiting = item(account('tiktok-shop', { dealerEnabled: true, systemSetupReady: false }));
+    assert.equal(waiting.displayStatus, 'SETTING_UP');
+    assert.equal(waiting.waitingOn, 'INTERNAL_SUPPORT');
+    assert.match(waiting.displayReason, /Nothing for you to do/);
+  });
+
   it('is NEEDS_ATTENTION for a failed connection, expired sign-in, hold, or delivery problems', () => {
     assert.match(item(account('cars-com', { state: 'FAILED', accountId: 'X' })).displayReason, /did not accept/);
     assert.match(item(account('google-vehicle-ads', { oauthExpired: true })).displayReason, /sign-in expired/);

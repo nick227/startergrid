@@ -94,8 +94,8 @@ export async function seedUxAcceptanceDealership(prisma: PrismaClient): Promise<
   for (const [platformSlug, state] of channels) {
     await prisma.platformAccount.upsert({
       where: { dealershipId_platformSlug: { dealershipId: dealerId, platformSlug } },
-      update: { state, dealerEnabled: true },
-      create: { dealershipId: dealerId, platformSlug, state, dealerEnabled: true, connectionConfig: json({}) },
+      update: { state, dealerEnabled: true, ...(platformSlug === 'cars-com' ? { accountId: 'DEMO-HLM-4100' } : {}) },
+      create: { dealershipId: dealerId, platformSlug, state, dealerEnabled: true, connectionConfig: json({}), ...(platformSlug === 'cars-com' ? { accountId: 'DEMO-HLM-4100' } : {}) },
     });
   }
 

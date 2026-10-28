@@ -9,6 +9,12 @@ import { preserveSupport } from '@/lib/routes.ts';
 import LeadsPage from './LeadsPage.tsx';
 
 const tabs = [{ id: 'all', label: 'All Activity' }, { id: 'attention', label: 'Needs Attention' }, { id: 'leads', label: 'Leads' }, { id: 'sales', label: 'Sales' }];
+
+function activityWhen(iso: string): string {
+  const date = new Date(iso);
+  const sameYear = date.getFullYear() === new Date().getFullYear();
+  return date.toLocaleString(undefined, { month: 'short', day: 'numeric', year: sameYear ? undefined : 'numeric', hour: 'numeric', minute: '2-digit' });
+}
 export default function ActivityPage(props: OperatorPageBaseProps & { view?: string }) {
   const view = tabs.some(t => t.id === props.view) ? props.view! : 'all';
   const viewLabel = tabs.find(tab => tab.id === view)?.label ?? 'Activity';
@@ -27,18 +33,21 @@ function BusinessActivity({ dealerId }: { dealerId: string }) {
   const [category, setCategory] = useState('all');
   const query = useAsyncQuery(() => workspaceRequest<BusinessFeed>(dealerId, `business-activity${before ? `?cursor=${encodeURIComponent(before)}` : ''}`), [dealerId, before]);
   const events = (query.data?.events ?? []).filter(e => (category === 'all' || category === e.category) && `${e.title} ${e.detail}`.toLowerCase().includes(search.toLowerCase()));
-  return <section className="space-y-5" aria-label="Business activity">
-    <div className="flex flex-wrap gap-3">
-      <input aria-label="Search activity" className="field-input flex-1 min-w-48" placeholder="Search activity" value={search} onChange={e => setSearch(e.target.value)} />
-      <select aria-label="Activity type" className="field-input" value={category} onChange={e => setCategory(e.target.value)}>{[['all', 'All events'], ['leads', 'Buyer inquiries'], ['vehicles', 'Vehicles'], ['channels', 'Channels'], ['imports', 'Imports'], ['crm', 'CRM delivery']].map(([id, label]) => <option key={id} value={id}>{label}</option>)}</select>
-      <button className="btn-secondary-operator" onClick={query.reload}>Refresh</button>
+  return <section className="space-y-4" aria-label="Business activity">
+    <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
+      <input aria-label="Search activity" className="field-input min-w-0 flex-1" placeholder="Search activity" value={search} onChange={e => setSearch(e.target.value)} />
+      <select aria-label="Activity type" className="field-input sm:w-52 sm:shrink-0" value={category} onChange={e => setCategory(e.target.value)}>{[['all', 'All events'], ['leads', 'Buyer inquiries'], ['vehicles', 'Vehicles'], ['channels', 'Channels'], ['imports', 'Imports'], ['crm', 'CRM delivery']].map(([id, label]) => <option key={id} value={id}>{label}</option>)}</select>
+      <button className="btn-secondary-operator shrink-0" onClick={query.reload}>Refresh</button>
     </div>
     <p className="text-sm text-ink-muted">Recent business events. Publishing batches are grouped; detailed changes stay with their records.</p>
     {query.error && <p role="alert" className="text-red-700">{query.error}</p>}
-    {query.loading && !query.data ? <p role="status">Loading activity…</p> : !query.error && events.length === 0 ? <p className="py-10 text-ink-muted">No activity matches this view.</p> : <ol className="divide-y divide-silver-200">{events.map(e => <li key={e.id} className="py-5 flex flex-col sm:flex-row gap-2 sm:gap-8">
-      <time className="sm:w-44 shrink-0 text-xs text-ink-muted" dateTime={e.occurredAt}>{new Date(e.occurredAt).toLocaleString()}</time>
-      <div><a className="font-semibold text-ink-heading underline underline-offset-4" href={preserveSupport(e.href)}>{e.title}{e.count > 1 ? ` · ${e.count} events` : ''}</a><p className="text-sm text-ink-muted mt-1">{e.detail}</p></div>
-    </li>)}</ol>}
+    {query.loading && !query.data ? <p role="status">Loading activity…</p> : !query.error && events.length === 0 ? <p className="py-10 text-ink-muted">No activity matches this view.</p> : <ol className="divide-y divide-silver-200 rounded-xl border border-silver-200 bg-white">{events.map(e => {
+      const urgent = /failed/i.test(e.title);
+      return <li key={e.id} className={`px-4 py-3 flex flex-col gap-1 sm:flex-row sm:items-baseline sm:gap-6 ${urgent ? 'bg-amber-50/80' : ''}`}>
+        <time className="sm:w-36 shrink-0 text-xs text-ink-muted" dateTime={e.occurredAt}>{activityWhen(e.occurredAt)}</time>
+        <div className="min-w-0"><a className={`font-semibold underline underline-offset-4 ${urgent ? 'text-amber-900' : 'text-ink-heading'}`} href={preserveSupport(e.href)}>{e.title}{e.count > 1 ? ` · ${e.count} events` : ''}</a><p className="text-sm text-ink-body mt-0.5">{e.detail}</p></div>
+      </li>;
+    })}</ol>}
     <div className="flex gap-4">{before && <button className="btn-secondary-operator" onClick={() => setBefore(null)}>Latest activity</button>}{query.data?.nextCursor && <button className="btn-secondary-operator" onClick={() => setBefore(query.data!.nextCursor)}>Older activity</button>}</div>
   </section>;
 }
