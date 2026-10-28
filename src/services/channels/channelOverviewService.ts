@@ -59,8 +59,15 @@ function connectionState(a: PlatformAccountDetail): ChannelConnectionState {
   return 'NOT_CHECKED';
 }
 
-function hasStarted(a: PlatformAccountDetail, plan: ChannelSetupPlan): boolean {
-  return a.dealerEnabled || a.state !== 'ACCOUNT_NEEDED' || plan.progress.done > 0 || a.oauthConnected || a.oauthExpired;
+/** A blank catalog row is not setup, even when the row was created already enabled. */
+function setupHasStarted(a: PlatformAccountDetail, plan: ChannelSetupPlan, evidence: Evidence): boolean {
+  if (a.oauthConnected || a.oauthExpired) return true;
+  if (a.state !== 'ACCOUNT_NEEDED') return true;
+  if (a.accountId?.trim()) return true;
+  const config = a.connectionConfig;
+  if (config && typeof config === 'object' && !Array.isArray(config) && Object.values(config).some(value => value != null && value !== '')) return true;
+  if (evidence.distribution.verifiedLive > 0 || evidence.distribution.inProgress > 0 || evidence.distribution.problems > 0 || evidence.openIncidents > 0) return true;
+  return plan.steps.some(step => step.state === 'DONE' && step.id !== 'startergrid-enable');
 }
 
 /** Pure status rules, kept separate from data loading so they are easy to test. */
@@ -70,10 +77,11 @@ export function channelOverviewItem(a: PlatformAccountDetail, plan: ChannelSetup
   const connection = connectionState(a);
   const current = plan.steps.find(s => s.id === plan.currentStepId) ?? null;
   const { distribution, openIncidents } = evidence;
-  const owned = a.integrationClass === 'OWNED';
-  const started = owned ? a.dealerEnabled : hasStarted(a, plan);
+  const started = setupHasStarted(a, plan, evidence);
+  const productGap = current?.id === 'startergrid-enable';
+  const supportOwnsStep = current?.owner === 'INTERNAL_SUPPORT' && !productGap;
 
-  // First matching problem wins; each only counts once the dealer has started the channel.
+  // First matching problem wins; each only counts once setup has actually started.
   const attention = !started ? null
     : a.oauthExpired ? `Your ${name} sign-in expired. Sign in again.`
     : a.state === 'FAILED' ? `${name} did not accept the connection details.`
@@ -83,14 +91,14 @@ export function channelOverviewItem(a: PlatformAccountDetail, plan: ChannelSetup
     : openIncidents > 0 ? `${plural(openIncidents, 'problem needs', 'problems need')} a look on ${name}.`
     : null;
 
-  const ready = owned || plan.status === 'READY';
   const displayStatus: ChannelDisplayStatus = attention ? 'NEEDS_ATTENTION'
     : !started ? 'NOT_SET_UP'
-    : ready ? 'CONNECTED'
+    : plan.status === 'READY' ? 'CONNECTED'
     : 'SETTING_UP';
 
   const displayReason = attention
     ?? (displayStatus === 'NOT_SET_UP' ? 'Not set up.'
+      : productGap ? `${name} is in the catalog, but it cannot be connected yet.`
       : displayStatus === 'SETTING_UP' ? plan.headline
       : distribution.verifiedLive > 0 ? `${plural(distribution.verifiedLive, 'vehicle', 'vehicles')} confirmed live.`
       : 'Set up. No listings confirmed live yet.');
@@ -104,7 +112,7 @@ export function channelOverviewItem(a: PlatformAccountDetail, plan: ChannelSetup
     enabled: a.dealerEnabled,
     displayStatus,
     displayReason,
-    waitingOn: displayStatus === 'SETTING_UP' ? current?.owner ?? null : null,
+    waitingOn: displayStatus === 'SETTING_UP' && current && (current.owner !== 'INTERNAL_SUPPORT' || supportOwnsStep) ? current.owner : null,
     setup: { status: plan.status, done: plan.progress.done, total: plan.progress.total, currentStepTitle: current?.title ?? null },
     connection: { state: connection },
     distribution,

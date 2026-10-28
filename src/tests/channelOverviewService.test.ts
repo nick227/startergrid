@@ -57,9 +57,9 @@ describe('channel display status', () => {
   });
 
   it('is SETTING_UP with who it is waiting on', () => {
-    const turnedOn = item(account('cargurus-dealer', { dealerEnabled: true }));
-    assert.equal(turnedOn.displayStatus, 'SETTING_UP');
-    assert.equal(turnedOn.waitingOn, 'DEALERSHIP');
+    const enabledOnly = item(account('cargurus-dealer', { dealerEnabled: true }));
+    assert.equal(enabledOnly.displayStatus, 'NOT_SET_UP', 'enabling a catalog row does not start setup');
+    assert.equal(enabledOnly.waitingOn, null);
     const review = item(account('cargurus-dealer', { state: 'PENDING_REVIEW', accountId: 'CG-12345', connectionConfig: { sftpUsername: 'u', sftpPassword: '***' } }));
     assert.equal(review.displayStatus, 'SETTING_UP');
     assert.equal(review.waitingOn, 'PARTNER');
@@ -83,11 +83,18 @@ describe('channel display status', () => {
     assert.doesNotMatch(queued.displayReason, /live\./, 'in-progress sends are not live');
   });
 
-  it('keeps a channel DealerGrid has not turned on out of Needs attention', () => {
+  it('keeps a catalog channel DealerGrid has not turned on out of Your channels', () => {
     const waiting = item(account('tiktok-shop', { dealerEnabled: true, systemSetupReady: false }));
-    assert.equal(waiting.displayStatus, 'SETTING_UP');
-    assert.equal(waiting.waitingOn, 'INTERNAL_SUPPORT');
-    assert.match(waiting.displayReason, /Nothing for you to do/);
+    assert.equal(waiting.displayStatus, 'NOT_SET_UP');
+    assert.equal(waiting.waitingOn, null);
+    assert.equal(item(account('facebook-business-page', { dealerEnabled: true })).displayStatus, 'NOT_SET_UP');
+    assert.equal(item(account('dealer-storefront', { dealerEnabled: true })).displayStatus, 'NOT_SET_UP');
+  });
+
+  it('says DealerGrid is waiting only when support owns the next step of a started setup', () => {
+    const signedIn = item(account('google-business-profile', { oauthConnected: true, state: 'ACCOUNT_NEEDED' }));
+    assert.equal(signedIn.displayStatus, 'SETTING_UP');
+    assert.equal(signedIn.waitingOn, 'INTERNAL_SUPPORT');
   });
 
   it('is NEEDS_ATTENTION for a failed connection, expired sign-in, hold, or delivery problems', () => {
