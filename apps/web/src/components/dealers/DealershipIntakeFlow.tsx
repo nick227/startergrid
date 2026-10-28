@@ -1,5 +1,5 @@
 import { useMemo, useState, type FormEvent, type ReactNode } from 'react';
-import { BUSINESS_CATEGORY_IDS } from '@auto-dealer/category-schemas';
+import { BUSINESS_CATEGORY_IDS, resolveCategorySchema } from '@auto-dealer/category-schemas';
 import type { CreateDealershipPayload, CreateDealershipResponse } from '@/lib/types.ts';
 import { IntakeSteps } from './IntakeSteps.tsx';
 import { authFieldClass, authLabelClass, authSelectClass } from '@/components/operator/AuthFrame.tsx';
@@ -248,7 +248,7 @@ export function DealershipIntakeFlow({ mode, steps = 'chips', onSubmit, onUpload
           <label className={rowClass}>
             <span className={labelText}>Business category</span>
             <select value={payload.businessCategory} onChange={e => update('businessCategory', e.target.value)} className={rail ? authSelectClass : fieldClass}>
-              {BUSINESS_CATEGORY_IDS.map(id => <option key={id} value={id} className="bg-white text-navy-950">{id.replace(/_/g, ' ')}</option>)}
+              {BUSINESS_CATEGORY_IDS.map(id => <option key={id} value={id} className="bg-white text-navy-950">{resolveCategorySchema(id).label}</option>)}
             </select>
           </label>
           <label className={rowClass}>
@@ -397,7 +397,7 @@ export function DealershipIntakeFlow({ mode, steps = 'chips', onSubmit, onUpload
         <dl className="border-y border-white/10">
           {[
             ['Dealer', payload.legalName || 'Not provided'],
-            ['Category', payload.businessCategory],
+            ['Category', resolveCategorySchema(payload.businessCategory).label],
             ['Address', payload.rooftopAddress.city || payload.rooftopAddress.state ? `${payload.rooftopAddress.city || 'Not provided'}, ${payload.rooftopAddress.state || 'Not provided'}` : 'Not provided'],
             ['Email', payload.primaryContact.email || 'Not provided'],
             ['Inventory', payload.inventorySize ?? 'Not provided'],
@@ -414,7 +414,7 @@ export function DealershipIntakeFlow({ mode, steps = 'chips', onSubmit, onUpload
         <div className="rounded-md border border-silver-200 bg-surface-inset p-4 text-sm">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-3">
             <div><span className="text-ink-faint">Dealer</span><div className="font-semibold text-ink-heading">{payload.legalName || 'Missing'}</div></div>
-            <div><span className="text-ink-faint">Category</span><div className="font-semibold text-ink-heading">{payload.businessCategory}</div></div>
+            <div><span className="text-ink-faint">Category</span><div className="font-semibold text-ink-heading">{resolveCategorySchema(payload.businessCategory).label}</div></div>
             <div><span className="text-ink-faint">Address</span><div className="font-semibold text-ink-heading">{payload.rooftopAddress.city || 'Missing'}, {payload.rooftopAddress.state || 'Missing'}</div></div>
             <div><span className="text-ink-faint">Contact</span><div className="font-semibold text-ink-heading">{payload.primaryContact.name || 'Missing'}</div></div>
             <div><span className="text-ink-faint">Inventory</span><div className="font-semibold text-ink-heading">{payload.inventorySize ?? 'Not provided'}</div></div>

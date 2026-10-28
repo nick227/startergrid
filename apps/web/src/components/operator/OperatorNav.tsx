@@ -1,4 +1,6 @@
 import { workspaceHash } from '@/lib/routes.ts';
+import { useCategorySchema } from '@/contexts/CategoryContext.tsx';
+import { inventoryWorkspaceLabel } from '@/lib/categoryPresentation.ts';
 import { OPERATOR_TABS, type OperatorTab, type OperatorNavHandlers } from '../../lib/operatorNav.ts';
 
 type Props = {
@@ -7,6 +9,7 @@ type Props = {
 };
 
 export function OperatorNav({ active, nav }: Props) {
+  const inventoryLabel = inventoryWorkspaceLabel(useCategorySchema());
   const handlers: Record<OperatorTab, () => void> = {
     activity: nav.goToHome,
     team: () => { const id = window.location.hash.split('/')[1]; window.location.hash = workspaceHash(id, 'team'); },
@@ -35,7 +38,7 @@ export function OperatorNav({ active, nav }: Props) {
                 : 'text-silver-200 hover:text-white hover:bg-navy-700/50'
             }`}
           >
-            {tab.short}
+            {tab.id === 'inventory' ? inventoryLabel : tab.short}
           </button>
         );
       })}

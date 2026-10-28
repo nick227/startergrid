@@ -15,6 +15,7 @@ import { PlatformMovementCompare } from './PlatformMovementCompare.tsx';
 import { MarketplacePreviewCard } from './MarketplacePreviewCard.tsx';
 import { AssetLifecycleHistory } from './AssetLifecycleHistory.tsx';
 import { isActiveLifecycleScope } from '@/lib/lifecycleDisplay.ts';
+import { comparableAgingNote, fieldLabel, schemaHasField, usageDisplay } from '@/lib/categoryPresentation.ts';
 import type { LifecycleScope } from '@/lib/types.ts';
 
 type Props = {
@@ -39,6 +40,8 @@ export function AssetDetailPanel({
   lifecycleScope = 'active',
 }: Props) {
   const schema = useCategorySchema();
+  const agingNote = comparableAgingNote(schema);
+  const usage = schemaHasField(schema, 'mileage') ? usageDisplay(schema, vehicle.mileage) : null;
   const p = perf ? movementBenchmarkParts(perf) : null;
   const hint = perf ? movementTaskHint(perf) : null;
   const showMarketplace = isActiveLifecycleScope(lifecycleScope) && vehicle.lifecycleState !== 'SOLD' && vehicle.lifecycleState !== 'REMOVED';
@@ -64,35 +67,35 @@ export function AssetDetailPanel({
       <div className="p-3 sm:p-4 flex flex-col gap-5 lg:grid lg:grid-cols-2 lg:gap-6 lg:items-start">
         <div className="space-y-5 min-w-0 order-2 lg:order-1">
           <section>
-            <h4 className="text-[10px] font-bold text-ink-faint uppercase tracking-widest mb-2">Vehicle details</h4>
+            <h4 className="text-[10px] font-bold text-ink-faint uppercase tracking-widest mb-2">{schema.asset.titleLabel} details</h4>
             <dl className="grid grid-cols-2 gap-x-4 gap-y-1 text-xs">
-              {vehicle.trim && (
+              {schemaHasField(schema, 'trim') && vehicle.trim && (
                 <>
-                  <dt className="text-ink-faint">Trim</dt>
+                  <dt className="text-ink-faint">{fieldLabel(schema, 'trim', 'Trim')}</dt>
                   <dd className="text-ink-body font-medium">{vehicle.trim}</dd>
                 </>
               )}
-              {vehicle.mileage > 0 && (
+              {usage && (
                 <>
-                  <dt className="text-ink-faint">Mileage</dt>
-                  <dd className="text-ink-body font-medium">{vehicle.mileage.toLocaleString()} mi</dd>
+                  <dt className="text-ink-faint">{fieldLabel(schema, 'mileage', 'Mileage')}</dt>
+                  <dd className="text-ink-body font-medium">{usage}</dd>
                 </>
               )}
-              {vehicle.condition && (
+              {schemaHasField(schema, 'condition') && vehicle.condition && (
                 <>
-                  <dt className="text-ink-faint">Condition</dt>
+                  <dt className="text-ink-faint">{fieldLabel(schema, 'condition', 'Condition')}</dt>
                   <dd className="text-ink-body font-medium capitalize">{vehicle.condition.toLowerCase()}</dd>
                 </>
               )}
-              {vehicle.exteriorColor && (
+              {schemaHasField(schema, 'exteriorColor') && vehicle.exteriorColor && (
                 <>
-                  <dt className="text-ink-faint">Ext. color</dt>
+                  <dt className="text-ink-faint">{fieldLabel(schema, 'exteriorColor', 'Color')}</dt>
                   <dd className="text-ink-body font-medium">{vehicle.exteriorColor}</dd>
                 </>
               )}
-              {vehicle.vin && (
+              {schemaHasField(schema, 'vin') && vehicle.vin && (
                 <>
-                  <dt className="text-ink-faint">VIN</dt>
+                  <dt className="text-ink-faint">{fieldLabel(schema, 'vin', schema.asset.idLabel)}</dt>
                   <dd className="text-ink-body font-mono truncate">{vehicle.vin}</dd>
                 </>
               )}
@@ -111,7 +114,9 @@ export function AssetDetailPanel({
           )}
 
           <section>
-            <h4 className="text-[10px] font-bold text-ink-faint uppercase tracking-widest mb-2">Movement vs similar stock</h4>
+            <h4 className="text-[10px] font-bold text-ink-faint uppercase tracking-widest mb-2">{agingNote ? 'Comparable aging' : 'Movement vs similar stock'}</h4>
+            {agingNote && <p className="text-xs text-ink-muted">{agingNote}</p>}
+            {!agingNote && <>
             {benchmarksUpdating && !perf && (
               <p className="text-xs text-amber-700">{EMPTY_STATE_COPY.postImportBenchmarksPending.subtitle}</p>
             )}
@@ -136,9 +141,10 @@ export function AssetDetailPanel({
                 )}
               </div>
             )}
+            </>}
           </section>
 
-          {perf && hasSimilarBenchmark(perf) && (
+          {!agingNote && perf && hasSimilarBenchmark(perf) && (
             <section className="overflow-x-auto">
               <h4 className="text-[10px] font-bold text-ink-faint uppercase tracking-widest mb-2">Platform movement comparison</h4>
               <PlatformMovementCompare perf={perf} platformPerfBySlug={platformPerfBySlug} />

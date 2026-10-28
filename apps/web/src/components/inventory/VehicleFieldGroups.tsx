@@ -1,6 +1,8 @@
 import { useState } from 'react';
 import type { VehicleDetailDto, VehicleFieldPatch } from '@/lib/api/sdk.ts';
 import { patchVehicleFields } from '@/lib/api/sdk.ts';
+import { useCategorySchema } from '@/contexts/CategoryContext.tsx';
+import { fieldLabel, schemaHasField, usesVehicleIdentifier } from '@/lib/categoryPresentation.ts';
 
 type Props = {
   vehicle: VehicleDetailDto;
@@ -106,6 +108,8 @@ function FieldRow({ label, children }: FieldRowProps) {
 }
 
 export function VehicleFieldGroups({ vehicle, onSaved }: Props) {
+  const schema = useCategorySchema();
+  const vinLocked = usesVehicleIdentifier(schema);
   const [state, setState] = useState<FieldState>(() => vehicleToState(vehicle));
   const [saving, setSaving] = useState(false);
   const [saveError, setSaveError] = useState<string | null>(null);
@@ -141,73 +145,102 @@ export function VehicleFieldGroups({ vehicle, onSaved }: Props) {
           <span>🔒</span> Identity (protected)
         </h3>
         <div className="space-y-1.5">
-          <FieldRow label="VIN">
-            <div className={readonlyCls}>{vehicle.vin}</div>
-          </FieldRow>
-          <FieldRow label="Year">
-            <div className={readonlyCls}>{vehicle.year}</div>
-          </FieldRow>
-          <FieldRow label="Make">
-            <div className={readonlyCls}>{vehicle.make}</div>
-          </FieldRow>
-          <FieldRow label="Model">
-            <div className={readonlyCls}>{vehicle.model}</div>
-          </FieldRow>
+          {schemaHasField(schema, 'vin') && (
+            <FieldRow label={fieldLabel(schema, 'vin', schema.asset.idLabel)}>
+              <div className={readonlyCls}>{vehicle.vin}</div>
+            </FieldRow>
+          )}
+          {schemaHasField(schema, 'year') && (
+            <FieldRow label={fieldLabel(schema, 'year', 'Year')}>
+              <div className={readonlyCls}>{vehicle.year}</div>
+            </FieldRow>
+          )}
+          {schemaHasField(schema, 'make') && (
+            <FieldRow label={fieldLabel(schema, 'make', 'Make')}>
+              <div className={readonlyCls}>{vehicle.make}</div>
+            </FieldRow>
+          )}
+          {schemaHasField(schema, 'model') && (
+            <FieldRow label={fieldLabel(schema, 'model', 'Model')}>
+              <div className={readonlyCls}>{vehicle.model}</div>
+            </FieldRow>
+          )}
         </div>
-        <p className="text-[10px] text-ink-faint mt-2 pl-[128px]">VIN, year, make, and model are set from VIN decode. Contact support to correct a VIN error.</p>
+        <p className="text-[10px] text-ink-faint mt-2 pl-[128px]">
+          {vinLocked
+            ? 'VIN, year, make, and model are set from VIN decode. Contact support to correct a VIN error.'
+            : 'Identifier and title fields are set when the record is created. Price and the fields below can be edited here.'}
+        </p>
       </section>
 
       {/* ── Listing fields ─────────────────────────────────────────────────── */}
       <section>
         <h3 className="text-[10px] font-bold text-ink-faint uppercase tracking-widest mb-3">Listing</h3>
         <div className="space-y-1.5">
-          <FieldRow label="Stock #">
+          <FieldRow label={fieldLabel(schema, 'stockNumber', schema.asset.refLabel)}>
             <input className={inputCls} value={state.stockNumber} onChange={set('stockNumber')} maxLength={80} />
           </FieldRow>
           <FieldRow label="Price ($)">
             <input className={inputCls} type="text" value={state.priceCents} onChange={set('priceCents')} placeholder="e.g. 24995" />
           </FieldRow>
-          <FieldRow label="Mileage">
-            <input className={inputCls} type="text" value={state.mileage} onChange={set('mileage')} placeholder="e.g. 42000" />
-          </FieldRow>
-          <FieldRow label="Condition">
-            <select className={inputCls} value={state.condition} onChange={set('condition')}>
-              <option value="NEW">New</option>
-              <option value="USED">Used</option>
-              <option value="CPO">CPO</option>
-            </select>
-          </FieldRow>
-          <FieldRow label="Ext. Color">
-            <input className={inputCls} value={state.exteriorColor} onChange={set('exteriorColor')} maxLength={80} />
-          </FieldRow>
-          <FieldRow label="Int. Color">
-            <input className={inputCls} value={state.interiorColor} onChange={set('interiorColor')} maxLength={80} placeholder="Optional" />
-          </FieldRow>
+          {schemaHasField(schema, 'mileage') && (
+            <FieldRow label={fieldLabel(schema, 'mileage', 'Mileage')}>
+              <input className={inputCls} type="text" value={state.mileage} onChange={set('mileage')} placeholder={fieldLabel(schema, 'mileage', 'Mileage')} />
+            </FieldRow>
+          )}
+          {schemaHasField(schema, 'condition') && (
+            <FieldRow label={fieldLabel(schema, 'condition', 'Condition')}>
+              <select className={inputCls} value={state.condition} onChange={set('condition')}>
+                <option value="NEW">New</option>
+                <option value="USED">Used</option>
+                {vinLocked && <option value="CPO">CPO</option>}
+              </select>
+            </FieldRow>
+          )}
+          {schemaHasField(schema, 'exteriorColor') && (
+            <FieldRow label={fieldLabel(schema, 'exteriorColor', 'Color')}>
+              <input className={inputCls} value={state.exteriorColor} onChange={set('exteriorColor')} maxLength={80} />
+            </FieldRow>
+          )}
+          {schemaHasField(schema, 'interiorColor') && (
+            <FieldRow label={fieldLabel(schema, 'interiorColor', 'Interior color')}>
+              <input className={inputCls} value={state.interiorColor} onChange={set('interiorColor')} maxLength={80} placeholder="Optional" />
+            </FieldRow>
+          )}
         </div>
       </section>
 
-      {/* ── Vehicle specs ─────────────────────────────────────────────────── */}
-      <section>
+      {['trim', 'bodyStyle', 'drivetrain', 'fuelType', 'transmission'].some(key => schemaHasField(schema, key)) && <section>
         <h3 className="text-[10px] font-bold text-ink-faint uppercase tracking-widest mb-3">Specs</h3>
         <div className="space-y-1.5">
-          <FieldRow label="Trim">
-            <input className={inputCls} value={state.trim} onChange={set('trim')} maxLength={120} placeholder="Optional" />
-          </FieldRow>
-          <FieldRow label="Body Style">
-            <SpecSelect value={state.bodyStyle} options={BODY_STYLE_OPTIONS} onChange={set('bodyStyle')} placeholder="— Not set —" />
-          </FieldRow>
-          <FieldRow label="Drivetrain">
-            <SpecSelect value={state.drivetrain} options={DRIVETRAIN_OPTIONS} onChange={set('drivetrain')} placeholder="— Not set —" />
-          </FieldRow>
-          <FieldRow label="Fuel Type">
-            <SpecSelect value={state.fuelType} options={FUEL_TYPE_OPTIONS} onChange={set('fuelType')} placeholder="— Not set —" />
-          </FieldRow>
-          <FieldRow label="Transmission">
-            <SpecSelect value={state.transmission} options={TRANSMISSION_OPTIONS} onChange={set('transmission')} placeholder="— Not set —" />
-          </FieldRow>
+          {schemaHasField(schema, 'trim') && (
+            <FieldRow label={fieldLabel(schema, 'trim', 'Trim')}>
+              <input className={inputCls} value={state.trim} onChange={set('trim')} maxLength={120} placeholder="Optional" />
+            </FieldRow>
+          )}
+          {schemaHasField(schema, 'bodyStyle') && (
+            <FieldRow label={fieldLabel(schema, 'bodyStyle', 'Body style')}>
+              <SpecSelect value={state.bodyStyle} options={BODY_STYLE_OPTIONS} onChange={set('bodyStyle')} placeholder="— Not set —" />
+            </FieldRow>
+          )}
+          {schemaHasField(schema, 'drivetrain') && (
+            <FieldRow label={fieldLabel(schema, 'drivetrain', 'Drivetrain')}>
+              <SpecSelect value={state.drivetrain} options={DRIVETRAIN_OPTIONS} onChange={set('drivetrain')} placeholder="— Not set —" />
+            </FieldRow>
+          )}
+          {schemaHasField(schema, 'fuelType') && (
+            <FieldRow label={fieldLabel(schema, 'fuelType', 'Fuel type')}>
+              <SpecSelect value={state.fuelType} options={FUEL_TYPE_OPTIONS} onChange={set('fuelType')} placeholder="— Not set —" />
+            </FieldRow>
+          )}
+          {schemaHasField(schema, 'transmission') && (
+            <FieldRow label={fieldLabel(schema, 'transmission', 'Transmission')}>
+              <SpecSelect value={state.transmission} options={TRANSMISSION_OPTIONS} onChange={set('transmission')} placeholder="— Not set —" />
+            </FieldRow>
+          )}
         </div>
-        <p className="text-[10px] text-ink-faint mt-2 pl-[128px]">Specs are auto-filled from VIN decode where available.</p>
-      </section>
+        {vinLocked && <p className="text-[10px] text-ink-faint mt-2 pl-[128px]">Specs are auto-filled from VIN decode where available.</p>}
+      </section>}
 
       {/* ── Price history ─────────────────────────────────────────────────── */}
       {vehicle.priceLastChangedAt && (

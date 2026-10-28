@@ -15,24 +15,29 @@ export function reportsPrimary(input: {
   blocked: number;
   failedSends: number;
   stale: number;
+  assetSingular?: string;
+  assetPlural?: string;
 }): ReportsPrimary {
+  const singular = input.assetSingular ?? 'vehicle';
+  const plural = input.assetPlural ?? 'vehicles';
+  const named = (count: number) => (count === 1 ? singular : plural);
   const kind = reportsExperience(input);
   if (kind === 'empty') {
     return {
       kind,
       title: 'Reports are not set up yet',
-      why: 'There are no vehicles to measure. This is missing setup, not a healthy set of listings.',
+      why: `There are no ${plural} to measure. This is missing setup, not a healthy set of listings.`,
       action: 'vehicles',
-      actionLabel: 'Add vehicles',
+      actionLabel: `Add ${plural}`,
     };
   }
   if (input.blocked > 0) {
     return {
       kind,
-      title: `${input.blocked} vehicle${input.blocked === 1 ? ' is' : 's are'} missing what a destination requires`,
+      title: `${input.blocked} ${named(input.blocked)} ${input.blocked === 1 ? 'is' : 'are'} missing what a destination requires`,
       why: 'A destination you use will not take them until that is added. They can still be ready for other destinations.',
       action: 'vehicles',
-      actionLabel: 'Review vehicles',
+      actionLabel: `Review ${plural}`,
     };
   }
   if (input.failedSends > 0) {
@@ -47,16 +52,17 @@ export function reportsPrimary(input: {
   if (input.stale > 0) {
     return {
       kind: 'running',
-      title: `${input.stale} vehicle${input.stale === 1 ? '' : 's'} sitting longer than similar stock`,
+      title: `${input.stale} ${named(input.stale)} sitting longer than similar stock`,
       why: 'Check price and photos before changing destinations.',
       action: 'vehicles',
-      actionLabel: 'Review vehicles',
+      actionLabel: `Review ${plural}`,
     };
   }
+  const workspace = plural.charAt(0).toUpperCase() + plural.slice(1);
   return {
     kind: 'running',
     title: 'Nothing unusual right now',
-    why: 'Use the lists below if you want more detail. Day-to-day work lives in Vehicles and Channels.',
+    why: `Use the lists below if you want more detail. Day-to-day work lives in ${workspace} and Channels.`,
     action: null,
   };
 }

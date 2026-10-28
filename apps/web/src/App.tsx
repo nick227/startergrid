@@ -55,7 +55,8 @@ function OperatorApp() {
   const { user, authReady } = useAuth();
   const { route, nav, activeTab, selectDealer } = useOperatorRoute();
   const { dealerId, page, platformSlug, platformView, reportSlug, reportRange, adminDealerId, adminDealerPage, adminPlatformSlug } = route;
-  const categorySchema = useDealerCategorySchema(dealerId ?? adminDealerId ?? null);
+  const categoryState = useDealerCategorySchema(dealerId ?? adminDealerId ?? null);
+  const categorySchema = categoryState.schema;
 
   const helpStandalone = (page === 'help' || page === 'knowledge') && !dealerId;
   const signupStandalone = page === 'signup' && !dealerId;
@@ -78,15 +79,45 @@ function OperatorApp() {
   if (!authReady) return <AuthLoadingScreen />;
   if (inviteToken) return <AccountSetupPage key={inviteToken} token={inviteToken} />;
   if (user?.mustChangePassword) return <AccountSetupPage />;
-  if (internalStaff && (!dealerId || page === 'admin')) {
-    return (
-      <CategoryProvider schema={categorySchema}>
-        <InternalWorkspace dealerId={adminDealerId} dealerPage={adminDealerPage} />
-      </CategoryProvider>
-    );
-  }
   if (signupStandalone && !user) return <RegisterPage />;
   if (!user) return <LoginPage />;
+  if ((dealerId || adminDealerId) && (categoryState.pending || !categorySchema)) {
+    return (
+      <div className="flex min-h-screen items-center justify-center bg-surface-page p-6">
+        <p role="status" className="text-sm text-ink-muted">
+          {categoryState.pending ? 'Loading business…' : 'This business could not be loaded.'}
+        </p>
+      </div>
+    );
+  }
+  if (internalStaff && (!dealerId || page === 'admin')) {
+    const workspace = <InternalWorkspace dealerId={adminDealerId} dealerPage={adminDealerPage} />;
+    return categorySchema ? <CategoryProvider schema={categorySchema}>{workspace}</CategoryProvider> : workspace;
+  }
+
+  if (!categorySchema) {
+    return (
+      <>
+        {superAdminHome ? (
+          <Suspense fallback={null}>
+            <AdminApp
+              adminDealerId={adminDealerId}
+              platformSlug={platformSlug}
+              adminDealerPage={adminDealerPage}
+              platformView={platformView}
+              reportSlug={reportSlug}
+              reportRange={reportRange}
+              adminPlatformSlug={adminPlatformSlug}
+            />
+          </Suspense>
+        ) : !dealerId || !nav ? (
+          <DealerPicker onSelect={selectDealer} />
+        ) : (
+          <DealerPicker onSelect={selectDealer} forbiddenDealerId={dealerId} />
+        )}
+      </>
+    );
+  }
 
   return (
     <CategoryProvider schema={categorySchema}>

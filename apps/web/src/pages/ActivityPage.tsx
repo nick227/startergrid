@@ -7,6 +7,8 @@ import type { OperatorPageBaseProps } from '@/lib/operatorPage.ts';
 import { workspaceRequest, type BusinessFeed, type SaleRow } from '@/lib/api/workspaces.ts';
 import { preserveSupport } from '@/lib/routes.ts';
 import LeadsPage from './LeadsPage.tsx';
+import { useCategorySchema } from '@/contexts/CategoryContext.tsx';
+import { inventoryWorkspaceLabel } from '@/lib/categoryPresentation.ts';
 
 const tabs = [{ id: 'all', label: 'All Activity' }, { id: 'attention', label: 'Needs Attention' }, { id: 'leads', label: 'Leads' }, { id: 'sales', label: 'Sales' }];
 
@@ -28,6 +30,7 @@ export default function ActivityPage(props: OperatorPageBaseProps & { view?: str
   </OperatorPage>;
 }
 function BusinessActivity({ dealerId }: { dealerId: string }) {
+  const inventoryName = inventoryWorkspaceLabel(useCategorySchema());
   const [before, setBefore] = useState<string | null>(null);
   const [search, setSearch] = useState('');
   const [category, setCategory] = useState('all');
@@ -36,7 +39,7 @@ function BusinessActivity({ dealerId }: { dealerId: string }) {
   return <section className="space-y-4" aria-label="Business activity">
     <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
       <input aria-label="Search activity" className="field-input min-w-0 flex-1" placeholder="Search activity" value={search} onChange={e => setSearch(e.target.value)} />
-      <select aria-label="Activity type" className="field-input sm:w-52 sm:shrink-0" value={category} onChange={e => setCategory(e.target.value)}>{[['all', 'All events'], ['leads', 'Buyer inquiries'], ['vehicles', 'Vehicles'], ['channels', 'Channels'], ['imports', 'Imports'], ['crm', 'CRM delivery']].map(([id, label]) => <option key={id} value={id}>{label}</option>)}</select>
+      <select aria-label="Activity type" className="field-input sm:w-52 sm:shrink-0" value={category} onChange={e => setCategory(e.target.value)}>{[['all', 'All events'], ['leads', 'Buyer inquiries'], ['vehicles', inventoryName], ['channels', 'Channels'], ['imports', 'Imports'], ['crm', 'CRM delivery']].map(([id, label]) => <option key={id} value={id}>{label}</option>)}</select>
       <button className="btn-secondary-operator shrink-0" onClick={query.reload}>Refresh</button>
     </div>
     <p className="text-sm text-ink-muted">Recent business events. Publishing batches are grouped; detailed changes stay with their records.</p>
@@ -52,14 +55,15 @@ function BusinessActivity({ dealerId }: { dealerId: string }) {
   </section>;
 }
 function SalesRegister({ dealerId, nav }: Pick<OperatorPageBaseProps, 'dealerId' | 'nav'>) {
+  const plural = useCategorySchema().asset.plural;
   const query = useAsyncQuery(() => workspaceRequest<{ sales: SaleRow[]; truncated: boolean }>(dealerId, 'sales-register'), [dealerId]);
   const [search, setSearch] = useState('');
   const sales = (query.data?.sales ?? []).filter(s => `${s.title} ${s.stockNumber} ${s.channel ?? ''}`.toLowerCase().includes(search.toLowerCase()));
   return <section className="space-y-5" aria-label="Sales register">
-    <div className="flex gap-3"><input className="field-input flex-1" aria-label="Search sales" placeholder="Search sold vehicles or source" value={search} onChange={e => setSearch(e.target.value)} /><button className="btn-secondary-operator" onClick={query.reload}>Refresh</button></div>
+    <div className="flex gap-3"><input className="field-input flex-1" aria-label="Search sales" placeholder={`Search sold ${plural} or source`} value={search} onChange={e => setSearch(e.target.value)} /><button className="btn-secondary-operator" onClick={query.reload}>Refresh</button></div>
     <p className="text-sm text-ink-muted">Sold inventory and recorded transactions. A sold-status change does not establish a sale date, price or source.</p>
     {query.error && <p role="alert" className="text-red-700">{query.error}</p>}
-    {query.loading && !query.data ? <p>Loading sales…</p> : !query.error && !sales.length ? <p className="py-10 text-ink-muted">No sold vehicles match this view.</p> : sales.map(s => <article key={s.vehicleId} className="surface-card-operator p-5 space-y-4">
+    {query.loading && !query.data ? <p>Loading sales…</p> : !query.error && !sales.length ? <p className="py-10 text-ink-muted">No sold {plural} match this view.</p> : sales.map(s => <article key={s.vehicleId} className="surface-card-operator p-5 space-y-4">
       <button className="font-semibold underline text-left" onClick={() => nav.goToInventoryItem({ assetTitle: s.title, stockNumber: s.stockNumber }, { assetId: s.vehicleId })}>{s.title} · {s.stockNumber}</button>
       <dl className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4 text-sm">
         <div><dt className="text-ink-muted">Inventory outcome</dt><dd>Sold · marked {new Date(s.statusChangedAt).toLocaleDateString()}</dd></div>
@@ -68,6 +72,6 @@ function SalesRegister({ dealerId, nav }: Pick<OperatorPageBaseProps, 'dealerId'
         <div><dt className="text-ink-muted">Evidence</dt><dd>{s.evidence ? s.evidence.toLowerCase().replace(/_/g, ' ') : 'Inventory status only'}</dd></div>
       </dl>
     </article>)}
-    {query.data?.truncated && <p>Showing the 500 most recent sold vehicles. Use inventory for older records.</p>}
+    {query.data?.truncated && <p>Showing the 500 most recent sold {plural}. Use inventory for older records.</p>}
   </section>;
 }

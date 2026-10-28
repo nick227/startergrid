@@ -34,6 +34,8 @@ import {
 import { formatMovementBenchmarkLine } from '@/lib/movementBenchmark.ts';
 import { reportsPrimary } from '@/lib/reportsPrimary.ts';
 import { platformDisplayName } from '@/lib/platformPresentation.ts';
+import { useCategorySchema } from '@/contexts/CategoryContext.tsx';
+import { comparableAgingNote, inventoryWorkspaceLabel, showsAutomotiveComparables } from '@/lib/categoryPresentation.ts';
 
 import { ReadinessAssetList } from '@/components/reports/ReadinessAssetList.tsx';
 import { ReportExposureList } from '@/components/reports/ReportExposureList.tsx';
@@ -85,6 +87,10 @@ const hubReportCopy: Record<HubReportSlug, { category: string; title: string; su
 };
 
 export default function ReportsHubPage({ dealerId, nav, activeTab }: Props) {
+  const categorySchema = useCategorySchema();
+  const plural = categorySchema.asset.plural;
+  const workspaceLabel = inventoryWorkspaceLabel(categorySchema);
+  const agingNote = comparableAgingNote(categorySchema);
   const { perf, publish, reload, loading, error } = useReportsData(dealerId);
   const phase2 = usePhase2HubTeasers(dealerId);
   const [refreshing, setRefreshing] = useState(false);
@@ -156,7 +162,9 @@ export default function ReportsHubPage({ dealerId, nav, activeTab }: Props) {
     vehicleTotal: activeCount,
     blocked: blockedCount,
     failedSends: failedCount,
-    stale: typeof staleMetric === 'number' ? staleMetric : 0,
+    stale: showsAutomotiveComparables(categorySchema) && typeof staleMetric === 'number' ? staleMetric : 0,
+    assetSingular: categorySchema.asset.singular,
+    assetPlural: plural,
   });
 
   const emptyListState = <EmptyState icon="📊" title="No data" subtitle="No data available for this report." />;
@@ -230,7 +238,7 @@ export default function ReportsHubPage({ dealerId, nav, activeTab }: Props) {
           <div>
             <h2 className="text-base font-bold text-ink-heading tracking-tight">More detail</h2>
             <p className="mt-1 max-w-3xl text-sm leading-relaxed text-ink-muted">
-              What cannot list, which vehicles need a look, and where shopper interest is showing up.
+              What cannot list, which {plural} need a look, and where shopper interest is showing up. Listing coverage and inquiries apply to every category. Comparable aging is {agingNote ? 'not available here' : `part of ${workspaceLabel}`}.
             </p>
           </div>
 
@@ -252,15 +260,17 @@ export default function ReportsHubPage({ dealerId, nav, activeTab }: Props) {
             </ReportWidget>
 
             <ReportWidget
-              category={hubReportCopy.movement.category}
-              title={hubReportCopy.movement.title}
-              decision={hubReportCopy.movement.summary}
-              metricLabel={staleCopy.primaryMetric}
-              metricValue={staleMetric}
-              actionHint={hubReportCopy.movement.actionHint}
-              onViewAll={() => setActiveDrawerSlug('movement')}
+              category={agingNote ? 'Not available' : hubReportCopy.movement.category}
+              title={agingNote ? 'Comparable aging' : hubReportCopy.movement.title}
+              decision={agingNote ?? hubReportCopy.movement.summary}
+              metricLabel={agingNote ? 'Status' : staleCopy.primaryMetric}
+              metricValue={agingNote ? 'Not supported' : staleMetric}
+              actionHint={agingNote ? 'Mileage comparables and similar-vehicle aging stay on automotive inventory.' : hubReportCopy.movement.actionHint}
+              onViewAll={agingNote ? undefined : () => setActiveDrawerSlug('movement')}
             >
-              {topStale.length === 0 ? (
+              {agingNote ? (
+                <div className="py-4 text-center text-xs text-ink-muted">{agingNote}</div>
+              ) : topStale.length === 0 ? (
                 <div className="py-4 text-center text-xs text-ink-muted">No stale inventory.</div>
               ) : (
                 topStale.map(r => <MiniAssetRow key={r.stockNumber} item={r} valueLabel={formatMovementBenchmarkLine(r) || ''} onClick={() => nav.goToInventory({ assetRef: r.stockNumber })} />)

@@ -4,6 +4,7 @@ import type { OperatorTab, OperatorNavHandlers } from '../../lib/operatorNav.ts'
 import { operatorCopy } from '../../lib/copy/operator.ts';
 import { useAuth } from '@/contexts/AuthContext.tsx';
 import { useCategorySchema } from '@/contexts/CategoryContext.tsx';
+import { inventoryWorkspaceLabel } from '@/lib/categoryPresentation.ts';
 import { DealerLogo } from './DealerLogo.tsx';
 import { OperatorAvatar } from './OperatorAvatar.tsx';
 import { isDealerFacingRole, isInternalSupportRole } from '@/lib/operatorAccess.ts';
@@ -31,7 +32,7 @@ const TAB_LABELS: Record<OperatorTab, string> = {
   home: 'Activity',
   platforms: 'Channels',
   reports: 'Reports',
-  inventory: 'Vehicles',
+  inventory: 'Inventory',
   leads: 'Leads',
   settings: 'Company',
   help: 'Help',
@@ -55,6 +56,7 @@ export function PageShell({
 }: Props) {
   const { user, logout, refresh } = useAuth();
   const categorySchema = useCategorySchema();
+  const tabLabel = activeTab === 'inventory' ? inventoryWorkspaceLabel(categorySchema) : TAB_LABELS[activeTab];
   const displayDealerName = dealerName?.trim() || dealerId;
 
   // Internal staff always see which dealership they are acting in, whichever tab they navigate to.
@@ -107,7 +109,7 @@ export function PageShell({
             <div className="min-w-0">
               <h1 className="truncate text-sm font-bold tracking-tight sm:text-base">{displayDealerName}</h1>
               <p className="truncate text-[11px] text-silver-200">
-                {sectionLabel ?? TAB_LABELS[activeTab]}
+                {sectionLabel ?? tabLabel}
                 <span className="hidden text-ink-faint sm:inline">
                   <span className="text-silver-300"> · </span>
                   <span>{categorySchema.label}</span>

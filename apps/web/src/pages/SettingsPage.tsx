@@ -4,6 +4,8 @@ import { DealershipProfilePanel } from '@/components/dealers/DealershipProfilePa
 import { useAsyncQuery } from '@/hooks/useAsyncQuery.ts';
 import { workspaceRequest } from '@/lib/api/workspaces.ts';
 import type { OperatorPageBaseProps } from '@/lib/operatorPage.ts';
+import { useCategorySchema } from '@/contexts/CategoryContext.tsx';
+import { inventoryWorkspaceLabel, usesVehicleIdentifier } from '@/lib/categoryPresentation.ts';
 
 const tabs = [
   { id: 'identity', label: 'Identity' },
@@ -42,23 +44,24 @@ export default function SettingsPage(props: OperatorPageBaseProps & { view?: str
 }
 
 function InboundEmailCard({ dealerId }: { dealerId: string }) {
+  const automotiveLeads = usesVehicleIdentifier(useCategorySchema());
   const query = useAsyncQuery(() => workspaceRequest<InboundStatus>(dealerId, 'inbound-email'), [dealerId]);
   const status = query.data;
   return (
     <section className="surface-card-operator p-5 space-y-3" aria-label="Marketplace lead email">
       <h2 className="text-lg font-semibold text-ink-heading">Marketplace lead email</h2>
-      <p className="text-sm text-ink-muted">Forward Cars.com, Autotrader, and CarGurus inquiries to this address. The token is private to this dealership.</p>
+      <p className="text-sm text-ink-muted">{automotiveLeads ? 'Forward Cars.com, Autotrader, and CarGurus inquiries to this address. The token is private to this dealership.' : 'Forward marketplace inquiries to this address. The token is private to this business. Automotive classifieds are not part of this category.'}</p>
       {query.error && <p role="alert" className="text-sm text-red-700">{query.error}</p>}
       {status && (
         <>
           <p className="font-mono text-sm break-all">{status.address}</p>
           <button type="button" className="btn-secondary-operator" onClick={() => void navigator.clipboard.writeText(status.address)}>Copy address</button>
           <p className="text-sm text-ink-muted">
-            {status.mailboxConfigured ? 'The intake mailbox is configured.' : 'The intake mailbox is not connected yet. The address is reserved for this dealership.'}
+            {status.mailboxConfigured ? 'The intake mailbox is configured.' : `The intake mailbox is not connected yet. The address is reserved for this ${automotiveLeads ? 'dealership' : 'business'}.`}
             {status.lastReceivedAt ? ` Last message ${new Date(status.lastReceivedAt).toLocaleString()}.` : ' No message has arrived yet.'}
             {status.recentProblemCount > 0 ? ` ${status.recentProblemCount} messages in the last 30 days need review.` : ''}
           </p>
-          <p className="text-sm text-ink-muted">A lead forwarded through the dealership's own mailbox is still accepted. It stays marked as dealership-reported until that forwarding path is confirmed, so it is not counted as a verified marketplace.</p>
+          <p className="text-sm text-ink-muted">{automotiveLeads ? "A lead forwarded through the dealership's own mailbox is still accepted. It stays marked as dealership-reported until that forwarding path is confirmed, so it is not counted as a verified marketplace." : 'A lead forwarded through this business mailbox is still accepted. It stays marked as business-reported until that forwarding path is confirmed, so it is not counted as a verified marketplace.'}</p>
         </>
       )}
     </section>
@@ -66,12 +69,13 @@ function InboundEmailCard({ dealerId }: { dealerId: string }) {
 }
 
 function CompanyIntegrations({ nav }: { nav: OperatorPageBaseProps['nav'] }) {
+  const workspace = inventoryWorkspaceLabel(useCategorySchema());
   return (
     <section className="space-y-4" aria-label="Company integrations">
-      <p className="text-sm text-ink-muted max-w-2xl">Company holds shared business configuration. Day-to-day platform connections stay in Channels, and inventory import sources stay in Vehicles.</p>
+      <p className="text-sm text-ink-muted max-w-2xl">Company holds shared business configuration. Day-to-day platform connections stay in Channels, and inventory import sources stay in {workspace}.</p>
       <div className="flex flex-wrap gap-3">
         <button type="button" className="btn-secondary-operator" onClick={() => nav.goToPlatforms()}>Open Channels</button>
-        <button type="button" className="btn-secondary-operator" onClick={() => nav.goToInventory()}>Open Vehicles</button>
+        <button type="button" className="btn-secondary-operator" onClick={() => nav.goToInventory()}>Open {workspace}</button>
       </div>
     </section>
   );

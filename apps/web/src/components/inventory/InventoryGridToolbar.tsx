@@ -1,5 +1,6 @@
 import { useState, useRef, useEffect, type ReactNode } from 'react';
 import { INVENTORY_FIELD_REGISTRY, INVENTORY_COLUMN_PRESETS } from './fieldRegistry.ts';
+import { inventoryLabels } from '@/lib/copy/index.ts';
 
 type Props = {
   viewMode: 'table' | 'card';
@@ -47,7 +48,7 @@ export function InventoryGridToolbar({
     <div className="flex flex-wrap items-center gap-3 py-2 border-b border-silver-100">
       <input
         type="text"
-        placeholder="Search vehicles…"
+        placeholder={inventoryLabels().searchPlaceholder}
         value={search}
         onChange={e => onSearchChange(e.target.value)}
         className="flex-1 min-w-[200px] max-w-sm px-3 py-1.5 text-sm border border-silver-200 rounded-md focus:outline-none focus:border-navy-500"

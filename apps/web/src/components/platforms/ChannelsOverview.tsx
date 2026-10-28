@@ -2,6 +2,9 @@ import { useState } from 'react';
 import { useAsyncQuery } from '@/hooks/useAsyncQuery.ts';
 import { PlatformLogo } from '@/components/platforms/PlatformLogo.tsx';
 import type { ChannelView } from '@/lib/routes.ts';
+import { operatorChannelName } from '@/lib/platformPresentation.ts';
+import { useCategorySchema } from '@/contexts/CategoryContext.tsx';
+import { usesVehicleIdentifier } from '@/lib/categoryPresentation.ts';
 import {
   CAPABILITY_LABEL,
   STATUS_LABEL,
@@ -38,6 +41,7 @@ const PILL: Record<ChannelDisplayStatus, string> = {
  * that can be added. Each channel is counted once, under its primary purpose.
  */
 export function ChannelsOverview({ dealerId, hrefFor, refreshKey = 0 }: Props) {
+  const schema = useCategorySchema();
   const { data, loading, error, reload } = useAsyncQuery(() => fetchChannelOverview(dealerId), [dealerId, refreshKey]);
   const [purpose, setPurpose] = useState<ChannelPurpose | null>(null);
   const [showAll, setShowAll] = useState(false);
@@ -75,7 +79,7 @@ export function ChannelsOverview({ dealerId, hrefFor, refreshKey = 0 }: Props) {
                 onClick={() => { setPurpose(on ? null : p.purpose); setShowAll(false); }}
                 className={`rounded-xl border p-3 sm:p-4 text-left transition-colors ${on ? 'border-navy-600 bg-navy-50/60' : 'border-silver-200 bg-white hover:border-silver-300'}`}>
                 <span className="block text-sm font-bold text-ink-heading">{p.label}</span>
-                <span className="mt-1 hidden text-xs text-ink-muted sm:block">{p.description}</span>
+                <span className="mt-1 hidden text-xs text-ink-muted sm:block">{usesVehicleIdentifier(schema) ? p.description : p.description.replace('your vehicles', `your ${schema.asset.plural}`)}</span>
                 <span className={`mt-2 sm:mt-3 block text-xs font-semibold ${p.counts.NEEDS_ATTENTION ? 'text-amber-800' : 'text-ink-body'}`}>
                   {parts.length ? parts.join(' · ') : p.total ? 'None in use yet' : 'None available'}
                 </span>
@@ -137,8 +141,8 @@ export function ChannelsOverview({ dealerId, hrefFor, refreshKey = 0 }: Props) {
                 {rows.map(c => (
                   <li key={c.channel}>
                     <a href={hrefFor(c.channel, 'setup')} className="flex items-center gap-3 rounded-lg border border-silver-200 bg-white px-3 py-2.5 hover:border-navy-300">
-                      <PlatformLogo slug={c.channel} name={c.name} size="sm" />
-                      <span className="min-w-0 flex-1 truncate text-sm font-semibold text-ink-heading">{c.name}</span>
+                      <PlatformLogo slug={c.channel} name={operatorChannelName(c.channel, c.name)} size="sm" />
+                      <span className="min-w-0 flex-1 truncate text-sm font-semibold text-ink-heading">{operatorChannelName(c.channel, c.name)}</span>
                       <span className="shrink-0 text-xs font-semibold text-navy-700">Set up</span>
                     </a>
                   </li>
@@ -161,10 +165,10 @@ function ChannelRow({ item, href, purposeLabel }: { item: ChannelOverviewItem; h
   return (
     <li>
       <a href={href} className="flex items-start gap-3 px-4 py-3 hover:bg-silver-50/70">
-        <PlatformLogo slug={item.channel} name={item.name} />
+        <PlatformLogo slug={item.channel} name={operatorChannelName(item.channel, item.name)} />
         <span className="min-w-0 flex-1">
           <span className="flex flex-wrap items-center gap-x-2 gap-y-1">
-            <span className="text-sm font-semibold text-ink-heading">{item.name}</span>
+            <span className="text-sm font-semibold text-ink-heading">{operatorChannelName(item.channel, item.name)}</span>
             <span className={`rounded border px-1.5 py-0.5 text-[10px] font-bold uppercase tracking-wide ${PILL[item.displayStatus]}`}>
               {STATUS_LABEL[item.displayStatus]}{waiting ? ` · waiting on ${waiting}` : ''}
             </span>

@@ -44,6 +44,7 @@ import { WindowStickerModal } from '@/components/inventory/WindowStickerModal.ts
 import type { CleanupFilter } from '@/components/inventory/inventoryConfig.tsx';
 import { CreatePostModal } from '@/components/social/index.ts';
 import { useCategorySchema } from '@/contexts/CategoryContext.tsx';
+import { inventoryWorkspaceLabel, usesVehicleIdentifier } from '@/lib/categoryPresentation.ts';
 import { useOperatorRoute } from '@/hooks/useOperatorRoute.ts';
 import { OwnershipLine } from '@/components/guidance/OwnershipLine.tsx';
 import { PagePrimaryState } from '@/components/guidance/PagePrimaryState.tsx';
@@ -60,6 +61,10 @@ const DEFAULT_COLS = INVENTORY_COLUMN_PRESETS['Default'];
 
 export default function InventoryPage({ dealerId, nav, activeTab }: Props) {
   const categorySchema = useCategorySchema();
+  const workspaceLabel = inventoryWorkspaceLabel(categorySchema);
+  const assetSingular = categorySchema.asset.singular;
+  const assetPlural = categorySchema.asset.plural;
+  const vinEntry = usesVehicleIdentifier(categorySchema);
   const { route } = useOperatorRoute();
   const [lifecycleScope] = useState<LifecycleScope>('all');
   const { data, loading, error, reload: load, lastRefresh } = useAsyncQuery(
@@ -387,12 +392,12 @@ export default function InventoryPage({ dealerId, nav, activeTab }: Props) {
   const isFilteredEmpty = !loading && vehicles.length > 0 && mappedVisible.length === 0;
   const hasActiveFilter = search.trim() !== '' || filter !== 'All' || ageFilter !== 'all';
   const inventoryEmptyMessage = isEmpty ? (
-    <>No vehicles yet. Use Add vehicle or Import spreadsheet above.</>
+    <>No {assetPlural} yet. Use {vinEntry ? `Add ${assetSingular}` : 'Import spreadsheet'} above.</>
   ) : isFilteredEmpty && hasActiveFilter ? (
     <>
-      No vehicles match this search or filter.{' '}
+      No {assetPlural} match this search or filter.{' '}
       <button type="button" onClick={() => { setSearch(''); setFilter('All'); setAgeFilter('all'); }} className="text-navy-600 hover:text-navy-700 font-medium underline underline-offset-2">
-        Show all vehicles
+        Show all {assetPlural}
       </button>
     </>
   ) : undefined;
@@ -465,22 +470,24 @@ export default function InventoryPage({ dealerId, nav, activeTab }: Props) {
         </div>
       ) : (
         <div className="space-y-5">
-          <PageHeader title="Vehicles" />
+          <PageHeader title={workspaceLabel} />
 
           {isPhysicalInventory ? (
             <>
               {isEmpty && (
                 <PagePrimaryState
                   kind="empty"
-                  title="Add your first vehicle"
-                  why="Shoppers can only see vehicles that are on your lot with a price and photos. Add one by VIN, or import a spreadsheet."
+                  title={`Add your first ${assetSingular}`}
+                  why={vinEntry
+                    ? 'Shoppers can only see vehicles that are on your lot with a price and photos. Add one by VIN, or import a spreadsheet.'
+                    : `Shoppers can only see ${assetPlural} with a price and photos. Import a spreadsheet to add them.`}
                 />
               )}
               {!isEmpty && summaryCounts.blocked > 0 && (
                 <PagePrimaryState
                   kind="attention"
-                  title={`${summaryCounts.blocked} vehicle${summaryCounts.blocked === 1 ? '' : 's'} cannot be listed yet`}
-                  why="Usually a missing price or photos. Fix those and the vehicle can go to your destinations."
+                  title={`${summaryCounts.blocked} ${summaryCounts.blocked === 1 ? assetSingular : assetPlural} cannot be listed yet`}
+                  why={`Usually a missing price or photos. Fix those and the ${assetSingular} can go to your destinations.`}
                   next="Set the missing price or photos."
                   ownerKind="YOU"
                 />
@@ -496,10 +503,10 @@ export default function InventoryPage({ dealerId, nav, activeTab }: Props) {
                     <div className="space-y-0.5">
                       <h3 className="text-sm font-bold text-ink-heading">Import Complete</h3>
                       <p className="text-xs text-ink-body leading-relaxed">
-                        <strong>{importOutcome.created}</strong> vehicle{importOutcome.created === 1 ? '' : 's'} added to lot
+                        <strong>{importOutcome.created}</strong> {importOutcome.created === 1 ? assetSingular : assetPlural} added
                         {importOutcome.updated > 0 && `, ${importOutcome.updated} updated`}
                         {importOutcome.skipped > 0 && `, ${importOutcome.skipped} skipped`}
-                        . Vehicles with price and photos are eligible to syndicate across your connected channels.
+                        . {workspaceLabel} with price and photos can be sent to connected channels.
                       </p>
                     </div>
                   </div>
@@ -567,7 +574,7 @@ export default function InventoryPage({ dealerId, nav, activeTab }: Props) {
                 <div className="flex items-center justify-between">
                   <div>
                     <h3 className="text-sm font-semibold text-ink-heading">Needs a fix ({attentionVehicles.length})</h3>
-                    <p className="text-xs text-ink-muted">These vehicles are missing photos, a price, or another required detail.</p>
+                    <p className="text-xs text-ink-muted">These {assetPlural} are missing photos, a price, or another required detail.</p>
                   </div>
                 </div>
 
@@ -581,7 +588,7 @@ export default function InventoryPage({ dealerId, nav, activeTab }: Props) {
                   <div className="p-8 text-center bg-white border border-silver-200 rounded-xl shadow-sm">
                     <div className="text-3xl mb-2">🎉</div>
                     <p className="text-sm font-semibold text-ink-heading">Nothing needs a fix right now</p>
-                    <p className="text-xs text-ink-muted mt-1">Every active vehicle has photos and a price.</p>
+                    <p className="text-xs text-ink-muted mt-1">Every active {assetSingular} has photos and a price.</p>
                   </div>
                 ) : (
                   <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
@@ -897,7 +904,7 @@ export default function InventoryPage({ dealerId, nav, activeTab }: Props) {
                         allSelected={allVisibleSelected}
                         onToggleAll={toggleAll}
                         onClearSelection={() => setSelected(new Set())}
-                        onPrintSelected={() => setShowBatchPrintModal(true)}
+                        onPrintSelected={vinEntry ? () => setShowBatchPrintModal(true) : undefined}
                         onEditSelected={() => setShowBulkEditModal(true)}
                         extra={
                           <div className="flex flex-wrap items-center gap-2">
@@ -912,7 +919,7 @@ export default function InventoryPage({ dealerId, nav, activeTab }: Props) {
                                   ? 'bg-navy-900 text-white border-navy-900'
                                   : 'bg-white text-ink-body border-silver-200 hover:bg-surface-raised'
                               }`}
-                              title="Sort vehicles by days in DealerGrid"
+                              title={`Sort ${assetPlural} by days in DealerGrid`}
                             >
                               {sortKey === 'performance.daysOnline' && sortDirection === 'desc' ? 'Oldest in DealerGrid ↓' : 'Oldest in DealerGrid'}
                             </button>

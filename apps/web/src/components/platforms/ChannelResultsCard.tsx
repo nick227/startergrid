@@ -11,6 +11,18 @@ import {
 import { SectionCard } from '@/components/operator/SectionCard.tsx';
 import { PanelError, PanelSkeleton } from '@/components/operator/AsyncPanel.tsx';
 import { Button, Modal } from '@/components/ui/index.ts';
+import { getActiveCategorySchema } from '@/lib/copy/activeCategoryCopy.ts';
+import { businessNoun } from '@/lib/categoryPresentation.ts';
+import { operatorChannelName } from '@/lib/platformPresentation.ts';
+
+function soldPlural(): string {
+  return getActiveCategorySchema()?.asset.plural ?? 'records';
+}
+
+function costOwner(): string {
+  const schema = getActiveCategorySchema();
+  return schema ? businessNoun(schema) : 'business';
+}
 
 type Props = { dealerId: string; refreshKey?: number };
 
@@ -81,7 +93,7 @@ export function ChannelResultsCard({ dealerId, refreshKey = 0 }: Props) {
   return (
     <SectionCard
       title="Channel results"
-      subtitle="Inquiries DealerGrid recorded, sales linked to a channel by evidence, and costs your dealership entered."
+      subtitle={`Inquiries DealerGrid recorded, sales linked to a channel by evidence, and costs your ${costOwner()} entered.`}
       action={monthPicker}
       noPadding
     >
@@ -120,7 +132,7 @@ function ResultsBody({ data, onEditCost, onEditSale }: {
     <div>
       <dl className="grid grid-cols-1 gap-px bg-silver-100 sm:grid-cols-3">
         <div className="bg-surface-card px-5 py-4">
-          <dt className="text-xs text-ink-muted">Vehicles marked sold</dt>
+          <dt className="text-xs text-ink-muted">{soldPlural().charAt(0).toUpperCase() + soldPlural().slice(1)} marked sold</dt>
           <dd className="mt-1 text-xl font-semibold text-ink-heading">{sales.markedSold}</dd>
           <Note>{sales.attributed} linked to a channel · {sales.unattributed} not linked</Note>
         </div>
@@ -179,7 +191,7 @@ function ChannelTable({ rows, unattributed, onEditCost }: { rows: ChannelResultR
           <tbody className="divide-y divide-silver-100">
             {rows.map(row => (
               <tr key={row.platformSlug} className="align-top">
-                <td className="px-5 py-3 font-medium text-ink-heading">{row.platformName}</td>
+                <td className="px-5 py-3 font-medium text-ink-heading">{operatorChannelName(row.platformSlug, row.platformName)}</td>
                 <td className="px-4 py-3"><InquiryCell row={row} /></td>
                 <td className="px-4 py-3">
                   <span className="font-semibold text-ink-heading">{row.attributedSales}</span>
@@ -230,15 +242,15 @@ function ChannelTable({ rows, unattributed, onEditCost }: { rows: ChannelResultR
 }
 
 function SalesTable({ sales, channels, onEditSale }: { sales: SaleOutcomeRow[]; channels: ChannelResultRow[]; onEditSale: (sale: SaleOutcomeRow) => void }) {
-  const names = new Map(channels.map(c => [c.platformSlug, c.platformName]));
+  const names = new Map(channels.map(c => [c.platformSlug, operatorChannelName(c.platformSlug, c.platformName)]));
   return (
     <div className="border-t border-silver-200">
       <div className="px-5 py-3">
         <h4 className="text-sm font-semibold text-ink-heading">Sales this month</h4>
-        <p className="text-xs text-ink-faint">Vehicles marked sold this month. Add the actual sale date, price and channel when you know them.</p>
+        <p className="text-xs text-ink-faint">{soldPlural().charAt(0).toUpperCase() + soldPlural().slice(1)} marked sold this month. Add the actual sale date, price and channel when you know them.</p>
       </div>
       {sales.length === 0 ? (
-        <p className="px-5 pb-5 text-sm text-ink-muted">No vehicles were marked sold this month.</p>
+        <p className="px-5 pb-5 text-sm text-ink-muted">No {soldPlural()} were marked sold this month.</p>
       ) : (
         <div className="overflow-x-auto">
           <table className="w-full min-w-[720px] text-left text-sm">
@@ -330,7 +342,7 @@ function CostDialog({ dealerId, month, row, onDone }: { dealerId: string; month:
 
   return (
     <DialogFrame
-      title={`${row.platformName} cost for ${monthLabel(month)}`}
+      title={`${operatorChannelName(row.platformSlug, row.platformName)} cost for ${monthLabel(month)}`}
       subtitle="Leave a field blank if you don't know it. Blank is not the same as $0. Clearing both removes the cost."
       error={error} busy={busy} onCancel={() => onDone(false)} onSubmit={submit}
     >
@@ -387,7 +399,7 @@ function SaleDialog({ dealerId, sale, channels, onDone }: { dealerId: string; sa
         Channel that produced the sale
         <select value={channel} onChange={e => setChannel(e.target.value)} className={`${FIELD} mt-1`}>
           <option value="">Not known</option>
-          {channels.map(c => <option key={c.platformSlug} value={c.platformSlug}>{c.platformName}</option>)}
+          {channels.map(c => <option key={c.platformSlug} value={c.platformSlug}>{operatorChannelName(c.platformSlug, c.platformName)}</option>)}
         </select>
         <span className="mt-1 block font-normal text-ink-faint">Only choose a channel if you know the buyer came from it.</span>
       </label>

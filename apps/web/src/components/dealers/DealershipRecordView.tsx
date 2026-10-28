@@ -18,6 +18,7 @@ import { handoffReadiness, recordNextAction, type NextAction } from '@/lib/deale
 import { PagePrimaryState } from '@/components/guidance/PagePrimaryState.tsx';
 import { DealershipDestinationsPanel } from './DealershipDestinationsPanel.tsx';
 import { adminDealerHash } from '@/lib/routes.ts';
+import { resolveCategorySchema } from '@auto-dealer/category-schemas';
 
 export type RecordTab = 'overview' | 'destinations' | 'people' | 'activity';
 
@@ -214,6 +215,7 @@ export function DealershipRecordView({ dealerId, initialTab = 'overview', viewer
               <div className="flex items-center gap-2 flex-wrap">
                 <h1 className="text-xl font-bold text-ink-heading truncate">{record.legalName}</h1>
                 <span className={`px-2 py-0.5 rounded-full border text-xs font-semibold ${TONE_CLASS[status.tone]}`}>{status.label}</span>
+                <span className="px-2 py-0.5 rounded-full border border-navy-200 bg-navy-50 text-xs font-semibold text-navy-800">{resolveCategorySchema(record.businessCategory).label}</span>
               </div>
               {record.dbaName && record.dbaName !== record.legalName && <p className="text-sm text-ink-muted">Doing business as {record.dbaName}</p>}
               <p className="text-xs text-ink-muted mt-1">

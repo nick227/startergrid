@@ -6,7 +6,7 @@ type Props = {
   decision: string;
   metricLabel: string;
   metricValue: string | number;
-  onViewAll: () => void;
+  onViewAll?: () => void;
   category?: string;
   actionHint?: string;
   children?: ReactNode;
@@ -54,13 +54,15 @@ export function ReportWidget({
         )}
       </div>
 
-      <button
-        type="button"
-        onClick={onViewAll}
-        className="px-5 py-3 bg-surface-inset/30 border-t border-silver-100/80 mt-auto text-xs font-semibold text-orange-600 hover:text-orange-700 w-full text-center hover:bg-orange-50/50 transition-colors"
-      >
-        {operatorCopy.reports.viewFullReport} →
-      </button>
+      {onViewAll && (
+        <button
+          type="button"
+          onClick={onViewAll}
+          className="px-5 py-3 bg-surface-inset/30 border-t border-silver-100/80 mt-auto text-xs font-semibold text-orange-600 hover:text-orange-700 w-full text-center hover:bg-orange-50/50 transition-colors"
+        >
+          {operatorCopy.reports.viewFullReport} →
+        </button>
+      )}
     </article>
   );
 }

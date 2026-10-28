@@ -6,6 +6,7 @@ import { Skeleton } from '@/components/ui/Skeleton.tsx';
 import { lifecycleLabel, relativeTime, SETUP_LIFECYCLES, type LifecycleTone } from '@/lib/dealershipLabels.ts';
 import { needsOurAction, summaryNextAction } from '@/lib/dealershipNextStep.ts';
 import { ownerLabel } from '@/lib/taskOwnership.ts';
+import { resolveCategorySchema } from '@auto-dealer/category-schemas';
 import { CreateDealershipDialog } from './CreateDealershipDialog.tsx';
 import { PagePrimaryState } from '@/components/guidance/PagePrimaryState.tsx';
 
@@ -138,7 +139,8 @@ export function DealershipDirectory({ currentUserId, includeChannelIssues, onOpe
           <table className="w-full text-left text-sm">
             <thead className="bg-silver-50 text-xs text-ink-muted border-b border-silver-200">
               <tr>
-                <th scope="col" className="px-4 py-2.5 font-semibold">Dealership</th>
+                <th scope="col" className="px-4 py-2.5 font-semibold">Business</th>
+                <th scope="col" className="px-4 py-2.5 font-semibold hidden lg:table-cell">Category</th>
                 <th scope="col" className="px-4 py-2.5 font-semibold hidden md:table-cell">Status</th>
                 <th scope="col" className="px-4 py-2.5 font-semibold">Next action</th>
                 <th scope="col" className="px-4 py-2.5 font-semibold hidden sm:table-cell text-right">Last activity</th>
@@ -157,8 +159,10 @@ export function DealershipDirectory({ currentUserId, includeChannelIssues, onOpe
                         {row.dbaName || row.legalName}
                       </a>
                       {row.dbaName && row.dbaName !== row.legalName && <p className="text-xs text-ink-muted">{row.legalName}</p>}
+                      <p className="text-xs text-ink-muted lg:hidden">{resolveCategorySchema(row.businessCategory).label}</p>
                       <p className="text-xs text-ink-muted md:hidden">{status.label}</p>
                     </td>
+                    <td className="px-4 py-3 hidden lg:table-cell text-ink-body">{resolveCategorySchema(row.businessCategory).label}</td>
                     <td className="px-4 py-3 hidden md:table-cell">
                       <span className="inline-flex items-center gap-1.5 text-ink-body">
                         <span aria-hidden="true" className={`w-2 h-2 rounded-full ${TONE_DOT[status.tone]}`} />

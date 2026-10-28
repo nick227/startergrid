@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useRef, useState, useCallback } from 'react';
-import { resolveCategorySchema } from '@auto-dealer/category-schemas';
+import { resolveCategorySchema, type CategorySchema } from '@auto-dealer/category-schemas';
+import { businessNoun } from '@/lib/categoryPresentation.ts';
 import { fetchDealershipProfile, updateDealershipProfile, uploadDealerLogo } from '@/lib/api/sdk.ts';
 import type { DealershipProfile, ProfileReadinessWarning } from '@/lib/types.ts';
 import { invalidateDealersList } from '@/lib/dealersListInvalidation.ts';
@@ -23,12 +24,15 @@ const FIELD_CLS =
 
 type ProfileSection = 'all' | 'identity' | 'email' | 'preferences';
 
-const SECTION_COPY: Record<ProfileSection, { title: string; body: string }> = {
-  all: { title: 'Dealership profile', body: 'What buyers see, and what destinations use when they list your vehicles.' },
-  identity: { title: 'Business identity', body: 'Name, logo, location, and website used by the marketplace storefront and channel profiles.' },
-  email: { title: 'Addresses customers and marketplaces use', body: 'The address customers see, the address that receives marketplace leads, and the address that sends notifications can be different.' },
-  preferences: { title: 'Dealership defaults', body: 'These choices apply to the selected dealership. Personal notification choices stay on your profile.' },
-};
+function sectionCopy(section: ProfileSection, schema: CategorySchema | null): { title: string; body: string } {
+  const noun = schema ? businessNoun(schema) : 'business';
+  const titled = noun.charAt(0).toUpperCase() + noun.slice(1);
+  const plural = schema?.asset.plural ?? 'inventory';
+  if (section === 'all') return { title: `${titled} profile`, body: `What buyers see, and what destinations use when they list your ${plural}.` };
+  if (section === 'preferences') return { title: `${titled} defaults`, body: `These choices apply to the selected ${noun}. Personal notification choices stay on your profile.` };
+  if (section === 'email') return { title: 'Addresses customers and marketplaces use', body: 'The address customers see, the address that receives marketplace leads, and the address that sends notifications can be different.' };
+  return { title: 'Business identity', body: 'Name, logo, location, and website used by the marketplace storefront and channel profiles.' };
+}
 
 type Props = {
   dealerId: string;
@@ -174,10 +178,12 @@ export function DealershipProfilePanel({ dealerId, mode = 'operator', section = 
     return () => setNavigationGuard(null);
   }, [isAnyDirty]);
 
-  const categoryLabel = useMemo(
-    () => (profile ? resolveCategorySchema(profile.businessCategory).label : ''),
+  const categorySchema = useMemo(
+    () => (profile ? resolveCategorySchema(profile.businessCategory) : null),
     [profile],
   );
+  const categoryLabel = categorySchema?.label ?? '';
+  const orgNoun = categorySchema ? businessNoun(categorySchema) : 'business';
 
   const marketplaceHref = profile
     ? `${MARKETPLACE_URL}#/${profile.businessCategory.toLowerCase()}/seller/${encodeURIComponent(dealerId)}`
@@ -262,8 +268,8 @@ export function DealershipProfilePanel({ dealerId, mode = 'operator', section = 
     <div className="space-y-5">
       <div className="flex flex-wrap items-start justify-between gap-3">
         <div>
-          <h2 className="text-lg font-semibold text-ink-heading">{SECTION_COPY[section].title}</h2>
-          <p className="text-sm text-ink-muted mt-1">{SECTION_COPY[section].body}</p>
+          <h2 className="text-lg font-semibold text-ink-heading">{sectionCopy(section, categorySchema).title}</h2>
+          <p className="text-sm text-ink-muted mt-1">{sectionCopy(section, categorySchema).body}</p>
         </div>
         <div className="flex flex-wrap items-center gap-2">
           {showIdentity && marketplaceHref && (
@@ -288,11 +294,11 @@ export function DealershipProfilePanel({ dealerId, mode = 'operator', section = 
               <span className="text-emerald-700 text-lg leading-none shrink-0 mt-0.5">✓</span>
               <div className="text-xs text-emerald-950 space-y-1">
                 <p className="font-bold text-sm text-emerald-900">
-                  Profile complete · Ready for vehicle listings and channel syndication
+                  Profile complete · Ready for {categorySchema?.asset.plural ?? 'inventory'} and channel publishing
                 </p>
                 <p className="text-emerald-800">
                   Legal business identity, rooftop address, and primary contact are configured.
-                  Connected channels can use this verified lot profile for syndication.
+                  Connected channels can use this verified {orgNoun} profile.
                 </p>
               </div>
             </div>
@@ -300,7 +306,7 @@ export function DealershipProfilePanel({ dealerId, mode = 'operator', section = 
         </SectionCard>
       )}
 
-      {showIdentity && <SectionCard title="How your dealership appears" subtitle={`Category: ${categoryLabel}`}>
+      {showIdentity && <SectionCard title={`How your ${orgNoun} appears`} subtitle={`Category: ${categoryLabel}`}>
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <label className="block space-y-1">
             <span className="text-xs font-semibold text-ink-muted">Legal name</span>
@@ -312,7 +318,7 @@ export function DealershipProfilePanel({ dealerId, mode = 'operator', section = 
           </label>
           <label className="block space-y-1 sm:col-span-2">
             <span className="text-xs font-semibold text-ink-muted">Website URL</span>
-            <input type="url" value={form.websiteUrl} onChange={e => update('websiteUrl', e.target.value)} className={FIELD_CLS} placeholder="https://yourdealership.com" />
+            <input type="url" value={form.websiteUrl} onChange={e => update('websiteUrl', e.target.value)} className={FIELD_CLS} placeholder={orgNoun === 'dealership' ? 'https://yourdealership.com' : 'https://example.com'} />
           </label>
         </div>
       </SectionCard>}

@@ -8,6 +8,8 @@ import { BulkVinReviewSidebar } from './BulkVinReviewSidebar.tsx';
 import { ImportModal } from './ImportModal.tsx';
 import { IngressPanel } from './IngressPanel.tsx';
 import { GuidanceNote } from '@/components/guidance/GuidanceNote.tsx';
+import { useCategorySchema } from '@/contexts/CategoryContext.tsx';
+import { inventoryWorkspaceLabel, usesVehicleIdentifier } from '@/lib/categoryPresentation.ts';
 
 type Panel = 'vin' | 'bulk' | 'source' | null;
 
@@ -19,10 +21,13 @@ type Props = {
 };
 
 export function VehicleAddControls({ dealerId, compact, onVehicleCreated, onImportCommitted }: Props) {
+  const schema = useCategorySchema();
+  const vinEntry = usesVehicleIdentifier(schema);
+  const workspace = inventoryWorkspaceLabel(schema);
   const { route } = useOperatorRoute();
   const focusedRunId = new URLSearchParams(window.location.hash.split('?')[1]).get('importRunId');
   useEffect(() => { if (focusedRunId) setPanel('source'); }, [focusedRunId, route.dealerId]);
-  const [panel, setPanel] = useState<Panel>(compact ? null : 'vin');
+  const [panel, setPanel] = useState<Panel>(compact || !vinEntry ? null : 'vin');
   const [showCsv, setShowCsv] = useState(false);
 
   const finish = (result?: CommitImportResponse) => {
@@ -33,15 +38,19 @@ export function VehicleAddControls({ dealerId, compact, onVehicleCreated, onImpo
   return (
     <div className="space-y-3">
       <div className="flex flex-wrap gap-2">
-        <button type="button" className="btn-primary-operator text-xs" onClick={() => setPanel(panel === 'vin' ? null : 'vin')}>
-          Add vehicle
-        </button>
-        <button type="button" className="btn-secondary-operator text-xs" onClick={() => setShowCsv(true)}>
+        {vinEntry && (
+          <button type="button" className="btn-primary-operator text-xs" onClick={() => setPanel(panel === 'vin' ? null : 'vin')}>
+            Add {schema.asset.singular}
+          </button>
+        )}
+        <button type="button" className={vinEntry ? 'btn-secondary-operator text-xs' : 'btn-primary-operator text-xs'} onClick={() => setShowCsv(true)}>
           Import spreadsheet
         </button>
-        <button type="button" className="btn-secondary-operator text-xs" onClick={() => setPanel(panel === 'bulk' ? null : 'bulk')}>
-          Paste VINs
-        </button>
+        {vinEntry && (
+          <button type="button" className="btn-secondary-operator text-xs" onClick={() => setPanel(panel === 'bulk' ? null : 'bulk')}>
+            Paste VINs
+          </button>
+        )}
         <button
           type="button"
           data-testid="import-from-source"
@@ -52,7 +61,11 @@ export function VehicleAddControls({ dealerId, compact, onVehicleCreated, onImpo
         </button>
       </div>
 
-      {panel === 'vin' && (
+      {!vinEntry && (
+        <p className="text-xs text-ink-muted">Add {workspace.toLowerCase()} from a spreadsheet. VIN decode is only for vehicles.</p>
+      )}
+
+      {vinEntry && panel === 'vin' && (
         <div className="p-4 bg-white border border-silver-200 rounded-xl space-y-2">
           <p className="text-sm font-medium text-ink-heading">Add one vehicle by VIN</p>
           <GuidanceNote>We fill year, make, and model from the VIN. You add price and photos next.</GuidanceNote>

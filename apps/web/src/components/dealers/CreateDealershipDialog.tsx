@@ -1,14 +1,9 @@
 import { useState, type FormEvent } from 'react';
-import { BUSINESS_CATEGORY_IDS } from '@auto-dealer/category-schemas';
+import { BUSINESS_CATEGORY_IDS, resolveCategorySchema } from '@auto-dealer/category-schemas';
 import { createDealershipRecord, DuplicateDealershipError, type ChannelSetupResult, type InviteResult } from '@/lib/api/dealershipRecordApi.ts';
 import { InviteLinkResult } from '@/components/people/InviteLinkResult.tsx';
 
 const FIELD = 'w-full px-3 py-2 text-sm border border-silver-300 rounded-md bg-surface-card focus:outline-none focus:ring-2 focus:ring-navy-500/30';
-
-function categoryName(id: string): string {
-  const words = id.toLowerCase().replace(/_/g, ' ');
-  return words.charAt(0).toUpperCase() + words.slice(1);
-}
 
 type Props = {
   onClose: () => void;
@@ -80,7 +75,7 @@ export function CreateDealershipDialog({ onClose, onOpenDealership, onCreated }:
           <form onSubmit={submit} className="space-y-5">
             <div>
               <h2 id="create-dealership-title" className="text-lg font-semibold text-ink-heading">Add a dealership</h2>
-              <p className="text-sm text-ink-muted mt-1">Just the essentials. Address, logo, vehicles and destinations come later in setup.</p>
+              <p className="text-sm text-ink-muted mt-1">Just the essentials. Address, logo, inventory, and destinations come later in setup.</p>
             </div>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               <label className="block space-y-1 sm:col-span-2">
@@ -90,7 +85,7 @@ export function CreateDealershipDialog({ onClose, onOpenDealership, onCreated }:
               <label className="block space-y-1 sm:col-span-2">
                 <span className="text-xs font-semibold text-ink-body">What they sell</span>
                 <select value={category} onChange={e => setCategory(e.target.value)} className={FIELD}>
-                  {BUSINESS_CATEGORY_IDS.map(id => <option key={id} value={id}>{categoryName(id)}</option>)}
+                  {BUSINESS_CATEGORY_IDS.map(id => <option key={id} value={id}>{resolveCategorySchema(id).label}</option>)}
                 </select>
               </label>
               <label className="block space-y-1">

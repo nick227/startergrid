@@ -1,5 +1,7 @@
 import { useEffect, useRef, useState, createContext, useContext } from 'react';
 import type { ReactNode } from 'react';
+import { useCategorySchema } from '@/contexts/CategoryContext.tsx';
+import { inventoryWorkspaceLabel } from '@/lib/categoryPresentation.ts';
 import { EbookEntryPanel } from './EbookEntryPanel.tsx';
 import { SongEntryPanel } from './SongEntryPanel.tsx';
 import { DigitalArtEntryPanel } from './DigitalArtEntryPanel.tsx';
@@ -44,6 +46,7 @@ export function InventoryWorkspace({
   soldContent,
   tabCounts,
 }: Props) {
+  const workspace = inventoryWorkspaceLabel(useCategorySchema());
   const [activeTab, setActiveTab] = useState<Tab>(initialTab);
   const chosen = useRef(false);
   const setTab = (tab: Tab) => {
@@ -58,7 +61,7 @@ export function InventoryWorkspace({
     <WorkspaceContext.Provider value={{ dealerId, activeTab, setTab }}>
       <div>
         <div className="border-b border-silver-200 bg-white">
-          <nav className="flex overflow-x-auto scrollbar-none" aria-label="Vehicle lists">
+          <nav className="flex overflow-x-auto scrollbar-none" aria-label={`${workspace} lists`}>
             {TABS.map(tab => {
               const count = tabCounts?.[tab.key];
               const isActive = activeTab === tab.key;

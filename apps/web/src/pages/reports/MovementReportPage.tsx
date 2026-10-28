@@ -22,6 +22,8 @@ import {
 } from '@/lib/reportRowPresentation.ts';
 import type { PlatformPerformanceItem } from '@/lib/types.ts';
 import { movementActionCount } from '@/lib/reportPresentation.ts';
+import { useCategorySchema } from '@/contexts/CategoryContext.tsx';
+import { comparableAgingNote } from '@/lib/categoryPresentation.ts';
 
 type Props = OperatorPageBaseProps;
 
@@ -34,6 +36,7 @@ const SIGNAL_FILTERS: Array<{ key: ReportSignalFilter; label: string }> = [
 ];
 
 export default function MovementReportPage({ dealerId, nav, activeTab }: Props) {
+  const agingNote = comparableAgingNote(useCategorySchema());
   const copy = reportCatalogCopy(findReport('movement')!);
   const { perf, reload } = useReportsData(dealerId);
   const [refreshing, setRefreshing] = useState(false);
@@ -73,6 +76,20 @@ export default function MovementReportPage({ dealerId, nav, activeTab }: Props) 
         { label: 'Need action', value: movementActionCount(perf.data!.vehicles), tone: 'warning' },
       ]
     : undefined;
+
+  if (agingNote) {
+    return (
+      <ReportPageShell
+        dealerId={dealerId}
+        activeTab={activeTab}
+        nav={nav}
+        title="Comparable aging"
+        decision={agingNote}
+      >
+        <p className="text-sm text-ink-muted">Publishing readiness, coverage, and buyer inquiries still apply to this business. Mileage and similar-vehicle comparisons do not.</p>
+      </ReportPageShell>
+    );
+  }
 
   return (
     <ReportPageShell

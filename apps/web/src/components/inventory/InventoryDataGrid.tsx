@@ -3,9 +3,10 @@ import type { ReactNode } from 'react';
 import { InventoryGridRowDto } from '../../types/inventoryDto.ts';
 import { INVENTORY_FIELD_REGISTRY } from './fieldRegistry.ts';
 import { InventoryRowCard } from './InventoryRowCard.tsx';
-import type { BusinessCategoryId } from '@auto-dealer/category-schemas';
 import { vehicleReadinessText } from '@/lib/listingStatus.ts';
 import type { VelocityVehicleItem } from '@/lib/api/velocityApi.ts';
+import { useCategorySchema } from '@/contexts/CategoryContext.tsx';
+import { gridColumnLabel, gridColumnVisible, showsAutomotiveComparables, usageDisplay } from '@/lib/categoryPresentation.ts';
 
 type Props = {
   dealerId?: string;
@@ -28,6 +29,7 @@ type Props = {
 function renderCell(
   item: InventoryGridRowDto,
   colKey: string,
+  schema: ReturnType<typeof useCategorySchema>,
   repriceMap?: Map<string, VelocityVehicleItem>,
   onReviewReprice?: (vehicle: VelocityVehicleItem) => void,
 ) {
@@ -45,7 +47,7 @@ function renderCell(
       return <span className="truncate" title={item.specs.exteriorColor}>{item.specs.exteriorColor}</span>;
     case 'number': {
       if (colKey === 'year') return item.specs.year;
-      if (colKey === 'mileage') return item.specs.mileage?.toLocaleString();
+      if (colKey === 'mileage') return usageDisplay(schema, item.specs.mileage ?? 0) ?? '—';
       if (colKey === 'missingShots') return item.media.missingRequiredShots;
       if (colKey === 'messages') return item.performance.messages;
       return null;
@@ -65,7 +67,7 @@ function renderCell(
                   onReviewReprice?.(reprice);
                 }}
                 className="px-1.5 py-0.5 rounded text-[10px] font-semibold bg-indigo-50 text-indigo-700 border border-indigo-200 hover:bg-indigo-100 transition-colors shadow-2xs"
-                title={`Suggested: $${(reprice.suggestedPriceCents / 100).toLocaleString()} (${reprice.daysOnLot} days on lot)`}
+                title={`Suggested: $${(reprice.suggestedPriceCents / 100).toLocaleString()} (${reprice.daysOnLot} ${showsAutomotiveComparables(schema) ? 'days on lot' : 'days listed'})`}
               >
                 Review price
               </button>
@@ -111,6 +113,8 @@ function renderCell(
 export function InventoryDataGrid({
   dealerId, items, viewMode, selectedIds, onToggleSelection, onToggleAll, onRowClick, activeColumns, sortKey, sortDir, onSort, emptyMessage, repriceMap, onReviewReprice
 }: Props) {
+  const schema = useCategorySchema();
+  const columns = activeColumns.filter(colKey => gridColumnVisible(schema, colKey));
   const allSelected = items.length > 0 && items.every(i => selectedIds.has(i.id));
 
   if (items.length === 0) {
@@ -128,9 +132,15 @@ export function InventoryDataGrid({
           // Map InventoryGridRowDto to Claude's InventoryRowItem for the card
           const cardItem = {
             id: item.id,
-            category: item.category as BusinessCategoryId,
+            category: schema.id,
             primaryIdentifier: item.identity.primaryIdentifier,
-            displayTitle: `${item.specs.year ?? ''} ${item.specs.make} ${item.specs.model} ${item.specs.trim}`.trim(),
+            displayTitle: schema.formatters.assetLead({
+              year: item.specs.year,
+              make: item.specs.make,
+              model: item.specs.model,
+              trim: item.specs.trim,
+              stockNumber: item.identity.stockNumber,
+            }),
             stockNumber: item.identity.stockNumber,
             priceCents: item.pricing.priceCents,
             condition: item.specs.condition,
@@ -174,11 +184,11 @@ export function InventoryDataGrid({
                 type="checkbox"
                 checked={allSelected}
                 onChange={onToggleAll}
-                aria-label="Select all vehicles in this list"
+                aria-label={`Select all ${schema.asset.plural} in this list`}
                 className="w-4 h-4 accent-orange-600 rounded border-silver-300"
               />
             </th>
-            {activeColumns.map(colKey => {
+            {columns.map(colKey => {
               const def = INVENTORY_FIELD_REGISTRY[colKey];
               if (!def) return null;
               return (
@@ -188,7 +198,7 @@ export function InventoryDataGrid({
                   onClick={() => def.sortable && onSort(colKey)}
                 >
                   <div className="flex items-center gap-1">
-                    {def.label}
+                    {gridColumnLabel(schema, colKey, def.label)}
                     {def.sortable && sortKey === colKey && (
                       <span className="text-orange-600 ml-1">{sortDir === 'asc' ? '↑' : '↓'}</span>
                     )}
@@ -217,9 +227,9 @@ export function InventoryDataGrid({
                     className="w-4 h-4 accent-orange-600 rounded border-silver-300"
                   />
                 </td>
-                {activeColumns.map(colKey => (
+                {columns.map(colKey => (
                   <td key={colKey} className="px-3 py-2 text-ink-body truncate max-w-[200px]">
-                    {renderCell(item, colKey, repriceMap, onReviewReprice)}
+                    {renderCell(item, colKey, schema, repriceMap, onReviewReprice)}
                   </td>
                 ))}
               </tr>

@@ -4,6 +4,8 @@ import type { VehicleDetailDto } from '@/lib/api/sdk.ts';
 import { markVehicleSold, relistVehicle, setVehicleListingStatus } from '@/lib/api/sdk.ts';
 import { VEHICLE_READINESS_REGISTRY } from '@/lib/statusRegistry.ts';
 import { WindowStickerModal } from './WindowStickerModal.tsx';
+import { useCategorySchema } from '@/contexts/CategoryContext.tsx';
+import { fieldLabel, schemaHasField, usageDisplay, usesVehicleIdentifier } from '@/lib/categoryPresentation.ts';
 
 function formatPrice(cents: number) {
   return cents > 0 ? `$${(cents / 100).toLocaleString(undefined, { maximumFractionDigits: 0 })}` : '—';
@@ -22,11 +24,14 @@ type Props = {
 };
 
 export function VehicleDetailHeader({ vehicle, onClose, onReload }: Props) {
+  const schema = useCategorySchema();
+  const vinTools = usesVehicleIdentifier(schema);
+  const usage = schemaHasField(schema, 'mileage') ? usageDisplay(schema, vehicle.mileage) : null;
   const [busy, setBusy] = useState<string | null>(null);
   const [actionError, setActionError] = useState<string | null>(null);
   const [showStickerModal, setShowStickerModal] = useState(false);
 
-  const title = [vehicle.year, vehicle.make, vehicle.model].filter(Boolean).join(' ');
+  const title = schema.formatters.assetLead(vehicle as unknown as Record<string, unknown>);
   const isSold = !!vehicle.soldAt;
   const isRemoved = !!vehicle.removedAt;
   const isActive = !isSold && !isRemoved;
@@ -62,14 +67,14 @@ export function VehicleDetailHeader({ vehicle, onClose, onReload }: Props) {
       {/* Row 1: identity + status + close */}
       <div className="flex items-start justify-between gap-4">
         <div className="min-w-0">
-          <h2 className="text-xl font-black text-navy-900 tracking-tight leading-snug truncate">{title || 'Vehicle'}</h2>
+          <h2 className="text-xl font-black text-navy-900 tracking-tight leading-snug truncate">{title || schema.asset.titleLabel}</h2>
           <div className="flex flex-wrap items-center gap-x-2 gap-y-0.5 mt-0.5 text-[11px] text-ink-muted">
-            <span className="font-mono tracking-tight">VIN {vehicle.vin}</span>
+            {schemaHasField(schema, 'vin') && <span className="font-mono tracking-tight">{fieldLabel(schema, 'vin', schema.asset.idLabel)} {vehicle.vin}</span>}
             <span>·</span>
             <span>#{vehicle.stockNumber}</span>
             <span>·</span>
             <span className="font-semibold text-ink-body">{formatPrice(vehicle.priceCents)}</span>
-            {vehicle.mileage > 0 && <><span>·</span><span>{vehicle.mileage.toLocaleString()} mi</span></>}
+            {usage && <><span>·</span><span>{usage}</span></>}
             {vehicle.exteriorColor && <><span>·</span><span>{vehicle.exteriorColor}</span></>}
           </div>
         </div>
@@ -122,20 +127,24 @@ export function VehicleDetailHeader({ vehicle, onClose, onReload }: Props) {
             </div>
             <span className="text-[11px] text-ink-muted">
               {isDraft
-                ? 'Draft stays on this lot only. Approved means it can be sent to connected channels.'
-                : 'Approved vehicles can be sent to connected channels. Sent is not the same as verified live.'}
+                ? (vinTools
+                  ? 'Draft stays on this lot only. Approved means it can be sent to connected channels.'
+                  : 'Draft stays in inventory only. Approved means it can be sent to connected channels.')
+                : `Approved ${schema.asset.plural} can be sent to connected channels. Sent is not the same as verified live.`}
             </span>
 
             <span className="grow" />
 
-            <button
-              type="button"
-              onClick={() => setShowStickerModal(true)}
-              className="px-3 py-1.5 text-xs font-semibold rounded-lg bg-silver-100 hover:bg-silver-200 text-ink-heading border border-silver-300 transition-all flex items-center gap-1.5 shadow-sm"
-              title="Print window sticker or Buyers Guide"
-            >
-              <span>🖨️ Print documents</span>
-            </button>
+            {vinTools && (
+              <button
+                type="button"
+                onClick={() => setShowStickerModal(true)}
+                className="px-3 py-1.5 text-xs font-semibold rounded-lg bg-silver-100 hover:bg-silver-200 text-ink-heading border border-silver-300 transition-all flex items-center gap-1.5 shadow-sm"
+                title="Print window sticker or Buyers Guide"
+              >
+                <span>🖨️ Print documents</span>
+              </button>
+            )}
 
             <button
               type="button"
@@ -155,7 +164,7 @@ export function VehicleDetailHeader({ vehicle, onClose, onReload }: Props) {
             onClick={() => run('relist', () => relistVehicle(vehicle.dealershipId, vehicle.id))}
             className="px-3 py-1.5 text-xs font-bold rounded-lg bg-green-600 text-white hover:bg-green-700 disabled:opacity-50 transition-all shadow-sm"
           >
-            {busy === 'relist' ? 'Relisting…' : 'Relist vehicle'}
+            {busy === 'relist' ? 'Relisting…' : `Relist ${schema.asset.singular}`}
           </button>
         )}
         {actionError && (
@@ -163,12 +172,14 @@ export function VehicleDetailHeader({ vehicle, onClose, onReload }: Props) {
         )}
       </div>
 
-      <WindowStickerModal
-        vehicle={vehicle}
-        dealerId={vehicle.dealershipId}
-        isOpen={showStickerModal}
-        onClose={() => setShowStickerModal(false)}
-      />
+      {vinTools && (
+        <WindowStickerModal
+          vehicle={vehicle}
+          dealerId={vehicle.dealershipId}
+          isOpen={showStickerModal}
+          onClose={() => setShowStickerModal(false)}
+        />
+      )}
     </div>
   );
 }

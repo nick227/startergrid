@@ -2,6 +2,7 @@ import type { PlatformPublishResult, PlatformAccountDetail, PlatformPerformanceI
 import { friendlyPlatformDetail, platformOutcomeMeta, sortPlatformsForSync } from './syncPresentation.ts';
 import { operatorCopy } from './copy/operator.ts';
 import { timeAgo } from './timeAgo.ts';
+import { getActiveCategorySchema } from './copy/activeCategoryCopy.ts';
 
 export type PlatformConnection = 'inactive' | 'connected' | 'blocked' | 'paused' | 'updating' | 'needs_oauth' | 'partner_pending';
 
@@ -51,6 +52,14 @@ const PLATFORM_DISPLAY_NAMES: Record<string, string> = {
 /** A slug is not a channel name. Known destinations keep their brand; others are readable words. */
 export function platformDisplayName(slug: string): string {
   return PLATFORM_DISPLAY_NAMES[slug] ?? slug.split('-').filter(Boolean).map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ');
+}
+
+/** First-party marketplace keeps its automotive name only while that category is active. */
+export function operatorChannelName(slug: string, apiName: string): string {
+  if (slug !== 'consumer-marketplace') return apiName;
+  const schema = getActiveCategorySchema();
+  if (schema && schema.asset.idLabel !== 'VIN') return 'Marketplace';
+  return apiName;
 }
 
 // ── Effort badge ─────────────────────────────────────────────────────────────

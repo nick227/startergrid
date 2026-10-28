@@ -11,6 +11,8 @@ import { MovementBenchmarkCell } from './MovementBenchmark.tsx';
 import { Badge } from '../ui/Badge.tsx';
 import type { BadgeColor } from '../ui/Badge.tsx';
 import { inventoryLabels } from '../../lib/copy/index.ts';
+import { getActiveCategorySchema } from '../../lib/copy/activeCategoryCopy.ts';
+import { showsAutomotiveComparables, usageDisplay } from '../../lib/categoryPresentation.ts';
 
 // ── Readiness badge — dot style (table rows) or pill style (import preview) ──
 
@@ -62,14 +64,18 @@ function formatPrice(cents: number) {
 }
 
 function formatMileage(mi: number) {
-  return mi.toLocaleString() + ' mi';
+  const schema = getActiveCategorySchema();
+  if (!schema) return mi.toLocaleString() + ' mi';
+  return usageDisplay(schema, mi) ?? '—';
 }
 
 // ── Asset table column definitions ─────────────────────────────────────────────
 
 function baseAssetColumns(): Column<VehicleListItem>[] {
   const labels = inventoryLabels();
-  return [
+  const schema = getActiveCategorySchema();
+  const mileageField = schema?.fields.find(field => field.key === 'mileage');
+  const columns: Column<VehicleListItem>[] = [
   {
     key: 'stockNumber',
     label: labels.refColumn,
@@ -81,18 +87,23 @@ function baseAssetColumns(): Column<VehicleListItem>[] {
     render: v => (
       <div>
         <div className="text-xs text-ink-heading">
-          {v.year} {v.make} {v.model}
-          {v.trim && <span className="text-ink-faint"> · {v.trim}</span>}
+          {schema ? schema.formatters.assetLead(v as unknown as Record<string, unknown>) : `${v.year} ${v.make} ${v.model}`}
         </div>
-        <div className="text-xs font-mono text-silver-300 truncate max-w-[12rem]">{v.vin}</div>
+        {(!schema || schema.fields.some(field => field.key === 'vin')) && (
+          <div className="text-xs font-mono text-silver-300 truncate max-w-[12rem]">{schema?.asset.idLabel ?? 'VIN'} {v.vin}</div>
+        )}
       </div>
     ),
   },
-  {
-    key: 'mileage',
-    label: labels.mileageLabel,
-    render: v => <span className="text-xs text-ink-body">{v.mileage > 0 ? formatMileage(v.mileage) : '—'}</span>,
-  },
+  ];
+  if (!schema || mileageField) {
+    columns.push({
+      key: 'mileage',
+      label: mileageField?.label ?? labels.mileageLabel,
+      render: v => <span className="text-xs text-ink-body">{v.mileage > 0 ? formatMileage(v.mileage) : '—'}</span>,
+    });
+  }
+  columns.push(
   {
     key: 'price',
     label: 'Price',
@@ -122,7 +133,8 @@ function baseAssetColumns(): Column<VehicleListItem>[] {
     label: 'Readiness',
     render: v => <ReadinessBadge readiness={v.readiness} />,
   },
-];
+  );
+  return columns;
 }
 
 /** @deprecated Use buildVehicleColumns — labels come from active vertical adapter. */
@@ -154,7 +166,7 @@ export function buildVehicleColumns(
       render: v => <LifecycleStateBadge state={v.lifecycleState} />,
     });
   }
-  cols.push({
+  if (!getActiveCategorySchema() || showsAutomotiveComparables(getActiveCategorySchema()!)) cols.push({
       key: 'performance',
       label: 'Days / Signal',
       render: v => {

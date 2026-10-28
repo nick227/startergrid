@@ -10,6 +10,7 @@ import { operatorCopy } from '@/lib/copy/operator.ts';
 import { useAuth } from '@/contexts/AuthContext.tsx';
 import { canAccessDealer, filterDealersForOperator, isDealerFacingRole } from '@/lib/operatorAccess.ts';
 import DealershipOnboardingPage from './DealershipOnboardingPage.tsx';
+import { resolveCategorySchema } from '@auto-dealer/category-schemas';
 
 type Props = {
   onSelect: (id: string) => void;
@@ -131,9 +132,10 @@ export default function DealerPicker({ onSelect, forbiddenDealerId }: Props) {
                   </div>
                 )}
                 <div>
-                  <div className="font-semibold text-ink-heading text-sm">{d.legalName}</div>
+                  <div className="font-semibold text-ink-heading text-sm">{d.dbaName && d.dbaName !== d.legalName ? d.dbaName : d.legalName}</div>
+                  <div className="text-ink-muted text-xs mt-0.5">{resolveCategorySchema(d.businessCategory).label}</div>
                   {d.dbaName && d.dbaName !== d.legalName && (
-                    <div className="text-ink-faint text-xs mt-0.5">dba {d.dbaName}</div>
+                    <div className="text-ink-faint text-xs mt-0.5">{d.legalName}</div>
                   )}
                   <div className="text-ink-faint text-xs font-mono mt-1">{d.id}</div>
                 </div>
