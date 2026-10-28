@@ -10,6 +10,12 @@ import { preserveSupport } from '@/lib/routes.ts';
 import { useDealerSummary } from '@/hooks/useDealerSummary.ts';
 
 const tabs = [{ id: 'board', label: 'Board' }, { id: 'tasks', label: 'Tasks' }, { id: 'people', label: 'People' }];
+
+function teamWhen(iso: string): string {
+  const date = new Date(iso);
+  const sameYear = date.getFullYear() === new Date().getFullYear();
+  return date.toLocaleString(undefined, { month: 'short', day: 'numeric', year: sameYear ? undefined : 'numeric', hour: 'numeric', minute: '2-digit' });
+}
 export default function TeamPage(props: OperatorPageBaseProps & { view?: string }) {
   const { user } = useAuth();
   const summary = useDealerSummary(props.dealerId);
@@ -57,10 +63,10 @@ function TeamDiscussions({ dealerId, tasks }: { dealerId: string; tasks: boolean
       <button disabled={saving} className="btn-primary-operator">{saving ? 'Saving…' : tasks ? 'Create task' : 'Publish post'}</button>
     </form>}
     {query.loading && !query.data ? <p role="status">Loading team workspace…</p> : !query.error && !threads.length ? <p className="py-10 text-ink-muted">{search ? 'No matches. Try a different search.' : tasks ? 'No tasks here yet. Create a task and assign the next step.' : 'Start a discussion or share an announcement with your team.'}</p> : threads.map(thread => <article key={thread.id} className="surface-card-operator p-5 space-y-4">
-      <div><p className="text-xs text-ink-muted mb-1">{thread.kind === 'ANNOUNCEMENT' ? 'Announcement · ' : ''}{thread.authorEmail} · {new Date(thread.createdAt).toLocaleString()}</p><h2 className="text-lg font-semibold">{thread.title}</h2></div>
+      <div><p className="text-xs text-ink-muted mb-1">{thread.kind === 'ANNOUNCEMENT' ? 'Announcement · ' : ''}<span className="break-all">{thread.authorEmail}</span> · <span className="whitespace-nowrap">{teamWhen(thread.createdAt)}</span></p><h2 className="text-lg font-semibold">{thread.title}</h2></div>
       <p className="text-sm whitespace-pre-wrap break-words">{thread.body}</p>
       {thread.reference && <a className="text-sm underline" href={preserveSupport(thread.reference)}>Open related record</a>}
-      {tasks && <div className="flex flex-wrap items-center gap-3"><label className="text-sm">Assigned to <select aria-label={`Assignee for ${thread.title}`} disabled={saving} className="field-input" value={thread.assigneeId ?? ''} onChange={e => void mutate(`team/${thread.id}`, 'PATCH', { assigneeId: e.target.value || null })}><option value="">Unassigned</option>{thread.assigneeId && !members.some(m => m.id === thread.assigneeId) && <option value={thread.assigneeId}>Inactive member</option>}{members.map(m => <option value={m.id} key={m.id}>{m.email}</option>)}</select></label><button disabled={saving} className="btn-secondary-operator" onClick={() => void mutate(`team/${thread.id}`, 'PATCH', { completed: !thread.completedAt })}>{thread.completedAt ? 'Reopen task' : 'Mark complete'}</button>{thread.completedAt && <span className="text-sm text-ink-muted">Completed {new Date(thread.completedAt).toLocaleDateString()}</span>}</div>}
+      {tasks && <div className="flex flex-wrap items-center gap-3"><label className="text-sm">Assigned to <select aria-label={`Assignee for ${thread.title}`} disabled={saving} className="field-input" value={thread.assigneeId ?? ''} onChange={e => void mutate(`team/${thread.id}`, 'PATCH', { assigneeId: e.target.value || null })}><option value="">Unassigned</option>{thread.assigneeId && !members.some(m => m.id === thread.assigneeId) && <option value={thread.assigneeId}>Inactive member</option>}{members.map(m => <option value={m.id} key={m.id}>{m.email}</option>)}</select></label><button disabled={saving} className="btn-secondary-operator" onClick={() => void mutate(`team/${thread.id}`, 'PATCH', { completed: !thread.completedAt })}>{thread.completedAt ? 'Reopen task' : 'Mark complete'}</button>{thread.completedAt && <span className="text-sm text-ink-muted">Completed {teamWhen(thread.completedAt)}</span>}</div>}
       <ThreadDiscussion thread={thread} saving={saving} onComment={body => mutate(`team/${thread.id}/comments`, 'POST', { body })} />
     </article>)}
     {query.data?.truncated && <p className="text-sm text-ink-muted">Showing the 200 most recent discussions and tasks.</p>}
@@ -68,5 +74,5 @@ function TeamDiscussions({ dealerId, tasks }: { dealerId: string; tasks: boolean
 }
 function ThreadDiscussion({ thread, onComment, saving }: { thread: TeamThread; onComment: (body: string) => Promise<boolean>; saving: boolean }) {
   const [body, setBody] = useState('');
-  return <details className="border-t border-silver-200 pt-3"><summary className="cursor-pointer text-sm font-medium">Discussion ({thread.comments.length})</summary><div className="mt-4 space-y-4">{thread.comments.map(c => <div key={c.id} className="border-l-2 border-silver-200 pl-4"><p className="text-xs text-ink-muted">{c.authorEmail} · {new Date(c.createdAt).toLocaleString()}</p><p className="text-sm whitespace-pre-wrap break-words mt-1">{c.body}</p></div>)}<form className="flex gap-2 items-start" onSubmit={async e => { e.preventDefault(); if (await onComment(body)) setBody(''); }}><textarea aria-label={`Comment on ${thread.title}`} required maxLength={10000} className="field-input flex-1 min-w-0" placeholder="Add to the discussion" value={body} onChange={e => setBody(e.target.value)} /><button disabled={saving} className="btn-secondary-operator">Comment</button></form></div></details>;
+  return <details className="border-t border-silver-200 pt-3"><summary className="cursor-pointer text-sm font-medium">Discussion ({thread.comments.length})</summary><div className="mt-4 space-y-4">{thread.comments.map(c => <div key={c.id} className="border-l-2 border-silver-200 pl-4"><p className="text-xs text-ink-muted"><span className="break-all">{c.authorEmail}</span> · <span className="whitespace-nowrap">{teamWhen(c.createdAt)}</span></p><p className="text-sm whitespace-pre-wrap break-words mt-1">{c.body}</p></div>)}<form className="flex gap-2 items-start" onSubmit={async e => { e.preventDefault(); if (await onComment(body)) setBody(''); }}><textarea aria-label={`Comment on ${thread.title}`} required maxLength={10000} className="field-input flex-1 min-w-0" placeholder="Add to the discussion" value={body} onChange={e => setBody(e.target.value)} /><button disabled={saving} className="btn-secondary-operator">Comment</button></form></div></details>;
 }

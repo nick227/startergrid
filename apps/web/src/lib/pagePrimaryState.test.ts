@@ -92,7 +92,7 @@ describe('reportsPrimary', () => {
 
   it('names the blocked-vehicle count before failed sends or stale stock', () => {
     expect(reportsPrimary({ vehicleTotal: 8, blocked: 3, failedSends: 2, stale: 5 }).title)
-      .toBe('3 vehicles cannot be listed');
+      .toBe('3 vehicles are missing what a destination requires');
   });
 });
 

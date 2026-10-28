@@ -266,8 +266,24 @@ export async function runPrepareAndPublish(
     readinessMap.set(platform.slug, validatePlatformReadiness(platform, dealerPayload, vehiclePayloads));
   }
 
-  // Classify vehicles across all issues
-  const allIssues: ValidationIssue[] = Array.from(readinessMap.values()).flatMap(r => r.issues);
+  // A catalog destination the dealership has not started does not block a vehicle.
+  const startedAccountRows = await prisma.platformAccount.findMany({
+    where: { dealershipId },
+    select: { platformSlug: true, state: true, accountId: true },
+  });
+  const startedSlugs = new Set(startedAccountRows.filter(row => row.state !== 'ACCOUNT_NEEDED' || Boolean(row.accountId?.trim())).map(row => row.platformSlug));
+  const allIssues: ValidationIssue[] = [];
+  for (const platform of targets) {
+    if (!startedSlugs.has(platform.slug)) continue;
+    const report = readinessMap.get(platform.slug);
+    if (!report) continue;
+    const destination = platform.name.split(' / ')[0]?.split(' (')[0]?.trim() || platform.name;
+    for (const issue of report.issues) {
+      allIssues.push({ ...issue, message: issue.code === 'MEDIA_MISSING'
+        ? `${destination} needs more photos before it will take this vehicle.`
+        : `${destination}: ${issue.message}` });
+    }
+  }
   const vehicleDetails: VehicleReadiness[] = vehiclePayloads.map(v => classifyVehicleReadiness(v, allIssues));
 
   const readinessSummary = {

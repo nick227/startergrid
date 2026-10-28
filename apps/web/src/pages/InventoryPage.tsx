@@ -482,7 +482,7 @@ export default function InventoryPage({ dealerId, nav, activeTab }: Props) {
                   kind="attention"
                   title={`${summaryCounts.blocked} vehicle${summaryCounts.blocked === 1 ? '' : 's'} cannot be listed yet`}
                   why="Usually a missing price or photos. Fix those and the vehicle can go to your destinations."
-                  next="Open the vehicles that need a fix."
+                  next="Set the missing price or photos."
                   ownerKind="YOU"
                 />
               )}

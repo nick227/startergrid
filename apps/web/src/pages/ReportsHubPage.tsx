@@ -49,7 +49,7 @@ const hubReportCopy: Record<HubReportSlug, { category: string; title: string; su
     category: 'Listings',
     title: 'Vehicles blocked from listing',
     summary: 'Vehicles that cannot be sent because required data, photos, or checks are failing.',
-    actionHint: 'Fix these first. A blocked vehicle cannot appear or update on any destination.',
+    actionHint: 'A destination you use is missing something these vehicles need.',
   },
   throughput: {
     category: 'Listings',

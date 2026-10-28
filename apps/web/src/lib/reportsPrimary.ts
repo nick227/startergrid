@@ -29,8 +29,8 @@ export function reportsPrimary(input: {
   if (input.blocked > 0) {
     return {
       kind,
-      title: `${input.blocked} vehicle${input.blocked === 1 ? '' : 's'} cannot be listed`,
-      why: 'Usually a missing price or photos. Destinations cannot receive an incomplete listing.',
+      title: `${input.blocked} vehicle${input.blocked === 1 ? ' is' : 's are'} missing what a destination requires`,
+      why: 'A destination you use will not take them until that is added. They can still be ready for other destinations.',
       action: 'vehicles',
       actionLabel: 'Review vehicles',
     };

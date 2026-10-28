@@ -1,4 +1,4 @@
-import { useState, createContext, useContext } from 'react';
+import { useEffect, useRef, useState, createContext, useContext } from 'react';
 import type { ReactNode } from 'react';
 import { EbookEntryPanel } from './EbookEntryPanel.tsx';
 import { SongEntryPanel } from './SongEntryPanel.tsx';
@@ -44,7 +44,15 @@ export function InventoryWorkspace({
   soldContent,
   tabCounts,
 }: Props) {
-  const [activeTab, setTab] = useState<Tab>(initialTab);
+  const [activeTab, setActiveTab] = useState<Tab>(initialTab);
+  const chosen = useRef(false);
+  const setTab = (tab: Tab) => {
+    chosen.current = true;
+    setActiveTab(tab);
+  };
+  useEffect(() => {
+    if (!chosen.current) setActiveTab(initialTab);
+  }, [initialTab]);
 
   return (
     <WorkspaceContext.Provider value={{ dealerId, activeTab, setTab }}>

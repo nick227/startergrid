@@ -50,7 +50,10 @@ export function MiniIssueRow({ item, onClick }: { item: VehicleReadinessItem; on
       onClick={onClick}
       className="w-full flex items-center justify-between py-2 text-sm text-left hover:bg-surface-inset/50 px-2 -mx-2 rounded transition-colors group"
     >
-      <span className="text-ink-heading font-medium truncate pr-4 group-hover:text-navy-700">{readinessRowTitle(item)}</span>
+      <span className="min-w-0 pr-4">
+        <span className="block truncate font-medium text-ink-heading group-hover:text-navy-700">{readinessRowTitle(item)}</span>
+        {item.issues[0] && <span className="block truncate text-xs text-ink-muted">{item.issues[0].message}</span>}
+      </span>
       <span className={`shrink-0 px-2 py-0.5 rounded-md text-[10px] font-bold uppercase tracking-wider ${status.pill}`}>
         {status.label}
       </span>
