@@ -20,6 +20,9 @@ import { DealershipDestinationsPanel } from './DealershipDestinationsPanel.tsx';
 import { adminDealerHash } from '@/lib/routes.ts';
 import { resolveCategorySchema } from '@auto-dealer/category-schemas';
 import { inventoryWorkspaceLabel } from '@/lib/categoryPresentation.ts';
+import { fetchCategoryItems } from '@/lib/api/sdk.ts';
+import { useAsyncQuery } from '@/hooks/useAsyncQuery.ts';
+import { addStockCounts, countCategoryItems } from '@/lib/adminInventoryCounts.ts';
 
 export type RecordTab = 'overview' | 'destinations' | 'people' | 'activity';
 
@@ -70,6 +73,10 @@ export function DealershipRecordView({ dealerId, initialTab = 'overview', viewer
   const [primaryBusy, setPrimaryBusy] = useState(false);
   const [activityKey, setActivityKey] = useState(0);
   const { toast, show, dismiss } = useToast();
+  const categoryItems = useAsyncQuery(
+    () => fetchCategoryItems(dealerId, { lifecycleScope: 'all' }),
+    [dealerId],
+  );
 
   const load = useCallback(async () => {
     try {
@@ -85,6 +92,7 @@ export function DealershipRecordView({ dealerId, initialTab = 'overview', viewer
 
   const refresh = async () => {
     await load();
+    categoryItems.reload();
     setActivityKey(k => k + 1);
     onRefreshDealers?.();
   };
@@ -104,6 +112,9 @@ export function DealershipRecordView({ dealerId, initialTab = 'overview', viewer
   const categorySchema = resolveCategorySchema(record.businessCategory);
   const inventoryLabel = inventoryWorkspaceLabel(categorySchema);
   const categoryItemsOnly = categorySchema.lifecycleMode === 'digital_distribution';
+  const categoryStock = countCategoryItems(categoryItems.data?.items ?? []);
+  const stock = addStockCounts(record.inventory, categoryStock);
+  const catalogKnown = record.inventory.total > 0 || !categoryItems.loading || Boolean(categoryItems.error);
   const status = lifecycleLabel(record.lifecycleStatus);
   const next = recordNextAction(record);
   const readiness = handoffReadiness(record);
@@ -295,9 +306,12 @@ export function DealershipRecordView({ dealerId, initialTab = 'overview', viewer
                         }`}>✓</span>
                       <div className="min-w-0 flex-1">
                         <p className={`text-sm ${done ? 'text-ink-muted' : 'text-ink-heading font-medium'}`}>
-                          {stepTitle(step.key)}<span className="sr-only">{done ? ' (done)' : ' (not done)'}</span>
+                          {step.key === 'VEHICLES' ? inventoryLabel : stepTitle(step.key)}<span className="sr-only">{done ? ' (done)' : ' (not done)'}</span>
                         </p>
-                        {!done && step.blockingReason && <p className="text-xs text-ink-muted">{step.blockingReason}</p>}
+                        {!done && step.key === 'VEHICLES' && categoryStock.total > 0 && (
+                          <p className="text-xs text-ink-muted">{stock.total} in the catalog ({stock.ready} ready). This setup step still only checks vehicle rows.</p>
+                        )}
+                        {!done && step.blockingReason && !(step.key === 'VEHICLES' && categoryStock.total > 0) && <p className="text-xs text-ink-muted">{step.blockingReason}</p>}
                         {step.key === 'VEHICLES' && (record.waitingForStock || !done) && (
                           <button type="button" onClick={() => void toggleWaitingForStock()} disabled={stockBusy}
                             className="mt-1 text-xs font-semibold text-navy-700 hover:underline disabled:opacity-40">
@@ -323,13 +337,15 @@ export function DealershipRecordView({ dealerId, initialTab = 'overview', viewer
           <section className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div className="surface-card-operator p-5 rounded-xl border border-silver-200 bg-white">
               <h3 className="text-xs font-semibold uppercase tracking-wide text-ink-muted">{inventoryLabel}</h3>
-              <p className="mt-2 text-lg font-semibold text-ink-heading">{record.inventory.total} in stock</p>
-              <p className="text-sm text-ink-muted">
-                {record.inventory.ready} ready · {record.inventory.needsAttention} need details · {record.inventory.sold} sold
-                {record.waitingForStock && ' · waiting for stock'}
-              </p>
-              {categoryItemsOnly && (
-                <p className="mt-2 text-xs text-ink-muted">This count is vehicle records. Category items, including published books or releases, are not included.</p>
+              <p className="mt-2 text-lg font-semibold text-ink-heading">{catalogKnown ? `${stock.total} in stock` : 'Loading inventory…'}</p>
+              {catalogKnown && (
+                <p className="text-sm text-ink-muted">
+                  {stock.ready} ready · {stock.needsAttention} need details · {stock.sold} sold
+                  {record.waitingForStock && ' · waiting for stock'}
+                </p>
+              )}
+              {categoryItems.error && (
+                <p className="mt-2 text-xs text-ink-muted">Category items could not be loaded. The count above may be incomplete.</p>
               )}
             </div>
             <button type="button" onClick={() => goTab('destinations')}
