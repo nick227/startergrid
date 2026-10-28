@@ -210,18 +210,17 @@ export const FlagshipHeroSection: React.FC<FlagshipHeroSectionProps> = ({ onCont
             </div>
           </div>
 
-          {/* AI Generated Graphic */}
-          <div style={{ position: 'relative', width: '100%', lineHeight: 0 }}>
+          {/* AI Generated Graphic: Simplistic Bauhaus Tech Illustration */}
+          <div style={{ position: 'relative', width: '100%', lineHeight: 0, background: '#0e1526' }}>
             <img
-              src="/hero-distribution-network.jpg"
-              alt="DealerGrid Intelligent Automotive Distribution Network Architecture"
+              src="/hero-distribution-bauhaus.jpg"
+              alt="DealerGrid Playful Bauhaus Distribution Architecture and Connected Vehicle Dispatch Hub"
               style={{
                 width: '100%',
                 height: 'auto',
                 display: 'block',
-                maxHeight: '720px',
-                objectFit: 'cover',
-                filter: 'brightness(1.02) contrast(1.04)',
+                maxHeight: '760px',
+                objectFit: 'contain',
               }}
               loading="eager"
             />
