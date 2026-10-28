@@ -1174,6 +1174,20 @@ export type DealerLeadCrmSummary = {
 export type DealerLead = {
   id: string;
   vehicleId: string | null;
+  categoryItemId?: string | null;
+  inventoryIdentity?: {
+    source: 'vehicle' | 'category_item';
+    inventoryId: string;
+    dealershipId: string;
+  } | null;
+  categoryItem?: {
+    id: string;
+    categoryId: string;
+    title: string | null;
+    stockNumber: string | null;
+    soldAt: string | null;
+    thumbnailUrl: string | null;
+  } | null;
   source: string;
   platformSlug: string;
   contactName: string | null;

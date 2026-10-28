@@ -17,11 +17,21 @@ export function reportsPrimary(input: {
   stale: number;
   assetSingular?: string;
   assetPlural?: string;
+  /** Digital categories are stored as category items. Vehicle-row reports cannot measure them. */
+  categoryItemReports?: 'unsupported';
 }): ReportsPrimary {
   const singular = input.assetSingular ?? 'vehicle';
   const plural = input.assetPlural ?? 'vehicles';
   const named = (count: number) => (count === 1 ? singular : plural);
   const kind = reportsExperience(input);
+  if (kind === 'empty' && input.categoryItemReports === 'unsupported') {
+    return {
+      kind,
+      title: 'Category-item reports are not available',
+      why: `These lists count vehicle records. ${plural} stored as category items are not included, so an empty report is not an empty catalog.`,
+      action: null,
+    };
+  }
   if (kind === 'empty') {
     return {
       kind,

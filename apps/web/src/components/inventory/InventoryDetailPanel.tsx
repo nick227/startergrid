@@ -16,6 +16,7 @@ import { GuidanceNote } from '@/components/guidance/GuidanceNote.tsx';
 import type { VelocityVehicleItem } from '@/lib/api/velocityApi.ts';
 
 import type { OperatorNavHandlers } from '@/lib/operatorNav.ts';
+import { activeAssetSingular } from '@/lib/categoryPresentation.ts';
 
 type Props = {
   dealerId: string;
@@ -142,6 +143,8 @@ export function InventoryDetailPanel({
   };
 
   const fieldIssueCount = vehicle.readiness.missingFields.length + vehicle.readiness.invalidFields.length;
+  const singular = activeAssetSingular();
+  const detailsLabel = `${singular.charAt(0).toUpperCase()}${singular.slice(1)} details`;
   const wizardTabs = [
     {
       key: 'photos' as const,
@@ -151,7 +154,7 @@ export function InventoryDetailPanel({
     },
     {
       key: 'details' as const,
-      label: 'Vehicle details',
+      label: detailsLabel,
       status: detailsStatus(vehicle),
       detail: fieldIssueCount > 0
         ? `${fieldIssueCount} field issue${fieldIssueCount === 1 ? '' : 's'}`
@@ -300,7 +303,7 @@ export function InventoryDetailPanel({
                     </div>
 
                     <div>
-                      <SectionHeader title="Vehicle Details" />
+                      <SectionHeader title={detailsLabel} />
                       <div className="mt-4">
                         <VehicleFieldGroups vehicle={vehicle} onSaved={handleReload} />
                       </div>
@@ -335,7 +338,7 @@ export function InventoryDetailPanel({
                     <SectionHeader title="Channels" />
                     <div className="mt-3">
                       <GuidanceNote>
-                        Ready means this vehicle can be sent. Selected includes it on that destination. Publish online is only for your DealerGrid storefront. A send is not verified live until the destination confirms it.
+                        Ready means this {singular} can be sent. Selected includes it on that destination. Publish online is only for your DealerGrid storefront. A send is not verified live until the destination confirms it.
                       </GuidanceNote>
                     </div>
                     <div className="mt-4 space-y-4">

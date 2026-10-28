@@ -1,4 +1,5 @@
 import type { CategorySchema } from '@auto-dealer/category-schemas';
+import { getActiveCategorySchema } from './copy/activeCategoryCopy.ts';
 
 /** Inventory workspace name from category copy. Generic "items" uses the schema inventory title. */
 export function inventoryWorkspaceLabel(schema: CategorySchema): string {
@@ -21,6 +22,11 @@ export function schemaHasField(schema: CategorySchema, key: string): boolean {
 
 export function fieldLabel(schema: CategorySchema, key: string, fallback: string): string {
   return schema.fields.find(field => field.key === key)?.label ?? fallback;
+}
+
+/** Singular asset name for the open business. Falls back to vehicle when no category is active. */
+export function activeAssetSingular(): string {
+  return getActiveCategorySchema()?.asset.singular ?? 'vehicle';
 }
 
 export function businessNoun(schema: CategorySchema): 'dealership' | 'business' {

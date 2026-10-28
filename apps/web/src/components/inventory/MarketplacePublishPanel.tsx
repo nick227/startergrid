@@ -1,4 +1,7 @@
 import { useEffect, useState } from 'react';
+import { activeAssetSingular } from '@/lib/categoryPresentation.ts';
+import { operatorChannelName } from '@/lib/platformPresentation.ts';
+import { AUTO_MARKETPLACE_NAME } from '@/lib/marketplaceBrand.ts';
 import { useAsyncQuery } from '@/hooks/useAsyncQuery.ts';
 import {
   fetchMarketplaceListing,
@@ -142,14 +145,16 @@ export function MarketplacePublishPanel({
     return <div className="text-xs text-ink-muted animate-pulse">Loading…</div>;
   }
 
+  const singular = activeAssetSingular();
+  const channelName = operatorChannelName('consumer-marketplace', AUTO_MARKETPLACE_NAME);
   return (
     <div className="space-y-2">
       <p className="text-[11px] leading-5 text-ink-muted">
-        Ready means this vehicle can be sent. Selected includes it on your DealerGrid storefront. Publish online submits it — that is not a verified-live confirmation.
+        Ready means this {singular} can be sent. Selected includes it on your DealerGrid storefront. Publish online submits it — that is not a verified-live confirmation.
       </p>
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div className="flex items-center gap-2">
-          <span className="text-xs text-ink-body font-semibold">Auto Marketplace</span>
+          <span className="text-xs text-ink-body font-semibold">{channelName}</span>
           {listing ? statusBadge(listing.status) : (
             <span className="text-[10px] text-ink-faint">Not listed</span>
           )}
@@ -174,10 +179,10 @@ export function MarketplacePublishPanel({
               }`}
               title={
                 !channel?.connected
-                  ? 'Connect Auto Marketplace on Platforms before managing vehicle selection'
+                  ? `Connect ${channelName} on Platforms before managing ${singular} selection`
                   : channel.selected
-                    ? 'Exclude this vehicle from Auto Marketplace'
-                    : 'Include this vehicle on Auto Marketplace'
+                    ? `Exclude this ${singular} from ${channelName}`
+                    : `Include this ${singular} on ${channelName}`
               }
             >
               <span className={`inline-block h-3 w-3 transform rounded-full bg-white shadow transition-transform ${

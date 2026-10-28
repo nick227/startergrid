@@ -1,5 +1,6 @@
 import type { VehicleReadinessDto } from '@/lib/api/sdk.ts';
 import { InfoButton } from '@/components/docs/index.ts';
+import { activeAssetSingular } from '@/lib/categoryPresentation.ts';
 
 type Props = {
   readiness: VehicleReadinessDto;
@@ -69,7 +70,7 @@ export function VehicleReadinessChecklist({ readiness }: Props) {
         {allClear && (
           <li className="flex items-start gap-2 text-xs whitespace-nowrap">
             <span className="shrink-0 mt-0.5 w-4 h-4 rounded-full bg-green-100 text-green-600 flex items-center justify-center text-[10px] font-bold">✓</span>
-            <span className="text-green-700 font-medium">Required photos and details are in place. Next, choose where to send this vehicle.</span>
+            <span className="text-green-700 font-medium">Required photos and details are in place. Next, choose where to send this {activeAssetSingular()}.</span>
           </li>
         )}
       </ul>

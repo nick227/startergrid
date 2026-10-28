@@ -1,7 +1,7 @@
 // SENT_TO_CRM_ADDRESS means a mail server accepted the email; CRM import is never confirmed.
 export type LeadCrmDeliveryStatus = 'NOT_SENT' | 'SENDING' | 'SENT_TO_CRM_ADDRESS' | 'FAILED';
 
-export type LeadCrmSendBlocker = 'NO_CRM_ADDRESS' | 'CRM_ADDRESS_NOT_EMAIL' | 'EMAIL_NOT_CONFIGURED' | 'SEND_IN_PROGRESS';
+export type LeadCrmSendBlocker = 'NO_CRM_ADDRESS' | 'CRM_ADDRESS_NOT_EMAIL' | 'EMAIL_NOT_CONFIGURED' | 'SEND_IN_PROGRESS' | 'UNSUPPORTED_INVENTORY_TYPE';
 
 export type LeadDeliveryAttemptItem = {
   id: string;

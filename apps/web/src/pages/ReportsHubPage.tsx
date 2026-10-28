@@ -165,6 +165,7 @@ export default function ReportsHubPage({ dealerId, nav, activeTab }: Props) {
     stale: showsAutomotiveComparables(categorySchema) && typeof staleMetric === 'number' ? staleMetric : 0,
     assetSingular: categorySchema.asset.singular,
     assetPlural: plural,
+    categoryItemReports: categorySchema.lifecycleMode === 'digital_distribution' ? 'unsupported' : undefined,
   });
 
   const emptyListState = <EmptyState icon="📊" title="No data" subtitle="No data available for this report." />;

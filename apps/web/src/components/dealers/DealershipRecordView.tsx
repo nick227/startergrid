@@ -19,6 +19,7 @@ import { PagePrimaryState } from '@/components/guidance/PagePrimaryState.tsx';
 import { DealershipDestinationsPanel } from './DealershipDestinationsPanel.tsx';
 import { adminDealerHash } from '@/lib/routes.ts';
 import { resolveCategorySchema } from '@auto-dealer/category-schemas';
+import { inventoryWorkspaceLabel } from '@/lib/categoryPresentation.ts';
 
 export type RecordTab = 'overview' | 'destinations' | 'people' | 'activity';
 
@@ -100,6 +101,9 @@ export function DealershipRecordView({ dealerId, initialTab = 'overview', viewer
   }
   if (!record) return <div className="surface-card-operator p-8"><Skeleton rows={8} /></div>;
 
+  const categorySchema = resolveCategorySchema(record.businessCategory);
+  const inventoryLabel = inventoryWorkspaceLabel(categorySchema);
+  const categoryItemsOnly = categorySchema.lifecycleMode === 'digital_distribution';
   const status = lifecycleLabel(record.lifecycleStatus);
   const next = recordNextAction(record);
   const readiness = handoffReadiness(record);
@@ -309,7 +313,7 @@ export function DealershipRecordView({ dealerId, initialTab = 'overview', viewer
                 <div className="rounded-md bg-surface-inset border border-silver-200 px-3 py-2 text-xs text-ink-body">
                   <p className="font-semibold text-ink-heading">Before handoff</p>
                   <ul className="list-disc pl-4 mt-1 space-y-0.5">
-                    {readiness.missing.map(item => <li key={item}>{item}</li>)}
+                    {readiness.missing.map(item => <li key={item}>{categoryItemsOnly && item === 'A ready vehicle has been sent to Auto Marketplace' ? 'A ready category item has been sent to Marketplace. This checklist still waits on a vehicle-row publish.' : item}</li>)}
                   </ul>
                 </div>
               )}
@@ -318,12 +322,15 @@ export function DealershipRecordView({ dealerId, initialTab = 'overview', viewer
 
           <section className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div className="surface-card-operator p-5 rounded-xl border border-silver-200 bg-white">
-              <h3 className="text-xs font-semibold uppercase tracking-wide text-ink-muted">Vehicles</h3>
+              <h3 className="text-xs font-semibold uppercase tracking-wide text-ink-muted">{inventoryLabel}</h3>
               <p className="mt-2 text-lg font-semibold text-ink-heading">{record.inventory.total} in stock</p>
               <p className="text-sm text-ink-muted">
                 {record.inventory.ready} ready · {record.inventory.needsAttention} need details · {record.inventory.sold} sold
                 {record.waitingForStock && ' · waiting for stock'}
               </p>
+              {categoryItemsOnly && (
+                <p className="mt-2 text-xs text-ink-muted">This count is vehicle records. Category items, including published books or releases, are not included.</p>
+              )}
             </div>
             <button type="button" onClick={() => goTab('destinations')}
               className="surface-card-operator p-5 rounded-xl border border-silver-200 bg-white text-left hover:border-silver-300">

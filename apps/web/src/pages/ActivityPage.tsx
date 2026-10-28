@@ -55,15 +55,18 @@ function BusinessActivity({ dealerId }: { dealerId: string }) {
   </section>;
 }
 function SalesRegister({ dealerId, nav }: Pick<OperatorPageBaseProps, 'dealerId' | 'nav'>) {
-  const plural = useCategorySchema().asset.plural;
+  const schema = useCategorySchema();
+  const plural = schema.asset.plural;
+  const categoryItemsOnly = schema.lifecycleMode === 'digital_distribution';
   const query = useAsyncQuery(() => workspaceRequest<{ sales: SaleRow[]; truncated: boolean }>(dealerId, 'sales-register'), [dealerId]);
   const [search, setSearch] = useState('');
   const sales = (query.data?.sales ?? []).filter(s => `${s.title} ${s.stockNumber} ${s.channel ?? ''}`.toLowerCase().includes(search.toLowerCase()));
   return <section className="space-y-5" aria-label="Sales register">
     <div className="flex gap-3"><input className="field-input flex-1" aria-label="Search sales" placeholder={`Search sold ${plural} or source`} value={search} onChange={e => setSearch(e.target.value)} /><button className="btn-secondary-operator" onClick={query.reload}>Refresh</button></div>
     <p className="text-sm text-ink-muted">Sold inventory and recorded transactions. A sold-status change does not establish a sale date, price or source.</p>
+    {categoryItemsOnly && <p className="text-sm text-ink-muted">This register lists vehicle records only. Category-item sales are not recorded here.</p>}
     {query.error && <p role="alert" className="text-red-700">{query.error}</p>}
-    {query.loading && !query.data ? <p>Loading sales…</p> : !query.error && !sales.length ? <p className="py-10 text-ink-muted">No sold {plural} match this view.</p> : sales.map(s => <article key={s.vehicleId} className="surface-card-operator p-5 space-y-4">
+    {query.loading && !query.data ? <p>Loading sales…</p> : !query.error && !sales.length ? <p className="py-10 text-ink-muted">{categoryItemsOnly ? 'No vehicle sales are in this register.' : `No sold ${plural} match this view.`}</p> : sales.map(s => <article key={s.vehicleId} className="surface-card-operator p-5 space-y-4">
       <button className="font-semibold underline text-left" onClick={() => nav.goToInventoryItem({ assetTitle: s.title, stockNumber: s.stockNumber }, { assetId: s.vehicleId })}>{s.title} · {s.stockNumber}</button>
       <dl className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4 text-sm">
         <div><dt className="text-ink-muted">Inventory outcome</dt><dd>Sold · marked {new Date(s.statusChangedAt).toLocaleDateString()}</dd></div>

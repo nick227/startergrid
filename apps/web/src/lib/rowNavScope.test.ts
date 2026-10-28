@@ -34,6 +34,15 @@ describe('appendRowNavScope', () => {
   it('returns base hash when scope is empty', () => {
     expect(appendRowNavScope('#/d1/queue')).toBe('#/d1/queue');
   });
+
+  it('keeps category-item inventory separate from a vehicle lookup', () => {
+    const hash = appendRowNavScope('#/d1/inventory', { assetId: 'me_books_digital_1', inventorySource: 'category_item' });
+    expect(hash).toBe('#/d1/inventory?assetId=me_books_digital_1&inventorySource=category_item');
+    expect(parseRowNavScope(hash.split('?')[1] ?? '')).toEqual({
+      assetId: 'me_books_digital_1',
+      inventorySource: 'category_item',
+    });
+  });
 });
 
 describe('splitOperatorHash', () => {

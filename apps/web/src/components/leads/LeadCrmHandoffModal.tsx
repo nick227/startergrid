@@ -111,11 +111,14 @@ export function LeadCrmHandoffModal({ dealershipId, leadId, isOpen, onClose, onS
     }
   };
 
+  const unsupportedInventory = data?.sendBlocker === 'UNSUPPORTED_INVENTORY_TYPE';
   const vehicleLabel = data?.vehicle
     ? `${data.vehicle.year || ''} ${data.vehicle.make || ''} ${data.vehicle.model || ''} (#${data.vehicle.stockNumber})`.trim()
-    : 'General Vehicle Inquiry';
+    : unsupportedInventory
+      ? 'Category item'
+      : 'No vehicle on this inquiry';
 
-  const isNotConfigured = Boolean(data && !data.canSend && data.sendBlocker !== 'SEND_IN_PROGRESS' && data.deliveryStatus !== 'SENT_TO_CRM_ADDRESS');
+  const isNotConfigured = Boolean(data && !data.canSend && !unsupportedInventory && data.sendBlocker !== 'SEND_IN_PROGRESS' && data.deliveryStatus !== 'SENT_TO_CRM_ADDRESS');
   const isSending = Boolean(dispatching || data?.deliveryStatus === 'SENDING');
   const isSent = Boolean(!dispatching && data?.deliveryStatus === 'SENT_TO_CRM_ADDRESS');
   const isFailed = Boolean(!dispatching && data?.deliveryStatus === 'FAILED');
@@ -130,6 +133,8 @@ export function LeadCrmHandoffModal({ dealershipId, leadId, isOpen, onClose, onS
     ? 'Transmission accepted by mail server'
     : isFailed
     ? 'Transmission failed'
+    : unsupportedInventory
+    ? 'ADF/XML not available'
     : isNotConfigured
     ? 'Not configured'
     : isReady
@@ -215,6 +220,8 @@ export function LeadCrmHandoffModal({ dealershipId, leadId, isOpen, onClose, onS
                     ? `Could not send to ${destination}${lastAttempt?.errorMessage ? `: ${lastAttempt.errorMessage}` : '.'}`
                     : isSending
                     ? `Sending to ${destination}…`
+                    : unsupportedInventory
+                    ? data.sendBlockerMessage || 'ADF/XML is an automotive delivery contract. Category-item inquiries support email summaries and JSON webhooks.'
                     : isNotConfigured
                     ? data.sendBlockerMessage || 'CRM lead routing is not configured. Automatic email delivery is unavailable.'
                     : `Ready to send this lead to ${destination} in standard ADF/XML format.`}
@@ -228,6 +235,10 @@ export function LeadCrmHandoffModal({ dealershipId, leadId, isOpen, onClose, onS
                   ) : isFailed ? (
                     <p className="text-red-900">
                       <strong>Next step:</strong> {data.canSend ? 'Click "Retry send" to try again, or use manual export below.' : 'Verify your CRM lead routing in Channels, or use manual export below.'}
+                    </p>
+                  ) : unsupportedInventory ? (
+                    <p className="text-amber-900">
+                      <strong>Next step:</strong> Use the email summary. This inquiry does not produce an ADF/XML vehicle file.
                     </p>
                   ) : isNotConfigured ? (
                     <p className="text-amber-900">
@@ -245,10 +256,10 @@ export function LeadCrmHandoffModal({ dealershipId, leadId, isOpen, onClose, onS
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
                 <div className="p-3.5 rounded-xl border border-silver-200 bg-silver-50/60">
                   <span className="text-[11px] font-bold text-ink-muted uppercase tracking-wider block">
-                    Inquiry Vehicle
+                    {data.vehicle ? 'Inquiry vehicle' : 'Inquiry record'}
                   </span>
                   <span className="text-sm font-bold text-ink-heading block mt-0.5">{vehicleLabel}</span>
-                  <span className="text-ink-muted block mt-0.5">Stock #{data.vehicle?.stockNumber || 'N/A'}</span>
+                  <span className="text-ink-muted block mt-0.5">{data.vehicle ? `Stock #${data.vehicle.stockNumber}` : 'No vehicle reference'}</span>
                 </div>
                 <div className="p-3.5 rounded-xl border border-silver-200 bg-silver-50/60">
                   <span className="text-[11px] font-bold text-ink-muted uppercase tracking-wider block">
@@ -293,6 +304,14 @@ export function LeadCrmHandoffModal({ dealershipId, leadId, isOpen, onClose, onS
                       <span>{copiedSummary ? '✓ Copied Summary' : 'Copy Lead Summary'}</span>
                     </button>
                   </div>
+                ) : unsupportedInventory ? (
+                  <button
+                    type="button"
+                    onClick={handleCopySummary}
+                    className="px-3.5 py-2 text-xs font-semibold rounded-lg border border-silver-300 bg-white hover:bg-silver-100 text-ink-heading transition-all shadow-2xs cursor-pointer"
+                  >
+                    {copiedSummary ? 'Copied summary' : 'Copy email summary'}
+                  </button>
                 ) : (
                   <div className="space-y-2">
                     <div className="flex flex-wrap items-center gap-2">
@@ -326,7 +345,8 @@ export function LeadCrmHandoffModal({ dealershipId, leadId, isOpen, onClose, onS
                 )}
               </div>
 
-              {/* Contextual Disclosure: Advanced ADF/XML & Technical Log */}
+              {unsupportedInventory ? null : (
+              /* ADF/XML is an automotive contract. Category-item inquiries do not get a vehicle file. */
               <details className="rounded-xl border border-silver-200 bg-surface-card overflow-hidden">
                 <summary className="px-4 py-3 bg-silver-50/70 hover:bg-silver-100/70 cursor-pointer text-xs font-bold text-ink-heading flex items-center justify-between transition-colors select-none">
                   <span>Advanced: Raw ADF/XML 1.0 & send history</span>
@@ -406,6 +426,7 @@ export function LeadCrmHandoffModal({ dealershipId, leadId, isOpen, onClose, onS
                   )}
                 </div>
               </details>
+              )}
             </>
           ) : null}
         </div>

@@ -14,7 +14,7 @@ const tabs = [{ id: 'board', label: 'Board' }, { id: 'tasks', label: 'Tasks' }, 
 function relatedRecordLabel(reference: string): string {
   if (reference.includes('/activity/leads')) return 'Open the inquiry';
   if (reference.includes('/activity/sales')) return 'Open the sale';
-  if (reference.includes('/inventory')) return 'Open the vehicle';
+  if (reference.includes('/inventory')) return 'Open inventory';
   if (reference.includes('/channels') || reference.includes('/platforms')) return 'Open the channel';
   return 'Open related record';
 }

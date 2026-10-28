@@ -8,8 +8,21 @@ import { InfoButton } from '@/components/docs/index.ts';
 import { PagePrimaryState } from '@/components/guidance/PagePrimaryState.tsx';
 import { Banner, SearchField, Select } from '@/components/ui';
 import { AUTO_MARKETPLACE_NAME, AUTO_MARKETPLACE_SLUG } from '@/lib/marketplaceBrand.ts';
+import { operatorChannelName } from '@/lib/platformPresentation.ts';
 import { LeadCrmHandoffModal } from '@/components/leads/LeadCrmHandoffModal.tsx';
 import { useOperatorRoute } from '@/hooks/useOperatorRoute.ts';
+import { workspaceHash } from '@/lib/routes.ts';
+import { getActiveCategorySchema } from '@/lib/copy/activeCategoryCopy.ts';
+import { useDealerSummary } from '@/hooks/useDealerSummary.ts';
+import { workspaceRequest, type TeamData } from '@/lib/api/workspaces.ts';
+import {
+  leadInventoryScope,
+  leadRecordSoldAt,
+  leadRecordStock,
+  leadRecordThumbnail,
+  leadRecordTitle,
+  leadTaskReference,
+} from '@/lib/leadInventory.ts';
 
 type Props = OperatorPageBaseProps & { embedded?: boolean };
 
@@ -44,7 +57,7 @@ const WORKFLOW_MAP_FROM_API: Record<string, LeadStatus> = {
 const SORT_OPTIONS: Array<{ value: SortKey; label: string }> = [
   { value: 'newest', label: 'Newest' },
   { value: 'oldest', label: 'Oldest' },
-  { value: 'vehicle', label: 'Vehicle' },
+  { value: 'vehicle', label: 'Record' },
   { value: 'buyer', label: 'Buyer' },
   { value: 'source', label: 'Source' },
   { value: 'status', label: 'Status' },
@@ -69,34 +82,27 @@ function relativeTime(iso: string): string {
 }
 
 function platformLabel(slug: string): string {
-  if (slug === AUTO_MARKETPLACE_SLUG) return AUTO_MARKETPLACE_NAME;
-  return slug
-    .split('-')
-    .filter(Boolean)
-    .map(part => part[0]?.toUpperCase() + part.slice(1))
-    .join(' ');
-}
-
-function vehicleTitle(lead: DealerLead): string {
-  const vehicle = lead.vehicle;
-  if (!vehicle) return 'Unknown vehicle';
-  return `${vehicle.year} ${vehicle.make} ${vehicle.model}`.replace(/\s+/g, ' ').trim();
+  const fallback = slug === AUTO_MARKETPLACE_SLUG
+    ? AUTO_MARKETPLACE_NAME
+    : slug.split('-').filter(Boolean).map(part => part[0]?.toUpperCase() + part.slice(1)).join(' ');
+  return operatorChannelName(slug, fallback);
 }
 
 function leadSearchText(lead: DealerLead): string {
   return [
-    vehicleTitle(lead),
-    lead.vehicle?.stockNumber,
+    leadRecordTitle(lead),
+    leadRecordStock(lead),
     lead.contactName,
     lead.contactEmail,
     lead.contactPhone,
     lead.message,
+    lead.notes,
     platformLabel(lead.platformSlug),
   ].filter(Boolean).join(' ').toLowerCase();
 }
 
 function LeadThumbnail({ lead, title }: { lead: DealerLead; title: string }) {
-  const thumbnail = lead.vehicle?.thumbnailUrl;
+  const thumbnail = leadRecordThumbnail(lead);
   if (thumbnail) {
     return (
       <img
@@ -119,7 +125,7 @@ const CHANNEL_LABELS: Record<string, string> = { email: 'Email', sms: 'SMS' };
 function OutreachRow({ row }: { row: BuyerOutreachRecord }) {
   const vehicleTitle = row.vehicle
     ? `${row.vehicle.year} ${row.vehicle.make} ${row.vehicle.model}`
-    : 'Unknown vehicle';
+    : 'No vehicle on this delivery';
 
   return (
     <div className="grid gap-4 border-b border-silver-100 px-4 py-3 last:border-0 hover:bg-silver-50/70 transition-colors lg:grid-cols-[minmax(14rem,1.2fr)_minmax(12rem,1fr)_6rem_6rem_8rem] lg:items-center">
@@ -268,34 +274,48 @@ function LeadRow({
   lead,
   status,
   assigneeId,
+  notes,
+  sellerName,
   teamMembers,
   onStatusChange,
   onAssigneeChange,
-  onOpenVehicle,
+  onNotesChange,
+  onSaveNotes,
+  onOpenRecord,
+  onTeamTask,
   onOpenCrmHandoff,
 }: {
   lead: DealerLead;
   status: LeadStatus;
   assigneeId: string | null;
+  notes: string;
+  sellerName: string | null;
   teamMembers: Array<{ id: string; name?: string | null; email: string; accessRole: string }>;
   onStatusChange: (status: LeadStatus) => void;
   onAssigneeChange: (assigneeId: string | null) => void;
-  onOpenVehicle: () => void;
+  onNotesChange: (notes: string) => void;
+  onSaveNotes: () => void;
+  onOpenRecord: () => void;
+  onTeamTask: () => void;
   onOpenCrmHandoff: (leadId: string) => void;
 }) {
-  const title = vehicleTitle(lead);
-  const canOpenVehicle = Boolean(lead.vehicleId || lead.vehicle?.stockNumber);
+  const title = leadRecordTitle(lead);
+  const stock = leadRecordStock(lead);
+  const soldAt = leadRecordSoldAt(lead);
+  const canOpenRecord = leadInventoryScope(lead) !== null;
+  const categoryInquiry = lead.inventoryIdentity?.source === 'category_item';
 
   return (
-    <div className="grid gap-3 border-b border-silver-100 px-4 py-3.5 last:border-0 hover:bg-silver-50/70 transition-colors lg:grid-cols-[minmax(16rem,1.3fr)_minmax(11rem,1fr)_6.5rem_8rem_8rem_6rem_7.5rem] lg:items-center">
-      {/* 1. Vehicle & inquiry */}
+    <div className="border-b border-silver-100 last:border-0 hover:bg-silver-50/70 transition-colors">
+    <div className="grid gap-3 px-4 py-3.5 lg:grid-cols-[minmax(16rem,1.3fr)_minmax(11rem,1fr)_6.5rem_8rem_8rem_6rem_7.5rem] lg:items-center">
+      {/* 1. Record & inquiry */}
       <div className="flex min-w-0 gap-3">
         <LeadThumbnail lead={lead} title={title} />
         <div className="min-w-0">
-          {canOpenVehicle ? (
+          {canOpenRecord ? (
             <button
               type="button"
-              onClick={onOpenVehicle}
+              onClick={onOpenRecord}
               className="block max-w-full truncate text-left text-sm font-semibold text-ink-heading hover:text-navy-700 hover:underline"
             >
               {title}
@@ -304,8 +324,9 @@ function LeadRow({
             <p className="truncate text-sm font-semibold text-ink-heading">{title}</p>
           )}
           <div className="mt-0.5 flex flex-wrap items-center gap-x-2 gap-y-1 text-xs text-ink-muted">
-            {lead.vehicle?.stockNumber && <span className="font-mono">#{lead.vehicle.stockNumber}</span>}
-            {lead.vehicle?.soldAt && (
+            {stock && <span className="font-mono">#{stock}</span>}
+            {sellerName && <span>Seller {sellerName}</span>}
+            {soldAt && (
               <span className="rounded border border-green-200 bg-green-50 px-1.5 py-0.5 text-[10px] font-bold uppercase tracking-wide text-green-700">
                 Sold
               </span>
@@ -380,7 +401,16 @@ function LeadRow({
 
       {/* 7. Contextual CRM Handoff Action */}
       <div className="flex items-center justify-end pt-2 border-t border-silver-100 lg:border-0 lg:pt-0">
-        {(() => {
+        {categoryInquiry ? (
+          <button
+            type="button"
+            onClick={() => onOpenCrmHandoff(lead.id)}
+            className="inline-flex items-center justify-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs font-semibold bg-white hover:bg-silver-100 text-ink-heading border border-silver-300 transition-colors shadow-2xs w-full sm:w-auto"
+            title="ADF/XML does not apply to category-item inquiries"
+          >
+            CRM limits
+          </button>
+        ) : (() => {
           const crmStatus = lead.crmDeliverySummary?.status ?? 'NOT_SENT';
           if (crmStatus === 'SENT_TO_CRM_ADDRESS') {
             return (
@@ -444,6 +474,28 @@ function LeadRow({
         })()}
       </div>
     </div>
+    <div className="grid gap-2 px-4 pb-3 sm:grid-cols-[minmax(0,1fr)_auto] sm:items-end">
+      <label className="block text-[11px] font-semibold text-ink-muted">
+        Notes
+        <textarea
+          value={notes}
+          onChange={e => onNotesChange(e.target.value)}
+          onBlur={onSaveNotes}
+          rows={2}
+          maxLength={4000}
+          className="mt-1 w-full rounded-md border border-silver-300 bg-white px-2 py-1.5 text-xs text-ink-heading"
+          placeholder="What should the team do next?"
+        />
+      </label>
+      <button
+        type="button"
+        onClick={onTeamTask}
+        className="h-9 rounded-md border border-silver-300 bg-white px-3 text-xs font-semibold text-ink-heading hover:bg-silver-100"
+      >
+        Team task
+      </button>
+    </div>
+    </div>
   );
 }
 
@@ -451,6 +503,12 @@ type PageView = 'leads' | 'communications';
 
 export default function LeadsPage({ dealerId, nav, activeTab, embedded = false }: Props) {
   const { route } = useOperatorRoute();
+  const schema = getActiveCategorySchema();
+  const summary = useDealerSummary(dealerId);
+  const sellerName = summary?.dbaName || summary?.legalName || null;
+  const recordSingular = schema?.asset.singular ?? 'record';
+  const recordPlural = schema?.asset.plural ?? 'records';
+  const recordNoun = recordSingular.charAt(0).toUpperCase() + recordSingular.slice(1);
   const [view, setView] = useState<PageView>('leads');
   const [selectedLeadForCrm, setSelectedLeadForCrm] = useState<string | null>(() => route.scope?.handoff === 'crm' ? route.scope.leadId ?? null : null);
 
@@ -482,6 +540,7 @@ export default function LeadsPage({ dealerId, nav, activeTab, embedded = false }
   const [statuses, setStatuses] = useState<Record<string, LeadStatus>>({});
   const [assignees, setAssignees] = useState<Record<string, string | null>>({});
   const [versions, setVersions] = useState<Record<string, number>>({});
+  const [notesById, setNotesById] = useState<Record<string, string>>({});
   const [saveError, setSaveError] = useState('');
   const pendingSave = useRef<Record<string, Promise<number>>>({});
 
@@ -545,7 +604,7 @@ export default function LeadsPage({ dealerId, nav, activeTab, embedded = false }
 
     return [...filtered].sort((a, b) => {
       if (sort === 'oldest') return new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime();
-      if (sort === 'vehicle') return vehicleTitle(a).localeCompare(vehicleTitle(b));
+      if (sort === 'vehicle') return leadRecordTitle(a).localeCompare(leadRecordTitle(b));
       if (sort === 'buyer') return (a.contactName ?? '').localeCompare(b.contactName ?? '');
       if (sort === 'source') return platformLabel(a.platformSlug).localeCompare(platformLabel(b.platformSlug));
       if (sort === 'status') return statusFor(a).localeCompare(statusFor(b));
@@ -564,9 +623,14 @@ export default function LeadsPage({ dealerId, nav, activeTab, embedded = false }
     [versions],
   );
 
+  const notesFor = useCallback(
+    (lead: DealerLead) => notesById[lead.id] ?? lead.notes ?? '',
+    [notesById],
+  );
+
   const saveWorkflow = useCallback(async (
     lead: DealerLead,
-    patch: { workflowStatus: 'NEW' | 'CONTACTED' | 'APPOINTMENT' | 'SOLD' | 'LOST'; assigneeOperatorId: string | null },
+    patch: { workflowStatus?: 'NEW' | 'CONTACTED' | 'APPOINTMENT' | 'SOLD' | 'LOST'; assigneeOperatorId?: string | null; notes?: string | null },
   ) => {
     const prior = pendingSave.current[lead.id] ?? Promise.resolve(versionFor(lead));
     const next = prior.catch(() => versionFor(lead)).then(async version => {
@@ -608,11 +672,43 @@ export default function LeadsPage({ dealerId, nav, activeTab, embedded = false }
     }
   };
 
-  const openVehicle = (lead: DealerLead) => {
-    nav.goToInventory({
-      ...(lead.vehicle?.stockNumber ? { assetRef: lead.vehicle.stockNumber } : {}),
-      ...(lead.vehicleId ? { assetId: lead.vehicleId } : {}),
-    });
+  const saveNotes = async (lead: DealerLead) => {
+    const next = notesFor(lead);
+    if (next === (lead.notes ?? '')) return;
+    setSaveError('');
+    try {
+      await saveWorkflow(lead, { notes: next });
+    } catch (err) {
+      setSaveError(err instanceof Error ? err.message : 'Could not save notes.');
+    }
+  };
+
+  const linkTeamTask = async (lead: DealerLead) => {
+    const reference = leadTaskReference(dealerId, lead.id);
+    setSaveError('');
+    try {
+      const team = await workspaceRequest<TeamData>(dealerId, 'team');
+      const existing = team.threads.find(thread => thread.kind === 'TASK' && thread.reference === reference);
+      if (!existing) {
+        const title = `Follow up: ${leadRecordTitle(lead)}`.slice(0, 200);
+        const body = [lead.message, notesFor(lead)].filter(Boolean).join('\n\n') || 'Follow up on this inquiry.';
+        await workspaceRequest(dealerId, 'team', 'POST', {
+          kind: 'TASK',
+          title,
+          body,
+          assigneeId: assigneeFor(lead),
+          reference,
+        });
+      }
+      window.location.hash = workspaceHash(dealerId, 'team', 'tasks');
+    } catch (err) {
+      setSaveError(err instanceof Error ? err.message : 'Could not link a team task.');
+    }
+  };
+
+  const openRecord = (lead: DealerLead) => {
+    const scope = leadInventoryScope(lead);
+    if (scope) nav.goToInventory(scope);
   };
 
   const Frame = embedded ? EmbeddedLeads : OperatorPage;
@@ -631,11 +727,11 @@ export default function LeadsPage({ dealerId, nav, activeTab, embedded = false }
           <PagePrimaryState
             kind="empty"
             title="Buyer questions will show up here"
-            why="When a shopper asks about a vehicle, the inquiry lands in this inbox. Reply here, then mark the next step so the rest of the team can see it."
-            next="A vehicle needs a channel before a shopper can find it."
+            why={`When a shopper asks about one of your ${recordPlural}, the inquiry lands in this inbox. Reply here, then mark the next step so the rest of the team can see it.`}
+            next={`${recordNoun} needs a channel before a shopper can find it.`}
             actionLabel="Open channels"
             onAction={nav.goToPlatforms}
-            secondaryLabel="See vehicles"
+            secondaryLabel={`See ${recordPlural}`}
             onSecondary={() => nav.goToInventory()}
           />
         ) : (
@@ -700,7 +796,7 @@ export default function LeadsPage({ dealerId, nav, activeTab, embedded = false }
                   <SearchField
                     value={search}
                     onChange={setSearch}
-                    placeholder="Search vehicle, buyer, contact, message, source"
+                    placeholder={`Search ${recordSingular}, buyer, contact, message, source`}
                     className="field-input min-w-0 flex-1"
                   />
                   <div className="grid grid-cols-1 gap-2 sm:grid-cols-3 xl:w-auto">
@@ -749,7 +845,7 @@ export default function LeadsPage({ dealerId, nav, activeTab, embedded = false }
               ) : (
                 <div className="overflow-x-auto min-w-0">
                   <div className="hidden border-b border-silver-200 bg-silver-50 px-4 py-2 text-[10px] font-bold uppercase tracking-wide text-ink-faint lg:grid lg:grid-cols-[minmax(16rem,1.3fr)_minmax(11rem,1fr)_6.5rem_8rem_8rem_6rem_7.5rem] lg:gap-3">
-                    <span>Vehicle & Inquiry</span>
+                    <span>{recordNoun} & inquiry</span>
                     <span>Buyer Contact</span>
                     <span>Source</span>
                     <span>Assignee</span>
@@ -763,10 +859,15 @@ export default function LeadsPage({ dealerId, nav, activeTab, embedded = false }
                       lead={lead}
                       status={statusFor(lead)}
                       assigneeId={assigneeFor(lead)}
+                      notes={notesFor(lead)}
+                      sellerName={sellerName}
                       teamMembers={teamMembers}
                       onStatusChange={nextStatus => handleStatusChange(lead, nextStatus)}
                       onAssigneeChange={nextAssignee => handleAssigneeChange(lead, nextAssignee)}
-                      onOpenVehicle={() => openVehicle(lead)}
+                      onNotesChange={value => setNotesById(current => ({ ...current, [lead.id]: value }))}
+                      onSaveNotes={() => void saveNotes(lead)}
+                      onOpenRecord={() => openRecord(lead)}
+                      onTeamTask={() => void linkTeamTask(lead)}
                       onOpenCrmHandoff={id => setSelectedLeadForCrm(id)}
                     />
                   ))}

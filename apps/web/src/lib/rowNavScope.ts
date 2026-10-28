@@ -9,6 +9,8 @@ export type RowNavScope = {
   leadId?: string;
   /** Opens the CRM handoff for this inquiry. A lead link without it stays on the inquiry. */
   handoff?: 'crm';
+  /** Which inventory table assetId belongs to. Absent means the existing vehicle lookup. */
+  inventorySource?: 'vehicle' | 'category_item';
 };
 
 function slugPart(value: string): string {
@@ -43,6 +45,8 @@ export function parseRowNavScope(queryString: string): RowNavScope {
   const search = params.get('search') ?? params.get('q') ?? undefined;
   const leadId = params.get('leadId') ?? undefined;
   const handoff = params.get('handoff') === 'crm' ? 'crm' as const : undefined;
+  const sourceParam = params.get('inventorySource');
+  const inventorySource = sourceParam === 'vehicle' || sourceParam === 'category_item' ? sourceParam : undefined;
   const rawIds = params.get('ids');
   const ids = rawIds ? rawIds.split(',').filter(Boolean) : undefined;
   return {
@@ -52,6 +56,7 @@ export function parseRowNavScope(queryString: string): RowNavScope {
     ...(search ? { search } : {}),
     ...(leadId ? { leadId } : {}),
     ...(handoff ? { handoff } : {}),
+    ...(inventorySource ? { inventorySource } : {}),
     ...(ids ? { ids } : {}),
   };
 }
@@ -65,7 +70,7 @@ export function splitOperatorHash(hash: string): { path: string; query: string }
 
 export function appendRowNavScope(baseHash: string, scope?: RowNavScope): string {
   if (!scope) return baseHash;
-  const hasValues = scope.assetRef || scope.assetId || scope.filter || scope.search || scope.leadId || scope.handoff || (scope.ids && scope.ids.length > 0);
+  const hasValues = scope.assetRef || scope.assetId || scope.filter || scope.search || scope.leadId || scope.handoff || scope.inventorySource || (scope.ids && scope.ids.length > 0);
   if (!hasValues) return baseHash;
   const { path, query } = splitOperatorHash(baseHash);
   const params = new URLSearchParams(query);
@@ -75,6 +80,7 @@ export function appendRowNavScope(baseHash: string, scope?: RowNavScope): string
   if (scope.search) params.set('search', scope.search);
   if (scope.leadId) params.set('leadId', scope.leadId);
   if (scope.handoff) params.set('handoff', scope.handoff);
+  if (scope.inventorySource) params.set('inventorySource', scope.inventorySource);
   if (scope.ids && scope.ids.length > 0) params.set('ids', scope.ids.join(','));
   const qs = params.toString();
   return qs ? `#${path}?${qs}` : `#${path}`;

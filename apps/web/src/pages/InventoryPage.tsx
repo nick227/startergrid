@@ -422,13 +422,18 @@ export default function InventoryPage({ dealerId, nav, activeTab }: Props) {
   const [categoryItemRefreshKey, setCategoryItemRefreshKey] = useState(0);
 
   useEffect(() => {
+    if (route.scope?.inventorySource === 'category_item' && route.assetId) {
+      setCategoryItemDetailId(route.assetId);
+      setDetailId(null);
+      return;
+    }
     const routeSlug = route.inventoryItemSlug;
     if (!route.assetId && !routeSlug) return;
     const target = route.assetId
       ? vehicles.find(v => v.id === route.assetId)
       : vehicles.find(v => inventoryItemSlug(v) === routeSlug);
     if (target) setDetailId(target.id);
-  }, [route.assetId, route.inventoryItemSlug, vehicles]);
+  }, [route.assetId, route.inventoryItemSlug, route.scope?.inventorySource, vehicles]);
 
   const handleCloseDetail = () => {
     setDetailId(null);
@@ -450,7 +455,10 @@ export default function InventoryPage({ dealerId, nav, activeTab }: Props) {
           <CategoryItemDetailPanel
             dealerId={dealerId}
             itemId={categoryItemDetailId}
-            onClose={() => setCategoryItemDetailId(null)}
+            onClose={() => {
+              setCategoryItemDetailId(null);
+              if (route.scope?.inventorySource === 'category_item') nav.goToInventory();
+            }}
           />
         </div>
       ) : detailId ? (

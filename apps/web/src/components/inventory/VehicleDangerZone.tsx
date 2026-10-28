@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import type { VehicleDetailDto } from '@/lib/api/sdk.ts';
 import { markVehicleRemoved } from '@/lib/api/sdk.ts';
+import { activeAssetSingular } from '@/lib/categoryPresentation.ts';
 
 type Props = {
   vehicle: VehicleDetailDto;
@@ -38,7 +39,7 @@ export function VehicleDangerZone({ vehicle, onReload }: Props) {
       </h2>
       <div className="mt-4 flex items-start justify-between gap-4">
         <div className="min-w-0">
-          <p className="text-xs font-bold text-ink-heading">Take this vehicle off the lot</p>
+          <p className="text-xs font-bold text-ink-heading">Take this {activeAssetSingular()} off the lot</p>
           <ul className="mt-1.5 text-[11px] text-ink-muted space-y-0.5 list-disc list-inside">
             <li>Removes it from your DealerGrid storefront</li>
             <li>
