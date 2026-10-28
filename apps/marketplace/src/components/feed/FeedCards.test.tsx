@@ -68,14 +68,14 @@ const noticeItem: Extract<MarketplaceFeedItem, { type: 'marketplaceNotice' }> = 
   notice: { title: 'Notice', body: 'Inventory changes daily.', tone: MarketplaceNotice.tone.INFO },
 };
 
-function renderCard(item: MarketplaceFeedItem, onQuickView?: (id: string) => void) {
+function renderCard(item: MarketplaceFeedItem) {
   const el = document.createElement('div');
   document.body.appendChild(el);
   const root = createRoot(el);
   act(() => {
     root.render(
       <CategoryProvider categoryId="AUTOMOTIVE" slug="automotive">
-        <FeedItemCard item={item} index={0} onQuickView={onQuickView} />
+        <FeedItemCard item={item} index={0} />
       </CategoryProvider>,
     );
   });
@@ -86,25 +86,25 @@ afterEach(() => {
   document.body.innerHTML = '';
 });
 
-describe('FeedItemCard quick view gating', () => {
-  it('renders Quick view for vehicle items when onQuickView is provided', () => {
-    const el = renderCard(vehicleItem, () => undefined);
-    expect(el.textContent).toContain('Quick view');
-  });
-
-  it('does not render Quick view for vehicle items without onQuickView', () => {
+describe('FeedItemCard vehicle summary', () => {
+  it('shows price, mileage, and location without seller, quick view, or compare', () => {
     const el = renderCard(vehicleItem);
+    expect(el.textContent).toContain('$25,000');
+    expect(el.textContent).toContain('12,000 mi');
+    expect(el.textContent).toContain('Springfield, IL');
     expect(el.textContent).not.toContain('Quick view');
+    expect(el.textContent).not.toContain('Compare');
+    expect(el.textContent).not.toContain('Seller');
   });
 
-  it('does not render Quick view for dealerPromo items even with onQuickView', () => {
-    const el = renderCard(promoItem, () => undefined);
+  it('does not render Quick view for dealerPromo items', () => {
+    const el = renderCard(promoItem);
     expect(el.textContent).not.toContain('Quick view');
     expect(el.textContent).toContain('Sponsored dealer');
   });
 
-  it('does not render Quick view for marketplaceNotice items even with onQuickView', () => {
-    const el = renderCard(noticeItem, () => undefined);
+  it('does not render Quick view for marketplaceNotice items', () => {
+    const el = renderCard(noticeItem);
     expect(el.textContent).not.toContain('Quick view');
     expect(el.textContent).toContain('Marketplace notice');
   });

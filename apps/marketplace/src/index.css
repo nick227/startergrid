@@ -17,7 +17,7 @@
 
 @layer components {
   .mp-page {
-    @apply mx-auto max-w-6xl px-4 pb-6;
+    @apply mx-auto w-full max-w-7xl px-4 pb-6 sm:px-6;
   }
 
   .mp-card {
@@ -25,7 +25,7 @@
   }
 
   .mp-grid-vehicles {
-    @apply grid grid-cols-1 gap-4 sm:grid-cols-2 sm:gap-5 lg:grid-cols-3;
+    @apply grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4;
   }
 
   .mp-aspect-vehicle {

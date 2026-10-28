@@ -43,6 +43,7 @@ type Props = {
   showSearch?: boolean;
   query: ListingQuery;
   category: BusinessCategoryId;
+  embedded?: boolean;
 };
 
 export function ListingFilterBar({
@@ -77,6 +78,7 @@ export function ListingFilterBar({
   showSearch = true,
   query,
   category,
+  embedded = false,
 }: Props) {
   const searchRef = useRef<HTMLInputElement>(null);
   const brandRef = useRef<HTMLSelectElement & HTMLInputElement>(null);
@@ -94,7 +96,7 @@ export function ListingFilterBar({
 
   const brandLabel = config.labels.brand ?? 'Make';
   const modelLabel = config.labels.model ?? 'Model';
-  const usageLabel = 'Mileage';
+  const usageLabel = config.labels.usage ?? 'Mileage';
   const conditionLabel = config.labels.condition ?? 'Condition';
   const sellerNameLabel = config.labels.sellerName ?? 'Seller';
 
@@ -158,11 +160,13 @@ export function ListingFilterBar({
     return match?.value ?? '';
   };
 
-  return (
-    <SectionCard padded={false} className="p-4 sm:p-5">
+  const fieldClass = embedded ? 'mp-input h-10 py-1' : 'mp-input';
+  const form = (
       <form
         onSubmit={e => { e.preventDefault(); onSubmit(); }}
-        className="grid gap-4 sm:grid-cols-2 lg:grid-cols-[repeat(auto-fit,minmax(9rem,1fr))]"
+        className={embedded
+          ? 'grid grid-cols-2 gap-3 md:grid-cols-3 xl:grid-cols-4'
+          : 'grid gap-4 sm:grid-cols-2 lg:grid-cols-[repeat(auto-fit,minmax(9rem,1fr))]'}
         aria-label={listingSearchAriaLabel()}
       >
         {showSearch && (
@@ -174,7 +178,7 @@ export function ListingFilterBar({
               value={q}
               onChange={e => onQChange(e.target.value)}
               placeholder="Search by keyword…"
-              className="mp-input"
+              className={fieldClass}
               autoComplete="off"
             />
           </label>
@@ -188,7 +192,7 @@ export function ListingFilterBar({
                 ref={brandRef as any}
                 value={brand}
                 onChange={e => handleMakeChange(e.target.value)}
-                className="mp-input"
+                className={fieldClass}
               >
                 <option value="">Any {brandLabel.toLowerCase()}</option>
                 {facetsData.brandFacets.map(b => (
@@ -204,7 +208,7 @@ export function ListingFilterBar({
                 value={brand}
                 onChange={e => handleMakeChange(e.target.value)}
                 placeholder={`Any ${brandLabel.toLowerCase()}`}
-                className="mp-input"
+                className={fieldClass}
                 autoComplete="off"
               />
             )}
@@ -218,7 +222,7 @@ export function ListingFilterBar({
               <select
                 value={model}
                 onChange={e => onModelChange(e.target.value)}
-                className="mp-input"
+                className={fieldClass}
                 disabled={!brand}
               >
                 <option value="">Any {modelLabel.toLowerCase()}</option>
@@ -234,7 +238,7 @@ export function ListingFilterBar({
                 value={model}
                 onChange={e => onModelChange(e.target.value)}
                 placeholder={`Any ${modelLabel.toLowerCase()}`}
-                className="mp-input"
+                className={fieldClass}
                 autoComplete="off"
               />
             )}
@@ -249,7 +253,7 @@ export function ListingFilterBar({
               value={sellerName}
               onChange={e => onSellerNameChange(e.target.value)}
               placeholder={`Any ${sellerNameLabel.toLowerCase()}`}
-              className="mp-input"
+              className={fieldClass}
               autoComplete="off"
             />
           </label>
@@ -261,7 +265,7 @@ export function ListingFilterBar({
             <select
               value={condition ?? ''}
               onChange={e => onConditionChange((e.target.value as ListFilters['condition']) || undefined)}
-              className="mp-input"
+              className={fieldClass}
             >
               <option value="">Any condition</option>
               <option value="NEW">New</option>
@@ -277,7 +281,7 @@ export function ListingFilterBar({
             <select
               value={getSelectedPriceRange()}
               onChange={e => handlePriceChange(e.target.value)}
-              className="mp-input"
+              className={fieldClass}
             >
               <option value="">Any price</option>
               {facetsData?.priceRanges?.map(r => (
@@ -295,7 +299,7 @@ export function ListingFilterBar({
             <select
               value={getSelectedYearRange()}
               onChange={e => handleYearChange(e.target.value)}
-              className="mp-input"
+              className={fieldClass}
             >
               <option value="">Any year</option>
               {facetsData?.yearRanges?.map(r => (
@@ -313,9 +317,9 @@ export function ListingFilterBar({
             <select
               value={getSelectedMileageRange()}
               onChange={e => handleMileageChange(e.target.value)}
-              className="mp-input"
+              className={fieldClass}
             >
-              <option value="">Any mileage</option>
+              <option value="">Any {usageLabel.toLowerCase()}</option>
               {facetsData?.mileageRanges?.map(r => (
                 <option key={r.value} value={r.value}>
                   {r.label} ({r.count})
@@ -333,7 +337,7 @@ export function ListingFilterBar({
               <select
                 value={facetValues[facet.key] ?? ''}
                 onChange={e => onFacetChange?.(facet.key, e.target.value || undefined)}
-                className="mp-input"
+                className={fieldClass}
               >
                 <option value="">Any {facet.label.toLowerCase()}</option>
                 {facet.options.map(option => {
@@ -352,9 +356,11 @@ export function ListingFilterBar({
           );
         })}
 
-        <div className="flex flex-col gap-2 sm:col-span-2 sm:flex-row sm:items-end lg:col-span-full xl:col-span-1">
-          <button type="submit" className="mp-btn-primary w-full sm:w-auto">
-            Search
+        <div className={embedded
+          ? 'col-span-full flex flex-wrap items-center gap-2'
+          : 'flex flex-col gap-2 sm:col-span-2 sm:flex-row sm:items-end lg:col-span-full xl:col-span-1'}>
+          <button type="submit" className={embedded ? 'mp-btn-primary !h-10 !min-h-0 w-auto px-4' : 'mp-btn-primary w-full sm:w-auto'}>
+            {embedded ? 'Apply' : 'Search'}
           </button>
           {hasActiveFilters && (
             <button type="button" onClick={onClear} className="mp-btn-ghost w-full sm:w-auto whitespace-nowrap">
@@ -363,6 +369,11 @@ export function ListingFilterBar({
           )}
         </div>
       </form>
+  );
+  if (embedded) return form;
+  return (
+    <SectionCard padded={false} className="p-4 sm:p-5">
+      {form}
     </SectionCard>
   );
 }

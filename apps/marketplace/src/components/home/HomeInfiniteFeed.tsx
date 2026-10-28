@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef } from 'react';
 import { useInfiniteMarketplaceFeed } from '../../hooks/useInfiniteMarketplaceFeed.ts';
 import { useBuyerLocation } from '../../features/location/useBuyerLocation.ts';
 import { fromListQuery } from '../../features/listings/listingQuery.ts';
@@ -8,8 +8,6 @@ import { EndOfFeedState, FeedCardSkeleton, LoadingMoreState } from '../feed/Feed
 import { ErrorState } from '../ui/ErrorState.tsx';
 import { queryErrorMessage } from '../../hooks/useQuery.ts';
 import type { ListQuery } from '../../lib/routes.ts';
-import { QuickDetailDrawer } from '../listings/QuickDetailDrawer.tsx';
-
 type Props = {
   viewMode?: ViewMode;
   initialQuery?: ListQuery;
@@ -19,9 +17,6 @@ export function HomeInfiniteFeed({ viewMode = 'grid', initialQuery = {} }: Props
   const buyerLocation = useBuyerLocation();
   const listingQuery = fromListQuery(initialQuery);
   const feed = useInfiniteMarketplaceFeed(listingQuery, buyerLocation.geoApiParams);
-
-  const [quickViewListingId, setQuickViewListingId] = useState<string | null>(null);
-  const [quickViewOpen, setQuickViewOpen] = useState(false);
 
   const sentinelRef = useRef<HTMLDivElement | null>(null);
 
@@ -73,10 +68,6 @@ export function HomeInfiniteFeed({ viewMode = 'grid', initialQuery = {} }: Props
             item={item}
             index={index}
             compact={viewMode === 'list'}
-            onQuickView={listingId => {
-              setQuickViewListingId(listingId);
-              setQuickViewOpen(true);
-            }}
           />
         ))}
       </ListingGrid>
@@ -103,11 +94,6 @@ export function HomeInfiniteFeed({ viewMode = 'grid', initialQuery = {} }: Props
         />
       )}
 
-      <QuickDetailDrawer
-        open={quickViewOpen}
-        listingId={quickViewListingId}
-        onClose={() => setQuickViewOpen(false)}
-      />
     </div>
   );
 }

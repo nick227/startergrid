@@ -4,16 +4,10 @@ export function FeedCardSkeleton({ count = 6 }: { count?: number }) {
       {Array.from({ length: count }, (_, i) => (
         <div key={i} className="mp-card overflow-hidden">
           <div className="mp-aspect-vehicle animate-pulse rounded-lg bg-silver-200" />
-          <div className="space-y-4 p-5">
-            <div className="h-5 w-3/4 animate-pulse rounded bg-silver-200" />
-            <div className="h-4 w-1/2 animate-pulse rounded bg-silver-100" />
-            <div className="rounded-lg bg-surface-inset p-3">
-              <div className="h-7 w-28 animate-pulse rounded bg-silver-200" />
-              <div className="mt-3 grid grid-cols-2 gap-3">
-                <div className="h-4 animate-pulse rounded bg-silver-200" />
-                <div className="h-4 animate-pulse rounded bg-silver-200" />
-              </div>
-            </div>
+          <div className="space-y-2 px-3 py-2.5">
+            <div className="h-4 w-3/4 animate-pulse rounded bg-silver-200" />
+            <div className="h-5 w-24 animate-pulse rounded bg-silver-200" />
+            <div className="h-3 w-2/3 animate-pulse rounded bg-silver-100" />
           </div>
         </div>
       ))}
