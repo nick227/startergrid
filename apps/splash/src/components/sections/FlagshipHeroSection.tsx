@@ -59,7 +59,7 @@ export const FlagshipHeroSection: React.FC<FlagshipHeroSectionProps> = ({ onCont
           </p>
 
           {/* Action Row */}
-          <div style={{ display: 'flex', alignItems: 'center', gap: '16px', flexWrap: 'wrap' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '16px', flexWrap: 'nowrap' }}>
             <button
               onClick={onContactUs}
               style={{
@@ -84,31 +84,6 @@ export const FlagshipHeroSection: React.FC<FlagshipHeroSectionProps> = ({ onCont
               }}
             >
               Contact Us
-            </button>
-
-            <button
-              onClick={onOpenPricing}
-              style={{
-                padding: '16px 28px',
-                borderRadius: '8px',
-                background: 'rgba(59, 130, 246, 0.12)',
-                border: '1px solid rgba(59, 130, 246, 0.3)',
-                color: '#60a5fa',
-                fontSize: '1.0625rem',
-                fontWeight: 600,
-                cursor: 'pointer',
-                transition: 'all 0.15s ease',
-              }}
-              onMouseEnter={(e) => {
-                e.currentTarget.style.background = 'rgba(59, 130, 246, 0.2)';
-                e.currentTarget.style.borderColor = 'rgba(59, 130, 246, 0.5)';
-              }}
-              onMouseLeave={(e) => {
-                e.currentTarget.style.background = 'rgba(59, 130, 246, 0.12)';
-                e.currentTarget.style.borderColor = 'rgba(59, 130, 246, 0.3)';
-              }}
-            >
-              View Proposed Pricing
             </button>
 
             <a
@@ -136,8 +111,7 @@ export const FlagshipHeroSection: React.FC<FlagshipHeroSectionProps> = ({ onCont
                 e.currentTarget.style.borderColor = 'rgba(255, 255, 255, 0.14)';
               }}
             >
-              <span>Explore Live Operator Portal</span>
-              <span style={{ fontSize: '0.75rem', color: '#60a5fa' }}>[Live Demo]</span>
+              <span>Live Operator Portal</span>
             </a>
 
             <a
