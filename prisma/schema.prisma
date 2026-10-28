@@ -498,6 +498,8 @@ model DealershipProfile {
   invitations                  OperatorInvitation[]
   activityEvents               DealershipActivityEvent[]
   teamThreads                  TeamThread[]
+  inboundEmailRoutes           InboundEmailRoute[]
+  inboundEmailMessages         InboundEmailMessage[]
   platformOAuthTokens          PlatformOAuthToken[]
   socialPageAccounts           SocialPageAccount[]
   socialPosts                  SocialPost[]
@@ -551,6 +553,7 @@ model Vehicle {
   dealership        DealershipProfile @relation(fields: [dealershipId], references: [id], onDelete: Cascade)
   media             VehicleMedia[]
   leads             Lead[]
+  inboundSuggestions InboundLeadVehicleSuggestion[]
   updates           VehicleUpdate[]
   lifecycleEvents   VehicleLifecycleEvent[]
   queueItems        PublishQueueItem[]
@@ -788,6 +791,7 @@ model Lead {
   message             String?             @db.Text
   vehicleInterest     Json?
   adfPayload          Json?
+  inboundMessageId    String?             @unique
   workflowStatus      LeadWorkflowStatus  @default(NEW)
   assigneeOperatorId  String?             @db.VarChar(30)
   notes               String?             @db.Text
@@ -799,6 +803,8 @@ model Lead {
 
   dealership      DealershipProfile @relation(fields: [dealershipId], references: [id], onDelete: Cascade)
   vehicle         Vehicle?          @relation(fields: [vehicleId], references: [id])
+  inboundMessage  InboundEmailMessage? @relation(fields: [inboundMessageId], references: [id], onDelete: SetNull)
+  vehicleSuggestions InboundLeadVehicleSuggestion[]
   deliveryAttempts LeadDeliveryAttempt[]
   buyerOutreach   BuyerOutreach[]
 
@@ -1628,4 +1634,74 @@ model TeamComment {
   createdAt   DateTime @default(now())
   thread      TeamThread @relation(fields: [threadId], references: [id], onDelete: Cascade)
   @@index([threadId, createdAt])
+}
+
+enum InboundRouteStatus {
+  ACTIVE
+  ROTATED
+  DISABLED
+}
+
+enum InboundProviderTrust {
+  VERIFIED
+  CLAIMED
+  CONFLICTING
+  UNKNOWN
+}
+
+enum InboundMessageStatus {
+  RECEIVED
+  LEAD_CREATED
+  DUPLICATE
+  UNROUTED
+  PARSE_FAILED
+  NEEDS_REVIEW
+  DISMISSED
+}
+
+// Opaque plus-address for marketplace lead email. The token is the only routing key.
+model InboundEmailRoute {
+  id           String             @id @default(cuid())
+  dealershipId String
+  routeToken   String             @unique @db.VarChar(40)
+  status       InboundRouteStatus @default(ACTIVE)
+  createdAt    DateTime           @default(now())
+  rotatedAt    DateTime?
+  dealership   DealershipProfile  @relation(fields: [dealershipId], references: [id], onDelete: Cascade)
+  @@index([dealershipId])
+}
+
+model InboundEmailMessage {
+  id                String                @id @default(cuid())
+  provider          String                @db.VarChar(20)
+  providerMessageId String                @db.VarChar(120)
+  rfcMessageId      String?               @db.VarChar(255)
+  dealershipId      String?
+  routeToken        String?               @db.VarChar(40)
+  envelopeRecipient String                @db.VarChar(255)
+  fromEmail         String                @db.VarChar(255)
+  subject           String?               @db.VarChar(255)
+  receivedAt        DateTime
+  provenance        Json
+  providerTrust     InboundProviderTrust
+  status            InboundMessageStatus
+  failureReason     String?               @db.VarChar(60)
+  duplicateOfLeadId String?
+  createdAt         DateTime              @default(now())
+  dealership        DealershipProfile?    @relation(fields: [dealershipId], references: [id], onDelete: Cascade)
+  lead              Lead?
+  @@unique([provider, providerMessageId])
+  @@index([dealershipId, status])
+  @@index([dealershipId, rfcMessageId])
+}
+
+model InboundLeadVehicleSuggestion {
+  id         String   @id @default(cuid())
+  leadId     String
+  vehicleId  String
+  basis      String   @db.VarChar(20)
+  resolution String?  @db.VarChar(12)
+  lead       Lead     @relation(fields: [leadId], references: [id], onDelete: Cascade)
+  vehicle    Vehicle  @relation(fields: [vehicleId], references: [id], onDelete: Cascade)
+  @@unique([leadId, vehicleId])
 }

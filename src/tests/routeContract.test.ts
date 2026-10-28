@@ -29,6 +29,8 @@ const REGISTERED_ROUTES = new Set([
   "POST   /api/dealers/{dealershipId}/distribution/incidents/{incidentId}/resolve",
   "POST   /api/dealers/{dealershipId}/distribution/incidents/{incidentId}/reconnect",
   'GET    /health',
+  'POST   /api/inbound/email/postmark',
+  'GET    /api/dealers/{dealershipId}/inbound-email',
   'POST   /api/dealers/signup',
   'POST   /api/dealers/onboarding',
   'POST   /api/dealers/signup/{dealershipId}/logo',

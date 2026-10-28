@@ -70,6 +70,7 @@ export async function persistLead(
     message?: string | null;
     vehicleInterest?: Record<string, unknown> | null;
     adfPayload?: string | null;
+    inboundMessageId?: string | null;
   }
 ): Promise<string> {
   const created = await prisma.lead.create({
@@ -83,7 +84,8 @@ export async function persistLead(
       contactPhone: lead.contactPhone ?? null,
       message: lead.message ?? null,
       vehicleInterest: lead.vehicleInterest != null ? (lead.vehicleInterest as unknown as Prisma.InputJsonValue) : undefined,
-      adfPayload: lead.adfPayload ? ({ xml: lead.adfPayload } as unknown as Prisma.InputJsonValue) : undefined
+      adfPayload: lead.adfPayload ? ({ xml: lead.adfPayload } as unknown as Prisma.InputJsonValue) : undefined,
+      inboundMessageId: lead.inboundMessageId ?? null
     }
   });
   return created.id;

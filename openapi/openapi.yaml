@@ -22,6 +22,35 @@ tags:
   - name: Admin
 
 paths:
+  /api/inbound/email/postmark:
+    post:
+      tags: [Leads]
+      security: []
+      x-route-classification: public-write
+      operationId: acceptPostmarkInboundEmail
+      summary: Persist a marketplace lead email delivered by the inbound provider
+      responses:
+        '200':
+          description: Message persisted
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '403':
+          description: Delivery verification failed
+        '503':
+          description: Inbound email is not configured
+  /api/dealers/{dealershipId}/inbound-email:
+    get:
+      tags: [Leads]
+      security:
+        - OperatorAuth: []
+      x-route-classification: operator
+      operationId: getInboundEmailAddress
+      summary: Dealership address that receives marketplace lead email
+      responses:
+        '200':
+          description: Inbound address
+        '401':
+          $ref: '#/components/responses/Unauthorized'
   /api/dealers/{dealershipId}/autopilot:
     get:
       tags:

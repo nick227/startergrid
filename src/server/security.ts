@@ -193,6 +193,7 @@ export const routeClassifications = {
     'GET /api/dealers/:dealershipId/activity',
     'POST /api/auth/change-password',
     'POST /api/dealers/onboarding',
+    'GET /api/dealers/:dealershipId/inbound-email',
     'GET /api/dealers/:dealershipId/notifications',
     'GET /api/dealers/:dealershipId/notification-channels',
     'PATCH /api/dealers/:dealershipId/notification-channels',
@@ -203,6 +204,7 @@ export const routeClassifications = {
     'DELETE /api/dealers/:dealershipId/platforms/:platformSlug/listings/:vehicleId',
   ],
   publicWrite: [
+    'POST /api/inbound/email/postmark',
     'POST /api/dealers/signup',
     'POST /api/dealers/signup/:dealershipId/logo',
     'POST /api/dealers/:dealershipId/leads',
