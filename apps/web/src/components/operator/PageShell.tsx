@@ -32,7 +32,7 @@ const TAB_LABELS: Record<OperatorTab, string> = {
   reports: 'Reports',
   inventory: 'Vehicles',
   leads: 'Leads',
-  settings: 'Settings',
+  settings: 'Company',
   help: 'Help',
 };
 
@@ -151,7 +151,7 @@ export function PageShell({
                       : 'text-silver-300 hover:bg-navy-900/60 hover:text-white'
                   }`}
                 >
-                  Settings
+                  Company
                 </button>
                 {user && (
                   <OperatorAvatar user={user} onAvatarUpdated={refresh} />

@@ -277,6 +277,9 @@ describe('workspace navigation compatibility', () => {
     expect(parseOperatorRoute('#/d1/activity/leads?leadId=l1&support=true')).toMatchObject({ page: 'activity', workspaceView: 'leads', scope: { leadId: 'l1' } });
     expect(parseOperatorRoute('#/d1/team/tasks')).toMatchObject({ page: 'team', workspaceView: 'tasks' });
     expect(parseOperatorRoute('#/d1/settings/team')).toMatchObject({ page: 'team', workspaceView: 'people' });
+    expect(parseOperatorRoute('#/d1/settings')).toMatchObject({ page: 'settings', workspaceView: 'identity' });
+    expect(parseOperatorRoute('#/d1/settings/email')).toMatchObject({ page: 'settings', workspaceView: 'email' });
+    expect(parseOperatorRoute('#/d1/company/preferences')).toMatchObject({ page: 'settings', workspaceView: 'preferences' });
     expect(tabFromPage(parseOperatorRoute('#/d1/leads').page)).toBe('activity');
   });
 });

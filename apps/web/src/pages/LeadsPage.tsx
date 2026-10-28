@@ -619,7 +619,7 @@ export default function LeadsPage({ dealerId, nav, activeTab, embedded = false }
         <p className="text-xs text-ink-muted">
           Change email and text alerts in{' '}
           <button type="button" onClick={nav.goToSettings} className="font-semibold text-navy-700 hover:underline">
-            Settings
+            Company
           </button>
           .
         </p>

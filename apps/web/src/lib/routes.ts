@@ -228,9 +228,16 @@ export function parseOperatorRoute(hash = window.location.hash): OperatorRoute {
     );
   }
 
-  if (/^(activity|team)(\/[^/]+)?$/.test(rest) || rest === 'settings/team') {
+  if (rest === 'settings/team') {
+    return { ...emptyRoute(), dealerId, page: 'team', workspaceView: 'people', scope, assetRef, assetId };
+  }
+  const companyMatch = rest.match(/^(?:company|settings)(?:\/(identity|email|preferences|integrations))?$/);
+  if (companyMatch) {
+    return { ...emptyRoute(), dealerId, page: 'settings', workspaceView: companyMatch[1] ?? 'identity', scope, assetRef, assetId };
+  }
+  if (/^(activity|team)(\/[^/]+)?$/.test(rest)) {
     const [workspace, view] = rest.split('/');
-    return { ...emptyRoute(), dealerId, page: workspace === 'settings' ? 'team' : workspace as 'activity' | 'team', workspaceView: workspace === 'settings' ? 'people' : view, scope, assetRef, assetId };
+    return { ...emptyRoute(), dealerId, page: workspace as 'activity' | 'team', workspaceView: view, scope, assetRef, assetId };
   }
   const page = parsePageSegment(rest || undefined);
   return routeWithReports(
@@ -343,8 +350,9 @@ export function normalizeOperatorHash(): void {
 }
 
 /** Preserve staff support mode while moving between dealership workspaces. */
-export function workspaceHash(dealerId: string, workspace: 'activity' | 'team', view?: string): string {
-  const base = `#/${dealerId}/${workspace}${view ? `/${view}` : ''}`;
+export function workspaceHash(dealerId: string, workspace: 'activity' | 'team' | 'company', view?: string): string {
+  const segment = workspace === 'company' ? 'settings' : workspace;
+  const base = `#/${dealerId}/${segment}${view && view !== 'identity' ? `/${view}` : ''}`;
   return preserveSupport(base);
 }
 export function preserveSupport(hash: string): string {

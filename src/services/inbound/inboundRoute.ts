@@ -4,7 +4,9 @@ import type { NormalizedInboundEmail } from './inboundEmailTypes.js';
 
 const TOKEN = /^[a-z0-9_-]{16,40}$/i;
 
-export function inboundAddress(routeToken: string, domain = process.env['INBOUND_EMAIL_DOMAIN']?.trim() || 'in.dealergrid.example'): string {
+export const INBOUND_EMAIL_DOMAIN = 'leads.dealergrid.com';
+
+export function inboundAddress(routeToken: string, domain = process.env['INBOUND_EMAIL_DOMAIN']?.trim() || INBOUND_EMAIL_DOMAIN): string {
   return `leads+${routeToken}@${domain}`;
 }
 

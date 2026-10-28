@@ -131,7 +131,7 @@ function OperatorApp() {
       ) : page === 'leads' || page === 'activity' ? (
         <ActivityPage dealerId={dealerId} nav={nav} activeTab={activeTab} view={page === 'leads' ? 'leads' : route.workspaceView} />
       ) : page === 'settings' ? (
-        <SettingsPage dealerId={dealerId} nav={nav} activeTab={activeTab} />
+        <SettingsPage dealerId={dealerId} nav={nav} activeTab={activeTab} view={route.workspaceView} />
       ) : page === 'platforms' ? (
         <PlatformsPage
           dealerId={dealerId}

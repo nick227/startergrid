@@ -1,37 +1,77 @@
-import { OperatorPage } from '@/components/operator';
-import type { OperatorPageBaseProps } from '@/lib/operatorPage.ts';
+import { OperatorPage, PageHeader } from '@/components/operator';
+import { WorkspaceTabs } from '@/components/operator/WorkspaceTabs.tsx';
 import { DealershipProfilePanel } from '@/components/dealers/DealershipProfilePanel.tsx';
-import { PagePrimaryState } from '@/components/guidance/PagePrimaryState.tsx';
 import { useAsyncQuery } from '@/hooks/useAsyncQuery.ts';
-import { fetchDealershipProfile } from '@/lib/api/sdk.ts';
+import { workspaceRequest } from '@/lib/api/workspaces.ts';
+import type { OperatorPageBaseProps } from '@/lib/operatorPage.ts';
 
-type Props = OperatorPageBaseProps;
+const tabs = [
+  { id: 'identity', label: 'Identity' },
+  { id: 'email', label: 'Email & Contacts' },
+  { id: 'preferences', label: 'Preferences' },
+  { id: 'integrations', label: 'Integrations' },
+];
 
+type InboundStatus = {
+  address: string;
+  mailboxConfigured: boolean;
+  lastReceivedAt: string | null;
+  lastStatus: string | null;
+  lastFailureReason: string | null;
+  recentProblemCount: number;
+};
 
-export default function SettingsPage({ dealerId, nav, activeTab }: Props) {
-  const { data: profile } = useAsyncQuery(() => fetchDealershipProfile(dealerId), [dealerId]);
-  const criticalWarning = profile?.publishingWarnings.find(w => w.severity === 'critical');
-
+export default function SettingsPage(props: OperatorPageBaseProps & { view?: string }) {
+  const view = tabs.some(tab => tab.id === props.view) ? props.view! : 'identity';
   return (
-    <OperatorPage dealerId={dealerId} nav={nav} activeTab={activeTab} sectionLabel="Settings">
-      <div className="max-w-4xl space-y-6">
-        {(
-          <div className="max-w-3xl space-y-5">
-            <PagePrimaryState
-              kind={criticalWarning ? 'attention' : 'running'}
-              title={criticalWarning ? `Add ${criticalWarning.label}` : 'Dealership details'}
-              why={
-                criticalWarning
-                  ? criticalWarning.message
-                  : 'Name, address, and contact that buyers and destinations use. Inquiries go to the primary email unless you add another method below.'
-              }
-              ownerKind={criticalWarning ? 'YOU' : undefined}
-            />
-            <DealershipProfilePanel dealerId={dealerId} mode="operator" />
-          </div>
-        )}
-
-      </div>
+    <OperatorPage dealerId={props.dealerId} nav={props.nav} activeTab="settings" sectionLabel="Company">
+      <PageHeader title="Company" />
+      <WorkspaceTabs dealerId={props.dealerId} workspace="company" active={view} tabs={tabs} />
+      {view === 'identity' && <DealershipProfilePanel dealerId={props.dealerId} section="identity" />}
+      {view === 'email' && (
+        <div className="space-y-5">
+          <DealershipProfilePanel dealerId={props.dealerId} section="email" />
+          <InboundEmailCard dealerId={props.dealerId} />
+        </div>
+      )}
+      {view === 'preferences' && <DealershipProfilePanel dealerId={props.dealerId} section="preferences" />}
+      {view === 'integrations' && <CompanyIntegrations nav={props.nav} />}
     </OperatorPage>
+  );
+}
+
+function InboundEmailCard({ dealerId }: { dealerId: string }) {
+  const query = useAsyncQuery(() => workspaceRequest<InboundStatus>(dealerId, 'inbound-email'), [dealerId]);
+  const status = query.data;
+  return (
+    <section className="surface-card-operator p-5 space-y-3" aria-label="Marketplace lead email">
+      <h2 className="text-lg font-semibold text-ink-heading">Marketplace lead email</h2>
+      <p className="text-sm text-ink-muted">Forward Cars.com, Autotrader, and CarGurus inquiries to this address. The token is private to this dealership.</p>
+      {query.error && <p role="alert" className="text-sm text-red-700">{query.error}</p>}
+      {status && (
+        <>
+          <p className="font-mono text-sm break-all">{status.address}</p>
+          <button type="button" className="btn-secondary-operator" onClick={() => void navigator.clipboard.writeText(status.address)}>Copy address</button>
+          <p className="text-sm text-ink-muted">
+            {status.mailboxConfigured ? 'The intake mailbox is configured.' : 'The intake mailbox is not connected yet. The address is reserved for this dealership.'}
+            {status.lastReceivedAt ? ` Last message ${new Date(status.lastReceivedAt).toLocaleString()}.` : ' No message has arrived yet.'}
+            {status.recentProblemCount > 0 ? ` ${status.recentProblemCount} messages in the last 30 days need review.` : ''}
+          </p>
+          <p className="text-sm text-ink-muted">A lead forwarded through the dealership's own mailbox is still accepted. It stays marked as dealership-reported until that forwarding path is confirmed, so it is not counted as a verified marketplace.</p>
+        </>
+      )}
+    </section>
+  );
+}
+
+function CompanyIntegrations({ nav }: { nav: OperatorPageBaseProps['nav'] }) {
+  return (
+    <section className="space-y-4" aria-label="Company integrations">
+      <p className="text-sm text-ink-muted max-w-2xl">Company holds shared business configuration. Day-to-day platform connections stay in Channels, and inventory import sources stay in Vehicles.</p>
+      <div className="flex flex-wrap gap-3">
+        <button type="button" className="btn-secondary-operator" onClick={() => nav.goToPlatforms()}>Open Channels</button>
+        <button type="button" className="btn-secondary-operator" onClick={() => nav.goToInventory()}>Open Vehicles</button>
+      </div>
+    </section>
   );
 }

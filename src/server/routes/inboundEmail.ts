@@ -24,7 +24,20 @@ export function registerInboundEmailRoutes(app: FastifyInstance, prisma: PrismaC
 
   app.get<{ Params: { dealershipId: string } }>('/api/dealers/:dealershipId/inbound-email', async (request, reply) => {
     if (!await requireDealerAccess(prisma, request, reply, request.params.dealershipId)) return;
-    const routeToken = await issueInboundRoute(prisma, request.params.dealershipId);
-    return { address: inboundAddress(routeToken) };
+    const dealershipId = request.params.dealershipId;
+    const routeToken = await issueInboundRoute(prisma, dealershipId);
+    const since = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000);
+    const [latest, recentProblemCount] = await Promise.all([
+      prisma.inboundEmailMessage.findFirst({ where: { dealershipId }, orderBy: { receivedAt: 'desc' }, select: { receivedAt: true, status: true, failureReason: true } }),
+      prisma.inboundEmailMessage.count({ where: { dealershipId, receivedAt: { gte: since }, status: { in: ['PARSE_FAILED', 'UNROUTED', 'NEEDS_REVIEW'] } } }),
+    ]);
+    return {
+      address: inboundAddress(routeToken),
+      mailboxConfigured: Boolean(process.env['INBOUND_POSTMARK_WEBHOOK_USERNAME'] && process.env['INBOUND_POSTMARK_WEBHOOK_PASSWORD']),
+      lastReceivedAt: latest?.receivedAt.toISOString() ?? null,
+      lastStatus: latest?.status ?? null,
+      lastFailureReason: latest?.failureReason ?? null,
+      recentProblemCount,
+    };
   });
 }

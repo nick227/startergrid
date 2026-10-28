@@ -18,9 +18,19 @@ const MARKETPLACE_URL = (import.meta.env['VITE_MARKETPLACE_URL'] as string | und
 const FIELD_CLS =
   'w-full bg-surface-card border border-silver-300 rounded-md px-3 py-2 text-sm text-ink-heading focus:outline-none focus:ring-2 focus:ring-navy-500/30';
 
+type ProfileSection = 'all' | 'identity' | 'email' | 'preferences';
+
+const SECTION_COPY: Record<ProfileSection, { title: string; body: string }> = {
+  all: { title: 'Dealership profile', body: 'What buyers see, and what destinations use when they list your vehicles.' },
+  identity: { title: 'Business identity', body: 'Name, logo, location, and website used by the marketplace storefront and channel profiles.' },
+  email: { title: 'Addresses customers and marketplaces use', body: 'The address customers see, the address that receives marketplace leads, and the address that sends notifications can be different.' },
+  preferences: { title: 'Dealership defaults', body: 'These choices apply to the selected dealership. Personal notification choices stay on your profile.' },
+};
+
 type Props = {
   dealerId: string;
   mode?: 'operator' | 'admin';
+  section?: ProfileSection;
   onDealersChanged?: () => void;
 };
 
@@ -107,7 +117,7 @@ function ChannelSummary({ profile }: { profile: DealershipProfile }) {
   );
 }
 
-export function DealershipProfilePanel({ dealerId, mode = 'operator', onDealersChanged }: Props) {
+export function DealershipProfilePanel({ dealerId, mode = 'operator', section = 'all', onDealersChanged }: Props) {
   const { data: profile, loading, error, reload } = useAsyncQuery(
     () => fetchDealershipProfile(dealerId),
     [dealerId],
@@ -258,18 +268,19 @@ export function DealershipProfilePanel({ dealerId, mode = 'operator', onDealersC
   }
   if (error && !profile) return <ErrorState message={error} onRetry={reload} />;
   if (!profile || !form) return null;
+  const showIdentity = section === 'all' || section === 'identity';
+  const showContact = section === 'all' || section === 'email';
+  const showChannels = section === 'all' || section === 'preferences';
 
   return (
     <div className="space-y-5">
       <div className="flex flex-wrap items-start justify-between gap-3">
         <div>
-          <h2 className="text-lg font-semibold text-ink-heading">Dealership profile</h2>
-          <p className="text-sm text-ink-muted mt-1">
-            What buyers see, and what destinations use when they list your vehicles.
-          </p>
+          <h2 className="text-lg font-semibold text-ink-heading">{SECTION_COPY[section].title}</h2>
+          <p className="text-sm text-ink-muted mt-1">{SECTION_COPY[section].body}</p>
         </div>
         <div className="flex flex-wrap items-center gap-2">
-          {marketplaceHref && (
+          {showIdentity && marketplaceHref && (
             <a
               href={marketplaceHref}
               target="_blank"
@@ -282,13 +293,13 @@ export function DealershipProfilePanel({ dealerId, mode = 'operator', onDealersC
         </div>
       </div>
 
-      {profile.publishingWarnings.length > 0 && (
+      {showIdentity && profile.publishingWarnings.length > 0 && (
         <SectionCard title="What still needs filling in">
           <WarningList warnings={profile.publishingWarnings} />
         </SectionCard>
       )}
 
-      <SectionCard title="How your dealership appears" subtitle={`Category: ${categoryLabel}`}>
+      {showIdentity && <SectionCard title="How your dealership appears" subtitle={`Category: ${categoryLabel}`}>
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <label className="block space-y-1">
             <span className="text-xs font-semibold text-ink-muted">Legal name</span>
@@ -303,9 +314,9 @@ export function DealershipProfilePanel({ dealerId, mode = 'operator', onDealersC
             <input type="url" value={form.websiteUrl} onChange={e => update('websiteUrl', e.target.value)} className={FIELD_CLS} placeholder="https://yourdealership.com" />
           </label>
         </div>
-      </SectionCard>
+      </SectionCard>}
 
-      <SectionCard title="Contact information">
+      {showContact && <SectionCard title="Public contact">
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <label className="block space-y-1 sm:col-span-2">
             <span className="text-xs font-semibold text-ink-muted">Primary contact name</span>
@@ -320,9 +331,9 @@ export function DealershipProfilePanel({ dealerId, mode = 'operator', onDealersC
             <input type="tel" value={form.contactPhone} onChange={e => update('contactPhone', e.target.value)} className={FIELD_CLS} placeholder="+15551234567" />
           </label>
         </div>
-      </SectionCard>
+      </SectionCard>}
 
-      <SectionCard title="Lot address">
+      {showIdentity && <SectionCard title="Lot address">
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <label className="block space-y-1 sm:col-span-2">
             <span className="text-xs font-semibold text-ink-muted">Street</span>
@@ -341,9 +352,9 @@ export function DealershipProfilePanel({ dealerId, mode = 'operator', onDealersC
             <input value={form.postalCode} onChange={e => update('postalCode', e.target.value)} className={FIELD_CLS} />
           </label>
         </div>
-      </SectionCard>
+      </SectionCard>}
 
-      <SectionCard title="Logo / branding">
+      {showIdentity && <SectionCard title="Logo">
         <div className="flex items-center gap-4">
           <button
             type="button"
@@ -377,9 +388,9 @@ export function DealershipProfilePanel({ dealerId, mode = 'operator', onDealersC
             }}
           />
         </div>
-      </SectionCard>
+      </SectionCard>}
 
-      <details className="rounded-xl border border-silver-200 bg-white">
+      {showChannels && <details open className="rounded-xl border border-silver-200 bg-white">
         <summary className="px-4 py-3 cursor-pointer">
           <span className="text-sm font-semibold text-ink-heading">How you hear about new inquiries</span>
           <span className="block text-xs font-normal text-ink-muted mt-0.5">
@@ -397,7 +408,7 @@ export function DealershipProfilePanel({ dealerId, mode = 'operator', onDealersC
             }}
           />
         </div>
-      </details>
+      </details>}
 
       {mode === 'admin' && (
         <SectionCard title="Internal reference">
