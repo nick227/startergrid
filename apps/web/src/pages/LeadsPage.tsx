@@ -218,7 +218,7 @@ function CommunicationsLog({ dealerId }: { dealerId: string }) {
               value={search}
               onChange={setSearch}
               placeholder="Search recipient, name, vehicle"
-              className="field-input min-w-0 flex-1"
+              className="min-w-0 flex-1"
             />
             <div className="flex flex-wrap gap-2">
               <Select
@@ -797,7 +797,7 @@ export default function LeadsPage({ dealerId, nav, activeTab, embedded = false }
                     value={search}
                     onChange={setSearch}
                     placeholder={`Search ${recordSingular}, buyer, contact, message, source`}
-                    className="field-input min-w-0 flex-1"
+                    className="min-w-0 flex-1"
                   />
                   <div className="grid grid-cols-1 gap-2 sm:grid-cols-3 xl:w-auto">
                     <Select

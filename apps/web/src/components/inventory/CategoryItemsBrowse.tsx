@@ -3,14 +3,38 @@ import {
   fetchCategoryItems,
   type CategoryInventoryItemSummary,
 } from '@/lib/api/sdk.ts';
+import { BrowseResultsHeader } from './BrowseResultsHeader.tsx';
+import { SearchField } from '@/components/ui';
 
 type Props = {
   dealerId: string;
   categoryId: string;
   onItemClick?: (itemId: string) => void;
-  /** Increment to trigger a refresh (e.g. after creating a new item). */
   refreshKey?: number;
 };
+
+type CategoryMatch = 'title' | 'stock' | 'identifier';
+
+const MATCH_LABEL: Record<CategoryMatch, string> = {
+  title: 'Matched title',
+  stock: 'Matched stock number',
+  identifier: 'Matched identifier',
+};
+
+function itemTitle(item: CategoryInventoryItemSummary): string {
+  const title = item.data['title'];
+  if (typeof title === 'string' && title.trim() !== '') return title;
+  return item.primaryIdentifier ?? item.stockNumber ?? item.id;
+}
+
+function categoryMatch(item: CategoryInventoryItemSummary, search: string): CategoryMatch | null {
+  const q = search.trim().toLowerCase();
+  if (!q) return null;
+  if (itemTitle(item).toLowerCase().includes(q)) return 'title';
+  if ((item.stockNumber ?? '').toLowerCase().includes(q)) return 'stock';
+  if ((item.primaryIdentifier ?? '').toLowerCase().includes(q)) return 'identifier';
+  return null;
+}
 
 function formatPrice(cents: number | null): string {
   if (cents == null || cents === 0) return '—';
@@ -19,7 +43,7 @@ function formatPrice(cents: number | null): string {
 
 function lifecycleLabel(item: CategoryInventoryItemSummary): string {
   if (item.removedAt) return 'Removed';
-  if (item.soldAt)    return 'Sold';
+  if (item.soldAt) return 'Sold';
   return 'Available';
 }
 
@@ -31,9 +55,9 @@ function lifecycleCls(item: CategoryInventoryItemSummary): string {
 
 export function CategoryItemsBrowse({ dealerId, categoryId, onItemClick, refreshKey }: Props) {
   const [items, setItems] = useState<CategoryInventoryItemSummary[]>([]);
-  const [total, setTotal] = useState(0);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [search, setSearch] = useState('');
 
   useEffect(() => {
     let cancelled = false;
@@ -43,7 +67,6 @@ export function CategoryItemsBrowse({ dealerId, categoryId, onItemClick, refresh
       .then(res => {
         if (cancelled) return;
         setItems(res.items);
-        setTotal(res.total);
       })
       .catch(err => {
         if (cancelled) return;
@@ -72,48 +95,61 @@ export function CategoryItemsBrowse({ dealerId, categoryId, onItemClick, refresh
     );
   }
 
-  return (
-    <div className="space-y-2">
-      <p className="text-[11px] text-ink-muted font-medium">{total} item{total !== 1 ? 's' : ''}</p>
-      <ul className="divide-y divide-silver-100">
-        {items.map(item => {
-          const title = (item.data['title'] as string | undefined) ?? item.primaryIdentifier ?? item.stockNumber ?? item.id;
-          const subtitle = [
-            item.data['author'] as string | undefined,
-            item.data['format'] as string | undefined,
-          ].filter(Boolean).join(' · ');
+  const visible = items.flatMap(item => {
+    const match = categoryMatch(item, search);
+    if (search.trim() !== '' && !match) return [];
+    return [{ item, match }];
+  });
 
-          return (
-            <li key={item.id}>
-              <button
-                type="button"
-                onClick={() => onItemClick?.(item.id)}
-                className="w-full flex items-center gap-3 px-2 py-3 hover:bg-silver-50 rounded-lg text-left transition-colors"
-              >
-                <div className="w-10 h-10 rounded-lg bg-silver-100 border border-silver-200 flex items-center justify-center text-lg shrink-0">
-                  📚
-                </div>
-                <div className="flex-1 min-w-0">
-                  <p className="text-sm font-semibold text-ink-body truncate">{title}</p>
-                  {subtitle && (
-                    <p className="text-[11px] text-ink-muted truncate">{subtitle}</p>
-                  )}
-                  <p className="text-[11px] text-ink-faint mt-0.5">
-                    Stock #{item.stockNumber ?? '—'}
-                    {item.primaryIdentifier && <span className="ml-2 font-mono">{item.primaryIdentifier}</span>}
-                  </p>
-                </div>
-                <div className="text-right shrink-0 space-y-1">
-                  <p className="text-sm font-semibold text-ink-body">{formatPrice(item.priceCents)}</p>
-                  <p className={`text-[10px] font-semibold ${lifecycleCls(item)}`}>
-                    {lifecycleLabel(item)}
-                  </p>
-                </div>
-              </button>
-            </li>
-          );
-        })}
-      </ul>
+  return (
+    <div className="space-y-3">
+      <BrowseResultsHeader
+        query={search}
+        count={visible.length}
+        browseLabel={`${items.length} item${items.length === 1 ? '' : 's'}`}
+        onClear={() => setSearch('')}
+      />
+      <SearchField
+        value={search}
+        onChange={setSearch}
+        placeholder="Search title, stock, or identifier"
+        className="max-w-xl"
+      />
+      {visible.length === 0 ? (
+        <p className="py-8 text-center text-sm text-ink-muted">No items match this search.</p>
+      ) : (
+        <ul className="divide-y divide-silver-100">
+          {visible.map(({ item, match }) => {
+            const title = itemTitle(item);
+            const author = item.data['author'];
+            const format = item.data['format'];
+            const subtitle = [typeof author === 'string' ? author : '', typeof format === 'string' ? format : ''].filter(Boolean).join(' · ');
+            return (
+              <li key={item.id}>
+                <button
+                  type="button"
+                  onClick={() => onItemClick?.(item.id)}
+                  className="flex w-full items-center gap-3 rounded-lg px-2 py-3 text-left hover:bg-silver-50"
+                >
+                  <div className="min-w-0 flex-1">
+                    <p className="truncate text-sm font-semibold text-ink-heading">{title}</p>
+                    {subtitle && <p className="truncate text-[11px] text-ink-muted">{subtitle}</p>}
+                    <p className="mt-0.5 text-[11px] text-ink-faint">
+                      Stock #{item.stockNumber ?? '—'}
+                      {item.primaryIdentifier && <span className="ml-2 font-mono">{item.primaryIdentifier}</span>}
+                    </p>
+                    {match && <p className="text-[11px] font-medium text-navy-800">{MATCH_LABEL[match]}</p>}
+                  </div>
+                  <div className="shrink-0 space-y-1 text-right">
+                    <p className="text-sm font-semibold text-ink-heading">{formatPrice(item.priceCents)}</p>
+                    <p className={`text-[10px] font-semibold ${lifecycleCls(item)}`}>{lifecycleLabel(item)}</p>
+                  </div>
+                </button>
+              </li>
+            );
+          })}
+        </ul>
+      )}
     </div>
   );
 }

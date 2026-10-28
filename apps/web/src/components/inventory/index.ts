@@ -41,7 +41,7 @@ export {
   buildVehicleColumns,
 } from './inventoryConfig.tsx';
 export type { CleanupFilter, FilterChipDef } from './inventoryConfig.tsx';
-export { InventoryWorkspace, useInventoryWorkspace, ApparelAddControls, EbookAddControls, SongAddControls, DigitalArtAddControls, VideoAddControls } from './InventoryWorkspace.tsx';
+export { ApparelAddControls, EbookAddControls, SongAddControls, DigitalArtAddControls, VideoAddControls } from './InventoryWorkspace.tsx';
 export { VehicleAddControls } from './VehicleAddControls.tsx';
 export { VinEntryPanel } from './VinEntryPanel.tsx';
 export { EbookEntryPanel } from './EbookEntryPanel.tsx';
@@ -60,9 +60,9 @@ export { CategoryItemDetailPanel } from './CategoryItemDetailPanel.tsx';
 export { CategoryItemsBrowse } from './CategoryItemsBrowse.tsx';
 export { CategoryItemPublishPanel } from './CategoryItemPublishPanel.tsx';
 export { MediaSlotGrid } from './MediaSlotGrid.tsx';
+export { BrowseCatalog } from './BrowseCatalog.tsx';
 export { InventoryRowCard } from './InventoryRowCard.tsx';
 export { InventoryDataGrid } from './InventoryDataGrid.tsx';
-export { InventoryGridToolbar } from './InventoryGridToolbar.tsx';
 export { InventorySummaryStrip } from './InventorySummaryStrip.tsx';
 export { INVENTORY_FIELD_REGISTRY, INVENTORY_COLUMN_PRESETS } from './fieldRegistry.ts';
 export { mapLegacyVehicleToGridRow } from './inventoryGridMapper.ts';

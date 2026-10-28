@@ -1,6 +1,8 @@
 import { describe, it, expect } from 'vitest';
 import {
   composeInventoryList,
+  inventorySearchMatch,
+  inventorySearchMatchLabel,
   matchesInventorySearch,
   movementFilterCountsScoped,
   type InventoryListQuery,
@@ -46,6 +48,12 @@ describe('inventory list composition', () => {
     expect(matchesInventorySearch(vehicles[0]!, 'honda')).toBe(true);
     expect(matchesInventorySearch(vehicles[0]!, 'vin001')).toBe(true);
     expect(matchesInventorySearch(vehicles[0]!, 'nomatch')).toBe(false);
+    expect(inventorySearchMatch(vehicles[0]!, 'honda')).toBe('make');
+    expect(inventorySearchMatch(vehicles[0]!, 'vin001')).toBe('vin');
+    expect(inventorySearchMatch(vehicles[0]!, 'a-1')).toBe('stock');
+    expect(inventorySearchMatch(vehicles[0]!, 'accord')).toBe('model');
+    expect(inventorySearchMatch(vehicles[0]!, '')).toBeNull();
+    expect(inventorySearchMatchLabel('stock')).toBe('Matched stock number');
   });
 
   it('applies readiness then movement filters together', () => {

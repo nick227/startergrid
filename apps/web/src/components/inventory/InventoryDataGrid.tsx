@@ -2,16 +2,14 @@
 import type { ReactNode } from 'react';
 import { InventoryGridRowDto } from '../../types/inventoryDto.ts';
 import { INVENTORY_FIELD_REGISTRY } from './fieldRegistry.ts';
-import { InventoryRowCard } from './InventoryRowCard.tsx';
+import { Button } from '@/components/ui';
 import { vehicleReadinessText } from '@/lib/listingStatus.ts';
 import type { VelocityVehicleItem } from '@/lib/api/velocityApi.ts';
 import { useCategorySchema } from '@/contexts/CategoryContext.tsx';
-import { gridColumnLabel, gridColumnVisible, showsAutomotiveComparables, usageDisplay } from '@/lib/categoryPresentation.ts';
+import { gridColumnLabel, gridColumnVisible, usageDisplay } from '@/lib/categoryPresentation.ts';
 
 type Props = {
-  dealerId?: string;
   items: InventoryGridRowDto[];
-  viewMode: 'table' | 'card';
   selectedIds: Set<string>;
   onToggleSelection: (id: string) => void;
   onToggleAll: () => void;
@@ -60,17 +58,11 @@ function renderCell(
           return (
             <div className="flex items-center gap-1.5">
               <span>{priceStr}</span>
-              <button
-                type="button"
-                onClick={e => {
-                  e.stopPropagation();
-                  onReviewReprice?.(reprice);
-                }}
-                className="px-1.5 py-0.5 rounded text-[10px] font-semibold bg-indigo-50 text-indigo-700 border border-indigo-200 hover:bg-indigo-100 transition-colors shadow-2xs"
-                title={`Suggested: $${(reprice.suggestedPriceCents / 100).toLocaleString()} (${reprice.daysOnLot} ${showsAutomotiveComparables(schema) ? 'days on lot' : 'days listed'})`}
-              >
-                Review price
-              </button>
+              <span onClick={event => event.stopPropagation()}>
+                <Button variant="ghost" size="sm" onClick={() => onReviewReprice?.(reprice)}>
+                  Review price
+                </Button>
+              </span>
             </div>
           );
         }
@@ -111,7 +103,7 @@ function renderCell(
 }
 
 export function InventoryDataGrid({
-  dealerId, items, viewMode, selectedIds, onToggleSelection, onToggleAll, onRowClick, activeColumns, sortKey, sortDir, onSort, emptyMessage, repriceMap, onReviewReprice
+  items, selectedIds, onToggleSelection, onToggleAll, onRowClick, activeColumns, sortKey, sortDir, onSort, emptyMessage, repriceMap, onReviewReprice
 }: Props) {
   const schema = useCategorySchema();
   const columns = activeColumns.filter(colKey => gridColumnVisible(schema, colKey));
@@ -125,55 +117,6 @@ export function InventoryDataGrid({
     );
   }
 
-  if (viewMode === 'card') {
-    return (
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 p-4">
-        {items.map(item => {
-          // Map InventoryGridRowDto to Claude's InventoryRowItem for the card
-          const cardItem = {
-            id: item.id,
-            category: schema.id,
-            primaryIdentifier: item.identity.primaryIdentifier,
-            displayTitle: schema.formatters.assetLead({
-              year: item.specs.year,
-              make: item.specs.make,
-              model: item.specs.model,
-              trim: item.specs.trim,
-              stockNumber: item.identity.stockNumber,
-            }),
-            stockNumber: item.identity.stockNumber,
-            priceCents: item.pricing.priceCents,
-            condition: item.specs.condition,
-            readiness: item.readiness.status,
-            readinessNextAction: item.readiness.nextAction,
-            mediaThumbnail: item.media.thumbnailUrl,
-            mediaCount: item.media.photoCount,
-            distribution: {
-              liveCount: item.publishing.liveCount,
-              queuedCount: item.publishing.queuedCount,
-              failedCount: item.publishing.failedCount,
-              blockedCount: item.publishing.blockedCount,
-              nextAction: item.publishing.nextAction,
-            }
-          };
-
-          return (
-            <InventoryRowCard
-              key={item.id}
-              dealerId={dealerId}
-              item={cardItem}
-              selected={selectedIds.has(item.id)}
-              selectable
-              onToggle={onToggleSelection}
-              onClick={() => onRowClick(item)}
-            />
-          );
-        })}
-      </div>
-    );
-  }
-
-  // Table view
   return (
     <div className="overflow-x-auto">
       <table className="w-full text-left text-sm whitespace-nowrap border-collapse">
@@ -195,11 +138,11 @@ export function InventoryDataGrid({
                 <th
                   key={colKey}
                   className={`px-3 py-2 text-[11px] font-bold text-ink-muted uppercase tracking-wider ${def.sortable ? 'cursor-pointer hover:text-ink-body select-none' : ''}`}
-                  onClick={() => def.sortable && onSort(colKey)}
+                  onClick={() => def.sortable && onSort(def.sortKey ?? colKey)}
                 >
                   <div className="flex items-center gap-1">
                     {gridColumnLabel(schema, colKey, def.label)}
-                    {def.sortable && sortKey === colKey && (
+                    {def.sortable && sortKey === (def.sortKey ?? colKey) && (
                       <span className="text-orange-600 ml-1">{sortDir === 'asc' ? '↑' : '↓'}</span>
                     )}
                   </div>

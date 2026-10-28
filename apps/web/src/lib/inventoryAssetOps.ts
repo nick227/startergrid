@@ -30,15 +30,32 @@ const READINESS_ORDER: Record<VehicleListItem['readiness'], number> = {
   READY: 2,
 };
 
-export function matchesInventorySearch(vehicle: VehicleListItem, search: string): boolean {
+export type InventorySearchField = 'stock' | 'vin' | 'make' | 'model';
+
+const SEARCH_FIELD_LABEL: Record<InventorySearchField, string> = {
+  stock: 'Matched stock number',
+  vin: 'Matched VIN',
+  make: 'Matched make',
+  model: 'Matched model',
+};
+
+export function inventorySearchMatch(vehicle: VehicleListItem, search: string): InventorySearchField | null {
   const q = search.trim().toLowerCase();
-  if (!q) return true;
-  return (
-    vehicle.stockNumber.toLowerCase().includes(q)
-    || vehicle.vin.toLowerCase().includes(q)
-    || vehicle.make.toLowerCase().includes(q)
-    || vehicle.model.toLowerCase().includes(q)
-  );
+  if (!q) return null;
+  if (vehicle.stockNumber.toLowerCase().includes(q)) return 'stock';
+  if (vehicle.vin.toLowerCase().includes(q)) return 'vin';
+  if (vehicle.make.toLowerCase().includes(q)) return 'make';
+  if (vehicle.model.toLowerCase().includes(q)) return 'model';
+  return null;
+}
+
+export function inventorySearchMatchLabel(field: InventorySearchField): string {
+  return SEARCH_FIELD_LABEL[field];
+}
+
+export function matchesInventorySearch(vehicle: VehicleListItem, search: string): boolean {
+  if (!search.trim()) return true;
+  return inventorySearchMatch(vehicle, search) !== null;
 }
 
 export function passesInventoryFilters(

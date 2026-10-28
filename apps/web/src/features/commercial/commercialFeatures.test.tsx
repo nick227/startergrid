@@ -5,7 +5,7 @@ import { afterEach, describe, expect, it, vi } from 'vitest';
 import { SyndicationSentryCard } from '@/components/platforms/SyndicationSentryCard.tsx';
 import { InventorySummaryStrip } from '@/components/inventory/InventorySummaryStrip.tsx';
 import { WindowStickerModal } from '@/components/inventory/WindowStickerModal.tsx';
-import { InventoryGridToolbar } from '@/components/inventory/InventoryGridToolbar.tsx';
+import { BrowseToolbar } from '@/components/inventory/BrowseToolbar.tsx';
 import { InventoryDetailPanel } from '@/components/inventory/InventoryDetailPanel.tsx';
 import { LeadCrmHandoffModal } from '@/components/leads/LeadCrmHandoffModal.tsx';
 import LeadsPage from '@/pages/LeadsPage.tsx';
@@ -663,40 +663,45 @@ describe('Usability Improvement 1: Inline CRM Delivery Status', () => {
 });
 
 describe('Usability Improvement 2: Batch Vehicle Document Printing & FTC Warranty Verification', () => {
-  it('shows batch print button only when vehicles are selected in InventoryGridToolbar', () => {
+  it('shows batch print button only when vehicles are selected in the browse toolbar', () => {
     const onPrint = vi.fn();
-
-    // 0 selected: No print button
-    render(
-      <InventoryGridToolbar
-        viewMode="table"
-        onChangeViewMode={vi.fn()}
-        activeColumns={[]}
-        onChangeColumns={vi.fn()}
+    const toolbar = (selectedCount: number) => (
+      <BrowseToolbar
         search=""
         onSearchChange={vi.fn()}
-        selectedCount={0}
+        searchPlaceholder="Search"
+        lotStatus="on_lot"
+        onLotStatus={vi.fn()}
+        lotCounts={{ on_lot: 3, needs_fix: 0, sold: 0 }}
+        density="list"
+        onDensity={vi.fn()}
+        filter="All"
+        onFilterChange={vi.fn()}
+        counts={{ active: 3, ready: 3, needsPhotos: 0, queued: 0, blocked: 0 }}
+        ageWeek={false}
+        onToggleAge={vi.fn()}
+        oldest={false}
+        onToggleOldest={vi.fn()}
+        selectedCount={selectedCount}
+        allSelected={false}
+        onToggleAll={vi.fn()}
+        onClearSelection={vi.fn()}
         onPrintSelected={onPrint}
+        activeColumns={[]}
+        onChangeColumns={vi.fn()}
+        sheet={false}
+        onShowSheet={vi.fn()}
+        onShowRows={vi.fn()}
       />
     );
+
+    render(toolbar(0));
     expect(screen.queryByText(/Print documents/)).toBeNull();
 
     cleanup();
 
-    // 3 selected: Contextual print action appears
-    render(
-      <InventoryGridToolbar
-        viewMode="table"
-        onChangeViewMode={vi.fn()}
-        activeColumns={[]}
-        onChangeColumns={vi.fn()}
-        search=""
-        onSearchChange={vi.fn()}
-        selectedCount={3}
-        onPrintSelected={onPrint}
-      />
-    );
-    const printBtn = screen.getByText('🖨️ Print documents (3)');
+    render(toolbar(3));
+    const printBtn = screen.getByText('Print documents (3)');
     expect(printBtn).toBeTruthy();
 
     fireEvent.click(printBtn);

@@ -1,4 +1,5 @@
 
+import { FilterChip } from '@/components/ui';
 
 type Props = {
   counts: {
@@ -15,28 +16,24 @@ type Props = {
 
 export function InventorySummaryStrip({ counts, activeFilter, onFilterChange }: Props) {
   const chips = [
-    { id: 'All', label: `All ${counts.active}`, color: 'bg-silver-100 text-ink-body border-silver-200' },
-    { id: 'Ready', label: `Ready to send ${counts.ready}`, color: 'bg-green-100 text-green-700 border-green-200' },
-    { id: 'Needs photos', label: `Needs photos ${counts.needsPhotos}`, color: 'bg-amber-100 text-amber-700 border-amber-200' },
-    { id: 'Blocked', label: `Cannot list ${counts.blocked}`, color: 'bg-red-100 text-red-700 border-red-200' },
+    { id: 'All', label: `All ${counts.active}` },
+    { id: 'Ready', label: `Ready to send ${counts.ready}` },
+    { id: 'Needs photos', label: `Needs photos ${counts.needsPhotos}` },
+    { id: 'Blocked', label: `Cannot list ${counts.blocked}` },
     ...(counts.aging !== undefined && counts.aging > 0
-      ? [{ id: 'Aging', label: `Aging ${counts.aging}`, color: 'bg-indigo-50 text-indigo-700 border-indigo-200' }]
+      ? [{ id: 'Aging', label: `Aging ${counts.aging}` }]
       : []),
   ];
 
   return (
-    <div className="flex flex-wrap items-center gap-2 py-3 border-b border-silver-100">
-      <div className="text-sm text-ink-body font-semibold mr-2">Filters:</div>
+    <div className="flex flex-wrap items-center gap-2" role="group" aria-label="Filters">
       {chips.map(chip => (
-        <button
+        <FilterChip
           key={chip.id}
+          label={chip.label}
+          selected={activeFilter === chip.id}
           onClick={() => onFilterChange(chip.id)}
-          className={`px-3 py-1 rounded-full text-xs font-semibold border transition-colors ${
-            activeFilter === chip.id ? 'ring-2 ring-navy-500 ring-offset-1 ' + chip.color : 'opacity-70 hover:opacity-100 ' + chip.color
-          }`}
-        >
-          {chip.label}
-        </button>
+        />
       ))}
     </div>
   );
