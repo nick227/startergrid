@@ -1,4 +1,4 @@
-const SITE = 'Vehicle Marketplace';
+const SITE = 'DealerGrid Marketplace';
 
 export function setPageMeta(title: string, description?: string): void {
   document.title = title === SITE ? title : `${title} · ${SITE}`;
@@ -18,5 +18,5 @@ export function setPageMeta(title: string, description?: string): void {
 }
 
 export function resetPageMeta(): void {
-  setPageMeta(SITE, 'Browse price, mileage, and condition from participating dealers.');
+  setPageMeta(SITE, 'Browse price, mileage, and condition directly from connected sellers.');
 }

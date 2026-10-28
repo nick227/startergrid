@@ -193,7 +193,7 @@ function parseCategoryPath(path: string, search: string): MarketplaceRoute | nul
 }
 
 export function parseRoute(): MarketplaceRoute {
-  const raw = window.location.hash.replace(/^#\/?/, '');
+  const raw = window.location.hash.replace(/^(?:#|\/)+/, '');
   const [path, search = ''] = raw.split('?');
 
   if (path === '' && !search) return { page: 'sites' };
