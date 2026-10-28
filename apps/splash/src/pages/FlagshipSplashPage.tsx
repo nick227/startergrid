@@ -78,8 +78,8 @@ export default function FlagshipSplashPage() {
         {/* 05 DMS Connection • 06 Automotive Experts • 07 Leads & CRM • 09 Team Collaboration • 10 Market Demand */}
         <SupportingCapabilitiesSection />
 
-        {/* 05 — CONVERSION (Working Account Setup & Evaluation Request) */}
-        <ConversionSection />
+        {/* 05 — CONVERSION (Instant Self-Serve Signup & Contact Form) */}
+        <ConversionSection onOpenPricing={openPricing} />
       </main>
 
       {/* Footer */}

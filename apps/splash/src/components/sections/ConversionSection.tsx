@@ -1,7 +1,11 @@
 import React, { useState } from 'react';
 import { submitDealershipIntake, type IntakeReceipt } from '../../lib/dealershipIntakeService.ts';
 
-export const ConversionSection: React.FC = () => {
+interface ConversionSectionProps {
+  onOpenPricing?: () => void;
+}
+
+export const ConversionSection: React.FC<ConversionSectionProps> = ({ onOpenPricing }) => {
   const [dealershipName, setDealershipName] = useState('');
   const [contactName, setContactName] = useState('');
   const [email, setEmail] = useState('');
@@ -64,7 +68,7 @@ export const ConversionSection: React.FC = () => {
                 marginBottom: '20px',
               }}
             >
-              DEALERSHIP ONBOARDING
+              INSTANT SETUP & CONTACT
             </div>
 
             <h2
@@ -85,11 +89,51 @@ export const ConversionSection: React.FC = () => {
                 fontSize: 'clamp(1.15rem, 1.8vw, 1.45rem)',
                 lineHeight: 1.6,
                 color: '#94a3b8',
-                marginBottom: '40px',
+                marginBottom: '28px',
               }}
             >
-              Request an evaluation for your store. Speak with our team to verify your DMS export format and explore live dealership access.
+              There is no application or approval process. Sign up today in under 2 minutes with an email and credit card, or contact our team directly for custom integrations.
             </p>
+
+            {/* Instant Self-Serve Signup Callout */}
+            {onOpenPricing && (
+              <div
+                style={{
+                  background: 'rgba(37, 99, 235, 0.08)',
+                  border: '1px solid rgba(37, 99, 235, 0.25)',
+                  borderRadius: '12px',
+                  padding: '22px',
+                  marginBottom: '36px',
+                }}
+              >
+                <div style={{ fontSize: '0.8125rem', fontWeight: 800, color: '#60a5fa', letterSpacing: '0.06em', textTransform: 'uppercase', marginBottom: '6px' }}>
+                  ⚡ Self-Serve Rooftop Activation
+                </div>
+                <p style={{ color: '#cbd5e1', fontSize: '0.875rem', lineHeight: 1.5, margin: '0 0 16px' }}>
+                  Start your 14-day evaluation with $0 charged today. Connect your vehicles immediately.
+                </p>
+                <button
+                  type="button"
+                  onClick={onOpenPricing}
+                  style={{
+                    padding: '10px 20px',
+                    borderRadius: '6px',
+                    background: '#2563eb',
+                    color: '#ffffff',
+                    border: 'none',
+                    fontSize: '0.875rem',
+                    fontWeight: 600,
+                    cursor: 'pointer',
+                    boxShadow: '0 2px 10px rgba(37, 99, 235, 0.3)',
+                    transition: 'background 0.15s ease',
+                  }}
+                  onMouseEnter={(e) => (e.currentTarget.style.background = '#1d4ed8')}
+                  onMouseLeave={(e) => (e.currentTarget.style.background = '#2563eb')}
+                >
+                  View Pricing & Sign Up Now →
+                </button>
+              </div>
+            )}
 
             <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
               <div style={{ display: 'flex', alignItems: 'flex-start', gap: '16px' }}>
@@ -213,7 +257,7 @@ export const ConversionSection: React.FC = () => {
                   </div>
                   <div>
                     <h3 style={{ fontSize: '1.25rem', fontWeight: 800, color: '#ffffff', margin: 0 }}>
-                      {receipt.isDuplicate ? 'Active Request on File' : 'Evaluation Request Received'}
+                      {receipt.isDuplicate ? 'Active Message on File' : 'Message Sent Successfully'}
                     </h3>
                     <span style={{ fontSize: '0.75rem', color: '#64748b', fontFamily: 'monospace' }}>
                       REF: {receipt.referenceId}
@@ -223,8 +267,8 @@ export const ConversionSection: React.FC = () => {
 
                 <p style={{ color: '#cbd5e1', fontSize: '0.875rem', lineHeight: 1.6, marginBottom: '24px' }}>
                   {receipt.isDuplicate
-                    ? `We already have an active evaluation request for ${receipt.dealershipName} on file. Our team is reviewing your ${receipt.primaryDms} configuration and will follow up shortly.`
-                    : `Thank you, ${receipt.contactName}. Your dealership evaluation request has been received. Our team will review your lot requirements and follow up within one business day.`}
+                    ? `We already have an active message for ${receipt.dealershipName} on file. Our team is reviewing your notes and will follow up shortly.`
+                    : `Thank you, ${receipt.contactName}. Your message has been received. Our team will follow up within one business day. You can also sign up today at any time with an email and credit card.`}
                 </p>
 
                 <div
@@ -270,17 +314,17 @@ export const ConversionSection: React.FC = () => {
                     cursor: 'pointer',
                   }}
                 >
-                  Submit Another Request
+                  Send Another Message
                 </button>
               </div>
             ) : (
               <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
                 <div>
                   <h3 style={{ fontSize: '1.25rem', fontWeight: 800, color: '#ffffff', marginBottom: '6px' }}>
-                    Request Dealership Access
+                    Contact Us
                   </h3>
                   <p style={{ color: '#94a3b8', fontSize: '0.875rem', margin: 0 }}>
-                    Speak with our automotive team to verify your DMS export and explore DealerGrid.
+                    Have questions about DMS compatibility, syndication channels, or custom feeds? Send our automotive team a note.
                   </p>
                 </div>
 
@@ -479,7 +523,7 @@ export const ConversionSection: React.FC = () => {
                     onMouseEnter={(e) => (e.currentTarget.style.background = '#1d4ed8')}
                     onMouseLeave={(e) => (e.currentTarget.style.background = '#2563eb')}
                   >
-                    Submit Dealership Request
+                    Send Message
                   </button>
                 </div>
               </form>

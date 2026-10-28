@@ -212,16 +212,16 @@ export const FlagshipHeroSection: React.FC<FlagshipHeroSectionProps> = ({ onCont
             </div>
           </div>
 
-          {/* AI Generated Graphic: Ultra-Minimalist Bauhaus Car with Signal */}
-          <div style={{ position: 'relative', width: '100%', lineHeight: 0, background: '#1c2538', display: 'flex', justifyContent: 'center' }}>
+          {/* AI Generated Graphic: Sophisticated Multi-Channel Syndication Network */}
+          <div style={{ position: 'relative', width: '100%', lineHeight: 0, background: '#090d16', display: 'flex', justifyContent: 'center' }}>
             <img
-              src="/hero-distribution-bauhaus.jpg"
-              alt="DealerGrid Minimalist Bauhaus Connected Vehicle Signal Distribution"
+              src="/hero-distribution-sleek.jpg"
+              alt="DealerGrid Multi-Channel Vehicle Syndication and Connected Automotive Distribution Network"
               style={{
                 width: '100%',
                 height: 'auto',
                 display: 'block',
-                maxHeight: '480px',
+                maxHeight: '540px',
                 objectFit: 'contain',
               }}
               loading="eager"

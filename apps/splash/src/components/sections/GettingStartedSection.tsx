@@ -294,10 +294,10 @@ export const GettingStartedSection: React.FC = () => {
               <>
                 <div style={{ marginBottom: '24px' }}>
                   <h3 style={{ fontSize: '1.25rem', fontWeight: 800, color: '#ffffff', marginBottom: '6px' }}>
-                    Request Dealership Access
+                    Contact Us
                   </h3>
                   <p style={{ color: '#94a3b8', fontSize: '0.8125rem', lineHeight: 1.5, margin: 0 }}>
-                    Speak with our deployment engineering team to evaluate StarterGrid for your lot.
+                    Have questions about DMS compatibility, syndication channels, or custom feeds? Send our team a note, or sign up today in minutes with an email and credit card.
                   </p>
                 </div>
 
@@ -504,7 +504,7 @@ export const GettingStartedSection: React.FC = () => {
                         cursor: 'pointer',
                       }}
                     >
-                      Submit Access Request
+                      Send Message
                     </button>
                   </div>
                 </form>

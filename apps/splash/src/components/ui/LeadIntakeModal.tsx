@@ -210,13 +210,13 @@ export const LeadIntakeModal: React.FC<LeadIntakeModalProps> = ({ isOpen, onClos
                   border: '1px solid rgba(37, 99, 235, 0.3)',
                 }}
               >
-                Dealership Evaluation
+                Direct Support & Inquiries
               </span>
               <h2 style={{ fontSize: '1.5rem', fontWeight: 800, marginTop: '12px', letterSpacing: '-0.02em' }}>
-                Request Dealership Access
+                Contact Us
               </h2>
               <p style={{ color: 'rgba(255, 255, 255, 0.6)', fontSize: '0.875rem', marginTop: '6px' }}>
-                Speak with our automotive deployment engineering team to review your DMS export compatibility and lot requirements.
+                Have questions or need custom integration assistance? Send our automotive team a message below. You can also sign up immediately with an email and credit card.
               </p>
             </div>
 
@@ -401,7 +401,7 @@ export const LeadIntakeModal: React.FC<LeadIntakeModalProps> = ({ isOpen, onClos
                     boxShadow: '0 4px 14px rgba(37, 99, 235, 0.4)',
                   }}
                 >
-                  Submit Dealership Information →
+                  Send Message →
                 </button>
               </div>
 

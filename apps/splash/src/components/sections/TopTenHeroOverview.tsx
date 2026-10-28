@@ -70,7 +70,7 @@ export const TopTenHeroOverview: React.FC<TopTenHeroOverviewProps> = ({ onReques
                 cursor: 'pointer',
               }}
             >
-              Request Dealership Access
+              Contact Us
             </button>
 
             <a

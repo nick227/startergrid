@@ -25,7 +25,7 @@ export const content: SplashContent = {
     headline: 'One platform for online automotive sales.',
     subheadline:
       'Manage your vehicles, connect online sales channels, publish inventory, receive inquiries, and measure results.',
-    ctaLabel: 'Request Dealership Access',
+    ctaLabel: 'Contact Us',
     ctaSecondaryLabel: 'Explore Live Demo',
     trustItems: [
       'Works alongside your existing DMS (CDK, Reynolds, Dealertrack)',
@@ -118,8 +118,8 @@ export const content: SplashContent = {
   block5_cta: {
     heading: 'Get Started with StarterGrid',
     subheading:
-      'Evaluate StarterGrid for your dealership. Speak with our team to verify your DMS export format and see how easily you can manage inventory online.',
-    ctaLabel: 'Request Dealership Access',
+      'Have questions about DMS feeds, multi-rooftop accounts, or marketplace listings? Contact our team, or sign up today in minutes with an email and credit card.',
+    ctaLabel: 'Contact Us',
     urgencyNote: 'Our team will review your lot requirements and follow up within one business day.',
   },
 };

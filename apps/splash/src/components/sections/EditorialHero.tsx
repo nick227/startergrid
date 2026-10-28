@@ -126,7 +126,7 @@ export const EditorialHero: React.FC<EditorialHeroProps> = ({ onRequestAccess })
                   cursor: 'pointer',
                 }}
               >
-                Request Dealership Access
+                Contact Us
               </button>
 
               <a
