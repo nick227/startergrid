@@ -3,6 +3,8 @@ import type { OperatorNavHandlers } from '@/lib/operatorNav.ts';
 import { fetchDealershipProfile, fetchPublishStatus } from '@/lib/api/sdk.ts';
 import type { DealershipProfile, PublishStatusResponse } from '@/lib/types.ts';
 import { platformLooksConnected } from '@/lib/pagePrimaryState.ts';
+import { workspaceHash } from '@/lib/routes.ts';
+import { workspaceRequest, type TeamData } from '@/lib/api/workspaces.ts';
 
 type Props = {
   dealerId: string;
@@ -21,7 +23,8 @@ type SetupStep = {
 
 const DISMISS_KEY_PREFIX = 'getting-started-dismissed:';
 
-function buildSetupSteps(nav: OperatorNavHandlers, profile: DealershipProfile, status: PublishStatusResponse): SetupStep[] {
+function buildSetupSteps(dealerId: string, nav: OperatorNavHandlers, profile: DealershipProfile, status: PublishStatusResponse, teamSize: number | null): SetupStep[] {
+  const open = (workspace: 'company' | 'team', view: string) => { window.location.hash = workspaceHash(dealerId, workspace, view); };
   return [
     {
       key: 'vehicle',
@@ -39,17 +42,31 @@ function buildSetupSteps(nav: OperatorNavHandlers, profile: DealershipProfile, s
     },
     {
       key: 'channels',
-      label: 'Connect a destination where shoppers look',
+      label: 'Connect a channel where shoppers look',
       done: status.platforms.some(platformLooksConnected),
       onGo: nav.goToPlatforms,
-      ctaLabel: 'Connect a destination',
+      ctaLabel: 'Open channels',
+    },
+    {
+      key: 'identity',
+      label: 'Add the website and lot address',
+      done: profile.publishingWarnings.every(w => w.field !== 'websiteUrl' && !w.field.startsWith('rooftopAddress')),
+      onGo: () => open('company', 'identity'),
+      ctaLabel: 'Open Company',
+    },
+    {
+      key: 'contact',
+      label: 'Set the company contact',
+      done: profile.publishingWarnings.every(w => w.field !== 'primaryContact.email' && w.field !== 'primaryContact.phone'),
+      onGo: () => open('company', 'email'),
+      ctaLabel: 'Open Company',
     },
     {
       key: 'team',
-      label: 'Set primary contact and invite your team',
-      done: profile.publishingWarnings.every(w => w.field !== 'primaryContactEmail'),
-      onGo: nav.goToSettings,
-      ctaLabel: 'Invite team',
+      label: 'Invite your team',
+      done: teamSize !== null && teamSize > 1,
+      onGo: () => open('team', 'people'),
+      ctaLabel: 'Open team',
     },
   ];
 }
@@ -63,6 +80,7 @@ export function GettingStartedChecklist({ dealerId, nav, profile: profileProp, s
   const [loadedProfile, setLoadedProfile] = useState<DealershipProfile | null>(profileProp ?? null);
   const [loadedStatus, setLoadedStatus] = useState<PublishStatusResponse | null>(statusProp ?? null);
   const [dismissed, setDismissed] = useState(() => localStorage.getItem(DISMISS_KEY_PREFIX + dealerId) === '1');
+  const [teamSize, setTeamSize] = useState<number | null>(null);
   const profile = profileProp ?? loadedProfile;
   const status = statusProp ?? loadedStatus;
 
@@ -82,6 +100,14 @@ export function GettingStartedChecklist({ dealerId, nav, profile: profileProp, s
     return () => { active = false; };
   }, [dealerId, profileProp, statusProp]);
 
+  useEffect(() => {
+    let active = true;
+    workspaceRequest<TeamData>(dealerId, 'team')
+      .then(data => { if (active) setTeamSize(data.members.length); })
+      .catch(() => { if (active) setTeamSize(null); });
+    return () => { active = false; };
+  }, [dealerId]);
+
   const dismiss = () => {
     localStorage.setItem(DISMISS_KEY_PREFIX + dealerId, '1');
     setDismissed(true);
@@ -89,7 +115,7 @@ export function GettingStartedChecklist({ dealerId, nav, profile: profileProp, s
 
   if (dismissed || !profile || !status) return null;
 
-  const steps = buildSetupSteps(nav, profile, status);
+  const steps = buildSetupSteps(dealerId, nav, profile, status, teamSize);
   const allSetupDone = steps.every(s => s.done);
   const connectedCount = status.platforms.filter(platformLooksConnected).length;
   const autopilotOn = (profile.autopilotPreference ?? 'OFF') === 'ON';
@@ -102,7 +128,6 @@ export function GettingStartedChecklist({ dealerId, nav, profile: profileProp, s
 
   const doneCount = steps.filter(s => s.done).length;
   const progressPercent = Math.round((doneCount / steps.length) * 100);
-  const firstIncompleteStep = steps.find(s => !s.done);
 
   return (
     <div className="surface-card-operator p-5 rounded-xl border border-silver-200 bg-white space-y-4">
@@ -125,23 +150,6 @@ export function GettingStartedChecklist({ dealerId, nav, profile: profileProp, s
           Hide checklist
         </button>
       </div>
-
-      {/* Immediate Next Action Prompt */}
-      {firstIncompleteStep && (
-        <div className="bg-navy-50/70 border border-navy-100 rounded-lg p-3 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-          <div className="space-y-0.5">
-            <span className="text-[10px] font-bold uppercase tracking-wider text-navy-800">Your first action</span>
-            <p className="text-xs font-semibold text-ink-heading">{firstIncompleteStep.label}</p>
-          </div>
-          <button
-            type="button"
-            onClick={firstIncompleteStep.onGo}
-            className="btn-primary-operator text-xs py-1.5 px-3 self-start sm:self-auto shrink-0 shadow-sm"
-          >
-            {firstIncompleteStep.ctaLabel} →
-          </button>
-        </div>
-      )}
 
       {/* Part 1: Account & Lot Setup */}
       <div className="space-y-2 pt-2 border-t border-silver-100">

@@ -103,13 +103,15 @@ export function PageShell({
             <DealerLogo dealershipId={dealerId} />
             <div className="min-w-0">
               <h1 className="truncate text-sm font-bold tracking-tight sm:text-base">{displayDealerName}</h1>
-              <p className="hidden truncate text-[11px] text-ink-faint sm:block">
+              <p className="truncate text-[11px] text-silver-200">
                 {sectionLabel ?? TAB_LABELS[activeTab]}
-                <span className="text-silver-300"> · </span>
-                <span>{categorySchema.label}</span>
-                {!hideDealerId && !isDealerFacingRole(user?.role ?? '') && (
-                  <span className="font-mono"> · {dealerId}</span>
-                )}
+                <span className="hidden text-ink-faint sm:inline">
+                  <span className="text-silver-300"> · </span>
+                  <span>{categorySchema.label}</span>
+                  {!hideDealerId && !isDealerFacingRole(user?.role ?? '') && (
+                    <span className="font-mono"> · {dealerId}</span>
+                  )}
+                </span>
               </p>
             </div>
           </div>

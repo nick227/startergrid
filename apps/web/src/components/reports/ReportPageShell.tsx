@@ -48,6 +48,7 @@ export function ReportPageShell({
       refreshing={refreshing}
       lastRefresh={lastRefresh}
       hideDealerId
+      sectionLabel={`Reports · ${title}`}
     >
       <nav className="mb-4" aria-label="Report breadcrumb">
         <button
@@ -62,7 +63,7 @@ export function ReportPageShell({
       </nav>
 
       <header className="mb-5 max-w-3xl">
-        <h1 className="text-xl font-bold text-ink-heading tracking-tight">{title}</h1>
+        <h2 className="text-xl font-bold text-ink-heading tracking-tight">{title}</h2>
         <p className="text-sm text-ink-muted mt-2 leading-relaxed">{decision}</p>
       </header>
 

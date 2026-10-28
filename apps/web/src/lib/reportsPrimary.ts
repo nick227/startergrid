@@ -20,10 +20,10 @@ export function reportsPrimary(input: {
   if (kind === 'empty') {
     return {
       kind,
-      title: 'Nothing to report yet',
-      why: 'These numbers fill in after vehicles are listed and sent to destinations.',
+      title: 'Reports are not set up yet',
+      why: 'There are no vehicles to measure. This is missing setup, not a healthy set of listings.',
       action: 'vehicles',
-      actionLabel: 'Open vehicles',
+      actionLabel: 'Add vehicles',
     };
   }
   if (input.blocked > 0) {

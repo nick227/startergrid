@@ -41,6 +41,22 @@ export function dealerSetupIncomplete(input: {
   );
 }
 
+export type OperatingPosture = 'unconfigured' | 'attention' | 'clear';
+
+/** A dealership with nothing in use is not healthy. All clear requires a configured system and a completed check. */
+export function operatingPosture(input: {
+  vehicleTotal: number;
+  channelConfigured: boolean;
+  leadCount: number;
+  problemCount: number;
+  checksIncomplete: boolean;
+}): OperatingPosture {
+  const inUse = input.vehicleTotal > 0 || input.channelConfigured || input.leadCount > 0;
+  if (!inUse) return 'unconfigured';
+  if (input.problemCount > 0 || input.checksIncomplete) return 'attention';
+  return 'clear';
+}
+
 /** Reports: blocked listings and failed sends win; empty inventory is empty, not a six-widget dashboard. */
 export function reportsExperience(input: {
   vehicleTotal: number;

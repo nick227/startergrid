@@ -138,7 +138,7 @@ describe('Attention List Interface: DealerAttentionSection', () => {
   };
 
   it('renders blocking and warning attention items with proper severity indicators', () => {
-    render(<DealerAttentionSection dealerId="dealer-123" attention={baseAttention} nav={mockNav} />);
+    render(<DealerAttentionSection dealerId="dealer-123" attention={baseAttention} nav={mockNav} posture="attention" />);
 
     expect(screen.getByText('Needs Attention')).toBeTruthy();
     expect(screen.getByText(/1 blocking/)).toBeTruthy();
@@ -147,7 +147,7 @@ describe('Attention List Interface: DealerAttentionSection', () => {
   });
 
   it('routes action buttons according to action.kind and lands on affected records with filters and IDs', () => {
-    render(<DealerAttentionSection dealerId="dealer-123" attention={baseAttention} nav={mockNav} />);
+    render(<DealerAttentionSection dealerId="dealer-123" attention={baseAttention} nav={mockNav} posture="attention" />);
 
     // Compact target preview is displayed on Home
     expect(screen.getByText(/2022 Honda Civic, 2021 Toyota RAV4/)).toBeTruthy();
@@ -189,7 +189,7 @@ describe('Attention List Interface: DealerAttentionSection', () => {
       ],
     };
 
-    render(<DealerAttentionSection dealerId="dealer-123" attention={leadAttention} nav={mockNav} />);
+    render(<DealerAttentionSection dealerId="dealer-123" attention={leadAttention} nav={mockNav} posture="attention" />);
 
     const retryBtn = screen.getByRole('button', { name: 'Review leads & retry' });
     act(() => {
@@ -201,14 +201,14 @@ describe('Attention List Interface: DealerAttentionSection', () => {
   });
 
   it('respects action.enabled: false and displays the disabledReason without clickable action', () => {
-    render(<DealerAttentionSection dealerId="dealer-123" attention={baseAttention} nav={mockNav} />);
+    render(<DealerAttentionSection dealerId="dealer-123" attention={baseAttention} nav={mockNav} posture="attention" />);
 
     expect(screen.getByText(/No CRM delivery address configured in Settings/)).toBeTruthy();
     expect(screen.queryByRole('button', { name: 'Review leads & retry' })).toBeNull();
   });
 
   it('expands and collapses affected records', () => {
-    render(<DealerAttentionSection dealerId="dealer-123" attention={baseAttention} nav={mockNav} />);
+    render(<DealerAttentionSection dealerId="dealer-123" attention={baseAttention} nav={mockNav} posture="attention" />);
 
     expect(screen.queryByText('2022 Honda Civic')).toBeNull();
     const viewRecordsBtn = screen.getByRole('button', { name: 'View records (2)' });
@@ -227,7 +227,7 @@ describe('Attention List Interface: DealerAttentionSection', () => {
   });
 
   it('keeps WAITING items collapsed under secondary section', () => {
-    render(<DealerAttentionSection dealerId="dealer-123" attention={baseAttention} nav={mockNav} />);
+    render(<DealerAttentionSection dealerId="dealer-123" attention={baseAttention} nav={mockNav} posture="attention" />);
 
     expect(screen.getByText(/Waiting on external actions/)).toBeTruthy();
     expect(screen.queryByText('CarGurus partner account approval in progress')).toBeNull();
@@ -246,7 +246,7 @@ describe('Attention List Interface: DealerAttentionSection', () => {
       unavailableAreas: ['VEHICLES'],
     };
 
-    render(<DealerAttentionSection dealerId="dealer-123" attention={incompleteAttention} nav={mockNav} />);
+    render(<DealerAttentionSection dealerId="dealer-123" attention={incompleteAttention} nav={mockNav} posture="attention" />);
 
     expect(screen.getByText(/Partial status inspection/)).toBeTruthy();
     expect(screen.getByText(/Could not check records for VEHICLES/)).toBeTruthy();
@@ -593,7 +593,7 @@ describe('Three Remaining UX Considerations', () => {
       unavailableAreas: [],
     };
 
-    render(<DealerAttentionSection dealerId="dealer-123" attention={compactAttention} nav={mockNav} />);
+    render(<DealerAttentionSection dealerId="dealer-123" attention={compactAttention} nav={mockNav} posture="attention" />);
 
     // 1. Shows compact target preview without taking over Home
     expect(screen.getByText(/Target:/)).toBeTruthy();

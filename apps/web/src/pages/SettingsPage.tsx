@@ -23,8 +23,9 @@ type InboundStatus = {
 
 export default function SettingsPage(props: OperatorPageBaseProps & { view?: string }) {
   const view = tabs.some(tab => tab.id === props.view) ? props.view! : 'identity';
+  const viewLabel = tabs.find(tab => tab.id === view)?.label ?? 'Company';
   return (
-    <OperatorPage dealerId={props.dealerId} nav={props.nav} activeTab="settings" sectionLabel="Company">
+    <OperatorPage dealerId={props.dealerId} nav={props.nav} activeTab="settings" sectionLabel={view === 'identity' ? 'Company' : `Company · ${viewLabel}`}>
       <PageHeader title="Company" />
       <WorkspaceTabs dealerId={props.dealerId} workspace="company" active={view} tabs={tabs} />
       {view === 'identity' && <DealershipProfilePanel dealerId={props.dealerId} section="identity" />}

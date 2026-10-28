@@ -215,6 +215,7 @@ export default function PlatformDetailPage({ dealerId, nav, activeTab, platformS
       onRefresh={handleRefresh}
       refreshing={loading}
       hideDealerId
+      sectionLabel={`Channels · ${item?.name ?? displayName}`}
     >
       {backToChannels}
 
@@ -222,7 +223,7 @@ export default function PlatformDetailPage({ dealerId, nav, activeTab, platformS
         <div className="flex items-start gap-4">
           <PlatformLogo slug={platform.platformSlug} name={displayName} size="md" />
           <div className="min-w-0 flex-1">
-            <h1 className="text-xl sm:text-2xl font-bold text-ink-heading">{item?.name ?? displayName}</h1>
+            <h2 className="text-xl sm:text-2xl font-bold text-ink-heading">{item?.name ?? displayName}</h2>
             {item && item.name !== displayName && <p className="text-xs text-ink-muted">{displayName}</p>}
             {item && (
               <>

@@ -1,15 +1,17 @@
 import { useState } from 'react';
 import type { OperatorNavHandlers } from '@/lib/operatorNav.ts';
 import type { AttentionItem, AttentionResponse } from '@/lib/api/attentionApi.ts';
+import type { OperatingPosture } from '@/lib/pagePrimaryState.ts';
 
 type Props = {
   dealerId: string;
   attention: AttentionResponse | null;
   nav: OperatorNavHandlers;
+  posture: OperatingPosture;
   onRefresh?: () => void;
 };
 
-export function DealerAttentionSection({ dealerId: _dealerId, attention, nav }: Props) {
+export function DealerAttentionSection({ dealerId: _dealerId, attention, nav, posture }: Props) {
   const [expandedKeys, setExpandedKeys] = useState<Set<string>>(new Set());
   const [showWaiting, setShowWaiting] = useState(false);
 
@@ -122,13 +124,15 @@ export function DealerAttentionSection({ dealerId: _dealerId, attention, nav }: 
           <div className="flex items-center gap-2">
             <h3 className="text-sm font-bold text-ink-heading">Needs Attention</h3>
             <span className={`px-2 py-0.5 rounded-full text-[11px] font-bold ${
-              attention.counts.blocking > 0
+              posture === 'unconfigured'
+                ? 'bg-silver-100 text-ink-muted'
+                : attention.counts.blocking > 0
                 ? 'bg-red-100 text-red-800'
-                : dealershipItems.length > 0
+                : dealershipItems.length > 0 || posture === 'attention'
                 ? 'bg-amber-100 text-amber-800'
                 : 'bg-emerald-100 text-emerald-800'
             }`}>
-              {dealershipItems.length} {dealershipItems.length === 1 ? 'task' : 'tasks'}
+              {posture === 'unconfigured' ? 'Not configured' : posture === 'clear' ? 'All clear' : `${dealershipItems.length} ${dealershipItems.length === 1 ? 'task' : 'tasks'}`}
             </span>
           </div>
 
@@ -139,16 +143,15 @@ export function DealerAttentionSection({ dealerId: _dealerId, attention, nav }: 
           )}
         </div>
 
-        {dealershipItems.length === 0 ? (
+        {posture === 'unconfigured' ? (
+          <p className="text-sm text-ink-muted">Problems are listed here after this dealership has vehicles, a connected channel, or an inquiry.</p>
+        ) : posture === 'clear' && dealershipItems.length === 0 ? (
           <div className="p-4 rounded-xl bg-silver-50 border border-silver-200 text-center space-y-1">
-            <span className="text-xl">✅</span>
-            <p className="text-xs font-bold text-ink-heading">All dealership tasks caught up</p>
-            <p className="text-[11px] text-ink-muted">
-              {attention.unavailableAreas.length === 0
-                ? 'No active issues found across your vehicles, listings, channels, or leads.'
-                : 'No tasks found in available categories.'}
-            </p>
+            <p className="text-xs font-bold text-ink-heading">All clear</p>
+            <p className="text-[11px] text-ink-muted">Vehicles, channels, and inquiries were checked. Nothing needs a fix.</p>
           </div>
+        ) : dealershipItems.length === 0 ? (
+          <p className="text-sm text-ink-muted">The check above is the open item. This list stays quiet until that is resolved.</p>
         ) : (
           <div className="space-y-3">
             {dealershipItems.map(item => {

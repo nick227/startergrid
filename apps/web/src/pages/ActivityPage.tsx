@@ -11,7 +11,8 @@ import LeadsPage from './LeadsPage.tsx';
 const tabs = [{ id: 'all', label: 'All Activity' }, { id: 'attention', label: 'Needs Attention' }, { id: 'leads', label: 'Leads' }, { id: 'sales', label: 'Sales' }];
 export default function ActivityPage(props: OperatorPageBaseProps & { view?: string }) {
   const view = tabs.some(t => t.id === props.view) ? props.view! : 'all';
-  return <OperatorPage {...props} activeTab="activity" sectionLabel="Activity">
+  const viewLabel = tabs.find(tab => tab.id === view)?.label ?? 'Activity';
+  return <OperatorPage {...props} activeTab="activity" sectionLabel={view === 'all' ? 'Activity' : `Activity · ${viewLabel}`}>
     <PageHeader title="Activity" />
     <WorkspaceTabs dealerId={props.dealerId} workspace="activity" active={view} tabs={tabs} />
     {view === 'all' && <BusinessActivity key={props.dealerId} dealerId={props.dealerId} />}

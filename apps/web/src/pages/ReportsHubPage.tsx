@@ -2,7 +2,7 @@ import { useState } from 'react';
 import type { OperatorPageBaseProps } from '@/lib/operatorPage.ts';
 import { useReportsData } from '@/hooks/useReportsData.ts';
 import { triggerPerformanceCompute } from '@/lib/api/sdk.ts';
-import { OperatorPage, ErrorState } from '@/components/operator';
+import { OperatorPage, ErrorState, PageHeader } from '@/components/operator';
 import { RowDetailDrawer } from '@/components/layout';
 import { PagePrimaryState } from '@/components/guidance/PagePrimaryState.tsx';
 import { EmptyState } from '@/components/ui';
@@ -148,6 +148,7 @@ export default function ReportsHubPage({ dealerId, nav, activeTab }: Props) {
   const topEngagement = engagementSortedPlatforms(platforms).slice(0, 3);
   const topChannelsMetric = topEngagementTotal(platforms);
 
+  const countsKnown = Boolean(publish.data) || Boolean(perf.data) || !loading;
   const blockedCount = publish.data ? readinessCounts(publish.data.vehicles).blocked : 0;
   const failedCount = phase2.throughput.data?.summary.failedInPeriod ?? 0;
   const primary = reportsPrimary({
@@ -178,9 +179,11 @@ export default function ReportsHubPage({ dealerId, nav, activeTab }: Props) {
       refreshing={refreshing || loading}
       lastRefresh={perf.lastRefresh ?? undefined}
       hideDealerId
+      sectionLabel="Reports"
     >
+      <PageHeader title="Reports" />
       <div className="mb-6 space-y-3">
-        <PagePrimaryState
+        {!countsKnown ? <p role="status" className="text-sm text-ink-muted">Loading reports…</p> : <PagePrimaryState
           kind={primary.kind}
           title={primary.title}
           why={primary.why}
@@ -193,7 +196,9 @@ export default function ReportsHubPage({ dealerId, nav, activeTab }: Props) {
                 ? () => nav.goToPlatforms()
                 : undefined
           }
-        />
+          secondaryLabel={primary.kind === 'empty' ? 'Open channels' : undefined}
+          onSecondary={primary.kind === 'empty' ? () => nav.goToPlatforms() : undefined}
+        />}
 
         {perf.data && hasPerf && (
           <p className="text-xs text-ink-muted">{formatPerformanceUpdated(perf.data.computedAt!)}</p>
@@ -202,7 +207,7 @@ export default function ReportsHubPage({ dealerId, nav, activeTab }: Props) {
 
       {refreshError && <p className="text-xs text-status-error-text mb-3">{refreshError}</p>}
 
-      {!hasPerf && perf.data && !loading && (
+      {countsKnown && primary.kind !== 'empty' && !hasPerf && perf.data && !loading && (
         <EmptyState
           icon="📈"
           title={EMPTY_STATE_COPY.noPerformanceData.title}
@@ -219,7 +224,7 @@ export default function ReportsHubPage({ dealerId, nav, activeTab }: Props) {
         />
       )}
 
-      {((loading && !perf.data) || perf.data || publish.data) && (
+      {countsKnown && primary.kind !== 'empty' && ((loading && !perf.data) || perf.data || publish.data) && (
         <div className="space-y-5">
           <div>
             <h2 className="text-base font-bold text-ink-heading tracking-tight">More detail</h2>

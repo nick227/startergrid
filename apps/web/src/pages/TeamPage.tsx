@@ -14,7 +14,8 @@ export default function TeamPage(props: OperatorPageBaseProps & { view?: string 
   const { user } = useAuth();
   const summary = useDealerSummary(props.dealerId);
   const view = tabs.some(t => t.id === props.view) ? props.view! : 'board';
-  return <OperatorPage {...props} activeTab="team" sectionLabel="Team">
+  const viewLabel = tabs.find(tab => tab.id === view)?.label ?? 'Team';
+  return <OperatorPage {...props} activeTab="team" sectionLabel={view === 'board' ? 'Team' : `Team · ${viewLabel}`}>
     <PageHeader title="Team" />
     <WorkspaceTabs dealerId={props.dealerId} workspace="team" active={view} tabs={tabs} />
     {view === 'people' ? <PeoplePanel dealerId={props.dealerId} dealershipName={summary?.legalName || 'this dealership'} viewer={{ kind: ['SUPER_ADMIN', 'INTERNAL_SUPPORT', 'OPERATOR'].includes(user?.role ?? '') ? 'internal' : 'dealer', userId: user?.id, isSiteAdmin: user?.role === 'SUPER_ADMIN' }} /> : <TeamDiscussions key={`${props.dealerId}:${view}`} dealerId={props.dealerId} tasks={view === 'tasks'} />}

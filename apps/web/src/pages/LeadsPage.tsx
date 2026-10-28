@@ -601,14 +601,14 @@ export default function LeadsPage({ dealerId, nav, activeTab, embedded = false }
       refreshing={loading}
     >
       <div className="space-y-5">
-        <PageHeader title="Leads" />
+        {!embedded && <PageHeader title="Leads" />}
 
         {leads.length === 0 && !loading && view === 'leads' ? (
           <PagePrimaryState
             kind="empty"
             title="Buyer questions will show up here"
             why="When a shopper asks about a vehicle, the inquiry lands in this inbox. Reply here, then mark the next step so the rest of the team can see it."
-            next="Vehicles need a destination before shoppers can find them."
+            next="A vehicle needs a channel before a shopper can find it."
             actionLabel="Open channels"
             onAction={nav.goToPlatforms}
             secondaryLabel="See vehicles"
@@ -630,10 +630,10 @@ export default function LeadsPage({ dealerId, nav, activeTab, embedded = false }
               key={v}
               type="button"
               onClick={() => setView(v)}
-              className={`px-4 py-2 text-sm font-semibold border-b-2 transition-colors ${
+              className={`shrink-0 py-3 text-sm font-semibold border-b-2 transition-colors ${
                 view === v
-                  ? 'border-orange-500 text-orange-700'
-                  : 'border-transparent text-ink-muted hover:text-ink-body hover:border-silver-400'
+                  ? 'border-navy-900 text-ink-heading'
+                  : 'border-transparent text-ink-muted hover:text-ink-heading'
               }`}
             >
               {v === 'leads' ? `Inbox (${leads.length})` : 'Delivery log'}

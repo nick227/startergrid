@@ -11,7 +11,8 @@ import { GuidanceNote } from '@/components/guidance/GuidanceNote.tsx';
 import { PagePrimaryState } from '@/components/guidance/PagePrimaryState.tsx';
 import { GettingStartedChecklist } from './GettingStartedChecklist.tsx';
 import { Skeleton } from '@/components/ui/Skeleton.tsx';
-import { dealerSetupIncomplete, platformLooksConnected } from '@/lib/pagePrimaryState.ts';
+import { dealerSetupIncomplete, operatingPosture, platformLooksConnected } from '@/lib/pagePrimaryState.ts';
+import { workspaceHash } from '@/lib/routes.ts';
 import { fetchSyndicationSentryAudit, type SyndicationSentryAuditResult } from '@/lib/api/sentryApi.ts';
 import { fetchAttention, type AttentionResponse } from '@/lib/api/attentionApi.ts';
 import { DealerAttentionSection } from './DealerAttentionSection.tsx';
@@ -63,7 +64,7 @@ export function DealerHomeDashboard({ dealerId, nav }: Props) {
     vehicleTotal: status.vehicles.total,
     vehicleReady: status.vehicles.ready,
     channelConnected: connectedCount > 0,
-    missingPrimaryContact: profile.publishingWarnings.some(w => w.field === 'primaryContactEmail'),
+    missingPrimaryContact: profile.publishingWarnings.some(w => w.field === 'primaryContact.email'),
   }));
 
   const tasks = useMemo<HomeTask[]>(() => {
@@ -74,8 +75,8 @@ export function DealerHomeDashboard({ dealerId, nav }: Props) {
         action: `Add ${warning.label || warning.field}`,
         detail: warning.message,
         ownerKind: 'YOU',
-        button: 'Open settings',
-        onAction: nav.goToSettings,
+        button: 'Open Company',
+        onAction: () => { window.location.hash = workspaceHash(dealerId, 'company', warning.field.startsWith('primaryContact') ? 'email' : 'identity'); },
       });
     });
     if (blocked > 0) {
@@ -112,7 +113,7 @@ export function DealerHomeDashboard({ dealerId, nav }: Props) {
       });
     }
     return list;
-  }, [profile, status, nav, blocked, sentryAudit]);
+  }, [profile, status, dealerId, nav, blocked, sentryAudit]);
 
   if (loading) {
     return <div className="surface-card-operator p-6 rounded-xl"><Skeleton rows={6} /></div>;
@@ -162,35 +163,54 @@ export function DealerHomeDashboard({ dealerId, nav }: Props) {
     : tasks[0];
 
   const inquiryCount = newLeads.length;
+  const posture = operatingPosture({
+    vehicleTotal: status?.vehicles.total ?? 0,
+    channelConfigured: connectedCount > 0,
+    leadCount: leads.length,
+    problemCount: (attention?.items.filter(item => item.owner === 'DEALERSHIP' && item.severity !== 'WAITING').length ?? 0) + tasks.length + inquiryCount,
+    checksIncomplete: !attention || attention.unavailableAreas.length > 0,
+  });
+  const unconfigured = posture === 'unconfigured';
 
   return (
     <div className="space-y-5">
-      {firstTime && <GettingStartedChecklist dealerId={dealerId} nav={nav} profile={profile} status={status} />}
       {!attention && <p role="alert" className="text-red-700">Needs Attention could not load. Refresh to try again.</p>}
       <PagePrimaryState
-        kind={top ? 'attention' : 'running'}
+        kind={unconfigured ? 'empty' : top ? 'attention' : posture === 'clear' ? 'running' : 'attention'}
         title={
-          top
-            ? top.action
-            : inquiryCount > 0
-              ? `${inquiryCount} new inquir${inquiryCount === 1 ? 'y' : 'ies'}`
-              : !attention || attention.unavailableAreas.length ? 'Some activity could not be checked' : "You're caught up"
+          unconfigured
+            ? 'This dealership is not set up yet'
+            : top
+              ? top.action
+              : inquiryCount > 0
+                ? `${inquiryCount} new inquir${inquiryCount === 1 ? 'y' : 'ies'}`
+                : posture === 'clear'
+                  ? 'All clear'
+                  : 'Some activity could not be checked'
         }
         why={
-          top
-            ? top.detail
-            : inquiryCount > 0
-              ? 'A shopper asked about a vehicle. Mark the next step so your team sees it.'
-              : !attention || attention.unavailableAreas.length ? 'Refresh to check all areas before assuming there are no issues.' : 'Nothing needs you right now. New buyer inquiries appear below.'
+          unconfigured
+            ? 'There are no vehicles, connected channels, or inquiries to review. That is missing setup, not a clean result.'
+            : top
+              ? top.detail
+              : inquiryCount > 0
+                ? 'A shopper asked about a vehicle. Mark the next step so your team sees it.'
+                : posture === 'clear'
+                  ? 'Vehicles, channels, and inquiries were checked. Nothing needs a fix right now.'
+                  : 'Refresh before treating this dealership as clear. Part of the check did not finish.'
         }
-        ownerKind={top ? top.ownerKind : inquiryCount > 0 ? 'YOU' : undefined}
-        actionLabel={top && top.button ? top.button : inquiryCount > 0 ? 'Open leads' : undefined}
-        onAction={top && top.button ? top.onAction : inquiryCount > 0 ? () => nav.goToLeads() : undefined}
+        ownerKind={!unconfigured && top ? top.ownerKind : !unconfigured && inquiryCount > 0 ? 'YOU' : undefined}
+        actionLabel={unconfigured ? 'Add vehicles' : top && top.button ? top.button : inquiryCount > 0 ? 'Open leads' : undefined}
+        onAction={unconfigured ? () => nav.goToInventory() : top && top.button ? top.onAction : inquiryCount > 0 ? () => nav.goToLeads() : undefined}
+        secondaryLabel={unconfigured ? 'Connect a channel' : undefined}
+        onSecondary={unconfigured ? () => nav.goToPlatforms() : undefined}
       />
 
-      <DealerAttentionSection dealerId={dealerId} attention={attention} nav={nav} />
+      {firstTime && <GettingStartedChecklist dealerId={dealerId} nav={nav} profile={profile} status={status} />}
 
-      <section className="surface-card-operator p-5 rounded-xl border border-silver-200 bg-white space-y-3">
+      <DealerAttentionSection dealerId={dealerId} attention={attention} nav={nav} posture={posture} />
+
+      {!unconfigured && <section className="surface-card-operator p-5 rounded-xl border border-silver-200 bg-white space-y-3">
         <div className="flex items-center justify-between gap-3">
           <h3 className="text-sm font-semibold text-ink-heading">New inquiries</h3>
           <button type="button" onClick={() => nav.goToLeads()} className="text-xs font-medium text-ink-heading underline">
@@ -214,7 +234,7 @@ export function DealerHomeDashboard({ dealerId, nav }: Props) {
             </button>
           ))
         )}
-      </section>
+      </section>}
     </div>
   );
 }

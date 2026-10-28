@@ -68,6 +68,7 @@ export function ChannelResultsCard({ dealerId, refreshKey = 0 }: Props) {
   const [editingCost, setEditingCost] = useState<ChannelResultRow | null>(null);
   const [editingSale, setEditingSale] = useState<SaleOutcomeRow | null>(null);
   const isCurrentMonth = month === currentMonth();
+  if (!error && (!data || data.channels.length === 0)) return null;
 
   const monthPicker = (
     <div className="flex items-center gap-1 text-xs">

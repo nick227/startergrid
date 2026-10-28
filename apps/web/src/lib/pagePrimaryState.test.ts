@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { channelExperience, dealerSetupIncomplete, platformLooksConnected, reportsExperience } from './pagePrimaryState.ts';
+import { channelExperience, dealerSetupIncomplete, operatingPosture, platformLooksConnected, reportsExperience } from './pagePrimaryState.ts';
 import { reportsPrimary } from './reportsPrimary.ts';
 import { listingStatusText } from './listingStatus.ts';
 
@@ -45,6 +45,29 @@ describe('dealerSetupIncomplete', () => {
   });
 });
 
+describe('operatingPosture', () => {
+  it('does not call an empty dealership clear', () => {
+    expect(operatingPosture({
+      vehicleTotal: 0, channelConfigured: false, leadCount: 0, problemCount: 0, checksIncomplete: false,
+    })).toBe('unconfigured');
+  });
+
+  it('is attention when a configured dealership still has a problem or an unfinished check', () => {
+    expect(operatingPosture({
+      vehicleTotal: 4, channelConfigured: true, leadCount: 0, problemCount: 1, checksIncomplete: false,
+    })).toBe('attention');
+    expect(operatingPosture({
+      vehicleTotal: 4, channelConfigured: true, leadCount: 0, problemCount: 0, checksIncomplete: true,
+    })).toBe('attention');
+  });
+
+  it('is clear only after the dealership is in use and the check found nothing', () => {
+    expect(operatingPosture({
+      vehicleTotal: 4, channelConfigured: true, leadCount: 2, problemCount: 0, checksIncomplete: false,
+    })).toBe('clear');
+  });
+});
+
 describe('reportsExperience', () => {
   it('is empty when there is no inventory and nothing failed', () => {
     expect(reportsExperience({ vehicleTotal: 0, blocked: 0, failedSends: 0 })).toBe('empty');
@@ -63,7 +86,7 @@ describe('reportsExperience', () => {
 describe('reportsPrimary', () => {
   it('sends a new employee to vehicles when nothing is listed yet', () => {
     expect(reportsPrimary({ vehicleTotal: 0, blocked: 0, failedSends: 0, stale: 0 })).toMatchObject({
-      kind: 'empty', action: 'vehicles',
+      kind: 'empty', action: 'vehicles', title: 'Reports are not set up yet',
     });
   });
 
