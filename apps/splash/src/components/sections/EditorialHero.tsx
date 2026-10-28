@@ -171,8 +171,8 @@ export const EditorialHero: React.FC<EditorialHeroProps> = ({ onRequestAccess })
             </div>
 
             <div style={{ fontSize: '0.75rem', color: '#64748b', display: 'flex', gap: '20px', flexWrap: 'wrap' }}>
-              <span>• For Dealerships: Lot management, 31-channel distribution & CRM routing</span>
-              <span>• For Shoppers: Verified inventory nationwide with zero conquest ads</span>
+              <span>• For Dealerships: Manage lot inventory, connect sales channels, and receive buyer inquiries</span>
+              <span>• For Shoppers: Discover verified vehicles nationwide with zero competitor ads</span>
             </div>
           </div>
         </div>

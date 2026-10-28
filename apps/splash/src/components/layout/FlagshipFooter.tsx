@@ -42,7 +42,7 @@ export const FlagshipFooter: React.FC = () => {
             <span style={{ fontSize: '1rem', fontWeight: 800 }}>StarterGrid</span>
           </div>
           <p style={{ color: 'rgba(255, 255, 255, 0.55)', fontSize: '0.8125rem', lineHeight: 1.6, marginBottom: '16px' }}>
-            The automotive sales channel intelligence and distribution platform. Coexisting with your DMS, validating 31 destination schemas, and measuring deterministic sales attribution.
+            The complete platform for online automotive sales. Manage vehicle inventory, connect online sales channels, receive buyer inquiries, and see which channels actually sell cars.
           </p>
           <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
             <span style={{ fontSize: '0.6875rem', padding: '2px 8px', borderRadius: '4px', background: 'rgba(255, 255, 255, 0.06)', color: 'rgba(255, 255, 255, 0.6)' }}>

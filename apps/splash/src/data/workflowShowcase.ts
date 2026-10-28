@@ -83,15 +83,15 @@ export const WORKFLOW_STEPS: WorkflowStep[] = [
     id: 'channels',
     number: '02',
     tabLabel: '2. Channels',
-    headline: 'Connect advertising destinations, review pre-flight readiness, and monitor publishing status.',
+    headline: 'Connect advertising channels, check listing quality, and monitor publishing status.',
     summary:
-      'Manage which platforms receive your inventory. Configure Autopilot automatic updates, review destination-specific pre-flight schema gates, and track the critical distinction between what is connected, what has been sent, and what is verified live.',
+      'Manage which platforms receive your inventory. Configure automatic scheduled updates, review listing quality checks before sending, and easily track what is connected, what has been sent, and what is currently live.',
     details: [
       'Organized by purpose: Marketplaces, Social Advertising, Feeds, and Lead Delivery',
-      'Autopilot scheduling for automated catalog sync and feed compilation',
-      'Pre-flight validation rules checked before feeds are transmitted',
-      'Explicit status separation: Connected vs Sent vs Verified Live',
-      'Syndication Sentry auditing transmission attempts and provider error logs',
+      'Automatic scheduled updates for catalog sync and feed export',
+      'Quality checks prevent missing photos, prices, or specs from getting rejected',
+      'Publish status clearly separates configured channels from active listings',
+      'Activity logs record export attempts and provider status responses',
     ],
     screenData: {
       title: 'Channels & Sales Intelligence',
@@ -195,15 +195,15 @@ export const WORKFLOW_STEPS: WorkflowStep[] = [
     id: 'performance',
     number: '04',
     tabLabel: '4. Performance',
-    headline: 'Compare recorded inquiries and available performance data by sales channel.',
+    headline: 'Compare recorded buyer inquiries and actual sales by channel.',
     summary:
-      'Evaluate marketing investments by comparing recorded spend, buyer inquiry volume, and confirmed vehicle sales. Tag every metric with an explicit evidence badge so dealership managers distinguish raw telemetry from third-party claims.',
+      'Evaluate your advertising spend by comparing marketing costs, buyer inquiries, and confirmed car sales. Every metric carries a clear evidence badge so you know which numbers are verified.',
     details: [
       'Side-by-side comparison of channel fee, ad spend, inquiries, and attributed sales',
-      'Strict sale attribution rules separating dealer confirmations from qualified lead evidence',
-      '4-tier evidence tagging: [Observed], [Dealer Reported], [Attributed], and [Estimated]',
-      'Turn velocity analysis across body styles (Trucks, SUVs, Sedans) and price bands',
-      'Statistical confidence gating (N ≥ 5 sample size) preventing premature conclusions',
+      'Sales desk confirmations take precedence over automated inquiry matching',
+      'Clear badges: [Observed] platform counts, [Dealer Reported] ad spend, [Attributed] verified sales',
+      'Days on lot and inventory turn analysis across body styles (Trucks, SUVs, Sedans)',
+      'Minimum sample threshold (N ≥ 5 units) to avoid misleading small-sample conclusions',
     ],
     screenData: {
       title: 'Channel Commercial Comparison',
@@ -244,7 +244,7 @@ export const WORKFLOW_STEPS: WorkflowStep[] = [
           statusVariant: 'warning',
         },
       ],
-      notes: 'Inventory outcome, sale details, channel attribution, and evidence tiers remain strictly separated.',
+      notes: 'Vehicle sale records, channel tracking, and data sources remain clearly separated.',
     },
   },
 ];

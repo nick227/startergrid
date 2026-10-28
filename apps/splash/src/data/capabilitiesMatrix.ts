@@ -46,8 +46,8 @@ export const CAPABILITIES_AREAS: CapabilityArea[] = [
   },
   {
     id: 'channel-distribution',
-    title: 'Channel Distribution & Publishing',
-    summary: 'Configure destinations, enforce pre-flight rules, and monitor actual delivery outcomes.',
+    title: 'Sales Channels & Publishing',
+    summary: 'Connect sales channels, enforce listing quality checks, and monitor vehicle publishing status.',
     items: [
       {
         name: 'Channel Setup & Permissions',
@@ -108,31 +108,31 @@ export const CAPABILITIES_AREAS: CapabilityArea[] = [
   },
   {
     id: 'performance-intelligence',
-    title: 'Performance & Demand Intelligence',
-    summary: 'Measure real customer acquisition costs and analyze vehicle turn velocity with statistical confidence gating.',
+    title: 'Performance & Sales Results',
+    summary: 'Compare marketing spend against recorded buyer inquiries and actual car sales, backed by clear evidence badges.',
     items: [
       {
-        name: 'Operational Reports & Metrics',
-        description: 'Inspect movement, readiness, observed demand, merchandising, throughput, exposure, and engagement reports.',
+        name: 'Channel Performance Reports',
+        description: 'Review buyer inquiries, marketing costs, and available sales outcomes side-by-side for each connected channel.',
         docTitle: 'Find and read reports',
         docRef: 'doc:app/reports',
       },
       {
-        name: 'Inventory Aging & Price Guidance',
-        description: 'Review inventory age brackets (0-15d, 16-30d, 31-60d, 60d+) with suggested pricing adjustments based on turn history.',
+        name: 'Days on Lot & Pricing Guidance',
+        description: 'Review vehicle age brackets (0-15d, 16-30d, 31-60d, 60d+) to identify slow-moving cars and adjust prices before holding costs build up.',
         docTitle: 'Review older inventory',
         docRef: 'doc:inventory/older-inventory',
       },
       {
-        name: 'Statistical Confidence Gating',
-        description: 'Demand observations require a minimum sample threshold (N ≥ 5) before reporting velocity conclusions.',
-        docTitle: 'Statistical gating standards',
+        name: 'Minimum Sample Thresholds (N ≥ 5)',
+        description: 'Demand and turn observations require at least 5 units before reporting recommendations, avoiding misleading conclusions from small sample sizes.',
+        docTitle: 'Statistical standards',
         docRef: 'doc:app/reports',
       },
       {
-        name: 'Deterministic Sales Attribution',
-        description: 'Link confirmed vehicle sales back to originating marketing channels when marked sold in your inventory.',
-        docTitle: 'Deterministic lead-to-VIN attribution',
+        name: 'Sales Tracking by Channel',
+        description: 'Connect confirmed vehicle sales to the channel that brought in the buyer, using verified lead records or dealership sales desk confirmations.',
+        docTitle: 'Tracking sales and channel performance',
         docRef: 'doc:app/reports',
       },
     ],

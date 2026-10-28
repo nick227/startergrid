@@ -12,28 +12,28 @@ const TIER_CONFIG: Record<EvidenceTier, { label: string; bg: string; color: stri
     bg: 'rgba(16, 185, 129, 0.12)',
     color: '#34d399',
     border: 'rgba(16, 185, 129, 0.3)',
-    desc: 'Direct platform telemetry measured directly on StarterGrid servers (e.g. first-party page views, form submissions).',
+    desc: 'Direct platform counts measured on StarterGrid servers (e.g. marketplace page views, lead submissions).',
   },
   Reported: {
     label: '[Reported]',
     bg: 'rgba(245, 158, 11, 0.12)',
     color: '#fbbf24',
     border: 'rgba(245, 158, 11, 0.3)',
-    desc: 'Self-reported figures from third-party advertising portals (e.g. CarGurus or AutoTrader vendor dashboard exports).',
+    desc: 'Ad spend or figures reported by the dealership or external advertising invoices.',
   },
   Attributed: {
     label: '[Attributed]',
     bg: 'rgba(59, 130, 246, 0.12)',
     color: '#60a5fa',
     border: 'rgba(59, 130, 246, 0.3)',
-    desc: 'Deterministic linkage matching a sold vehicle VIN and buyer contact back to originating platform inquiries.',
+    desc: 'Verified car sales connected to originating channel leads via sales desk confirmation or qualified inquiry.',
   },
   Estimated: {
     label: '[Estimated]',
     bg: 'rgba(168, 85, 247, 0.12)',
     color: '#c084fc',
     border: 'rgba(168, 85, 247, 0.3)',
-    desc: 'Heuristic model projection where historical sample size (N < 5) has not yet satisfied statistical confidence gating.',
+    desc: 'Estimate based on available data when sample size is under 5 units, requiring more volume before drawing firm conclusions.',
   },
 };
 

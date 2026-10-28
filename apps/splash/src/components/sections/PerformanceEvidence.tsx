@@ -25,7 +25,7 @@ export const PerformanceEvidence: React.FC = () => {
               marginBottom: '12px',
             }}
           >
-            SALES INTELLIGENCE & AUDITED EVIDENCE
+            SALES RESULTS & EVIDENCE
           </div>
           <h2
             style={{
@@ -37,14 +37,14 @@ export const PerformanceEvidence: React.FC = () => {
               marginBottom: '16px',
             }}
           >
-            Performance Measurement & The Evidence Standard
+            See Which Channels Actually Sell Cars
           </h2>
           <p style={{ color: '#94a3b8', fontSize: '1.0625rem', lineHeight: 1.6 }}>
-            Dealerships evaluate advertising investments by linking marketing spend to actual showroom visits and closed sales. StarterGrid connects vehicle activity, inquiries, and confirmed sales when evidence exists, while explicitly labeling the origin and certainty of every metric.
+            Dealerships want to know which advertising channels actually bring in paying buyers. StarterGrid connects marketing spend, buyer inquiries, and confirmed vehicle sales when real evidence exists—with clear badges showing where every number came from.
           </p>
         </div>
 
-        {/* 3 Core Analytical Mechanics */}
+        {/* 4 Core Practical Principles */}
         <div
           style={{
             display: 'grid',
@@ -62,10 +62,10 @@ export const PerformanceEvidence: React.FC = () => {
             }}
           >
             <div style={{ color: '#60a5fa', fontSize: '0.875rem', fontWeight: 700, marginBottom: '8px' }}>
-              1. Inventory Outcome ≠ Attribution
+              1. Marking a Car Sold Stops Ads
             </div>
             <p style={{ color: '#94a3b8', fontSize: '0.8125rem', lineHeight: 1.6, margin: 0 }}>
-              Marking a vehicle sold withdraws active listings from advertising channels to stop wasted ad spend. It records the sale date and price, but does not invent or assume marketing credit on its own.
+              When a vehicle is marked sold, StarterGrid removes it from connected channels so you don't waste ad budget. It records the sale date and price, but doesn't guess which ad brought in the buyer.
             </p>
           </div>
 
@@ -78,10 +78,10 @@ export const PerformanceEvidence: React.FC = () => {
             }}
           >
             <div style={{ color: '#38bdf8', fontSize: '0.875rem', fontWeight: 700, marginBottom: '8px' }}>
-              2. Dealer Confirmation Outranks
+              2. Your Sales Desk Has Final Word
             </div>
             <p style={{ color: '#94a3b8', fontSize: '0.8125rem', lineHeight: 1.6, margin: 0 }}>
-              When dealership staff record the buyer source directly on the sale record, that manual confirmation is authoritative and establishes primary channel attribution.
+              When your sales team records the customer's lead source on the deal, that dealership confirmation is the authority and takes precedence.
             </p>
           </div>
 
@@ -94,10 +94,10 @@ export const PerformanceEvidence: React.FC = () => {
             }}
           >
             <div style={{ color: '#34d399', fontSize: '0.875rem', fontWeight: 700, marginBottom: '8px' }}>
-              3. Strict Qualified Lead Rules
+              3. Only Qualified Inquiries Count
             </div>
             <p style={{ color: '#94a3b8', fontSize: '0.8125rem', lineHeight: 1.6, margin: 0 }}>
-              Without dealer confirmation, a sale is attributed only if exactly one channel had a lead that staff moved to SOLD prior to the sale. Conflicting leads or raw received inquiries remain strictly Unattributed.
+              If your sales desk didn't log a source, a sale is linked to a channel only if your team moved a lead from that single channel to SOLD before the car was sold. Conflicting inquiries remain strictly Unattributed.
             </p>
           </div>
 
@@ -110,10 +110,10 @@ export const PerformanceEvidence: React.FC = () => {
             }}
           >
             <div style={{ color: '#fbbf24', fontSize: '0.875rem', fontWeight: 700, marginBottom: '8px' }}>
-              4. 4-Tier Evidence Hierarchy
+              4. Badges Show Evidence Level
             </div>
             <p style={{ color: '#94a3b8', fontSize: '0.8125rem', lineHeight: 1.6, margin: 0 }}>
-              Every metric carries an explicit badge: [Observed] direct telemetry, [Dealer Reported] cost entries, [Attributed] qualified sales, and [Estimated] demand analytics gated by statistical thresholds (N ≥ 5).
+              Every number is labeled: [Observed] direct platform counts, [Dealer Reported] your actual ad spend, and [Attributed] verified sales, so you always know where numbers come from.
             </p>
           </div>
         </div>

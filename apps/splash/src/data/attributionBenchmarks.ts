@@ -30,7 +30,7 @@ export const ATTRIBUTION_BENCHMARKS: AttributionRow[] = [
     turnDays: 12,
     grossMargin: 16800,
     evidence: 'Observed',
-    evidenceNotes: 'Raw platform telemetry. Direct lead capture on first-party VDP, zero ad spend, verified sold transitions.',
+    evidenceNotes: 'Direct platform measurement. Direct buyer inquiry on vehicle page, zero ad spend, verified dealership sold records.',
   },
   {
     id: 'google',

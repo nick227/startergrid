@@ -102,7 +102,7 @@ export const EditorialFooter: React.FC = () => {
         }}
       >
         <div>
-          © {new Date().getFullYear()} StarterGrid Inc. All rights reserved. Dealership software and automotive distribution platform.
+          © {new Date().getFullYear()} StarterGrid Inc. All rights reserved. Dealership inventory software and online sales platform.
         </div>
         <div style={{ display: 'flex', gap: '20px' }}>
           <a href="#/dev-categories" style={{ color: '#475569', textDecoration: 'none' }}>

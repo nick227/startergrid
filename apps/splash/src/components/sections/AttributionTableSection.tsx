@@ -45,10 +45,10 @@ export const AttributionTableSection: React.FC = () => {
               marginBottom: '16px',
             }}
           >
-            Deterministic Sales Attribution & The 4-Tier Evidence Hierarchy
+            Sales Tracking by Channel & Evidence Standards
           </h2>
           <p style={{ color: 'rgba(255, 255, 255, 0.68)', fontSize: '1.0625rem', lineHeight: 1.6 }}>
-            Every ad portal claims credit for your vehicle sales. StarterGrid replaces vendor vanity claims with <strong>deterministic lead-to-VIN resolution</strong>: when a vehicle is marked sold in your DMS, we link the sale to verified originating inquiries to report real Cost Per Lead (CPL) and Cost Per Sale (CPS).
+            Every ad portal claims credit for your vehicle sales. StarterGrid replaces vendor claims with <strong>verified sales tracking</strong>: when a vehicle is marked sold in your inventory, we connect the sale to recorded buyer inquiries so you see your actual Cost Per Lead (CPL) and Cost Per Sale (CPS).
           </p>
         </div>
 
@@ -208,21 +208,21 @@ export const AttributionTableSection: React.FC = () => {
             <div>
               <div style={{ marginBottom: '6px' }}><EvidenceBadge tier="Observed" /></div>
               <p style={{ color: 'rgba(255, 255, 255, 0.65)', lineHeight: 1.5, margin: 0 }}>
-                Raw telemetry recorded directly on StarterGrid servers (e.g. consumer search impressions, direct inquiry forms, webhooks).
+                Direct counts recorded on StarterGrid servers (e.g. vehicle views, inquiry forms, direct calls).
               </p>
             </div>
 
             <div>
               <div style={{ marginBottom: '6px' }}><EvidenceBadge tier="Attributed" /></div>
               <p style={{ color: 'rgba(255, 255, 255, 0.65)', lineHeight: 1.5, margin: 0 }}>
-                Deterministic resolution matching a closed vehicle sale back to an inbound inquiry via stock number, VIN, and buyer contact.
+                Verified sales linked to a channel through sales desk confirmation or qualifying lead records.
               </p>
             </div>
 
             <div>
               <div style={{ marginBottom: '6px' }}><EvidenceBadge tier="Reported" /></div>
               <p style={{ color: 'rgba(255, 255, 255, 0.65)', lineHeight: 1.5, margin: 0 }}>
-                Metrics imported from third-party vendor dashboards (e.g. CarGurus or AutoTrader self-reported lead exports).
+                Marketing costs and numbers reported by the dealership or external advertising invoices.
               </p>
             </div>
 

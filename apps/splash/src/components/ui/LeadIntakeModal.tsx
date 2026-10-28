@@ -125,8 +125,8 @@ export const LeadIntakeModal: React.FC<LeadIntakeModalProps> = ({ isOpen, onClos
 
             <p style={{ color: 'rgba(255, 255, 255, 0.75)', fontSize: '0.875rem', lineHeight: 1.6, marginBottom: '20px' }}>
               {receipt.isDuplicate
-                ? `An evaluation request for ${receipt.dealershipName} is already assigned in our onboarding queue. Our deployment team is reviewing your ${receipt.primaryDms} export configuration.`
-                : `Thank you, ${receipt.contactName}. Your request has been logged and assigned to our automotive ingestion engineering unit.`}
+                ? `An evaluation request for ${receipt.dealershipName} is already on file. Our onboarding team is reviewing your ${receipt.primaryDms} setup and will follow up shortly.`
+                : `Thank you, ${receipt.contactName}. Your request has been received. Our dealership onboarding team will review your lot requirements and follow up within one business day.`}
             </p>
 
             <div
@@ -147,7 +147,7 @@ export const LeadIntakeModal: React.FC<LeadIntakeModalProps> = ({ isOpen, onClos
                 <strong style={{ color: '#ffffff' }}>{receipt.dealershipName}</strong>
               </div>
               <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-                <span style={{ color: '#64748b' }}>Assigned Queue:</span>
+                <span style={{ color: '#64748b' }}>Assigned Team:</span>
                 <span style={{ color: '#38bdf8' }}>{receipt.assignedQueue}</span>
               </div>
               <div style={{ display: 'flex', justifyContent: 'space-between' }}>
@@ -155,7 +155,7 @@ export const LeadIntakeModal: React.FC<LeadIntakeModalProps> = ({ isOpen, onClos
                 <span style={{ color: '#ffffff' }}>{receipt.primaryDms}</span>
               </div>
               <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-                <span style={{ color: '#64748b' }}>Review SLA:</span>
+                <span style={{ color: '#64748b' }}>Response Time:</span>
                 <span style={{ color: '#34d399', fontWeight: 600 }}>{receipt.reviewSla}</span>
               </div>
             </div>

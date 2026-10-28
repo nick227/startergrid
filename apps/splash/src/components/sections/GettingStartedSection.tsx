@@ -213,8 +213,8 @@ export const GettingStartedSection: React.FC = () => {
 
                 <p style={{ color: '#cbd5e1', fontSize: '0.8125rem', lineHeight: 1.6, marginBottom: '20px' }}>
                   {receipt.isDuplicate
-                    ? `We already have an active onboarding inquiry for ${receipt.dealershipName} logged in our queue. Our deployment team is reviewing your ${receipt.primaryDms} export format.`
-                    : `Thank you, ${receipt.contactName}. Your dealership evaluation request has been entered into our deployment queue.`}
+                    ? `We already have an active evaluation inquiry for ${receipt.dealershipName} on file. Our onboarding team is reviewing your ${receipt.primaryDms} configuration and will follow up shortly.`
+                    : `Thank you, ${receipt.contactName}. Your dealership evaluation request has been received. Our onboarding team will follow up within one business day.`}
                 </p>
 
                 {/* Structured Operational Receipt */}
@@ -236,7 +236,7 @@ export const GettingStartedSection: React.FC = () => {
                     <strong style={{ color: '#ffffff' }}>{receipt.dealershipName}</strong>
                   </div>
                   <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-                    <span style={{ color: '#64748b' }}>Assigned Unit:</span>
+                    <span style={{ color: '#64748b' }}>Assigned Team:</span>
                     <span style={{ color: '#38bdf8' }}>{receipt.assignedQueue}</span>
                   </div>
                   <div style={{ display: 'flex', justifyContent: 'space-between' }}>
@@ -248,7 +248,7 @@ export const GettingStartedSection: React.FC = () => {
                     <span style={{ color: '#cbd5e1' }}>{receipt.lotSize}</span>
                   </div>
                   <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-                    <span style={{ color: '#64748b' }}>Review SLA:</span>
+                    <span style={{ color: '#64748b' }}>Response Time:</span>
                     <span style={{ color: '#34d399', fontWeight: 600 }}>{receipt.reviewSla}</span>
                   </div>
                   <div style={{ display: 'flex', justifyContent: 'space-between' }}>

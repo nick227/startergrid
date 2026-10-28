@@ -1,152 +1,195 @@
-# 🚗 Auto Dealer Sales Portal
+# StarterGrid — Dealership Inventory & Online Sales Platform
 
-> **A centralized "DistroKid for Auto Dealerships"—manage, syndicate, and compare inventory across 31+ online platforms from a single hub.**
+StarterGrid is one platform for online automotive sales. Dealerships connect their vehicle inventory, publish across search, social, and third-party marketplaces, route buyer inquiries directly to their CRM, and see which channels actually sell cars.
 
-The Auto Dealer Sales Portal is a pragmatic, integration-first utility built specifically for automotive inventory. Dealerships today struggle with fragmented online platforms. Our platform acts as a unified hub: you connect a dealership's inventory once, and we handle the validation, VIN decoding, and automated syndication to every major advertising channel and marketplace.
+Instead of trying to be a bloated DMS or an all-in-one dealership CRM, StarterGrid focuses on a specific operational problem:
+- **Where should dealerships list and advertise their vehicles?**
+- **Which platforms are actually generating qualified leads and confirmed sales?**
+- **What do channels cost relative to the inquiries and sales we can actually observe?**
+- **Which types of vehicles turn fastest on which marketing channels?**
 
----
-
-## 🌟 Executive Summary
-
-**The Core Utility:** Auto dealerships need a centralized place to manage their online sales presence without constantly logging into different portals. We built a system heavily integrated with auto-specific standards (including rigorous VIN validation and decoding) to standardize inventory data and push it out securely.
-
-**Pragmatic Operations:** We ingest messy Dealer Management System (DMS) data, standardize it to a canonical auto schema, run pre-flight validation against platform-specific rules, and automatically route it to 31+ distinct platforms. While the platform is extensible to other verticals, its core DNA and included marketplaces are explicitly designed around automotive inventory.
+Dealers connect their inventory once. The platform standardizes the data, runs pre-flight validation against channel-specific rules, handles automated syndication across 31+ online platforms, and records inquiries from channels that send them to StarterGrid, sales linked to a channel by evidence, and channel costs the dealership enters.
 
 ---
 
-## 📈 Platform Value & Investor Highlights
+## What the System Does
 
-- **The "DistroKid" Model for Dealerships:** By supporting 31+ platforms out-of-the-box (including Google, Meta, TikTok, CarGurus, and Cars.com), we provide a centralized distribution network. Dealers upload once, and we handle the complex endpoint requirements everywhere else.
-- **Unified Inventory & Marketplace:** The entire stack is deeply integrated with auto data—from strict VIN decoding to our own first-party consumer marketplace designed exclusively for vehicle shopping.
-- **Actionable Performance Intelligence:** We ingest return signals (leads, clicks, impressions) from the distributed platforms to create a feedback loop. Dealers can directly compare platform effectiveness and understand inventory movement against local benchmarks.
-- **Enterprise-Ready Infrastructure:** Built on a strict, scalable modern TypeScript stack (**Node 22, Prisma 6, Fastify**) utilizing Role-Based Access Control (RBAC) to ensure dealer data is strictly siloed and secure.
-
----
-
-## 🤝 Dealership Value Proposition
-
-- **Centralized Management:** A single dashboard to monitor exactly where vehicles are listed, which platforms are healthy, and where data errors (like missing photos or pricing issues) need fixing.
-- **Stop Guessing on Spend:** Performance Intelligence embedded in the portal allows dealers to compare the ROI of different platforms and adjust their ad spend based on actual local benchmarks.
-- **Automated Heavy Lifting:** Dealers no longer have to format CSVs for 30 different platforms. We handle all platform-specific formatting, validation rules, and endpoint error handling.
+1. **Inventory & Pre-flight Validation**: Ingests vehicle data, decodes VINs, inspects photos, and checks readiness against specific channel rules so dealers fix missing data before pushing feeds.
+2. **Multi-Channel Syndication**: Formats and exports compliant feeds for search engines, social networks, and major third-party vehicle marketplaces.
+3. **Channel Results**: Combines dealer-entered monthly fees and ad spend with recorded inquiries and evidence-linked sales. Cost per inquiry and cost per linked sale appear only when both inputs are known; unknown values are never shown as zero.
+4. **Evidence-Based Attribution**: A sold vehicle is linked to a channel only when the dealership confirms the channel or marks exactly one channel's lead as sold. Marking a vehicle sold alone attributes nothing.
+5. **Provenance on every figure**: Inquiries, costs and sale details carry their `SourceConfidence` (observed by StarterGrid, reported by the channel, or entered by the dealership). Sales are linked to a channel only by a documented rule; see `docs/v5/sales-data-integrity-handoff.md`.
 
 ---
 
-## 🏗️ The Platform Ecosystem
+## Monorepo Architecture & Applications
 
-Our ecosystem is split into purpose-built applications tailored to specific users:
+```
+startergrid/
+├── src/                    # Fastify API, sync engine, sale attribution and channel results
+├── apps/
+│   ├── web/                # Operator & dealership management interface
+│   ├── marketplace/        # Consumer vehicle search and shopping frontend
+│   └── splash/             # Public landing page
+├── packages/
+│   └── category-schemas/   # Shared schemas and validation for auto & adjacent verticals
+├── prisma/                 # Database schema, migrations, and seeding scripts
+└── openapi/                # OpenAPI 3 specification for all REST endpoints
+```
 
-### ⚙️ 1. Sync Engine (`src/`)
-**Target User:** Backend / System Pipelines
-**Live API Health:** [https://auto-dealer-operator-ui-production.up.railway.app/api/health](https://auto-dealer-operator-ui-production.up.railway.app/api/health)
-*The Brains of the Operation.* The core data pipeline that ingests inventory, standardizes it, validates readiness across 31 platforms, and generates exact feed artifacts.
+### Application Port & Path Matrix
 
-### 🛠️ 2. Operator Platform (`apps/web/`)
-**Target User:** Internal Team (Operators)
-**Live Portal:** [https://auto-dealer-operator-ui-production.up.railway.app/app/](https://auto-dealer-operator-ui-production.up.railway.app/app/)
-*Mission Control.* The primary interface for our internal operations team to manage dealership accounts, oversee onboarding, monitor global sync health, and manage API credentials securely.
+The platform is architected with strict port and path distinctions between backend services and frontend applications:
 
-### 🏢 3. Dealership Platform
-**Target User:** Client Dealerships
-**Live Portal:** [https://auto-dealer-operator-ui-production.up.railway.app/app/](https://auto-dealer-operator-ui-production.up.railway.app/app/)
-*The Dealer's Command Center.* A dedicated portal empowering dealers to manage their specific inventory, track sales, resolve missing data, and view their Performance Intelligence directly.
+| Application | Workspace / Dir | Dev Port | Local Dev URL | Base / Mount Path | Public Railway Production URL | Role & Authentication Domain |
+| :--- | :--- | :--- | :--- | :--- | :--- | :--- |
+| **Core API & Engine** | `src/` | `3000` | `http://localhost:3000` | `/api/*`<br>`/health` | [API /api](https://auto-dealer-operator-ui-production.up.railway.app/api)<br>[Health /health](https://auto-dealer-operator-ui-production.up.railway.app/health) | Fastify REST API, sync queue, sale attribution, channel results |
+| **Dealership & Operator Portal** | `apps/web/` | `5173` | `http://localhost:5173/app/` | `/app/` | [Portal /app/](https://auto-dealer-operator-ui-production.up.railway.app/app/) | Dealership staff & operator workspace (`op_session` cookie) |
+| **Consumer Marketplace** | `apps/marketplace/` | `5174` | `http://localhost:5174/marketplace/` | `/marketplace/` | [Marketplace /marketplace/](https://auto-dealer-operator-ui-production.up.railway.app/marketplace/) | Public vehicle search, details & buyer lead intake (`mp_session` cookie) |
+| **Public Splash Landing** | `apps/splash/` | `5175` | `http://localhost:5175/` | `/` | [Splash /](https://auto-dealer-operator-ui-production.up.railway.app/) | Marketing landing page & new dealership intake |
 
-### 🛍️ 4. Consumer Marketplace (`apps/marketplace/`)
-**Target User:** Car Buyers / Consumers
-**Live Marketplace:** [https://auto-dealer-operator-ui-production.up.railway.app/marketplace/](https://auto-dealer-operator-ui-production.up.railway.app/marketplace/)
-*The Aggregated Showroom.* A comprehensive, multi-dealer marketplace that allows consumers to search our entire connected inventory network.
+> **Live Railway Environment**:
+> - **Production Host**: `https://auto-dealer-operator-ui-production.up.railway.app`
+> - **Topology**: Consolidated single-service deployment running Fastify on Node 22, serving the backend REST API, static asset directories, and all three compiled SPA bundles.
+>
+> **Dual Routing Architecture (Local Dev vs. Production)**:
+> - **Local Development**: Frontends run on dedicated Vite dev servers (`5173`, `5174`, `5175`). Because `apps/web` (`/app/`) and `apps/marketplace` (`/marketplace/`) define explicit Vite base paths, they must be visited with their respective subpaths (e.g. `http://localhost:5173/app/`). Dev servers automatically proxy `/api`, `/uploads`, and `/demo-assets` to the Fastify backend on port `3000`.
+> - **Production Deployment (Railway)**: In production, the entire monorepo is consolidated into a single Fastify Node.js service on a single port (`PORT`, default `3000`). Fastify serves the compiled static SPA bundles partitioned by path (`/app/` for `apps/web`, `/marketplace/` for `apps/marketplace`, and `/` root fallback for `apps/splash`), routing all `/api/*` requests to the REST API.
 
-### 🛒 5. Auto-Specific Carvana Clone
-**Target User:** Car Buyers / Consumers (Digital Retailing)
-**Live Experience:** [https://auto-dealer-operator-ui-production.up.railway.app/marketplace/](https://auto-dealer-operator-ui-production.up.railway.app/marketplace/)
-*The Future of Online Buying.* A specialized consumer-facing front-end providing a fully digital, end-to-end car buying and financing experience.
+### 1. Core API & Sync Engine (`src/`)
+Built with **Node 22**, **Fastify**, and **Prisma ORM** (MySQL).
+- **Port, Path & Live URLs**: Runs on port `3000` (configurable via `PORT`). Local dev at `http://localhost:3000`. Public Railway endpoints: [`https://auto-dealer-operator-ui-production.up.railway.app/api`](https://auto-dealer-operator-ui-production.up.railway.app/api) and [`https://auto-dealer-operator-ui-production.up.railway.app/health`](https://auto-dealer-operator-ui-production.up.railway.app/health). Uploaded photos are served at `/uploads/*`, and seeded vehicle media at `/demo-assets/*`.
+- **REST Endpoints**: Comprehensive API secured by Role-Based Access Control (RBAC) separating internal staff, dealership managers, and consumer operations.
+- **Syndication Engine**: Pre-flight validation, batch export generators, and sync history for 31+ external platforms.
+- **Channel Results** (`channelRoiService`): Per channel and month — recorded inquiries, evidence-linked sales and dealer-entered cost, with cost-per figures only when both inputs exist.
+- **Sale Attribution** (`saleAttribution`): Links a sale to a channel only when the dealership confirms the channel or marks exactly one channel's lead as sold; otherwise the sale stays unattributed. Sale price and date are recorded only when entered.
+- **OpenAPI Alignment**: Enforces bidirectional contract consistency between Fastify route handlers, `openapi.yaml`, and route contract tests.
 
-### 🚀 6. Splash UI (`apps/splash/`)
-**Target User:** Prospects / General Public
-**Live Site:** [https://auto-dealer-operator-ui-production.up.railway.app/](https://auto-dealer-operator-ui-production.up.railway.app/)
-*The Front Door.* A highly optimized marketing landing page designed to drive awareness, capture leads, and acquire new dealership clients.
+### 2. Dealership & Operator Web App (`apps/web/`)
+Built with **React**, **Vite**, and **Tailwind CSS**. A single responsive application that adapts based on user permissions:
+- **Port, Path & Live URL**: Local dev on port `5173` at `http://localhost:5173/app/` (`base: '/app/'`). Public Railway URL: [`https://auto-dealer-operator-ui-production.up.railway.app/app/`](https://auto-dealer-operator-ui-production.up.railway.app/app/).
+- **Channel Results**: On the Channels page, a monthly table of recorded inquiries, linked sales and entered costs per channel, plus the month's sold vehicles with a form to record actual sale date, price and channel.
+- **Inventory Workspace**: Full lot inventory management with photo gallery, VIN decoding, completeness checks, and a 1-click workflow to mark vehicles sold.
+- **Syndication Sentry**: Real-time status of catalog syncs, pending approval queues, and error remediation guidance.
+- **Internal Operator Workspace**: Multi-dealership oversight, credential management, and operational audit logs for support staff.
+
+### 3. Consumer Marketplace (`apps/marketplace/`)
+Built with **React**, **Vite**, and **Tailwind CSS**.
+- **Port, Path & Live URL**: Local dev on port `5174` at `http://localhost:5174/marketplace/` (`base: '/marketplace/'`). Public Railway URL: [`https://auto-dealer-operator-ui-production.up.railway.app/marketplace/`](https://auto-dealer-operator-ui-production.up.railway.app/marketplace/).
+- Aggregates active, eligible inventory across connected dealerships.
+- Search and filtering by make, model, year, body style, price, and mileage.
+- Clean vehicle detail pages with photo carousels, full specs, and buyer inquiry forms that route leads directly back into the dealer's dashboard.
+
+### 4. Splash Page (`apps/splash/`)
+Built with **React**, **Vite**, and **TypeScript**.
+- **Port, Path & Live URL**: Local dev port `5175` at `http://localhost:5175/` (`base: '/'`). Public Railway URL: [`https://auto-dealer-operator-ui-production.up.railway.app/`](https://auto-dealer-operator-ui-production.up.railway.app/).
+- Lightweight landing page explaining the StarterGrid service to prospective dealerships, with an intake form for new dealer onboarding.
+
+### 5. Category Schemas (`packages/category-schemas/`)
+- Shared TypeScript validation rules and metadata used by both the backend API and frontend apps to ensure consistent payload handling across automotive and adjacent specialty categories (e.g. trailers, boats).
 
 ---
 
-## 🌐 Our Unrivaled Reach: 31 Supported Platforms
+## Supported Channels (31 Platforms)
 
-*We maximize visibility by pushing inventory to every corner of the internet.*
+Platforms are classified by how inventory is distributed:
 
-### 🏠 Owned (2)
-- **Dealer Storefront:** White-label web feeds powering dealer-branded sites.
-- **Auto Marketplace:** Our first-party marketplace index. Strict eligibility (soldAt null, priceCents > 0) with zero internal/VIN data exposure.
-
-### 📡 Feedable (16)
-*Active, automated inventory syndication.*
-- **Search & Local:** Google Vehicle Ads, Microsoft Advertising Automotive Ads, Google Business Profile, Apple Business Location Publishing, Nextdoor Ads API.
-- **Social & Discovery:** Meta Automotive Inventory Ads, TikTok Automotive Ads, TikTok Shop, Pinterest Shopping Ads Catalogs, Reddit Dynamic Product Ads, Snapchat Dynamic Product Ads, X Dynamic Product Ads, LinkedIn Lead Gen Forms.
-- **Marketplaces:** eBay Motors, Facebook Marketplace, Facebook Business Page.
-
-### 🤝 Assisted (11)
-*Platforms where we manage partner-assisted feeds and onboarding.*
-- **Major Automotive:** CarGurus Dealer Marketplace, Autotrader / Cox Automotive, Cars.com / Cars Commerce, TrueCar Dealer Network, CARFAX for Dealers.
-- **Specialty/Powersports:** RV Trader, Cycle Trader, ATV Trader, Trailer Trader, Boat Trader, YachtWorld, Boats.com.
-
-### 🔗 Partner-dependent (2)
-*Platforms reliant on external CRM routing.*
-- **TrueCar Dealer Network:** Portal/support-assisted setup.
-- **ADF/XML Lead Routing:** Industry-standard payload routing for CRM endpoints.
+| Classification | Count | Channels |
+| :--- | :--- | :--- |
+| **Owned Channels** | 2 | Dealer Storefront web feeds, Consumer Marketplace |
+| **Search & Local** | 5 | Google Vehicle Ads, Microsoft Advertising Auto Ads, Google Business Profile, Apple Business Connect, Nextdoor Ads |
+| **Social & Discovery** | 8 | Meta Automotive Inventory Ads, TikTok Automotive Ads, TikTok Shop, Pinterest Shopping, Reddit Dynamic Ads, Snapchat Dynamic Ads, X Dynamic Ads, LinkedIn Lead Gen |
+| **Auto Marketplaces** | 7 | CarGurus, AutoTrader / Cox Automotive, Cars.com, eBay Motors, TrueCar Dealer Network, CARFAX for Dealers, Facebook Marketplace |
+| **Specialty & Powersports** | 7 | RV Trader, Cycle Trader, ATV Trader, Trailer Trader, Boat Trader, YachtWorld, Boats.com |
+| **CRM Routing** | 2 | ADF/XML Lead Routing, Assisted TrueCar integration |
 
 ---
 
-## ⚡ Quick Start (For Developers)
+## Database Seeding & Demo Environment
+
+The repository includes a comprehensive seeding pipeline designed to recreate a fully populated development environment in seconds.
+
+### What Gets Seeded
+
+When running `npm run db:seed`, the system automatically provisions:
+1. **Platform Profiles**: All 73 platform definitions and schema versions across automotive and specialty categories.
+2. **Dealership Scenarios**:
+   - **Pristine Dealer**: A clean reference dealer with fully verified inventory and published sync events.
+   - **Austin Auto Group (`dealer_austin_auto`)**: A realistic mid-size dealership with active channels, queued vehicles, and full commercial data.
+   - **Messy Motors (`dealer_messy_motors`)**: A dealer with edge cases (drafts, missing photos, rejected feeds) for testing validation and error handling.
+   - **Premium Imports (`dealer_premium_imports`)**: High-end inventory requiring manager approvals before publishing.
+   - **Specialty Dealers**: Trailers and boats dealerships for testing category extensibility.
+3. **Commercial & Performance Demo Data** (`seedPerformanceBenchmarkDemo`):
+   - Historical sold vehicles and sync events so movement benchmarks have comparables. No sale prices, costs or channel attributions are seeded.
+4. **Default User Accounts**:
+   - **Internal Operator** (Dealer & Operator Portal at `http://localhost:5173/app/` or [Railway Portal](https://auto-dealer-operator-ui-production.up.railway.app/app/)): `a@a.com` / `dev-change-me`
+   - **Super Admin** (Dealer & Operator Portal at `http://localhost:5173/app/` or [Railway Portal](https://auto-dealer-operator-ui-production.up.railway.app/app/)): `admin@example.local` / `dev-change-me`
+   - **Marketplace Consumer** (Marketplace at `http://localhost:5174/marketplace/` or [Railway Marketplace](https://auto-dealer-operator-ui-production.up.railway.app/marketplace/)): `buyer@example.local` / `dev-change-me`
+
+### Resetting the Demo World
+
+To wipe the database, apply pending migrations, seed all profiles and dealerships, and generate proof syndication artifacts:
 
 ```bash
-npm install
-
-# Copy and edit .env (MySQL credentials)
-cp .env.example .env
-
-# Apply migrations, then seed platform profiles + demo dealers
-npm run db:migrate
-npm run db:seed
-
-# Full pipeline reset — use this to verify everything works!
 npm run demo:reset
 ```
 
-**After running `demo:reset`:**
-✅ Core platforms evaluated and marked GREEN
-✅ Feed artifacts successfully written to `./exports/`
-✅ Proof folder manifest built
-✅ `poc:green`, `poc:risk`, and `poc:portal` all pass
-
 ---
 
-## 💻 Local Development Environment
+## Quick Start (Local Development)
 
-When running the full local stack via `npm run dev:all`, multiple UIs and the backend API start concurrently:
+### Prerequisites
+- **Node.js** v22+
+- **MySQL** 8.0+ running locally (e.g. port 3306)
 
-- 🟢 **API Server** (`http://localhost:3000`)
-- 🔵 **Operator Platform** (`http://localhost:5173`)
-- 🟠 **Dealership Platform**
-- 🟣 **Consumer Marketplace / Carvana Clone** (`http://localhost:5174`)
-- 🟡 **Splash UI** (`http://localhost:5175`)
+### 1. Install & Configure
+```bash
+npm install
 
-To start all of these simultaneously:
+# Copy environment variables and configure your local MySQL connection string
+cp .env.example .env
+```
+
+### 2. Initialize Database & Seed
+```bash
+npm run db:migrate
+npm run db:seed
+```
+
+### 3. Start the Development Stack
+To run the API server and all frontends concurrently:
 ```bash
 npm run dev:all
 ```
 
-Alternatively, to run just the API and Operator Console:
+Or run individual components by their specific port and path:
 ```bash
+# Start API server only (port 3000 -> http://localhost:3000/api)
 npm run server:start
+
+# Start Operator / Dealer Web App only (port 5173 -> http://localhost:5173/app/)
 npm run ui:dev
 
-# Run Tests and Typecheck
-npm test
-npm run typecheck
+# Start Consumer Marketplace only (port 5174 -> http://localhost:5174/marketplace/)
+npm run marketplace:dev
+
+# Start Splash landing page only (port 5175 -> http://localhost:5175/)
+npm run splash:dev
 ```
 
 ---
 
-## 📚 Deep Dive Documentation
+## Testing & Code Quality
 
-- 📖 `docs/handoff.md` - **Start here.** Current state, setup, architecture.
-- 🎯 `docs/mvp-scope-and-milestones.md` - Milestones and revenue validation.
-- 💼 `docs/go-to-market-playbook.md` - Sales motion and ICP.
-- 💰 `docs/pricing-and-unit-economics.md` - Revenue model and financial projections.
+The repository enforces strict typing and contract validation:
+
+```bash
+# Run all unit, integration, and UI tests
+npm test
+
+# Run TypeScript typechecks across backend and apps
+npm run typecheck
+
+# Validate OpenAPI schema against route definitions
+npm run openapi:validate
+```

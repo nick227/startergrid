@@ -262,13 +262,13 @@ export const DmsArchitectureSection: React.FC = () => {
                   STEP 4: ATTRIBUTION
                 </div>
                 <h3 style={{ fontSize: '1.125rem', fontWeight: 700, color: '#fff', marginBottom: '10px' }}>
-                  Deterministic Sale Match
+                  Sales Tracking by Channel
                 </h3>
                 <p style={{ fontSize: '0.8125rem', color: 'rgba(255, 255, 255, 0.65)', lineHeight: 1.5 }}>
-                  When marked sold in your DMS, StarterGrid resolves the sold VIN to originating platform leads—reporting true Cost Per Sale (CPS) and turn days.
+                  When marked sold in your inventory, StarterGrid links the sold VIN to confirmed buyer inquiries—reporting verified Cost Per Sale (CPS) and days on lot.
                 </p>
                 <div style={{ marginTop: '14px', fontSize: '0.6875rem', fontFamily: 'monospace', color: '#c084fc' }}>
-                  ★ 4-tier audited evidence badge
+                  ★ 4-tier evidence standards
                 </div>
               </div>
             </div>

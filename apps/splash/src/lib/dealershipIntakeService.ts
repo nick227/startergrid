@@ -102,7 +102,7 @@ export function submitDealershipIntake(payload: DealershipIntakePayload): {
     primaryDms: payload.primaryDms,
     lotSize: payload.lotSize,
     submittedAt: now.toISOString(),
-    assignedQueue: 'Automotive Deployment & Ingestion Engineering',
+    assignedQueue: 'Dealership Onboarding & DMS Setup',
     reviewSla: '1 business day',
   };
 

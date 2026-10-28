@@ -2,13 +2,13 @@ import type { SplashContent } from '../types/content.ts';
 
 export const content: SplashContent = {
   meta: {
-    title: 'StarterGrid — Automotive Channel Intelligence & Distribution',
+    title: 'StarterGrid — One Platform for Online Automotive Sales',
     description:
-      'StarterGrid ingests inventory from your DMS, validates data across 31 destination schemas, syndicates to search, social and portals, and measures deterministic sales attribution.',
+      'Manage your vehicles, connect online sales channels, publish inventory, receive buyer inquiries, and measure results.',
   },
   brand: {
     name: 'StarterGrid',
-    tagline: 'Automotive Distribution & Closed-Loop Attribution Platform',
+    tagline: 'Dealership Software & Online Automotive Sales',
     accentColor: '#2563eb',
     accentColorDark: '#1d4ed8',
     accentColorLight: '#eff6ff',
@@ -21,105 +21,105 @@ export const content: SplashContent = {
     channelNoun: 'destinations',
   },
   block1_hero: {
-    eyebrow: 'Automotive Distribution Engine',
-    headline: 'Multi-channel vehicle distribution with audited sales attribution.',
+    eyebrow: 'StarterGrid / Dealership Software',
+    headline: 'One platform for online automotive sales.',
     subheadline:
-      'StarterGrid ingests lot inventory from your DMS, executes 17-point pre-flight validation against destination-specific rules, syndicates across 31 platforms, and attributes closed sales back to originating channels.',
-    ctaLabel: 'Onboard Dealership',
-    ctaSecondaryLabel: 'View Performance Matrix',
+      'Manage your vehicles, connect online sales channels, publish inventory, receive inquiries, and measure results.',
+    ctaLabel: 'Request Dealership Access',
+    ctaSecondaryLabel: 'Explore Live Demo',
     trustItems: [
-      'Coexists with CDK, Reynolds, Dealertrack & Frazer',
-      '17-Point Pre-Flight Schema Verification',
-      'First-Party Consumer Marketplace Included',
+      'Works alongside your existing DMS (CDK, Reynolds, Dealertrack)',
+      'Publish vehicles to search, social, and classified sites',
+      'Includes consumer marketplace with zero competitor ads',
     ],
   },
   block2_pain: {
-    sectionLabel: 'The Operational Gap',
-    heading: 'Dealerships pay for syndication, but lose visibility into true acquisition costs.',
+    sectionLabel: 'Common Dealership Challenges',
+    heading: 'Publishing inventory online shouldn’t create messy data or guesswork.',
     subheading:
-      'Traditional syndication exports dirty data that fails silently on third-party sites, while ad vendors claim duplicate credit for in-store sales.',
+      'Dealerships often struggle with dropped listings, sold vehicles staying online, and unclear advertising results.',
     painPoints: [
       {
         icon: '⚠️',
-        title: 'Silent Feed Rejections',
-        body: 'Missing EPA mileage, improper photo crops, or missing trim codes cause platforms to drop listings without notifying dealership staff.',
+        title: 'Listings Dropped Without Notice',
+        body: 'Missing details, improper photo formats, or missing trim codes cause platforms to quietly reject vehicles, leaving cars unlisted.',
       },
       {
         icon: '⏳',
-        title: 'Syndication Lag and Stale Stock',
-        body: 'Overnight batch exports leave sold vehicles advertised for days, wasting ad budget and frustrating prospective buyers.',
+        title: 'Sold Cars Still Advertised',
+        body: 'Slow batch updates leave sold vehicles online for days, wasting advertising budget and frustrating prospective shoppers.',
       },
       {
         icon: '📊',
-        title: 'Unverifiable Ad Vendor Claims',
-        body: 'Third-party marketplaces self-report inflated lead numbers, while dealerships lack deterministic sale-to-lead attribution.',
+        title: 'Unclear Marketing Results',
+        body: 'Listing sites report clicks and impressions, but dealerships struggle to see which advertising channels actually bring in paying customers.',
       },
       {
         icon: '💸',
-        title: 'Fragmented Vendor Tax',
-        body: 'Paying separate vendors for inventory software, feed distribution, and analytics costs $3,500+ per month per rooftop.',
+        title: 'Too Many Disconnected Tools',
+        body: 'Paying separate vendors for inventory software, listing feeds, and reporting leads to high monthly costs and fragmented records.',
       },
     ],
   },
   block3_features: {
-    sectionLabel: 'The Platform Solution',
-    heading: 'Engineered for inventory readiness, multi-channel syndication, and audited ROI.',
+    sectionLabel: 'What StarterGrid Does',
+    heading: 'Everything your dealership needs to sell vehicles online.',
     subheading:
-      'A reactive software operating system that connects your DMS to search engines, social catalogs, third-party portals, and our first-party marketplace.',
+      'Connect your lot inventory to search ads, social media catalogs, auto marketplaces, and direct CRM inquiry delivery.',
     features: [
       {
         icon: '🔌',
-        title: 'Non-Disruptive DMS Ingestion',
-        body: 'Ingests inventory outputs from CDK, Reynolds & Reynolds, Dealertrack, Frazer, and DealerCenter. Your DMS remains the system of record for accounting and floorplanning.',
+        title: 'Works With Your DMS',
+        body: 'Import vehicle inventory from CDK, Reynolds & Reynolds, Dealertrack, Frazer, or standard CSV files. Your DMS remains the authority for accounting and deals.',
       },
       {
         icon: '🛡️',
-        title: '17-Point Pre-Flight Sentry',
-        body: 'Inspects VIN check digits, mandatory 6-slot media grids, odometer readings, and destination rules before pushing feeds to prevent silent rejections.',
+        title: 'Listing Quality Checks',
+        body: 'Checks VINs, photos, prices, and vehicle specs before publishing so listings meet platform rules and avoid silent rejections.',
       },
       {
         icon: '🌐',
-        title: 'First-Party Consumer Marketplace',
-        body: 'Active vehicles index instantly with zero syndication lag, zero competitor conquest ads on VDPs, and direct-to-CRM ADF/XML lead routing.',
+        title: 'StarterGrid Auto Marketplace',
+        body: 'Publish vehicles to our public consumer marketplace. Interested shoppers see only your vehicle and dealership contact info, with no competitor conquest ads.',
       },
       {
         icon: '📈',
-        title: 'Deterministic Sales Attribution',
-        body: 'Links sold vehicles back to originating channel leads when marked sold in your DMS, reporting verified Cost Per Lead (CPL) and Cost Per Sale (CPS).',
+        title: 'Sales Tracking by Channel',
+        body: 'Connect closed vehicle sales back to the advertising channel that generated the buyer inquiry, based on verified dealership records.',
       },
       {
         icon: '🏷️',
-        title: '4-Tier Evidence Standard',
-        body: 'Every metric is explicitly tagged as [Observed], [Reported], [Attributed], or [Estimated] so dealers always know the certainty of their numbers.',
+        title: 'Clear Evidence Badges',
+        body: 'Every performance figure clearly shows where the data came from: direct platform measurement, dealer-reported costs, or verified sales.',
       },
       {
         icon: '⏱️',
-        title: 'Turn Velocity Intelligence',
-        body: 'Tracks inventory age across 0-15d, 16-30d, 31-60d, and 60d+ brackets with statistically gated (N ≥ 5) turn recommendations.',
+        title: 'Inventory Age & Turn Guidance',
+        body: 'Track days on lot across practical age brackets to help your team price vehicles competitively and move older inventory.',
       },
     ],
   },
   block4_proof: {
-    sectionLabel: 'Audited Telemetry',
-    heading: 'Measured Performance Benchmarks',
+    sectionLabel: 'Operational Overview',
+    heading: 'Built for Real Dealership Operations',
     stats: [
-      { value: '31', suffix: '', label: 'supported syndication destinations' },
-      { value: '17', suffix: '-pt', label: 'automated pre-flight validation rules' },
-      { value: '0', suffix: 'min', label: 'marketplace sync latency' },
-      { value: '100', suffix: '%', label: 'ADF/XML lead delivery verification' },
+      { value: '31', suffix: '', label: 'supported advertising and marketplace channels' },
+      { value: '4', suffix: '', label: 'core categories: Marketplaces, Ads, Feeds, Leads' },
+      { value: 'ADF', suffix: '/XML', label: 'direct email delivery into your dealership CRM' },
+      { value: '100', suffix: '%', label: 'listing protection: no conquest ads on your vehicle pages' },
     ],
     testimonial: {
       quote:
-        'StarterGrid eliminated our silent syndication errors and proved our true acquisition costs across Meta, Google, and third-party portals with deterministic sales attribution.',
+        'StarterGrid keeps our lot inventory organized, publishes our vehicles to every channel we use, and routes buyer inquiries straight to our CRM.',
       author: 'Austin Auto Group',
-      role: 'Operations & Inventory Management',
+      role: 'Inventory & Sales Operations',
     },
   },
   block5_cta: {
-    heading: 'Connect Your Dealership to the StarterGrid Platform',
+    heading: 'Get Started with StarterGrid',
     subheading:
-      'Transparent pricing: $499 per month per rooftop. Unlimited vehicle inventory, 31 syndication channels, first-party marketplace inclusion, and full ADF/XML CRM dispatch.',
-    ctaLabel: 'Onboard Rooftop ($499/mo)',
-    urgencyNote: 'Includes assisted DMS feed configuration and full operator portal access.',
+      'Evaluate StarterGrid for your dealership. Speak with our team to verify your DMS export format and see how easily you can manage inventory online.',
+    ctaLabel: 'Request Dealership Access',
+    urgencyNote: 'Our team will review your lot requirements and follow up within one business day.',
   },
 };

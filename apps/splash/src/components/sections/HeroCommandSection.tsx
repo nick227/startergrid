@@ -107,7 +107,7 @@ export const HeroCommandSection: React.FC<HeroCommandSectionProps> = ({ onOpenIn
                 maxWidth: '560px',
               }}
             >
-              StarterGrid ingests inventory from your operational DMS, validates every vehicle against <strong>31 platform schemas</strong> before submission, distributes to search, social, and classifieds, and attributes confirmed sales back to originating channels with <strong>audited evidence</strong>.
+              StarterGrid connects with your DMS, checks every vehicle before publishing to search, social, and classified channels, and helps you see which channels actually sell cars with <strong>clear evidence badges</strong>.
             </p>
 
             {/* Action Buttons */}
@@ -213,7 +213,7 @@ export const HeroCommandSection: React.FC<HeroCommandSectionProps> = ({ onOpenIn
                   4-Tier Proof
                 </div>
                 <div style={{ fontSize: '0.75rem', color: 'rgba(255, 255, 255, 0.5)', marginTop: '2px' }}>
-                  Audited telemetry vs ad platform claims
+                  Verified platform data vs vendor claims
                 </div>
               </div>
             </div>
