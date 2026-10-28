@@ -188,7 +188,7 @@ export const SupportedChannelsCompact: React.FC = () => {
             <div>
               <strong style={{ color: '#ffffff', fontSize: '0.875rem' }}>31 Supported Advertising & Distribution Channels</strong>
               <div style={{ color: '#64748b', fontSize: '0.75rem' }}>
-                Including auto marketplaces, search ads, social catalogs, CRM lead routing, and specialty verticals.
+                Including auto marketplaces, search ads, social catalogs, CRM lead routing, and specialty markets.
               </div>
             </div>
             <button

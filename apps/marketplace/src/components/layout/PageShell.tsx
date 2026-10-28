@@ -26,7 +26,6 @@ export function PageShell({
   const activeTab = route && category && 'slug' in route && route.slug === category.slug
     ? route.page
     : null;
-  const isSitesIndex = !category || !showCategoryNav;
   const tabs = category && showCategoryNav
     ? [
         { key: 'list', label: 'Browse', href: listHref(category.slug) },
@@ -55,29 +54,8 @@ export function PageShell({
                     MARKETPLACE
                   </span>
                 </div>
-                {category && (
-                  <span className="text-[11px] font-medium text-ink-muted -mt-0.5">
-                    {category.schema.label}
-                  </span>
-                )}
               </div>
             </a>
-
-            {/* Shopper Navigation Links */}
-            <div className="hidden md:flex items-center gap-4 text-xs font-semibold text-ink-muted">
-              <a href="#/automotive/list" className="hover:text-navy-950 transition">
-                Vehicles
-              </a>
-              <a href="#/boats/list" className="hover:text-navy-950 transition">
-                Boats
-              </a>
-              <a href="#/trailers-powersports-rv/list" className="hover:text-navy-950 transition">
-                Powersports
-              </a>
-              <a href={sitesHref()} className="hover:text-navy-950 transition">
-                All Categories
-              </a>
-            </div>
 
             {backHref && (
               <div className="hidden sm:flex items-center gap-2">
@@ -90,15 +68,6 @@ export function PageShell({
           </div>
 
           <div className="flex shrink-0 items-center gap-2 sm:gap-3">
-            {isSitesIndex && (
-              <a
-                href="#categories-grid"
-                className="hidden lg:inline-flex text-xs font-semibold text-ink-muted hover:text-navy-900 px-3 py-1.5 rounded-lg hover:bg-silver-100 transition"
-              >
-                Browse All Verticals
-              </a>
-            )}
-
             <a
               href="http://localhost:5173/app/"
               target="_blank"
