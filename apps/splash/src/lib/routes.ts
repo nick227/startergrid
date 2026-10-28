@@ -19,21 +19,19 @@ export function parseRoute(): SplashRoute {
   const raw = window.location.hash.replace(/^#\/?/, '').split('?')[0] ?? '';
   const slug = raw.trim().toLowerCase();
 
-  // Root loads the flagship automotive platform landing page
-  if (slug === '' || slug === '/' || slug === 'flagship') {
-    return { page: 'flagship' };
-  }
-
   // Developer / internal access to multi-category stubs
   if (slug === 'dev-categories' || slug === 'categories' || slug === 'index') {
     return { page: 'index' };
   }
 
+  // Known multi-vertical category splash stubs (e.g. #/boats, #/homes)
   if (isKnownSplashSlug(slug)) {
     return { page: 'splash', slug };
   }
 
-  return { page: 'not-found', slug };
+  // All other hashes (empty root, #/, #flagship, or in-page anchors like #getting-started)
+  // map to the flagship automotive landing page.
+  return { page: 'flagship' };
 }
 
 export function flagshipHref(): string {

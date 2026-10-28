@@ -1,19 +1,23 @@
 import { useState, useEffect } from 'react';
-import { EditorialNav } from '../components/layout/EditorialNav.tsx';
-import { EditorialFooter } from '../components/layout/EditorialFooter.tsx';
-import { TopTenHeroOverview } from '../components/sections/TopTenHeroOverview.tsx';
-import { ValuePropositionSection } from '../components/sections/ValuePropositionSection.tsx';
-import { GettingStartedSection } from '../components/sections/GettingStartedSection.tsx';
+import { AppleScaleNav } from '../components/layout/AppleScaleNav.tsx';
+import { AppleScaleFooter } from '../components/layout/AppleScaleFooter.tsx';
+import { FlagshipHeroSection } from '../components/sections/FlagshipHeroSection.tsx';
+import { DiscoverSection } from '../components/sections/DiscoverSection.tsx';
+import { MarketplaceHeroSection } from '../components/sections/MarketplaceHeroSection.tsx';
+import { AdvertisingSection } from '../components/sections/AdvertisingSection.tsx';
+import { AutomationSection } from '../components/sections/AutomationSection.tsx';
+import { InventoryHubSection } from '../components/sections/InventoryHubSection.tsx';
+import { SupportingCapabilitiesSection } from '../components/sections/SupportingCapabilitiesSection.tsx';
+import { ConversionSection } from '../components/sections/ConversionSection.tsx';
 import { LeadIntakeModal } from '../components/ui/LeadIntakeModal.tsx';
-import { TOP_TEN_VALUE_PROPOSITIONS } from '../data/topTenValueProps.ts';
 
 export default function FlagshipSplashPage() {
   const [intakeOpen, setIntakeOpen] = useState<boolean>(false);
 
   useEffect(() => {
-    document.title = 'DealerGrid — Top 10 Core Value Propositions';
+    document.title = 'DealerGrid — Automotive Sales & Distribution Platform';
     const metaDesc = document.querySelector<HTMLMetaElement>('meta[name="description"]');
-    const descContent = 'DealerGrid: Post your vehicles to 70+ websites, list for free on the DealerGrid Marketplace with zero conquest ads, advertise across Google and Meta, and route inquiries directly to your CRM.';
+    const descContent = 'DealerGrid: Post your vehicles to 70+ websites from one platform, list for free on the DealerGrid Marketplace with zero conquest ads, advertise across Google and Meta, and route inquiries directly to your CRM.';
     if (metaDesc) {
       metaDesc.content = descContent;
     } else {
@@ -28,36 +32,47 @@ export default function FlagshipSplashPage() {
   const closeIntake = () => setIntakeOpen(false);
 
   return (
-    <div style={{ background: '#090d16', color: '#ffffff', minHeight: '100vh', fontFamily: "'Inter', system-ui, -apple-system, sans-serif" }}>
-      {/* 00 Navigation */}
-      <EditorialNav onRequestAccess={openIntake} />
+    <div
+      style={{
+        background: '#080c14',
+        color: '#ffffff',
+        minHeight: '100vh',
+        fontFamily: "'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif",
+      }}
+    >
+      {/* Navigation */}
+      <AppleScaleNav onRequestAccess={openIntake} />
 
       <main id="main-content">
-        {/* Top of Page: Lead with Top 10 Core Value Propositions */}
-        <div id="top-propositions">
-          <TopTenHeroOverview onRequestAccess={openIntake} />
-        </div>
+        {/* 01 — HERO (Flagship Distribution) */}
+        <FlagshipHeroSection onRequestAccess={openIntake} />
 
-        {/* 10 Consistently Structured Sections Containing More Detail & Real Examples */}
-        {TOP_TEN_VALUE_PROPOSITIONS.map((vp, index) => {
-          const nextProp = TOP_TEN_VALUE_PROPOSITIONS[index + 1];
-          return (
-            <ValuePropositionSection
-              key={vp.number}
-              propData={vp}
-              isEven={index % 2 === 1}
-              nextPropId={nextProp?.id}
-              onRequestAccess={openIntake}
-            />
-          );
-        })}
+        {/* 02 — DISCOVER (Compact Overview of All 10 Benefits) */}
+        <DiscoverSection />
 
-        {/* Rooftop Evaluation & Onboarding Request */}
-        <GettingStartedSection />
+        {/* 03 — PRODUCT STORY (Dominant Cinematic Visual Moments) */}
+        {/* 02 Marketplace: Full-Width Automotive Feature */}
+        <MarketplaceHeroSection />
+
+        {/* 03 Advertising: Large, Distinctive Paid Ads Section */}
+        <AdvertisingSection />
+
+        {/* 04 Automation: Focused Product Demonstration */}
+        <AutomationSection />
+
+        {/* 08 Inventory: Authoritative Lot Control Preview */}
+        <InventoryHubSection />
+
+        {/* 04 — SUPPORTING CAPABILITIES (Spacious Editorial Compositions) */}
+        {/* 05 DMS Connection • 06 Automotive Experts • 07 Leads & CRM • 09 Team Collaboration • 10 Market Demand */}
+        <SupportingCapabilitiesSection />
+
+        {/* 05 — CONVERSION (Working Account Setup & Evaluation Request) */}
+        <ConversionSection />
       </main>
 
       {/* Footer */}
-      <EditorialFooter />
+      <AppleScaleFooter />
 
       {/* Dealership Evaluation Modal */}
       <LeadIntakeModal isOpen={intakeOpen} onClose={closeIntake} />
