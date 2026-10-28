@@ -74,10 +74,16 @@ export const EditorialNav: React.FC<EditorialNavProps> = ({ onRequestAccess }) =
           className="desktop-nav"
         >
           <a
-            href="#what-it-does"
+            href="#how-it-works"
             style={{ color: '#94a3b8', textDecoration: 'none', fontSize: '0.875rem', fontWeight: 500 }}
           >
-            Platform
+            How It Works
+          </a>
+          <a
+            href="#products"
+            style={{ color: '#94a3b8', textDecoration: 'none', fontSize: '0.875rem', fontWeight: 500 }}
+          >
+            Products
           </a>
           <a
             href="#channels"
@@ -86,28 +92,16 @@ export const EditorialNav: React.FC<EditorialNavProps> = ({ onRequestAccess }) =
             Channels
           </a>
           <a
-            href="#marketplace"
+            href="#why-choose"
             style={{ color: '#94a3b8', textDecoration: 'none', fontSize: '0.875rem', fontWeight: 500 }}
           >
-            Marketplace
-          </a>
-          <a
-            href="#capabilities"
-            style={{ color: '#94a3b8', textDecoration: 'none', fontSize: '0.875rem', fontWeight: 500 }}
-          >
-            Features
-          </a>
-          <a
-            href="#performance"
-            style={{ color: '#94a3b8', textDecoration: 'none', fontSize: '0.875rem', fontWeight: 500 }}
-          >
-            Performance
+            Why StarterGrid
           </a>
           <a
             href="#getting-started"
             style={{ color: '#94a3b8', textDecoration: 'none', fontSize: '0.875rem', fontWeight: 500 }}
           >
-            Getting Started
+            Get Started
           </a>
         </nav>
 

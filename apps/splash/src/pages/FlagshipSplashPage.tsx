@@ -2,11 +2,10 @@ import { useState, useEffect } from 'react';
 import { EditorialNav } from '../components/layout/EditorialNav.tsx';
 import { EditorialFooter } from '../components/layout/EditorialFooter.tsx';
 import { EditorialHero } from '../components/sections/EditorialHero.tsx';
-import { WorkflowFourPart } from '../components/sections/WorkflowFourPart.tsx';
-import { ProvidersDirectory } from '../components/sections/ProvidersDirectory.tsx';
-import { MarketplaceEditorial } from '../components/sections/MarketplaceEditorial.tsx';
-import { CapabilitiesDirectory } from '../components/sections/CapabilitiesDirectory.tsx';
-import { PerformanceEvidence } from '../components/sections/PerformanceEvidence.tsx';
+import { WorkflowThreeStep } from '../components/sections/WorkflowThreeStep.tsx';
+import { TwoProductsSection } from '../components/sections/TwoProductsSection.tsx';
+import { SupportedChannelsCompact } from '../components/sections/SupportedChannelsCompact.tsx';
+import { WhyChooseSection } from '../components/sections/WhyChooseSection.tsx';
 import { GettingStartedSection } from '../components/sections/GettingStartedSection.tsx';
 import { LeadIntakeModal } from '../components/ui/LeadIntakeModal.tsx';
 
@@ -36,32 +35,29 @@ export default function FlagshipSplashPage() {
       <EditorialNav onRequestAccess={openIntake} />
 
       <main id="main-content">
-        {/* 01 Product Introduction */}
+        {/* 01 Hero & Product Preview */}
         <EditorialHero onRequestAccess={openIntake} />
 
-        {/* 02 What StarterGrid Does */}
-        <WorkflowFourPart />
+        {/* 02 How It Works in 3 Clear Steps */}
+        <WorkflowThreeStep />
 
-        {/* 03 Sales Channels & Integrations */}
-        <ProvidersDirectory />
+        {/* 03 The Two Products: Operator Portal & Zero-Conquest Marketplace */}
+        <TwoProductsSection />
 
-        {/* 04 The StarterGrid Marketplace */}
-        <MarketplaceEditorial />
+        {/* 04 Supported Sales Channels & Advertising Providers */}
+        <SupportedChannelsCompact />
 
-        {/* 05 Complete Software Capabilities */}
-        <CapabilitiesDirectory />
+        {/* 05 Why Dealerships Choose StarterGrid */}
+        <WhyChooseSection />
 
-        {/* 06 Performance and Intelligence */}
-        <PerformanceEvidence />
-
-        {/* 07 Getting Started */}
+        {/* 06 Fast Rooftop Evaluation Request */}
         <GettingStartedSection />
       </main>
 
-      {/* 08 Footer */}
+      {/* 07 Clean Editorial Footer */}
       <EditorialFooter />
 
-      {/* Onboarding Intake Dialog */}
+      {/* Dealership Evaluation Modal */}
       <LeadIntakeModal isOpen={intakeOpen} onClose={closeIntake} />
     </div>
   );
