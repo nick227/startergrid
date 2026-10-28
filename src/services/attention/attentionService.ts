@@ -24,6 +24,7 @@ export type AttentionKind =
   | 'SOLD_LISTING_REMOVAL_IN_PROGRESS'
   | 'CHANNEL_SETUP_INCOMPLETE'
   | 'DISTRIBUTION_PROBLEM'
+  | 'UNANSWERED_INQUIRY'
   | 'CRM_DELIVERY_FAILED';
 export type AttentionActionKind =
   | 'FIX_VEHICLES'
@@ -31,6 +32,7 @@ export type AttentionActionKind =
   | 'REVIEW_REMOVALS'
   | 'END_EXTERNAL_LISTING'
   | 'COMPLETE_CHANNEL_SETUP'
+  | 'OPEN_LEADS'
   | 'RETRY_CRM_DELIVERY'
   | 'CONTACT_SUPPORT'
   | 'NONE';
@@ -360,6 +362,10 @@ export async function getAttention(
     ['REMOVALS', () => removalItems(db, dealershipId)],
     ['CHANNELS', () => channelItems(db, dealershipId)],
     ['LEADS', () => leadItems(db, dealershipId, env)],
+    ['LEADS', async () => {
+      const leads = await db.lead.findMany({ where: { dealershipId, workflowStatus: 'NEW' }, orderBy: { createdAt: 'asc' } });
+      return leads.length ? [item({ key: 'leads:unanswered', area: 'LEADS', kind: 'UNANSWERED_INQUIRY', severity: 'WARNING', owner: 'DEALERSHIP', ownerId: null, summary: `${leads.length} inquiries await a response`, nextAction: 'Review the inbox and record the next step.', action: 'OPEN_LEADS', records: leads.map(l => ({ type: 'LEAD' as const, id: l.id, label: l.contactName || 'Buyer inquiry', detail: null, channel: l.platformSlug, vehicleId: l.vehicleId })) })] : [];
+    }],
   ];
   const settled = await Promise.allSettled(sources.map(([, load]) => load()));
   const unavailableAreas: AttentionArea[] = [];

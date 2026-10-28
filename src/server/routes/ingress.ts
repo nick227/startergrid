@@ -7,7 +7,7 @@ import { createIngressSourceSchema, updateIngressSourceSchema, checkIngressSourc
 
 type DealerParams = { dealershipId: string };
 type SourceParams = { dealershipId: string; sourceId: string };
-type RunsQuery    = { limit?: string; before?: string };
+type RunsQuery    = { limit?: string; before?: string; runId?: string };
 
 async function requireDealer(prisma: PrismaClient, dealershipId: string): Promise<boolean> {
   const row = await prisma.dealershipProfile.findUnique({
@@ -92,7 +92,7 @@ export function registerIngressRoutes(app: FastifyInstance, prisma: PrismaClient
     '/api/dealers/:dealershipId/ingress/runs',
     async (request, reply) => {
       const { dealershipId } = request.params;
-      const { limit: limitStr, before } = request.query;
+      const { limit: limitStr, before, runId } = request.query;
       if (!await requireDealerAccess(prisma, request, reply, dealershipId)) return;
       if (!await requireDealer(prisma, dealershipId))
         return reply.status(404).send({ error: 'Dealer not found' });
@@ -101,7 +101,7 @@ export function registerIngressRoutes(app: FastifyInstance, prisma: PrismaClient
         ? Math.min(Math.max(parseInt(limitStr, 10) || 20, 1), 100)
         : 20;
 
-      const result = await listRuns(prisma, dealershipId, { limit, before });
+      const result = await listRuns(prisma, dealershipId, { limit, before, runId });
       return reply.send(result);
     }
   );

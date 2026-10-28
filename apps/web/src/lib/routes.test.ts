@@ -10,23 +10,23 @@ import {
 import { tabFromPage } from './operatorNav.ts';
 
 describe('parseOperatorRoute', () => {
-  it('parses dealer root hash as home (profile)', () => {
+  it('parses dealer root hash as the Activity landing page', () => {
     const route = parseOperatorRoute('#/dealer-a');
     expect(route).toMatchObject({
       dealerId: 'dealer-a',
       page: null,
       platformSlug: null,
     });
-    expect(tabFromPage(route.page)).toBe('home');
+    expect(tabFromPage(route.page)).toBe('activity');
   });
 
-  it('parses explicit /home segment as home (profile)', () => {
+  it('parses explicit /home segment as the Activity landing page', () => {
     const route = parseOperatorRoute('#/dealer-a/home');
     expect(route).toMatchObject({
       dealerId: 'dealer-a',
       page: null,
     });
-    expect(tabFromPage(route.page)).toBe('home');
+    expect(tabFromPage(route.page)).toBe('activity');
   });
 
   it('parses /platforms segment as platforms', () => {
@@ -268,5 +268,15 @@ describe('hash builders', () => {
   it('adminDealerHash builds correct href', () => {
     expect(adminDealerHash('dealer-xyz')).toBe('#/admin/dealers/dealer-xyz');
     expect(adminDealerHash('dealer-xyz', 'destinations')).toBe('#/admin/dealers/dealer-xyz/destinations');
+  });
+});
+
+
+describe('workspace navigation compatibility', () => {
+  it('parses focused Activity and Team views without losing record scope', () => {
+    expect(parseOperatorRoute('#/d1/activity/leads?leadId=l1&support=true')).toMatchObject({ page: 'activity', workspaceView: 'leads', scope: { leadId: 'l1' } });
+    expect(parseOperatorRoute('#/d1/team/tasks')).toMatchObject({ page: 'team', workspaceView: 'tasks' });
+    expect(parseOperatorRoute('#/d1/settings/team')).toMatchObject({ page: 'team', workspaceView: 'people' });
+    expect(tabFromPage(parseOperatorRoute('#/d1/leads').page)).toBe('activity');
   });
 });

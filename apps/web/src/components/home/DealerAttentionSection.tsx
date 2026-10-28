@@ -62,6 +62,9 @@ export function DealerAttentionSection({ dealerId: _dealerId, attention, nav }: 
           nav.goToPlatforms();
         }
         break;
+      case 'OPEN_LEADS':
+        nav.goToLeads();
+        break;
       case 'RETRY_CRM_DELIVERY': {
         const leadRecord = item.records?.find(r => r.type === 'LEAD') || item.records?.[0];
         nav.goToLeads({ leadId: leadRecord?.id });

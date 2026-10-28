@@ -1,4 +1,4 @@
-export type OperatorTab = 'home' | 'platforms' | 'reports' | 'inventory' | 'leads' | 'settings' | 'help';
+export type OperatorTab = 'activity' | 'team' | 'home' | 'platforms' | 'reports' | 'inventory' | 'leads' | 'settings' | 'help';
 
 import type { RowNavScope } from './rowNavScope.ts';
 
@@ -42,13 +42,15 @@ export type OperatorNavHandlers = {
 };
 
 export const OPERATOR_TABS: Array<{ id: OperatorTab; label: string; short: string }> = [
-  { id: 'home', label: 'Home', short: 'Home' },
-  { id: 'inventory', label: 'Vehicles', short: 'Vehicles' },
+  { id: 'activity', label: 'Activity', short: 'Activity' },
   { id: 'platforms', label: 'Channels', short: 'Channels' },
-  { id: 'leads', label: 'Leads', short: 'Leads' },
+  { id: 'inventory', label: 'Vehicles', short: 'Vehicles' },
+  { id: 'team', label: 'Team', short: 'Team' },
 ];
 
 export type OperatorPageSegment =
+  | 'activity'
+  | 'team'
   | 'platforms'
   | 'queue'
   | 'history'
@@ -62,10 +64,10 @@ export type OperatorPageSegment =
   | 'signup';
 
 export function tabFromPage(page: OperatorPageSegment | null): OperatorTab {
-  if (!page) return 'home';
+  if (!page || page === 'activity' || page === 'leads') return 'activity';
+  if (page === 'team') return 'team';
   if (page === 'reports') return 'reports';
   if (page === 'inventory') return 'inventory';
-  if (page === 'leads') return 'leads';
   if (page === 'settings') return 'settings';
   if (page === 'help' || page === 'knowledge') return 'help';
   return 'platforms';

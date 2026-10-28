@@ -3006,6 +3006,10 @@ paths:
       operationId: listIngressRuns
       summary: List ingress runs for a dealer
       parameters:
+        - name: runId
+          in: query
+          description: Focus an authoritative import run within this dealership
+          schema: { type: string }
         - $ref: '#/components/parameters/dealershipId'
         - name: limit
           in: query
@@ -4888,6 +4892,256 @@ paths:
           $ref: '#/components/responses/Unauthorized'
         '403':
           $ref: '#/components/responses/Forbidden'
+
+  /api/dealers/{dealershipId}/business-activity:
+    get:
+      tags:
+        - Dealers
+      security:
+        - OperatorAuth: []
+      x-route-classification: operator
+      operationId: listBusinessActivity
+      summary: Meaningful dealership activity, grouped by publishing batch
+      parameters:
+        - name: dealershipId
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: cursor
+          in: query
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Workspace result
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: true
+        '400':
+          description: Invalid input or cross-dealership reference
+        '401':
+          description: Authentication required
+        '403':
+          description: Dealership access required
+  /api/dealers/{dealershipId}/sales-register:
+    get:
+      tags:
+        - Dealers
+      security:
+        - OperatorAuth: []
+      x-route-classification: operator
+      operationId: listSalesRegister
+      summary: Sold inventory with separately recorded transaction facts
+      parameters:
+        - name: dealershipId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Workspace result
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: true
+        '400':
+          description: Invalid input or cross-dealership reference
+        '401':
+          description: Authentication required
+        '403':
+          description: Dealership access required
+  /api/dealers/{dealershipId}/team:
+    get:
+      tags:
+        - Dealers
+      security:
+        - OperatorAuth: []
+      x-route-classification: operator
+      operationId: listTeamThreads
+      summary: Shared dealership discussions and tasks
+      parameters:
+        - name: dealershipId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Workspace result
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: true
+        '400':
+          description: Invalid input or cross-dealership reference
+        '401':
+          description: Authentication required
+        '403':
+          description: Dealership access required
+    post:
+      tags:
+        - Dealers
+      security:
+        - OperatorAuth: []
+      x-route-classification: operator
+      operationId: createTeamThread
+      summary: Create a discussion, announcement or employee task
+      parameters:
+        - name: dealershipId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '201':
+          description: Workspace result
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: true
+        '400':
+          description: Invalid input or cross-dealership reference
+        '401':
+          description: Authentication required
+        '403':
+          description: Dealership access required
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: false
+              properties:
+                kind:
+                  type: string
+                  enum:
+                    - POST
+                    - ANNOUNCEMENT
+                    - TASK
+                title:
+                  type: string
+                  minLength: 1
+                  maxLength: 200
+                body:
+                  type: string
+                  minLength: 1
+                  maxLength: 10000
+                assigneeId:
+                  type: string
+                  nullable: true
+                  maxLength: 191
+                reference:
+                  type: string
+                  nullable: true
+                  maxLength: 512
+              required:
+                - kind
+                - title
+                - body
+  /api/dealers/{dealershipId}/team/{threadId}:
+    patch:
+      tags:
+        - Dealers
+      security:
+        - OperatorAuth: []
+      x-route-classification: operator
+      operationId: updateTeamTask
+      summary: Assign, complete or reopen a task
+      parameters:
+        - name: dealershipId
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: threadId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Workspace result
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: true
+        '400':
+          description: Invalid input or cross-dealership reference
+        '401':
+          description: Authentication required
+        '403':
+          description: Dealership access required
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: false
+              properties:
+                completed:
+                  type: boolean
+                assigneeId:
+                  type: string
+                  nullable: true
+                  maxLength: 191
+  /api/dealers/{dealershipId}/team/{threadId}/comments:
+    post:
+      tags:
+        - Dealers
+      security:
+        - OperatorAuth: []
+      x-route-classification: operator
+      operationId: createTeamComment
+      summary: Comment on a dealership discussion or task
+      parameters:
+        - name: dealershipId
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: threadId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '201':
+          description: Workspace result
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: true
+        '400':
+          description: Invalid input or cross-dealership reference
+        '401':
+          description: Authentication required
+        '403':
+          description: Dealership access required
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: false
+              properties:
+                body:
+                  type: string
+                  minLength: 1
+                  maxLength: 10000
+              required:
+                - body
 
 components:
   securitySchemes:
@@ -7410,6 +7664,7 @@ components:
             - SOLD_LISTING_REMOVAL_IN_PROGRESS
             - CHANNEL_SETUP_INCOMPLETE
             - DISTRIBUTION_PROBLEM
+            - UNANSWERED_INQUIRY
             - CRM_DELIVERY_FAILED
         severity:
           type: string
@@ -7429,7 +7684,7 @@ components:
           properties:
             kind:
               type: string
-              enum: [FIX_VEHICLES, ADD_PHOTOS, REVIEW_REMOVALS, END_EXTERNAL_LISTING, COMPLETE_CHANNEL_SETUP, RETRY_CRM_DELIVERY, CONTACT_SUPPORT, NONE]
+              enum: [FIX_VEHICLES, ADD_PHOTOS, REVIEW_REMOVALS, END_EXTERNAL_LISTING, COMPLETE_CHANNEL_SETUP, OPEN_LEADS, RETRY_CRM_DELIVERY, CONTACT_SUPPORT, NONE]
             enabled: { type: boolean }
             disabledReason: { type: string, nullable: true }
             channel: { type: string, nullable: true, description: Set when every record is on one channel. }

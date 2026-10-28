@@ -289,14 +289,14 @@ export async function updateSource(
 export async function listRuns(
   prisma: PrismaClient,
   dealershipId: string,
-  opts: { limit?: number; before?: string } = {}
+  opts: { limit?: number; before?: string; runId?: string } = {}
 ): Promise<{ runs: IngressRunView[]; hasMore: boolean }> {
   const limit = Math.min(opts.limit ?? 20, 100);
 
   let cursorDate: Date | undefined;
   if (opts.before) {
     const ref = await prisma.ingressRun.findUnique({
-      where: { id: opts.before }, select: { createdAt: true }
+      where: { id: opts.before, dealershipId }, select: { createdAt: true }
     });
     if (ref) cursorDate = ref.createdAt;
   }
@@ -304,6 +304,7 @@ export async function listRuns(
   const rows = await prisma.ingressRun.findMany({
     where: {
       dealershipId,
+      ...(opts.runId ? { id: opts.runId } : {}),
       ...(cursorDate ? { createdAt: { lt: cursorDate } } : {})
     },
     orderBy: { receivedAt: 'desc' },

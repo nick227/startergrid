@@ -1,3 +1,4 @@
+import { registerWorkspaceRoutes } from './routes/workspaces.js';
 import { registerAutopilotRoutes } from './routes/autopilot.js';
 import Fastify, { type FastifyInstance } from 'fastify';
 import cors from '@fastify/cors';
@@ -116,6 +117,7 @@ export function buildApp(prisma: PrismaClient): FastifyInstance {
   registerInviteAuthRoutes(app, prisma);
   registerDealerRoutes(app, prisma);
   registerDealershipRecordRoutes(app, prisma);
+  registerWorkspaceRoutes(app, prisma);
   registerDealershipPeopleRoutes(app, prisma);
   registerStorefrontRoutes(app, prisma);
   registerInventoryRoutes(app, prisma);

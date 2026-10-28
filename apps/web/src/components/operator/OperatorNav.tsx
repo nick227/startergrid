@@ -1,3 +1,4 @@
+import { workspaceHash } from '@/lib/routes.ts';
 import { OPERATOR_TABS, type OperatorTab, type OperatorNavHandlers } from '../../lib/operatorNav.ts';
 
 type Props = {
@@ -7,6 +8,8 @@ type Props = {
 
 export function OperatorNav({ active, nav }: Props) {
   const handlers: Record<OperatorTab, () => void> = {
+    activity: nav.goToHome,
+    team: () => { const id = window.location.hash.split('/')[1]; window.location.hash = workspaceHash(id, 'team'); },
     home: nav.goToHome,
     platforms: nav.goToPlatforms,
     reports: nav.goToReports,
@@ -25,6 +28,7 @@ export function OperatorNav({ active, nav }: Props) {
             key={tab.id}
             type="button"
             onClick={handlers[tab.id]}
+            aria-current={isActive ? 'page' : undefined}
             className={`px-3 py-2 text-xs font-semibold rounded-lg transition-all ${
               isActive
                 ? 'bg-white text-ink-heading shadow-elevation-1'

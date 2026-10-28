@@ -395,10 +395,10 @@ export async function checkIngressSource(
 
 export async function fetchIngressRuns(
   dealershipId: string,
-  opts?: { limit?: number; before?: string }
+  opts?: { limit?: number; before?: string; runId?: string }
 ): Promise<IngressRunsResponse> {
   return fromSdk(
-    InventoryService.listIngressRuns({ dealershipId, limit: opts?.limit, before: opts?.before })
+    InventoryService.listIngressRuns({ dealershipId, limit: opts?.limit, before: opts?.before, runId: opts?.runId })
   ) as Promise<IngressRunsResponse>;
 }
 

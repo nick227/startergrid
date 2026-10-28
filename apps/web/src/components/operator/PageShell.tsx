@@ -26,7 +26,8 @@ type Props = {
 };
 
 const TAB_LABELS: Record<OperatorTab, string> = {
-  home: 'Home',
+  activity: 'Activity', team: 'Team',
+  home: 'Activity',
   platforms: 'Channels',
   reports: 'Reports',
   inventory: 'Vehicles',
@@ -129,7 +130,7 @@ export function PageShell({
                 </button>
               ) : null}
               <div className="flex min-w-0 flex-1 flex-wrap items-center justify-end gap-2 [&>*]:shrink-0">
-                <HelpButton topic={HELP_TOPICS[activeTab]} inverted />
+                <HelpButton topic={activeTab === 'activity' && /\/(activity\/)?leads(?:[?]|$)/.test(window.location.hash) ? HELP_TOPICS.leads : HELP_TOPICS[activeTab]} inverted />
                 <button
                   type="button"
                   onClick={nav.goToReports}

@@ -9,6 +9,7 @@ export const CHANNEL_VIEWS = ['overview', 'setup', 'activity', 'settings', 'soci
 export type ChannelView = typeof CHANNEL_VIEWS[number];
 
 export type OperatorRoute = {
+  workspaceView?: string;
   dealerId: string | null;
   page: OperatorPageSegment | null;
   platformSlug: string | null;
@@ -227,6 +228,10 @@ export function parseOperatorRoute(hash = window.location.hash): OperatorRoute {
     );
   }
 
+  if (/^(activity|team)(\/[^/]+)?$/.test(rest) || rest === 'settings/team') {
+    const [workspace, view] = rest.split('/');
+    return { ...emptyRoute(), dealerId, page: workspace === 'settings' ? 'team' : workspace as 'activity' | 'team', workspaceView: workspace === 'settings' ? 'people' : view, scope, assetRef, assetId };
+  }
   const page = parsePageSegment(rest || undefined);
   return routeWithReports(
     { dealerId, page, platformSlug: null, platformView: null, assetRef, assetId, inventoryItemSlug: null, adminDealerId: null, adminDealerPage: null },
@@ -298,25 +303,26 @@ export function platformHistoryHash(dealerId: string, platformSlug: string, scop
 }
 
 export function buildOperatorNav(dealerId: string): OperatorNavHandlers {
+  const go = (hash: string) => { window.location.hash = preserveSupport(hash); };
   return {
-    goToHome: () => { window.location.hash = `#/${dealerId}`; },
-    goToPlatforms: scope => { window.location.hash = operatorHash(dealerId, 'platforms', scope); },
-    goToQueue: scope => { window.location.hash = operatorHash(dealerId, 'inventory', scope); },
-    goToHistory: scope => { window.location.hash = operatorHash(dealerId, 'platforms', scope); },
-    goToReports: () => { window.location.hash = operatorHash(dealerId, 'reports'); },
-    goToInventory: scope => { window.location.hash = operatorHash(dealerId, 'inventory', scope); },
-    goToVehicles: scope => { window.location.hash = operatorHash(dealerId, 'inventory', scope); },
-    goToChannels: scope => { window.location.hash = operatorHash(dealerId, 'platforms', scope); },
-    goToInventoryItem: (item, scope) => { window.location.hash = inventoryItemHash(dealerId, item, scope); },
-    goToLeads: scope => { window.location.hash = operatorHash(dealerId, 'leads', scope); },
-    goToSettings: () => { window.location.hash = operatorHash(dealerId, 'settings'); },
+    goToHome: () => { go(workspaceHash(dealerId, 'activity')); },
+    goToPlatforms: scope => { go(operatorHash(dealerId, 'platforms', scope)); },
+    goToQueue: scope => { go(operatorHash(dealerId, 'inventory', scope)); },
+    goToHistory: scope => { go(operatorHash(dealerId, 'platforms', scope)); },
+    goToReports: () => { go(operatorHash(dealerId, 'reports')); },
+    goToInventory: scope => { go(operatorHash(dealerId, 'inventory', scope)); },
+    goToVehicles: scope => { go(operatorHash(dealerId, 'inventory', scope)); },
+    goToChannels: scope => { go(operatorHash(dealerId, 'platforms', scope)); },
+    goToInventoryItem: (item, scope) => { go(inventoryItemHash(dealerId, item, scope)); },
+    goToLeads: scope => { go(appendRowNavScope(workspaceHash(dealerId, 'activity', 'leads'), scope)); },
+    goToSettings: () => { go(operatorHash(dealerId, 'settings')); },
     goToHelp: () => openDocumentation(),
-    goToPlatformDetail: (slug, scope) => { window.location.hash = platformDetailHash(dealerId, slug, scope); },
-    goToPlatformQueue: (slug, scope) => { window.location.hash = platformDetailHash(dealerId, slug, scope); },
-    goToPlatformHistory: (slug, scope) => { window.location.hash = platformDetailHash(dealerId, slug, scope); },
-    goToSync: () => { window.location.hash = operatorHash(dealerId, 'platforms'); },
-    goToAccounts: () => { window.location.hash = operatorHash(dealerId, 'platforms'); },
-    goToInsights: () => { window.location.hash = operatorHash(dealerId, 'reports'); },
+    goToPlatformDetail: (slug, scope) => { go(platformDetailHash(dealerId, slug, scope)); },
+    goToPlatformQueue: (slug, scope) => { go(platformDetailHash(dealerId, slug, scope)); },
+    goToPlatformHistory: (slug, scope) => { go(platformDetailHash(dealerId, slug, scope)); },
+    goToSync: () => { go(operatorHash(dealerId, 'platforms')); },
+    goToAccounts: () => { go(operatorHash(dealerId, 'platforms')); },
+    goToInsights: () => { go(operatorHash(dealerId, 'reports')); },
     goToKnowledge: () => openDocumentation(),
     changeDealer: () => { window.location.hash = dealerPickerHash(); },
   };
@@ -324,7 +330,7 @@ export function buildOperatorNav(dealerId: string): OperatorNavHandlers {
 
 /** Redirect legacy hash paths (#/dealer/sync, accounts, insights) to new IA. */
 export function normalizeOperatorHash(): void {
-  const { path } = splitOperatorHash(window.location.hash);
+  const { path, query } = splitOperatorHash(window.location.hash);
   if (path === '/knowledge' || path === 'knowledge') {
     window.location.replace('#/help');
     return;
@@ -333,5 +339,15 @@ export function normalizeOperatorHash(): void {
   if (!m) return;
   const [, dealerId, legacy] = m;
   const next = legacy === 'insights' ? 'reports' : 'platforms';
-  window.location.replace(`#/${dealerId}/${next}`);
+  window.location.replace(`#/${dealerId}/${next}${query ? `?${query}` : ''}`);
+}
+
+/** Preserve staff support mode while moving between dealership workspaces. */
+export function workspaceHash(dealerId: string, workspace: 'activity' | 'team', view?: string): string {
+  const base = `#/${dealerId}/${workspace}${view ? `/${view}` : ''}`;
+  return preserveSupport(base);
+}
+export function preserveSupport(hash: string): string {
+  if (typeof window === 'undefined' || new URLSearchParams(splitOperatorHash(window.location.hash).query).get('support') !== 'true' || new URLSearchParams(splitOperatorHash(hash).query).has('support')) return hash;
+  return `${hash}${hash.includes('?') ? '&' : '?'}support=true`;
 }

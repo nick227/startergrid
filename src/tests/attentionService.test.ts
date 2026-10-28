@@ -55,7 +55,7 @@ function fakeDb(f: Fixture): any {
     },
     distributionIncident: { findMany: async () => f.incidents ?? [] },
     leadDeliveryAttempt: { findMany: async () => f.attempts ?? [] },
-    lead: { findMany: async () => f.leads ?? [] },
+    lead: { findMany: async (args: any) => args?.where?.workflowStatus ? (f.leads ?? []).filter(l => l.workflowStatus === args.where.workflowStatus) : f.leads ?? [] },
   };
 }
 
@@ -159,6 +159,13 @@ describe('attention list', () => {
     const info = find(res.items, 'VEHICLE_INFORMATION_MISSING')!;
     assert.equal(info.count, 60);
     assert.equal(info.records.length, 50);
+  });
+
+  it('uses the shared attention system for unanswered inquiries', async () => {
+    const res = await getAttention(fakeDb({ leads: [{ id: 'l1', contactName: 'Alex', workflowStatus: 'NEW', platformSlug: 'storefront', vehicleId: null }] }), 'd1', NO_SMTP);
+    const issue = find(res.items, 'UNANSWERED_INQUIRY');
+    assert.equal(issue?.action.kind, 'OPEN_LEADS');
+    assert.equal(issue?.records[0]?.id, 'l1');
   });
 
   it('requires access to the dealership', async () => {

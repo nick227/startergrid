@@ -11,7 +11,7 @@ import { AUTO_MARKETPLACE_NAME, AUTO_MARKETPLACE_SLUG } from '@/lib/marketplaceB
 import { LeadCrmHandoffModal } from '@/components/leads/LeadCrmHandoffModal.tsx';
 import { useOperatorRoute } from '@/hooks/useOperatorRoute.ts';
 
-type Props = OperatorPageBaseProps;
+type Props = OperatorPageBaseProps & { embedded?: boolean };
 
 type LeadStatus = 'new' | 'contacted' | 'appointment' | 'closed' | 'lost';
 type StatusFilter = 'all' | LeadStatus;
@@ -449,7 +449,7 @@ function LeadRow({
 
 type PageView = 'leads' | 'communications';
 
-export default function LeadsPage({ dealerId, nav, activeTab }: Props) {
+export default function LeadsPage({ dealerId, nav, activeTab, embedded = false }: Props) {
   const { route } = useOperatorRoute();
   const [view, setView] = useState<PageView>('leads');
   const [selectedLeadForCrm, setSelectedLeadForCrm] = useState<string | null>(() => route.scope?.leadId ?? null);
@@ -591,8 +591,9 @@ export default function LeadsPage({ dealerId, nav, activeTab }: Props) {
     });
   };
 
+  const Frame = embedded ? EmbeddedLeads : OperatorPage;
   return (
-    <OperatorPage
+    <Frame
       dealerId={dealerId}
       activeTab={activeTab}
       nav={nav}
@@ -763,6 +764,8 @@ export default function LeadsPage({ dealerId, nav, activeTab }: Props) {
           onSent={() => reload()}
         />
       )}
-    </OperatorPage>
+    </Frame>
   );
 }
+
+function EmbeddedLeads({ children }: React.PropsWithChildren<OperatorPageBaseProps & { onRefresh?: () => void; refreshing?: boolean }>) { return <>{children}</>; }

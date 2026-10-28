@@ -10,9 +10,9 @@ import HistoryPage from './pages/HistoryPage.tsx';
 import PlatformQueuePage from './pages/PlatformQueuePage.tsx';
 import PlatformHistoryPage from './pages/PlatformHistoryPage.tsx';
 import InventoryPage from './pages/InventoryPage.tsx';
-import LeadsPage from './pages/LeadsPage.tsx';
 import KnowledgeBasePage from './pages/KnowledgeBasePage.tsx';
-import HomePage from './pages/HomePage.tsx';
+import ActivityPage from './pages/ActivityPage.tsx';
+import TeamPage from './pages/TeamPage.tsx';
 import RegisterPage from './pages/RegisterPage.tsx';
 import { OperatorPage } from '@/components/operator';
 
@@ -126,8 +126,10 @@ function OperatorApp() {
         </Suspense>
       ) : page === 'inventory' ? (
         <InventoryPage dealerId={dealerId} nav={nav} activeTab={activeTab} />
-      ) : page === 'leads' ? (
-        <LeadsPage dealerId={dealerId} nav={nav} activeTab={activeTab} />
+      ) : page === 'team' ? (
+        <TeamPage dealerId={dealerId} nav={nav} activeTab={activeTab} view={route.workspaceView} />
+      ) : page === 'leads' || page === 'activity' ? (
+        <ActivityPage dealerId={dealerId} nav={nav} activeTab={activeTab} view={page === 'leads' ? 'leads' : route.workspaceView} />
       ) : page === 'settings' ? (
         <SettingsPage dealerId={dealerId} nav={nav} activeTab={activeTab} />
       ) : page === 'platforms' ? (
@@ -137,7 +139,7 @@ function OperatorApp() {
           activeTab={activeTab}
         />
       ) : (
-        <HomePage
+        <ActivityPage
           dealerId={dealerId}
           nav={nav}
           activeTab={activeTab}

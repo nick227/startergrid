@@ -37,6 +37,7 @@ export function DealerHomeDashboard({ dealerId, nav }: Props) {
 
   useEffect(() => {
     let live = true;
+    setLoading(true);
     Promise.all([
       fetchDealershipProfile(dealerId).catch(() => null),
       fetchPublishStatus(dealerId).catch(() => null),
@@ -117,14 +118,6 @@ export function DealerHomeDashboard({ dealerId, nav }: Props) {
     return <div className="surface-card-operator p-6 rounded-xl"><Skeleton rows={6} /></div>;
   }
 
-  if (firstTime) {
-    return (
-      <div className="space-y-5">
-        <GettingStartedChecklist dealerId={dealerId} nav={nav} profile={profile} status={status} />
-      </div>
-    );
-  }
-
   const blockingAttention = attention?.items?.find(i => i.owner === 'DEALERSHIP' && i.severity === 'BLOCKING');
   const actionAttention = attention?.items?.find(i => i.owner === 'DEALERSHIP' && i.severity !== 'WAITING');
   const topAttention = blockingAttention || actionAttention;
@@ -156,6 +149,8 @@ export function DealerHomeDashboard({ dealerId, nav }: Props) {
           } else if (topAttention.action.kind === 'REVIEW_REMOVALS' || topAttention.action.kind === 'END_EXTERNAL_LISTING' || topAttention.action.kind === 'COMPLETE_CHANNEL_SETUP') {
             if (topAttention.action.channel) nav.goToPlatformDetail(topAttention.action.channel);
             else nav.goToPlatforms();
+          } else if (topAttention.action.kind === 'OPEN_LEADS') {
+            nav.goToLeads();
           } else if (topAttention.action.kind === 'RETRY_CRM_DELIVERY') {
             const leadRecord = topAttention.records?.find(r => r.type === 'LEAD') || topAttention.records?.[0];
             nav.goToLeads({ leadId: leadRecord?.id });
@@ -170,6 +165,8 @@ export function DealerHomeDashboard({ dealerId, nav }: Props) {
 
   return (
     <div className="space-y-5">
+      {firstTime && <GettingStartedChecklist dealerId={dealerId} nav={nav} profile={profile} status={status} />}
+      {!attention && <p role="alert" className="text-red-700">Needs Attention could not load. Refresh to try again.</p>}
       <PagePrimaryState
         kind={top ? 'attention' : 'running'}
         title={
@@ -177,14 +174,14 @@ export function DealerHomeDashboard({ dealerId, nav }: Props) {
             ? top.action
             : inquiryCount > 0
               ? `${inquiryCount} new inquir${inquiryCount === 1 ? 'y' : 'ies'}`
-              : "You're caught up"
+              : !attention || attention.unavailableAreas.length ? 'Some activity could not be checked' : "You're caught up"
         }
         why={
           top
             ? top.detail
             : inquiryCount > 0
               ? 'A shopper asked about a vehicle. Mark the next step so your team sees it.'
-              : 'Nothing needs you right now. New buyer inquiries appear below.'
+              : !attention || attention.unavailableAreas.length ? 'Refresh to check all areas before assuming there are no issues.' : 'Nothing needs you right now. New buyer inquiries appear below.'
         }
         ownerKind={top ? top.ownerKind : inquiryCount > 0 ? 'YOU' : undefined}
         actionLabel={top && top.button ? top.button : inquiryCount > 0 ? 'Open leads' : undefined}

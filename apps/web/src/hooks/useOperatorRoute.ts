@@ -31,7 +31,7 @@ export function useOperatorRoute(): {
   const activeTab = tabFromPage(route.page);
 
   const selectDealer = (id: string) => {
-    window.location.hash = `#/${id}/platforms`;
+    window.location.hash = `#/${id}/activity`;
   };
 
   return { route, nav, activeTab, selectDealer };

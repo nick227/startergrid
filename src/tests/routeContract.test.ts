@@ -11,6 +11,12 @@ const yaml = _require('js-yaml') as { load(src: string): unknown };
 // Format: "METHOD /path" using {param} placeholders (OpenAPI style).
 
 const REGISTERED_ROUTES = new Set([
+  'GET    /api/dealers/{dealershipId}/business-activity',
+  'GET    /api/dealers/{dealershipId}/sales-register',
+  'GET    /api/dealers/{dealershipId}/team',
+  'POST   /api/dealers/{dealershipId}/team',
+  'PATCH  /api/dealers/{dealershipId}/team/{threadId}',
+  'POST   /api/dealers/{dealershipId}/team/{threadId}/comments',
   "GET    /api/dealers/{dealershipId}/autopilot",
   "PUT    /api/dealers/{dealershipId}/autopilot",
   "POST   /api/dealers/{dealershipId}/autopilot/preview",

@@ -23,6 +23,7 @@ import { EmptyState } from '@/components/ui';
 // ── Props ─────────────────────────────────────────────────────────────────────
 
 type Props = {
+  focusedRunId?: string;
   dealerId: string;
   latestRunId?: string | null;
   onShowBlockedVehicles?: () => void;
@@ -162,12 +163,12 @@ function buildImpactChips(impact: IngressRunPlatformImpact): ImpactChip[] {
 
 // ── Main component ────────────────────────────────────────────────────────────
 
-export function IngressPanel({ dealerId, latestRunId, onShowBlockedVehicles, onSnapshotCommitted, onIngestComplete }: Props) {
+export function IngressPanel({ dealerId, latestRunId, focusedRunId, onShowBlockedVehicles, onSnapshotCommitted, onIngestComplete }: Props) {
   const { data: srcData, loading: loadingSrc, error: srcErr, reload: reloadSrc } =
     useAsyncQuery(() => fetchIngressSources(dealerId), [dealerId, latestRunId]);
 
   const { data: runsData, loading: loadingRuns, error: runsErr, reload: reloadRuns } =
-    useAsyncQuery(() => fetchIngressRuns(dealerId, { limit: 5 }), [dealerId, latestRunId]);
+    useAsyncQuery(() => fetchIngressRuns(dealerId, { limit: 5, runId: focusedRunId }), [dealerId, latestRunId, focusedRunId]);
 
   const [addingSource, setAddingSource] = useState(false);
 

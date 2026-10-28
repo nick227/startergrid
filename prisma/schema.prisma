@@ -497,6 +497,7 @@ model DealershipProfile {
   onboardingSteps              DealershipOnboardingStep[]
   invitations                  OperatorInvitation[]
   activityEvents               DealershipActivityEvent[]
+  teamThreads                  TeamThread[]
   platformOAuthTokens          PlatformOAuthToken[]
   socialPageAccounts           SocialPageAccount[]
   socialPosts                  SocialPost[]
@@ -1597,4 +1598,34 @@ model ChannelMonthlyCost {
 
   @@unique([dealershipId, platformSlug, month])
   @@index([dealershipId])
+}
+
+// Shared dealership discussions and employee tasks; references retain source ownership.
+model TeamThread {
+  id           String @id @default(cuid())
+  dealershipId String
+  kind         String @db.VarChar(16)
+  title        String @db.VarChar(200)
+  body         String @db.Text
+  authorId     String
+  authorEmail  String @db.VarChar(255)
+  assigneeId   String?
+  completedAt  DateTime?
+  reference    String? @db.VarChar(512)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+  dealership   DealershipProfile @relation(fields: [dealershipId], references: [id], onDelete: Cascade)
+  comments     TeamComment[]
+  @@index([dealershipId, createdAt])
+}
+
+model TeamComment {
+  id          String @id @default(cuid())
+  threadId    String
+  authorId    String
+  authorEmail String @db.VarChar(255)
+  body        String @db.Text
+  createdAt   DateTime @default(now())
+  thread      TeamThread @relation(fields: [threadId], references: [id], onDelete: Cascade)
+  @@index([threadId, createdAt])
 }

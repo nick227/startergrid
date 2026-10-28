@@ -1,4 +1,5 @@
-import { useState } from 'react';
+import { useOperatorRoute } from '@/hooks/useOperatorRoute.ts';
+import { useEffect, useState } from 'react';
 import { previewBulkVins, commitBulkVins } from '@/lib/api/sdk.ts';
 import type { BulkVinPreviewRow } from '@/lib/api/sdk.ts';
 import type { CommitImportResponse } from '@/lib/types.ts';
@@ -18,6 +19,9 @@ type Props = {
 };
 
 export function VehicleAddControls({ dealerId, compact, onVehicleCreated, onImportCommitted }: Props) {
+  const { route } = useOperatorRoute();
+  const focusedRunId = new URLSearchParams(window.location.hash.split('?')[1]).get('importRunId');
+  useEffect(() => { if (focusedRunId) setPanel('source'); }, [focusedRunId, route.dealerId]);
   const [panel, setPanel] = useState<Panel>(compact ? null : 'vin');
   const [showCsv, setShowCsv] = useState(false);
 
@@ -74,7 +78,7 @@ export function VehicleAddControls({ dealerId, compact, onVehicleCreated, onImpo
         <div className="p-4 bg-white border border-silver-200 rounded-xl space-y-2">
           <p className="text-sm font-medium text-ink-heading">Import from a connected source</p>
           <GuidanceNote>Use this for a DMS feed or a JSON inventory file. Spreadsheet imports use Import spreadsheet.</GuidanceNote>
-          <IngressPanel dealerId={dealerId} onIngestComplete={() => finish()} />
+          <IngressPanel dealerId={dealerId} focusedRunId={focusedRunId ?? undefined} onIngestComplete={() => finish()} />
         </div>
       )}
 
