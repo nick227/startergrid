@@ -45,7 +45,7 @@ export function isConsumerMarketplaceCategoryEnabled(category: BusinessCategory)
   return isConsumerMarketplaceLive(resolveCategorySchema(category));
 }
 
-/** Category-item browse and seller pages. SONGS is the physical-record catalog, not digital distribution. */
+/** Category-item browse and seller pages, including physical records and digital song releases. */
 export function resolveCatalogCategory(
   categoryParam: string | undefined,
   reply: FastifyReply,

@@ -12,7 +12,7 @@ export type ListingIdentity = {
 };
 export const CONSUMER_PLATFORM = 'consumer-marketplace';
 export const enabledCategories = () => listCategorySchemas().filter(c => c.marketplace.consumerEnabled).map(c => c.id);
-/** Consumer sites plus physical records and apparel. Digital SONGS distribution stays disabled. */
+/** Consumer sites plus records and apparel. Digital releases use the existing SONGS item schema. */
 export const categoryItemCatalogCategories = (): BusinessCategoryId[] => [...new Set<BusinessCategoryId>([...enabledCategories(), 'SONGS', 'APPAREL'])];
 export const vehiclePublicationGate: Prisma.VehicleWhereInput = {
   listingStatus: 'READY',

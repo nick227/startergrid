@@ -35,12 +35,14 @@ describe('physical merchandise publication', () => {
     });
     assert.equal(isPhysicalRecordMerchandise('USED', vinyl.data as Record<string, unknown>), true);
     assert.equal(categoryItemEligible(vinyl), true);
-    assert.equal(categoryItemEligible(item({
+    const digital = item({
       categoryId: 'SONGS',
       condition: 'DIGITAL',
-      data: { title: 'Harbor Sessions', artist: 'Demo Quartet', format: 'Digital Album', isrc: 'US-DG1-26-00001' },
+      data: { title: 'Harbor Signal — Digital Demo', artist: 'Demo Quartet', format: 'Digital Album', label: 'Harbor Records', isrc: 'USHR12600001' },
       dealership: { businessCategory: 'SONGS' },
-    })), false);
+    });
+    assert.equal(categoryItemEligible(digital), true);
+    assert.equal(categoryItemEligible(item({ ...digital, data: { format: 'Digital Album', isrc: 'USHR12600001' } })), false);
     assert.equal(isDigitalSongRelease('DIGITAL', { format: 'Digital Album' }), true);
   });
 });

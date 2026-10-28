@@ -77,7 +77,9 @@ test('multi-entity publication, inquiry, operator access and reset integration',
       assert.ok(apparel.json().total >= 1);
       const songs = await app.inject('/api/marketplace/category-items?categoryId=SONGS');
       assert.equal(songs.statusCode, 200, songs.body);
-      for (const row of songs.json().items) assert.ok(['Vinyl LP', 'CD', 'Cassette', '7-inch'].includes(row.format));
+      for (const row of songs.json().items) assert.ok(['Vinyl LP', 'CD', 'Cassette', '7-inch', 'Digital Album'].includes(row.format));
+      assert.ok(songs.json().items.some((row: { listingId: string }) => row.listingId === 'me_records_digital_1'));
+      assert.equal((await app.inject('/api/marketplace/category-items/me_records_2')).statusCode, 404);
       const original = await prisma.categoryInventoryItem.findUniqueOrThrow({ where: { id: 'me_books_digital_1' } });
       for (const change of [{ listingStatus: 'DRAFT' }, { soldAt: new Date() }, { removedAt: new Date() }, { priceCents: 0 }, { condition: 'USED' }, { data: { title: 'Physical', format: 'Vinyl LP' } }, { data: { format: 'epub' } }]) {
         await prisma.categoryInventoryItem.update({ where: { id: original.id }, data: change });

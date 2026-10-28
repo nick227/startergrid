@@ -2,6 +2,7 @@ import type { CategoryInventorySchema } from '@auto-dealer/category-schemas';
 import {
   categoryInventorySource,
   getCategoryInventorySchema,
+  isDigitalSongRelease,
   isPhysicalRecordMerchandise,
   isRegisteredCategory,
   physicalRecordsInventorySchema,
@@ -30,7 +31,7 @@ function recordData(data: unknown): Record<string, unknown> {
   return data && typeof data === 'object' && !Array.isArray(data) ? data as Record<string, unknown> : {};
 }
 
-/** Apparel and other consumer category items, or physical records. Digital songs stay off. */
+/** Apparel, other consumer category items, physical records, and digital song releases. */
 export function publicationContract(
   categoryId: string,
   condition: string | null,
@@ -38,8 +39,12 @@ export function publicationContract(
 ): ItemPublicationContract | null {
   const payload = recordData(data);
   if (categoryId === 'SONGS') {
-    if (!isPhysicalRecordMerchandise(condition, payload)) return null;
-    return { kind: 'physical_record', schema: physicalRecordsInventorySchema };
+    if (isPhysicalRecordMerchandise(condition, payload)) {
+      return { kind: 'physical_record', schema: physicalRecordsInventorySchema };
+    }
+    if (!isDigitalSongRelease(condition, payload)) return null;
+    const schema = getCategoryInventorySchema('SONGS');
+    return schema ? { kind: 'category_item', schema } : null;
   }
   if (!isRegisteredCategory(categoryId)) return null;
   const category = resolveCategorySchema(categoryId);

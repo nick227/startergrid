@@ -118,6 +118,21 @@ async function main() {
           } });
         }
       }
+      if (business.category === 'SONGS') {
+        // A separate digital release. Vinyl and CD drafts stay on their own records.
+        const id = 'me_records_digital_1';
+        await tx.categoryInventoryItem.upsert({ where: { id }, update: {}, create: {
+          id, dealershipId: dealerId, categoryId: 'SONGS', stockNumber: 'ME-SONG-DIGITAL-001', primaryIdentifier: 'ME-SONG-DIGITAL-001',
+          priceCents: 800, condition: 'DIGITAL', listingStatus: 'READY',
+          data: json({ title: 'Harbor Signal — Digital Demo', artist: 'Demo Quartet', format: 'Digital Album', label: 'Harbor Records', isrc: 'USHR12600001' }), createdAt: FIXTURE_DATE,
+        } });
+        await tx.categoryInventoryItemMedia.upsert({ where: { id: `${id}_image` }, update: {}, create: {
+          id: `${id}_image`, itemId: id, url: '/demo-assets/multi-entity-records.svg', kind: 'IMAGE', sortOrder: 0, mediaSlotKey: 'artwork',
+        } });
+        await tx.marketplaceListing.upsert({ where: { categoryItemId_platformSlug: { categoryItemId: id, platformSlug: 'consumer-marketplace' } }, update: {}, create: {
+          id: `${id}_listing`, dealershipId: dealerId, categoryItemId: id, platformSlug: 'consumer-marketplace', status: 'ACTIVE', listedAt: FIXTURE_DATE,
+        } });
+      }
       if (business.category === 'EBOOKS') {
         // A separate, valid digital control. Never relabel or publish the physical book drafts.
         const id = 'me_books_digital_1';
