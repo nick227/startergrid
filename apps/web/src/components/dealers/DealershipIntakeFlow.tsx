@@ -17,9 +17,9 @@ type Props = {
   footer?: ReactNode;
 };
 
-type Step = 'business' | 'location' | 'channels' | 'review';
+type Step = 'business' | 'place' | 'account' | 'channels' | 'review';
 
-const STEPS: Step[] = ['business', 'location', 'channels', 'review'];
+const STEPS: Step[] = ['business', 'place', 'account', 'channels', 'review'];
 
 const CHANNEL_OPTIONS = [
   { value: 'owned-storefront', label: 'Owned storefront' },
@@ -89,24 +89,41 @@ function cleanPayload(payload: CreateDealershipPayload): CreateDealershipPayload
 function stepLabel(step: Step) {
   switch (step) {
     case 'business': return 'Business';
-    case 'location': return 'Location';
+    case 'place': return 'Location';
+    case 'account': return 'Account';
     case 'channels': return 'Channels';
     case 'review': return 'Review';
   }
 }
 
+function websiteProblem(value: string | undefined): string | null {
+  const website = value?.trim();
+  if (!website) return null;
+  try {
+    const url = new URL(website);
+    if (url.protocol !== 'http:' && url.protocol !== 'https:') return 'Website needs a full address, like https://example.com.';
+  } catch {
+    return 'Website needs a full address, like https://example.com.';
+  }
+  return null;
+}
+
 function validateStep(step: Step, payload: CreateDealershipPayload, mode: Mode, confirmPass: string): string | null {
   if (step === 'business') {
-    if (!payload.legalName.trim()) return 'Legal business name is required.';
-    if (!payload.businessCategory) return 'Business category is required.';
+    if (!payload.legalName.trim()) return 'Dealership name is required.';
+    return websiteProblem(payload.websiteUrl);
   }
-  if (step === 'location') {
+  if (step === 'place' && mode === 'admin') {
     if (!payload.rooftopAddress.street.trim()) return 'Street address is required.';
     if (!payload.rooftopAddress.city.trim()) return 'City is required.';
     if (!payload.rooftopAddress.state.trim()) return 'State is required.';
     if (!payload.rooftopAddress.postalCode.trim()) return 'Postal code is required.';
-    if (!payload.primaryContact.name.trim()) return 'Primary contact name is required.';
-    if (!payload.primaryContact.email.trim()) return 'Primary contact email is required.';
+  }
+  if (step === 'account') {
+    const email = payload.primaryContact.email.trim();
+    if (!email) return 'Email is required.';
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) return 'Email needs to be a full address.';
+    if (mode === 'admin' && !payload.primaryContact.name.trim()) return 'Primary contact name is required.';
     if (mode === 'signup') {
       if (!payload.password || payload.password.length < 8) return 'Password must be at least 8 characters.';
       if (payload.password !== confirmPass) return 'Passwords do not match.';
@@ -213,6 +230,7 @@ export function DealershipIntakeFlow({ mode, steps = 'chips', onSubmit, onUpload
         stepIndex={stepIndex}
         onSelect={index => { setError(null); setStepIndex(index); }}
         title={rail ? 'Create your dealership' : title}
+        subtitle={rail ? 'A DealerGrid workspace for inventory, channels, and leads.' : subtitle}
       />
       <div className={rail ? 'flex w-full flex-col gap-5' : 'min-w-0 space-y-5'}>
       {error && (
@@ -224,8 +242,18 @@ export function DealershipIntakeFlow({ mode, steps = 'chips', onSubmit, onUpload
       {step === 'business' && (
         <div className={fieldGrid}>
           <label className={rail ? rowClass : `${LABEL_CLS} md:col-span-2`}>
-            <span className={labelText}>Legal business name</span>
+            <span className={labelText}>Dealership name</span>
             <input value={payload.legalName} onChange={e => update('legalName', e.target.value)} className={fieldClass} autoFocus />
+          </label>
+          <label className={rowClass}>
+            <span className={labelText}>Business category</span>
+            <select value={payload.businessCategory} onChange={e => update('businessCategory', e.target.value)} className={rail ? authSelectClass : fieldClass}>
+              {BUSINESS_CATEGORY_IDS.map(id => <option key={id} value={id} className="bg-white text-navy-950">{id.replace(/_/g, ' ')}</option>)}
+            </select>
+          </label>
+          <label className={rowClass}>
+            <span className={labelText}>Website</span>
+            <input type="url" value={payload.websiteUrl ?? ''} onChange={e => update('websiteUrl', e.target.value)} className={fieldClass} placeholder="https://example.com" />
           </label>
           <label className={rail ? rowClass : `${LABEL_CLS} md:col-span-2`}>
             <span className={labelText}>Logo image</span>
@@ -238,20 +266,10 @@ export function DealershipIntakeFlow({ mode, steps = 'chips', onSubmit, onUpload
               />
             </div>
           </label>
-          <label className={rowClass}>
-            <span className={labelText}>Business category</span>
-            <select value={payload.businessCategory} onChange={e => update('businessCategory', e.target.value)} className={rail ? authSelectClass : fieldClass}>
-              {BUSINESS_CATEGORY_IDS.map(id => <option key={id} value={id} className="bg-white text-navy-950">{id.replace(/_/g, ' ')}</option>)}
-            </select>
-          </label>
-          <label className={rowClass}>
-            <span className={labelText}>Website</span>
-            <input type="url" value={payload.websiteUrl ?? ''} onChange={e => update('websiteUrl', e.target.value)} className={fieldClass} placeholder="https://example.com" />
-          </label>
         </div>
       )}
 
-      {step === 'location' && (
+      {step === 'place' && (
         <div className={fieldGrid}>
           <label className={rail ? rowClass : `${LABEL_CLS} md:col-span-2`}>
             <span className={labelText}>Street address</span>
@@ -273,24 +291,17 @@ export function DealershipIntakeFlow({ mode, steps = 'chips', onSubmit, onUpload
             <span className={labelText}>Country</span>
             <input value={payload.rooftopAddress.country ?? 'US'} onChange={e => updateAddress('country', e.target.value)} className={fieldClass} />
           </label>
-          <label className={rowClass}>
-            <span className={labelText}>Primary contact</span>
-            <input value={payload.primaryContact.name} onChange={e => updateContact('name', e.target.value)} className={fieldClass} />
-          </label>
-          <label className={rowClass}>
-            <span className={labelText}>Contact email</span>
-            <input type="email" value={payload.primaryContact.email} onChange={e => updateContact('email', e.target.value)} className={fieldClass} />
-          </label>
-          <label className={rowClass}>
-            <span className={labelText}>Contact phone</span>
-            <input value={payload.primaryContact.phone ?? ''} onChange={e => updateContact('phone', e.target.value)} className={fieldClass} />
-          </label>
-          <label className={rowClass}>
-            <span className={labelText}>Contact role</span>
-            <input value={payload.primaryContact.role ?? ''} onChange={e => updateContact('role', e.target.value)} className={fieldClass} />
-          </label>
-          {mode === 'signup' && (
+        </div>
+      )}
+
+      {step === 'account' && (
+        <div className={fieldGrid}>
+          {mode === 'signup' ? (
             <>
+              <label className={rowClass}>
+                <span className={labelText}>Email</span>
+                <input type="email" value={payload.primaryContact.email} onChange={e => updateContact('email', e.target.value)} className={fieldClass} autoFocus />
+              </label>
               <label className={rowClass}>
                 <span className={labelText}>Password</span>
                 <input type="password" value={payload.password ?? ''} onChange={e => update('password', e.target.value)} className={fieldClass} />
@@ -298,6 +309,33 @@ export function DealershipIntakeFlow({ mode, steps = 'chips', onSubmit, onUpload
               <label className={rowClass}>
                 <span className={labelText}>Confirm password</span>
                 <input type="password" value={confirmPassword} onChange={e => setConfirmPassword(e.target.value)} className={fieldClass} />
+              </label>
+              <label className={rowClass}>
+                <span className={labelText}>Your name</span>
+                <input value={payload.primaryContact.name} onChange={e => updateContact('name', e.target.value)} className={fieldClass} />
+              </label>
+              <label className={rowClass}>
+                <span className={labelText}>Phone</span>
+                <input value={payload.primaryContact.phone ?? ''} onChange={e => updateContact('phone', e.target.value)} className={fieldClass} />
+              </label>
+            </>
+          ) : (
+            <>
+              <label className={rowClass}>
+                <span className={labelText}>Primary contact</span>
+                <input value={payload.primaryContact.name} onChange={e => updateContact('name', e.target.value)} className={fieldClass} autoFocus />
+              </label>
+              <label className={rowClass}>
+                <span className={labelText}>Contact email</span>
+                <input type="email" value={payload.primaryContact.email} onChange={e => updateContact('email', e.target.value)} className={fieldClass} />
+              </label>
+              <label className={rowClass}>
+                <span className={labelText}>Contact phone</span>
+                <input value={payload.primaryContact.phone ?? ''} onChange={e => updateContact('phone', e.target.value)} className={fieldClass} />
+              </label>
+              <label className={rowClass}>
+                <span className={labelText}>Contact role</span>
+                <input value={payload.primaryContact.role ?? ''} onChange={e => updateContact('role', e.target.value)} className={fieldClass} />
               </label>
             </>
           )}
@@ -347,10 +385,10 @@ export function DealershipIntakeFlow({ mode, steps = 'chips', onSubmit, onUpload
       {step === 'review' && (rail ? (
         <dl className="border-y border-white/10">
           {[
-            ['Dealer', payload.legalName || 'Missing'],
+            ['Dealer', payload.legalName || 'Not provided'],
             ['Category', payload.businessCategory],
-            ['Address', `${payload.rooftopAddress.city || 'Missing'}, ${payload.rooftopAddress.state || 'Missing'}`],
-            ['Contact', payload.primaryContact.name || 'Missing'],
+            ['Address', payload.rooftopAddress.city || payload.rooftopAddress.state ? `${payload.rooftopAddress.city || 'Not provided'}, ${payload.rooftopAddress.state || 'Not provided'}` : 'Not provided'],
+            ['Email', payload.primaryContact.email || 'Not provided'],
             ['Inventory', payload.inventorySize ?? 'Not provided'],
             ['Channels', payload.desiredChannels?.length ? String(payload.desiredChannels.length) : 'None selected'],
             ['Logo', logoFile ? logoFile.name : 'Not selected'],
@@ -376,28 +414,31 @@ export function DealershipIntakeFlow({ mode, steps = 'chips', onSubmit, onUpload
       ))}
 
       {rail ? (
-        <div className="flex flex-col gap-4 pt-2">
-          {stepIndex > 0 && (
-            <button
-              type="button"
-              onClick={() => { setError(null); setStepIndex(i => Math.max(0, i - 1)); }}
-              className="text-sm font-medium text-white/55 hover:text-white"
-            >
-              Back
-            </button>
-          )}
-          {onCancel && (
-            <p className="text-center text-sm text-white/50">
-              or{' '}
-              <button type="button" onClick={onCancel} className="font-semibold text-orange-500 hover:text-orange-600">
-                sign in
+        <div className="flex flex-col gap-3 pt-1">
+          <div className={`grid gap-3 ${stepIndex > 0 ? 'grid-cols-2' : 'grid-cols-1'}`}>
+            {stepIndex > 0 && (
+              <button
+                type="button"
+                onClick={() => { setError(null); setStepIndex(i => Math.max(0, i - 1)); }}
+                className="h-10 rounded-md border border-white/15 text-sm font-semibold text-white/80 transition-colors hover:border-white/30 hover:text-white"
+              >
+                Back
               </button>
-              {' '}instead
-            </p>
+            )}
+            <button type="submit" disabled={submitting} className="btn-primary-operator w-full">
+              {submitting ? 'Creating...' : isLastStep ? 'Create dealership' : 'Continue'}
+            </button>
+          </div>
+          {(onCancel || footer) && (
+            <div className="flex items-center justify-center gap-1">
+              {onCancel && (
+                <button type="button" onClick={onCancel} className="rounded-md px-3 py-1.5 text-sm font-semibold text-white/70 hover:text-white">
+                  Sign in
+                </button>
+              )}
+              {footer}
+            </div>
           )}
-          <button type="submit" disabled={submitting} className="btn-primary-operator w-full">
-            {submitting ? 'Creating...' : isLastStep ? 'Create dealership' : 'Continue'}
-          </button>
         </div>
       ) : (
         <div className="flex items-center justify-between gap-3 border-t border-silver-200 pt-4">
@@ -424,7 +465,7 @@ export function DealershipIntakeFlow({ mode, steps = 'chips', onSubmit, onUpload
           </div>
         </div>
       )}
-      {footer}
+      {!rail && footer}
       </div>
     </form>
   );

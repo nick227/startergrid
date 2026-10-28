@@ -2,7 +2,7 @@ import type { FastifyInstance, FastifyReply } from 'fastify';
 import type { PrismaClient } from '@prisma/client';
 import { requireOperator, requireDealerAccess, requireInternalStaff, requireCapability } from '../security.js';
 import { fileUploadService } from '../../services/storage/fileUploadService.js';
-import { createDealershipSchema, updateDealershipProfileSchema, validateBody } from '../requestValidation.js';
+import { createDealershipSchema, createDealershipSignupSchema, updateDealershipProfileSchema, validateBody } from '../requestValidation.js';
 import { createDealership } from '../../services/dealer/createDealershipService.js';
 import { getDealershipProfile, updateDealershipProfile } from '../../services/dealer/dealershipProfileService.js';
 import { createOperatorSession, makeSessionCookieHeader } from '../../services/auth/sessionService.js';
@@ -62,7 +62,7 @@ export function registerDealerRoutes(app: FastifyInstance, prisma: PrismaClient)
   });
 
   app.post('/api/dealers/signup', async (request, reply) => {
-    const parsed = validateBody(createDealershipSchema, request.body);
+    const parsed = validateBody(createDealershipSignupSchema, request.body);
     if (!parsed.ok) return reply.status(400).send({ error: parsed.error });
 
     try {

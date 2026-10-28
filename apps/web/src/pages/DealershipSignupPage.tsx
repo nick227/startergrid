@@ -23,7 +23,7 @@ export default function DealershipSignupPage() {
             window.location.assign(`#/${response.dealer.id}/platforms`);
           }}
           onCancel={() => { window.location.assign('#/'); }}
-          footer={<div className="text-center"><HelpButton topic="app/getting-started" inverted /></div>}
+          footer={<HelpButton topic="app/getting-started" inverted />}
         />
         {submitting && (
           <div className="absolute inset-0 z-10 flex items-center justify-center bg-navy-950/70">
