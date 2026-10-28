@@ -69,7 +69,7 @@ export function DealerAttentionSection({ dealerId: _dealerId, attention, nav, po
         break;
       case 'RETRY_CRM_DELIVERY': {
         const leadRecord = item.records?.find(r => r.type === 'LEAD') || item.records?.[0];
-        nav.goToLeads({ leadId: leadRecord?.id });
+        nav.goToLeads({ leadId: leadRecord?.id, handoff: 'crm' });
         break;
       }
       case 'CONTACT_SUPPORT':

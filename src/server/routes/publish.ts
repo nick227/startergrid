@@ -11,6 +11,7 @@ import {
 import { getQueueView, dispatchQueueItemNow } from '../../services/publishing/publishQueueService.js';
 import {
   approveQueueItem,
+  dismissFailedQueueItem,
   holdQueueItem,
   rejectQueueItem,
   releaseHeldQueueItem,
@@ -308,6 +309,23 @@ export function registerPublishRoutes(app: FastifyInstance, prisma: PrismaClient
         return reply.send({ ok: true, itemId });
       } catch (err: unknown) {
         return reply.status(400).send({ error: err instanceof Error ? err.message : 'Hold failed' });
+      }
+    }
+  );
+
+  // POST /api/dealers/:dealershipId/publish/queue/:itemId/dismiss
+  app.post<{ Params: QueueItemParams }>(
+    '/api/dealers/:dealershipId/publish/queue/:itemId/dismiss',
+    async (request, reply) => {
+      const { dealershipId, itemId } = request.params;
+      if (!await requireDealerAccess(prisma, request, reply, dealershipId)) return;
+      if (!await requireDealer(prisma, dealershipId)) return reply.status(404).send({ error: 'Dealer not found' });
+      if (!await requireQueueItem(dealershipId, itemId)) return reply.status(404).send({ error: 'Queue item not found' });
+      try {
+        await dismissFailedQueueItem(prisma, itemId, operatorLabel(request));
+        return reply.send({ ok: true, itemId });
+      } catch (err: unknown) {
+        return reply.status(400).send({ error: err instanceof Error ? err.message : 'Clear failed' });
       }
     }
   );

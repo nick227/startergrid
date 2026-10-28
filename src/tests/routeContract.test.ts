@@ -54,6 +54,7 @@ const REGISTERED_ROUTES = new Set([
   'GET    /api/dealers/{dealershipId}/publish/queue',
   'POST   /api/dealers/{dealershipId}/publish/queue/{itemId}/approve',
   'POST   /api/dealers/{dealershipId}/publish/queue/{itemId}/hold',
+  'POST   /api/dealers/{dealershipId}/publish/queue/{itemId}/dismiss',
   'POST   /api/dealers/{dealershipId}/publish/queue/{itemId}/reject',
   'POST   /api/dealers/{dealershipId}/publish/queue/{itemId}/release',
   'POST   /api/dealers/{dealershipId}/publish/queue/{itemId}/publish-now',

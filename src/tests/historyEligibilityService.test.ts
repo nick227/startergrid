@@ -119,6 +119,20 @@ describe('isSyncEventVisibleForDealer', () => {
     );
   });
 
+  it('shows a recorded send failure even when the channel is not connected', () => {
+    const ctx = makeCtx({
+      accountBySlug: new Map(),
+      applicationStatusBySlug: new Map(),
+    });
+    assert.equal(
+      isSyncEventVisibleForDealer(
+        { kind: 'DISPATCH_FAILED', platformSlug: 'google-vehicle-ads', vehicleId: 'v1' },
+        ctx,
+      ),
+      true,
+    );
+  });
+
   it('hides fake sends for unattested external platforms', () => {
     const ctx = makeCtx({
       accountBySlug: new Map(),

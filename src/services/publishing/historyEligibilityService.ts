@@ -170,6 +170,9 @@ export function isSyncEventVisibleForDealer(
   ) {
     return true;
   }
+  // A recorded failure is the thing a dealership needs to see. Hiding it because the
+  // channel is not fully connected removes the only path to the problem.
+  if (event.kind === 'DISPATCH_FAILED' || event.kind === 'DISPATCH_RETRY') return true;
 
   return isOperatorAttestedChannelForHistory(ctx, event.platformSlug, event.vehicleId);
 }

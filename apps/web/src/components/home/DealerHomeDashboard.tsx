@@ -154,7 +154,7 @@ export function DealerHomeDashboard({ dealerId, nav }: Props) {
             nav.goToLeads();
           } else if (topAttention.action.kind === 'RETRY_CRM_DELIVERY') {
             const leadRecord = topAttention.records?.find(r => r.type === 'LEAD') || topAttention.records?.[0];
-            nav.goToLeads({ leadId: leadRecord?.id });
+            nav.goToLeads({ leadId: leadRecord?.id, handoff: 'crm' });
           } else if (topAttention.action.kind === 'CONTACT_SUPPORT') {
             window.location.href = 'mailto:support@startergrid.com';
           }

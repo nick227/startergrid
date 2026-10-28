@@ -165,7 +165,7 @@ export async function fetchPublishQueue(dealershipId: string): Promise<QueueView
 async function queueAction(
   dealershipId: string,
   itemId: string,
-  action: 'approve' | 'hold' | 'reject' | 'release' | 'publish-now',
+  action: 'approve' | 'hold' | 'reject' | 'release' | 'publish-now' | 'dismiss',
   body?: { reason?: string },
 ): Promise<{ ok: boolean; itemId: string } | { sent: boolean; queueItemId: string }> {
   const res = await fetch(`/api/dealers/${dealershipId}/publish/queue/${itemId}/${action}`, {
@@ -191,6 +191,10 @@ export function holdQueueItem(dealershipId: string, itemId: string, reason?: str
 
 export function rejectQueueItem(dealershipId: string, itemId: string, reason?: string) {
   return queueAction(dealershipId, itemId, 'reject', { reason });
+}
+
+export function dismissFailedQueueItem(dealershipId: string, itemId: string) {
+  return queueAction(dealershipId, itemId, 'dismiss');
 }
 
 export function releaseQueueItem(dealershipId: string, itemId: string) {

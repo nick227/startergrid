@@ -197,6 +197,7 @@ describe('Attention List Interface: DealerAttentionSection', () => {
     });
     expect(mockNav.goToLeads).toHaveBeenCalledWith({
       leadId: 'l1',
+      handoff: 'crm',
     });
   });
 
@@ -489,7 +490,7 @@ describe('Three Remaining UX Considerations', () => {
   });
 
   it('lands directly on targeted lead and displays contextual focus banner', async () => {
-    window.location.hash = '#/dealer-123/leads?leadId=lead-456';
+    window.location.hash = '#/dealer-123/leads?leadId=lead-456&handoff=crm';
 
     vi.stubGlobal('fetch', vi.fn(async (url: string) => {
       if (url.includes('/crm-detail')) {
@@ -541,7 +542,7 @@ describe('Three Remaining UX Considerations', () => {
     render(<LeadsPage dealerId="dealer-123" nav={mockNav} />);
 
     await waitFor(() => {
-      expect(screen.getByText(/Focused on inquiry needing attention/)).toBeTruthy();
+      expect(screen.getByText(/This inquiry/)).toBeTruthy();
       expect(screen.getByText(/CRM handoff details opened for this inquiry/)).toBeTruthy();
       expect(screen.getByText('Alice Buyer')).toBeTruthy();
       // LeadCrmHandoffModal is automatically opened

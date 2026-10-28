@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useAsyncQuery } from '@/hooks/useAsyncQuery.ts';
 import { fetchDealerLeads, fetchBuyerOutreach, type DealerLead, type BuyerOutreachRecord } from '@/lib/api/sdk.ts';
 import { updateLeadWorkflow, fetchDealershipPeople } from '@/lib/api/dealershipRecordApi.ts';
@@ -452,7 +452,7 @@ type PageView = 'leads' | 'communications';
 export default function LeadsPage({ dealerId, nav, activeTab, embedded = false }: Props) {
   const { route } = useOperatorRoute();
   const [view, setView] = useState<PageView>('leads');
-  const [selectedLeadForCrm, setSelectedLeadForCrm] = useState<string | null>(() => route.scope?.leadId ?? null);
+  const [selectedLeadForCrm, setSelectedLeadForCrm] = useState<string | null>(() => route.scope?.handoff === 'crm' ? route.scope.leadId ?? null : null);
 
   const { data, loading, error, reload } = useAsyncQuery(
     () => fetchDealerLeads(dealerId),
@@ -481,11 +481,14 @@ export default function LeadsPage({ dealerId, nav, activeTab, embedded = false }
   const [sort, setSort] = useState<SortKey>('newest');
   const [statuses, setStatuses] = useState<Record<string, LeadStatus>>({});
   const [assignees, setAssignees] = useState<Record<string, string | null>>({});
+  const [versions, setVersions] = useState<Record<string, number>>({});
+  const [saveError, setSaveError] = useState('');
+  const pendingSave = useRef<Record<string, Promise<number>>>({});
 
   const leads = data?.leads ?? [];
 
   useEffect(() => {
-    if (route.scope?.leadId) {
+    if (route.scope?.handoff === 'crm' && route.scope.leadId) {
       setSelectedLeadForCrm(route.scope.leadId);
     }
     if (route.scope?.search !== undefined) {
@@ -556,31 +559,52 @@ export default function LeadsPage({ dealerId, nav, activeTab, embedded = false }
     return counts;
   }, [leads, statusFor]);
 
-  const handleStatusChange = async (lead: DealerLead, nextStatus: LeadStatus) => {
-    setStatuses(current => ({ ...current, [lead.id]: nextStatus }));
+  const versionFor = useCallback(
+    (lead: DealerLead) => versions[lead.id] ?? lead.version,
+    [versions],
+  );
 
+  const saveWorkflow = useCallback(async (
+    lead: DealerLead,
+    patch: { workflowStatus: 'NEW' | 'CONTACTED' | 'APPOINTMENT' | 'SOLD' | 'LOST'; assigneeOperatorId: string | null },
+  ) => {
+    const prior = pendingSave.current[lead.id] ?? Promise.resolve(versionFor(lead));
+    const next = prior.catch(() => versionFor(lead)).then(async version => {
+      const saved = await updateLeadWorkflow(dealerId, lead.id, { ...patch, version });
+      setVersions(current => ({ ...current, [lead.id]: saved.version }));
+      return saved.version;
+    });
+    pendingSave.current[lead.id] = next;
+    await next;
+  }, [dealerId, versionFor]);
+
+  const handleStatusChange = async (lead: DealerLead, nextStatus: LeadStatus) => {
+    const previous = statusFor(lead);
+    setStatuses(current => ({ ...current, [lead.id]: nextStatus }));
+    setSaveError('');
     try {
-      await updateLeadWorkflow(dealerId, lead.id, {
+      await saveWorkflow(lead, {
         workflowStatus: WORKFLOW_MAP_TO_API[nextStatus],
         assigneeOperatorId: assigneeFor(lead),
-        version: lead.version,
       });
     } catch (err) {
-      console.error('Failed to persist lead status', err);
+      setStatuses(current => ({ ...current, [lead.id]: previous }));
+      setSaveError(err instanceof Error ? err.message : 'Could not update this inquiry.');
     }
   };
 
   const handleAssigneeChange = async (lead: DealerLead, nextAssigneeId: string | null) => {
+    const previous = assigneeFor(lead);
     setAssignees(current => ({ ...current, [lead.id]: nextAssigneeId }));
-
+    setSaveError('');
     try {
-      await updateLeadWorkflow(dealerId, lead.id, {
+      await saveWorkflow(lead, {
         workflowStatus: WORKFLOW_MAP_TO_API[statusFor(lead)],
         assigneeOperatorId: nextAssigneeId,
-        version: lead.version,
       });
     } catch (err) {
-      console.error('Failed to persist lead assignee', err);
+      setAssignees(current => ({ ...current, [lead.id]: previous }));
+      setSaveError(err instanceof Error ? err.message : 'Could not update this inquiry.');
     }
   };
 
@@ -645,9 +669,9 @@ export default function LeadsPage({ dealerId, nav, activeTab, embedded = false }
           <CommunicationsLog dealerId={dealerId} />
         ) : (
           <div className="space-y-4">
-            {error && (
-              <Banner variant="error" action={<button type="button" onClick={reload} className="text-xs underline">Retry</button>}>
-                {error}
+            {(error || saveError) && (
+              <Banner variant="error" action={error ? <button type="button" onClick={reload} className="text-xs underline">Retry</button> : undefined}>
+                {error || saveError}
               </Banner>
             )}
 
@@ -656,8 +680,8 @@ export default function LeadsPage({ dealerId, nav, activeTab, embedded = false }
                 <div className="flex items-center gap-2">
                   <span className="text-sm">🎯</span>
                   <div>
-                    <span className="font-bold">Focused on inquiry needing attention</span>
-                    <span className="text-indigo-800 ml-1.5">— CRM handoff details opened for this inquiry.</span>
+                    <span className="font-bold">This inquiry</span>
+                    <span className="text-indigo-800 ml-1.5">{route.scope.handoff === 'crm' ? '— CRM handoff details opened for this inquiry.' : '— assign it or record the next step.'}</span>
                   </div>
                 </div>
                 <button

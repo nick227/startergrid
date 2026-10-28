@@ -2,7 +2,7 @@ import { useState } from 'react';
 import type { PlatformPublishResult, PlatformAccountDetail, PlatformPerformanceItem, SyncEvent } from '@/lib/types.ts';
 import { timeAgo } from '@/lib/timeAgo.ts';
 import type { OperatorNavHandlers } from '@/lib/operatorNav.ts';
-import { fetchPublishHistory, updateAccount } from '@/lib/api/sdk.ts';
+import { dismissFailedQueueItem, fetchPublishHistory, updateAccount } from '@/lib/api/sdk.ts';
 import { useAsyncQuery } from '@/hooks/useAsyncQuery.ts';
 
 export const EVENT_KIND_LABELS: Record<string, string> = {
@@ -11,14 +11,25 @@ export const EVENT_KIND_LABELS: Record<string, string> = {
   VEHICLE_REMOVED:    'Vehicle removed',
   ARTIFACT_GENERATED: 'Feed generated',
   SUBMISSION_SENT:    'Send completed',
+  DISPATCH_FAILED:    'Listing submission failed',
   DISPATCH_CLAIMED:   'Send started',
   APPROVAL_REQUESTED: 'Approval requested',
   APPROVAL_GRANTED:   'Approval approved',
   ACCOUNT_UPDATED:    'Channel settings updated',
 };
 
+function failureNote(payload: unknown): { reason: string | null; queueItemId: string | null; dismissed: boolean } {
+  if (!payload || typeof payload !== 'object' || Array.isArray(payload)) return { reason: null, queueItemId: null, dismissed: false };
+  const record = payload as { failureReason?: unknown; queueItemId?: unknown; dismissed?: unknown };
+  return {
+    reason: typeof record.failureReason === 'string' ? record.failureReason : null,
+    queueItemId: typeof record.queueItemId === 'string' ? record.queueItemId : null,
+    dismissed: record.dismissed === true,
+  };
+}
+
 export function ActivityTab({ dealerId, platformSlug, nav }: { dealerId: string; platformSlug: string; nav: OperatorNavHandlers }) {
-  const { data, loading, error } = useAsyncQuery(
+  const { data, loading, error, reload } = useAsyncQuery(
     () => fetchPublishHistory(dealerId, { platformSlug, limit: 15 }),
     [dealerId, platformSlug]
   );
@@ -44,17 +55,25 @@ export function ActivityTab({ dealerId, platformSlug, nav }: { dealerId: string;
 
   return (
     <div className="space-y-1">
-      {events.map((e: SyncEvent) => (
+      {events.map((e: SyncEvent) => {
+        const failure = e.kind === 'DISPATCH_FAILED' ? failureNote(e.payload) : null;
+        return (
         <div key={e.id} className="flex items-start justify-between gap-2 py-1.5 border-b border-silver-100 last:border-0">
           <div className="min-w-0">
             <p className="text-xs font-medium text-ink-body">{EVENT_KIND_LABELS[e.kind] ?? e.kind}</p>
-            {e.vehicleId && (
-              <p className="text-[10px] text-ink-faint truncate">vehicle {e.vehicleId.slice(-6)}</p>
+            {e.stockNumber && <p className="text-[10px] text-ink-faint truncate">{e.assetTitle ? `${e.assetTitle} · ` : ''}{e.stockNumber}</p>}
+            {failure?.reason && <p className="text-[10px] text-ink-body">{failure.reason}</p>}
+            {failure?.dismissed && <p className="text-[10px] text-ink-muted">Cleared</p>}
+            {failure?.queueItemId && !failure.dismissed && (
+              <button type="button" className="mt-1 min-h-11 text-sm font-semibold text-navy-800 underline" onClick={() => { const id = failure.queueItemId; if (id) void dismissFailedQueueItem(dealerId, id).then(() => reload()); }}>
+                Clear failure
+              </button>
             )}
           </div>
           <span className="text-[10px] text-ink-faint shrink-0 tabular-nums">{timeAgo(e.createdAt)}</span>
         </div>
-      ))}
+        );
+      })}
       {data?.meta.hasMore && (
         <button
           type="button"

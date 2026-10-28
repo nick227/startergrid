@@ -503,7 +503,7 @@ export async function updateLeadWorkflow(
     notes?: string | null;
     version?: number;
   },
-): Promise<{ id: string; workflowStatus: string; assigneeOperatorId: string | null; notes: string | null }> {
+): Promise<{ id: string; workflowStatus: string; assigneeOperatorId: string | null; notes: string | null; version: number }> {
   return apiFetch(`/api/dealers/${dealershipId}/leads/${leadId}`, {
     method: 'PATCH',
     body: JSON.stringify(payload),

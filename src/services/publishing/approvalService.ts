@@ -110,6 +110,37 @@ export async function holdQueueItem(
   });
 }
 
+/** Clears a send that already failed. Does not contact the channel. */
+export async function dismissFailedQueueItem(
+  prisma: PrismaClient,
+  itemId: string,
+  operator: string,
+): Promise<void> {
+  const item = await prisma.publishQueueItem.findUniqueOrThrow({ where: { id: itemId } });
+  if (item.status !== 'FAILED') {
+    throw new Error(`Cannot clear a send in status ${item.status}.`);
+  }
+  await prisma.publishQueueItem.update({
+    where: { id: itemId },
+    data: {
+      status: 'CANCELLED',
+      rejectedBy: operator,
+      rejectedAt: new Date(),
+      rejectionReason: 'Cleared by the dealership',
+    },
+  });
+  const event = await prisma.syncEvent.findFirst({
+    where: { dealershipId: item.dealershipId, platformSlug: item.platformSlug, vehicleId: item.vehicleId, kind: 'DISPATCH_FAILED' },
+    orderBy: { createdAt: 'desc' },
+  });
+  if (event && event.payload && typeof event.payload === 'object' && !Array.isArray(event.payload)) {
+    await prisma.syncEvent.update({
+      where: { id: event.id },
+      data: { payload: { ...event.payload, dismissed: true } },
+    });
+  }
+}
+
 export async function rejectQueueItem(
   prisma: PrismaClient,
   itemId: string,
