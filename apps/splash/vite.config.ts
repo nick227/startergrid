@@ -15,6 +15,20 @@ export default defineConfig({
       usePolling: true,
       interval: 100,
     },
+    proxy: {
+      '/app': {
+        target: 'http://localhost:5173',
+        changeOrigin: true,
+      },
+      '/marketplace': {
+        target: 'http://localhost:5174',
+        changeOrigin: true,
+      },
+      '/api': {
+        target: 'http://localhost:3000',
+        changeOrigin: true,
+      },
+    },
   },
   preview: {
     port: 5175,

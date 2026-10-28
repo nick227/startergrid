@@ -1,11 +1,12 @@
 import React from 'react';
+import { getOperatorPortalUrl, getMarketplaceUrl } from '../../lib/navigation.ts';
 
 interface FlagshipHeroSectionProps {
   onContactUs: () => void;
   onOpenPricing: () => void;
 }
 
-export const FlagshipHeroSection: React.FC<FlagshipHeroSectionProps> = ({ onContactUs, onOpenPricing }) => {
+export const FlagshipHeroSection: React.FC<FlagshipHeroSectionProps> = ({ onContactUs, onOpenPricing: _onOpenPricing }) => {
   return (
     <section
       id="hero-distribution"
@@ -87,7 +88,7 @@ export const FlagshipHeroSection: React.FC<FlagshipHeroSectionProps> = ({ onCont
             </button>
 
             <a
-              href="/app/"
+              href={getOperatorPortalUrl()}
               style={{
                 padding: '16px 28px',
                 borderRadius: '8px',
@@ -115,7 +116,7 @@ export const FlagshipHeroSection: React.FC<FlagshipHeroSectionProps> = ({ onCont
             </a>
 
             <a
-              href="/marketplace/"
+              href={getMarketplaceUrl()}
               style={{
                 padding: '16px 28px',
                 borderRadius: '8px',
@@ -140,7 +141,7 @@ export const FlagshipHeroSection: React.FC<FlagshipHeroSectionProps> = ({ onCont
         {/* Full Width Application Screenshot Card */}
         <div
           style={{
-            maxWidth: '1240px',
+            maxWidth: '100%',
             margin: '0 auto',
             position: 'relative',
             background: '#090d16',

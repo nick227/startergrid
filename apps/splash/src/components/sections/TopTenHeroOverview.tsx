@@ -1,5 +1,6 @@
 import React from 'react';
 import { TOP_TEN_VALUE_PROPOSITIONS } from '../../data/topTenValueProps.ts';
+import { getOperatorPortalUrl, getMarketplaceUrl } from '../../lib/navigation.ts';
 
 interface TopTenHeroOverviewProps {
   onRequestAccess: () => void;
@@ -74,7 +75,7 @@ export const TopTenHeroOverview: React.FC<TopTenHeroOverviewProps> = ({ onReques
             </button>
 
             <a
-              href="/app/"
+              href={getOperatorPortalUrl()}
               style={{
                 padding: '12px 20px',
                 borderRadius: '6px',
@@ -94,7 +95,7 @@ export const TopTenHeroOverview: React.FC<TopTenHeroOverviewProps> = ({ onReques
             </a>
 
             <a
-              href="/marketplace/"
+              href={getMarketplaceUrl()}
               style={{
                 padding: '12px 20px',
                 borderRadius: '6px',

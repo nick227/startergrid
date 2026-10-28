@@ -1,8 +1,9 @@
 import React, { useState, useEffect } from 'react';
+import { getMarketplaceUrl, getOperatorPortalUrl } from '../../lib/navigation.ts';
 
 interface AppleScaleNavProps {
-  onOpenPricing: () => void;
-  onContactUs: () => void;
+  onOpenPricing?: () => void;
+  onContactUs?: () => void;
 }
 
 export const AppleScaleNav: React.FC<AppleScaleNavProps> = ({ onOpenPricing, onContactUs }) => {
@@ -15,6 +16,9 @@ export const AppleScaleNav: React.FC<AppleScaleNavProps> = ({ onOpenPricing, onC
     window.addEventListener('scroll', handleScroll, { passive: true });
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
+
+  const marketplaceUrl = getMarketplaceUrl();
+  const operatorPortalUrl = getOperatorPortalUrl();
 
   return (
     <header
@@ -82,7 +86,7 @@ export const AppleScaleNav: React.FC<AppleScaleNavProps> = ({ onOpenPricing, onC
         <div style={{ display: 'flex', alignItems: 'center', gap: '18px' }}>
           {/* Marketplace */}
           <a
-            href="/marketplace/"
+            href={marketplaceUrl}
             style={{
               display: 'inline-flex',
               alignItems: 'center',
@@ -139,7 +143,7 @@ export const AppleScaleNav: React.FC<AppleScaleNavProps> = ({ onOpenPricing, onC
 
           {/* Sign In */}
           <a
-            href="/app/"
+            href={operatorPortalUrl}
             style={{
               color: '#94a3b8',
               textDecoration: 'none',

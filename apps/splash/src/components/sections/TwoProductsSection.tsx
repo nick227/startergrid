@@ -1,4 +1,5 @@
 import React from 'react';
+import { getOperatorPortalUrl, getMarketplaceUrl } from '../../lib/navigation.ts';
 
 export const TwoProductsSection: React.FC = () => {
   return (
@@ -111,7 +112,7 @@ export const TwoProductsSection: React.FC = () => {
 
             <div style={{ borderTop: '1px solid rgba(255, 255, 255, 0.06)', paddingTop: '20px' }}>
               <a
-                href="/app/"
+                href={getOperatorPortalUrl()}
                 style={{
                   display: 'inline-flex',
                   alignItems: 'center',
@@ -192,7 +193,7 @@ export const TwoProductsSection: React.FC = () => {
 
             <div style={{ borderTop: '1px solid rgba(255, 255, 255, 0.06)', paddingTop: '20px' }}>
               <a
-                href="/marketplace/"
+                href={getMarketplaceUrl()}
                 style={{
                   display: 'inline-flex',
                   alignItems: 'center',

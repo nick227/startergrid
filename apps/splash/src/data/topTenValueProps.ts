@@ -1,6 +1,6 @@
 export interface ValueProposition {
-  number: string; // '01' through '10'
-  id: string; // 'vp-01' through 'vp-10'
+  number: string; // '01' through '12'
+  id: string; // 'vp-01' through 'vp-12'
   title: string;
   summary: string;
   category: string;
@@ -16,7 +16,9 @@ export interface ValueProposition {
     | 'leads-crm'
     | 'inventory-hub'
     | 'team-access'
-    | 'market-demand';
+    | 'market-demand'
+    | 'managed-services'
+    | 'industry-veterans';
 }
 
 export const TOP_TEN_VALUE_PROPOSITIONS: ValueProposition[] = [
@@ -169,5 +171,35 @@ export const TOP_TEN_VALUE_PROPOSITIONS: ValueProposition[] = [
       'Minimum sample size safeguards (N ≥ 5 units) prevent misleading conclusions from small numbers of sales.',
     ],
     exampleType: 'market-demand',
+  },
+  {
+    number: '11',
+    id: 'vp-11',
+    title: 'Let our team manage your online listings and push your cars everywhere.',
+    summary: 'We push your vehicles online, format photos, craft descriptions, and manage multi-platform syndication so your staff stays focused on the showroom.',
+    category: 'Managed Staff Services',
+    tag: 'Full-Service Management',
+    keyPoints: [
+      'Complete hands-off online distribution: our experienced team formats photos, writes custom descriptions, and pushes every vehicle live across all connected platforms.',
+      'Daily feed audits and error resolution: when listing feeds reject a VIN or require missing equipment specs, our staff fixes and resubmits the vehicle for you.',
+      'Consistent merchandising standards: automated watermark alignment, high-resolution photo sequencing, and promotional tag updates handled end-to-end.',
+      'Frees your sales reps, BDC staff, and lot managers to spend 100% of their energy on greeting customers and closing deals.',
+    ],
+    exampleType: 'managed-services',
+  },
+  {
+    number: '12',
+    id: 'vp-12',
+    title: 'Leverage experienced automotive industry professionals on demand.',
+    summary: 'Direct access to veteran automotive retail specialists who have walked dealership lots, managed used car inventory, and know how to drive real showroom traffic.',
+    category: 'Automotive Staffing & Advisory',
+    tag: 'Veteran Industry Team',
+    keyPoints: [
+      'Real dealership veterans on your side: our specialists have worked in retail stores as former GMs, GSMs, used car managers, and BDC directors.',
+      'Proactive monthly inventory and channel reviews to identify slow-moving units, suggest merchandising tweaks, and trim unprofitable ad channels.',
+      'Direct phone, email, and live messaging access to human experts who speak automotive retail fluently—not generic tech support scripts.',
+      'Practical retail guidance on vehicle photography standards, window sticker compliance, market pricing strategy, and lead handling processes.',
+    ],
+    exampleType: 'industry-veterans',
   },
 ];

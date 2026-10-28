@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { getOperatorPortalUrl, getMarketplaceUrl } from '../../lib/navigation.ts';
 
 interface HeroCommandSectionProps {
   onOpenIntake: () => void;
@@ -131,7 +132,7 @@ export const HeroCommandSection: React.FC<HeroCommandSectionProps> = ({ onOpenIn
               </button>
 
               <a
-                href="/app/"
+                href={getOperatorPortalUrl()}
                 style={{
                   padding: '14px 24px',
                   borderRadius: '10px',
@@ -151,7 +152,7 @@ export const HeroCommandSection: React.FC<HeroCommandSectionProps> = ({ onOpenIn
               </a>
 
               <a
-                href="/marketplace/"
+                href={getMarketplaceUrl()}
                 style={{
                   padding: '14px 20px',
                   borderRadius: '10px',

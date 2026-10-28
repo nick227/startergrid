@@ -1,4 +1,5 @@
 import React from 'react';
+import { getOperatorPortalUrl, getMarketplaceUrl, getHealthUrl } from '../../lib/navigation.ts';
 
 export const EditorialFooter: React.FC = () => {
   return (
@@ -41,17 +42,17 @@ export const EditorialFooter: React.FC = () => {
           </div>
           <ul style={{ listStyle: 'none', padding: 0, margin: 0, display: 'flex', flexDirection: 'column', gap: '8px' }}>
             <li>
-              <a href="/app/" style={{ color: '#94a3b8', textDecoration: 'none' }}>
+              <a href={getOperatorPortalUrl()} style={{ color: '#94a3b8', textDecoration: 'none' }}>
                 Dealership & Operator Portal (/app/)
               </a>
             </li>
             <li>
-              <a href="/marketplace/" style={{ color: '#94a3b8', textDecoration: 'none' }}>
+              <a href={getMarketplaceUrl()} style={{ color: '#94a3b8', textDecoration: 'none' }}>
                 Auto Consumer Marketplace (/marketplace/)
               </a>
             </li>
             <li>
-              <a href="/api/health" target="_blank" rel="noreferrer" style={{ color: '#94a3b8', textDecoration: 'none' }}>
+              <a href={getHealthUrl()} target="_blank" rel="noreferrer" style={{ color: '#94a3b8', textDecoration: 'none' }}>
                 REST Engine Health (/health)
               </a>
             </li>

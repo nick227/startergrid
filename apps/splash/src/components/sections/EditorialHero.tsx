@@ -1,4 +1,5 @@
 import React from 'react';
+import { getOperatorPortalUrl, getMarketplaceUrl } from '../../lib/navigation.ts';
 
 interface EditorialHeroProps {
   onRequestAccess: () => void;
@@ -130,7 +131,7 @@ export const EditorialHero: React.FC<EditorialHeroProps> = ({ onRequestAccess })
               </button>
 
               <a
-                href="/app/"
+                href={getOperatorPortalUrl()}
                 style={{
                   padding: '13px 20px',
                   borderRadius: '6px',
@@ -150,7 +151,7 @@ export const EditorialHero: React.FC<EditorialHeroProps> = ({ onRequestAccess })
               </a>
 
               <a
-                href="/marketplace/"
+                href={getMarketplaceUrl()}
                 style={{
                   padding: '13px 20px',
                   borderRadius: '6px',

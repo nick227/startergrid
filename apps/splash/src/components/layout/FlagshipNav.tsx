@@ -1,3 +1,5 @@
+import { getMarketplaceUrl, getOperatorPortalUrl } from '../../lib/navigation.ts';
+
 interface FlagshipNavProps {
   onOpenIntake: () => void;
 }
@@ -146,7 +148,7 @@ export const FlagshipNav: React.FC<FlagshipNavProps> = ({ onOpenIntake }) => {
         {/* Action CTAs */}
         <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
           <a
-            href="/marketplace/"
+            href={getMarketplaceUrl()}
             style={{
               color: '#60a5fa',
               textDecoration: 'none',
@@ -166,7 +168,7 @@ export const FlagshipNav: React.FC<FlagshipNavProps> = ({ onOpenIntake }) => {
           </a>
 
           <a
-            href="/app/"
+            href={getOperatorPortalUrl()}
             style={{
               color: '#fff',
               textDecoration: 'none',

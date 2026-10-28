@@ -399,6 +399,160 @@ export const SupportingCapabilitiesSection: React.FC = () => {
               </div>
             </div>
           </div>
+
+          {/* 11: Managed Listing & Merchandising Services */}
+          <div
+            id="vp-11"
+            style={{
+              display: 'grid',
+              gridTemplateColumns: 'repeat(auto-fit, minmax(360px, 1fr))',
+              gap: '48px',
+              alignItems: 'center',
+              scrollMarginTop: '80px',
+            }}
+          >
+            <div>
+              <span style={{ fontSize: '0.75rem', fontWeight: 800, color: '#38bdf8', textTransform: 'uppercase', letterSpacing: '0.08em' }}>
+                11 • Managed Staff Services
+              </span>
+              <h3 style={{ fontSize: 'clamp(1.6rem, 2.5vw, 2.25rem)', fontWeight: 800, color: '#ffffff', marginTop: '8px', marginBottom: '16px' }}>
+                Let our team manage your online listings and push your cars everywhere.
+              </h3>
+              <p style={{ fontSize: '1.0625rem', color: '#cbd5e1', lineHeight: 1.6, marginBottom: '20px' }}>
+                We push your dealership's cars online, format photos, craft descriptions, and manage multi-platform syndication so your staff stays focused on the showroom.
+              </p>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', fontSize: '0.875rem', color: '#94a3b8' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                  <span style={{ color: '#10b981' }}>✓</span>
+                  <span>Complete hands-off online distribution: our experienced team pushes every vehicle live across all channels</span>
+                </div>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                  <span style={{ color: '#10b981' }}>✓</span>
+                  <span>Daily feed audits and error resolution: our internal staff fixes rejected VINs and spec gaps for you</span>
+                </div>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                  <span style={{ color: '#10b981' }}>✓</span>
+                  <span>Consistent photo sequencing, watermark rules, and promotional dealer badges managed end-to-end</span>
+                </div>
+              </div>
+            </div>
+
+            <div
+              style={{
+                background: '#0d131f',
+                border: '1px solid rgba(255, 255, 255, 0.08)',
+                borderRadius: '12px',
+                padding: '24px',
+              }}
+            >
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
+                <strong style={{ color: '#ffffff', fontSize: '0.875rem' }}>DealerGrid Managed Operations</strong>
+                <span style={{ fontSize: '0.6875rem', padding: '2px 8px', borderRadius: '4px', background: 'rgba(16, 185, 129, 0.15)', color: '#34d399', fontWeight: 600 }}>
+                  Done-For-You
+                </span>
+              </div>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', fontSize: '0.8125rem' }}>
+                <div style={{ padding: '12px 14px', background: 'rgba(255, 255, 255, 0.02)', borderRadius: '8px', border: '1px solid rgba(255, 255, 255, 0.05)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                  <div>
+                    <div style={{ color: '#ffffff', fontWeight: 600 }}>Vehicles Pushed Online Today</div>
+                    <div style={{ color: '#64748b', fontSize: '0.75rem' }}>Live on Facebook, Google, and portals</div>
+                  </div>
+                  <span style={{ color: '#38bdf8', fontWeight: 700, fontSize: '1rem' }}>48 units</span>
+                </div>
+                <div style={{ padding: '12px 14px', background: 'rgba(255, 255, 255, 0.02)', borderRadius: '8px', border: '1px solid rgba(255, 255, 255, 0.05)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                  <div>
+                    <div style={{ color: '#ffffff', fontWeight: 600 }}>Feed Errors Resolved by DealerGrid</div>
+                    <div style={{ color: '#64748b', fontSize: '0.75rem' }}>Fixed by our team, zero staff input needed</div>
+                  </div>
+                  <span style={{ color: '#34d399', fontWeight: 700, fontSize: '0.875rem' }}>✓ 0 Pending</span>
+                </div>
+                <div style={{ padding: '12px 14px', background: 'rgba(59, 130, 246, 0.08)', borderRadius: '8px', border: '1px solid rgba(59, 130, 246, 0.25)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                  <div>
+                    <div style={{ color: '#ffffff', fontWeight: 600 }}>Dealership Labor Required</div>
+                    <div style={{ color: '#94a3b8', fontSize: '0.75rem' }}>Your staff stays focused on customers</div>
+                  </div>
+                  <span style={{ color: '#38bdf8', fontWeight: 800, fontSize: '1rem' }}>0 Hours</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* 12: Experienced Automotive Industry Veterans */}
+          <div
+            id="vp-12"
+            style={{
+              display: 'grid',
+              gridTemplateColumns: 'repeat(auto-fit, minmax(360px, 1fr))',
+              gap: '48px',
+              alignItems: 'center',
+              scrollMarginTop: '80px',
+            }}
+          >
+            <div>
+              <span style={{ fontSize: '0.75rem', fontWeight: 800, color: '#38bdf8', textTransform: 'uppercase', letterSpacing: '0.08em' }}>
+                12 • Automotive Staffing & Advisory
+              </span>
+              <h3 style={{ fontSize: 'clamp(1.6rem, 2.5vw, 2.25rem)', fontWeight: 800, color: '#ffffff', marginTop: '8px', marginBottom: '16px' }}>
+                Leverage experienced automotive industry professionals on demand.
+              </h3>
+              <p style={{ fontSize: '1.0625rem', color: '#cbd5e1', lineHeight: 1.6, marginBottom: '20px' }}>
+                Work alongside former dealership general managers, used car directors, and retail specialists who understand your floorplan carrying costs and store operations.
+              </p>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', fontSize: '0.875rem', color: '#94a3b8' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                  <span style={{ color: '#10b981' }}>✓</span>
+                  <span>Real dealership veterans on your side who speak automotive retail, not generic software scripts</span>
+                </div>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                  <span style={{ color: '#10b981' }}>✓</span>
+                  <span>Proactive monthly merchandising and turn velocity reviews to identify slow-moving lot inventory</span>
+                </div>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                  <span style={{ color: '#10b981' }}>✓</span>
+                  <span>Direct phone, email, and chat access for quick adjustments and strategic sales guidance</span>
+                </div>
+              </div>
+            </div>
+
+            <div
+              style={{
+                background: '#0d131f',
+                border: '1px solid rgba(255, 255, 255, 0.08)',
+                borderRadius: '12px',
+                padding: '24px',
+              }}
+            >
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
+                <strong style={{ color: '#ffffff', fontSize: '0.875rem' }}>Your Dedicated Auto Specialists</strong>
+                <span style={{ fontSize: '0.6875rem', color: '#38bdf8', fontWeight: 600 }}>Direct Line</span>
+              </div>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', fontSize: '0.8125rem' }}>
+                <div style={{ padding: '12px 14px', background: 'rgba(255, 255, 255, 0.02)', borderRadius: '8px', display: 'flex', alignItems: 'center', gap: '12px' }}>
+                  <div style={{ width: '36px', height: '36px', borderRadius: '50%', background: '#1e3a8a', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '0.875rem', color: '#ffffff', fontWeight: 800 }}>
+                    GM
+                  </div>
+                  <div style={{ flex: 1 }}>
+                    <div style={{ color: '#ffffff', fontWeight: 600 }}>Former Used Car Director & GM</div>
+                    <div style={{ color: '#94a3b8', fontSize: '0.75rem' }}>Available for monthly lot turn & pricing reviews</div>
+                  </div>
+                  <span style={{ color: '#10b981', fontSize: '0.75rem', fontWeight: 600 }}>● Active</span>
+                </div>
+                <div style={{ padding: '12px 14px', background: 'rgba(255, 255, 255, 0.02)', borderRadius: '8px', display: 'flex', alignItems: 'center', gap: '12px' }}>
+                  <div style={{ width: '36px', height: '36px', borderRadius: '50%', background: '#065f46', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '0.875rem', color: '#ffffff', fontWeight: 800 }}>
+                    BDC
+                  </div>
+                  <div style={{ flex: 1 }}>
+                    <div style={{ color: '#ffffff', fontWeight: 600 }}>Digital Merchandising Specialist</div>
+                    <div style={{ color: '#94a3b8', fontSize: '0.75rem' }}>Daily channel posting, watermarking & ad optimization</div>
+                  </div>
+                  <span style={{ color: '#10b981', fontSize: '0.75rem', fontWeight: 600 }}>● Active</span>
+                </div>
+                <div style={{ padding: '10px 14px', background: 'rgba(16, 185, 129, 0.08)', borderRadius: '8px', border: '1px solid rgba(16, 185, 129, 0.2)', textAlign: 'center', color: '#a7f3d0', fontSize: '0.75rem', fontWeight: 600 }}>
+                  💬 Real human industry experts available by direct phone and messaging
+                </div>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
     </section>

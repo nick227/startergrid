@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { submitDealershipIntake, type IntakeReceipt } from '../../lib/dealershipIntakeService.ts';
+import { getOperatorPortalUrl } from '../../lib/navigation.ts';
 
 export const GettingStartedSection: React.FC = () => {
   const [dealershipName, setDealershipName] = useState('');
@@ -259,7 +260,7 @@ export const GettingStartedSection: React.FC = () => {
 
                 <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap' }}>
                   <a
-                    href="/app/"
+                    href={getOperatorPortalUrl()}
                     style={{
                       flex: 1,
                       textAlign: 'center',

@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { MARKETPLACE_MOCK_CARS, type MarketplaceCar } from '../../data/marketplaceMockCars.ts';
+import { getMarketplaceUrl } from '../../lib/navigation.ts';
 
 interface MarketplaceShowcaseSectionProps {
   onOpenIntake: () => void;
@@ -263,7 +264,7 @@ export const MarketplaceShowcaseSection: React.FC<MarketplaceShowcaseSectionProp
 
                 <div style={{ display: 'flex', gap: '8px', borderTop: '1px solid rgba(255, 255, 255, 0.06)', paddingTop: '14px' }}>
                   <a
-                    href="/marketplace/"
+                    href={getMarketplaceUrl()}
                     style={{
                       flex: 1,
                       textAlign: 'center',
@@ -325,7 +326,7 @@ export const MarketplaceShowcaseSection: React.FC<MarketplaceShowcaseSectionProp
 
           <div style={{ display: 'flex', gap: '12px' }}>
             <a
-              href="/marketplace/"
+              href={getMarketplaceUrl()}
               style={{
                 padding: '12px 20px',
                 borderRadius: '8px',

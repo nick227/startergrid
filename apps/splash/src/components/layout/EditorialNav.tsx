@@ -1,4 +1,5 @@
 import React from 'react';
+import { getMarketplaceUrl, getOperatorPortalUrl } from '../../lib/navigation.ts';
 
 interface EditorialNavProps {
   onRequestAccess: () => void;
@@ -115,7 +116,7 @@ export const EditorialNav: React.FC<EditorialNavProps> = ({ onRequestAccess }) =
         <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
           {/* Shopper Entrance */}
           <a
-            href="/marketplace/"
+            href={getMarketplaceUrl()}
             style={{
               display: 'inline-flex',
               alignItems: 'center',
@@ -137,7 +138,7 @@ export const EditorialNav: React.FC<EditorialNavProps> = ({ onRequestAccess }) =
 
           {/* Dealership Sign In */}
           <a
-            href="/app/"
+            href={getOperatorPortalUrl()}
             style={{
               color: '#ffffff',
               textDecoration: 'none',

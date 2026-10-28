@@ -1,4 +1,5 @@
 import React from 'react';
+import { getMarketplaceUrl } from '../../lib/navigation.ts';
 
 export const MarketplaceHeroSection: React.FC = () => {
   return (
@@ -53,7 +54,7 @@ export const MarketplaceHeroSection: React.FC = () => {
           </p>
 
           <a
-            href="/marketplace/"
+            href={getMarketplaceUrl()}
             style={{
               display: 'inline-flex',
               alignItems: 'center',

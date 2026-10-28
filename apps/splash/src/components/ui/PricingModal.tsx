@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { getOperatorPortalUrl } from '../../lib/navigation.ts';
 
 interface PricingModalProps {
   isOpen: boolean;
@@ -1024,7 +1025,7 @@ export const PricingModal: React.FC<PricingModalProps> = ({
 
             <div style={{ display: 'flex', gap: '14px', flexWrap: 'wrap' }}>
               <a
-                href="/app/"
+                href={getOperatorPortalUrl()}
                 style={{
                   flex: 1,
                   minWidth: '200px',

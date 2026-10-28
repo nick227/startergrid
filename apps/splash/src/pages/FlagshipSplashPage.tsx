@@ -62,7 +62,7 @@ export default function FlagshipSplashPage() {
         {/* 01.5 — GRAPHICAL TOOL FEATURES OVERVIEW */}
         <VisualFeaturesSection onOpenPricing={openPricing} onContactUs={handleContactUs} />
 
-        {/* 02 — DISCOVER (Compact Overview of All 10 Benefits) */}
+        {/* 02 — DISCOVER (Compact Overview of All 12 Benefits) */}
         <DiscoverSection />
 
         {/* 03 — PRODUCT STORY (Dominant Cinematic Visual Moments) */}
@@ -79,7 +79,7 @@ export default function FlagshipSplashPage() {
         <InventoryHubSection />
 
         {/* 04 — SUPPORTING CAPABILITIES (Spacious Editorial Compositions) */}
-        {/* 05 DMS Connection • 06 Automotive Experts • 07 Leads & CRM • 09 Team Collaboration • 10 Market Demand */}
+        {/* 05 DMS Connection • 06 Automotive Experts • 07 Leads & CRM • 09 Team Collaboration • 10 Market Demand • 11 Managed Listings • 12 Industry Veterans */}
         <SupportingCapabilitiesSection />
 
         {/* 05 — CONVERSION (Instant Self-Serve Signup & Contact Form) */}

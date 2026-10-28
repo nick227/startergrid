@@ -1,6 +1,10 @@
 import React from 'react';
+import { getMarketplaceUrl, getOperatorPortalUrl, getHealthUrl } from '../../lib/navigation.ts';
 
 export const AppleScaleFooter: React.FC = () => {
+  const operatorPortalUrl = getOperatorPortalUrl();
+  const marketplaceUrl = getMarketplaceUrl();
+  const healthUrl = getHealthUrl();
   return (
     <footer
       style={{
@@ -41,18 +45,18 @@ export const AppleScaleFooter: React.FC = () => {
           </div>
           <ul style={{ listStyle: 'none', padding: 0, margin: 0, display: 'flex', flexDirection: 'column', gap: '12px' }}>
             <li>
-              <a href="/app/" style={{ color: '#94a3b8', textDecoration: 'none', transition: 'color 0.15s ease' }} onMouseEnter={(e) => (e.currentTarget.style.color = '#fff')} onMouseLeave={(e) => (e.currentTarget.style.color = '#94a3b8')}>
+              <a href={operatorPortalUrl} style={{ color: '#94a3b8', textDecoration: 'none', transition: 'color 0.15s ease' }} onMouseEnter={(e) => (e.currentTarget.style.color = '#fff')} onMouseLeave={(e) => (e.currentTarget.style.color = '#94a3b8')}>
                 Dealership Operator Portal (/app/)
               </a>
             </li>
             <li>
-              <a href="/marketplace/" style={{ color: '#34d399', textDecoration: 'none', fontWeight: 500, display: 'inline-flex', alignItems: 'center', gap: '6px' }}>
+              <a href={marketplaceUrl} style={{ color: '#34d399', textDecoration: 'none', fontWeight: 500, display: 'inline-flex', alignItems: 'center', gap: '6px' }}>
                 <span style={{ width: '6px', height: '6px', borderRadius: '50%', background: '#10b981' }} />
                 <span>Consumer Marketplace (/marketplace/)</span>
               </a>
             </li>
             <li>
-              <a href="/api/health" target="_blank" rel="noreferrer" style={{ color: '#64748b', textDecoration: 'none' }}>
+              <a href={healthUrl} target="_blank" rel="noreferrer" style={{ color: '#64748b', textDecoration: 'none' }}>
                 REST Engine Health Check (/health)
               </a>
             </li>

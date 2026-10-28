@@ -1,4 +1,5 @@
 import React from 'react';
+import { getOperatorPortalUrl, getMarketplaceUrl, getHealthUrl } from '../../lib/navigation.ts';
 
 export const FlagshipFooter: React.FC = () => {
   return (
@@ -67,17 +68,17 @@ export const FlagshipFooter: React.FC = () => {
           </h4>
           <ul style={{ listStyle: 'none', padding: 0, margin: 0, display: 'flex', flexDirection: 'column', gap: '10px', fontSize: '0.8125rem' }}>
             <li>
-              <a href="/app/" style={{ color: 'rgba(255, 255, 255, 0.75)', textDecoration: 'none' }}>
+              <a href={getOperatorPortalUrl()} style={{ color: 'rgba(255, 255, 255, 0.75)', textDecoration: 'none' }}>
                 Dealership & Operator Portal <code style={{ color: '#60a5fa', fontSize: '0.75rem' }}>/app/</code>
               </a>
             </li>
             <li>
-              <a href="/marketplace/" style={{ color: 'rgba(255, 255, 255, 0.75)', textDecoration: 'none' }}>
+              <a href={getMarketplaceUrl()} style={{ color: 'rgba(255, 255, 255, 0.75)', textDecoration: 'none' }}>
                 Consumer Auto Marketplace <code style={{ color: '#60a5fa', fontSize: '0.75rem' }}>/marketplace/</code>
               </a>
             </li>
             <li>
-              <a href="/api/health" target="_blank" rel="noreferrer" style={{ color: 'rgba(255, 255, 255, 0.75)', textDecoration: 'none' }}>
+              <a href={getHealthUrl()} target="_blank" rel="noreferrer" style={{ color: 'rgba(255, 255, 255, 0.75)', textDecoration: 'none' }}>
                 REST API Health Check <code style={{ color: '#60a5fa', fontSize: '0.75rem' }}>/health</code>
               </a>
             </li>

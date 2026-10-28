@@ -335,6 +335,58 @@ export const PropositionExample: React.FC<ExampleProps> = ({ propData }) => {
         </div>
       );
 
+    // 11: Managed Staff Services
+    case 'managed-services':
+      return (
+        <div style={{ background: '#090d16', border: '1px solid rgba(255, 255, 255, 0.08)', borderRadius: '10px', overflow: 'hidden' }}>
+          <div style={{ background: '#0d131f', padding: '12px 18px', borderBottom: '1px solid rgba(255, 255, 255, 0.06)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+            <strong style={{ fontSize: '0.8125rem', color: '#ffffff' }}>Managed Online Inventory Queue</strong>
+            <span style={{ fontSize: '0.75rem', color: '#10b981', fontWeight: 600 }}>● Fully Managed</span>
+          </div>
+          <div style={{ padding: '16px', display: 'flex', flexDirection: 'column', gap: '8px', fontSize: '0.75rem' }}>
+            <div style={{ padding: '10px 12px', background: 'rgba(255, 255, 255, 0.02)', borderRadius: '6px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+              <span style={{ color: '#ffffff', fontWeight: 600 }}>Vehicles Processed & Pushed Today</span>
+              <span style={{ color: '#38bdf8', fontWeight: 700 }}>48 Units</span>
+            </div>
+            <div style={{ padding: '10px 12px', background: 'rgba(255, 255, 255, 0.02)', borderRadius: '6px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+              <span style={{ color: '#ffffff', fontWeight: 600 }}>Photo & Watermark Quality Check</span>
+              <span style={{ color: '#10b981', fontWeight: 700 }}>100% Passed</span>
+            </div>
+            <div style={{ padding: '10px 12px', background: 'rgba(59, 130, 246, 0.08)', borderRadius: '6px', border: '1px solid rgba(59, 130, 246, 0.2)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+              <span style={{ color: '#bfdbfe', fontWeight: 600 }}>Dealership Labor Required</span>
+              <span style={{ color: '#38bdf8', fontWeight: 800 }}>0 Minutes</span>
+            </div>
+          </div>
+        </div>
+      );
+
+    // 12: Automotive Industry Veterans
+    case 'industry-veterans':
+      return (
+        <div style={{ background: '#090d16', border: '1px solid rgba(255, 255, 255, 0.08)', borderRadius: '10px', overflow: 'hidden' }}>
+          <div style={{ background: '#0d131f', padding: '12px 18px', borderBottom: '1px solid rgba(255, 255, 255, 0.06)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+            <strong style={{ fontSize: '0.8125rem', color: '#ffffff' }}>Dedicated Automotive Advisory</strong>
+            <span style={{ fontSize: '0.75rem', color: '#38bdf8' }}>Direct Access</span>
+          </div>
+          <div style={{ padding: '16px', display: 'flex', flexDirection: 'column', gap: '8px', fontSize: '0.75rem' }}>
+            <div style={{ padding: '10px 12px', background: 'rgba(255, 255, 255, 0.02)', borderRadius: '6px', display: 'flex', alignItems: 'center', gap: '10px' }}>
+              <span style={{ width: '24px', height: '24px', borderRadius: '50%', background: '#1e3a8a', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '0.6875rem', color: '#ffffff', fontWeight: 800 }}>GM</span>
+              <div style={{ flex: 1 }}>
+                <div style={{ color: '#ffffff', fontWeight: 600 }}>Former Used Car Director & GM</div>
+                <div style={{ color: '#64748b', fontSize: '0.6875rem' }}>Available for monthly turn velocity reviews</div>
+              </div>
+            </div>
+            <div style={{ padding: '10px 12px', background: 'rgba(255, 255, 255, 0.02)', borderRadius: '6px', display: 'flex', alignItems: 'center', gap: '10px' }}>
+              <span style={{ width: '24px', height: '24px', borderRadius: '50%', background: '#065f46', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '0.6875rem', color: '#ffffff', fontWeight: 800 }}>BDC</span>
+              <div style={{ flex: 1 }}>
+                <div style={{ color: '#ffffff', fontWeight: 600 }}>Digital Merchandising Specialist</div>
+                <div style={{ color: '#64748b', fontSize: '0.6875rem' }}>Multi-channel posting & ad campaign management</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      );
+
     default:
       return null;
   }

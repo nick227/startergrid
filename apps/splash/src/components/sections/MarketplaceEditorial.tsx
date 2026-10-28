@@ -1,5 +1,6 @@
 import React from 'react';
 import { MARKETPLACE_MOCK_CARS, type MarketplaceCar } from '../../data/marketplaceMockCars.ts';
+import { getMarketplaceUrl } from '../../lib/navigation.ts';
 
 export const MarketplaceEditorial: React.FC = () => {
   return (
@@ -42,7 +43,7 @@ export const MarketplaceEditorial: React.FC = () => {
             Vehicles published to our marketplace receive public listing pages that shoppers can search, inspect and inquire about. Dealerships can manage those records from StarterGrid.
           </p>
           <a
-            href="/marketplace/"
+            href={getMarketplaceUrl()}
             style={{
               display: 'inline-flex',
               alignItems: 'center',
@@ -199,7 +200,7 @@ export const MarketplaceEditorial: React.FC = () => {
 
                   <div style={{ borderTop: '1px solid rgba(255, 255, 255, 0.06)', paddingTop: '14px', display: 'flex', gap: '8px' }}>
                     <a
-                      href="/marketplace/"
+                      href={getMarketplaceUrl()}
                       style={{
                         flex: 1,
                         textAlign: 'center',

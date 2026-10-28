@@ -13,7 +13,7 @@ export const DiscoverSection: React.FC = () => {
     >
       <div style={{ maxWidth: '1360px', margin: '0 auto' }}>
         {/* Header Block */}
-        <div style={{ maxWidth: '880px', marginBottom: '64px' }}>
+        <div style={{ maxWidth: '1200px', marginBottom: '64px' }}>
           <div
             style={{
               fontSize: '0.8125rem',
@@ -46,13 +46,14 @@ export const DiscoverSection: React.FC = () => {
               lineHeight: 1.6,
               color: '#94a3b8',
               margin: 0,
+              maxWidth: '880px',
             }}
           >
-            Ten operational advantages designed to expand your vehicle reach, protect your showroom traffic, and keep your lot organized.
+            Twelve operational advantages designed to expand your vehicle reach, protect your showroom traffic, and keep your lot organized.
           </p>
         </div>
 
-        {/* 10 Benefits Compact Grid */}
+        {/* 12 Benefits Compact Grid */}
         <div
           style={{
             display: 'grid',

@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { submitDealershipIntake, type IntakeReceipt } from '../../lib/dealershipIntakeService.ts';
+import { getOperatorPortalUrl } from '../../lib/navigation.ts';
 
 interface LeadIntakeModalProps {
   isOpen: boolean;
@@ -162,7 +163,7 @@ export const LeadIntakeModal: React.FC<LeadIntakeModalProps> = ({ isOpen, onClos
 
             <div style={{ display: 'flex', gap: '12px' }}>
               <a
-                href="/app/"
+                href={getOperatorPortalUrl()}
                 style={{
                   flex: 1,
                   textAlign: 'center',
