@@ -10,7 +10,7 @@ export const FlagshipHeroSection: React.FC<FlagshipHeroSectionProps> = ({ onCont
     <section
       id="hero-distribution"
       style={{
-        padding: '120px 32px 140px',
+        padding: '72px 32px 96px',
         background: 'radial-gradient(ellipse 90% 60% at 50% -10%, rgba(37, 99, 235, 0.12) 0%, transparent 80%), #080c14',
         borderBottom: '1px solid rgba(255, 255, 255, 0.06)',
         position: 'relative',
@@ -19,7 +19,7 @@ export const FlagshipHeroSection: React.FC<FlagshipHeroSectionProps> = ({ onCont
     >
       <div style={{ maxWidth: '1360px', margin: '0 auto' }}>
         {/* Top Text Block: Enormous Typography & Apple-Scale Restraint */}
-        <div style={{ maxWidth: '1060px', marginBottom: '56px' }}>
+        <div style={{ maxWidth: '1060px', marginBottom: '40px' }}>
           <div
             style={{
               fontSize: '0.8125rem',
@@ -27,7 +27,7 @@ export const FlagshipHeroSection: React.FC<FlagshipHeroSectionProps> = ({ onCont
               letterSpacing: '0.14em',
               color: '#3b82f6',
               textTransform: 'uppercase',
-              marginBottom: '24px',
+              marginBottom: '20px',
             }}
           >
             DEALERGRID / AUTOMOTIVE SOFTWARE
@@ -35,12 +35,12 @@ export const FlagshipHeroSection: React.FC<FlagshipHeroSectionProps> = ({ onCont
 
           <h1
             style={{
-              fontSize: 'clamp(2.75rem, 5.8vw, 5.75rem)',
+              fontSize: 'clamp(2.5rem, 5.2vw, 5.25rem)',
               fontWeight: 900,
               color: '#ffffff',
               letterSpacing: '-0.04em',
-              lineHeight: 1.04,
-              marginBottom: '28px',
+              lineHeight: 1.05,
+              marginBottom: '24px',
             }}
           >
             Post your vehicles to 70+ websites from one platform.
@@ -48,11 +48,11 @@ export const FlagshipHeroSection: React.FC<FlagshipHeroSectionProps> = ({ onCont
 
           <p
             style={{
-              fontSize: 'clamp(1.25rem, 2vw, 1.75rem)',
+              fontSize: 'clamp(1.125rem, 1.8vw, 1.625rem)',
               lineHeight: 1.5,
               color: '#94a3b8',
               maxWidth: '860px',
-              marginBottom: '40px',
+              marginBottom: '32px',
             }}
           >
             Compare what sells, where it sells, and how quickly.
@@ -163,21 +163,23 @@ export const FlagshipHeroSection: React.FC<FlagshipHeroSectionProps> = ({ onCont
           </div>
         </div>
 
-        {/* Stylized AI-Generated Distribution Network Graphic */}
+        {/* Minimalist Bauhaus Graphic Card */}
         <div
           style={{
+            maxWidth: '1080px',
+            margin: '0 auto',
             position: 'relative',
             background: '#090d16',
             border: '1px solid rgba(255, 255, 255, 0.12)',
             borderRadius: '20px',
             overflow: 'hidden',
-            boxShadow: '0 30px 90px rgba(0, 0, 0, 0.75), 0 0 60px rgba(37, 99, 235, 0.15)',
+            boxShadow: '0 30px 90px rgba(0, 0, 0, 0.75), 0 0 60px rgba(37, 99, 235, 0.12)',
           }}
         >
           {/* Subtle Top Control Bar */}
           <div
             style={{
-              padding: '16px 24px',
+              padding: '14px 24px',
               background: 'rgba(8, 12, 20, 0.95)',
               borderBottom: '1px solid rgba(255, 255, 255, 0.08)',
               display: 'flex',
@@ -193,8 +195,8 @@ export const FlagshipHeroSection: React.FC<FlagshipHeroSectionProps> = ({ onCont
                 <span style={{ width: '10px', height: '10px', borderRadius: '50%', background: '#f59e0b' }} />
                 <span style={{ width: '10px', height: '10px', borderRadius: '50%', background: '#10b981' }} />
               </div>
-              <span style={{ color: '#ffffff', fontSize: '0.875rem', fontWeight: 700 }}>
-                DealerGrid Core Distribution Architecture
+              <span style={{ color: '#ffffff', fontSize: '0.8125rem', fontWeight: 700 }}>
+                DealerGrid Distribution Engine
               </span>
             </div>
 
@@ -210,16 +212,16 @@ export const FlagshipHeroSection: React.FC<FlagshipHeroSectionProps> = ({ onCont
             </div>
           </div>
 
-          {/* AI Generated Graphic: Simplistic Bauhaus Tech Illustration */}
-          <div style={{ position: 'relative', width: '100%', lineHeight: 0, background: '#0e1526' }}>
+          {/* AI Generated Graphic: Ultra-Minimalist Bauhaus Car with Signal */}
+          <div style={{ position: 'relative', width: '100%', lineHeight: 0, background: '#1c2538', display: 'flex', justifyContent: 'center' }}>
             <img
               src="/hero-distribution-bauhaus.jpg"
-              alt="DealerGrid Playful Bauhaus Distribution Architecture and Connected Vehicle Dispatch Hub"
+              alt="DealerGrid Minimalist Bauhaus Connected Vehicle Signal Distribution"
               style={{
                 width: '100%',
                 height: 'auto',
                 display: 'block',
-                maxHeight: '760px',
+                maxHeight: '480px',
                 objectFit: 'contain',
               }}
               loading="eager"
@@ -229,7 +231,7 @@ export const FlagshipHeroSection: React.FC<FlagshipHeroSectionProps> = ({ onCont
           {/* Bottom Footnote Bar */}
           <div
             style={{
-              padding: '16px 24px',
+              padding: '14px 24px',
               background: 'rgba(8, 12, 20, 0.95)',
               borderTop: '1px solid rgba(255, 255, 255, 0.08)',
               display: 'flex',
