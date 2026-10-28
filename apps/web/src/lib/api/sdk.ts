@@ -111,6 +111,10 @@ async function createDealershipFetch(url: string, payload: CreateDealershipPaylo
   return res.json() as Promise<CreateDealershipResponse>;
 }
 
+export async function createDealershipOnboarding(payload: CreateDealershipPayload): Promise<CreateDealershipResponse> {
+  return createDealershipFetch('/api/dealers/onboarding', payload);
+}
+
 export async function createDealershipSignup(payload: CreateDealershipPayload): Promise<CreateDealershipResponse> {
   return createDealershipFetch('/api/dealers/signup', payload);
 }

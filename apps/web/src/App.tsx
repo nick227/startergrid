@@ -13,7 +13,7 @@ import InventoryPage from './pages/InventoryPage.tsx';
 import LeadsPage from './pages/LeadsPage.tsx';
 import KnowledgeBasePage from './pages/KnowledgeBasePage.tsx';
 import HomePage from './pages/HomePage.tsx';
-import DealershipSignupPage from './pages/DealershipSignupPage.tsx';
+import RegisterPage from './pages/RegisterPage.tsx';
 import { OperatorPage } from '@/components/operator';
 
 const PlatformDetailPage = lazy(() => import('./pages/PlatformDetailPage.tsx'));
@@ -85,7 +85,7 @@ function OperatorApp() {
       </CategoryProvider>
     );
   }
-  if (signupStandalone) return <DealershipSignupPage />;
+  if (signupStandalone && !user) return <RegisterPage />;
   if (!user) return <LoginPage />;
 
   return (

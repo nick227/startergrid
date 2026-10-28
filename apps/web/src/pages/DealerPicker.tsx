@@ -9,6 +9,7 @@ import { ErrorState } from '@/components/operator/ErrorState.tsx';
 import { operatorCopy } from '@/lib/copy/operator.ts';
 import { useAuth } from '@/contexts/AuthContext.tsx';
 import { canAccessDealer, filterDealersForOperator, isDealerFacingRole } from '@/lib/operatorAccess.ts';
+import DealershipOnboardingPage from './DealershipOnboardingPage.tsx';
 
 type Props = {
   onSelect: (id: string) => void;
@@ -52,6 +53,10 @@ export default function DealerPicker({ onSelect, forbiddenDealerId }: Props) {
     setManualError(null);
     onSelect(id);
   };
+
+  if (!loading && !error && user?.role === 'DEALER_OWNER' && scopedDealers.length === 0 && !forbiddenDealerId) {
+    return <DealershipOnboardingPage />;
+  }
 
   return (
     <div className="min-h-screen bg-navy-950 flex items-center justify-center p-6">

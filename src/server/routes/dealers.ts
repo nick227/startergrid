@@ -2,7 +2,7 @@ import type { FastifyInstance, FastifyReply } from 'fastify';
 import type { PrismaClient } from '@prisma/client';
 import { requireOperator, requireDealerAccess, requireInternalStaff, requireCapability } from '../security.js';
 import { fileUploadService } from '../../services/storage/fileUploadService.js';
-import { createDealershipSchema, createDealershipSignupSchema, updateDealershipProfileSchema, validateBody } from '../requestValidation.js';
+import { createDealershipSchema, createDealershipSignupSchema, dealershipOnboardingSchema, updateDealershipProfileSchema, validateBody } from '../requestValidation.js';
 import { createDealership } from '../../services/dealer/createDealershipService.js';
 import { getDealershipProfile, updateDealershipProfile } from '../../services/dealer/dealershipProfileService.js';
 import { createOperatorSession, makeSessionCookieHeader } from '../../services/auth/sessionService.js';
@@ -55,6 +55,38 @@ export function registerDealerRoutes(app: FastifyInstance, prisma: PrismaClient)
         dealer: result.dealer,
         nextHref: `#/${result.dealer.id}/platforms`,
         mode: 'operator',
+      });
+    } catch (err) {
+      return sendCreateDealershipError(reply, err);
+    }
+  });
+
+  app.post('/api/dealers/onboarding', async (request, reply) => {
+    const operator = await requireOperator(prisma, request, reply);
+    if (!operator) return;
+    if (operator.devHeader || (operator.role !== 'DEALER_OWNER' && operator.role !== 'DEALER_OPERATOR')) {
+      return reply.status(403).send({ error: 'Only a dealership account can start setup.' });
+    }
+    if (operator.dealerAccessIds.length > 0) {
+      return reply.status(409).send({ error: 'This account already has a dealership.' });
+    }
+
+    const parsed = validateBody(dealershipOnboardingSchema, request.body);
+    if (!parsed.ok) return reply.status(400).send({ error: parsed.error });
+
+    const email = parsed.data.primaryContact.email?.trim() || operator.email;
+    try {
+      const result = await createDealership(prisma, {
+        ...parsed.data,
+        primaryContact: { ...parsed.data.primaryContact, email, name: parsed.data.primaryContact.name ?? '' },
+      }, {
+        ownerAccountId: operator.id,
+        actorEmail: operator.email,
+      });
+      return reply.status(201).send({
+        dealer: result.dealer,
+        nextHref: `#/${result.dealer.id}/platforms`,
+        mode: 'onboarding',
       });
     } catch (err) {
       return sendCreateDealershipError(reply, err);

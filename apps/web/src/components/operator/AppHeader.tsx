@@ -22,7 +22,7 @@ function PublicAuthLinks({ route }: { route: PublicAuthRoute }) {
         Log in
       </a>
       <a href="#/signup" aria-current={loginActive ? undefined : 'page'} className={PILL}>
-        Create dealership
+        Create account
       </a>
     </nav>
   );

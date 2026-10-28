@@ -272,6 +272,15 @@ export const createDealershipSignupSchema = createDealershipSchema.extend({
   password: z.string().min(8).max(128),
 }).strict();
 
+export const dealershipOnboardingSchema = createDealershipSignupSchema.omit({ password: true }).extend({
+  primaryContact: z.object({
+    name: blankable(160),
+    email: z.string().trim().email().max(255).optional().or(z.literal('')),
+    phone: blankable(40),
+    role: blankable(80),
+  }).strict(),
+}).strict();
+
 export type CreateDealershipBody = z.infer<typeof createDealershipRecordSchema>;
 
 const updateDealershipAddressSchema = z.object({
@@ -327,7 +336,7 @@ export const operatorLoginSchema = z.object({
   password: z.string().min(8).max(128),
 }).strict();
 
-export type OperatorLoginBody = z.infer<typeof operatorLoginSchema>;
+export const operatorRegisterSchema = operatorLoginSchema;
 
 export const changePasswordSchema = z.object({
   currentPassword: z.string().min(8).max(128),

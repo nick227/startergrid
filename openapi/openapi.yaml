@@ -591,6 +591,31 @@ paths:
         '401':
           $ref: '#/components/responses/Unauthorized'
 
+  /api/auth/register:
+    post:
+      tags: [Auth]
+      security: []
+      x-route-classification: auth
+      operationId: operatorRegister
+      summary: Create a dealership account with email and password
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/OperatorLoginRequest'
+      responses:
+        '201':
+          description: Account created and signed in
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OperatorIdentityResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '409':
+          description: An account with this email already exists
+
   /api/auth/logout:
     post:
       tags: [Auth]
@@ -789,6 +814,36 @@ paths:
           $ref: '#/components/responses/ValidationError'
         '409':
           description: Duplicate dealership
+
+  /api/dealers/onboarding:
+    post:
+      tags: [Dealers]
+      security:
+        - OperatorAuth: []
+      x-route-classification: operator
+      operationId: createDealershipOnboarding
+      summary: Create the signed-in account's dealership during in-app setup
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateDealershipRequest'
+      responses:
+        '201':
+          description: Created dealership profile
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CreateDealershipResponse'
+        '400':
+          $ref: '#/components/responses/ValidationError'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          description: The account cannot start dealership setup
+        '409':
+          description: This account already has a dealership
 
   /api/dealers/signup/{dealershipId}/logo:
     post:

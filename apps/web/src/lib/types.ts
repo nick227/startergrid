@@ -180,7 +180,7 @@ export type CreateDealershipPayload = {
 export type CreateDealershipResponse = {
   dealer: DealerSummary;
   nextHref: string;
-  mode: 'signup' | 'admin' | 'operator';
+  mode: 'signup' | 'admin' | 'operator' | 'onboarding';
 };
 
 export type NotificationChannelSummary = {

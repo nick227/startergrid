@@ -56,6 +56,7 @@ export const marketplaceRouteClassifications = {
 export const routeClassifications = {
   auth: [
     'POST /api/auth/login',
+    'POST /api/auth/register',
     'POST /api/auth/logout',
     'GET /api/auth/me',
   ],
@@ -185,6 +186,7 @@ export const routeClassifications = {
     'DELETE /api/dealers/:dealershipId/people/:accountId',
     'GET /api/dealers/:dealershipId/activity',
     'POST /api/auth/change-password',
+    'POST /api/dealers/onboarding',
     'GET /api/dealers/:dealershipId/notifications',
     'GET /api/dealers/:dealershipId/notification-channels',
     'PATCH /api/dealers/:dealershipId/notification-channels',

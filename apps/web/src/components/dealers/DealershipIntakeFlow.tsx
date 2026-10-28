@@ -4,7 +4,7 @@ import type { CreateDealershipPayload, CreateDealershipResponse } from '@/lib/ty
 import { IntakeSteps } from './IntakeSteps.tsx';
 import { authFieldClass, authLabelClass, authSelectClass } from '@/components/operator/AuthFrame.tsx';
 
-type Mode = 'signup' | 'admin';
+type Mode = 'signup' | 'admin' | 'onboarding';
 type StepPresentation = 'chips' | 'rail';
 
 type Props = {
@@ -119,7 +119,7 @@ function validateStep(step: Step, payload: CreateDealershipPayload, mode: Mode, 
     if (!payload.rooftopAddress.state.trim()) return 'State is required.';
     if (!payload.rooftopAddress.postalCode.trim()) return 'Postal code is required.';
   }
-  if (step === 'account') {
+  if (step === 'account' && mode !== 'onboarding') {
     const email = payload.primaryContact.email.trim();
     if (!email) return 'Email is required.';
     if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) return 'Email needs to be a full address.';
@@ -229,8 +229,8 @@ export function DealershipIntakeFlow({ mode, steps = 'chips', onSubmit, onUpload
         items={stepItems}
         stepIndex={stepIndex}
         onSelect={index => { setError(null); setStepIndex(index); }}
-        title={rail ? 'Create your dealership' : title}
-        subtitle={rail ? 'A DealerGrid workspace for inventory, channels, and leads.' : subtitle}
+        title={rail ? (mode === 'onboarding' ? 'Set up your dealership' : 'Create your dealership') : title}
+        subtitle={rail ? (mode === 'onboarding' ? 'You are signed in. Only the dealership name is required.' : 'A DealerGrid workspace for inventory, channels, and leads.') : subtitle}
       />
       <div className={rail ? 'flex w-full flex-col gap-5' : 'min-w-0 space-y-5'}>
       {error && (
@@ -296,7 +296,18 @@ export function DealershipIntakeFlow({ mode, steps = 'chips', onSubmit, onUpload
 
       {step === 'account' && (
         <div className={fieldGrid}>
-          {mode === 'signup' ? (
+          {mode === 'onboarding' ? (
+            <>
+              <label className={rowClass}>
+                <span className={labelText}>Your name</span>
+                <input value={payload.primaryContact.name} onChange={e => updateContact('name', e.target.value)} className={fieldClass} autoFocus />
+              </label>
+              <label className={rowClass}>
+                <span className={labelText}>Phone</span>
+                <input value={payload.primaryContact.phone ?? ''} onChange={e => updateContact('phone', e.target.value)} className={fieldClass} />
+              </label>
+            </>
+          ) : mode === 'signup' ? (
             <>
               <label className={rowClass}>
                 <span className={labelText}>Email</span>

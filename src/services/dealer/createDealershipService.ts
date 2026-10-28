@@ -13,6 +13,7 @@ import { recordDealershipActivity } from '../dealership/activityService.js';
 type CreateDealershipOptions = {
   createdByOperatorId?: string | null;
   grantAccessToOperatorId?: string | null;
+  ownerAccountId?: string | null;
   internalOwnerId?: string | null;
   inviteOwnerEmail?: string | null;
   actorEmail?: string | null;
@@ -53,7 +54,7 @@ function isWriteConflict(err: unknown): boolean {
 }
 
 function actorIdAfter(options: CreateDealershipOptions, createdOperatorAccountId?: string): string | null {
-  return options.createdByOperatorId ?? createdOperatorAccountId ?? null;
+  return options.createdByOperatorId ?? createdOperatorAccountId ?? options.ownerAccountId ?? null;
 }
 
 function cleanOptional(value: string | undefined | null): string | null {
@@ -151,6 +152,17 @@ export async function createDealership(
       });
     }
 
+    if (options.ownerAccountId && options.ownerAccountId !== createdOperatorAccountId) {
+      await tx.operatorDealerAccess.create({
+        data: {
+          operatorAccountId: options.ownerAccountId,
+          dealershipId: dealer.id,
+          accessRole: 'DEALER_OWNER',
+          grantedBy: options.ownerAccountId,
+        },
+      });
+    }
+
     const staffId = options.grantAccessToOperatorId;
     if (staffId && staffId !== createdOperatorAccountId) {
       await tx.operatorDealerAccess.create({
@@ -163,7 +175,7 @@ export async function createDealership(
       });
     }
 
-    const actorId = options.createdByOperatorId ?? createdOperatorAccountId ?? null;
+    const actorId = options.createdByOperatorId ?? createdOperatorAccountId ?? options.ownerAccountId ?? null;
     await seedOnboardingSteps(tx, dealer.id, actorId);
 
     if (options.internalOwnerId && actorId) {

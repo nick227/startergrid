@@ -52,6 +52,18 @@ export async function fetchOperatorMe(): Promise<OperatorUser> {
   }
 }
 
+export async function registerOperator(email: string, password: string): Promise<OperatorUser> {
+  const res = await fetch('/api/auth/register', {
+    method: 'POST',
+    credentials: 'include',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ email, password }),
+  });
+  const body = await res.json().catch(() => ({})) as { error?: string };
+  if (!res.ok) throw new OperatorAuthError(body.error ?? 'Could not create the account.', res.status);
+  return body as OperatorUser;
+}
+
 export async function loginOperator(email: string, password: string): Promise<OperatorUser> {
   try {
     return await AuthService.operatorLogin({ requestBody: { email, password } });

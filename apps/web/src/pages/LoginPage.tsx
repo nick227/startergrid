@@ -69,7 +69,7 @@ export default function LoginPage() {
         </label>
 
         <p className="pt-1 text-center text-sm text-white/50">
-          or <a href="#/signup" className="font-semibold text-orange-500 hover:text-orange-600">create a dealership</a> instead
+          or <a href="#/signup" className="font-semibold text-orange-500 hover:text-orange-600">create an account</a> instead
         </p>
 
         <button

@@ -1,6 +1,6 @@
 import type { FastifyInstance } from 'fastify';
 import type { PrismaClient } from '@prisma/client';
-import { validateBody, operatorLoginSchema, changePasswordSchema } from '../requestValidation.js';
+import { validateBody, operatorLoginSchema, operatorRegisterSchema, changePasswordSchema } from '../requestValidation.js';
 import { hashPassword, verifyPassword } from '../../services/auth/passwordService.js';
 import { requireOperator } from '../security.js';
 import {
@@ -75,6 +75,35 @@ export function registerAuthRoutes(app: FastifyInstance, prisma: PrismaClient): 
       role:                account.role,
       dealerAccessIds:     dealerAccess.map(d => d.dealershipId),
       mustChangePassword:  account.mustChangePassword,
+    });
+  });
+
+  app.post('/api/auth/register', async (request, reply) => {
+    const parsed = validateBody(operatorRegisterSchema, request.body);
+    if (!parsed.ok) return reply.status(400).send({ error: parsed.error });
+
+    const email = parsed.data.email.trim().toLowerCase();
+    const existing = await prisma.operatorAccount.findUnique({ where: { email } });
+    if (existing) return reply.status(409).send({ error: 'An account with this email already exists. Sign in instead.' });
+
+    const account = await prisma.operatorAccount.create({
+      data: {
+        email,
+        passwordHash: await hashPassword(parsed.data.password),
+        role: 'DEALER_OWNER',
+      },
+    });
+    const rawToken = await createOperatorSession(prisma, account.id, {
+      ipAddress: request.ip ?? undefined,
+      userAgent: typeof request.headers['user-agent'] === 'string' ? request.headers['user-agent'] : undefined,
+    });
+    reply.header('Set-Cookie', makeSessionCookieHeader(rawToken));
+    return reply.status(201).send({
+      id: account.id,
+      email: account.email,
+      role: account.role,
+      dealerAccessIds: [],
+      mustChangePassword: false,
     });
   });
 
