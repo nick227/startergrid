@@ -145,6 +145,14 @@ describe('resolveCategorySchema — known categories', () => {
 });
 
 describe('resolveCategorySchema — placeholders', () => {
+  it('APPAREL is an active physical category-item contract', () => {
+    const schema = resolveCategorySchema('APPAREL');
+    assert.equal(schema.status, 'active');
+    assert.equal(schema.lifecycleMode, 'physical_inventory');
+    assert.equal(schema.inventorySource, 'category_item');
+    assert.equal(schema.marketplace.consumerEnabled, true);
+  });
+
   const activeIds = new Set<typeof BUSINESS_CATEGORY_IDS[number]>([
     'AUTOMOTIVE',
     'TRAILERS_POWERSPORTS_RV',
@@ -153,12 +161,13 @@ describe('resolveCategorySchema — placeholders', () => {
     'SONGS',
     'DIGITAL_ART',
     'VIDEO_DISTRIBUTION',
+    'APPAREL',
   ]);
 
   /** Minimal placeholders built via createPlaceholderSchema — generic shell labels only. */
   const genericPlaceholderIds = BUSINESS_CATEGORY_IDS.filter(
     id => !activeIds.has(id) && ![
-      'APPAREL', 'SNEAKERS', 'PAWN',
+      'SNEAKERS', 'PAWN',
       'WATCHES', 'COLLECTIBLES', 'FURNITURE', 'VACATION_RENTALS',
       'APARTMENTS', 'HOMES', 'COMMERCIAL_PROPERTY', 'HEAVY_EQUIPMENT',
     ].includes(id),
@@ -166,7 +175,7 @@ describe('resolveCategorySchema — placeholders', () => {
 
   /** Rich placeholder schemas with category-specific field labels but not yet active. */
   const richPlaceholderIds = [
-    'APPAREL', 'SNEAKERS', 'PAWN',
+    'SNEAKERS', 'PAWN',
     'WATCHES', 'COLLECTIBLES', 'FURNITURE', 'VACATION_RENTALS',
     'APARTMENTS', 'HOMES', 'COMMERCIAL_PROPERTY', 'HEAVY_EQUIPMENT',
   ] as const;

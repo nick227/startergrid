@@ -1,3 +1,4 @@
+import { categoryItemEligible, categoryPublicationGate, vehiclePublicationGate, categoryItemCatalogCategories, type ListingIdentity } from './listingIdentity.js';
 // Marketplace query service — public read-only projection of eligible inventory.
 //
 // Boundary rule: this service MUST NOT return any of the following, ever:
@@ -17,6 +18,7 @@
 import type { PrismaClient, Prisma, BusinessCategory } from '@prisma/client';
 import {
   buildMarketplaceFacets,
+  categoryInventorySource,
   categoryIdToSlug,
   parseMarketplaceAvailabilityFilter,
   resolveCategorySchema,
@@ -53,27 +55,11 @@ const CONSUMER_MARKETPLACE_SLUG = 'consumer-marketplace';
 // Added to every vehicle query so only explicitly published vehicles appear.
 // listingStatus DRAFT = internal inventory only; a channelSelections row with
 // selected=false is a dealer opt-out for this channel (no row = selected).
-export const PUBLISHED_LISTING_GATE: Prisma.VehicleWhereInput = {
-  listingStatus: 'READY',
-  marketplaceListings: {
-    some: { platformSlug: CONSUMER_MARKETPLACE_SLUG, status: 'ACTIVE' },
-  },
-  channelSelections: {
-    none: { channelKey: CONSUMER_MARKETPLACE_SLUG, selected: false },
-  },
-};
+export const PUBLISHED_LISTING_GATE = vehiclePublicationGate;
 
 const CATEGORY_ITEM_CONSUMER_SLUG = 'consumer-marketplace';
 
-const CATEGORY_ITEM_PUBLISHED_GATE: Prisma.CategoryInventoryItemWhereInput = {
-  listingStatus: 'READY',
-  soldAt:        null,
-  removedAt:     null,
-  priceCents:    { gt: 0 },
-  marketplaceListings: {
-    some: { platformSlug: CATEGORY_ITEM_CONSUMER_SLUG, status: 'ACTIVE' },
-  },
-};
+const CATEGORY_ITEM_PUBLISHED_GATE = categoryPublicationGate;
 
 const MAX_CARD_IMAGES = 8;
 const DEFAULT_FEED_LIMIT = 24;
@@ -120,6 +106,8 @@ export type MarketplaceMediaItem = {
 export type { MarketplaceVehicleDetailResponse } from './marketplaceDetailMapper.js';
 
 export type MarketplaceDealerIndex = {
+  categoryItems: MarketplaceCategoryItemCard[];
+  categoryItemTotal: number;
   dealerId:   string;
   dealerName: string;
   city:       string | null;
@@ -882,34 +870,23 @@ export async function getMarketplaceFacets(
   const schema = resolveCategorySchema(filters.category!);
   const customFacets: Record<string, MarketplaceFacetOption[]> = {};
 
-  const baseWhere = {
-    categoryId: filters.category!,
-    ...CATEGORY_ITEM_PUBLISHED_GATE,
-  };
-
+  const physical = categoryInventorySource(schema.id) === 'vehicle';
+  const eligible = physical ? [] : await eligibleCategoryItems(prisma, { categoryId: filters.category!, ...(filters.dealer ? { dealershipId: filters.dealer } : {}) });
   const priceRanges = await Promise.all(priceRangesDef.map(async r => {
-    const count = await prisma.categoryInventoryItem.count({
-      where: { ...baseWhere, priceCents: { gte: r.min, ...(r.max != null ? { lte: r.max } : {}) } },
-    });
+    const count = physical
+      ? await prisma.vehicle.count({ where: { ...buildMarketplaceWhere(filters), priceCents: { gt: 0, gte: r.min, ...(r.max != null ? { lte: r.max } : {}) } } })
+      : eligible.filter(row => row.priceCents! >= r.min && (r.max == null || row.priceCents! <= r.max)).length;
     return { value: r.value, label: r.label, count, min: r.min, max: r.max };
   }));
-
-  const facetDefs = buildMarketplaceFacets(schema);
-  for (const facet of facetDefs) {
-    if (facet.options && facet.options.length > 0 && facet.filterStorage.storage === 'categoryPayload') {
-      // Hoist the narrowed payloadKey before the async closure: TypeScript drops
-      // the `storage === 'categoryPayload'` narrowing inside the .map callback, and
-      // payloadKey does not exist on the 'column' variant of the facet contract.
+  for (const facet of buildMarketplaceFacets(schema)) {
+    if (facet.options?.length && facet.filterStorage.storage === 'categoryPayload') {
       const payloadKey = facet.filterStorage.payloadKey;
-      const optionsWithCounts = await Promise.all(facet.options.map(async opt => {
-        const count = await prisma.categoryInventoryItem.count({
-          where: {
-            ...baseWhere,
-            data: { path: [payloadKey], equals: opt.value }
-          }
-        });
-        return { value: opt.value, count };
-      }));
+      const optionsWithCounts = await Promise.all(facet.options.map(async opt => ({
+        value: opt.value,
+        count: physical
+          ? await prisma.vehicle.count({ where: { ...buildMarketplaceWhere(filters), categoryPayload: { path: categoryPayloadJsonPath(payloadKey), equals: opt.value } } })
+          : eligible.filter(row => (row.data as Record<string, unknown>)[payloadKey] === opt.value).length,
+      })));
       customFacets[facet.key] = optionsWithCounts.filter(o => o.count > 0).sort((a, b) => b.count - a.count);
     }
   }
@@ -1001,6 +978,7 @@ export async function getMarketplaceDealerIndex(
   });
   if (!dealer) return null;
   if (category && dealer.businessCategory !== category) return null;
+  if (!categoryItemCatalogCategories().includes(dealer.businessCategory)) return null;
 
   const rows = await prisma.vehicle.findMany({
     where: { dealershipId: dealerId, soldAt: null, removedAt: null, priceCents: { gt: 0 }, ...PUBLISHED_LISTING_GATE },
@@ -1008,6 +986,9 @@ export async function getMarketplaceDealerIndex(
     orderBy: [{ createdAt: 'desc' }, { id: 'asc' }],
   });
 
+  const categoryItems = categoryInventorySource(dealer.businessCategory) === 'vehicle'
+    ? { items: [], total: 0 }
+    : await listMarketplaceCategoryItems(prisma, { dealerId, categoryId: dealer.businessCategory, pageSize: 100 });
   const addr = extractAddress(dealer.rooftopAddress);
 
   return {
@@ -1017,6 +998,8 @@ export async function getMarketplaceDealerIndex(
     state:      addr.state,
     websiteUrl: dealer.websiteUrl,
     vehicles:   (rows as unknown as DbVehicleRow[]).map(row => shapeCard(row)),
+    categoryItems: categoryItems.items,
+    categoryItemTotal: categoryItems.total,
   };
 }
 
@@ -1025,6 +1008,7 @@ export async function getMarketplaceDealerIndex(
 // consumer-marketplace listing — same gate semantics as vehicles above.
 
 export type MarketplaceCategoryItemCard = {
+  identity: ListingIdentity;
   listingId:   string;        // CategoryInventoryItem.id
   categoryId:  string;
   stockNumber: string | null;
@@ -1069,6 +1053,7 @@ function safeNum(data: Record<string, unknown>, key: string): number | null {
 
 function shapeCategoryItemCard(
   row: {
+    marketplaceListings?: { id: string }[];
     id: string; categoryId: string; stockNumber: string | null; priceCents: number | null;
     createdAt: Date; data: unknown;
     media: { url: string; sortOrder: number }[];
@@ -1081,6 +1066,7 @@ function shapeCategoryItemCard(
   const addr = extractAddress(row.dealership.rooftopAddress);
 
   return {
+    identity: { source: 'category_item', inventoryId: row.id, dealershipId: row.dealership.id, categoryId: row.categoryId, publicationId: row.marketplaceListings?.[0]?.id ?? null },
     listingId:   row.id,
     categoryId:  row.categoryId,
     stockNumber: row.stockNumber,
@@ -1098,20 +1084,17 @@ function shapeCategoryItemCard(
   };
 }
 
-const CATEGORY_ITEM_CARD_SELECT = {
-  id:          true,
-  categoryId:  true,
-  stockNumber: true,
-  priceCents:  true,
-  data:        true,
-  createdAt:   true,
-  media: {
-    select:  { url: true, sortOrder: true },
-    orderBy: { sortOrder: 'asc' as const },
-    take:    MAX_CARD_IMAGES,
-  },
-  dealership: { select: DEALER_SELECT },
-} as const;
+export async function eligibleCategoryItems(prisma: PrismaClient, where: Prisma.CategoryInventoryItemWhereInput = {}) {
+  const candidates = await prisma.categoryInventoryItem.findMany({
+    where: { ...where, ...categoryPublicationGate, dealership: { businessCategory: { in: categoryItemCatalogCategories() } } },
+    include: { dealership: true, media: { orderBy: { sortOrder: 'asc' } }, marketplaceListings: {
+      where: { platformSlug: 'consumer-marketplace', status: 'ACTIVE' }, select: { id: true, dealershipId: true },
+    } },
+    orderBy: [{ createdAt: 'desc' }, { id: 'asc' }],
+  });
+  // Evaluate the schema before pagination so totals never advertise hidden/incompatible inventory.
+  return candidates.filter(row => categoryItemEligible(row) && row.marketplaceListings.some(p => p.dealershipId === row.dealershipId));
+}
 
 export async function listMarketplaceCategoryItems(
   prisma: PrismaClient,
@@ -1126,23 +1109,8 @@ export async function listMarketplaceCategoryItems(
     ...(filters.categoryId ? { categoryId:   filters.categoryId } : {}),
   };
 
-  const [total, rows] = await Promise.all([
-    prisma.categoryInventoryItem.count({ where }),
-    prisma.categoryInventoryItem.findMany({
-      where,
-      select:  CATEGORY_ITEM_CARD_SELECT,
-      orderBy: [{ createdAt: 'desc' }, { id: 'asc' }],
-      skip:    (page - 1) * pageSize,
-      take:    pageSize,
-    }),
-  ]);
-
-  return {
-    items: (rows as Parameters<typeof shapeCategoryItemCard>[0][]).map(shapeCategoryItemCard),
-    total,
-    page,
-    pageSize,
-  };
+  const rows = await eligibleCategoryItems(prisma, where);
+  return { items: rows.slice((page - 1) * pageSize, page * pageSize).map(shapeCategoryItemCard), total: rows.length, page, pageSize };
 }
 
 export async function getMarketplaceCategoryItemDetail(
@@ -1151,15 +1119,11 @@ export async function getMarketplaceCategoryItemDetail(
 ): Promise<MarketplaceCategoryItemDetail | null> {
   const row = await prisma.categoryInventoryItem.findFirst({
     where: { id: listingId, ...CATEGORY_ITEM_PUBLISHED_GATE },
-    select: {
-      ...CATEGORY_ITEM_CARD_SELECT,
-      media: {
-        select:  { url: true, sortOrder: true },
-        orderBy: { sortOrder: 'asc' as const },
-      },
-    },
+    include: { dealership: true, media: { orderBy: { sortOrder: 'asc' } }, marketplaceListings: {
+      where: { platformSlug: 'consumer-marketplace', status: 'ACTIVE' }, select: { id: true, dealershipId: true },
+    } },
   });
-  if (!row) return null;
+  if (!row || !categoryItemEligible(row) || !row.marketplaceListings.some(p => p.dealershipId === row.dealershipId)) return null;
 
   const card = shapeCategoryItemCard(row as Parameters<typeof shapeCategoryItemCard>[0]);
   const data = (row.data && typeof row.data === 'object' && !Array.isArray(row.data))
@@ -1173,6 +1137,6 @@ export async function getMarketplaceCategoryItemDetail(
     pageCount:  safeNum(data, 'pageCount'),
     isbn:       safeStr(data, 'isbn'),
     asin:       safeStr(data, 'asin'),
-    data,
+    data: Object.fromEntries(Object.entries(data).filter(([key]) => [...resolveCategorySchema(row.categoryId as import('@auto-dealer/category-schemas').BusinessCategoryId).fields.map(f => f.key), 'publisher', 'language', 'pageCount', 'asin'].includes(key))),
   };
 }

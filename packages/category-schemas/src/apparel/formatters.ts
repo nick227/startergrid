@@ -9,9 +9,9 @@ function asNumber(v: unknown): number | null {
 
 export const apparelFormatters: CategoryFormatters = {
   assetLead(record) {
-    const brand = asString(record['make']);
-    const style = asString(record['model']);
-    const size  = asString(record['trim']);
+    const brand = asString(record['brand']) ?? asString(record['make']);
+    const style = asString(record['title']) ?? asString(record['model']);
+    const size  = asString(record['size']) ?? asString(record['trim']);
     const parts = [brand, style, size].filter((p): p is string => p !== null);
     return parts.join(' · ') || asString(record['stockNumber']) || 'Unknown item';
   },
@@ -21,7 +21,7 @@ export const apparelFormatters: CategoryFormatters = {
     if (sku) parts.push(`SKU ${sku}`);
     const condition = asString(record['condition']);
     if (condition) parts.push(condition);
-    const color = asString(record['exteriorColor']);
+    const color = asString(record['color']) ?? asString(record['exteriorColor']);
     if (color) parts.push(color);
     const price = asNumber(record['priceCents']);
     if (price !== null) parts.push(`$${(price / 100).toLocaleString(undefined, { maximumFractionDigits: 0 })}`);

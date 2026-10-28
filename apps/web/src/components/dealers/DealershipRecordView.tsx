@@ -20,9 +20,6 @@ import { DealershipDestinationsPanel } from './DealershipDestinationsPanel.tsx';
 import { adminDealerHash } from '@/lib/routes.ts';
 import { resolveCategorySchema } from '@auto-dealer/category-schemas';
 import { inventoryWorkspaceLabel } from '@/lib/categoryPresentation.ts';
-import { fetchCategoryItems } from '@/lib/api/sdk.ts';
-import { useAsyncQuery } from '@/hooks/useAsyncQuery.ts';
-import { addStockCounts, countCategoryItems } from '@/lib/adminInventoryCounts.ts';
 
 export type RecordTab = 'overview' | 'destinations' | 'people' | 'activity';
 
@@ -73,10 +70,6 @@ export function DealershipRecordView({ dealerId, initialTab = 'overview', viewer
   const [primaryBusy, setPrimaryBusy] = useState(false);
   const [activityKey, setActivityKey] = useState(0);
   const { toast, show, dismiss } = useToast();
-  const categoryItems = useAsyncQuery(
-    () => fetchCategoryItems(dealerId, { lifecycleScope: 'all' }),
-    [dealerId],
-  );
 
   const load = useCallback(async () => {
     try {
@@ -92,7 +85,6 @@ export function DealershipRecordView({ dealerId, initialTab = 'overview', viewer
 
   const refresh = async () => {
     await load();
-    categoryItems.reload();
     setActivityKey(k => k + 1);
     onRefreshDealers?.();
   };
@@ -111,10 +103,7 @@ export function DealershipRecordView({ dealerId, initialTab = 'overview', viewer
 
   const categorySchema = resolveCategorySchema(record.businessCategory);
   const inventoryLabel = inventoryWorkspaceLabel(categorySchema);
-  const categoryItemsOnly = categorySchema.lifecycleMode === 'digital_distribution';
-  const categoryStock = countCategoryItems(categoryItems.data?.items ?? []);
-  const stock = addStockCounts(record.inventory, categoryStock);
-  const catalogKnown = record.inventory.total > 0 || !categoryItems.loading || Boolean(categoryItems.error);
+  const stock = record.inventory;
   const status = lifecycleLabel(record.lifecycleStatus);
   const next = recordNextAction(record);
   const readiness = handoffReadiness(record);
@@ -308,10 +297,7 @@ export function DealershipRecordView({ dealerId, initialTab = 'overview', viewer
                         <p className={`text-sm ${done ? 'text-ink-muted' : 'text-ink-heading font-medium'}`}>
                           {step.key === 'VEHICLES' ? inventoryLabel : stepTitle(step.key)}<span className="sr-only">{done ? ' (done)' : ' (not done)'}</span>
                         </p>
-                        {!done && step.key === 'VEHICLES' && categoryStock.total > 0 && (
-                          <p className="text-xs text-ink-muted">{stock.total} in the catalog ({stock.ready} ready). This setup step still only checks vehicle rows.</p>
-                        )}
-                        {!done && step.blockingReason && !(step.key === 'VEHICLES' && categoryStock.total > 0) && <p className="text-xs text-ink-muted">{step.blockingReason}</p>}
+                        {!done && step.blockingReason && <p className="text-xs text-ink-muted">{step.blockingReason}</p>}
                         {step.key === 'VEHICLES' && (record.waitingForStock || !done) && (
                           <button type="button" onClick={() => void toggleWaitingForStock()} disabled={stockBusy}
                             className="mt-1 text-xs font-semibold text-navy-700 hover:underline disabled:opacity-40">
@@ -327,7 +313,7 @@ export function DealershipRecordView({ dealerId, initialTab = 'overview', viewer
                 <div className="rounded-md bg-surface-inset border border-silver-200 px-3 py-2 text-xs text-ink-body">
                   <p className="font-semibold text-ink-heading">Before handoff</p>
                   <ul className="list-disc pl-4 mt-1 space-y-0.5">
-                    {readiness.missing.map(item => <li key={item}>{categoryItemsOnly && item === 'A ready vehicle has been sent to Auto Marketplace' ? 'A ready category item has been sent to Marketplace. This checklist still waits on a vehicle-row publish.' : item}</li>)}
+                    {readiness.missing.map(item => <li key={item}>{item}</li>)}
                   </ul>
                 </div>
               )}
@@ -337,16 +323,11 @@ export function DealershipRecordView({ dealerId, initialTab = 'overview', viewer
           <section className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div className="surface-card-operator p-5 rounded-xl border border-silver-200 bg-white">
               <h3 className="text-xs font-semibold uppercase tracking-wide text-ink-muted">{inventoryLabel}</h3>
-              <p className="mt-2 text-lg font-semibold text-ink-heading">{catalogKnown ? `${stock.total} in stock` : 'Loading inventory…'}</p>
-              {catalogKnown && (
-                <p className="text-sm text-ink-muted">
-                  {stock.ready} ready · {stock.needsAttention} need details · {stock.sold} sold
-                  {record.waitingForStock && ' · waiting for stock'}
-                </p>
-              )}
-              {categoryItems.error && (
-                <p className="mt-2 text-xs text-ink-muted">Category items could not be loaded. The count above may be incomplete.</p>
-              )}
+              <p className="mt-2 text-lg font-semibold text-ink-heading">{stock.total} in stock</p>
+              <p className="text-sm text-ink-muted">
+                {stock.ready} ready · {stock.needsAttention} need details · {stock.sold} sold
+                {record.waitingForStock && ' · waiting for stock'}
+              </p>
             </div>
             <button type="button" onClick={() => goTab('destinations')}
               className="surface-card-operator p-5 rounded-xl border border-silver-200 bg-white text-left hover:border-silver-300">
@@ -356,7 +337,7 @@ export function DealershipRecordView({ dealerId, initialTab = 'overview', viewer
               {record.channels.length > 0 && (
                 <ul className="mt-2 space-y-1 text-sm text-ink-body">
                   {record.channels.slice(0, 4).map(channel => (
-                    <li key={channel.slug}>{channel.name} · {channel.status === 'ACTIVE' ? 'Connected' : channel.status === 'NEEDS_LOGIN' ? 'Needs a sign-in' : channel.status === 'PAUSED' ? 'Paused' : 'Not connected'}</li>
+                    <li key={channel.slug}>{channel.slug === 'consumer-marketplace' && categorySchema.asset.idLabel !== 'VIN' ? 'Marketplace' : channel.name} · {channel.status === 'ACTIVE' ? 'Connected' : channel.status === 'NEEDS_LOGIN' ? 'Needs a sign-in' : channel.status === 'PAUSED' ? 'Paused' : 'Not connected'}</li>
                   ))}
                 </ul>
               )}

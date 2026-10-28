@@ -8,6 +8,7 @@ import { HttpError } from './httpError.js';
 import { defaultIncomplete, defaultOwner, upsertStep } from './onboardingSteps.js';
 import { recordDealershipActivity } from './activityService.js';
 import { channelSetupStatus } from './channelSetupStatus.js';
+import { categoryInventorySource, isRegisteredCategory } from '../../../packages/category-schemas/src/index.js';
 import { readOnboardingEvidence } from './onboardingEvidence.js';
 
 type Db = PrismaClient | Prisma.TransactionClient;
@@ -38,6 +39,7 @@ export async function refreshOnboarding(db: Db, dealershipId: string, actorId?: 
     where: { id: dealershipId },
     select: {
       id: true,
+      businessCategory: true,
       lifecycleStatus: true,
       waitingForStock: true,
       autopilotPreference: true,
@@ -66,16 +68,22 @@ export async function refreshOnboarding(db: Db, dealershipId: string, actorId?: 
   const inviteOpen = dealer.invitations.some((row) =>
     !row.acceptedAt && (row.deliveryStatus === 'SENT' || row.deliveryStatus === 'PENDING' || row.deliveryStatus === 'FAILED'));
   const hasOwnerAccess = owners.length > 0;
-  const hasVehicles = dealer._count.vehicles > 0;
-  const vehiclesReady = hasVehicles && !dealer.waitingForStock;
+  const inventorySource = isRegisteredCategory(dealer.businessCategory)
+    ? categoryInventorySource(dealer.businessCategory)
+    : 'vehicle';
+  const categoryItemCount = inventorySource === 'category_item'
+    ? await db.categoryInventoryItem.count({ where: { dealershipId, soldAt: null, removedAt: null } })
+    : 0;
+  const hasStock = inventorySource === 'category_item' ? categoryItemCount > 0 : dealer._count.vehicles > 0;
+  const vehiclesReady = hasStock && !dealer.waitingForStock;
   const evidence = vehiclesReady
     ? await readOnboardingEvidence(db, dealershipId)
-    : { vehicleId: null, inboxLeadId: null };
+    : { vehicleId: null, categoryItemId: null, inboxLeadId: null };
   // Missing default channel rows block setup until a retry repairs them. Live dealerships
   // are not re-flagged here; their record still reports the channel setup status.
   const inSetup = !['ACTIVE', 'PAUSED', 'ARCHIVED'].includes(dealer.lifecycleStatus);
   const channelSetup = inSetup ? await channelSetupStatus(db, dealershipId) : { ready: true, missing: [] };
-  const channelsReady = Boolean(evidence.vehicleId);
+  const channelsReady = Boolean(evidence.vehicleId || evidence.categoryItemId);
   const handoffReady = hasOwnerAccess && ownerLoggedIn && vehiclesReady && channelsReady && Boolean(evidence.inboxLeadId);
 
   await upsertStep(db, dealershipId, 'CREATE', {
@@ -114,7 +122,7 @@ export async function refreshOnboarding(db: Db, dealershipId: string, actorId?: 
       status: 'COMPLETE',
       ownerKind: 'DEALER',
       incompleteReason: null,
-      evidenceJson: { vehicleCount: dealer._count.vehicles, waitingForStock: dealer.waitingForStock },
+      evidenceJson: { vehicleCount: dealer._count.vehicles, categoryItemCount, waitingForStock: dealer.waitingForStock },
       completedAt: new Date(),
       completedBy: actorId ?? null,
     });
@@ -122,7 +130,9 @@ export async function refreshOnboarding(db: Db, dealershipId: string, actorId?: 
     await upsertStep(db, dealershipId, 'VEHICLES', {
       status: 'IN_PROGRESS',
       ownerKind: 'DEALER',
-      incompleteReason: dealer.waitingForStock ? 'Waiting for stock; launch requires an eligible published vehicle' : defaultIncomplete('VEHICLES'),
+      incompleteReason: dealer.waitingForStock
+        ? `Waiting for stock; launch requires an eligible published ${inventorySource === 'category_item' ? 'category item' : 'vehicle'}`
+        : defaultIncomplete('VEHICLES'),
     });
   }
 
@@ -140,7 +150,7 @@ export async function refreshOnboarding(db: Db, dealershipId: string, actorId?: 
       status: 'COMPLETE',
       ownerKind: 'OUR_TEAM',
       incompleteReason: null,
-      evidenceJson: { channel: 'consumer-marketplace', vehicleId: evidence.vehicleId, method: 'OWNED_READ_MODEL' },
+      evidenceJson: { channel: 'consumer-marketplace', vehicleId: evidence.vehicleId, categoryItemId: evidence.categoryItemId, method: 'OWNED_READ_MODEL' },
       completedAt: new Date(),
       completedBy: actorId ?? null,
     });
@@ -148,7 +158,9 @@ export async function refreshOnboarding(db: Db, dealershipId: string, actorId?: 
     await upsertStep(db, dealershipId, 'CHANNELS', {
       status: 'IN_PROGRESS',
       ownerKind: 'OUR_TEAM',
-      incompleteReason: 'Publish an eligible vehicle and verify it is visible on Auto Marketplace; an Autopilot preference is not publication',
+      incompleteReason: inventorySource === 'category_item'
+        ? 'Publish an eligible category item and verify it is visible on Marketplace; an Autopilot preference is not publication'
+        : 'Publish an eligible vehicle and verify it is visible on Auto Marketplace; an Autopilot preference is not publication',
     });
   }
 

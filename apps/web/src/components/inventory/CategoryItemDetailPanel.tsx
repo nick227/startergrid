@@ -5,7 +5,10 @@ import {
   type CategoryInventoryItemDetail,
 } from '@/lib/api/sdk.ts';
 import { VehicleReadinessChecklist } from './VehicleReadinessChecklist.tsx';
+import { isPhysicalRecordMerchandise } from '@auto-dealer/category-schemas';
+import { ApparelItemFields, apparelFieldsFromData, apparelFieldsToData, type ApparelFields } from './ApparelItemFields.tsx';
 import { EbookItemFields, ebookFieldsFromData, ebookFieldsToData, type EbookFields } from './EbookItemFields.tsx';
+import { PhysicalRecordItemFields, physicalRecordFieldsFromData, physicalRecordFieldsToData, type PhysicalRecordFields } from './PhysicalRecordItemFields.tsx';
 import { SongItemFields, songFieldsFromData, songFieldsToData, type SongFields } from './SongItemFields.tsx';
 import { DigitalArtItemFields, digitalArtFieldsFromData, digitalArtFieldsToData, type DigitalArtFields } from './DigitalArtItemFields.tsx';
 import { VideoItemFields, videoFieldsFromData, videoFieldsToData, type VideoFields } from './VideoItemFields.tsx';
@@ -42,6 +45,8 @@ export function CategoryItemDetailPanel({ dealerId, itemId, onClose }: Props) {
 
   // Per-category editable fields
   const [ebookFields, setEbookFields] = useState<EbookFields | null>(null);
+  const [apparelFields, setApparelFields] = useState<ApparelFields | null>(null);
+  const [recordFields, setRecordFields] = useState<PhysicalRecordFields | null>(null);
   const [songFields, setSongFields] = useState<SongFields | null>(null);
   const [artFields, setArtFields] = useState<DigitalArtFields | null>(null);
   const [videoFields, setVideoFields] = useState<VideoFields | null>(null);
@@ -61,6 +66,8 @@ export function CategoryItemDetailPanel({ dealerId, itemId, onClose }: Props) {
     setError(null);
     setItem(null);
     setEbookFields(null);
+    setApparelFields(null);
+    setRecordFields(null);
     setSongFields(null);
     setArtFields(null);
     setVideoFields(null);
@@ -73,6 +80,8 @@ export function CategoryItemDetailPanel({ dealerId, itemId, onClose }: Props) {
         setPriceInput(data.priceCents != null ? String(data.priceCents / 100) : '');
         setConditionInput(data.condition ?? '');
         if (data.categoryId === 'EBOOKS') setEbookFields(ebookFieldsFromData(data.data));
+        else if (data.categoryId === 'APPAREL') setApparelFields(apparelFieldsFromData(data.data));
+        else if (data.categoryId === 'SONGS' && isPhysicalRecordMerchandise(data.condition, data.data)) setRecordFields(physicalRecordFieldsFromData(data.data));
         else if (data.categoryId === 'SONGS') setSongFields(songFieldsFromData(data.data));
         else if (data.categoryId === 'DIGITAL_ART') setArtFields(digitalArtFieldsFromData(data.data));
         else if (data.categoryId === 'VIDEO_DISTRIBUTION') setVideoFields(videoFieldsFromData(data.data));
@@ -98,6 +107,8 @@ export function CategoryItemDetailPanel({ dealerId, itemId, onClose }: Props) {
       // Build data payload from whichever category fields are active
       let data: Record<string, unknown> | undefined;
       if (item.categoryId === 'EBOOKS' && ebookFields) data = ebookFieldsToData(ebookFields);
+      else if (item.categoryId === 'APPAREL' && apparelFields) data = apparelFieldsToData(apparelFields);
+      else if (recordFields) data = physicalRecordFieldsToData(recordFields);
       else if (item.categoryId === 'SONGS' && songFields) data = songFieldsToData(songFields);
       else if (item.categoryId === 'DIGITAL_ART' && artFields) data = digitalArtFieldsToData(artFields);
       else if (item.categoryId === 'VIDEO_DISTRIBUTION' && videoFields) data = videoFieldsToData(videoFields);
@@ -116,6 +127,8 @@ export function CategoryItemDetailPanel({ dealerId, itemId, onClose }: Props) {
       setPriceInput(updated.priceCents != null ? String(updated.priceCents / 100) : '');
       setConditionInput(updated.condition ?? '');
       if (updated.categoryId === 'EBOOKS') setEbookFields(ebookFieldsFromData(updated.data));
+      else if (updated.categoryId === 'APPAREL') setApparelFields(apparelFieldsFromData(updated.data));
+      else if (updated.categoryId === 'SONGS' && isPhysicalRecordMerchandise(updated.condition, updated.data)) setRecordFields(physicalRecordFieldsFromData(updated.data));
       else if (updated.categoryId === 'SONGS') setSongFields(songFieldsFromData(updated.data));
       else if (updated.categoryId === 'DIGITAL_ART') setArtFields(digitalArtFieldsFromData(updated.data));
       else if (updated.categoryId === 'VIDEO_DISTRIBUTION') setVideoFields(videoFieldsFromData(updated.data));
@@ -146,6 +159,13 @@ export function CategoryItemDetailPanel({ dealerId, itemId, onClose }: Props) {
 
   const title = (item.data['title'] as string | undefined) ?? item.primaryIdentifier ?? item.stockNumber ?? item.id;
   const isEditable = item.lifecycleStatus === 'AVAILABLE';
+  const physicalMerchandise = item.categoryId === 'APPAREL' || recordFields != null;
+  const digitalSong = item.categoryId === 'SONGS' && recordFields == null;
+  const conditionOptions = physicalMerchandise
+    ? [['NEW', 'New'], ['USED', 'Used'], ['VINTAGE', 'Vintage']]
+    : digitalSong
+      ? [['DIGITAL', 'Digital']]
+      : [['NEW', 'New'], ['USED', 'Used'], ['LIKE_NEW', 'Like new'], ['GOOD', 'Good'], ['FAIR', 'Fair']];
   const inputCls = 'w-full text-sm px-3 py-1.5 border border-silver-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-navy-500 disabled:bg-silver-50 disabled:text-ink-muted';
 
   return (
@@ -230,11 +250,7 @@ export function CategoryItemDetailPanel({ dealerId, itemId, onClose }: Props) {
                   className={`${inputCls} bg-white`}
                 >
                   <option value="">—</option>
-                  <option value="NEW">New</option>
-                  <option value="USED">Used</option>
-                  <option value="LIKE_NEW">Like new</option>
-                  <option value="GOOD">Good</option>
-                  <option value="FAIR">Fair</option>
+                  {conditionOptions.map(([value, label]) => <option key={value} value={value}>{label}</option>)}
                 </select>
               </div>
             </div>
@@ -242,6 +258,18 @@ export function CategoryItemDetailPanel({ dealerId, itemId, onClose }: Props) {
         )}
 
         {/* Category-specific fields */}
+        {item.categoryId === 'APPAREL' && apparelFields && (
+          <section>
+            <h3 className="text-xs font-semibold text-ink-body mb-2">Garment</h3>
+            <ApparelItemFields fields={apparelFields} onChange={fields => { setApparelFields(fields); markDirty(); }} readOnly={!isEditable} />
+          </section>
+        )}
+        {recordFields && (
+          <section>
+            <h3 className="text-xs font-semibold text-ink-body mb-2">Physical record</h3>
+            <PhysicalRecordItemFields fields={recordFields} onChange={fields => { setRecordFields(fields); markDirty(); }} readOnly={!isEditable} />
+          </section>
+        )}
         {item.categoryId === 'EBOOKS' && ebookFields && (
           <section>
             <h3 className="text-xs font-semibold text-ink-body mb-2">Book Details</h3>
@@ -306,7 +334,7 @@ export function CategoryItemDetailPanel({ dealerId, itemId, onClose }: Props) {
         )}
 
         {/* Publishing */}
-        {item.lifecycleStatus === 'AVAILABLE' && (
+        {item.lifecycleStatus === 'AVAILABLE' && !digitalSong && (
           <section className="border border-silver-200 rounded-xl p-4">
             <h3 className="text-xs font-semibold text-ink-body mb-3">Listing</h3>
             <CategoryItemPublishPanel

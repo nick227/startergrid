@@ -1,3 +1,4 @@
+import { resolveCategorySchema } from '@auto-dealer/category-schemas';
 import { SETUP_LIFECYCLES } from './dealershipLabels.ts';
 
 /**
@@ -29,13 +30,27 @@ type Step = { key: string; status: string; ownerKind?: string | null; blockingRe
 type Invite = { email: string; accessRole: string; deliveryStatus: string; expiresAt: string };
 type Person = { accessRole: string; isActive: boolean; firstLoginAt: string | null; lastLoginAt: string | null; isInternal?: boolean; mustChangePassword?: boolean };
 
+function categoryItemPhrases(businessCategory?: string) {
+  if (!businessCategory) return null;
+  const schema = resolveCategorySchema(businessCategory);
+  if (schema.inventorySource !== 'category_item') return null;
+  const noun = schema.asset.singular;
+  return {
+    add: `Add ${noun === 'item' ? 'items' : `${noun}s`}`,
+    send: `Send a ${noun} to Marketplace`,
+    channel: `A ready ${noun} has been sent to Marketplace`,
+  };
+}
+
 export function recordNextAction(record: {
   lifecycleStatus: string;
+  businessCategory?: string;
   onboardingSteps: Step[];
   invitations: Invite[];
   people: Person[];
   channelSetup?: { status: string; missing: string[] };
 }, now = new Date()): NextAction {
+  const phrases = categoryItemPhrases(record.businessCategory);
   // A failed setup step is our team's to fix and outranks waiting on anyone else.
   if (record.channelSetup?.status === 'NEEDS_ATTENTION') {
     const n = record.channelSetup.missing.length;
@@ -67,12 +82,12 @@ export function recordNextAction(record: {
   }
   if (open('VEHICLES')) {
     return {
-      kind: 'addVehicles', label: 'Add vehicles', owner: 'DEALER', actionable: true,
+      kind: 'addVehicles', label: phrases?.add ?? 'Add vehicles', owner: 'DEALER', actionable: true,
       detail: 'Add or import stock in their workspace. You will leave this record.',
     };
   }
   if (open('CHANNELS')) {
-    return { kind: 'setAutopilot', label: 'Send a vehicle to Auto Marketplace', owner: 'OUR_TEAM', actionable: true, detail: open('CHANNELS')?.blockingReason ?? undefined };
+    return { kind: 'setAutopilot', label: phrases?.send ?? 'Send a vehicle to Auto Marketplace', owner: 'OUR_TEAM', actionable: true, detail: open('CHANNELS')?.blockingReason ?? undefined };
   }
   if (open('HANDOFF')) {
     if (!ownerSignedIn) return { kind: 'waitForOwner', label: 'Owner to sign in before handoff', owner: 'DEALER', actionable: false };
@@ -85,13 +100,14 @@ export function recordNextAction(record: {
 }
 
 /** Mirror server checks; the handoff endpoint rechecks authoritative evidence. */
-export function handoffReadiness(record: { onboardingSteps: Step[]; people: Person[] }): { ready: boolean; missing: string[] } {
+export function handoffReadiness(record: { onboardingSteps: Step[]; people: Person[]; businessCategory?: string }): { ready: boolean; missing: string[] } {
+  const phrases = categoryItemPhrases(record.businessCategory);
   const done = (key: string) => record.onboardingSteps.some(s => s.key === key && s.status === 'COMPLETE');
   const ownerSignedIn = record.people.some(p => p.accessRole === 'DEALER_OWNER' && !p.isInternal && p.isActive && !p.mustChangePassword && (p.firstLoginAt || p.lastLoginAt));
   const missing: string[] = [];
   if (!done('ACCESS') || !ownerSignedIn) missing.push('The owner has signed in');
   if (!done('VEHICLES')) missing.push('Stock is available for launch');
-  if (!done('CHANNELS')) missing.push('A ready vehicle has been sent to Auto Marketplace');
+  if (!done('CHANNELS')) missing.push(phrases?.channel ?? 'A ready vehicle has been sent to Auto Marketplace');
   const handoff = record.onboardingSteps.find(s => s.key === 'HANDOFF');
   if (!handoff || ['BLOCKED', 'NEEDS_RECHECK', 'NOT_STARTED'].includes(handoff.status)) {
     missing.push(handoff?.blockingReason ?? 'A marketplace inquiry has reached the shared Leads inbox');

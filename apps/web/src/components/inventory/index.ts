@@ -41,7 +41,7 @@ export {
   buildVehicleColumns,
 } from './inventoryConfig.tsx';
 export type { CleanupFilter, FilterChipDef } from './inventoryConfig.tsx';
-export { InventoryWorkspace, useInventoryWorkspace, EbookAddControls, SongAddControls, DigitalArtAddControls, VideoAddControls } from './InventoryWorkspace.tsx';
+export { InventoryWorkspace, useInventoryWorkspace, ApparelAddControls, EbookAddControls, SongAddControls, DigitalArtAddControls, VideoAddControls } from './InventoryWorkspace.tsx';
 export { VehicleAddControls } from './VehicleAddControls.tsx';
 export { VinEntryPanel } from './VinEntryPanel.tsx';
 export { EbookEntryPanel } from './EbookEntryPanel.tsx';

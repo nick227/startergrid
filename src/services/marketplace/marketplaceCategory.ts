@@ -45,6 +45,23 @@ export function isConsumerMarketplaceCategoryEnabled(category: BusinessCategory)
   return isConsumerMarketplaceLive(resolveCategorySchema(category));
 }
 
+/** Category-item browse and seller pages. SONGS is the physical-record catalog, not digital distribution. */
+export function resolveCatalogCategory(
+  categoryParam: string | undefined,
+  reply: FastifyReply,
+): BusinessCategory | null {
+  const parsed = parseMarketplaceCategoryParam(categoryParam);
+  if (!parsed.ok) {
+    reply.status(400).send({ error: parsed.error });
+    return null;
+  }
+  if (!isConsumerMarketplaceCategoryEnabled(parsed.category) && parsed.category !== 'SONGS' && parsed.category !== 'APPAREL') {
+    reply.status(404).send({ error: MARKETPLACE_CATEGORY_UNAVAILABLE });
+    return null;
+  }
+  return parsed.category;
+}
+
 export function resolveEnabledMarketplaceCategory(
   categoryParam: string | undefined,
   reply: FastifyReply,

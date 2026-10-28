@@ -2,7 +2,9 @@ import { useEffect, useRef, useState, createContext, useContext } from 'react';
 import type { ReactNode } from 'react';
 import { useCategorySchema } from '@/contexts/CategoryContext.tsx';
 import { inventoryWorkspaceLabel } from '@/lib/categoryPresentation.ts';
+import { ApparelEntryPanel } from './ApparelEntryPanel.tsx';
 import { EbookEntryPanel } from './EbookEntryPanel.tsx';
+import { PhysicalRecordEntryPanel } from './PhysicalRecordEntryPanel.tsx';
 import { SongEntryPanel } from './SongEntryPanel.tsx';
 import { DigitalArtEntryPanel } from './DigitalArtEntryPanel.tsx';
 import { VideoEntryPanel } from './VideoEntryPanel.tsx';
@@ -117,11 +119,28 @@ export function EbookAddControls({ dealerId, onItemCreated }: DigitalAddControls
   );
 }
 
-export function SongAddControls({ dealerId, onItemCreated }: DigitalAddControlsProps) {
+export function ApparelAddControls({ dealerId, onItemCreated }: DigitalAddControlsProps) {
   return (
     <div className="max-w-lg p-4 bg-white border border-silver-200 rounded-xl">
-      <h3 className="text-sm font-semibold text-ink-heading mb-3">Add release</h3>
-      <SongEntryPanel dealerId={dealerId} onCreated={onItemCreated} />
+      <h3 className="text-sm font-semibold text-ink-heading mb-3">Add garment</h3>
+      <ApparelEntryPanel dealerId={dealerId} onCreated={onItemCreated} />
+    </div>
+  );
+}
+
+export function SongAddControls({ dealerId, onItemCreated }: DigitalAddControlsProps) {
+  return (
+    <div className="space-y-3 max-w-lg">
+      <div className="p-4 bg-white border border-silver-200 rounded-xl">
+        <h3 className="text-sm font-semibold text-ink-heading mb-1">Add physical record</h3>
+        <p className="text-xs text-ink-muted mb-3">Vinyl, CD, and other merchandise. This is separate from a digital release.</p>
+        <PhysicalRecordEntryPanel dealerId={dealerId} onCreated={onItemCreated} />
+      </div>
+      <div className="p-4 bg-white border border-silver-200 rounded-xl">
+        <h3 className="text-sm font-semibold text-ink-heading mb-1">Add digital release</h3>
+        <p className="text-xs text-ink-muted mb-3">Digital distribution stays off Marketplace.</p>
+        <SongEntryPanel dealerId={dealerId} onCreated={onItemCreated} />
+      </div>
     </div>
   );
 }

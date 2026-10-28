@@ -65,7 +65,7 @@ export const platformProfiles: PlatformProfileSeed[] = [
     ],
     // VIN is intentionally excluded — marketplace APIs never expose VIN.
     // Eligibility check (priceCents > 0) is enforced at query time, not in the feed artifact.
-    supportedCategories: ['AUTOMOTIVE', 'TRAILERS_POWERSPORTS_RV', 'BOATS'],
+    supportedCategories: ['AUTOMOTIVE', 'TRAILERS_POWERSPORTS_RV', 'BOATS', 'EBOOKS', 'APPAREL', 'SONGS'],
     requiredVehicleFields: [
       'stockNumber', 'year', 'make', 'model', 'priceCents', 'condition', 'media[0].url'
     ],

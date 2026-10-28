@@ -23,6 +23,7 @@ import { Banner } from '@/components/ui';
 import { BulkActionBar } from '@/components/generic';
 import {
   VehicleAddControls,
+  ApparelAddControls,
   EbookAddControls,
   SongAddControls,
   DigitalArtAddControls,
@@ -417,7 +418,7 @@ export default function InventoryPage({ dealerId, nav, activeTab }: Props) {
   const [detailId, setDetailId] = useState<string | null>(null);
   const detailVehicle = detailId ? vehicles.find(r => r.id === detailId) ?? null : null;
 
-  const isPhysicalInventory = categorySchema.lifecycleMode === 'physical_inventory';
+  const vehicleInventory = categorySchema.lifecycleMode === 'physical_inventory' && categorySchema.inventorySource !== 'category_item';
   const [categoryItemDetailId, setCategoryItemDetailId] = useState<string | null>(null);
   const [categoryItemRefreshKey, setCategoryItemRefreshKey] = useState(0);
 
@@ -480,7 +481,7 @@ export default function InventoryPage({ dealerId, nav, activeTab }: Props) {
         <div className="space-y-5">
           <PageHeader title={workspaceLabel} />
 
-          {isPhysicalInventory ? (
+          {vehicleInventory ? (
             <>
               {isEmpty && (
                 <PagePrimaryState
@@ -540,6 +541,11 @@ export default function InventoryPage({ dealerId, nav, activeTab }: Props) {
                 }}
               />
             </>
+          ) : categorySchema.id === 'APPAREL' ? (
+            <ApparelAddControls
+              dealerId={dealerId}
+              onItemCreated={() => setCategoryItemRefreshKey(k => k + 1)}
+            />
           ) : categorySchema.id === 'SONGS' ? (
             <SongAddControls
               dealerId={dealerId}
@@ -568,14 +574,14 @@ export default function InventoryPage({ dealerId, nav, activeTab }: Props) {
             </Banner>
           )}
 
-          {(!isPhysicalInventory || !isEmpty) && (
+          {(!vehicleInventory || !isEmpty) && (
           <InventoryWorkspace
             dealerId={dealerId}
-            initialTab={focusIds || route.scope?.filter ? 'browse' : (isPhysicalInventory && summaryCounts.blocked > 0 ? 'attention' : 'browse')}
+            initialTab={focusIds || route.scope?.filter ? 'browse' : (vehicleInventory && summaryCounts.blocked > 0 ? 'attention' : 'browse')}
             tabCounts={{
-              browse: isPhysicalInventory ? activeVehicles.length : 0,
-              attention: isPhysicalInventory ? attentionVehicles.length : 0,
-              sold: isPhysicalInventory ? soldVehicles.length : 0,
+              browse: vehicleInventory ? activeVehicles.length : 0,
+              attention: vehicleInventory ? attentionVehicles.length : 0,
+              sold: vehicleInventory ? soldVehicles.length : 0,
             }}
             attentionContent={
               <div className="space-y-4">
@@ -876,7 +882,7 @@ export default function InventoryPage({ dealerId, nav, activeTab }: Props) {
               </div>
             }
             browseContent={
-              isPhysicalInventory ? (
+              vehicleInventory ? (
                 <>
                   {focusIds && focusIds.length > 0 && (
                     <div className="mb-4 flex items-center justify-between gap-3 px-4 py-2.5 rounded-xl border border-indigo-200 bg-indigo-50/80 text-xs text-indigo-950 font-medium shadow-2xs">

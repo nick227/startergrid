@@ -1,4 +1,4 @@
-import type { BusinessCategoryId } from '@auto-dealer/category-schemas';
+import type { BusinessCategoryId, CategoryInventorySchema } from '@auto-dealer/category-schemas';
 import {
   getCategoryInventorySchema,
   getMissingRequiredPublishSlots,
@@ -26,6 +26,8 @@ export type ReadinessInput = {
   assignedMediaSlotKeys?: string[];
   /** Total media count (for generic photo warning fallback). */
   totalMediaCount?: number;
+  /** Physical records use their own schema. Digital SONGS stays the category default. */
+  schema?: CategoryInventorySchema;
 };
 
 function isMissing(val: unknown): boolean {
@@ -34,7 +36,7 @@ function isMissing(val: unknown): boolean {
 
 export function buildInventoryReadiness(input: ReadinessInput): InventoryReadinessResult {
   const { category, fields, assignedMediaSlotKeys = [], totalMediaCount = 0 } = input;
-  const schema = getCategoryInventorySchema(category);
+  const schema = input.schema ?? getCategoryInventorySchema(category);
 
   const blockers: string[] = [];
   const warnings: string[] = [];

@@ -5,6 +5,7 @@ import type {
   MediaGuide,
   MediaSlot,
 } from '../types.js';
+import { apparelInventorySchema } from '../apparel/inventorySchema.js';
 import { automotiveInventorySchema } from '../automotive/inventorySchema.js';
 import { ebooksInventorySchema } from '../ebooks/inventorySchema.js';
 import { songsInventorySchema } from '../songs/inventorySchema.js';
@@ -17,6 +18,7 @@ import { videoDistributionInventorySchema } from '../video_distribution/inventor
 
 const CATEGORY_INVENTORY_REGISTRY: Partial<Record<BusinessCategoryId, CategoryInventorySchema>> = {
   AUTOMOTIVE: automotiveInventorySchema,
+  APPAREL: apparelInventorySchema,
   EBOOKS: ebooksInventorySchema,
   SONGS: songsInventorySchema,
   DIGITAL_ART: digitalArtInventorySchema,

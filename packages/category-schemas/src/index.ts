@@ -34,6 +34,7 @@ export { CATEGORY_REGISTRY, isRegisteredCategory, listCategorySchemas } from './
 export {
   resolveCategorySchema,
   resolveCategorySchemaStrict,
+  categoryInventorySource,
 } from './resolveCategorySchema.js';
 export {
   buildMarketplaceMeta,
@@ -67,6 +68,12 @@ export type { MarketplaceFacetDef, MarketplaceFacetKind } from './marketplace/fa
 export { automotiveSchema } from './automotive/schema.js';
 export { automotiveInventorySchema, AUTO_SHOT_GUIDE } from './automotive/inventorySchema.js';
 export { ebooksInventorySchema, EBOOK_MEDIA_GUIDE } from './ebooks/inventorySchema.js';
+export {
+  PHYSICAL_RECORD_FORMATS,
+  isDigitalSongRelease,
+  isPhysicalRecordMerchandise,
+  physicalRecordsInventorySchema,
+} from './records/physicalInventorySchema.js';
 export { createPlaceholderSchema, createUnknownFallbackSchema, genericOperatorFallback } from './generic/schema.js';
 export {
   getCategoryInventorySchema,

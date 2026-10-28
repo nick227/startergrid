@@ -43,7 +43,8 @@ import { normalizeVin, validateVin, resolveVinDecoder } from '../../services/inv
 import { createVehicleShell, BULK_VIN_SOURCE } from '../../services/inventory/vehicleShellService.js';
 import { buildVehicleChannelMatrix, STOREFRONT_CHANNEL_KEY } from '../../services/inventory/vehicleChannelService.js';
 import { platformProfiles } from '../../data/platformProfiles.js';
-import { getCategoryInventorySchema, getMediaGuide } from '@auto-dealer/category-schemas';
+import { getMediaGuide } from '@auto-dealer/category-schemas';
+import { categoryItemReadiness, listingStatusForReadiness } from '../../services/inventory/publicationContract.js';
 import type { BusinessCategoryId } from '@auto-dealer/category-schemas';
 import { resolveIdentifierDecoder } from '../../services/inventory/identifiers/index.js';
 import { createCategoryItemShell } from '../../services/inventory/categoryItemShellService.js';
@@ -1292,6 +1293,18 @@ export function registerInventoryRoutes(app: FastifyInstance, prisma: PrismaClie
     }
   );
 
+  const categoryItemDetailInclude = {
+    media: {
+      select: {
+        id: true, url: true, kind: true, sortOrder: true,
+        width: true, height: true, mimeType: true,
+        mediaSlotKey: true, mediaRole: true,
+        customLabel: true, customGroup: true,
+      },
+      orderBy: { sortOrder: 'asc' as const },
+    },
+  };
+
   // ── Generic category item: detail ─────────────────────────────────────────────
 
   type ItemDetailParams = { dealershipId: string; itemId: string };
@@ -1304,44 +1317,12 @@ export function registerInventoryRoutes(app: FastifyInstance, prisma: PrismaClie
 
       const item = await prisma.categoryInventoryItem.findFirst({
         where: { id: itemId, dealershipId },
-        include: {
-          media: {
-            select: {
-              id: true, url: true, kind: true, sortOrder: true,
-              width: true, height: true, mimeType: true,
-              mediaSlotKey: true, mediaRole: true,
-              customLabel: true, customGroup: true,
-            },
-            orderBy: { sortOrder: 'asc' },
-          },
-        },
+        include: categoryItemDetailInclude,
       });
       if (!item) return reply.status(404).send({ error: 'Item not found' });
 
       const record = categoryItemToInventoryRecord(item);
-
-      const schema = getCategoryInventorySchema(item.categoryId as BusinessCategoryId);
-      const assignedSlotKeys = item.media
-        .filter(m => m.mediaSlotKey)
-        .map(m => m.mediaSlotKey as string);
-
-      // Flatten top-level fields + data for readiness evaluation
-      const fields: Record<string, unknown> = {
-        stockNumber: item.stockNumber,
-        priceCents:  item.priceCents,
-        condition:   item.condition,
-        ...(item.data as Record<string, unknown>),
-      };
-      if (schema && item.primaryIdentifier) {
-        fields[schema.primaryIdentifier.fieldKey] = item.primaryIdentifier;
-      }
-
-      const readiness = buildInventoryReadiness({
-        category: item.categoryId as BusinessCategoryId,
-        fields,
-        assignedMediaSlotKeys: assignedSlotKeys,
-        totalMediaCount: item.media.length,
-      });
+      const readiness = categoryItemReadiness(item);
 
       return reply.send({
         ...record,
@@ -1373,7 +1354,7 @@ export function registerInventoryRoutes(app: FastifyInstance, prisma: PrismaClie
         return reply.status(400).send({ error: 'No fields to update' });
       }
 
-      const updated = await prisma.categoryInventoryItem.update({
+      const edited = await prisma.categoryInventoryItem.update({
         where: { id: itemId },
         data: {
           ...(stockNumber !== undefined && { stockNumber }),
@@ -1381,42 +1362,19 @@ export function registerInventoryRoutes(app: FastifyInstance, prisma: PrismaClie
           ...(condition !== undefined && { condition }),
           ...(data !== undefined && { data: data as import('@prisma/client').Prisma.InputJsonValue }),
         },
-        include: {
-          media: {
-            select: {
-              id: true, url: true, kind: true, sortOrder: true,
-              width: true, height: true, mimeType: true,
-              mediaSlotKey: true, mediaRole: true,
-              customLabel: true, customGroup: true,
-            },
-            orderBy: { sortOrder: 'asc' },
-          },
-        },
+        include: categoryItemDetailInclude,
+      });
+      const readiness = categoryItemReadiness(edited);
+      const listingStatus = edited.soldAt || edited.removedAt
+        ? edited.listingStatus
+        : listingStatusForReadiness(readiness.status);
+      const updated = listingStatus === edited.listingStatus ? edited : await prisma.categoryInventoryItem.update({
+        where: { id: itemId },
+        data: { listingStatus },
+        include: categoryItemDetailInclude,
       });
 
       const record = categoryItemToInventoryRecord(updated);
-
-      const schema = getCategoryInventorySchema(updated.categoryId as BusinessCategoryId);
-      const assignedSlotKeys = updated.media
-        .filter(m => m.mediaSlotKey)
-        .map(m => m.mediaSlotKey as string);
-
-      const fields: Record<string, unknown> = {
-        stockNumber: updated.stockNumber,
-        priceCents:  updated.priceCents,
-        condition:   updated.condition,
-        ...(updated.data as Record<string, unknown>),
-      };
-      if (schema && updated.primaryIdentifier) {
-        fields[schema.primaryIdentifier.fieldKey] = updated.primaryIdentifier;
-      }
-
-      const readiness = buildInventoryReadiness({
-        category: updated.categoryId as BusinessCategoryId,
-        fields,
-        assignedMediaSlotKeys: assignedSlotKeys,
-        totalMediaCount: updated.media.length,
-      });
 
       return reply.send({
         ...record,

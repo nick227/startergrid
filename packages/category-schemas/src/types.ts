@@ -132,6 +132,8 @@ export type CategorySchema = {
   status: CategoryStatus;
   label: string;
   lifecycleMode: CategoryLifecycleMode;
+  /** Storage is independent of physical/digital lifecycle. Omitted preserves the legacy mapping. */
+  inventorySource?: 'vehicle' | 'category_item';
   copy: CategoryCopyBundle;
   asset: CategoryAssetLabels;
   channel: CategoryChannelLabels;

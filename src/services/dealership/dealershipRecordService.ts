@@ -10,6 +10,36 @@ import { channelSetupStatus } from './channelSetupStatus.js';
 
 type Db = PrismaClient | Prisma.TransactionClient;
 
+function stockBuckets(rows: { listingStatus: string; soldAt: Date | null; removedAt: Date | null }[]) {
+  let ready = 0;
+  let needsAttention = 0;
+  let sold = 0;
+  for (const row of rows) {
+    if (row.soldAt || row.removedAt) sold += 1;
+    else if (row.listingStatus === 'READY') ready += 1;
+    else needsAttention += 1;
+  }
+  return { ready, needsAttention, sold, total: rows.length };
+}
+
+function stockSummary(
+  vehicles: { listingStatus: string; soldAt: Date | null; removedAt: Date | null }[],
+  categoryItems: { listingStatus: string; soldAt: Date | null; removedAt: Date | null }[],
+  vehicleCount: number,
+  waitingForStock: boolean,
+) {
+  const vehicleStock = stockBuckets(vehicles);
+  const categoryStock = stockBuckets(categoryItems);
+  return {
+    vehicleCount,
+    categoryItemCount: categoryStock.total,
+    waitingForStock,
+    ready: vehicleStock.ready + categoryStock.ready,
+    needsAttention: vehicleStock.needsAttention + categoryStock.needsAttention,
+    sold: vehicleStock.sold + categoryStock.sold,
+  };
+}
+
 const ATTENTION_LIFECYCLES: DealershipLifecycle[] = ['DRAFT', 'SETTING_UP', 'READY_TO_LAUNCH'];
 
 export type DealershipListQuery = {
@@ -162,10 +192,11 @@ export async function getDealershipRecord(db: Db, dealershipId: string) {
   });
   if (!dealer) throw new HttpError(404, 'Dealership not found');
 
-  const [onboarding, people, vehicles, accounts, owner] = await Promise.all([
+  const [onboarding, people, vehicles, categoryItems, accounts, owner] = await Promise.all([
     getOnboarding(db, dealershipId),
     listPeople(db, dealershipId),
     db.vehicle.findMany({ where: { dealershipId }, select: { listingStatus: true, soldAt: true, removedAt: true } }),
+    db.categoryInventoryItem.findMany({ where: { dealershipId }, select: { listingStatus: true, soldAt: true, removedAt: true } }),
     db.platformAccount.findMany({ where: { dealershipId }, select: { platformSlug: true, state: true, dealerEnabled: true } }),
     dealer.internalOwnerId ? db.operatorAccount.findUnique({ where: { id: dealer.internalOwnerId }, select: { id: true, email: true } }) : null,
   ]);
@@ -184,10 +215,7 @@ export async function getDealershipRecord(db: Db, dealershipId: string) {
     internalOwner: owner,
     lastActivityAt: (latestEvent?.createdAt ?? dealer.createdAt).toISOString(),
     channelSetup: { status: channelSetup.ready ? 'READY' : 'NEEDS_ATTENTION', missing: channelSetup.missing },
-    inventory: { vehicleCount: dealer._count.vehicles, waitingForStock: dealer.waitingForStock,
-      ready: vehicles.filter(v => v.listingStatus === 'READY' && !v.soldAt && !v.removedAt).length,
-      needsAttention: vehicles.filter(v => v.listingStatus !== 'READY' && !v.soldAt && !v.removedAt).length,
-      sold: vehicles.filter(v => v.soldAt || v.removedAt).length },
+    inventory: stockSummary(vehicles, categoryItems, dealer._count.vehicles, dealer.waitingForStock),
     channels: { accountCount: dealer._count.platformAccounts, autopilotPreference: dealer.autopilotPreference,
       items: accounts.map(a => ({ slug: a.platformSlug, name: platformProfiles.find(p => p.slug === a.platformSlug)?.name ?? a.platformSlug,
         status: !a.dealerEnabled ? 'PAUSED' : a.state === 'ACTIVE' ? 'ACTIVE' : a.state === 'CREDENTIALS_NEEDED' ? 'NEEDS_LOGIN' : 'SETUP_NEEDED' })) },

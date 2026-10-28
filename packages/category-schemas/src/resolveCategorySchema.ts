@@ -15,3 +15,9 @@ export function resolveCategorySchemaStrict(category: BusinessCategoryId): Categ
 }
 
 export { BUSINESS_CATEGORY_IDS };
+
+/** Physical categories may use native category items (e.g. apparel). */
+export function categoryInventorySource(id: import('./types.js').BusinessCategoryId): 'vehicle' | 'category_item' {
+  const schema = resolveCategorySchema(id);
+  return schema.inventorySource ?? (schema.lifecycleMode === 'physical_inventory' ? 'vehicle' : 'category_item');
+}

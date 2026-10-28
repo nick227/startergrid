@@ -290,6 +290,7 @@ export type AutopilotSimulationResult = {
       message: string;
       owner: 'DEALERSHIP' | 'INTERNAL_SUPPORT' | 'SYSTEM' | 'PARTNER';
       vehicleCount: number;
+      categoryItemCount?: number;
       sampleStockNumbers: string[];
     }>;
   }>;
@@ -559,7 +560,7 @@ export function adaptRecord(wire: RecordWire): DealershipRecordDetail {
     primaryContact: wire.primaryContact ?? null, waitingForStock: wire.waitingForStock ?? false,
     launchCompletedAt: wire.launchCompletedAt ?? null, handoffCompletedAt: wire.handoffCompletedAt ?? null, handoffCompletedBy: null,
     onboardingSteps: steps, nextStep: steps.find(s => s.status !== 'COMPLETE') ?? null,
-    inventory: { total: wire.inventory?.vehicleCount ?? 0, ready: wire.inventory?.ready ?? 0,
+    inventory: { total: (wire.inventory?.vehicleCount ?? 0) + (wire.inventory?.categoryItemCount ?? 0), ready: wire.inventory?.ready ?? 0,
       needsAttention: wire.inventory?.needsAttention ?? 0, sold: wire.inventory?.sold ?? 0 },
     channels: (wire.channels?.items ?? []).map((channel) => ({
       ...channel,

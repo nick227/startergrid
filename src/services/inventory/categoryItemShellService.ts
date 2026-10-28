@@ -1,6 +1,7 @@
 import type { PrismaClient } from '@prisma/client';
 import type { BusinessCategoryId } from '@auto-dealer/category-schemas';
 import { getCategoryInventorySchema } from '@auto-dealer/category-schemas';
+import { categoryItemReadiness, listingStatusForReadiness } from './publicationContract.js';
 
 export type CreateCategoryItemInput = {
   dealershipId: string;
@@ -45,6 +46,16 @@ export async function createCategoryItemShell(
 ): Promise<CreateCategoryItemResult> {
   const stockNumber = input.stockNumber ?? generateStockNumber(input.categoryId);
   const condition = resolveCondition(input);
+  const priceCents = input.priceCents ?? null;
+  const readiness = categoryItemReadiness({
+    categoryId: input.categoryId,
+    condition,
+    data: input.data,
+    stockNumber,
+    priceCents,
+    primaryIdentifier: input.primaryIdentifier ?? null,
+    media: [],
+  });
 
   const item = await prisma.categoryInventoryItem.create({
     data: {
@@ -52,9 +63,9 @@ export async function createCategoryItemShell(
       categoryId:        input.categoryId,
       primaryIdentifier: input.primaryIdentifier ?? null,
       stockNumber,
-      priceCents:        input.priceCents ?? null,
+      priceCents,
       condition,
-      listingStatus:     'DRAFT',
+      listingStatus:     listingStatusForReadiness(readiness.status),
       data:              input.data as import('@prisma/client').Prisma.InputJsonValue,
     },
     select: { id: true, stockNumber: true },

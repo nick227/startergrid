@@ -11,7 +11,7 @@ import {
   type MarketplaceListFilters,
 } from '../../services/marketplace/marketplaceQueryService.js';
 import { listMarketplaceSites } from '../../services/marketplace/marketplaceSitesService.js';
-import { resolveEnabledMarketplaceCategory } from '../../services/marketplace/marketplaceCategory.js';
+import { resolveCatalogCategory, resolveEnabledMarketplaceCategory } from '../../services/marketplace/marketplaceCategory.js';
 import {
   parseMarketplaceAvailabilityFilter,
   parseMarketplaceFacetsParam,
@@ -205,6 +205,7 @@ export function registerMarketplaceRoutes(app: FastifyInstance, prisma: PrismaCl
       if (!dbEventType) return reply.status(400).send({ error: 'Invalid eventType' });
 
       const result = await recordMarketplaceChannelEvent(prisma, {
+        inventorySource: body.data.inventorySource,
         eventType:  dbEventType as 'VEHICLE_IMPRESSION' | 'VEHICLE_DETAIL_VIEW' | 'DEALER_PAGE_VIEW',
         listingId:  body.data.listingId?.trim() || null,
         dealerId:   body.data.dealerId?.trim() || null,
@@ -256,7 +257,7 @@ export function registerMarketplaceRoutes(app: FastifyInstance, prisma: PrismaCl
   app.get<{ Params: SellerParams; Querystring: { category?: string } }>(
     '/api/marketplace/sellers/:sellerId',
     async (request, reply) => {
-      const category = resolveEnabledMarketplaceCategory(request.query.category, reply);
+      const category = resolveCatalogCategory(request.query.category, reply);
       if (!category) return;
       return sendSellerIndex(prisma, request.params.sellerId, category, reply);
     }
@@ -266,7 +267,7 @@ export function registerMarketplaceRoutes(app: FastifyInstance, prisma: PrismaCl
   app.get<{ Params: { dealerId: string }; Querystring: { category?: string } }>(
     '/api/marketplace/dealers/:dealerId',
     async (request, reply) => {
-      const category = resolveEnabledMarketplaceCategory(request.query.category, reply);
+      const category = resolveCatalogCategory(request.query.category, reply);
       if (!category) return;
       return sendSellerIndex(prisma, request.params.dealerId, category, reply);
     }
@@ -289,8 +290,10 @@ export function registerMarketplaceRoutes(app: FastifyInstance, prisma: PrismaCl
     '/api/marketplace/category-items',
     async (request, reply) => {
       const q = request.query;
+      const category = q.categoryId ? resolveCatalogCategory(q.categoryId, reply) : undefined;
+      if (q.categoryId && !category) return;
       const items = await listMarketplaceCategoryItems(prisma, {
-        categoryId: q.categoryId || undefined,
+        categoryId: category || undefined,
         dealerId:   q.dealer    || undefined,
         page:       parsePosIntParam(q.page, 1),
         pageSize:   parsePosIntParam(q.pageSize, 24),
@@ -309,4 +312,14 @@ export function registerMarketplaceRoutes(app: FastifyInstance, prisma: PrismaCl
       return reply.send(item);
     }
   );
+  app.post<{ Params: ListingParams }>('/api/marketplace/category-items/:listingId/leads', async (request, reply) => {
+    const { listingId } = request.params;
+    if (!checkPublicWriteAbuseLimit(request, reply, `marketplace-lead:${listingId}`)) return;
+    const body = validateBody(marketplaceLeadCaptureSchema, request.body);
+    if (!body.ok) return reply.status(400).send({ error: body.error });
+    const result = await captureMarketplaceLead(prisma, listingId, body.data, { source: 'category_item' });
+    if (!result) return reply.status(404).send({ error: 'Listing not found' });
+    return reply.status(201).send({ message: 'Inquiry received', leadId: result.leadId });
+  });
+
 }
