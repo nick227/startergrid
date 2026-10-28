@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { AppleScaleNav } from '../components/layout/AppleScaleNav.tsx';
 import { AppleScaleFooter } from '../components/layout/AppleScaleFooter.tsx';
 import { FlagshipHeroSection } from '../components/sections/FlagshipHeroSection.tsx';
+import { VisualFeaturesSection } from '../components/sections/VisualFeaturesSection.tsx';
 import { DiscoverSection } from '../components/sections/DiscoverSection.tsx';
 import { MarketplaceHeroSection } from '../components/sections/MarketplaceHeroSection.tsx';
 import { AdvertisingSection } from '../components/sections/AdvertisingSection.tsx';
@@ -55,8 +56,11 @@ export default function FlagshipSplashPage() {
       <AppleScaleNav onOpenPricing={openPricing} onContactUs={handleContactUs} />
 
       <main id="main-content">
-        {/* 01 — HERO (Flagship Distribution with AI Generated Graphic) */}
+        {/* 01 — HERO (Flagship Distribution with Full Width App Screenshot) */}
         <FlagshipHeroSection onContactUs={handleContactUs} onOpenPricing={openPricing} />
+
+        {/* 01.5 — GRAPHICAL TOOL FEATURES OVERVIEW */}
+        <VisualFeaturesSection onOpenPricing={openPricing} onContactUs={handleContactUs} />
 
         {/* 02 — DISCOVER (Compact Overview of All 10 Benefits) */}
         <DiscoverSection />

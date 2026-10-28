@@ -163,24 +163,24 @@ export const FlagshipHeroSection: React.FC<FlagshipHeroSectionProps> = ({ onCont
           </div>
         </div>
 
-        {/* Minimalist Bauhaus Graphic Card */}
+        {/* Full Width Application Screenshot Card */}
         <div
           style={{
-            maxWidth: '1080px',
+            maxWidth: '1240px',
             margin: '0 auto',
             position: 'relative',
             background: '#090d16',
             border: '1px solid rgba(255, 255, 255, 0.12)',
-            borderRadius: '20px',
+            borderRadius: '16px',
             overflow: 'hidden',
-            boxShadow: '0 30px 90px rgba(0, 0, 0, 0.75), 0 0 60px rgba(37, 99, 235, 0.12)',
+            boxShadow: '0 30px 90px rgba(0, 0, 0, 0.8), 0 0 60px rgba(37, 99, 235, 0.12)',
           }}
         >
-          {/* Subtle Top Control Bar */}
+          {/* Top Window Navigation Bar */}
           <div
             style={{
-              padding: '14px 24px',
-              background: 'rgba(8, 12, 20, 0.95)',
+              padding: '12px 20px',
+              background: 'rgba(8, 12, 20, 0.98)',
               borderBottom: '1px solid rgba(255, 255, 255, 0.08)',
               display: 'flex',
               alignItems: 'center',
@@ -195,60 +195,85 @@ export const FlagshipHeroSection: React.FC<FlagshipHeroSectionProps> = ({ onCont
                 <span style={{ width: '10px', height: '10px', borderRadius: '50%', background: '#f59e0b' }} />
                 <span style={{ width: '10px', height: '10px', borderRadius: '50%', background: '#10b981' }} />
               </div>
-              <span style={{ color: '#ffffff', fontSize: '0.8125rem', fontWeight: 700 }}>
-                DealerGrid Distribution Engine
-              </span>
+              <div
+                style={{
+                  background: 'rgba(255, 255, 255, 0.05)',
+                  padding: '4px 12px',
+                  borderRadius: '6px',
+                  border: '1px solid rgba(255, 255, 255, 0.08)',
+                  color: '#94a3b8',
+                  fontSize: '0.75rem',
+                  fontFamily: 'monospace',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '6px',
+                }}
+              >
+                <span style={{ color: '#10b981' }}>🔒</span>
+                <span>https://app.dealergrid.com/inventory/syndication</span>
+              </div>
             </div>
 
             <div style={{ display: 'flex', alignItems: 'center', gap: '16px', fontSize: '0.75rem' }}>
-              <span style={{ color: '#34d399', display: 'flex', alignItems: 'center', gap: '6px' }}>
+              <span style={{ color: '#34d399', display: 'flex', alignItems: 'center', gap: '6px', fontWeight: 600 }}>
                 <span style={{ width: '6px', height: '6px', borderRadius: '50%', background: '#10b981' }} />
-                70+ Live Syndication Channels
+                72 Live Channels
               </span>
-              <span style={{ color: '#64748b' }}>•</span>
-              <span style={{ color: '#60a5fa' }}>
-                Bi-Directional DMS Sync Active
+              <span style={{ color: '#475569' }}>|</span>
+              <span style={{ color: '#60a5fa', fontWeight: 600 }}>
+                DMS Auto-Sync Active
+              </span>
+              <span style={{ color: '#475569' }}>|</span>
+              <span style={{ color: '#e2e8f0', fontWeight: 600 }}>
+                148 Vehicles In Stock
               </span>
             </div>
           </div>
 
-          {/* AI Generated Graphic: Sophisticated Multi-Channel Syndication Network */}
-          <div style={{ position: 'relative', width: '100%', lineHeight: 0, background: '#090d16', display: 'flex', justifyContent: 'center' }}>
+          {/* Full Width Application Screenshot Highlighting Product Value */}
+          <div style={{ position: 'relative', width: '100%', lineHeight: 0, background: '#0a0e17' }}>
             <img
-              src="/hero-distribution-sleek.jpg"
-              alt="DealerGrid Multi-Channel Vehicle Syndication and Connected Automotive Distribution Network"
+              src="/dealergrid-app-screen.jpg"
+              alt="DealerGrid Live Inventory Syndication Dashboard with Multi-Channel Broadcast and Auto-Delist"
               style={{
                 width: '100%',
                 height: 'auto',
                 display: 'block',
-                maxHeight: '540px',
-                objectFit: 'contain',
               }}
               loading="eager"
             />
           </div>
 
-          {/* Bottom Footnote Bar */}
+          {/* Plain Benefits Footnote Bar */}
           <div
             style={{
               padding: '14px 24px',
-              background: 'rgba(8, 12, 20, 0.95)',
+              background: 'rgba(8, 12, 20, 0.98)',
               borderTop: '1px solid rgba(255, 255, 255, 0.08)',
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'space-between',
-              fontSize: '0.75rem',
-              color: '#64748b',
+              fontSize: '0.8125rem',
+              color: '#94a3b8',
               flexWrap: 'wrap',
-              gap: '10px',
+              gap: '12px',
             }}
           >
-            <span>
-              Real-time vehicle inventory orchestration, automated sold withdrawal, and multi-channel dealer syndication.
-            </span>
-            <span style={{ color: '#38bdf8', fontWeight: 600 }}>
-              Zero Listing Fees • Zero Commission Cuts
-            </span>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+              <span style={{ color: '#38bdf8', fontSize: '1rem' }}>✓</span>
+              <span>
+                Manage your entire lot from one screen. When a car sells, it is automatically removed across all 70+ websites within seconds.
+              </span>
+            </div>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
+              <span style={{ color: '#34d399', fontWeight: 600 }}>
+                Zero Listing Fees
+              </span>
+              <span style={{ color: '#475569' }}>•</span>
+              <span style={{ color: '#38bdf8', fontWeight: 600 }}>
+                Zero Middleman Commissions
+              </span>
+            </div>
           </div>
         </div>
       </div>
