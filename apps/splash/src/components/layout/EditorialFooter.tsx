@@ -24,7 +24,7 @@ export const EditorialFooter: React.FC = () => {
         {/* Col 1 */}
         <div>
           <div style={{ color: '#fff', fontSize: '0.9375rem', fontWeight: 800, marginBottom: '12px' }}>
-            STARTERGRID
+            DEALERGRID
           </div>
           <p style={{ lineHeight: 1.6, color: '#64748b', marginBottom: '16px' }}>
             One platform for online automotive sales. Manage lot inventory, connect advertising channels, route inquiries, and measure performance.
@@ -102,7 +102,7 @@ export const EditorialFooter: React.FC = () => {
         }}
       >
         <div>
-          © {new Date().getFullYear()} StarterGrid Inc. All rights reserved. Dealership inventory software and online sales platform.
+          © {new Date().getFullYear()} DealerGrid Inc. All rights reserved. Dealership inventory software and online sales platform.
         </div>
         <div style={{ display: 'flex', gap: '20px' }}>
           <a href="#/dev-categories" style={{ color: '#475569', textDecoration: 'none' }}>

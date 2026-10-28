@@ -1,21 +1,19 @@
 import { useState, useEffect } from 'react';
 import { EditorialNav } from '../components/layout/EditorialNav.tsx';
 import { EditorialFooter } from '../components/layout/EditorialFooter.tsx';
-import { EditorialHero } from '../components/sections/EditorialHero.tsx';
-import { WorkflowThreeStep } from '../components/sections/WorkflowThreeStep.tsx';
-import { TwoProductsSection } from '../components/sections/TwoProductsSection.tsx';
-import { SupportedChannelsCompact } from '../components/sections/SupportedChannelsCompact.tsx';
-import { WhyChooseSection } from '../components/sections/WhyChooseSection.tsx';
+import { TopTenHeroOverview } from '../components/sections/TopTenHeroOverview.tsx';
+import { ValuePropositionSection } from '../components/sections/ValuePropositionSection.tsx';
 import { GettingStartedSection } from '../components/sections/GettingStartedSection.tsx';
 import { LeadIntakeModal } from '../components/ui/LeadIntakeModal.tsx';
+import { TOP_TEN_VALUE_PROPOSITIONS } from '../data/topTenValueProps.ts';
 
 export default function FlagshipSplashPage() {
   const [intakeOpen, setIntakeOpen] = useState<boolean>(false);
 
   useEffect(() => {
-    document.title = 'StarterGrid — One Platform for Online Automotive Sales';
+    document.title = 'DealerGrid — Top 10 Core Value Propositions';
     const metaDesc = document.querySelector<HTMLMetaElement>('meta[name="description"]');
-    const descContent = 'StarterGrid is dealership software for managing vehicles, connecting online sales channels, publishing inventory, receiving inquiries, and measuring performance.';
+    const descContent = 'DealerGrid: Post your vehicles to 70+ websites, list for free on the DealerGrid Marketplace with zero conquest ads, advertise across Google and Meta, and route inquiries directly to your CRM.';
     if (metaDesc) {
       metaDesc.content = descContent;
     } else {
@@ -35,26 +33,30 @@ export default function FlagshipSplashPage() {
       <EditorialNav onRequestAccess={openIntake} />
 
       <main id="main-content">
-        {/* 01 Hero & Product Preview */}
-        <EditorialHero onRequestAccess={openIntake} />
+        {/* Top of Page: Lead with Top 10 Core Value Propositions */}
+        <div id="top-propositions">
+          <TopTenHeroOverview onRequestAccess={openIntake} />
+        </div>
 
-        {/* 02 How It Works in 3 Clear Steps */}
-        <WorkflowThreeStep />
+        {/* 10 Consistently Structured Sections Containing More Detail & Real Examples */}
+        {TOP_TEN_VALUE_PROPOSITIONS.map((vp, index) => {
+          const nextProp = TOP_TEN_VALUE_PROPOSITIONS[index + 1];
+          return (
+            <ValuePropositionSection
+              key={vp.number}
+              propData={vp}
+              isEven={index % 2 === 1}
+              nextPropId={nextProp?.id}
+              onRequestAccess={openIntake}
+            />
+          );
+        })}
 
-        {/* 03 The Two Products: Operator Portal & Zero-Conquest Marketplace */}
-        <TwoProductsSection />
-
-        {/* 04 Supported Sales Channels & Advertising Providers */}
-        <SupportedChannelsCompact />
-
-        {/* 05 Why Dealerships Choose StarterGrid */}
-        <WhyChooseSection />
-
-        {/* 06 Fast Rooftop Evaluation Request */}
+        {/* Rooftop Evaluation & Onboarding Request */}
         <GettingStartedSection />
       </main>
 
-      {/* 07 Clean Editorial Footer */}
+      {/* Footer */}
       <EditorialFooter />
 
       {/* Dealership Evaluation Modal */}

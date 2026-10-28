@@ -49,7 +49,7 @@ export const EditorialNav: React.FC<EditorialNavProps> = ({ onRequestAccess }) =
               color: '#ffffff',
             }}
           >
-            STARTERGRID
+            DEALERGRID
           </span>
           <span
             style={{
@@ -69,33 +69,39 @@ export const EditorialNav: React.FC<EditorialNavProps> = ({ onRequestAccess }) =
           style={{
             display: 'none',
             alignItems: 'center',
-            gap: '28px',
+            gap: '24px',
           }}
           className="desktop-nav"
         >
           <a
-            href="#how-it-works"
+            href="#top-propositions"
             style={{ color: '#94a3b8', textDecoration: 'none', fontSize: '0.875rem', fontWeight: 500 }}
           >
-            How It Works
+            Top 10 Value Props
           </a>
           <a
-            href="#products"
+            href="#vp-01"
             style={{ color: '#94a3b8', textDecoration: 'none', fontSize: '0.875rem', fontWeight: 500 }}
           >
-            Products
+            70+ Websites
           </a>
           <a
-            href="#channels"
+            href="#vp-02"
             style={{ color: '#94a3b8', textDecoration: 'none', fontSize: '0.875rem', fontWeight: 500 }}
           >
-            Channels
+            Marketplace
           </a>
           <a
-            href="#why-choose"
+            href="#vp-03"
             style={{ color: '#94a3b8', textDecoration: 'none', fontSize: '0.875rem', fontWeight: 500 }}
           >
-            Why StarterGrid
+            Paid Ads
+          </a>
+          <a
+            href="#vp-05"
+            style={{ color: '#94a3b8', textDecoration: 'none', fontSize: '0.875rem', fontWeight: 500 }}
+          >
+            DMS Setup
           </a>
           <a
             href="#getting-started"
