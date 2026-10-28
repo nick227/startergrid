@@ -34,11 +34,11 @@ export function ConfirmDialog({ title, children, confirmLabel, tone = 'default',
         )}
         <div className="flex justify-end gap-2 pt-1">
           <button ref={cancelRef} type="button" onClick={onCancel} disabled={busy}
-            className="px-3 py-1.5 text-sm font-medium rounded-md text-ink-muted hover:bg-silver-100 disabled:opacity-40">
+            className="min-h-11 rounded-md px-3 text-sm font-medium text-ink-muted hover:bg-silver-100 disabled:opacity-40">
             Cancel
           </button>
           <button type="button" onClick={onConfirm} disabled={busy}
-            className={`px-4 py-1.5 text-sm font-semibold rounded-md text-white disabled:opacity-40 ${
+            className={`min-h-11 rounded-md px-4 text-sm font-semibold text-white disabled:opacity-40 ${
               tone === 'danger' ? 'bg-status-error-dot hover:bg-red-700' : 'bg-navy-900 hover:bg-navy-800'
             }`}>
             {busy ? 'Working…' : confirmLabel}

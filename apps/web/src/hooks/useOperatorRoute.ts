@@ -1,4 +1,5 @@
 import { startTransition, useState, useEffect, useMemo } from 'react';
+import { acceptHashChange } from '@/lib/navigationGuard.ts';
 import { parseOperatorRoute, buildOperatorNav, normalizeOperatorHash } from '@/lib/routes.ts';
 import type { OperatorRoute } from '@/lib/routes.ts';
 import type { OperatorNavHandlers } from '@/lib/operatorNav.ts';
@@ -15,6 +16,7 @@ export function useOperatorRoute(): {
   useEffect(() => {
     normalizeOperatorHash();
     const onHashChange = () => {
+      if (!acceptHashChange()) return;
       startTransition(() => {
         setRoute(parseOperatorRoute());
       });

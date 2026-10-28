@@ -11,7 +11,10 @@ import {
 import { useAsyncQuery } from '@/hooks/useAsyncQuery.ts';
 import { SectionCard, ErrorState } from '@/components/operator';
 import { NotificationChannelsPanel, type NotificationChannelsPanelHandle } from '@/components/operator/NotificationChannelsPanel.tsx';
+import { setNavigationGuard } from '@/lib/navigationGuard.ts';
 import { Button } from '@/components/ui/Button.tsx';
+import { Banner } from '@/components/ui/Banner.tsx';
+import { ConfirmDialog } from '@/components/ui/ConfirmDialog.tsx';
 import { Skeleton } from '@/components/ui/Skeleton.tsx';
 
 const MARKETPLACE_URL = (import.meta.env['VITE_MARKETPLACE_URL'] as string | undefined) ?? 'http://localhost:5174';
@@ -125,6 +128,8 @@ export function DealershipProfilePanel({ dealerId, mode = 'operator', section = 
   const [form, setForm] = useState<FormState | null>(null);
   const [saveState, setSaveState] = useState<'idle' | 'saving' | 'saved' | 'error'>('idle');
   const [saveError, setSaveError] = useState<string | null>(null);
+  const [pendingLeave, setPendingLeave] = useState<string | null>(null);
+  const ignoreLeave = useRef(false);
   const [uploadingLogo, setUploadingLogo] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const channelsRef = useRef<NotificationChannelsPanelHandle>(null);
@@ -154,38 +159,19 @@ export function DealershipProfilePanel({ dealerId, mode = 'operator', section = 
     return () => window.removeEventListener('beforeunload', handleBeforeUnload);
   }, [isAnyDirty]);
 
-  // Warn on in-app navigation (clicking another tab, etc.) while there are unsaved
-  // changes. `hashchange` fires after the hash has already changed, so on a dirty form
-  // we revert it immediately, confirm with the user, then re-apply the target hash only
-  // if they choose to leave. `ignoreNextChange` distinguishes those programmatic
-  // hash writes from a genuine navigation so this doesn't loop on itself.
+  // Hold hash changes while this form is dirty. The route hook restores the current
+  // hash before it commits another page, so this panel stays mounted for the dialog.
   useEffect(() => {
-    let lastHash = window.location.hash;
-    let ignoreNextChange = false;
-
-    function handleHashChange() {
-      if (ignoreNextChange) {
-        ignoreNextChange = false;
-        lastHash = window.location.hash;
-        return;
+    setNavigationGuard((nextHash) => {
+      if (ignoreLeave.current) {
+        ignoreLeave.current = false;
+        return false;
       }
-      if (!isAnyDirty()) {
-        lastHash = window.location.hash;
-        return;
-      }
-      const attemptedHash = window.location.hash;
-      ignoreNextChange = true;
-      window.location.hash = lastHash;
-      const leave = window.confirm('You have unsaved changes on this page. Leave without saving?');
-      if (leave) {
-        ignoreNextChange = true;
-        window.location.hash = attemptedHash;
-        lastHash = attemptedHash;
-      }
-    }
-
-    window.addEventListener('hashchange', handleHashChange);
-    return () => window.removeEventListener('hashchange', handleHashChange);
+      if (!isAnyDirty()) return false;
+      setPendingLeave(nextHash);
+      return true;
+    });
+    return () => setNavigationGuard(null);
   }, [isAnyDirty]);
 
   const categoryLabel = useMemo(
@@ -430,14 +416,26 @@ export function DealershipProfilePanel({ dealerId, mode = 'operator', section = 
           <Button variant="primary" loading={saveState === 'saving'} onClick={() => void handleSave()}>
             Save profile
           </Button>
-          {saveState === 'saved' && <span className="text-sm text-emerald-700 font-medium">Saved</span>}
         </div>
-        {saveError && (
-          <div className="p-3 bg-red-50 border border-red-200 rounded-md">
-            <span className="text-sm text-red-700 font-medium">{saveError}</span>
-          </div>
-        )}
+        {saveState === 'saved' && <Banner variant="success">Company details saved.</Banner>}
+        {saveError && <Banner variant="error">{saveError}</Banner>}
       </div>
+      {pendingLeave && (
+        <ConfirmDialog
+          title="Leave without saving?"
+          confirmLabel="Leave"
+          tone="danger"
+          onCancel={() => setPendingLeave(null)}
+          onConfirm={() => {
+            const next = pendingLeave;
+            ignoreLeave.current = true;
+            setPendingLeave(null);
+            window.location.hash = next;
+          }}
+        >
+          <p>Company details on this page have not been saved.</p>
+        </ConfirmDialog>
+      )}
     </div>
   );
 }

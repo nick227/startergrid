@@ -1,13 +1,16 @@
 import { useState, useRef } from 'react';
 import { uploadOperatorAvatar, type OperatorUser } from '../../lib/api/auth.ts';
+import { FeedbackNotice } from '@/components/ui/FeedbackNotice.tsx';
 
 type Props = {
   user: OperatorUser;
   onAvatarUpdated: () => void;
+  labeled?: boolean;
 };
 
-export function OperatorAvatar({ user, onAvatarUpdated }: Props) {
+export function OperatorAvatar({ user, onAvatarUpdated, labeled = false }: Props) {
   const [uploading, setUploading] = useState(false);
+  const [notice, setNotice] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -20,7 +23,7 @@ export function OperatorAvatar({ user, onAvatarUpdated }: Props) {
       onAvatarUpdated();
     } catch (err) {
       console.error('Failed to upload avatar', err);
-      alert('Failed to upload avatar');
+      setNotice('The profile photo did not upload. Try again.');
     } finally {
       setUploading(false);
     }
@@ -46,7 +49,7 @@ export function OperatorAvatar({ user, onAvatarUpdated }: Props) {
         </div>
       )}
       
-      <span className="text-ink-faint text-xs hidden sm:inline truncate max-w-[12rem] group-hover:text-silver-300 transition-colors">
+      <span className={labeled ? 'max-w-[12rem] truncate text-sm text-ink-body' : 'hidden max-w-[12rem] truncate text-xs text-ink-faint transition-colors group-hover:text-silver-300 sm:inline'}>
         {user.email}
       </span>
 
@@ -57,6 +60,7 @@ export function OperatorAvatar({ user, onAvatarUpdated }: Props) {
         accept="image/png, image/jpeg, image/webp"
         onChange={handleFileChange}
       />
+      {notice && <FeedbackNotice tone="error" onDismiss={() => setNotice(null)}>{notice}</FeedbackNotice>}
     </div>
   );
 }

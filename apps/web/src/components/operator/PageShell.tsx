@@ -9,6 +9,7 @@ import { OperatorAvatar } from './OperatorAvatar.tsx';
 import { isDealerFacingRole, isInternalSupportRole } from '@/lib/operatorAccess.ts';
 import { HelpButton } from '@/components/docs/HelpButton.tsx';
 import { AppHeader } from './AppHeader.tsx';
+import { OperatorUtilityMenu, RefreshIconButton } from './OperatorUtilityMenu.tsx';
 
 type Props = {
   dealerId: string;
@@ -59,6 +60,8 @@ export function PageShell({
   // Internal staff always see which dealership they are acting in, whichever tab they navigate to.
   const isInternalStaff = isInternalSupportRole(user?.role ?? '');
   const isSupportMode = isInternalStaff || (typeof window !== 'undefined' && window.location.hash.includes('support=true'));
+  const showChangeDealer = !(isDealerFacingRole(user?.role ?? '') && (user?.dealerAccessIds.length ?? 0) <= 1);
+  const helpTopic = activeTab === 'activity' && /\/(activity\/)?leads(?:[?]|$)/.test(window.location.hash) ? HELP_TOPICS.leads : HELP_TOPICS[activeTab];
 
   return (
     <div className={`min-h-screen bg-surface-page ${footerPad ? 'pb-20' : ''}`}>
@@ -116,13 +119,28 @@ export function PageShell({
             </div>
           </div>
         )}
+        end={(
+          <div className="flex shrink-0 items-center gap-1 sm:hidden">
+            {onRefresh && <RefreshIconButton onRefresh={onRefresh} refreshing={Boolean(refreshing)} />}
+            <OperatorUtilityMenu
+              activeReports={activeTab === 'reports'}
+              activeCompany={activeTab === 'settings'}
+              showChangeDealer={showChangeDealer}
+              helpTopic={helpTopic}
+              user={user}
+              onRefreshUser={refresh}
+              nav={nav}
+              onSignOut={() => void logout()}
+            />
+          </div>
+        )}
         nav={(
           <>
-            <div className="py-3">
+            <div className="py-1.5 sm:py-3">
               <OperatorNav active={activeTab} nav={nav} />
             </div>
-            <div className="flex min-w-0 items-center gap-3 border-t border-navy-800/80 py-3">
-              {!(isDealerFacingRole(user?.role ?? '') && (user?.dealerAccessIds.length ?? 0) <= 1) ? (
+            <div className="hidden min-w-0 items-center gap-3 border-t border-navy-800/80 py-3 sm:flex">
+              {showChangeDealer ? (
                 <button
                   type="button"
                   onClick={nav.changeDealer}
@@ -132,7 +150,7 @@ export function PageShell({
                 </button>
               ) : null}
               <div className="flex min-w-0 flex-1 flex-wrap items-center justify-end gap-2 [&>*]:shrink-0">
-                <HelpButton topic={activeTab === 'activity' && /\/(activity\/)?leads(?:[?]|$)/.test(window.location.hash) ? HELP_TOPICS.leads : HELP_TOPICS[activeTab]} inverted />
+                <HelpButton topic={helpTopic} inverted />
                 <button
                   type="button"
                   onClick={nav.goToReports}

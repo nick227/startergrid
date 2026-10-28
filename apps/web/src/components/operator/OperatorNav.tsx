@@ -20,7 +20,7 @@ export function OperatorNav({ active, nav }: Props) {
   };
 
   return (
-    <nav className="flex flex-wrap items-center gap-1 p-1 bg-navy-800/60 rounded-xl" aria-label="Main">
+    <nav className="flex flex-nowrap items-center gap-1 rounded-xl bg-navy-800/60 p-1 sm:flex-wrap" aria-label="Main">
       {OPERATOR_TABS.map(tab => {
         const isActive = tab.id === active;
         return (
@@ -29,7 +29,7 @@ export function OperatorNav({ active, nav }: Props) {
             type="button"
             onClick={handlers[tab.id]}
             aria-current={isActive ? 'page' : undefined}
-            className={`px-3 py-2 text-xs font-semibold rounded-lg transition-all ${
+            className={`min-h-11 flex-1 whitespace-nowrap rounded-lg px-2 text-sm font-semibold transition-all sm:flex-none sm:px-3 sm:py-2 sm:text-xs ${
               isActive
                 ? 'bg-white text-ink-heading shadow-elevation-1'
                 : 'text-silver-200 hover:text-white hover:bg-navy-700/50'

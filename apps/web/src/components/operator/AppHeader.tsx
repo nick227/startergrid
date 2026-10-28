@@ -33,8 +33,8 @@ export function AppHeader({ publicRoute, context, end, nav, sticky = true }: Pro
   return (
     <header className={`bg-navy-950 text-white ${blended ? '' : 'border-b border-white/10 shadow-chrome'} ${sticky ? 'sticky top-0 z-30' : ''}`}>
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-        <div className="flex h-16 items-center justify-between gap-4">
-          <div className="flex min-w-0 items-center gap-4">
+        <div className="flex h-16 items-center justify-between gap-2 sm:gap-4">
+          <div className="flex min-w-0 flex-1 items-center gap-3 sm:gap-4">
             <BrandLockup />
             {context && (
               <>

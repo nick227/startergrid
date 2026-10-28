@@ -25,7 +25,7 @@ export function Banner({ variant, children, onDismiss, action }: Props) {
         <div className="flex items-center gap-2 ml-3 shrink-0">
           {action}
           {onDismiss && (
-            <button onClick={onDismiss} className={`text-sm ${s.text} opacity-60 hover:opacity-100`}>✕</button>
+            <button type="button" onClick={onDismiss} aria-label="Dismiss" className={`min-h-11 px-3 text-sm font-semibold ${s.text}`}>Dismiss</button>
           )}
         </div>
       )}

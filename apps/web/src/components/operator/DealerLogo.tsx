@@ -3,11 +3,13 @@ import { uploadDealerLogo, fetchDealers } from '../../lib/api/sdk.ts';
 import { invalidateDealersList, useDealersListInvalidation } from '../../lib/dealersListInvalidation.ts';
 import { useAsyncQuery } from '../../hooks/useAsyncQuery.ts';
 import type { DealerSummary } from '../../lib/types.ts';
+import { FeedbackNotice } from '@/components/ui/FeedbackNotice.tsx';
 
 export function DealerLogo({ dealershipId }: { dealershipId: string }) {
   const { data, reload } = useAsyncQuery(() => fetchDealers(), []);
   useDealersListInvalidation(reload);
   const [uploading, setUploading] = useState(false);
+  const [notice, setNotice] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const dealer = data?.dealers?.find((d: DealerSummary) => d.id === dealershipId);
@@ -24,7 +26,7 @@ export function DealerLogo({ dealershipId }: { dealershipId: string }) {
       invalidateDealersList();
     } catch (err) {
       console.error('Failed to upload logo', err);
-      alert('Failed to upload logo');
+      setNotice('The logo did not upload. Try again.');
     } finally {
       setUploading(false);
     }
@@ -59,6 +61,7 @@ export function DealerLogo({ dealershipId }: { dealershipId: string }) {
         accept="image/png, image/jpeg, image/webp"
         onChange={handleFileChange}
       />
+      {notice && <FeedbackNotice tone="error" onDismiss={() => setNotice(null)}>{notice}</FeedbackNotice>}
     </div>
   );
 }
