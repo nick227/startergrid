@@ -19,9 +19,11 @@ export const CONDITION_TONE: Record<MarketplaceVehicleCard['condition'], 'sky' |
 };
 
 export function vehicleHeading(
-  card: Pick<MarketplaceVehicleCard, 'year' | 'make' | 'model'>,
+  card: Pick<MarketplaceVehicleCard, 'year' | 'make' | 'model'> & { title?: string | null },
 ): string {
-  return `${card.year} ${card.make} ${card.model}`;
+  if (card.title) return card.title;
+  if (!card.year) return `${card.make} ${card.model}`.trim();
+  return `${card.year} ${card.make} ${card.model}`.trim();
 }
 
 export function formatPrice(priceCents: number): string {

@@ -2,10 +2,10 @@
 //
 // Proves the categoryPayload-stored enum facet path still works after the
 // filterStorage contract reconciliation: for a non-automotive category, facet
-// counts are read from CategoryInventoryItem via the facet's payloadKey, and
+// counts are read from Vehicle via the facet's payloadKey, and
 // only options with a positive count are returned (descending by count).
 //
-// Pure — no DB. A capturing mock answers categoryInventoryItem.count from the
+// Pure — no DB. A capturing mock answers vehicle.count from the
 // `where` it receives.
 
 import assert from 'node:assert/strict';
@@ -17,7 +17,7 @@ type CountArgs = {
   where: {
     categoryId?: string;
     priceCents?: unknown;
-    data?: { path: string[]; equals: unknown };
+    categoryPayload?: { path: string; equals: unknown };
   };
 };
 
@@ -33,12 +33,12 @@ describe('getMarketplaceFacets — generic category (BOATS) categoryPayload face
     const seenFacetPaths: string[] = [];
 
     const prisma = {
-      categoryInventoryItem: {
+      vehicle: {
         count: async (args: CountArgs) => {
           // Facet option query: { data: { path: [payloadKey], equals } }
-          if (args.where.data) {
-            seenFacetPaths.push(args.where.data.path[0]!);
-            return vesselCounts[String(args.where.data.equals)] ?? 0;
+          if (args.where.categoryPayload) {
+            seenFacetPaths.push(args.where.categoryPayload.path);
+            return vesselCounts[String(args.where.categoryPayload.equals)] ?? 0;
           }
           // Price-range query — irrelevant here, report empty.
           return 0;
@@ -51,7 +51,7 @@ describe('getMarketplaceFacets — generic category (BOATS) categoryPayload face
     // The facet path the query used must be the schema's payloadKey, not the field key.
     assert.ok(seenFacetPaths.length > 0, 'facet counts should have been queried');
     assert.ok(
-      seenFacetPaths.every(p => p === 'vesselType'),
+      seenFacetPaths.every(p => p === '$.vesselType'),
       `all facet queries should target the vesselType payloadKey, saw: ${seenFacetPaths.join(',')}`,
     );
 
@@ -68,7 +68,7 @@ describe('getMarketplaceFacets — generic category (BOATS) categoryPayload face
 
   it('drops every option when no facet value has inventory', async () => {
     const prisma = {
-      categoryInventoryItem: { count: async () => 0 },
+      vehicle: { count: async () => 0 },
     } as unknown as PrismaClient;
 
     const result = await getMarketplaceFacets(prisma, { category: 'BOATS' });

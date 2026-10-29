@@ -64,6 +64,7 @@ export async function persistLead(
     source: 'DEALER_STOREFRONT' | 'ADF_XML' | 'PLATFORM_FORM' | 'MANUAL';
     platformSlug: string;
     vehicleId?: string | null;
+    categoryItemId?: string | null;
     contactName?: string | null;
     contactEmail?: string | null;
     contactPhone?: string | null;
@@ -73,10 +74,13 @@ export async function persistLead(
     inboundMessageId?: string | null;
   }
 ): Promise<string> {
+  if (lead.vehicleId && lead.categoryItemId) throw new Error("A lead can reference only one inventory record");
+  if (lead.categoryItemId && !await prisma.categoryInventoryItem.findFirst({ where: { id: lead.categoryItemId, dealershipId } })) throw new Error("Category item does not belong to this business");
   const created = await prisma.lead.create({
     data: {
       dealershipId,
       vehicleId: lead.vehicleId ?? null,
+      categoryItemId: lead.categoryItemId ?? null,
       source: lead.source,
       platformSlug: lead.platformSlug,
       contactName: lead.contactName ?? null,

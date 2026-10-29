@@ -37,6 +37,7 @@ export const marketplaceRouteClassifications = {
   ],
   publicWrite: [
     'POST /api/marketplace/vehicles/:listingId/leads',
+    'POST /api/marketplace/category-items/:listingId/leads',
     'POST /api/marketplace/vehicles/:listingId/report',
     'POST /api/marketplace/events',
   ],

@@ -1,4 +1,6 @@
-﻿import { minPriceCentsForPlatform } from '../../lib/categoryPricePolicy.js';
+import { getCategoryInventorySchema, isRegisteredCategory } from '../../../packages/category-schemas/src/index.js';
+import { buildInventoryReadiness } from '../../services/inventory/inventoryReadinessService.js';
+import { minPriceCentsForPlatform } from '../../lib/categoryPricePolicy.js';
 import type {
   DealershipPayload,
   PlatformProfileSeed,
@@ -65,14 +67,28 @@ function validatePlatformReadinessWithOptions(
   const priceCategory = options.businessCategory
     ?? (platform.supportedCategories.length === 1 ? platform.supportedCategories[0] : undefined);
 
+  const nativeSchema = priceCategory && isRegisteredCategory(priceCategory) ? getCategoryInventorySchema(priceCategory) : undefined;
+  // Native apparel uses its category contract even when legacy tooling passes VehiclePayload aliases.
+  // Automotive and established partner contracts keep their existing validator.
+  const nativeOwnedInventory = platform.slug === 'consumer-marketplace' && nativeSchema?.strictFieldValidation;
+  const inventoryIssues: ValidationIssue[] = nativeOwnedInventory ? vehicles.flatMap(item => {
+    const result = buildInventoryReadiness({
+      category: nativeSchema.categoryId, schema: nativeSchema,
+      fields: { ...(item.categoryPayload as Record<string, unknown> ?? {}), stockNumber: item.stockNumber,
+        [nativeSchema.primaryIdentifier.fieldKey]: item.stockNumber, priceCents: item.priceCents, condition: item.condition },
+      totalMediaCount: item.media?.length ?? 0,
+    });
+    return [
+      ...result.blockers.map(message => ({ path: item.stockNumber, message, severity: 'FAIL' as const })),
+      ...result.warnings.map(message => ({ path: item.stockNumber, message, severity: 'WARN' as const })),
+    ];
+  }) : validateVehiclePayloads(vehicles, platform.requiredVehicleFields, platform.requiredMediaRules, {
+    businessCategory: priceCategory,
+    minPriceCents: priceCategory ? undefined : minPriceCentsForPlatform(platform.supportedCategories),
+  });
   const issues = [
     ...validateDealershipProfile(dealership, platform.requiredDealershipFields),
-    ...validateVehiclePayloads(vehicles, platform.requiredVehicleFields, platform.requiredMediaRules, {
-      businessCategory: priceCategory,
-      minPriceCents: priceCategory
-        ? undefined
-        : minPriceCentsForPlatform(platform.supportedCategories),
-    }),
+    ...inventoryIssues,
   ];
 
   if (schemaFreshnessStatus === 'FAIL') {

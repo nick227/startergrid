@@ -7,6 +7,7 @@ export { CancelablePromise, CancelError } from './core/CancelablePromise';
 export { OpenAPI } from './core/OpenAPI';
 export type { OpenAPIConfig } from './core/OpenAPI';
 
+export { ListingIdentity } from './models/ListingIdentity';
 export { MarketplaceBusinessCategory } from './models/MarketplaceBusinessCategory';
 export { MarketplaceCardMediaItem } from './models/MarketplaceCardMediaItem';
 export type { MarketplaceCategoryItemCard } from './models/MarketplaceCategoryItemCard';

@@ -37,6 +37,8 @@ export function registerDealerLeadsRoutes(app: FastifyInstance, prisma: PrismaCl
           select: {
             id:              true,
             vehicleId:       true,
+            categoryItemId:  true,
+            categoryItem: { select: { id: true, categoryId: true, stockNumber: true, data: true, soldAt: true, media: { select: { url: true }, orderBy: { sortOrder: 'asc' }, take: 1 } } },
             source:          true,
             platformSlug:    true,
             contactName:     true,
@@ -88,7 +90,7 @@ export function registerDealerLeadsRoutes(app: FastifyInstance, prisma: PrismaCl
       const crmConfigured = Boolean(crmEndpoint && /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(crmEndpoint));
       const now = new Date();
 
-      const leads = rows.map(({ vehicle, deliveryAttempts, ...lead }) => {
+      const leads = rows.map(({ vehicle, categoryItem, deliveryAttempts, ...lead }) => {
         const latest = deliveryAttempts?.[0];
         let crmStatus: 'NOT_CONFIGURED' | 'NOT_SENT' | 'SENDING' | 'SENT_TO_CRM_ADDRESS' | 'FAILED';
         if (!crmConfigured) {
@@ -104,8 +106,14 @@ export function registerDealerLeadsRoutes(app: FastifyInstance, prisma: PrismaCl
           crmStatus = 'FAILED';
         }
 
+        const snapshot = lead.vehicleInterest as { identity?: { source?: string; inventoryId?: string; dealershipId?: string } } | null;
+        const deletedIdentity = snapshot?.identity?.dealershipId === dealershipId ? snapshot.identity : null;
+
         return {
           ...lead,
+          inventoryIdentity: lead.categoryItemId ? { source: 'category_item', inventoryId: lead.categoryItemId, dealershipId } : lead.vehicleId ? { source: 'vehicle', inventoryId: lead.vehicleId, dealershipId } : deletedIdentity,
+          categoryItem: categoryItem ? { id: categoryItem.id, categoryId: categoryItem.categoryId, stockNumber: categoryItem.stockNumber,
+            title: (categoryItem.data as Record<string, unknown>)?.title ?? null, soldAt: categoryItem.soldAt, thumbnailUrl: categoryItem.media[0]?.url ?? null } : null,
           crmDeliverySummary: {
             status: crmStatus,
             crmConfigured,

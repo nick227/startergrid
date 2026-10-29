@@ -1,3 +1,4 @@
+import { resolveListingIdentity } from '../../services/marketplace/listingIdentity.js';
 import type { FastifyInstance } from 'fastify';
 import type { PrismaClient } from '@prisma/client';
 import { requireDealerAccess } from '../security.js';
@@ -55,6 +56,8 @@ export function registerMarketplaceListingRoutes(app: FastifyInstance, prisma: P
       });
       if (!vehicle || vehicle.dealershipId !== dealershipId)
         return reply.status(404).send({ error: 'Vehicle not found' });
+
+      if (platformSlug === 'consumer-marketplace' && !await resolveListingIdentity(prisma, 'vehicle', vehicleId, { dealershipId })) return reply.status(409).send({ error: 'Listing is not eligible for Marketplace publication' });
 
       let token = '';
       if (bridge.requiresOAuth) {
@@ -207,6 +210,8 @@ export function registerMarketplaceListingRoutes(app: FastifyInstance, prisma: P
       });
       if (!item || item.dealershipId !== dealershipId)
         return reply.status(404).send({ error: 'Category item not found' });
+
+      if (!await resolveListingIdentity(prisma, 'category_item', categoryItemId, { dealershipId })) return reply.status(409).send({ error: 'Category item is not eligible for Marketplace publication' });
 
       // Consumer marketplace is first-party — write DB state directly, no bridge call.
       const listing = await MarketplaceListingStore.upsert(

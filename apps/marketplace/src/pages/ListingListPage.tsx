@@ -121,35 +121,40 @@ export default function ListingListPage({ initialQuery = {} }: Props) {
   return (
     <PageShell>
       <div className="mp-page">
-      <header className="mb-3 mt-4">
-        <h1 className="text-xl font-semibold tracking-tight text-ink-heading sm:text-2xl">
+      <header className="mb-4">
+        <h1 className="text-2xl font-semibold tracking-tight text-ink-heading sm:text-3xl">
           Browse {schema.asset.plural}
         </h1>
-        <p className="mt-0.5 text-sm text-ink-muted">{schema.marketplace.tagline}</p>
+        <p className="mt-1 text-sm text-ink-muted">{schema.marketplace.tagline}</p>
       </header>
 
       {consumerLive && (
-        <div className="mb-4 overflow-hidden rounded-xl border border-silver-200 bg-white">
+        <div className="mb-4">
           <form
             onSubmit={e => { e.preventDefault(); feed.reload(); }}
-            className="flex flex-col gap-2 p-3 sm:flex-row sm:items-center"
+            className="flex flex-col gap-2 sm:flex-row sm:items-center"
             aria-label={listingSearchAriaLabel()}
           >
             <label className="sr-only" htmlFor="listing-search">Search</label>
-            <input
-              id="listing-search"
-              type="search"
-              value={filters.q}
-              onChange={e => filters.setQ(e.target.value)}
-              placeholder={`Search ${schema.asset.plural.toLowerCase()}...`}
-              className="mp-input h-12 min-w-0 flex-1 py-0"
-              autoComplete="off"
-            />
+            <div className="relative min-w-0 flex-1">
+              <svg viewBox="0 0 20 20" fill="currentColor" className="pointer-events-none absolute left-3.5 top-1/2 size-4 -translate-y-1/2 text-ink-faint" aria-hidden="true">
+                <path fillRule="evenodd" d="M9 3.5a5.5 5.5 0 1 0 3.48 9.74l3.64 3.64a.75.75 0 1 0 1.06-1.06l-3.64-3.64A5.5 5.5 0 0 0 9 3.5ZM5 9a4 4 0 1 1 8 0 4 4 0 0 1-8 0Z" clipRule="evenodd" />
+              </svg>
+              <input
+                id="listing-search"
+                type="search"
+                value={filters.q}
+                onChange={e => filters.setQ(e.target.value)}
+                placeholder={`Search ${schema.asset.plural.toLowerCase()}`}
+                className="mp-input h-11 rounded-full py-0 pl-10 pr-4"
+                autoComplete="off"
+              />
+            </div>
             <div className="flex flex-wrap gap-2">
-              <button type="submit" className="mp-btn-primary h-12 px-4">Search</button>
+              <button type="submit" className="mp-btn-primary h-11 px-5">Search</button>
               <button
                 type="button"
-                className={filtersOpen ? 'mp-btn-secondary h-12 bg-surface-inset px-4' : 'mp-btn-secondary h-12 px-4'}
+                className={filtersOpen ? 'mp-btn-secondary h-11 bg-[#e8eef3] px-4' : 'mp-btn-secondary h-11 px-4'}
                 onClick={() => setFiltersOpen(open => !open)}
                 aria-expanded={filtersOpen}
               >
@@ -157,7 +162,7 @@ export default function ListingListPage({ initialQuery = {} }: Props) {
               </button>
               <button
                 type="button"
-                className={locationOpen ? 'mp-btn-secondary h-12 bg-surface-inset px-4' : 'mp-btn-secondary h-12 px-4'}
+                className={locationOpen ? 'mp-btn-secondary h-11 bg-[#e8eef3] px-4' : 'mp-btn-secondary h-11 px-4'}
                 onClick={() => setLocationOpen(open => !open)}
                 aria-expanded={locationOpen}
               >
@@ -167,7 +172,7 @@ export default function ListingListPage({ initialQuery = {} }: Props) {
           </form>
 
           {locationOpen && (
-            <div className="border-t border-silver-200 px-3 py-3">
+            <div className="mt-3 rounded-xl border border-silver-200 bg-white px-3 py-3">
               <BuyerLocationControls
                 bare
                 preference={buyerLocation.preference}
@@ -179,7 +184,7 @@ export default function ListingListPage({ initialQuery = {} }: Props) {
           )}
 
           {filtersOpen && (
-            <div className="border-t border-silver-200 px-3 py-3">
+            <div className="mt-3 rounded-xl border border-silver-200 bg-white px-3 py-3">
               <ListingFilterBar
                 embedded
                 config={filterConfig}

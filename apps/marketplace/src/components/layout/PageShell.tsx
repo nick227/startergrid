@@ -32,7 +32,7 @@ export function PageShell({
       </a>
 
       <header className={`${showHeader ? 'block' : 'hidden'} sticky top-0 z-20 border-b border-silver-200 bg-surface-card/95 backdrop-blur`}>
-        <nav className="mx-auto flex h-12 max-w-7xl items-center justify-between gap-4 px-4 sm:px-6 md:h-14" aria-label="Marketplace">
+        <nav className="mp-rail flex h-14 items-center justify-between gap-4" aria-label="Marketplace">
           <div className="flex min-w-0 items-center gap-4">
             <a href={homeHref} className="mp-focus flex items-center gap-2.5 group shrink-0" title="DealerGrid Marketplace">
               <DealerGridMark size={24} />

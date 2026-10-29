@@ -161,3 +161,25 @@ describe('planMarketplaceLeadDeliveries', () => {
     assert.equal(storedCount, 3);
   });
 });
+
+describe('category-item delivery adapters', () => {
+  it('carries real identity in email/JSON, excludes foreign destinations and does not fabricate ADF vehicles', () => {
+    const context: MarketplaceLeadDeliveryContext = {
+      ...BASE_CONTEXT, category: 'EBOOKS', listingId: 'ebook-1',
+      identity: { source: 'category_item', inventoryId: 'ebook-1', dealershipId: BASE_CONTEXT.dealershipId, categoryId: 'EBOOKS', publicationId: 'publication-1' },
+      categoryItem: { title: 'Harbor Field Notes' }, vehicle: { stockNumber: 'EBOOK-1', priceCents: 500 },
+    };
+    const common = { destinationId: 'destination', dealershipId: context.dealershipId, label: 'Destination', enabled: true, email: 'inbox@example.com', webhookUrl: 'https://example.com/webhook' };
+    const attempts = planMarketplaceLeadDeliveries([
+      { ...common, destinationType: 'EMAIL' }, { ...common, destinationType: 'JSON_WEBHOOK' },
+      { ...common, destinationType: 'ADF_XML_EMAIL' }, { ...common, dealershipId: 'other-seller', destinationType: 'EMAIL' },
+    ], context);
+    assert.equal(attempts.length, 2);
+    assert.match(attempts[0]!.payloadBody, /Listing: Harbor Field Notes/);
+    assert.doesNotMatch(attempts[0]!.payloadBody, /Vehicle:/);
+    const payload = JSON.parse(attempts[1]!.payloadBody);
+    assert.deepEqual(payload.listing.identity, context.identity);
+    assert.equal(payload.listing.title, context.categoryItem!.title);
+    assert.equal(payload.listing.year, null);
+  });
+});

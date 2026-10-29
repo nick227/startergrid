@@ -2,8 +2,13 @@
 /* istanbul ignore file */
 /* tslint:disable */
 /* eslint-disable */
+import type { MarketplaceCategoryItemCard } from './MarketplaceCategoryItemCard';
 import type { MarketplaceVehicleCard } from './MarketplaceVehicleCard';
 export type MarketplaceDealerIndexResponse = {
+    categoryItems?: Array<MarketplaceCategoryItemCard>;
+    categoryItemTotal?: number;
+    city?: string | null;
+    state?: string | null;
     dealerId: string;
     dealerName: string;
     dealerCity: string | null;

@@ -1,6 +1,7 @@
 import { useState, type FormEvent } from 'react';
-import { submitVehicleLead } from '../../lib/api.ts';
+import { submitListingInquiry } from '../../lib/api.ts';
 import { queryErrorMessage } from '../../hooks/useQuery.ts';
+import { useCategorySchema } from '../../contexts/CategoryContext.tsx';
 import {
   EMPTY_LEAD_FORM,
   hasLeadFormErrors,
@@ -16,11 +17,15 @@ type Props = {
   listingId: string;
   vehicleLabel: string;
   dealerName: string;
+  isCategoryItem?: boolean;
 };
 
 type FormState = 'idle' | 'submitting' | 'success' | 'error';
 
-export function LeadInquiryForm({ listingId, vehicleLabel, dealerName }: Props) {
+export function LeadInquiryForm({ listingId, vehicleLabel, dealerName, isCategoryItem = false }: Props) {
+  const schema = useCategorySchema();
+  const isAuto = schema.id === 'AUTOMOTIVE';
+  const sellerRole = isAuto ? 'dealer' : 'seller';
   const [values, setValues] = useState<LeadFormValues>(EMPTY_LEAD_FORM);
   const [fieldErrors, setFieldErrors] = useState<LeadFormErrors>({});
   const [submitError, setSubmitError] = useState<string | null>(null);
@@ -47,7 +52,7 @@ export function LeadInquiryForm({ listingId, vehicleLabel, dealerName }: Props) 
     setSubmitError(null);
 
     try {
-      await submitVehicleLead(listingId, toLeadPayload(values));
+      await submitListingInquiry(listingId, toLeadPayload(values), isCategoryItem);
       setState('success');
     } catch (error) {
       setSubmitError(queryErrorMessage(error));
@@ -63,19 +68,19 @@ export function LeadInquiryForm({ listingId, vehicleLabel, dealerName }: Props) 
           <span className="font-semibold">{vehicleLabel}</span>.
         </p>
         <p className="mt-2 text-sm text-emerald-800">
-          A dealer representative should follow up using the contact details you provided.
+          A {sellerRole} representative should follow up using the contact details you provided.
         </p>
       </SectionCard>
     );
   }
 
   return (
-    <SectionCard title="Contact dealer">
+    <SectionCard title={`Contact ${sellerRole}`}>
       <p className="mb-4 text-sm text-ink-muted">
         Send a basic inquiry about this {vehicleLabel} to {dealerName}. No account required.
       </p>
 
-      <form onSubmit={handleSubmit} noValidate className="space-y-4" aria-label="Vehicle inquiry form">
+      <form onSubmit={handleSubmit} noValidate className="space-y-4" aria-label="Listing inquiry form">
         {fieldErrors.form && (
           <p className="rounded-lg border border-amber-200 bg-amber-50 px-3 py-2 text-sm text-amber-900" role="alert">
             {fieldErrors.form}

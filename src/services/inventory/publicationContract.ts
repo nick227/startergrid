@@ -63,7 +63,7 @@ export function categoryItemReadiness(item: ItemFacts): InventoryReadinessResult
     priceCents: item.priceCents,
     condition: item.condition,
   };
-  if (schema && item.primaryIdentifier) fields[schema.primaryIdentifier.fieldKey] = item.primaryIdentifier;
+  if (schema) fields[schema.primaryIdentifier.fieldKey] = item.primaryIdentifier ?? item.stockNumber;
   return buildInventoryReadiness({
     category: isRegisteredCategory(item.categoryId) ? item.categoryId : 'APPAREL',
     ...(schema ? { schema } : {}),

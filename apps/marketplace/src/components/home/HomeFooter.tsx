@@ -4,7 +4,7 @@ import { buildAutomotiveListHref } from './automotiveLinks.ts';
 export function HomeFooter() {
   return (
     <footer className="bg-navy-900 py-12 border-t border-navy-800 text-white">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div className="mp-rail">
         <div className="mb-8">
           <h3 className="text-white font-bold mb-4">What shoppers are searching for</h3>
           <div className="flex flex-wrap gap-x-6 gap-y-3">

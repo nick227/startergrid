@@ -1,11 +1,13 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import {
   fetchFeed,
+  fetchCategoryItems,
   type FeedFilters,
   type MarketplaceFeedItem,
   type MarketplaceFeedResponse,
+  type MarketplaceCategoryItemCard,
 } from '../lib/api.ts';
-import { useCategoryId, useCategorySlug } from '../contexts/CategoryContext.tsx';
+import { useCategoryId, useCategorySlug, useCategorySchema } from '../contexts/CategoryContext.tsx';
 import { feedFilterKey, getSavedFeedState, saveFeedState } from '../lib/feedState.ts';
 import { toListQuery, type ListingQuery } from '../features/listings/listingQuery.ts';
 import type { BuyerGeoApiParams } from '../features/location/buyerLocation.ts';
@@ -28,6 +30,7 @@ export function useInfiniteMarketplaceFeed(
 ) {
   const categoryId = useCategoryId();
   const slug = useCategorySlug();
+  const schema = useCategorySchema();
   const listQuery = useMemo(() => toListQuery(query), [query]);
 
   const filters = useMemo<FeedFilters>(() => ({
@@ -101,7 +104,47 @@ export function useInfiniteMarketplaceFeed(
     }));
 
     try {
-      const page = await fetchFeed({ ...filters, cursor });
+      let page: MarketplaceFeedResponse;
+      if (schema.lifecycleMode === 'digital_distribution') {
+        const res = await fetchCategoryItems({
+          categoryId: schema.id,
+          dealer: filters.dealer,
+        });
+        const feedItems: MarketplaceFeedItem[] = res.items.map((item: MarketplaceCategoryItemCard) => ({
+          type: 'vehicle',
+          id: item.listingId,
+          impressionKey: `category_item:${item.listingId}`,
+          vehicle: {
+            listingId: item.listingId,
+            stockNumber: item.stockNumber || '',
+            year: 0,
+            make: item.author || '',
+            model: item.title || '',
+            trim: item.format ? item.format.toUpperCase() : null,
+            condition: 'NEW',
+            priceCents: item.priceCents,
+            mileage: 0,
+            usageUnit: null,
+            exteriorColor: null,
+            mediaUrls: item.mediaUrls?.length ? item.mediaUrls : ['/demo-assets/multi-entity-books.svg'],
+            mediaItems: [],
+            dealerId: item.dealerId,
+            dealerName: item.dealerName,
+            dealerCity: item.dealerCity ?? null,
+            dealerState: item.dealerState ?? null,
+            listingUrl: item.listingUrl,
+            listedAt: item.listedAt,
+          } as any,
+        }));
+        page = {
+          items: feedItems,
+          nextCursor: null,
+          totalEstimate: res.total,
+          appliedFilters: {} as any,
+        };
+      } else {
+        page = await fetchFeed({ ...filters, cursor });
+      }
       if (requestId.current !== id) return;
       setState(current => ({
         items: mergePage(current.items, page, mode),
@@ -123,7 +166,7 @@ export function useInfiniteMarketplaceFeed(
     } finally {
       if (requestId.current === id) loadingRef.current = false;
     }
-  }, [filters, mergePage, state.nextCursor]);
+  }, [filters, mergePage, state.nextCursor, schema]);
 
   useEffect(() => {
     requestId.current += 1;

@@ -99,7 +99,7 @@ export default function App() {
       <CategoryProvider categoryId={categoryId} slug={route.slug}>
         <CategoryFavoritesSync />
         {route.page === 'listing' && <VehicleDetailPage key={route.listingId} listingId={route.listingId} />}
-        {route.page === 'seller' && <SellerDetailPage key={route.sellerId} sellerId={route.sellerId} />}
+        {route.page === 'seller' && <SellerDetailPage key={route.sellerId} sellerId={route.sellerId} fromListing={route.fromListing} />}
         {route.page === 'favorites' && <FavoritesPage />}
         {route.page === 'profile' && <ProfilePage />}
         {route.page === 'home' && (() => {

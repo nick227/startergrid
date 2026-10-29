@@ -336,9 +336,7 @@ function ListingSummaryCard({
 }) {
   return (
     <a href={href} className="mp-card mp-focus block transition hover:border-navy-500/40 hover:shadow-elevation-2">
-      <div className="aspect-[4/3] bg-surface-inset">
-        <ListingImage src={imageUrl ?? undefined} alt={title} imgClassName="h-full w-full object-cover" />
-      </div>
+      <ListingImage src={imageUrl ?? undefined} alt={title} />
       <div className="p-3">
         <p className="truncate text-sm font-semibold text-ink-heading">{title}</p>
         <p className="mt-1 text-sm font-bold tabular-nums text-ink">{formatPrice(priceCents)}</p>

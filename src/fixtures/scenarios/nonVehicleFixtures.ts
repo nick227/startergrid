@@ -80,6 +80,7 @@ export const ebooksDealerPayload: DealershipPayload = {
 export const ebooksDealerInventory: VehiclePayload[] = [
   {
     stockNumber: 'B0C4DJ8K9M',
+    condition: 'DIGITAL',
     vin: '9780134685991',
     year: 2024,
     make: 'Robert C. Martin',
@@ -91,6 +92,7 @@ export const ebooksDealerInventory: VehiclePayload[] = [
   },
   {
     stockNumber: 'B0D1XK2P4R',
+    condition: 'DIGITAL',
     vin: '9781492052586',
     year: 2023,
     make: 'Luc Perkins',
@@ -125,7 +127,7 @@ export const apparelDealerInventory: VehiclePayload[] = [
     condition: 'NEW',
     exteriorColor: 'Black',
     media: [image('https://media.northline.example.com/apparel/essential-tee-black.jpg')],
-    categoryPayload: { material: 'Organic Cotton', gender: 'Unisex' },
+    categoryPayload: { material: 'Organic Cotton', gender: 'Unisex', barcode: '012345678905', title: 'Essential Crew Tee', brand: 'Northline', size: 'M', color: 'Black', era: 'Contemporary', measurements: 'Chest 100 cm', conditionNotes: 'New with tags' },
   },
   {
     stockNumber: 'NLA-HDY-GRY-L',
@@ -137,7 +139,7 @@ export const apparelDealerInventory: VehiclePayload[] = [
     condition: 'NEW',
     exteriorColor: 'Heather Gray',
     media: [image('https://media.northline.example.com/apparel/heavy-hoodie-gray.jpg')],
-    categoryPayload: { material: 'Cotton Blend', gender: 'Unisex' },
+    categoryPayload: { material: 'Cotton Blend', gender: 'Unisex', barcode: '012345678912', title: 'Heavyweight Hoodie', brand: 'Northline', size: 'L', color: 'Heather Gray', era: 'Contemporary', measurements: 'Chest 112 cm', conditionNotes: 'New with tags' },
   },
 ];
 

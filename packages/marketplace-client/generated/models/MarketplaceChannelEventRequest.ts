@@ -3,6 +3,7 @@
 /* tslint:disable */
 /* eslint-disable */
 export type MarketplaceChannelEventRequest = {
+    inventorySource?: MarketplaceChannelEventRequest.inventorySource;
     eventType: MarketplaceChannelEventRequest.eventType;
     /**
      * Required for vehicle_impression and vehicle_detail_view.
@@ -18,6 +19,10 @@ export type MarketplaceChannelEventRequest = {
     category?: string;
 };
 export namespace MarketplaceChannelEventRequest {
+    export enum inventorySource {
+        VEHICLE = 'vehicle',
+        CATEGORY_ITEM = 'category_item',
+    }
     export enum eventType {
         VEHICLE_IMPRESSION = 'vehicle_impression',
         VEHICLE_DETAIL_VIEW = 'vehicle_detail_view',

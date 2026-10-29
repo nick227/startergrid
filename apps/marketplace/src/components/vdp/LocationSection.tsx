@@ -1,9 +1,9 @@
 import type { VehicleLocation } from '@dealer-marketplace/client';
 import { DealerBlock } from '../ui/DealerBlock.tsx';
 
-type Props = { location: VehicleLocation };
+type Props = { location: VehicleLocation; fromListing?: string };
 
-export function LocationSection({ location }: Props) {
+export function LocationSection({ location, fromListing }: Props) {
   return (
     <DealerBlock
       dealerId={location.dealerId}
@@ -11,6 +11,7 @@ export function LocationSection({ location }: Props) {
       city={location.dealerCity}
       state={location.dealerState}
       websiteUrl={location.dealerWebsiteUrl}
+      fromListing={fromListing}
     />
   );
 }

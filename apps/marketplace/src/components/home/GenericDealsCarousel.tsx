@@ -1,10 +1,11 @@
 import { useMarketplaceFeed } from '../../hooks/useMarketplaceFeed.ts';
-import { useCategorySlug } from '../../contexts/CategoryContext.tsx';
+import { useCategorySlug, useCategorySchema } from '../../contexts/CategoryContext.tsx';
 import { listHref, listingHref } from '../../lib/routes.ts';
-import { vehicleHeading } from '../../lib/display.ts';
+import { vehicleHeading, formatUsage } from '../../lib/display.ts';
 
 export function GenericDealsCarousel() {
   const slug = useCategorySlug();
+  const schema = useCategorySchema();
   const { vehicles, loading, error } = useMarketplaceFeed({ limit: 10, sortBy: 'price-asc' });
 
   if (loading) {
@@ -15,13 +16,13 @@ export function GenericDealsCarousel() {
   }
 
   return (
-    <div className="py-12 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto overflow-hidden">
-      <div className="flex items-center justify-between mb-8">
+    <div className="mp-rail overflow-hidden py-10 sm:py-12">
+      <div className="mb-6 flex items-end justify-between gap-4">
         <div>
-          <h2 className="text-2xl sm:text-3xl font-extrabold text-ink-heading tracking-tight">The Best Deals</h2>
-          <p className="text-ink-muted font-medium mt-1">Listings priced below market value.</p>
+          <h2 className="mp-home-heading">The best deals</h2>
+          <p className="mt-1 text-sm text-ink-muted">Listings priced below the previous asking price.</p>
         </div>
-        <a href={listHref(slug, { sortBy: 'price-asc' })} className="text-sm font-bold text-orange-600 hover:text-orange-700">View all deals →</a>
+        <a href={listHref(slug, { sortBy: 'price-asc' })} className="mp-home-link">View all deals</a>
       </div>
 
       <div className="flex overflow-x-auto gap-6 pb-8 hide-scrollbar snap-x snap-mandatory">
@@ -30,24 +31,26 @@ export function GenericDealsCarousel() {
           const title = vehicleHeading(item);
 
           return (
-            <a key={item.listingId} href={listingHref(slug, item.listingId, title)} className="snap-start shrink-0 w-72 sm:w-80 group flex flex-col bg-surface-card rounded-2xl overflow-hidden shadow-elevation-1 border border-silver-200 hover:shadow-elevation-2 transition">
-              <div className="relative h-48">
+            <a key={item.listingId} href={listingHref(slug, item.listingId, title)} className="group flex w-72 shrink-0 snap-start flex-col overflow-hidden rounded-xl border border-silver-200 bg-white transition hover:shadow-elevation-2 sm:w-80">
+              <div className="mp-thumb-well">
                 {item.mediaUrls[0] ? (
-                  <img src={item.mediaUrls[0]} alt={title} className="absolute inset-0 w-full h-full object-cover" />
+                  <img src={item.mediaUrls[0]} alt="" className="absolute inset-0 h-full w-full object-contain p-4" />
                 ) : (
-                  <div className="absolute inset-0 bg-silver-200" />
+                  <div className="absolute inset-0" />
                 )}
-                <div className="absolute top-3 left-3 bg-status-success-bg text-status-success-text px-2 py-1 rounded text-[10px] font-bold uppercase tracking-wider shadow-sm">
-                  {discount > 0 ? 'Price Drop' : 'Great Deal'}
-                </div>
+                {discount > 0 && (
+                  <div className="absolute left-3 top-3">
+                    <span className="mp-thumb-badge bg-emerald-700">New price</span>
+                  </div>
+                )}
               </div>
               <div className="p-4 flex-1 flex flex-col justify-between">
                 <div>
-                  <h3 className="font-bold text-ink-heading group-hover:text-orange-600 transition-colors">
+                  <h3 className="font-semibold text-ink-heading group-hover:text-cta">
                     {title}
                   </h3>
                   <div className="mt-2 flex items-baseline gap-2">
-                    <p className="text-xl font-extrabold text-ink-heading">${(item.priceCents / 100).toLocaleString()}</p>
+                    <p className="text-lg font-bold tabular-nums text-ink">${(item.priceCents / 100).toLocaleString()}</p>
                     {discount > 0 && (
                       <p className="text-xs font-bold text-status-success-text">
                         ${(discount / 100).toLocaleString()} drop
@@ -56,7 +59,11 @@ export function GenericDealsCarousel() {
                   </div>
                 </div>
                 <div className="mt-4 pt-4 border-t border-silver-100 flex justify-between text-xs text-ink-muted font-medium">
-                  {item.mileage > 0 && <span>{item.mileage.toLocaleString()} mi</span>}
+                  {item.mileage > 0 ? (
+                    <span>{formatUsage(item.mileage, item.usageUnit === 'hours' || schema.id === 'BOATS' ? 'hours' : 'miles')}</span>
+                  ) : item.trim ? (
+                    <span>{item.trim}</span>
+                  ) : null}
                   <span>{item.dealerName}</span>
                 </div>
               </div>

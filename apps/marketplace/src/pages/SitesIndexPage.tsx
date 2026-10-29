@@ -1,16 +1,15 @@
 import { useState, useEffect, useMemo } from 'react';
 import { usePageMeta } from '../hooks/usePageMeta.ts';
 import { PageShell } from '../components/layout/PageShell.tsx';
-import { listCategorySchemas, categoryIdToSlug, type BusinessCategoryId } from '@auto-dealer/category-schemas';
-import { listingHref, sellerHref, listHref } from '../lib/routes.ts';
+import { listCategorySchemas, categoryIdToSlug, resolveCategorySchema, type BusinessCategoryId } from '@auto-dealer/category-schemas';
+import { sellerHref, listHref } from '../lib/routes.ts';
+import { formatPrice } from '../lib/display.ts';
+import { fromVehicleCard, fromCategoryItemCard, type ConsumerListingCard } from '../lib/listingReadModel.ts';
 import {
-  VERTICAL_GROUPS,
   CATEGORY_VERTICAL_META,
   type VerticalGroupId,
-  type CategoryVerticalMeta,
 } from '../data/productVerticals.ts';
 import { CategoryIcon, DealerGridMark } from '../components/ui/CategoryIcons.tsx';
-import { CategoryPreviewModal } from '../components/ui/CategoryPreviewModal.tsx';
 
 type ApiSiteSummary = {
   category: string;
@@ -22,24 +21,6 @@ type ApiSiteSummary = {
   tagline: string;
 };
 
-type ApiVehicleSummary = {
-  listingId: string;
-  stockNumber: string;
-  year: number;
-  make: string;
-  model: string;
-  trim: string | null;
-  condition: string;
-  priceCents: number;
-  mileage: number;
-  exteriorColor: string;
-  mediaUrls: string[];
-  dealerId: string;
-  dealerName: string;
-  dealerCity: string;
-  dealerState: string;
-};
-
 export default function SitesIndexPage() {
   usePageMeta(
     'DealerGrid Marketplace — Multi-Industry Product Discovery',
@@ -47,11 +28,9 @@ export default function SitesIndexPage() {
   );
 
   const [apiSites, setApiSites] = useState<Record<string, ApiSiteSummary>>({});
-  const [featuredVehicles, setFeaturedVehicles] = useState<ApiVehicleSummary[]>([]);
-  const [selectedVertical, setSelectedVertical] = useState<'all' | VerticalGroupId>('all');
+  const [featuredListings, setFeaturedListings] = useState<ConsumerListingCard[]>([]);
   const [searchQuery, setSearchQuery] = useState('');
-  const [searchCategory, setSearchCategory] = useState<'automotive' | 'boats' | 'trailers-powersports-rv'>('automotive');
-  const [previewMeta, setPreviewMeta] = useState<CategoryVerticalMeta | null>(null);
+  const [searchCategory, setSearchCategory] = useState<'automotive' | 'boats' | 'ebooks' | 'trailers-powersports-rv'>('automotive');
 
   // Fetch live site metadata and counts from the API
   useEffect(() => {
@@ -70,15 +49,43 @@ export default function SitesIndexPage() {
         // Fallback to local schema defaults
       });
 
-    // Fetch live inventory for the visual showcase
-    fetch('/api/marketplace/vehicles?limit=6')
-      .then((res) => (res.ok ? res.json() : null))
-      .then((data: { vehicles?: ApiVehicleSummary[] } | null) => {
-        if (cancelled || !data?.vehicles) return;
-        setFeaturedVehicles(data.vehicles);
+    // Fetch live inventory across eligible categories for universal discovery
+    Promise.all([
+      fetch('/api/marketplace/vehicles?category=automotive&pageSize=12').then((res) => (res.ok ? res.json() : null)),
+      fetch('/api/marketplace/vehicles?category=boats&pageSize=12').then((res) => (res.ok ? res.json() : null)),
+      fetch('/api/marketplace/category-items?pageSize=12').then((res) => (res.ok ? res.json() : null)),
+    ])
+      .then(([autoData, boatData, bookData]) => {
+        if (cancelled) return;
+        const cards: ConsumerListingCard[] = [];
+
+        if (autoData?.vehicles?.length) {
+          const autoSchema = resolveCategorySchema('AUTOMOTIVE');
+          for (const v of autoData.vehicles) {
+            cards.push(fromVehicleCard(v, autoSchema, 'automotive'));
+          }
+        }
+
+        if (boatData?.vehicles?.length) {
+          const boatSchema = resolveCategorySchema('BOATS');
+          for (const v of boatData.vehicles) {
+            cards.push(fromVehicleCard(v, boatSchema, 'boats'));
+          }
+        }
+
+        if (bookData?.items?.length) {
+          for (const item of bookData.items) {
+            const itemCatId = (item.categoryId as BusinessCategoryId) || 'EBOOKS';
+            const itemSchema = resolveCategorySchema(itemCatId);
+            const itemSlug = categoryIdToSlug(itemCatId);
+            cards.push(fromCategoryItemCard(item, itemSchema, itemSlug));
+          }
+        }
+
+        setFeaturedListings(cards);
       })
       .catch(() => {
-        // Non-fatal if vehicle fetch fails
+        // Non-fatal if fetch fails
       });
 
     return () => {
@@ -111,7 +118,7 @@ export default function SitesIndexPage() {
 
       const siteApi = apiSites[id];
       const isLive = siteApi ? siteApi.status === 'active' && siteApi.listingCount > 0 : verticalMeta.defaultStatus === 'active';
-      const listingCount = siteApi?.listingCount ?? (id === 'AUTOMOTIVE' ? 14 : id === 'BOATS' ? 5 : id === 'TRAILERS_POWERSPORTS_RV' ? 4 : 0);
+      const listingCount = siteApi?.listingCount ?? (id === 'AUTOMOTIVE' ? 5 : id === 'BOATS' ? 2 : id === 'EBOOKS' ? 1 : 0);
 
       return {
         schema,
@@ -128,26 +135,60 @@ export default function SitesIndexPage() {
     return allCategories.filter((c) => c.isLive);
   }, [allCategories]);
 
-  const comingSoonCategories = useMemo(() => {
-    return allCategories.filter((c) => !c.isLive);
-  }, [allCategories]);
+  // Derive featured sellers dynamically from active published listings
+  const featuredSellers = useMemo(() => {
+    const map = new Map<
+      string,
+      {
+        sellerId: string;
+        sellerName: string;
+        sellerCity: string | null;
+        sellerState: string | null;
+        categorySlug: string;
+        categoryLabel: string;
+        listingCount: number;
+      }
+    >();
 
-  // Filtered list for the Coming Soon directory
-  const filteredComingSoon = useMemo(() => {
-    return comingSoonCategories.filter(({ verticalMeta }) => {
-      if (selectedVertical !== 'all' && verticalMeta.verticalId !== selectedVertical) {
-        return false;
+    for (const card of featuredListings) {
+      if (!card.sellerId) continue;
+      if (!map.has(card.sellerId)) {
+        let categoryLabel = 'Automotive';
+        if (card.categoryId === 'BOATS') categoryLabel = 'Marine & Boats';
+        else if (card.categoryId === 'EBOOKS') categoryLabel = 'Digital Books';
+        else if (card.categoryId === 'SONGS') categoryLabel = 'Music & Audio';
+        else if (card.categoryId === 'APPAREL') categoryLabel = 'Apparel & Vintage';
+
+        map.set(card.sellerId, {
+          sellerId: card.sellerId,
+          sellerName: card.sellerName,
+          sellerCity: card.sellerCity || null,
+          sellerState: card.sellerState || null,
+          categorySlug: card.categorySlug,
+          categoryLabel,
+          listingCount: 0,
+        });
       }
-      if (searchQuery.trim()) {
-        const query = searchQuery.toLowerCase().trim();
-        const matchesName = verticalMeta.name.toLowerCase().includes(query);
-        const matchesDesc = verticalMeta.shortDesc.toLowerCase().includes(query);
-        const matchesItems = verticalMeta.typicalItems.some((item) => item.toLowerCase().includes(query));
-        return matchesName || matchesDesc || matchesItems;
+      map.get(card.sellerId)!.listingCount += 1;
+    }
+
+    const sellers = Array.from(map.values());
+    // Prioritize diverse category representation across featured sellers
+    const distinctCategorySellers: typeof sellers = [];
+    const seenCategories = new Set<string>();
+    for (const s of sellers) {
+      if (!seenCategories.has(s.categorySlug)) {
+        seenCategories.add(s.categorySlug);
+        distinctCategorySellers.push(s);
       }
-      return true;
-    });
-  }, [comingSoonCategories, selectedVertical, searchQuery]);
+    }
+    for (const s of sellers) {
+      if (!distinctCategorySellers.some((existing) => existing.sellerId === s.sellerId)) {
+        distinctCategorySellers.push(s);
+      }
+    }
+    return distinctCategorySellers;
+  }, [featuredListings]);
 
   // Parse natural language or structured search queries
   const parseSearchQuery = (rawInput: string) => {
@@ -235,6 +276,7 @@ export default function SitesIndexPage() {
                 >
                   <option value="automotive">Vehicles (Cars, Trucks)</option>
                   <option value="boats">Boats &amp; Marine</option>
+                  <option value="ebooks">Digital Books</option>
                   <option value="trailers-powersports-rv">Powersports &amp; RV</option>
                 </select>
               </div>
@@ -279,23 +321,18 @@ export default function SitesIndexPage() {
           <div className="mt-5 flex flex-wrap items-center justify-center gap-2 text-xs">
             <span className="text-slate-400 font-medium">Popular:</span>
             <a
+              href="#/automotive/list?q=toyota"
+              className="rounded-full bg-white/10 hover:bg-white/20 px-3 py-1 font-medium text-slate-200 transition"
+              title="Search Toyota vehicles"
+            >
+              Toyota RAV4
+            </a>
+            <a
               href="#/automotive/list?maxPrice=3000000"
               className="rounded-full bg-white/10 hover:bg-white/20 px-3 py-1 font-medium text-slate-200 transition"
               title="Vehicles under $30,000"
             >
               Under $30k
-            </a>
-            <a
-              href="#/automotive/list?q=truck"
-              className="rounded-full bg-white/10 hover:bg-white/20 px-3 py-1 font-medium text-slate-200 transition"
-            >
-              Trucks
-            </a>
-            <a
-              href="#/automotive/list?q=suv"
-              className="rounded-full bg-white/10 hover:bg-white/20 px-3 py-1 font-medium text-slate-200 transition"
-            >
-              SUVs
             </a>
             <a
               href="#/automotive/list?q=honda"
@@ -304,22 +341,28 @@ export default function SitesIndexPage() {
               Honda
             </a>
             <a
-              href="#/automotive/list?q=bmw"
-              className="rounded-full bg-white/10 hover:bg-white/20 px-3 py-1 font-medium text-slate-200 transition"
-            >
-              BMW
-            </a>
-            <a
               href="#/boats/list"
               className="rounded-full bg-white/10 hover:bg-white/20 px-3 py-1 font-medium text-slate-200 transition"
             >
-              Boats
+              Boats &amp; Marine
             </a>
             <a
-              href="#/trailers-powersports-rv/list"
+              href="#/boats/list?q=coastal"
               className="rounded-full bg-white/10 hover:bg-white/20 px-3 py-1 font-medium text-slate-200 transition"
             >
-              Powersports &amp; RV
+              Coastal Watercraft
+            </a>
+            <a
+              href="#/ebooks/list"
+              className="rounded-full bg-white/10 hover:bg-white/20 px-3 py-1 font-medium text-slate-200 transition"
+            >
+              Digital E-Books
+            </a>
+            <a
+              href="#/ebooks/list?q=field"
+              className="rounded-full bg-white/10 hover:bg-white/20 px-3 py-1 font-medium text-slate-200 transition"
+            >
+              Harbor Field Notes
             </a>
           </div>
         </div>
@@ -327,77 +370,88 @@ export default function SitesIndexPage() {
 
       {/* ── 2. ACTUAL INVENTORY SHOWCASE (Visual Priority) ───────────────────── */}
       <section className="py-14 bg-surface-page border-b border-silver-200">
-        <div className="max-w-6xl mx-auto px-4 sm:px-6">
+        <div className="mp-rail">
           <div className="flex flex-col sm:flex-row items-start sm:items-end justify-between gap-4 mb-8">
             <div>
               <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-emerald-700">
                 <span className="h-2 w-2 rounded-full bg-emerald-500 animate-pulse" />
-                Live On Dealer Lots • Published Inventory
+                Live Published Inventory • Multi-Industry Discovery
               </div>
               <h2 className="text-2xl sm:text-3xl font-extrabold text-navy-950 tracking-tight mt-1">
-                Recently Published Inventory
+                Recently Published Across All Categories
               </h2>
               <p className="text-sm text-ink-muted mt-0.5">
-                Explore actual vehicles with documented mileage, transparent window pricing, and direct dealership contacts.
+                Explore real inventory with transparent pricing directly from connected automotive dealerships, marinas, and digital publishers.
               </p>
             </div>
             <a
-              href={listHref('automotive')}
+              href="#available-markets"
               className="mp-btn-primary text-xs py-2.5 px-4 shrink-0 font-bold flex items-center gap-1.5 shadow-sm"
             >
-              <span>Explore All Automotive Lots ({apiSites.AUTOMOTIVE?.listingCount ?? 14})</span>
+              <span>Explore Available Markets</span>
               <span>→</span>
             </a>
           </div>
 
-          {/* Real Vehicle Inventory Cards */}
-          {featuredVehicles.length > 0 ? (
+          {/* Real Cross-Category Inventory Cards */}
+          {featuredListings.length > 0 ? (
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-              {featuredVehicles.slice(0, 6).map((v) => {
-                const title = `${v.year} ${v.make} ${v.model} ${v.trim || ''}`.trim();
-                const priceFormatted = `$${(v.priceCents / 100).toLocaleString('en-US')}`;
-                const mileageFormatted = `${v.mileage.toLocaleString('en-US')} miles`;
-                const imgUrl = v.mediaUrls?.[0] || '/demo-assets/suv-white.svg';
+              {featuredListings.map((card) => {
+                const priceFormatted = formatPrice(card.priceCents);
+                const imgUrl = card.mediaUrls?.[0] || '/demo-assets/suv-white.svg';
+                const categoryLabel = card.categoryId === 'AUTOMOTIVE' ? 'Automotive' : card.categoryId === 'BOATS' ? 'Boats' : card.categoryId === 'EBOOKS' ? 'Digital Books' : card.categoryId;
 
                 return (
                   <article
-                    key={v.listingId}
+                    key={`${card.categorySlug}-${card.listingId}`}
                     className="group bg-white rounded-2xl border border-silver-200 overflow-hidden shadow-elevation-1 hover:shadow-elevation-2 hover:border-cta/40 transition flex flex-col justify-between"
                   >
                     <div>
                       {/* Image Frame */}
                       <a
-                        href={listingHref('automotive', v.listingId, title)}
-                        className="relative aspect-[16/10] bg-silver-100 overflow-hidden flex items-center justify-center p-4 block"
+                        href={card.listingUrl}
+                        className="relative block aspect-[16/10] overflow-hidden bg-[#e8eef3]"
                       >
                         <img
                           src={imgUrl}
-                          alt={title}
-                          className="max-h-full max-w-full object-contain group-hover:scale-105 transition duration-300"
+                          alt=""
+                          className="absolute inset-0 h-full w-full object-contain p-5"
                           loading="lazy"
                         />
-                        <div className="absolute top-3 left-3 rounded-full bg-navy-950/80 backdrop-blur-sm px-2.5 py-0.5 text-[11px] font-bold text-white uppercase tracking-wider">
-                          {v.condition}
-                        </div>
-                        <div className="absolute bottom-3 right-3 rounded-lg bg-white/95 backdrop-blur-sm px-2.5 py-1 text-base font-extrabold text-navy-950 shadow-sm">
-                          {priceFormatted}
+                        <div className="absolute left-3 top-3 flex items-center gap-1.5">
+                          <span className="mp-thumb-badge bg-navy-800">
+                            {card.condition === 'NEW' ? 'New' : card.condition === 'CPO' ? 'Certified' : 'Used'}
+                          </span>
+                          <span className="rounded-md bg-white/95 px-2 py-1 text-[11px] font-semibold leading-none text-ink-heading shadow-sm">
+                            {categoryLabel}
+                          </span>
                         </div>
                       </a>
 
-                      {/* Listing Details */}
-                      <div className="p-5 pb-3">
+                      <div className="px-4 pb-3 pt-3.5">
                         <a
-                          href={listingHref('automotive', v.listingId, title)}
-                          className="font-bold text-lg text-navy-950 group-hover:text-cta transition-colors line-clamp-1 block"
+                          href={card.listingUrl}
+                          className="block truncate text-[15px] font-semibold text-ink-heading transition-colors group-hover:text-cta"
                         >
-                          {title}
+                          {card.title}
                         </a>
-                        <div className="flex items-center gap-2 text-xs text-ink-muted mt-1.5 flex-wrap">
-                          <span className="font-semibold text-slate-700">{mileageFormatted}</span>
-                          <span>•</span>
-                          <span>{v.exteriorColor}</span>
-                          <span>•</span>
-                          <span>Stock #{v.stockNumber}</span>
+                        <p className="mt-1 text-lg font-bold tabular-nums tracking-tight text-ink">{priceFormatted}</p>
+                        <div className="mt-1 flex flex-wrap items-center gap-2 text-sm text-ink-muted">
+                          {card.primarySpec && (
+                            <>
+                              <span className="font-semibold text-slate-700">{card.primarySpec.value}</span>
+                              <span>•</span>
+                            </>
+                          )}
+                          {card.subtitle && (
+                            <>
+                              <span>{card.subtitle}</span>
+                              <span>•</span>
+                            </>
+                          )}
+                          {card.stockNumber && (
+                            <span>Ref #{card.stockNumber}</span>
+                          )}
                         </div>
                       </div>
                     </div>
@@ -406,17 +460,19 @@ export default function SitesIndexPage() {
                     <div className="p-5 pt-3 border-t border-silver-100 bg-surface-page/50 flex flex-col gap-3">
                       <div className="flex items-center justify-between text-xs text-ink-muted">
                         <a
-                          href={sellerHref('automotive', v.dealerId)}
+                          href={sellerHref(card.categorySlug, card.sellerId)}
                           className="font-semibold text-navy-900 hover:text-cta transition truncate max-w-[200px]"
-                          title={`View ${v.dealerName}`}
+                          title={`View ${card.sellerName}`}
                         >
-                          {v.dealerName}
+                          {card.sellerName}
                         </a>
-                        <span className="shrink-0">{v.dealerCity}, {v.dealerState}</span>
+                        {card.sellerCity && (
+                          <span className="shrink-0">{card.sellerCity}, {card.sellerState}</span>
+                        )}
                       </div>
 
                       <a
-                        href={listingHref('automotive', v.listingId, title)}
+                        href={card.listingUrl}
                         className="w-full mp-btn-secondary py-2 px-3 text-xs font-bold text-center flex items-center justify-center gap-1 hover:border-cta/40 transition"
                       >
                         <span>View Listing &amp; Contact Seller</span>
@@ -429,7 +485,7 @@ export default function SitesIndexPage() {
             </div>
           ) : (
             <div className="p-8 text-center bg-white rounded-2xl border border-silver-200">
-              <p className="text-sm text-ink-muted">Loading live inventory from connected dealerships...</p>
+              <p className="text-sm text-ink-muted">Loading live inventory from connected sellers...</p>
             </div>
           )}
         </div>
@@ -437,7 +493,7 @@ export default function SitesIndexPage() {
 
       {/* ── 3. HOW BUYING WORKS (Shopper Journey) ────────────────────────────── */}
       <section className="py-14 bg-white border-b border-silver-200">
-        <div className="max-w-6xl mx-auto px-4 sm:px-6">
+        <div className="mp-rail">
           <div className="text-center max-w-2xl mx-auto mb-10">
             <div className="inline-flex items-center gap-1.5 rounded-full bg-navy-100 px-3 py-1 text-xs font-bold text-navy-900 mb-2">
               <span>HOW IT WORKS</span>
@@ -502,9 +558,78 @@ export default function SitesIndexPage() {
         </div>
       </section>
 
-      {/* ── 4. AVAILABLE NOW — PUBLISHED INVENTORY CATEGORIES ───────────────── */}
-      <section className="py-14 bg-surface-page border-b border-silver-200">
-        <div className="max-w-6xl mx-auto px-4 sm:px-6">
+      {/* ── SELLER DISCOVERY (Direct Merchants & Dealerships) ──────────────── */}
+      <section className="py-14 bg-white border-b border-silver-200">
+        <div className="mp-rail">
+          <div className="flex flex-col sm:flex-row items-start sm:items-end justify-between gap-4 mb-8">
+            <div>
+              <div className="inline-flex items-center gap-1.5 rounded-full bg-blue-50 px-2.5 py-0.5 text-xs font-bold text-cta border border-blue-200 mb-2">
+                <span>DIRECT SELLER NETWORK</span>
+              </div>
+              <h2 className="text-2xl sm:text-3xl font-extrabold text-navy-950 tracking-tight">
+                Featured Sellers
+              </h2>
+              <p className="text-sm text-ink-muted mt-1">
+                Browse dedicated storefronts with active inventory and direct inquiry routing.
+              </p>
+            </div>
+          </div>
+
+          {featuredSellers.length === 0 ? (
+            <div className="rounded-2xl border border-silver-200 bg-surface-page p-8 text-center text-sm text-ink-muted">
+              Loading active sellers...
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+              {featuredSellers.slice(0, 4).map((seller) => {
+                const locationStr = [seller.sellerCity, seller.sellerState].filter(Boolean).join(', ');
+                return (
+                  <div
+                    key={seller.sellerId}
+                    className="group bg-surface-page rounded-2xl p-5 border border-silver-200 hover:border-cta/40 hover:shadow-elevation-2 transition flex flex-col justify-between"
+                  >
+                    <div>
+                      <div className="flex items-center justify-between gap-2 mb-3">
+                        <span className="inline-flex items-center gap-1 rounded bg-blue-50 px-2 py-0.5 text-[11px] font-bold text-blue-700">
+                          {seller.categoryLabel}
+                        </span>
+                        {locationStr && (
+                          <span className="text-[11px] text-ink-muted">{locationStr}</span>
+                        )}
+                      </div>
+                      <h3 className="font-bold text-base text-navy-950 group-hover:text-cta transition-colors mb-1">
+                        {seller.sellerName}
+                      </h3>
+                      <p className="text-xs text-ink-muted leading-relaxed mb-4">
+                        Active inventory published directly to the DealerGrid marketplace.
+                      </p>
+                      <div className="flex items-center gap-2 text-xs font-semibold text-ink-body">
+                        <span className="h-2 w-2 rounded-full bg-emerald-500" />
+                        <span>
+                          {seller.listingCount} {seller.listingCount === 1 ? 'Active Listing' : 'Active Listings'}
+                        </span>
+                      </div>
+                    </div>
+                    <div className="mt-5 pt-4 border-t border-silver-200/80">
+                      <a
+                        href={sellerHref(seller.categorySlug, seller.sellerId)}
+                        className="w-full mp-btn-primary py-2 px-3 text-xs font-bold flex items-center justify-center gap-1.5 shadow-sm"
+                      >
+                        <span>Visit Storefront</span>
+                        <span>→</span>
+                      </a>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          )}
+        </div>
+      </section>
+
+      {/* ── 4. AVAILABLE NOW — PUBLISHED INVENTORY ─────────────────────────── */}
+      <section id="available-markets" className="py-14 bg-surface-page border-b border-silver-200 scroll-mt-20">
+        <div className="mp-rail">
           <div className="flex flex-col sm:flex-row items-start sm:items-end justify-between gap-4 mb-8">
             <div>
               <div className="inline-flex items-center gap-1.5 rounded-full bg-emerald-50 px-2.5 py-0.5 text-xs font-bold text-emerald-800 border border-emerald-200 mb-2">
@@ -512,10 +637,10 @@ export default function SitesIndexPage() {
                 AVAILABLE NOW • PUBLISHED INVENTORY
               </div>
               <h2 className="text-2xl sm:text-3xl font-extrabold text-navy-950 tracking-tight">
-                Active Marketplace Categories
+                Available Markets
               </h2>
               <p className="text-sm text-ink-muted mt-1">
-                These categories have active published listings ready for browsing and direct inquiry.
+                These markets have active published listings ready for browsing and direct inquiry.
               </p>
             </div>
           </div>
@@ -585,128 +710,9 @@ export default function SitesIndexPage() {
         </div>
       </section>
 
-      {/* ── 5. COMING SOON — SUPPORTED CATEGORIES IN PREPARATION ───────────── */}
-      <section id="categories-grid" className="py-16 bg-white scroll-mt-20">
-        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center max-w-3xl mx-auto mb-10">
-            <div className="inline-flex items-center gap-1.5 rounded-full bg-silver-200 px-3 py-1 text-xs font-bold text-slate-700 mb-3">
-              <span>EXPANDING ARCHITECTURE • COMING SOON</span>
-            </div>
-            <h2 className="text-2xl sm:text-3xl font-extrabold text-navy-950 tracking-tight mb-2">
-              Supported Industry Verticals In Preparation
-            </h2>
-            <p className="text-sm text-ink-muted leading-relaxed">
-              DealerGrid’s unified commerce platform is built to support 18 specialized product verticals with standardized identifiers and seller storefronts. The categories below are currently being prepared for public seller listings.
-            </p>
-          </div>
-
-          {/* Industry Vertical Tabs */}
-          <div className="flex flex-wrap items-center justify-center gap-2 mb-8">
-            <button
-              type="button"
-              onClick={() => setSelectedVertical('all')}
-              className={`px-3.5 py-1.5 rounded-xl text-xs font-bold transition ${
-                selectedVertical === 'all'
-                  ? 'bg-navy-950 text-white shadow-sm'
-                  : 'bg-silver-100 text-ink-body hover:bg-silver-200'
-              }`}
-            >
-              All Upcoming ({comingSoonCategories.length})
-            </button>
-            {VERTICAL_GROUPS.map((group) => {
-              const count = comingSoonCategories.filter((c) => c.verticalMeta.verticalId === group.id).length;
-              if (count === 0) return null;
-              const active = selectedVertical === group.id;
-              return (
-                <button
-                  key={group.id}
-                  type="button"
-                  onClick={() => setSelectedVertical(group.id)}
-                  className={`px-3.5 py-1.5 rounded-xl text-xs font-bold transition flex items-center gap-1.5 ${
-                    active
-                      ? 'bg-navy-950 text-white shadow-sm'
-                      : 'bg-silver-100 text-ink-body hover:bg-silver-200'
-                  }`}
-                >
-                  <span>{group.shortLabel}</span>
-                  <span className={`text-[10px] rounded-full px-1.5 py-0.2 ${active ? 'bg-white/20 text-white' : 'bg-silver-200 text-ink-muted'}`}>
-                    {count}
-                  </span>
-                </button>
-              );
-            })}
-          </div>
-
-          {/* Grid of Coming Soon Categories */}
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {filteredComingSoon.map(({ schema, verticalMeta }) => {
-              return (
-                <article
-                  key={schema.id}
-                  className="group bg-surface-page rounded-2xl border border-silver-200 overflow-hidden hover:border-cta/40 hover:bg-white transition flex flex-col justify-between"
-                >
-                  <div className="p-6 pb-4">
-                    <div className="flex items-start justify-between gap-3 mb-4">
-                      <div
-                        className={`flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br ${verticalMeta.gradient} text-white shadow-sm group-hover:scale-105 transition-transform duration-200`}
-                      >
-                        <CategoryIcon name={verticalMeta.iconKey} size={24} />
-                      </div>
-                      <span className="inline-flex items-center gap-1 rounded-full bg-silver-100 px-2.5 py-1 text-xs font-semibold text-slate-700 border border-silver-200">
-                        <span className="h-1.5 w-1.5 rounded-full bg-slate-400" />
-                        Coming Soon
-                      </span>
-                    </div>
-
-                    <h3 className="text-lg font-bold text-navy-950 group-hover:text-cta transition-colors mb-1.5">
-                      {verticalMeta.name}
-                    </h3>
-                    <p className="text-xs text-ink-body leading-relaxed mb-4 line-clamp-2">
-                      {verticalMeta.shortDesc}
-                    </p>
-
-                    <div className="space-y-1.5">
-                      <div className="text-[10px] font-bold uppercase tracking-wider text-ink-muted">
-                        Supported Types
-                      </div>
-                      <div className="flex flex-wrap gap-1">
-                        {verticalMeta.typicalItems.slice(0, 3).map((item, idx) => (
-                          <span
-                            key={idx}
-                            className="rounded bg-white px-2 py-0.5 text-[11px] font-medium text-slate-700 border border-silver-200"
-                          >
-                            {item}
-                          </span>
-                        ))}
-                      </div>
-                    </div>
-
-                    <div className="mt-4 pt-3 border-t border-silver-200/80 flex items-center justify-between text-xs text-ink-muted">
-                      <span className="font-medium text-slate-600">Standard ID:</span>
-                      <span className="font-semibold text-navy-900">{verticalMeta.primaryIdentifier.split(' ')[0]}</span>
-                    </div>
-                  </div>
-
-                  <div className="p-6 pt-0">
-                    <button
-                      type="button"
-                      onClick={() => setPreviewMeta(verticalMeta)}
-                      className="w-full mp-btn-secondary py-2 px-3 text-xs font-bold flex items-center justify-center gap-1.5 hover:border-cta/40 transition"
-                    >
-                      <span>View Category Specifications</span>
-                      <span className="text-cta">↗</span>
-                    </button>
-                  </div>
-                </article>
-              );
-            })}
-          </div>
-        </div>
-      </section>
-
       {/* ── 6. SELLER ONBOARDING CALLOUT (Shopper Secondary) ─────────────────── */}
       <section className="py-12 bg-surface-page border-b border-silver-200">
-        <div className="max-w-4xl mx-auto px-4 sm:px-6">
+        <div className="mp-rail">
           <div className="rounded-2xl bg-white border border-silver-200 p-6 sm:p-8 shadow-sm flex flex-col sm:flex-row items-center justify-between gap-6">
             <div>
               <div className="text-xs font-bold uppercase tracking-wider text-cta mb-1">
@@ -733,8 +739,8 @@ export default function SitesIndexPage() {
       </section>
 
       {/* ── 7. EDITORIAL SITEMAP & FOOTER ────────────────────────────────────── */}
-      <footer className="bg-navy-950 text-slate-400 py-14 px-4 sm:px-6 border-t border-white/10 text-xs">
-        <div className="max-w-6xl mx-auto space-y-10">
+      <footer className="border-t border-white/10 bg-navy-950 py-14 text-xs text-slate-400">
+        <div className="mp-rail space-y-10">
           {/* Top Row: Brand & Links */}
           <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-6 pb-6 border-b border-white/10">
             <div className="flex items-center gap-3">
@@ -746,54 +752,13 @@ export default function SitesIndexPage() {
             </div>
 
             <div className="flex flex-wrap items-center gap-4 text-xs font-semibold text-slate-300">
-              <a href="#/automotive/list" className="hover:text-white transition">Vehicles</a>
-              <span className="text-slate-700">•</span>
-              <a href="#/boats/list" className="hover:text-white transition">Boats</a>
-              <span className="text-slate-700">•</span>
-              <a href="#/trailers-powersports-rv/list" className="hover:text-white transition">Powersports</a>
-              <span className="text-slate-700">•</span>
+              {availableNowCategories.map(({ schema }) => (
+                <a key={schema.id} href={listHref(schema.marketplace.slug)} className="hover:text-white transition">
+                  {schema.label}
+                </a>
+              ))}
               <a href="http://localhost:5173/app/" className="hover:text-white transition">Seller Portal ↗</a>
-              <span className="text-slate-700">•</span>
-              <a href="http://localhost:3000/health" className="hover:text-white transition">API Health</a>
             </div>
-          </div>
-
-          {/* Directory Columns by Vertical */}
-          <div className="grid grid-cols-2 md:grid-cols-5 gap-6 text-xs">
-            {VERTICAL_GROUPS.map((group) => {
-              const categories = allCategories.filter((c) => c.verticalMeta.verticalId === group.id);
-              return (
-                <div key={group.id} className="space-y-2.5">
-                  <h4 className="font-bold uppercase tracking-wider text-white text-[11px]">
-                    {group.shortLabel}
-                  </h4>
-                  <ul className="space-y-1.5">
-                    {categories.map(({ schema, verticalMeta, isLive }) => (
-                      <li key={schema.id}>
-                        {isLive ? (
-                          <a
-                            href={listHref(schema.marketplace.slug)}
-                            className="hover:text-white transition flex items-center gap-1.5 text-slate-300"
-                          >
-                            <span className="h-1.5 w-1.5 rounded-full bg-emerald-400 shrink-0" />
-                            <span className="truncate">{schema.label}</span>
-                          </a>
-                        ) : (
-                          <button
-                            type="button"
-                            onClick={() => setPreviewMeta(verticalMeta)}
-                            className="hover:text-white text-left transition flex items-center gap-1.5 text-slate-500"
-                          >
-                            <span className="h-1 w-1 rounded-full bg-slate-600 shrink-0" />
-                            <span className="truncate">{schema.label}</span>
-                          </button>
-                        )}
-                      </li>
-                    ))}
-                  </ul>
-                </div>
-              );
-            })}
           </div>
 
           {/* Bottom Compliance & Policy */}
@@ -810,11 +775,6 @@ export default function SitesIndexPage() {
         </div>
       </footer>
 
-      {/* ── 8. CATEGORY SPECIFICATION MODAL ──────────────────────────────────── */}
-      <CategoryPreviewModal
-        meta={previewMeta}
-        onClose={() => setPreviewMeta(null)}
-      />
     </PageShell>
   );
 }

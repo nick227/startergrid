@@ -1008,6 +1008,12 @@ export async function getMarketplaceDealerIndex(
 // consumer-marketplace listing — same gate semantics as vehicles above.
 
 export type MarketplaceCategoryItemCard = {
+  condition: string | null;
+  brand: string | null;
+  size: string | null;
+  color: string | null;
+  material: string | null;
+  era: string | null;
   identity: ListingIdentity;
   listingId:   string;        // CategoryInventoryItem.id
   categoryId:  string;
@@ -1054,6 +1060,7 @@ function safeNum(data: Record<string, unknown>, key: string): number | null {
 function shapeCategoryItemCard(
   row: {
     marketplaceListings?: { id: string }[];
+    condition?: string | null;
     id: string; categoryId: string; stockNumber: string | null; priceCents: number | null;
     createdAt: Date; data: unknown;
     media: { url: string; sortOrder: number }[];
@@ -1067,6 +1074,12 @@ function shapeCategoryItemCard(
 
   return {
     identity: { source: 'category_item', inventoryId: row.id, dealershipId: row.dealership.id, categoryId: row.categoryId, publicationId: row.marketplaceListings?.[0]?.id ?? null },
+    condition: row.condition ?? null,
+    brand: safeStr(data, 'brand'),
+    size: safeStr(data, 'size'),
+    color: safeStr(data, 'color'),
+    material: safeStr(data, 'material'),
+    era: safeStr(data, 'era'),
     listingId:   row.id,
     categoryId:  row.categoryId,
     stockNumber: row.stockNumber,

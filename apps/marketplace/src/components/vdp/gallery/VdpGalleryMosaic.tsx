@@ -58,7 +58,7 @@ export function VdpGalleryMosaic({ map, alt, onOpenItem }: Props) {
   const remainingCount = totalItems - 1 - thumbnails.length;
 
   return (
-    <section aria-label="Vehicle gallery" className="flex flex-col gap-2 md:flex-row md:h-[550px] lg:h-[700px] xl:h-[800px]">
+    <section aria-label="Vehicle gallery" className="flex flex-col gap-2 md:flex-row md:h-[460px] lg:h-[520px]">
       <button
         type="button"
         className="mp-focus relative flex-1 overflow-hidden group"
@@ -95,7 +95,7 @@ export function VdpGalleryMosaic({ map, alt, onOpenItem }: Props) {
       </button>
 
       {thumbnails.length > 0 && (
-        <div className="hidden md:grid grid-cols-3 grid-rows-6 gap-2 h-full md:w-[400px] lg:w-[500px] xl:w-[600px]">
+        <div className="hidden md:grid grid-cols-3 grid-rows-6 gap-2 h-full md:w-[320px] lg:w-[360px]">
           {thumbnails.map((thumb, index) => {
             const isLast = index === thumbnails.length - 1;
             const item = thumb.item;

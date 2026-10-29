@@ -545,39 +545,6 @@ export class MarketplaceService {
         });
     }
     /**
-     * Mark a vehicle sold from its marketplace page (dealership staff)
-     * Requires an operator session with access to the vehicle's dealership; the public
-     * listing id alone never authorizes it. Anonymous requests are rejected before any
-     * lookup. The sale goes through the inventory lifecycle and records no sale details
-     * or channel attribution.
-     *
-     * @returns any Vehicle marked sold
-     * @throws ApiError
-     */
-    public static markMarketplaceVehicleSold({
-        listingId,
-    }: {
-        listingId: string,
-    }): CancelablePromise<{
-        ok: boolean;
-        soldAt: string;
-    }> {
-        return __request(OpenAPI, {
-            method: 'POST',
-            url: '/api/marketplace/vehicles/{listingId}/sold',
-            path: {
-                'listingId': listingId,
-            },
-            errors: {
-                401: `Operator authentication required`,
-                403: `Operator lacks access to this dealership`,
-                404: `Not found`,
-                409: `Inventory safety hold`,
-                422: `Lifecycle transition rejected`,
-            },
-        });
-    }
-    /**
      * Record a first-party marketplace engagement event
      * Captures observed_first_party channel events for consumer-marketplace.
      * Does not return analytics. GET marketplace endpoints remain analytics-free.
@@ -696,7 +663,7 @@ export class MarketplaceService {
         });
     }
     /**
-     * Browse category inventory items (e-books and other digital categories)
+     * Browse eligible category inventory items, including apparel and digital titles
      * Returns paginated marketplace-eligible category inventory items.
      * Supports filtering by categoryId, dealer, page, and pageSize.
      * Items must be READY with an active consumer-marketplace listing and a price set.
@@ -711,7 +678,7 @@ export class MarketplaceService {
         pageSize = 24,
     }: {
         /**
-         * Business category ID (e.g. EBOOKS). Required.
+         * Optional category ID or slug. Disabled categories return 404. Omit to browse all eligible category items.
          */
         categoryId?: string,
         /**
@@ -759,6 +726,33 @@ export class MarketplaceService {
             },
             errors: {
                 404: `Not found`,
+            },
+        });
+    }
+    /**
+     * Inquire about an eligible published category item
+     * @returns MarketplaceLeadCaptureResponse Inquiry persisted against the actual item and seller
+     * @throws ApiError
+     */
+    public static captureMarketplaceCategoryItemLead({
+        listingId,
+        requestBody,
+    }: {
+        listingId: string,
+        requestBody: MarketplaceLeadCaptureRequest,
+    }): CancelablePromise<MarketplaceLeadCaptureResponse> {
+        return __request(OpenAPI, {
+            method: 'POST',
+            url: '/api/marketplace/category-items/{listingId}/leads',
+            path: {
+                'listingId': listingId,
+            },
+            body: requestBody,
+            mediaType: 'application/json',
+            errors: {
+                400: `Bad request — invalid query parameter value`,
+                404: `Not found`,
+                429: `Too many inquiries`,
             },
         });
     }

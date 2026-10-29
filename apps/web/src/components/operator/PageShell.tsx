@@ -178,9 +178,6 @@ export function PageShell({
                 {user && (
                   <OperatorAvatar user={user} onAvatarUpdated={refresh} />
                 )}
-                {lastRefresh && !refreshing && (
-                  <span className="text-xs text-navy-500">Updated {lastRefresh.toLocaleTimeString()}</span>
-                )}
                 {refreshing && <span className="animate-pulse text-xs text-ink-faint">Refreshing…</span>}
                 {onRefresh && (
                   <button

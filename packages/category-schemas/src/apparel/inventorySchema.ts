@@ -2,7 +2,7 @@ import type { CategoryInventorySchema } from '../types.js';
 
 /** One physical garment per SKU. No VIN, mileage, digital format or fulfillment fiction. */
 export const apparelInventorySchema: CategoryInventorySchema = {
-  categoryId: 'APPAREL', schemaVersion: '1.0.0',
+  categoryId: 'APPAREL', schemaVersion: '1.0.0', strictFieldValidation: true,
   validConditionValues: ['NEW', 'USED', 'VINTAGE'],
   primaryIdentifier: { fieldKey: 'sku', label: 'SKU' },
   externalIdentifiers: [{ fieldKey: 'barcode', label: 'Barcode', helpText: 'Optional manufacturer barcode; the seller SKU identifies this garment.' }],

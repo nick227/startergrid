@@ -1,3 +1,4 @@
+import { resolveListingIdentity, type ListingIdentity } from '../marketplace/listingIdentity.js';
 import type { Prisma, PrismaClient } from '@prisma/client';
 import type { ChannelEventInput } from './channelMetrics.js';
 import { MARKETPLACE_PLATFORM_SLUG } from './channelMetrics.js';
@@ -43,6 +44,7 @@ export async function recordMarketplaceChannelEvent(
   prisma: PrismaClient,
   input: {
     eventType:   Prisma.ChannelEventCreateInput['eventType'];
+    inventorySource?: ListingIdentity['source'];
     listingId?:  string | null;
     dealerId?:   string | null;
     quantity?:   number;
@@ -54,14 +56,12 @@ export async function recordMarketplaceChannelEvent(
   const listingId: string | null = input.listingId ?? null;
 
   if (listingId) {
-    const vehicle = await prisma.vehicle.findFirst({
-      where:  { id: listingId, soldAt: null, removedAt: null, priceCents: { gt: 0 } },
-      select: { id: true, dealershipId: true, dealership: { select: { businessCategory: true } } },
+    const resolved = await resolveListingIdentity(prisma, input.inventorySource ?? 'vehicle', listingId, {
+      published: true, dealershipId: input.dealerId ?? undefined, categoryId: input.category ?? undefined,
     });
-    if (!vehicle) return null;
-    if (input.category && vehicle.dealership.businessCategory !== input.category) return null;
-    vehicleId = vehicle.id;
-    dealershipId = vehicle.dealershipId;
+    if (!resolved) return null;
+    vehicleId = resolved.identity.source === 'vehicle' ? resolved.identity.inventoryId : null;
+    dealershipId = resolved.identity.dealershipId;
   } else if (dealershipId) {
     const dealer = await prisma.dealershipProfile.findUnique({
       where:  { id: dealershipId },
@@ -81,7 +81,7 @@ export async function recordMarketplaceChannelEvent(
     vehicleId,
     listingId,
     quantity: input.quantity,
-    metadataJson: input.category ? { businessCategory: input.category } : null,
+    metadataJson: { ...(input.category ? { businessCategory: input.category } : {}), inventorySource: input.inventorySource ?? 'vehicle' },
   });
 
   return { eventId };

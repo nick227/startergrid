@@ -16,20 +16,48 @@
 }
 
 @layer components {
+  .mp-rail {
+    @apply mx-auto w-full max-w-7xl px-4 sm:px-6 lg:px-8;
+  }
+
   .mp-page {
-    @apply mx-auto w-full max-w-7xl px-4 pb-6 sm:px-6;
+    @apply mp-rail pb-10 pt-5 sm:pt-6;
   }
 
   .mp-card {
-    @apply surface-card-marketplace overflow-hidden;
+    @apply surface-card-marketplace overflow-hidden rounded-xl;
   }
 
   .mp-grid-vehicles {
-    @apply grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4;
+    @apply grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4;
   }
 
   .mp-aspect-vehicle {
     @apply aspect-[4/3];
+  }
+
+  .mp-thumb-well {
+    @apply relative aspect-[4/3] overflow-hidden bg-[#e8eef3];
+  }
+
+  .mp-thumb-badge {
+    @apply inline-flex items-center rounded-md px-2 py-1 text-[11px] font-semibold leading-none text-white shadow-sm;
+  }
+
+  .mp-home-heading {
+    @apply text-xl font-semibold tracking-tight text-ink-heading sm:text-2xl;
+  }
+
+  .mp-home-link {
+    @apply shrink-0 text-sm font-semibold text-cta hover:text-cta-hover;
+  }
+
+  .hide-scrollbar {
+    scrollbar-width: none;
+  }
+
+  .hide-scrollbar::-webkit-scrollbar {
+    display: none;
   }
 
   .mp-input {

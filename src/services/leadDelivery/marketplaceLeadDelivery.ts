@@ -27,6 +27,8 @@ export function buildMarketplaceLeadWebhookPayload(context: MarketplaceLeadDeliv
     },
     listing: {
       listingId: context.listingId,
+      ...(context.identity ? { identity: context.identity } : {}),
+      ...(context.categoryItem ? { title: context.categoryItem.title } : {}),
       stockNumber: context.vehicle.stockNumber,
       year: context.vehicle.year ?? null,
       make: context.vehicle.make ?? null,
@@ -58,7 +60,7 @@ function buildEmailSummary(context: MarketplaceLeadDeliveryContext): string {
     `Source: ${context.platformSlug}`,
     `Listing ID: ${context.listingId}`,
     `Dealer ID: ${context.dealershipId}`,
-    `Vehicle: ${vehicleLabel}`,
+    context.categoryItem ? `Listing: ${context.categoryItem.title}` : `Vehicle: ${vehicleLabel}`,
     `Stock Number: ${context.vehicle.stockNumber}`,
     context.contactName ? `Buyer Name: ${context.contactName}` : null,
     context.contactEmail ? `Buyer Email: ${context.contactEmail}` : null,
@@ -140,6 +142,8 @@ export function planMarketplaceLeadDeliveries(
 ): PlannedLeadDeliveryAttempt[] {
   return destinations
     .filter(destination => destination.enabled && destination.dealershipId === context.dealershipId)
+    // ADF is an automotive contract; never fabricate a vehicle for a category item.
+    .filter(destination => !context.categoryItem || destination.destinationType !== 'ADF_XML_EMAIL')
     .map(destination => buildAttempt(destination, context));
 }
 

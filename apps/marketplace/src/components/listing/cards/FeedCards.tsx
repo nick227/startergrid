@@ -1,9 +1,11 @@
-import type { MarketplaceFeedItem, MarketplaceVehicleCard } from '../../../lib/api.ts';
-import { formatDistanceAway, formatLocation, formatPrice, formatUsage, vehicleHeading } from '../../../lib/display.ts';
+import type { MarketplaceFeedItem } from '../../../lib/api.ts';
+import { formatDistanceAway, formatLocation, formatPrice } from '../../../lib/display.ts';
 import { listingHref } from '../../../lib/routes.ts';
-import { useCategoryId, useCategorySlug } from '../../../contexts/CategoryContext.tsx';
+import { useCategoryId, useCategorySlug, useCategorySchema } from '../../../contexts/CategoryContext.tsx';
 import { useTrackVisibleMarketplaceItem } from '../../../hooks/useTrackVisibleMarketplaceItem.ts';
+import { isNewArrival, NEW_ARRIVAL_LABEL } from '../../../features/listings/listingBadges.ts';
 import { FeedMediaCarousel } from '../../ui/FeedMediaCarousel.tsx';
+import { fromVehicleCard, type ConsumerListingCard } from '../../../lib/listingReadModel.ts';
 import { FavoriteButton } from '../../../features/favorites/FavoriteButton.tsx';
 
 type FeedItemProps = {
@@ -27,70 +29,93 @@ function VehicleFeedCard({
   index: number;
   compact: boolean;
 }) {
-  const card = item.vehicle;
+  const schema = useCategorySchema();
   const slug = useCategorySlug();
+  return <MarketplaceProductCard card={fromVehicleCard(item.vehicle, schema, slug)} index={index} compact={compact} impressionKey={item.impressionKey} />;
+}
+
+/** Shared product container for Browse and seller storefront inventory. */
+export function MarketplaceProductCard({ card, index = 0, compact = false, impressionKey }: {
+  card: ConsumerListingCard;
+  index?: number;
+  compact?: boolean;
+  impressionKey?: string;
+}) {
   const categoryId = useCategoryId();
   const articleRef = useTrackVisibleMarketplaceItem<HTMLElement>({
-    type: item.type,
-    impressionKey: item.impressionKey,
+    type: 'vehicle',
+    impressionKey: impressionKey ?? `storefront:${card.identity.source}:${card.listingId}`,
     listingId: card.listingId,
     category: categoryId,
   });
-  const title = vehicleHeading(card);
-  const location = formatLocation(card.dealerCity, card.dealerState) ?? '';
-  const href = listingHref(slug, card.listingId, title);
+  const title = card.title;
+  const location = formatLocation(card.sellerCity ?? null, card.sellerState ?? null) ?? '';
+  const href = listingHref(card.categorySlug, card.listingId, title);
+  const dropped = card.originalPriceCents != null && card.originalPriceCents > card.priceCents;
+  const recent = isNewArrival(card.listedAt);
 
   if (compact) {
     return (
-      <article ref={articleRef} className="group mp-card flex gap-3 p-2.5 transition hover:border-navy-500/40 hover:shadow-elevation-2">
-        <a href={href} className="mp-focus h-20 w-28 shrink-0 overflow-hidden rounded-lg bg-surface-inset">
+      <article ref={articleRef} className="group mp-card flex gap-3 p-2.5 transition hover:border-silver-300 hover:shadow-elevation-2">
+        <a href={href} className="mp-focus h-[4.75rem] w-[7.25rem] shrink-0 overflow-hidden rounded-lg bg-[#e8eef3]">
           {card.mediaUrls[0]
-            ? <img src={card.mediaUrls[0]} alt={title} className="h-full w-full object-cover" loading={index < 6 ? 'eager' : 'lazy'} decoding="async" />
+            ? <img src={card.mediaUrls[0]} alt={title} className="h-full w-full object-contain p-1.5" loading={index < 6 ? 'eager' : 'lazy'} decoding="async" />
             : <div className="h-full w-full" />}
         </a>
-        <div className="min-w-0 flex-1">
+        <div className="min-w-0 flex-1 py-0.5">
           <div className="flex items-start justify-between gap-2">
             <a href={href} className="mp-focus min-w-0 truncate text-sm font-semibold text-ink-heading hover:text-cta">
               {title}
             </a>
             <FavoriteButton listingId={card.listingId} />
           </div>
-          {card.trim && <p className="truncate text-xs text-ink-muted">{card.trim}</p>}
+          <VehicleSpec card={card} />
           <VehiclePrice card={card} />
-          <VehicleFacts card={card} location={location} />
+          <VehicleFacts location={location} distanceMiles={card.distanceMiles} />
         </div>
       </article>
     );
   }
 
   return (
-    <article ref={articleRef} className="group mp-card flex h-full flex-col transition hover:border-navy-500/40 hover:shadow-elevation-2">
+    <article ref={articleRef} className="group mp-card min-w-0 flex h-full flex-col transition hover:border-silver-300 hover:shadow-elevation-2">
       <div className="relative">
-        <a href={href} className="mp-focus block">
-          <FeedMediaCarousel mediaItems={card.mediaItems} fallbackImageUrls={card.mediaUrls} alt={title} eager={index < 6} />
-        </a>
-        <div className="absolute right-2 top-2 z-10">
+        <FeedMediaCarousel mediaItems={card.rawVehicle?.mediaItems ?? []} fallbackImageUrls={card.mediaUrls} alt={title} eager={index < 6} href={href} />
+        {(dropped || recent) && (
+          <div className="pointer-events-none absolute left-3 top-3 z-10 flex flex-wrap gap-1.5">
+            {recent && <span className="mp-thumb-badge bg-navy-800">{NEW_ARRIVAL_LABEL}</span>}
+            {dropped && <span className="mp-thumb-badge bg-emerald-700">New price</span>}
+          </div>
+        )}
+        <div className="absolute right-3 top-3 z-10">
           <FavoriteButton listingId={card.listingId} />
         </div>
       </div>
-      <div className="flex flex-col gap-0.5 px-3 py-2.5">
-        <a href={href} className="mp-focus line-clamp-2 text-sm font-semibold leading-snug text-ink-heading hover:text-cta">
+      <div className="flex flex-1 flex-col gap-1 px-3.5 pb-3.5 pt-3">
+        <a href={href} className="mp-focus line-clamp-2 text-[15px] font-semibold leading-snug text-ink-heading hover:text-cta">
           {title}
         </a>
-        {card.trim && <p className="truncate text-xs text-ink-muted">{card.trim}</p>}
+        <VehicleSpec card={card} />
         <VehiclePrice card={card} />
-        <VehicleFacts card={card} location={location} />
+        <VehicleFacts location={location} distanceMiles={card.distanceMiles} />
       </div>
     </article>
   );
 }
 
-function VehiclePrice({ card }: { card: MarketplaceVehicleCard }) {
+function VehicleSpec({ card }: { card: ConsumerListingCard }) {
+  const usage = card.primarySpec?.value ?? null;
+  const spec = [card.subtitle, usage].filter(Boolean).join(' · ');
+  if (!spec) return null;
+  return <p className="truncate text-sm text-ink-muted">{spec}</p>;
+}
+
+function VehiclePrice({ card }: { card: ConsumerListingCard }) {
   const previous = card.originalPriceCents;
   const dropped = previous != null && previous > card.priceCents;
   return (
-    <p className="flex items-baseline gap-2">
-      <span className="text-base font-bold tabular-nums text-ink">{formatPrice(card.priceCents)}</span>
+    <p className="flex flex-wrap items-baseline gap-2">
+      <span className="text-lg font-bold tabular-nums tracking-tight text-ink">{formatPrice(card.priceCents)}</span>
       {dropped && previous != null && (
         <span className="text-xs text-ink-muted line-through">{formatPrice(previous)}</span>
       )}
@@ -98,20 +123,15 @@ function VehiclePrice({ card }: { card: MarketplaceVehicleCard }) {
   );
 }
 
-function VehicleFacts({ card, location }: { card: MarketplaceVehicleCard; location: string }) {
-  const usage = card.mileage > 0
-    ? formatUsage(card.mileage, card.usageUnit === 'hours' ? 'hours' : 'miles')
-    : null;
-  const distance = card.distanceMiles != null ? formatDistanceAway(card.distanceMiles) : null;
-  if (!usage && !location && !distance) return null;
+function VehicleFacts({ location, distanceMiles }: { location: string; distanceMiles?: number | null }) {
+  const distance = distanceMiles != null ? formatDistanceAway(distanceMiles) : null;
+  if (!location && !distance) return null;
   return (
     <p className="truncate text-xs text-ink-muted">
-      {usage}
-      {usage && (location || distance) ? ' · ' : null}
       {location || null}
       {distance && (
         <>
-          {(usage || location) ? ' · ' : null}
+          {location ? ' · ' : null}
           <span data-testid="card-distance">{distance}</span>
         </>
       )}
@@ -129,7 +149,7 @@ function DealerPromoFeedCard({ item }: { item: Extract<MarketplaceFeedItem, { ty
         </div>
       )}
       <div className="flex flex-1 flex-col gap-4 p-5">
-        <span className="w-fit rounded-pill border border-orange-100 bg-orange-100 px-3 py-1 text-xs font-bold uppercase tracking-wide text-orange-600">
+        <span className="w-fit rounded-md bg-orange-50 px-2 py-1 text-[11px] font-semibold text-orange-700">
           Sponsored dealer
         </span>
         <div>

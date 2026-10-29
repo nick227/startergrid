@@ -100,6 +100,7 @@ describe('non-vehicle platform registry', () => {
 
   it('non-vehicle stubs are tagged for contract validation', () => {
     for (const platform of platformProfiles) {
+      if (platform.integrationClass === 'OWNED') continue; // first-party live adapter, not a non-vehicle stub
       if (!NON_VEHICLE_PLATFORM_CATEGORIES.some(c => platform.supportedCategories.includes(c))) continue;
       assert.equal(platform.testFixtures['validatesNonVehicleChannelStub'], true);
     }

@@ -35,11 +35,11 @@ export function ActiveListingFilterChips({ query, config, facets = [], onChange,
             }
             onChange({ ...query, [chip.key]: undefined, page: undefined });
           }}
-          className="mp-focus inline-flex min-h-9 items-center gap-2 rounded-pill border border-navy-500 bg-cta-light px-3 py-1.5 text-sm font-semibold text-cta"
+          className="mp-focus inline-flex h-8 items-center gap-1.5 rounded-full border border-silver-300 bg-white px-3 text-sm font-medium text-ink-heading transition hover:border-navy-400"
           aria-label={`Remove ${chip.label} filter`}
         >
           <span>{chip.label}</span>
-          <span aria-hidden="true">x</span>
+          <span aria-hidden="true" className="text-ink-faint">×</span>
         </button>
       ))}
       <button type="button" onClick={onClearAll} className="mp-btn-ghost min-h-9 px-3 py-1.5">

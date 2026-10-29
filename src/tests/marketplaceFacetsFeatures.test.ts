@@ -29,6 +29,7 @@ describe('Marketplace Facets Features', () => {
   it('EBOOKS omits brand/model facets', async () => {
     const prisma = {
       categoryInventoryItem: {
+        findMany: async () => [],
         count: async () => 0,
         aggregate: async () => ({
           _min: { priceCents: 100 },
@@ -46,7 +47,7 @@ describe('Marketplace Facets Features', () => {
 
   it('Generic enum facets render through customFacets (BOATS)', async () => {
     const prisma = {
-      categoryInventoryItem: {
+      vehicle: {
         count: async () => 5, // mock count for all custom facets
         aggregate: async () => ({
           _min: { priceCents: 100 },
@@ -66,6 +67,7 @@ describe('Marketplace Facets Features', () => {
   it('Range options include min/max', async () => {
     const prisma = {
       categoryInventoryItem: {
+        findMany: async () => [{ id: 'ebook', categoryId: 'EBOOKS', condition: 'DIGITAL', priceCents: 500, listingStatus: 'READY', soldAt: null, removedAt: null, data: { title: 'Book', format: 'epub' }, dealershipId: 'seller', dealership: { businessCategory: 'EBOOKS' }, media: [], marketplaceListings: [{ id: 'published', dealershipId: 'seller' }] }],
         count: async () => 1,
         aggregate: async () => ({
           _min: { priceCents: 500 },

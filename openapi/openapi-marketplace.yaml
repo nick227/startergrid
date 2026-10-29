@@ -986,7 +986,7 @@ paths:
       security: []
       x-route-classification: public
       operationId: listMarketplaceCategoryItems
-      summary: Browse category inventory items (e-books and other digital categories)
+      summary: Browse eligible category inventory items, including apparel and digital titles
       description: |
         Returns paginated marketplace-eligible category inventory items.
         Supports filtering by categoryId, dealer, page, and pageSize.
@@ -994,7 +994,7 @@ paths:
       parameters:
         - name: categoryId
           in: query
-          description: Business category ID (e.g. EBOOKS). Required.
+          description: Optional category ID or slug. Disabled categories return 404. Omit to browse all eligible category items.
           schema:
             type: string
         - name: dealer
@@ -1051,6 +1051,38 @@ paths:
                 $ref: '#/components/schemas/MarketplaceCategoryItemDetail'
         '404':
           $ref: '#/components/responses/NotFound'
+
+  /api/marketplace/category-items/{listingId}/leads:
+    post:
+      tags: [Marketplace]
+      security: []
+      x-route-classification: public-write
+      operationId: captureMarketplaceCategoryItemLead
+      summary: Inquire about an eligible published category item
+      parameters:
+        - name: listingId
+          in: path
+          required: true
+          schema: { type: string }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/MarketplaceLeadCaptureRequest'
+      responses:
+        '201':
+          description: Inquiry persisted against the actual item and seller
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MarketplaceLeadCaptureResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '429':
+          description: Too many inquiries
 
 components:
   securitySchemes:
@@ -2214,6 +2246,7 @@ components:
       additionalProperties: false
       required: [eventType]
       properties:
+        inventorySource: { type: string, enum: [vehicle, category_item], default: vehicle }
         eventType:
           type: string
           enum: [vehicle_impression, vehicle_detail_view, dealer_page_view]
@@ -2237,9 +2270,19 @@ components:
         accepted:
           type: boolean
 
+    ListingIdentity:
+      type: object
+      required: [source, inventoryId, dealershipId, categoryId, publicationId]
+      properties:
+        source: { type: string, enum: [vehicle, category_item] }
+        inventoryId: { type: string }
+        dealershipId: { type: string }
+        categoryId: { type: string }
+        publicationId: { type: string, nullable: true }
+
     MarketplaceCategoryItemCard:
       type: object
-      description: Consumer-safe category item card for browse lists (e-books, digital items).
+      description: Consumer-safe category item card. Apparel fields are nullable for categories that do not use them.
       required:
         - listingId
         - categoryId
@@ -2252,6 +2295,14 @@ components:
         - listingUrl
         - listedAt
       properties:
+        condition: { type: string, nullable: true }
+        brand: { type: string, nullable: true }
+        size: { type: string, nullable: true }
+        color: { type: string, nullable: true }
+        material: { type: string, nullable: true }
+        era: { type: string, nullable: true }
+        identity:
+          $ref: '#/components/schemas/ListingIdentity'
         listingId:
           type: string
           description: Opaque stable identifier for the detail route.
@@ -2339,6 +2390,13 @@ components:
       type: object
       required: [dealerId, dealerName, dealerCity, dealerState, websiteUrl, vehicles]
       properties:
+        categoryItems:
+          type: array
+          items:
+            $ref: '#/components/schemas/MarketplaceCategoryItemCard'
+        categoryItemTotal: { type: integer }
+        city: { type: string, nullable: true }
+        state: { type: string, nullable: true }
         dealerId:
           type: string
         dealerName:

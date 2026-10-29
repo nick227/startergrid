@@ -1,19 +1,29 @@
 import type { VehicleCore, VehicleCommerce, VehicleLocation } from '@dealer-marketplace/client';
 import { formatPrice } from '../../lib/display.ts';
 import { ConditionBadge } from '../ui/ConditionBadge.tsx';
+import { useCategorySchema, useCategorySlug } from '../../contexts/CategoryContext.tsx';
+import { sellerHref } from '../../lib/routes.ts';
 
 type Props = { core: VehicleCore; commerce: VehicleCommerce; location: VehicleLocation };
 
 export function CoreHeaderSection({ core, commerce, location }: Props) {
+  const schema = useCategorySchema();
+  const slug = useCategorySlug();
+  const idLabel = schema.asset.idLabel || 'Identifier';
+
   return (
     <header className="space-y-4 pt-4">
-      {/* Dealership Branding at top */}
-      <div className="flex items-center gap-2 text-sm font-semibold text-slate-500 uppercase tracking-wide">
-        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="size-4">
+      {/* Seller Branding at top */}
+      <a
+        href={sellerHref(slug, location.dealerId, core.listingId)}
+        className="inline-flex items-center gap-2 text-sm font-semibold text-slate-500 uppercase tracking-wide hover:text-cta transition"
+      >
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="size-4 text-cta">
           <path fillRule="evenodd" d="M11.54 22.351l.07.04.028.016a.76.76 0 00.723 0l.028-.015.071-.041a16.975 16.975 0 001.144-.742 19.58 19.58 0 002.683-2.282c1.944-1.99 3.963-4.98 3.963-8.827a8.25 8.25 0 00-16.5 0c0 3.846 2.02 6.837 3.963 8.827a19.58 19.58 0 002.682 2.282 16.975 16.975 0 001.145.742zM12 13.5a3 3 0 100-6 3 3 0 000 6z" clipRule="evenodd" />
         </svg>
-        {location.dealerName}
-      </div>
+        <span>{location.dealerName}</span>
+        <span className="text-xs text-cta lowercase">· storefront →</span>
+      </a>
 
       <div className="space-y-2">
         <ConditionBadge condition={core.condition} />
@@ -27,14 +37,17 @@ export function CoreHeaderSection({ core, commerce, location }: Props) {
 
       <dl className="grid grid-cols-2 gap-2 text-sm text-slate-600 pt-2 border-t border-slate-100">
         <div>
-          <dt className="mp-label text-slate-400">Stock #</dt>
+          <dt className="mp-label text-slate-400">{schema.asset.refLabel || 'Stock #'}</dt>
           <dd className="font-medium text-slate-800">{core.stockNumber}</dd>
         </div>
-        <div>
-          <dt className="mp-label text-slate-400">VIN</dt>
-          <dd className="font-mono text-xs font-medium text-slate-800 sm:text-sm">{core.vin}</dd>
-        </div>
+        {core.vin && (
+          <div>
+            <dt className="mp-label text-slate-400">{idLabel}</dt>
+            <dd className="font-mono text-xs font-medium text-slate-800 sm:text-sm">{core.vin}</dd>
+          </div>
+        )}
       </dl>
     </header>
   );
 }
+

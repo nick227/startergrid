@@ -28,7 +28,7 @@ export function CompareBar({ categorySlug, config }: Props) {
       {open ? (
         <CompareTable items={items} categorySlug={categorySlug} config={config} onClose={() => setOpen(false)} />
       ) : (
-        <div className="mx-auto flex max-w-6xl items-center gap-3 px-4 py-3">
+        <div className="mp-rail flex items-center gap-3 py-3">
           <span className="flex-1 text-sm font-semibold">
             {items.length} of {MAX_COMPARE} selected for comparison
           </span>
@@ -68,7 +68,7 @@ function CompareTable({
   const rows = useMemo(() => buildCompareRows(config), [config]);
 
   return (
-    <div className="mx-auto max-w-6xl px-4 py-4">
+    <div className="mp-rail py-4">
       <div className="mb-3 flex items-center justify-between">
         <span className="text-sm font-semibold">Comparing {items.length} listings</span>
         <button type="button" className="text-sm text-navy-300 hover:text-white" onClick={onClose}>

@@ -9,6 +9,7 @@ import { emailTransport, realEmailDeliveryEnabled } from '../dealer/emailTranspo
 export type LeadCrmDeliveryStatus = 'NOT_SENT' | 'SENDING' | 'SENT_TO_CRM_ADDRESS' | 'FAILED';
 
 export type LeadCrmSendBlocker =
+  | 'UNSUPPORTED_INVENTORY_TYPE'
   | 'NO_CRM_ADDRESS'
   | 'CRM_ADDRESS_NOT_EMAIL'
   | 'EMAIL_NOT_CONFIGURED'
@@ -157,7 +158,7 @@ export async function getLeadCrmHandoffDetails(
 
   if (existingAdfAttempt) {
     adfXml = existingAdfAttempt.payloadBody;
-  } else {
+  } else if (!lead.categoryItemId) {
     // Generate valid ADF/XML 1.0
     const vehiclePayload = lead.vehicle
       ? lead.vehicle
@@ -189,7 +190,7 @@ export async function getLeadCrmHandoffDetails(
   const now = new Date();
   const crmSends = lead.deliveryAttempts.filter(isCrmSend);
   const latest = crmSends[0];
-  const blocked = sendBlocker(crmEndpoint, latest, now, env);
+  const blocked = lead.categoryItemId ? { blocker: 'UNSUPPORTED_INVENTORY_TYPE' as const, message: 'ADF/XML is an automotive delivery contract. Category-item inquiries support email summaries and JSON webhooks.' } : sendBlocker(crmEndpoint, latest, now, env);
 
   return {
     leadId: lead.id,

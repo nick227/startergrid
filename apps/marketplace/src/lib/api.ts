@@ -18,6 +18,8 @@ import {
   type MarketplaceProfileUpdateRequest,
   type MarketplaceFavoritesResponse,
   type MarketplaceSitesResponse,
+  type MarketplaceCategoryItemDetail,
+  type MarketplaceCategoryItemListResponse,
 } from '@dealer-marketplace/client';
 import type { BusinessCategoryId } from '@auto-dealer/category-schemas';
 import type { SortBy } from './routes.ts';
@@ -39,7 +41,18 @@ export type {
   MarketplaceFavoritesResponse,
   MarketplaceSitesResponse,
   MarketplaceVehicleCtas,
+  MarketplaceCategoryItemCard,
+  MarketplaceCategoryItemDetail,
+  MarketplaceCategoryItemListResponse,
+  ListingIdentity,
 } from '@dealer-marketplace/client';
+
+export type CategoryItemFilters = {
+  categoryId?: string;
+  dealer?:     string;
+  page?:       number;
+  pageSize?:   number;
+};
 
 export type LeadCaptureInput = {
   contactName?:  string;
@@ -209,6 +222,44 @@ export function submitVehicleLead(
     listingId,
     requestBody: input,
   }));
+}
+
+export function fetchCategoryItems(
+  filters: CategoryItemFilters = {},
+): Promise<MarketplaceCategoryItemListResponse> {
+  return call(() => MarketplaceService.listMarketplaceCategoryItems({
+    categoryId: filters.categoryId,
+    dealer:     filters.dealer,
+    page:       filters.page,
+    pageSize:   filters.pageSize,
+  }));
+}
+
+export function fetchCategoryItem(
+  listingId: string,
+): Promise<MarketplaceCategoryItemDetail> {
+  return call(() => MarketplaceService.getMarketplaceCategoryItem({ listingId }));
+}
+
+export function submitCategoryItemLead(
+  listingId: string,
+  input: LeadCaptureInput,
+): Promise<MarketplaceLeadCaptureResponse> {
+  return call(() => MarketplaceService.captureMarketplaceCategoryItemLead({
+    listingId,
+    requestBody: input,
+  }));
+}
+
+export function submitListingInquiry(
+  listingId: string,
+  input: LeadCaptureInput,
+  isCategoryItem?: boolean,
+): Promise<MarketplaceLeadCaptureResponse> {
+  if (isCategoryItem) {
+    return submitCategoryItemLead(listingId, input);
+  }
+  return submitVehicleLead(listingId, input);
 }
 
 export function fetchMe(): Promise<MarketplaceUserIdentity> {

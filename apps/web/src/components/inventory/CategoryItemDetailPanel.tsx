@@ -1,9 +1,5 @@
 import { useEffect, useState, useCallback } from 'react';
-import {
-  fetchCategoryItemDetail,
-  patchCategoryItem,
-  type CategoryInventoryItemDetail,
-} from '@/lib/api/sdk.ts';
+import { fetchCategoryItemDetail, patchCategoryItem, type CategoryInventoryItemDetail } from '@/lib/api/sdk.ts';
 import { VehicleReadinessChecklist } from './VehicleReadinessChecklist.tsx';
 import { isPhysicalRecordMerchandise } from '@auto-dealer/category-schemas';
 import { ApparelItemFields, apparelFieldsFromData, apparelFieldsToData, type ApparelFields } from './ApparelItemFields.tsx';
@@ -56,6 +52,7 @@ export function CategoryItemDetailPanel({ dealerId, itemId, onClose }: Props) {
   const [conditionInput, setConditionInput] = useState('');
 
   // Save state
+  const [detailTab, setDetailTab] = useState<'overview' | 'details' | 'publish'>('overview');
   const [saveState, setSaveState] = useState<SaveState>('idle');
   const [saveError, setSaveError] = useState<string | null>(null);
   const [isDirty, setIsDirty] = useState(false);
@@ -169,7 +166,136 @@ export function CategoryItemDetailPanel({ dealerId, itemId, onClose }: Props) {
   const inputCls = 'w-full text-sm px-3 py-1.5 border border-silver-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-navy-500 disabled:bg-silver-50 disabled:text-ink-muted';
 
   return (
-    <div className="flex flex-col h-full">
+    <>
+    <div className="flex flex-col h-full bg-white shadow-lg rounded-lg overflow-hidden">
+        {/* Hero Section */}
+        <div className="relative">
+          <img
+            src={typeof item.data['image'] === 'string' ? item.data['image'] : 'https://via.placeholder.com/960x400'}
+            alt={title}
+            className="w-full h-64 object-cover"
+          />
+          <button
+            onClick={() => alert('Primary action')}
+            className="absolute bottom-4 right-4 bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition"
+          >
+            Publish
+          </button>
+        </div>
+        {/* Specs Grid */}
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 p-4">
+          <div className="bg-gray-50 p-2 rounded">
+            <span className="text-sm font-medium text-gray-600">Price</span>
+            <div className="text-lg font-semibold text-gray-800">{formatPrice(item.priceCents)}</div>
+          </div>
+          <div className="bg-gray-50 p-2 rounded">
+            <span className="text-sm font-medium text-gray-600">Condition</span>
+            <div className="text-lg font-semibold text-gray-800">{conditionInput || '—'}</div>
+          </div>
+          <div className="bg-gray-50 p-2 rounded">
+            <span className="text-sm font-medium text-gray-600">Lifecycle</span>
+            {lifecycleBadge(item.lifecycleStatus)}
+          </div>
+          <div className="bg-gray-50 p-2 rounded">
+            <span className="text-sm font-medium text-gray-600">Listing</span>
+            {listingBadge(item.listingStatus)}
+          </div>
+        </div>
+        {/* Tabbed Content */}
+        <div className="border-t">
+          <div className="flex border-b border-silver-200" role="tablist" aria-label="Item sections">
+            {([
+              ['overview', 'Overview'],
+              ['details', 'Details'],
+              ['publish', 'Publish'],
+            ] as const).map(([id, label]) => (
+              <button
+                key={id}
+                type="button"
+                role="tab"
+                aria-selected={detailTab === id}
+                onClick={() => setDetailTab(id)}
+                className={detailTab === id
+                  ? 'border-b border-navy-950 px-4 py-2 text-sm font-semibold text-navy-950'
+                  : 'border-b border-transparent px-4 py-2 text-sm text-ink-muted'}
+              >
+                {label}
+              </button>
+            ))}
+          </div>
+          <div className="p-4">
+            {detailTab === 'overview' && (
+              <p>{typeof item.data['description'] === 'string' ? item.data['description'] : 'No description available.'}</p>
+            )}
+            {detailTab === 'details' && (
+              <>
+                {/* Existing editable fields – reuse the form elements */}
+                {/* Condition */}
+                <label className="block text-sm font-medium mb-1">Condition</label>
+                <select
+                  value={conditionInput}
+                  onChange={e => { setConditionInput(e.target.value); markDirty(); }}
+                  className="w-full border rounded p-1"
+                >
+                  {conditionOptions.map(([val, label]) => (
+                    <option key={val} value={val}>{label}</option>
+                  ))}
+                </select>
+                {/* Price */}
+                <label className="block text-sm font-medium mt-4 mb-1">Price ($)</label>
+                <input
+                  type="text"
+                  value={priceInput}
+                  onChange={e => { setPriceInput(e.target.value); markDirty(); }}
+                  className="w-full border rounded p-1"
+                />
+                {/* Category specific fields */}
+                {/* Render the appropriate field component */}
+                {item.categoryId === 'EBOOKS' && ebookFields && (
+                  <EbookItemFields fields={ebookFields} onChange={fields => { setEbookFields(fields); markDirty(); }} readOnly={!isEditable} />
+                )}
+                {item.categoryId === 'APPAREL' && apparelFields && (
+                  <ApparelItemFields fields={apparelFields} onChange={fields => { setApparelFields(fields); markDirty(); }} readOnly={!isEditable} />
+                )}
+                {recordFields && (
+                  <PhysicalRecordItemFields fields={recordFields} onChange={fields => { setRecordFields(fields); markDirty(); }} readOnly={!isEditable} />
+                )}
+                {songFields && (
+                  <SongItemFields fields={songFields} onChange={fields => { setSongFields(fields); markDirty(); }} readOnly={!isEditable} />
+                )}
+                {artFields && (
+                  <DigitalArtItemFields fields={artFields} onChange={fields => { setArtFields(fields); markDirty(); }} readOnly={!isEditable} />
+                )}
+                {videoFields && (
+                  <VideoItemFields fields={videoFields} onChange={fields => { setVideoFields(fields); markDirty(); }} readOnly={!isEditable} />
+                )}
+              </>
+            )}
+            {detailTab === 'publish' && (
+              <CategoryItemPublishPanel dealerId={dealerId} categoryItemId={item.id} listingStatus={item.listingStatus} />
+            )}
+          </div>
+        </div>
+        {/* Footer actions */}
+        <div className="flex justify-end items-center p-2 border-t">
+          <button
+            type="button"
+            onClick={handleSave}
+            disabled={!isDirty || saveState === 'saving'}
+            className="bg-green-600 text-white px-4 py-2 rounded disabled:opacity-50"
+          >
+            Save
+          </button>
+          <button
+            type="button"
+            onClick={onClose}
+            className="ml-2 text-gray-600 hover:underline"
+          >
+            Close
+          </button>
+        </div>
+      </div>
+      <div className="flex flex-col h-full">
       {/* Header */}
       <div className="flex items-start justify-between px-5 pt-5 pb-3 border-b border-silver-100">
         <div className="space-y-1">
@@ -369,5 +495,6 @@ export function CategoryItemDetailPanel({ dealerId, itemId, onClose }: Props) {
 
       </div>
     </div>
+    </>
   );
 }

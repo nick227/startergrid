@@ -25,9 +25,9 @@ export function HomeBudgetExplorer() {
   const matchingCount = data?.totalEstimate ?? 0;
 
   return (
-    <div className="w-full mx-auto py-16 bg-navy-50">
-      <div className="w-full">
-        <div className="bg-white overflow-hidden flex flex-col md:flex-row">
+    <div className="bg-[#f4f7fa] py-10 sm:py-12">
+      <div className="mp-rail">
+        <div className="flex flex-col overflow-hidden rounded-2xl border border-silver-200 bg-white md:flex-row">
           {/* Left: Inputs */}
           <div className="p-8 md:w-1/2 border-b md:border-b-0 md:border-r border-silver-200">
             <h2 className="text-2xl font-extrabold text-navy-900 mb-2">Explore the market</h2>

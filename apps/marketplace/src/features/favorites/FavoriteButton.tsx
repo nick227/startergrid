@@ -25,7 +25,7 @@ export function FavoriteButton({ listingId, className = '' }: Props) {
       onClick={handleClick}
       aria-label={saved ? `Remove from saved ${schema.asset.plural}` : `Save ${noun}`}
       aria-pressed={saved}
-      className={`mp-focus flex size-8 items-center justify-center rounded-full bg-white/90 shadow-elevation-2 transition hover:bg-white ${saved ? 'text-red-500' : 'text-ink-muted hover:text-red-500'} ${className}`}
+      className={`mp-focus flex size-8 items-center justify-center rounded-full border border-silver-300 bg-white shadow-sm transition hover:border-navy-400 ${saved ? 'text-red-500' : 'text-navy-800 hover:text-red-500'} ${className}`}
     >
       {saved ? (
         <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="size-5" aria-hidden="true">

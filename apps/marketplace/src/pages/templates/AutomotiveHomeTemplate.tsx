@@ -19,33 +19,21 @@ export function AutomotiveHomeTemplate() {
 
   return (
     <PageShell showCategoryNav={true}>
-
-      {/* 4. Get inspired (Editorial) */}
-      <section className="bg-white">
-        <HomeEditorialCarousel />
-      </section>
-
       {/* 1. Search fast */}
-      <section className="bg-white px-4 sm:px-6 lg:px-8 py-8 mx-auto max-w-7xl">
-        <HomeHeroSearch />
-      </section>
-
-      {/* 8. Learn */}
-      <section>
-        <HomeBuyingGuides />
-      </section>
-      {/* 2. Browse visually */}
       <section className="bg-white">
-        <HomeBodyStyleGrid />
+        <div className="mp-rail py-6 sm:py-8">
+          <HomeHeroSearch />
+        </div>
       </section>
 
-      {/* 6. Shop by budget */}
-      <section>
-        <HomeBudgetExplorer />
+      <section className="border-b border-silver-200 bg-white">
+        <div className="mp-rail py-6">
+          <HomeBodyStyleGrid />
+        </div>
       </section>
 
-      {/* 3. High-impact single feature (Spotlight) */}
-      <Suspense fallback={<div className="py-24 text-center text-silver-400">Loading spotlight...</div>}>
+      <Suspense fallback={<div className="py-24 text-center text-silver-400">Loading automotive marketplace...</div>}>
+        {/* 3. High-impact single feature (Spotlight) */}
         <section className="bg-white">
           <HomeFeaturedSpotlight />
         </section>

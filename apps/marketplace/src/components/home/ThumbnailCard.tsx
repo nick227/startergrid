@@ -1,36 +1,38 @@
-
-
 type Props = {
   link: string;
   imageUrl: string;
   title: string;
   subtitle: string;
   badge?: string;
+  fit?: 'cover' | 'contain';
 };
 
-export function ThumbnailCard({ link, imageUrl, title, subtitle, badge }: Props) {
+export function ThumbnailCard({ link, imageUrl, title, subtitle, badge, fit = 'cover' }: Props) {
+  const studio = fit === 'contain';
   return (
-    <a href={link} className="group flex flex-col rounded-2xl overflow-hidden text-left">
-      <div className="relative h-40 w-full rounded-2xl overflow-hidden shadow-elevation-1 group-hover:shadow-elevation-2 transition mb-3">
+    <a href={link} className="group flex flex-col overflow-hidden rounded-xl border border-silver-200 bg-white text-left transition hover:shadow-elevation-2">
+      <div className={`relative h-40 w-full overflow-hidden ${studio ? 'bg-[#e8eef3]' : 'bg-silver-200'}`}>
         {imageUrl ? (
-          <img 
-            src={imageUrl} 
-            alt={title} 
-            className="absolute inset-0 w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" 
+          <img
+            src={imageUrl}
+            alt=""
+            className={studio
+              ? 'h-full w-full object-contain p-3'
+              : 'absolute inset-0 h-full w-full object-cover transition-transform duration-700 group-hover:scale-105'}
           />
-        ) : (
-          <div className="absolute inset-0 bg-silver-200" />
-        )}
+        ) : null}
         {badge && (
-          <div className="absolute top-3 left-3 z-10">
-            <span className="bg-navy-900 text-white px-2 py-1 rounded text-[10px] font-bold uppercase tracking-wider shadow-sm">
+          <div className="absolute left-3 top-3 z-10">
+            <span className="mp-thumb-badge bg-navy-800">
               {badge}
             </span>
           </div>
         )}
       </div>
-      <h4 className="font-bold text-ink-heading mb-1 group-hover:text-orange-600 transition-colors">{title}</h4>
-      <p className="text-xs text-ink-muted leading-relaxed line-clamp-2">{subtitle}</p>
+      <div className="px-3.5 py-3">
+        <h4 className="mb-0.5 font-semibold text-ink-heading group-hover:text-cta">{title}</h4>
+        <p className="line-clamp-2 text-sm text-ink-muted">{subtitle}</p>
+      </div>
     </a>
   );
 }

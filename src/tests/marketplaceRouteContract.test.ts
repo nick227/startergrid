@@ -33,6 +33,7 @@ const REGISTERED_MARKETPLACE_ROUTES = new Set([
   // Generic category item browse routes (EBOOKS and future digital categories)
   'GET    /api/marketplace/category-items',
   'GET    /api/marketplace/category-items/{listingId}',
+  'POST   /api/marketplace/category-items/{listingId}/leads',
   // Consumer auth routes (Phase C2)
   'POST   /api/marketplace/auth/register',
   'POST   /api/marketplace/auth/login',

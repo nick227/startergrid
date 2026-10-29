@@ -57,6 +57,25 @@ export function buildInventoryReadiness(input: ReadinessInput): InventoryReadine
         }
       }
     }
+    if (schema.strictFieldValidation) {
+      for (const field of schema.importFields) {
+        const value = fields[field.fieldKey];
+        const absent = value == null || (typeof value === 'string' && value.trim() === '');
+        const invalid = absent ? field.requiredLevel === 'REQUIRED'
+          : (['text', 'identifier'].includes(field.kind) && typeof value !== 'string')
+            || (['number', 'currency'].includes(field.kind) && (typeof value !== 'number' || !Number.isFinite(value)
+              || (field.validation?.min != null && value < field.validation.min)
+              || (field.validation?.max != null && value > field.validation.max)));
+        if (invalid && !invalidFields.includes(field.fieldKey)) {
+          invalidFields.push(field.fieldKey);
+          blockers.push(`${field.label} is missing or invalid`);
+        }
+      }
+      if (schema.validConditionValues && !schema.validConditionValues.includes(String(fields.condition ?? ''))) {
+        invalidFields.push('condition');
+        blockers.push('Condition is not supported by this inventory contract');
+      }
+    }
     // Validate VIN format if present
     const vin = fields['vin'];
     if (typeof vin === 'string' && vin.length > 0) {

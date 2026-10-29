@@ -4,6 +4,7 @@ type Props = {
   className?: string;
   imgClassName?: string;
   variant?: 'card' | 'hero' | 'thumb';
+  fit?: 'cover' | 'contain';
   decorative?: boolean;
   eager?: boolean;
 };
@@ -23,10 +24,17 @@ export function ListingImage({
   className = '',
   imgClassName = '',
   variant = 'card',
+  fit,
   decorative = false,
   eager = false,
 }: Props) {
-  const frame = `mp-aspect-vehicle overflow-hidden bg-surface-inset ${className}`;
+  const resolvedFit = fit ?? (variant === 'card' ? 'contain' : 'cover');
+  const frame = variant === 'card'
+    ? `mp-thumb-well ${className}`
+    : `h-full w-full overflow-hidden bg-[#e8eef3] ${className}`;
+  const imgFit = resolvedFit === 'contain'
+    ? `h-full w-full object-contain ${variant === 'card' ? 'p-4' : 'p-1.5'}`
+    : 'h-full w-full object-cover';
   const imgAlt = decorative ? '' : alt;
 
   if (src) {
@@ -35,7 +43,7 @@ export function ListingImage({
         <img
           src={src}
           alt={imgAlt}
-          className={`h-full w-full object-cover ${imgClassName}`}
+          className={`${imgFit} ${imgClassName}`}
           loading={eager ? 'eager' : 'lazy'}
           {...{ fetchpriority: eager ? 'high' : 'auto' }}
           decoding="async"

@@ -645,6 +645,7 @@ model CategoryInventoryItem {
 
   dealership          DealershipProfile           @relation(fields: [dealershipId], references: [id], onDelete: Cascade)
   media               CategoryInventoryItemMedia[]
+  leads               Lead[]
   marketplaceListings MarketplaceListing[]
 
   @@index([dealershipId])
@@ -782,6 +783,7 @@ model MockValidationRun {
 model Lead {
   id                  String              @id @default(cuid())
   dealershipId        String
+  categoryItemId      String?
   vehicleId           String?
   source              LeadSource
   platformSlug        String              @db.VarChar(80)
@@ -802,12 +804,14 @@ model Lead {
   updatedAt           DateTime            @updatedAt
 
   dealership      DealershipProfile @relation(fields: [dealershipId], references: [id], onDelete: Cascade)
+  categoryItem    CategoryInventoryItem? @relation(fields: [categoryItemId], references: [id], onDelete: SetNull)
   vehicle         Vehicle?          @relation(fields: [vehicleId], references: [id])
   inboundMessage  InboundEmailMessage? @relation(fields: [inboundMessageId], references: [id], onDelete: SetNull)
   vehicleSuggestions InboundLeadVehicleSuggestion[]
   deliveryAttempts LeadDeliveryAttempt[]
   buyerOutreach   BuyerOutreach[]
 
+  @@index([categoryItemId])
   @@index([dealershipId])
   @@index([platformSlug])
   @@index([dealershipId, workflowStatus])

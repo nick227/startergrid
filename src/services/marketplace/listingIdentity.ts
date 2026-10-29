@@ -42,7 +42,7 @@ export function categoryItemEligible(item: Pick<CategoryInventoryItem, 'category
     }
   }
   const fields = { ...data, stockNumber: item.stockNumber, priceCents: item.priceCents, condition: item.condition,
-    [contract.schema.primaryIdentifier.fieldKey]: item.primaryIdentifier };
+    [contract.schema.primaryIdentifier.fieldKey]: item.primaryIdentifier ?? item.stockNumber };
   return buildInventoryReadiness({ category: item.categoryId, schema: contract.schema, fields,
     assignedMediaSlotKeys: item.media.flatMap(m => m.mediaSlotKey ? [m.mediaSlotKey] : []), totalMediaCount: item.media.length }).status !== 'BLOCKED';
 }

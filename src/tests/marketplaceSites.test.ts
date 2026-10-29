@@ -28,6 +28,7 @@ describe('marketplace category schema helpers', () => {
 describe('listMarketplaceSites service', () => {
   it('returns active automotive site when inventory exists', async () => {
     const prisma = {
+      categoryInventoryItem: { findMany: async () => [] },
       vehicle: {
         groupBy: async () => [{ dealershipId: 'dealer-1', _count: { _all: 2 } }],
       },
@@ -46,6 +47,7 @@ describe('listMarketplaceSites service', () => {
 
   it('marks empty consumer categories as coming_soon', async () => {
     const prisma = {
+      categoryInventoryItem: { findMany: async () => [] },
       vehicle: { groupBy: async () => [] },
       dealershipProfile: { findMany: async () => [] },
     } as unknown as PrismaClient;
@@ -60,6 +62,7 @@ describe('listMarketplaceSites service', () => {
 
   it('returns active trailers site when inventory exists', async () => {
     const prisma = {
+      categoryInventoryItem: { findMany: async () => [] },
       vehicle: {
         groupBy: async () => [{ dealershipId: 'dealer-trailers', _count: { _all: 3 } }],
       },
@@ -79,6 +82,7 @@ describe('listMarketplaceSites service', () => {
 describe('GET /api/marketplace/sites', () => {
   it('returns marketplace site index', async () => {
     const app = buildApp({
+      categoryInventoryItem: { findMany: async () => [] },
       vehicle: {
         groupBy: async () => [{ dealershipId: 'dealer-1', _count: { _all: 1 } }],
       },
@@ -98,6 +102,7 @@ describe('GET /api/marketplace/sites', () => {
 describe('GET /api/marketplace/vehicles/:listingId category boundary', () => {
   it('404s when consumer marketplace category is disabled', async () => {
     const app = buildApp({
+      categoryInventoryItem: { findMany: async () => [] },
       vehicle: { findFirst: async () => null },
     } as unknown as PrismaClient);
 
@@ -112,6 +117,7 @@ describe('GET /api/marketplace/vehicles/:listingId category boundary', () => {
   it('404s when listing is requested under the wrong category', async () => {
     const createdAt = new Date('2026-06-01T00:00:00.000Z');
     const app = buildApp({
+      categoryInventoryItem: { findMany: async () => [] },
       vehicle: {
         findFirst: async () => ({
           id: 'vehicle-1',

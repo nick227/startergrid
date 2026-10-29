@@ -489,6 +489,7 @@ export type UpdateCategoryItemBody = z.infer<typeof updateCategoryItemSchema>;
 
 // operationId: captureMarketplaceChannelEvent
 export const marketplaceChannelEventSchema = z.object({
+  inventorySource: z.enum(['vehicle', 'category_item']).optional(),
   eventType: z.enum(['vehicle_impression', 'vehicle_detail_view', 'dealer_page_view']),
   listingId: optionalText(80),
   dealerId:  optionalText(80),

@@ -14,10 +14,10 @@ export function HomeEditorialCarousel() {
   const activeCampaign = MOCK_EDITORIAL_CAMPAIGNS[activeIndex];
 
   return (
-    <div className="py-12 px-4 sm:px-6 lg:px-8 max-w-6xl mx-auto">
+    <div className="mp-rail py-10 sm:py-12">
 
       {/* Hero Panel */}
-      <div className="relative h-[400px] sm:h-[500px] w-full overflow-hidden shadow-elevation-2 group bg-navy-900">
+      <div className="relative h-[400px] sm:h-[460px] w-full overflow-hidden rounded-2xl shadow-elevation-2 group bg-navy-900">
         <img
           src={activeCampaign.imageUrl}
           alt={activeCampaign.title}

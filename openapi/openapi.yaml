@@ -46,6 +46,8 @@ paths:
       x-route-classification: operator
       operationId: getInboundEmailAddress
       summary: Dealership address that receives marketplace lead email
+      parameters:
+        - $ref: '#/components/parameters/dealershipId'
       responses:
         '200':
           description: Inbound address
@@ -7827,7 +7829,7 @@ components:
         sendBlocker:
           type: string
           nullable: true
-          enum: [NO_CRM_ADDRESS, CRM_ADDRESS_NOT_EMAIL, EMAIL_NOT_CONFIGURED, SEND_IN_PROGRESS, null]
+          enum: [NO_CRM_ADDRESS, CRM_ADDRESS_NOT_EMAIL, EMAIL_NOT_CONFIGURED, SEND_IN_PROGRESS, UNSUPPORTED_INVENTORY_TYPE, null]
         sendBlockerMessage:
           type: string
           nullable: true
@@ -8950,6 +8952,24 @@ components:
       type: object
       required: [id, source, platformSlug, createdAt]
       properties:
+        categoryItemId: { type: string, nullable: true }
+        inventoryIdentity:
+          type: object
+          nullable: true
+          properties:
+            source: { type: string, enum: [vehicle, category_item] }
+            inventoryId: { type: string }
+            dealershipId: { type: string }
+        categoryItem:
+          type: object
+          nullable: true
+          properties:
+            id: { type: string }
+            categoryId: { type: string }
+            stockNumber: { type: string, nullable: true }
+            title: { type: string, nullable: true }
+            soldAt: { type: string, format: date-time, nullable: true }
+            thumbnailUrl: { type: string, nullable: true }
         id:
           type: string
         vehicleId:
@@ -8972,8 +8992,9 @@ components:
           type: string
           nullable: true
         vehicleInterest:
-          type: string
+          type: object
           nullable: true
+          additionalProperties: true
         createdAt:
           type: string
           format: date-time

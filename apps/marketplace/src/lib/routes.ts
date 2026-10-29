@@ -29,7 +29,7 @@ export type MarketplaceRoute =
   | { page: 'home'; slug: string }
   | { page: 'list'; slug: string; query: ListQuery }
   | { page: 'listing'; slug: string; listingId: string }
-  | { page: 'seller'; slug: string; sellerId: string }
+  | { page: 'seller'; slug: string; sellerId: string; fromListing?: string }
   | { page: 'favorites'; slug: string }
   | { page: 'profile'; slug: string }
   | { page: 'redirect'; href: string };
@@ -178,7 +178,13 @@ function parseCategoryPath(path: string, search: string): MarketplaceRoute | nul
   }
 
   if (segments[1] === 'seller' && segments[2]) {
-    return { page: 'seller', slug, sellerId: segments[2]! };
+    const params = new URLSearchParams(search.startsWith('?') ? search.slice(1) : search);
+    return {
+      page: 'seller',
+      slug,
+      sellerId: decodeURIComponent(segments[2]!),
+      fromListing: params.get('fromListing') || params.get('listingId') || params.get('id') || undefined,
+    };
   }
 
   if (segments[1] === 'favorites' && segments.length === 2) {
@@ -251,8 +257,9 @@ export function listingHref(slug: string, listingId: string, title?: string): st
   return `#/${slug}/listing/${encodeURIComponent(listingId)}`;
 }
 
-export function sellerHref(slug: string, sellerId: string): string {
-  return `#/${slug}/seller/${encodeURIComponent(sellerId)}`;
+export function sellerHref(slug: string, sellerId: string, fromListing?: string): string {
+  const base = `#/${slug}/seller/${encodeURIComponent(sellerId)}`;
+  return fromListing ? `${base}?fromListing=${encodeURIComponent(fromListing)}` : base;
 }
 
 export function favoritesHref(slug: string): string {

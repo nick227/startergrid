@@ -1,3 +1,5 @@
+import { eligibleCategoryItems } from './marketplaceQueryService.js';
+import { vehiclePublicationGate } from './listingIdentity.js';
 import type { PrismaClient } from '@prisma/client';
 import {
   categoryIdToSlug,
@@ -25,6 +27,7 @@ export type MarketplaceSitesResponse = {
 };
 
 const ELIGIBLE_VEHICLE_WHERE = {
+  ...vehiclePublicationGate,
   soldAt: null,
   removedAt: null,
   priceCents: { gt: 0 },
@@ -63,6 +66,7 @@ export async function listMarketplaceSites(
   prisma: PrismaClient,
 ): Promise<MarketplaceSitesResponse> {
   const counts = await countEligibleByCategory(prisma);
+  for (const item of await eligibleCategoryItems(prisma)) counts.set(item.categoryId, (counts.get(item.categoryId) ?? 0) + 1);
 
   const sites = listMarketplaceCategories().map(schema => {
     const listingCount = counts.get(schema.id) ?? 0;

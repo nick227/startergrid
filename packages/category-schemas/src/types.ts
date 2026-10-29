@@ -219,6 +219,8 @@ export type ExternalIdentifierDef = {
 };
 
 export type CategoryInventorySchema = {
+  /** Opt-in typed validation of native inventory fields, without changing legacy contracts. */
+  strictFieldValidation?: boolean;
   categoryId: BusinessCategoryId;
   /** Semver-style version string to detect schema drift in debug/readiness output. */
   schemaVersion: string;

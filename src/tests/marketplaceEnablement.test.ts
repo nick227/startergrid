@@ -24,10 +24,12 @@ const CONSUMER_LIVE_IDS = new Set([
   'BOATS',
   'TRAILERS_POWERSPORTS_RV',
   'EBOOKS',
+  'APPAREL',
 ]);
 
 function emptyBrowsePrisma(): PrismaClient {
   return {
+    categoryInventoryItem: { findMany: async () => [] },
     vehicle: {
       count: async () => 0,
       findMany: async () => [],
@@ -69,6 +71,7 @@ function makeFavoritesAuthContext(): { prisma: PrismaClient; rawToken: string } 
     prisma: {
       ...emptyBrowsePrisma(),
       marketplaceSession: { findUnique: async () => sessionRow },
+      categoryInventoryItem: { findMany: async () => [] },
       vehicle: { findMany: async () => [] },
     } as unknown as PrismaClient,
   };
@@ -93,6 +96,7 @@ describe('isConsumerMarketplaceLive', () => {
 describe('resolveConsumerMarketplaceSiteStatus', () => {
   it('maps enabled inventory to active and empty to coming_soon', async () => {
     const prisma = {
+      categoryInventoryItem: { findMany: async () => [] },
       vehicle: { groupBy: async () => [] },
       dealershipProfile: { findMany: async () => [] },
     } as unknown as PrismaClient;

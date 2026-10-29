@@ -1,14 +1,22 @@
 import { useState, useEffect } from 'react';
 import { useMarketplaceFeed } from '../../hooks/useMarketplaceFeed.ts';
-import { useCategorySlug, useCategoryTheme } from '../../contexts/CategoryContext.tsx';
+import { useCategorySlug, useCategoryTheme, useCategorySchema } from '../../contexts/CategoryContext.tsx';
 import { listHref } from '../../lib/routes.ts';
+import { formatPrice } from '../../lib/display.ts';
 
 export function GenericPriceExplorer() {
   const slug = useCategorySlug();
+  const schema = useCategorySchema();
   const { primaryColor } = useCategoryTheme();
   
-  // A generic max price slider. Max defaults to something generic like $10,000
-  const [maxPrice, setMaxPrice] = useState(10000);
+  const isBooks = schema.id === 'EBOOKS';
+  const isBoats = schema.id === 'BOATS';
+  const minSlider = isBooks ? 1 : isBoats ? 5000 : 1000;
+  const maxSlider = isBooks ? 50 : isBoats ? 150000 : 100000;
+  const stepSlider = isBooks ? 1 : isBoats ? 2500 : 1000;
+  const defaultPrice = isBooks ? 20 : isBoats ? 50000 : 35000;
+
+  const [maxPrice, setMaxPrice] = useState(defaultPrice);
 
   // Debounce the fetch so we don't spam the API while dragging sliders
   const [debouncedParams, setDebouncedParams] = useState({ maxPrice });
@@ -28,23 +36,23 @@ export function GenericPriceExplorer() {
   const matchingCount = data?.totalEstimate ?? 0;
 
   return (
-    <div className="w-full mx-auto py-16 bg-navy-50">
-      <div className="w-full">
-        <div className="bg-white overflow-hidden flex flex-col md:flex-row">
+    <div className="bg-[#f4f7fa] py-10 sm:py-12">
+      <div className="mp-rail">
+        <div className="flex flex-col overflow-hidden rounded-2xl border border-silver-200 bg-white md:flex-row">
           {/* Left: Inputs */}
           <div className="p-8 md:w-1/2 border-b md:border-b-0 md:border-r border-silver-200">
             <h2 className="text-2xl font-extrabold text-navy-900 mb-2">Shop by Budget</h2>
-            <p className="text-silver-500 mb-8 text-sm">Find items that fit your budget.</p>
+            <p className="text-silver-500 mb-8 text-sm">Find {schema.asset.plural} that fit your budget.</p>
 
             <div className="space-y-6">
               <div>
                 <div className="flex justify-between mb-2">
                   <label className="text-sm font-bold text-navy-800">Max Budget</label>
-                  <span className="text-sm font-bold" style={{ color: primaryColor }}>${maxPrice.toLocaleString()}</span>
+                  <span className="text-sm font-bold" style={{ color: primaryColor }}>{formatPrice(maxPrice * 100)}</span>
                 </div>
                 <input 
                   type="range" 
-                  min="50" max="100000" step="50" 
+                  min={minSlider} max={maxSlider} step={stepSlider} 
                   value={maxPrice} 
                   onChange={(e) => setMaxPrice(Number(e.target.value))}
                   className="w-full h-2 bg-silver-200 rounded-lg appearance-none cursor-pointer"

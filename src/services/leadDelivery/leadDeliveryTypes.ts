@@ -29,6 +29,8 @@ export type LeadDeliveryDestination = {
 };
 
 export type MarketplaceLeadDeliveryContext = {
+  identity?: import('../marketplace/listingIdentity.js').ListingIdentity;
+  categoryItem?: { title: string };
   leadId: string;
   listingId: string;
   dealershipId: string;

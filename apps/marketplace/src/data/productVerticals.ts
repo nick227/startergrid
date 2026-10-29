@@ -2,16 +2,6 @@ import type { BusinessCategoryId } from '@auto-dealer/category-schemas';
 
 export type VerticalGroupId = 'mobility' | 'real-estate' | 'luxury' | 'retail' | 'media';
 
-export type VerticalGroup = {
-  id: VerticalGroupId;
-  label: string;
-  shortLabel: string;
-  tagline: string;
-  description: string;
-  iconName: string;
-  categoryIds: BusinessCategoryId[];
-};
-
 export type CategoryVerticalMeta = {
   id: BusinessCategoryId;
   slug: string;
@@ -29,54 +19,6 @@ export type CategoryVerticalMeta = {
   accentColor: string;
   iconKey: string;
 };
-
-export const VERTICAL_GROUPS: VerticalGroup[] = [
-  {
-    id: 'mobility',
-    label: 'Vehicles, Marine & Powersports',
-    shortLabel: 'Mobility & Marine',
-    tagline: 'Cars, trucks, watercraft, adventure RVs, and commercial fleet machinery',
-    description: 'Direct dealership listings verified with VIN/HIN decoding, window stickers, and dealer lot status.',
-    iconName: 'car',
-    categoryIds: ['AUTOMOTIVE', 'BOATS', 'TRAILERS_POWERSPORTS_RV', 'HEAVY_EQUIPMENT'],
-  },
-  {
-    id: 'real-estate',
-    label: 'Real Estate & Living Spaces',
-    shortLabel: 'Real Estate',
-    tagline: 'Residential estates, urban multi-family lofts, commercial buildings, and vacation retreats',
-    description: 'Brokerage-direct listings with verified parcel data, floor plans, and direct agent connection.',
-    iconName: 'home',
-    categoryIds: ['HOMES', 'APARTMENTS', 'COMMERCIAL_PROPERTY', 'VACATION_RENTALS'],
-  },
-  {
-    id: 'luxury',
-    label: 'Luxury Watches & Collectibles',
-    shortLabel: 'Luxury & Vault',
-    tagline: 'Certified horology timepieces, authenticated sneakers, rare trading cards, and digital art',
-    description: 'High-value certified goods with provenance verification, serial tracking, and zero counterfeit risk.',
-    iconName: 'watch',
-    categoryIds: ['WATCHES', 'SNEAKERS', 'COLLECTIBLES', 'DIGITAL_ART'],
-  },
-  {
-    id: 'retail',
-    label: 'Specialty Retail & Pre-Owned',
-    shortLabel: 'Retail & Pre-Owned',
-    tagline: 'Curated fashion apparel, modern interior furniture, and certified pawn resale',
-    description: 'Direct retailer and consignment lot inventory synchronized across major shopping and discovery feeds.',
-    iconName: 'tag',
-    categoryIds: ['APPAREL', 'FURNITURE', 'PAWN'],
-  },
-  {
-    id: 'media',
-    label: 'Digital Media & Publishing',
-    shortLabel: 'Media & Publishing',
-    tagline: 'Technical e-books, master audio recordings, and original film productions',
-    description: 'Direct-to-consumer digital catalogs managed via automated distribution and rights-cleared licensing.',
-    iconName: 'book',
-    categoryIds: ['EBOOKS', 'SONGS', 'VIDEO_DISTRIBUTION'],
-  },
-];
 
 export const CATEGORY_VERTICAL_META: Record<BusinessCategoryId, CategoryVerticalMeta> = {
   AUTOMOTIVE: {
@@ -120,8 +62,8 @@ export const CATEGORY_VERTICAL_META: Record<BusinessCategoryId, CategoryVertical
     verticalId: 'mobility',
     shortDesc: 'Travel trailers, fifth wheels, motorhomes, ATVs, UTVs, motorcycles, and commercial hauling trailers.',
     fullDesc: 'Connect with outdoor adventure dealerships and powersports centers. Verified floor plans, towing specs, and engine displacement data without classified spam.',
-    defaultStatus: 'active',
-    statusBadge: 'Powersports Live',
+    defaultStatus: 'coming_soon',
+    statusBadge: 'Coming Soon',
     primaryIdentifier: 'Serial / VIN Number',
     typicalItems: ['Travel Trailers & 5th Wheels', 'Class A/C Motorhomes', 'Utility & Enclosed Trailers', 'ATVs & UTV Side-by-Sides', 'Street & Off-Road Bikes'],
     keyAttributes: ['Dry Weight & Towing', 'Engine / CC Rating', 'Sleeping Capacity', 'Slide-Outs & Generator'],
@@ -341,8 +283,8 @@ export const CATEGORY_VERTICAL_META: Record<BusinessCategoryId, CategoryVertical
     verticalId: 'media',
     shortDesc: 'Technical manuals, digital monographs, research publications, and independent literature.',
     fullDesc: 'Browse titles from independent publishing houses and research institutions. Instant format delivery (EPUB, PDF) with DRM-free reading options.',
-    defaultStatus: 'coming_soon',
-    statusBadge: 'Coming Soon',
+    defaultStatus: 'active',
+    statusBadge: 'Digital Library Live',
     primaryIdentifier: 'ISBN / DOI',
     typicalItems: ['Software Engineering Guides', 'Financial & Market Analysis', 'Independent Fiction', 'Academic Monographs', 'Illustrated Manuals'],
     keyAttributes: ['Page Count & Word Count', 'Supported Formats (EPUB/PDF)', 'Language & Edition', 'Publisher Imprint'],

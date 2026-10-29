@@ -30,9 +30,7 @@ export function NewArrivalsRail({ slug, cards }: Props) {
               href={listingHref(slug, card.listingId, title)}
               className="mp-card mp-focus w-56 shrink-0 overflow-hidden transition hover:border-navy-500/40 hover:shadow-elevation-2"
             >
-              <div className="aspect-[4/3] bg-surface-inset">
-                <ListingImage src={card.mediaUrls[0]} alt={title} imgClassName="h-full w-full object-cover" />
-              </div>
+              <ListingImage src={card.mediaUrls[0]} alt={title} />
               <div className="space-y-1 p-3">
                 <p className="truncate text-sm font-semibold text-ink-heading">{title}</p>
                 <p className="text-sm font-bold tabular-nums text-ink">{formatPrice(card.priceCents)}</p>

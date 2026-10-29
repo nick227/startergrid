@@ -41,7 +41,7 @@ export function HomeInfiniteFeed({ viewMode = 'grid', initialQuery = {} }: Props
 
   if (feed.loadingInitial) {
     return (
-      <div className="py-12 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto">
+      <div className="mp-rail py-10 sm:py-12">
         <FeedCardSkeleton />
       </div>
     );
@@ -49,7 +49,7 @@ export function HomeInfiniteFeed({ viewMode = 'grid', initialQuery = {} }: Props
 
   if (initialError) {
     return (
-      <div className="py-12 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto">
+      <div className="mp-rail py-10 sm:py-12">
         <ErrorState message={queryErrorMessage(feed.error)} onRetry={feed.retry} />
       </div>
     );
@@ -60,7 +60,7 @@ export function HomeInfiniteFeed({ viewMode = 'grid', initialQuery = {} }: Props
   }
 
   return (
-    <div className="py-12 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto">
+    <div className="mp-rail py-10 sm:py-12">
       <ListingGrid viewMode={viewMode}>
         {feed.items.map((item, index) => (
           <FeedItemCard

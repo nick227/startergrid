@@ -20,8 +20,8 @@ export function HomeBuyingGuides() {
   };
 
   return (
-    <div className="py-16 bg-[#f8f6f0]"> {/* Subtle beige matching Edmunds */}
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    <div className="bg-[#f4f7fa] py-12 sm:py-14">
+      <div className="mp-rail">
         
         <div className="flex flex-col lg:flex-row gap-12">
           {/* Left Title Block */}
